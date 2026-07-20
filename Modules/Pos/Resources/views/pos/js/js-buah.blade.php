@@ -2738,13 +2738,6 @@
                     }).on('select2:select', (e) => {
                         const data = e.params.data;
                         const stock = data.stock_available ?? 0;
-                        if (stock <= 0) {
-                            Swal.fire({
-                                icon: 'info',
-                                title: 'Informasi Stok',
-                                text: 'Stock saat ini ' + stock + ', maka akan otomatis dilakukan produksi.',
-                            });
-                        }
                         
                         this.addProduct.id = data.id;
                         this.addProduct.name = data.text;
