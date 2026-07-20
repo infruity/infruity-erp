@@ -893,8 +893,11 @@
             const message = encodeURIComponent(
                 `Halo, berikut bukti transaksi Anda:\n${url}`);
             let phone = '{{ $data->customer->whatsapp ?? '' }}'; // Ganti dengan nomor tujuan
+            phone = phone.replace(/[^0-9]/g, '');
             if (phone.startsWith('0')) {
                 phone = '62' + phone.substring(1);
+            } else if (phone.startsWith('8')) {
+                phone = '62' + phone;
             }
             const waUrl = `https://wa.me/${phone}?text=${message}`;
             window.open(waUrl, '_blank');

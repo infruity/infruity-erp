@@ -56,8 +56,11 @@
                         : url('/cek-nota/draft/' . $data->pos->uuid);
                     $message = urlencode("Halo, berikut bukti transaksi Anda:\n{$url}");
                     $phone = $data->pos->customer->whatsapp ?? '';
+                    $phone = preg_replace('/[^0-9]/', '', $phone);
                     if (str_starts_with($phone, '0')) {
                         $phone = '62' . substr($phone, 1);
+                    } elseif (str_starts_with($phone, '8')) {
+                        $phone = '62' . $phone;
                     }
                     $waUrl = "https://wa.me/{$phone}?text={$message}";
                 @endphp
