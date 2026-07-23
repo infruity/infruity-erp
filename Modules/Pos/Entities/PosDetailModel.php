@@ -42,4 +42,9 @@ class PosDetailModel extends Model
         return $this->belongsTo(Product::class, 'parcel_id');
     }
 
+    public function pos()
+    {
+        return $this->belongsTo(PosModel::class, 'pos_id');
+    }
+
 }

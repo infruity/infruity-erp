@@ -34,5 +34,6 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::get('report-customer-product/data', [ReportController::class, 'get_data_customer_product'])->name('report-customer-product.data');
     Route::get('report-product-buang/data', [ReportController::class, 'get_data_barang_buang'])->name('report-product-buang.data');
     Route::get('report-product-sales/data', [ReportController::class, 'get_data_product_sales'])->name('report-product-sales.data');
+    Route::get('report-product-sales/history', [ReportController::class, 'get_product_sales_history'])->name('report-product-sales.history');
     Route::get('report-total-aset/data', [ReportController::class, 'get_data_total_aset'])->name('report-total-aset.data');
 });
