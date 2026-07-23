@@ -77,7 +77,7 @@
                                         <input type="text" class="form-control form-control-flush p-0 fw-semibold text-dark h-auto cursor-pointer" id="date-end" placeholder="Pilih Tanggal" style="font-size: 11px;" readonly />
                                     </div>
                                     <!-- Hidden input for Flatpickr -->
-                                    <input type="hidden" id="kt_ecommerce_sales_flatpickr" />
+                                    <input type="text" class="d-none" style="display: none !important;" id="kt_ecommerce_sales_flatpickr" />
                                 </div>
                             </div>
 
@@ -112,7 +112,7 @@
                     </div>
                 </div>
                 
-                <div class="d-flex justify-content-between align-items-center fw-bolder text-gray-900 pb-4 pt-4 border-top mt-0 px-6">
+                <div class="d-flex justify-content-between align-items-center fw-bolder text-gray-900 pb-4 pt-4 border-top mt-0 px-2">
                     <span class="fs-5">TOTAL</span>
                     <span id="grand-total-cell" class="fs-5">Rp 0</span>
                 </div>
@@ -249,7 +249,7 @@
                             json.data.forEach(function(row) {
                                 let unit = row.unit ? row.unit : 'pcs';
                                 html += `
-                                    <div class="custom-list-item d-flex flex-column w-100 cursor-pointer history-trigger" style="padding: 1rem 1.5rem; border-bottom: 1px solid #f4f4f4;" data-product-id="${row.product_id}">
+                                    <div class="custom-list-item d-flex flex-column w-100 cursor-pointer history-trigger px-2" style="padding: 1rem 0; border-bottom: 1px solid #f4f4f4;" data-product-id="${row.product_id}">
                                         <div class="fw-bold text-gray-900 fs-6 mb-1">${row.name}</div>
                                         <div class="d-flex align-items-center justify-content-between text-muted fs-7 w-100">
                                             <div>
@@ -510,7 +510,7 @@
 
             $('#branch-filter').on('change', function() {
                 updateDateRangeLabel(); // Update label
-                dataTable.draw(); // Reload data
+                loadTransactions(true); // Reload data
             });
 
             var flatpickrInstance = $("#kt_ecommerce_sales_flatpickr").flatpickr({
@@ -518,6 +518,8 @@
                 dateFormat: "Y-m-d",
                 mode: "range",
                 defaultDate: [defaultDate, defaultDate],
+                positionElement: document.getElementById('kt_ecommerce_sales_flatpickr_custom'),
+                disableMobile: true, // Force standard web UI on mobile so positioning works
                 onChange: function(selectedDates, dateStr, instance) {
                     if (selectedDates.length > 0) {
                         // Format ke nama bulan Indonesia
@@ -537,7 +539,7 @@
                     }
                     
                     updateDateRangeLabel(); // Update label
-                    dataTable.draw(); // Reload data
+                    loadTransactions(true); // Reload data
                 },
                 onReady: function(selectedDates, dateStr, instance) {
                     if (selectedDates.length > 0) {
