@@ -519,6 +519,8 @@ class PosController extends Controller
             return $denied;
         }
 
+        \Illuminate\Support\Facades\Log::info('saveTransaction payload:', $request->all());
+
         // dd($request->all());
         $data = $request->validate([
             // 'customer_id' => 'nullable|exists:customer,id',
@@ -795,12 +797,11 @@ class PosController extends Controller
             // Simpan item transaksi
             $transaksiId = $pos->id;
             $settingExp  = SettingExp::first();
-            $totalPrice  = $this->sumTotalPrice($data['items']);
             foreach ($data['items'] as $item) {
                 if (is_numeric($item['id'])) {
                     $itemTotal   = isset($item['total_input']) ? $item['total_input'] : (($item['price'] * $item['qty']) - ($item['discount'] ?? 0));
-                    $prosentase  = $totalPrice > 0 ? round(($itemTotal / $totalPrice) * 100, 2) : 0;
-                    $posDiscount = ($itemTotal * $pos->discount) / 100;
+                    $prosentase  = $data['subtotal'] > 0 ? ($itemTotal / $data['subtotal']) : 0;
+                    $posDiscount = $prosentase * ($data['discount'] ?? 0);
                     $product     = Product::find($item['id']);
 
                     // Ambil parent/child dari product yang dipilih
@@ -881,6 +882,10 @@ class PosController extends Controller
                         ]
                     );
 
+                    $parcelSubtotal = $product->price;
+                    $parcelProrate  = $data['subtotal'] > 0 ? ($parcelSubtotal / $data['subtotal']) : 0;
+                    $parcelDiscount = $parcelProrate * ($data['discount'] ?? 0);
+
                     PosDetailModel::insert([
                         'pos_id'        => $transaksiId,
                         'parcel_id'     => ! empty($parcel['kemasanId']) ? $parcel['kemasanId'] : ($kemasanProduct->id ?? null),
@@ -888,8 +893,8 @@ class PosController extends Controller
                         'price'         => $product->price,
                         'quantity'      => $parcel['qty'],
                         'discount'      => 0,
-                        'diskon_global' => 0,
-                        'subtotal'      => $product->price,
+                        'diskon_global' => $parcelDiscount,
+                        'subtotal'      => $parcelSubtotal,
                         'kemasan_price' => isset($parcel['kemasanPrice']) ? preg_replace('/[^0-9]/', '', $parcel['kemasanPrice']) : ($kemasanProduct->price ?? 0),
                         'hpp'           => $product->hpp,
                         'exp'           => $product->price - $product->hpp,
@@ -974,14 +979,18 @@ class PosController extends Controller
                         }
                     }
 
+                    $jusSubtotal = isset($value['total_input']) ? $value['total_input'] : (($value['price'] * $value['qty']) - ($value['discount'] ?? 0));
+                    $jusProrate  = $data['subtotal'] > 0 ? ($jusSubtotal / $data['subtotal']) : 0;
+                    $jusDiscount = $jusProrate * ($data['discount'] ?? 0);
+
                     PosDetailModel::insert([
                         'pos_id'     => $transaksiId,
                         'product_id' => $value['productId'],
                         'price'      => $value['price'],
                         'quantity'   => $value['qty'],
                         'discount'   => $value['discount'],
-                        'diskon_global' => 0,
-                        'subtotal'   => isset($value['total_input']) ? $value['total_input'] : (($value['price'] * $value['qty']) - ($value['discount'] ?? 0)),
+                        'diskon_global' => $jusDiscount,
+                        'subtotal'   => $jusSubtotal,
                         'hpp'        => $value['hpp'],
                         'exp'        => $value['price'] - $value['hpp'],
                         'exp_value'  => ($value['price'] - $value['hpp']) * $settingExp->value_exp,
