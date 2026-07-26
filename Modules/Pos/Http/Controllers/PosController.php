@@ -519,8 +519,6 @@ class PosController extends Controller
             return $denied;
         }
 
-        \Illuminate\Support\Facades\Log::info('saveTransaction payload:', $request->all());
-
         // dd($request->all());
         $data = $request->validate([
             // 'customer_id' => 'nullable|exists:customer,id',
@@ -797,11 +795,18 @@ class PosController extends Controller
             // Simpan item transaksi
             $transaksiId = $pos->id;
             $settingExp  = SettingExp::first();
+
+            // Convert global discount to nominal if it is a percentage (<= 100)
+            $globalDiscountInput = $data['discount'] ?? 0;
+            $globalDiscountNominal = ($globalDiscountInput > 0 && $globalDiscountInput <= 100) 
+                ? ($data['subtotal'] * ($globalDiscountInput / 100)) 
+                : $globalDiscountInput;
+
             foreach ($data['items'] as $item) {
                 if (is_numeric($item['id'])) {
                     $itemTotal   = isset($item['total_input']) ? $item['total_input'] : (($item['price'] * $item['qty']) - ($item['discount'] ?? 0));
                     $prosentase  = $data['subtotal'] > 0 ? ($itemTotal / $data['subtotal']) : 0;
-                    $posDiscount = $prosentase * ($data['discount'] ?? 0);
+                    $posDiscount = $prosentase * $globalDiscountNominal;
                     $product     = Product::find($item['id']);
 
                     // Ambil parent/child dari product yang dipilih
@@ -884,7 +889,7 @@ class PosController extends Controller
 
                     $parcelSubtotal = $product->price;
                     $parcelProrate  = $data['subtotal'] > 0 ? ($parcelSubtotal / $data['subtotal']) : 0;
-                    $parcelDiscount = $parcelProrate * ($data['discount'] ?? 0);
+                    $parcelDiscount = $parcelProrate * $globalDiscountNominal;
 
                     PosDetailModel::insert([
                         'pos_id'        => $transaksiId,
@@ -981,7 +986,7 @@ class PosController extends Controller
 
                     $jusSubtotal = isset($value['total_input']) ? $value['total_input'] : (($value['price'] * $value['qty']) - ($value['discount'] ?? 0));
                     $jusProrate  = $data['subtotal'] > 0 ? ($jusSubtotal / $data['subtotal']) : 0;
-                    $jusDiscount = $jusProrate * ($data['discount'] ?? 0);
+                    $jusDiscount = $jusProrate * $globalDiscountNominal;
 
                     PosDetailModel::insert([
                         'pos_id'     => $transaksiId,
