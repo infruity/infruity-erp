@@ -411,11 +411,11 @@ class ReportController extends Controller
             'product_units.abbreviation as unit',
             DB::raw('COUNT(pos_transaction_detail.product_id) AS total_beli'),
             DB::raw('SUM(pos_transaction_detail.quantity) AS quantity'),
-            DB::raw('SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.discount, 0) - COALESCE(pos_transaction_detail.diskon_global, 0)) AS total'),
+            DB::raw('SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) AS total'),
             DB::raw("
             ROUND(
-                (SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.discount, 0) - COALESCE(pos_transaction_detail.diskon_global, 0)) * 100.0) /
-                SUM(SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.discount, 0) - COALESCE(pos_transaction_detail.diskon_global, 0))) OVER (),
+                (SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) * 100.0) /
+                SUM(SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0))) OVER (),
                 2
             ) AS persentase_penjualan
         ")
@@ -435,7 +435,7 @@ class ReportController extends Controller
 
         // Clone query untuk menghitung grand total
         $grandTotalQuery = clone $data;
-        $grandTotal      = $grandTotalQuery->sum(DB::raw('pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.discount, 0) - COALESCE(pos_transaction_detail.diskon_global, 0)'));
+        $grandTotal      = $grandTotalQuery->sum(DB::raw('pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)'));
 
         // Grouping dan urutan data
         $data = $data->groupBy('pos_transaction_detail.product_id', 'products.name', 'product_units.abbreviation')
@@ -639,11 +639,11 @@ class ReportController extends Controller
             }
 
             $txDate = \Carbon\Carbon::parse($detail->tx_date);
-            $subtotal = $detail->subtotal;
+            $subtotal = $detail->price * $detail->quantity;
             $discount = $detail->discount ?? 0;
             $diskon_global = $detail->diskon_global ?? 0;
             $total_discount = $discount + $diskon_global;
-            $total = $subtotal - $total_discount;
+            $total = $detail->subtotal - $diskon_global;
             
             $unit = $detail->unit ? $detail->unit : 'pcs';
             $qty_formatted = round($detail->quantity, 2) . ' ' . $unit;
