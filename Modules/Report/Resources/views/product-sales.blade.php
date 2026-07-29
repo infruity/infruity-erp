@@ -354,12 +354,21 @@
                             res.data.forEach(item => {
                                 const isTunai = item.payment.toLowerCase().includes('tunai');
                                 const paymentColorClass = isTunai ? 'text-success' : 'text-primary';
-                                const discountHtml = item.discount ? `
+                                const productDiscountHtml = item.product_discount ? `
                                     <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="text-gray-500" style="font-size: 11px;">Diskon</span>
-                                        <span class="fw-medium text-danger" style="font-size: 11px;">${item.discount}</span>
+                                        <span class="text-gray-500" style="font-size: 11px;">Diskon Produk</span>
+                                        <span class="fw-medium text-danger" style="font-size: 11px;">${item.product_discount}</span>
                                     </div>
                                 ` : '';
+                                
+                                const prorataDiscountHtml = item.prorata_discount ? `
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="text-gray-500" style="font-size: 11px;">Diskon Prorata</span>
+                                        <span class="fw-medium text-danger" style="font-size: 11px;">${item.prorata_discount}</span>
+                                    </div>
+                                ` : '';
+                                
+                                const discountHtml = productDiscountHtml + prorataDiscountHtml;
                                 
                                 // Use the exact business date from pos_transaction.date
                                 const dataDate = item.pos_date ? item.pos_date : (item.tx_date ? item.tx_date.substring(0, 10) : '');
