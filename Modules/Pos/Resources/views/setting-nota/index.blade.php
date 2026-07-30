@@ -10,8 +10,23 @@
         @csrf
         <!--begin::Main column-->
         <div class="d-flex flex-column flex-lg-row-fluid gap-7 gap-lg-10">
+            <div class="card card-flush py-4 mb-5">
+                <div class="card-header">
+                    <div class="card-title">
+                        <h2>Pilih Cabang</h2>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <select name="branch_id" class="form-select mb-2" onchange="window.location.href='{{ url('setting-nota') }}?cabang_filter='+this.value">
+                        @foreach ($branches as $branch)
+                            <option value="{{ $branch->id }}" {{ $selected_branch == $branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
             <div class="text-end">
-                <a href="{{ url('setting-nota/view-receipt') }}" class="btn btn-success"><i class="fa fa-eye"></i>Preview
+                <a href="{{ url('setting-nota/view-receipt') }}?cabang_filter={{ $selected_branch }}" class="btn btn-success"><i class="fa fa-eye"></i>Preview
                     Struk</a>
             </div>
             <!--begin::Thumbnail settings-->

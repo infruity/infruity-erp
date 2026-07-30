@@ -193,7 +193,7 @@ class PosController extends Controller
         $data['data']         = PosModel::with('customer')->findOrFail($id);
         $data['detail']       = PosDetailModel::with('product')->where('pos_id', $id)->get();
         $data['parcelDetail'] = ProductionParcelDetail::with('product')->where('pos_id', $id)->get();
-        $data['setting']      = SettingNota::first();
+        $data['setting']      = SettingNota::where('branch_id', $data['data']->branch_id)->first() ?? SettingNota::first();
         // dd($data);
         return view('pos::pos.receipt', $data);
     }
@@ -508,7 +508,7 @@ class PosController extends Controller
 
         $data['data']    = PosModel::with('customer')->findOrFail($id);
         $data['detail']  = PosDetailModel::with('product')->where('pos_id', $id)->get();
-        $data['setting'] = SettingNota::first();
+        $data['setting'] = SettingNota::where('branch_id', $data['data']->branch_id)->first() ?? SettingNota::first();
         // dd($data);
         return view('pos::pos.receipt2', $data);
     }
@@ -1091,7 +1091,8 @@ class PosController extends Controller
 
         // $data['data'] = PosModel::with('customer', 'user')->findOrFail($id);
         $data['listPayment'] = Payment::with('paymentMethod', 'pos')->where('pos_id', $id)->get();
-        $data['setting']     = SettingNota::first();
+        $pos = PosModel::find($id);
+        $data['setting']     = SettingNota::where('branch_id', $pos->branch_id)->first() ?? SettingNota::first();
         $data['detail']      = PosDetailModel::with('product')->where('pos_id', $id)->get();
         return view('pos::pos.print-list-payment', $data);
     }
@@ -1104,7 +1105,7 @@ class PosController extends Controller
 
         $data['data']        = PosModel::with('customer', 'user')->findOrFail($id);
         $data['listPayment'] = Payment::with('paymentMethod', 'pos')->where('pos_id', $id)->get();
-        $data['setting']     = SettingNota::first();
+        $data['setting']     = SettingNota::where('branch_id', $data['data']->branch_id)->first() ?? SettingNota::first();
         $data['detail']      = PosDetailModel::with('product')->where('pos_id', $id)->get();
         $data['tier']        = CustomerTier::where('customer_id', $data['data']->customer_id)->first();
         $data['deposito']    = CustomerDeposito::where('customer_id', $data['data']->customer_id)->where('quantity', '>', 0)->first();
@@ -1178,7 +1179,7 @@ class PosController extends Controller
             return view('pos::pos.deleted-nota');
         }
 
-        $data['setting'] = SettingNota::first();
+        $data['setting'] = SettingNota::where('branch_id', $data['data']->branch_id)->first() ?? SettingNota::first();
         $data['detail']  = PosDetailModel::with('product')->where('pos_id', $data['payment']->pos_id)->get();
         $data['tier']    = CustomerTier::where('customer_id', $data['data']->customer_id)->first();
         // dd($data);
@@ -1193,7 +1194,7 @@ class PosController extends Controller
             if (!$data['data']) {
                 return view('pos::pos.deleted-nota');
             }
-            $data['setting'] = SettingNota::first();
+            $data['setting'] = SettingNota::where('branch_id', $data['data']->branch_id)->first() ?? SettingNota::first();
             $data['detail']  = PosDetailModel::with('product')->where('pos_id', $data['payment']->pos_id)->get();
             $data['tier']    = CustomerTier::where('customer_id', $data['data']->customer_id)->first();
             // dd($data);
@@ -1210,7 +1211,7 @@ class PosController extends Controller
             return view('pos::pos.deleted-nota');
         }
         $data['listPayment'] = Payment::with('paymentMethod', 'pos')->where('pos_id', $data['data']->id)->get();
-        $data['setting']     = SettingNota::first();
+        $data['setting']     = SettingNota::where('branch_id', $data['data']->branch_id)->first() ?? SettingNota::first();
         $data['detail']      = PosDetailModel::with('product')->where('pos_id', $data['data']->id)->get();
         $data['tier']        = CustomerTier::where('customer_id', $data['data']->customer_id)->first();
         // dd($data);
