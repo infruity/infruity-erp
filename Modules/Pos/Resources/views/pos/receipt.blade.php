@@ -771,7 +771,16 @@
             </div>
 
             <div class="actions">
-                <a href="{{ url(Request::segment(1)) }}" class="btn btn-primary" style="flex:none; padding:12px 32px;">
+                @php
+                    $previousUrl = url()->previous();
+                    $parsedPath = parse_url($previousUrl, PHP_URL_PATH);
+                    if ($parsedPath == '/pos' || $parsedPath == '/pos/' || $previousUrl == url()->current()) {
+                        $backUrl = route('pos.index');
+                    } else {
+                        $backUrl = $previousUrl;
+                    }
+                @endphp
+                <a href="{{ $backUrl }}" class="btn btn-primary" style="flex:none; padding:12px 32px;">
                     &#8592; Kembali
                 </a>
             </div>

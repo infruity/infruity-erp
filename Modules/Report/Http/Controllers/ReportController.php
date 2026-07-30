@@ -625,13 +625,30 @@ class ReportController extends Controller
         $formattedData = $history->map(function ($detail) {
             $paymentMethods = collect();
             if ($detail->pos && $detail->pos->paymentDetails) {
-                $paymentMethods = $detail->pos->paymentDetails->map(function($payment) {
-                    return $payment->paymentMethod ? $payment->paymentMethod->name : 'Tunai';
+                $paymentMethods = $detail->pos->paymentDetails->filter(function($payment) {
+                    return $payment->payment_amount > 0;
+                })->map(function($payment) {
+                    $method = $payment->payment_method;
+                    if (empty($method) || strtolower($method) === 'tunai') {
+                        return 'Tunai';
+                    }
+                    if ($method === 'Split') {
+                        return 'Split';
+                    }
+                    $decoded = json_decode($method, true);
+                    if (is_array($decoded) && count($decoded) > 0) {
+                        return collect($decoded)->implode(' & ');
+                    }
+                    return $method;
                 })->filter()->unique()->values();
             }
             
+            if ($paymentMethods->isEmpty()) {
+                $paymentMethods->push('Tunai');
+            }
+
             if ($paymentMethods->count() > 1) {
-                $paymentStr = 'Split (' . $paymentMethods->implode(' & ') . ')';
+                $paymentStr = $paymentMethods->implode(', ');
             } elseif ($paymentMethods->count() == 1) {
                 $paymentStr = $paymentMethods[0];
             } else {
