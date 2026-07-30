@@ -260,16 +260,6 @@ class PosController extends Controller
             DB::beginTransaction();
             $pos = PosModel::findOrFail($id);
 
-            // Hapus parcel products
-            $parcelProductIds = PosDetailModel::where('pos_id', $id)
-                ->whereNotNull('parcel_id')
-                ->pluck('product_id')
-                ->filter()
-                ->all();
-            if (! empty($parcelProductIds)) {
-                Product::whereIn('id', $parcelProductIds)->delete();
-            }
-
             // Hapus production parcel details
             ProductionParcelDetail::where('pos_id', $id)->delete();
 
@@ -891,6 +881,8 @@ class PosController extends Controller
                     $parcelProrate  = $data['subtotal'] > 0 ? ($parcelSubtotal / $data['subtotal']) : 0;
                     $parcelDiscount = $parcelProrate * $globalDiscountNominal;
 
+                    $parcelHpp = preg_replace('/[^0-9]/', '', $parcel['hpp']);
+
                     PosDetailModel::insert([
                         'pos_id'        => $transaksiId,
                         'parcel_id'     => ! empty($parcel['kemasanId']) ? $parcel['kemasanId'] : ($kemasanProduct->id ?? null),
@@ -901,9 +893,9 @@ class PosController extends Controller
                         'diskon_global' => $parcelDiscount,
                         'subtotal'      => $parcelSubtotal,
                         'kemasan_price' => isset($parcel['kemasanPrice']) ? preg_replace('/[^0-9]/', '', $parcel['kemasanPrice']) : ($kemasanProduct->price ?? 0),
-                        'hpp'           => $product->hpp,
-                        'exp'           => $product->price - $product->hpp,
-                        'exp_value'     => ($product->price - $product->hpp) * $settingExp->value_exp,
+                        'hpp'           => $parcelHpp,
+                        'exp'           => $product->price - $parcelHpp,
+                        'exp_value'     => ($product->price - $parcelHpp) * $settingExp->value_exp,
                         'created_at'    => now(),
                         'updated_at'    => now(),
                         'type'          => 'parcel',
@@ -1041,16 +1033,6 @@ class PosController extends Controller
 
     private function clearExistingPosRelations(int $posId): void
     {
-        $parcelProductIds = PosDetailModel::where('pos_id', $posId)
-            ->whereNotNull('parcel_id')
-            ->pluck('product_id')
-            ->filter()
-            ->all();
-
-        if (! empty($parcelProductIds)) {
-            Product::whereIn('id', $parcelProductIds)->delete();
-        }
-
         ProductionParcelDetail::where('pos_id', $posId)->delete();
         PosDetailModel::where('pos_id', $posId)->forceDelete();
 
