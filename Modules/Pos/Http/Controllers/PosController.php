@@ -77,13 +77,6 @@ class PosController extends Controller
             'courier',
             'branch',
             'branch_proses',
-            'details',
-            'details.parcel',
-            'details.product',
-            'details.product.unit',
-            'details.product.productionParcelDetails',
-            'details.product.productionParcelDetails.product',
-            'details.product.productionParcelDetails.product.productBranches',
         ])
             ->where('created_by', Auth::id())
             ->where('status', 'temp')
@@ -91,6 +84,18 @@ class PosController extends Controller
             ->first();
 
         if ($draft) {
+            $draft->load([
+                'details',
+                'details.parcel',
+                'details.product',
+                'details.product.unit',
+                'details.product.productionParcelDetails' => function($q) use ($draft) {
+                    $q->where('pos_id', $draft->id);
+                },
+                'details.product.productionParcelDetails.product',
+                'details.product.productionParcelDetails.product.productBranches',
+                'details.product.productionParcelDetails.product.get_stock',
+            ]);
             $data['data']           = $draft;
             $data['detail']         = $draft->details;
             $data['invoice_number'] = $draft->invoice_number;
@@ -225,7 +230,20 @@ class PosController extends Controller
             return redirect()->route('pos.index')->with('error', 'Tidak bisa diedit, buatlah transaksi baru.');
         }
 
-        $data['detail']         = PosDetailModel::with('product', 'parcel', 'product.unit', 'product.productionParcelDetails', 'product.productionParcelDetails.product', 'product.productionParcelDetails.product.productBranches', 'product.productReceipt', 'product.productReceipt.ingredients', 'product.productReceipt.ingredients.get_stock')->where('pos_id', $id)->get();
+        $data['detail'] = PosDetailModel::with([
+            'product',
+            'parcel',
+            'product.unit',
+            'product.productionParcelDetails' => function($q) use ($id) {
+                $q->where('pos_id', $id);
+            },
+            'product.productionParcelDetails.product',
+            'product.productionParcelDetails.product.get_stock',
+            'product.productionParcelDetails.product.productBranches',
+            'product.productReceipt',
+            'product.productReceipt.ingredients',
+            'product.productReceipt.ingredients.get_stock'
+        ])->where('pos_id', $id)->get();
         $data['invoice_number'] = $data['data']->invoice_number;
         return view('pos::pos.create2', $data);
     }

@@ -180,7 +180,7 @@
                 return productName.includes(`(${unitLabel})`) ? productName : `${productName} (${unitLabel})`;
             },
             initSelect2() {
-                $('.parcel-select').select2({
+                $('.parcel-select:not(.select2-hidden-accessible)').select2({
                     placeholder: 'Pilih Buah',
                     language: {
                         errorLoading: function() {
@@ -276,7 +276,7 @@
                     this.updateTotal();
                 });
 
-                $('.parcel-select-edit').select2({
+                $('.parcel-select-edit:not(.select2-hidden-accessible)').select2({
                     placeholder: 'Pilih Parcel',
                     dropdownParent: $('#parcelEditModal'),
                     templateResult: (data) => {
@@ -577,7 +577,6 @@
                             totalUsed = posAppInstance.calculateUsedStock(productId);
                         }
 
-                        // Kurangi kontribusi parcel lama dari perhitungan (karena sedang diedit)
                         if (oldParcel && oldParcel.data && Array.isArray(oldParcel.data)) {
                             const oldIngredient = oldParcel.data.find(ing => {
                                 const ingId = ing.id || ing.product;
@@ -589,6 +588,16 @@
                                 totalUsed -= (parseFloat(oldIngredient.qty) || 0) * oldParcelQty;
                             }
                         }
+
+                        console.log(`[Validation Edit Parcel] Product: ${productId}`, {
+                            originalStock: originalStock,
+                            qtyPerParcel: qtyPerParcel,
+                            parcelQty: parcelQty,
+                            totalQtyNeed: totalQtyNeed,
+                            totalUsedAfterSubtractingOld: totalUsed,
+                            totalUsedBefore: totalUsed + ((oldParcel && oldParcel.data) ? ((parseFloat(oldParcel.data.find(ing => (ing.id || ing.product) == productId)?.qty) || 0) * oldParcelQty) : 0),
+                            diff: (totalUsed + totalQtyNeed) - originalStock
+                        });
 
                         if ((totalUsed + totalQtyNeed) > originalStock) {
                             const productName = item.displayName || item.name || `Produk #${productId}`;
