@@ -637,7 +637,7 @@ class ReportController extends Controller
                     }
                     $decoded = json_decode($method, true);
                     if (is_array($decoded) && count($decoded) > 0) {
-                        return collect($decoded)->implode(' & ');
+                        return collect($decoded)->implode(', ');
                     }
                     return $method;
                 })->filter()->unique()->values();

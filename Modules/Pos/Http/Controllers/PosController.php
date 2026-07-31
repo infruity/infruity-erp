@@ -195,7 +195,7 @@ class PosController extends Controller
             return $denied;
         }
 
-        $data['data']         = PosModel::with('customer')->findOrFail($id);
+        $data['data']         = PosModel::with(['customer', 'paymentDetails'])->findOrFail($id);
         $data['detail']       = PosDetailModel::with('product')->where('pos_id', $id)->get();
         $data['parcelDetail'] = ProductionParcelDetail::with('product')->where('pos_id', $id)->get();
         $data['setting']      = SettingNota::where('branch_id', $data['data']->branch_id)->first() ?? SettingNota::first();
