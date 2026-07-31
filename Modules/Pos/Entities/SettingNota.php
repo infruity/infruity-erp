@@ -10,6 +10,7 @@ class SettingNota extends Model
     use HasFactory;
 
     protected $fillable = [
+        'branch_id',
         'header',
         'footer',
         'craeated_by',
@@ -20,5 +21,10 @@ class SettingNota extends Model
     protected static function newFactory()
     {
         return \Modules\Pos\Database\factories\SettingNotaFactory::new();
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(\Modules\Master\Entities\Branch::class, 'branch_id');
     }
 }
