@@ -486,64 +486,7 @@
                 <p class="tagline">{{ $setting->brand_social_media }}</p>
             </div>
 
-            <!-- Customer Profile -->
-            <div class="customer-section">
-                <div class="customer-info">
-                    <div class="avatar">
-                        @php
-                            $assetPath = asset('images/icon/bronze-icon.png');
-                            // if (isset($tier->tier_name)) {
-                            //     switch ($tier->tier_name) {
-                            //         case 'Bronze':
-                            //             $assetPath = asset('images/icon/bronze-icon.png');
-                            //             break;
-                            //         case 'Silver':
-                            //             $assetPath = asset('images/icon/silver-icon.png');
-                            //             break;
-                            //         case 'Gold':
-                            //             $assetPath = asset('images/icon/gold-icon.png');
-                            //             break;
-                            //         case 'Platinum':
-                            //             $assetPath = asset('images/icon/platinum-icon.png');
-                            //             break;
-                            //         default:
-                            //             $assetPath = asset('images/icon/bronze-icon.png');
-                            //             break;
-                            //     }
-                            // }
-                            if (isset($tier->icon)) {
-                                $assetPath = asset('storage/' . $tier->icon);
-                            }
-                        @endphp
-                        <img src="{{ $assetPath }}" alt="icon" width="48">
-                    </div>
-                    @php
-                        if (isset($tier)) {
-                            $currentExp = $tier->customer_exp;
-                            $maxExp = $tier->max_exp ?? $tier->min_exp;
-                            $percent = min(100, ($currentExp / $maxExp) * 100);
-                        } else {
-                            $percent = 0;
-                        }
 
-                        $color = match (true) {
-                            $percent <= 25 => '#dc2626', // merah
-                            $percent <= 50 => '#eab308', // kuning
-                            $percent <= 75 => '#f97316', // orange
-                            default => '#16a34a', // hijau
-                        };
-                    @endphp
-                    <div class="customer-details">
-                        <h2 class="customer-name">{{ $data->customer->name ?? 'Umum' }}</h2>
-                        <p class="level-text">Level {{ $tier->tier_name ?? 'Bronze' }} ({{ $currentExp ?? 0 }} /
-                            {{ $maxExp ?? 0 }})</p>
-                        <div class="progress-bar">
-                            <div class="progress-fill"
-                                style="--progress: {{ $percent }}%; --fill-color : {{ $color }}"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Receipt Details -->
             <div class="receipt-details">
@@ -637,14 +580,11 @@
             <div class="footer">
                 <div class="footer-content">
                     <div class="contact-info">
-                        <h3 class="footer-title">Pesan & Kirim Jadi Lebih Mudah!</h3>
-                        <p class="footer-text">
-                            Ada kritik, saran, atau ingin tahu<br>
-                            info lebih lengkap?
-                        </p>
+                        <h3 class="footer-title">{{ $setting->brand_greeting }}</h3>
+                        <p class="footer-text">{{ $setting->note }}</p>
                         <p class="contact-details">
-                            0812-3060-7050 (WA/SMS)<br>
-                            Instagram: @In!Fruity
+                            {{ $setting->brand_phone }} (WA/SMS)<br>
+                            Instagram: {{ $setting->brand_social_media }}
                         </p>
                     </div>
                     <div class="qr-code" id="qrcode"></div>
