@@ -2253,13 +2253,18 @@
                             qty: item.qty || 1,
                             price: item.price,
                             priceFormatted: this.formatRupiah(item.price),
-                            hpp: item.hpp || 0
+                            hpp: item.hpp || 0,
+                            original_stock: item.original_stock || 0,
+                            stock_available: item.stock_available || 0
                         };
 
                         // push ke Alpine
                         parcelFormInstance.setParcel(parcelItem);
                     });
                     parcelFormInstance.setParcelId(item.id);
+                    setTimeout(() => {
+                        parcelFormInstance.initSelect2();
+                    }, 50);
                 });
 
                 const parcelQty = selectedParcel?.qty ?? item.qty ?? 1;
@@ -2456,6 +2461,8 @@
                                 price: linePrice,
                                 priceFormatted: this.formatRupiah(linePrice),
                                 qty: qtyPerParcel,
+                                original_stock: parseFloat(detailItem.product?.get_stock?.stock_available ?? 0),
+                                stock_available: parseFloat(detailItem.product?.get_stock?.stock_available ?? 0),
                             };
                             percelDatas.push(parcelData);
                         });

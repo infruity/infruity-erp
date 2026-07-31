@@ -5,116 +5,190 @@
     <div>
         <div class="card card-flush">
             <!--begin::Card header-->
-            <div class="card-header align-items-center py-3 gap-2 flex-wrap flex-md-nowrap">
-                <!--begin::Card title-->
-                <div class="card-title">
-                    <!--begin::Search-->
-                    <div class="d-flex align-items-center position-relative my-1">
-                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4"></i>
-                        <input type="text" data-kt-ecommerce-product-filter="search" id="search"
-                            class="form-control form-control-solid w-200px w-md-250px ps-12" placeholder="Cari Buah" />
-                    </div>
-                    <!--end::Search-->
+            <div class="card-header align-items-center py-4 px-4 px-sm-6 border-bottom d-flex flex-row gap-3 gap-sm-4 flex-nowrap" style="min-height: auto;">
+                <!--begin::Search-->
+                <div class="d-flex align-items-center position-relative flex-root">
+                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4 text-gray-400"></i>
+                    <input type="text" data-kt-ecommerce-product-filter="search" id="search"
+                        class="form-control form-control-solid rounded-pill ps-12 w-100" placeholder="Cari transaksi..." style="background-color: #f9f9f9; border: 1px solid #f0f0f0; height: 44px; font-size: 13px;" />
                 </div>
-                <!--end::Card title-->
-                <!--begin::Card toolbar-->
-                <div class="card-toolbar ms-auto">
-                    <div class="card-toolbar">
-                        <!--begin::Toolbar-->
-                        <div class="d-flex justify-content-end" data-kt-user-table-toolbar="base">
-                            <!--begin::Filter-->
-                            <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
-                                data-kt-menu-placement="bottom-end">
-                                <i class="ki-duotone ki-filter fs-2">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                </i></button>
-                            <!--begin::Menu 1-->
-                            <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                                <!--begin::Header-->
-                                <div class="px-7 py-5">
-                                    <div class="fs-5 text-gray-900 fw-bold">Pilihan Filter</div>
-                                </div>
-                                <!--end::Header-->
-                                <!--begin::Separator-->
-                                <div class="separator border-gray-200"></div>
-                                <!--end::Separator-->
-                                <!--begin::Content-->
-                                <div class="px-7 py-5" data-kt-user-table-filter="form">
-                                    <!--begin::Input group-->
-                                    <div class="mb-3">
-                                        <label class="form-label fs-6 fw-semibold">Cabang:</label>
-                                        <select class="form-select form-select-solid" id="branch-filter"
-                                            data-control="select2" data-hide-search="true" data-placeholder="Pilih Cabang">
-                                            <option value="all">Semua Cabang</option>
-                                            @foreach ($branches as $branch)
-                                                <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <!--end::Input group-->
-                                </div>
-                                <!--end::Content-->
-                                <!--begin::Separator-->
-                                <div class="separator border-gray-200"></div>
-                                <!--end::Separator-->
-                                <!--begin::Content-->
-                                <div class="px-7 py-5" data-kt-user-table-filter="form">
-                                    <!--begin::Input group-->
-                                    <div class="input-group mw-350px">
-                                        <input class="form-control form-control-solid rounded rounded-end-0"
-                                            placeholder="Pilih Range Tanggal" id="kt_ecommerce_sales_flatpickr" />
-                                        <button class="btn btn-icon btn-light" id="kt_ecommerce_sales_flatpickr_clear">
-                                            <i class="ki-duotone ki-cross fs-2">
-                                                <span class="path1"></span>
-                                                <span class="path2"></span>
-                                            </i>
-                                        </button>
-                                    </div>
-                                    <!--end::Input group-->
-                                </div>
-                                <!--end::Content-->
-                            </div>
-                            <!--end::Menu 1-->
-                            <!--end::Filter-->
+                <!--end::Search-->
+                
+                <!--begin::Filter-->
+                <div class="position-relative flex-shrink-0">
+                    <button type="button" class="btn btn-icon btn-bg-light btn-active-light-primary rounded-circle border border-gray-200" 
+                        style="width: 44px; height: 44px; background-color: #ffffff;"
+                        data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+                        <div class="position-relative d-flex align-items-center justify-content-center">
+                            <i class="ki-outline ki-filter fs-2 text-gray-600"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-white border-2 rounded-circle" style="margin-top: 4px; margin-left: -8px;">
+                                <span class="visually-hidden">New alerts</span>
+                            </span>
                         </div>
-                        <!--end::Toolbar-->
+                    </button>
+                    <!--begin::Menu 1-->
+                    <div class="menu menu-sub menu-sub-dropdown w-300px p-4 shadow-lg" data-kt-menu="true" style="border-radius: 1rem; border: 1px solid #f4f4f4;">
+                        <div class="d-flex flex-column gap-4 w-100">
+                            
+                            <!-- Grouping Field -->
+                            <div>
+                                <label class="d-block fw-bold text-muted text-uppercase mb-2" style="font-size: 10px; letter-spacing: 0.05em;">Grup Berdasarkan</label>
+                                <div class="d-flex flex-row gap-2">
+                                    <div class="flex-grow-1 py-2 px-2 rounded d-flex align-items-center justify-content-center gap-1 cursor-pointer" style="font-size: 11px; font-weight: 600; color: #047857; background-color: #ecfdf5; border: 1px solid #a7f3d0; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);">
+                                        <i class="ki-solid ki-abstract-26 fs-6 text-success"></i> Produk
+                                    </div>
+                                    <div class="flex-grow-1 py-2 px-2 rounded d-flex align-items-center justify-content-center gap-1 cursor-pointer" style="font-size: 11px; font-weight: 600; color: #6b7280; background-color: #f9fafb; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);">
+                                        <i class="ki-outline ki-calendar fs-6 text-muted"></i> Tanggal
+                                    </div>
+                                </div>
+                                <div class="mt-2 position-relative w-100">
+                                    <select class="form-select form-select-solid rounded bg-white text-dark fw-semibold" data-control="select2" data-hide-search="true" style="font-size: 12px; height: 38px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);">
+                                        <option value="harian">Harian</option>
+                                        <option value="mingguan">Mingguan</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Cabang Field -->
+                            <div>
+                                <label class="d-block fw-bold text-muted text-uppercase mb-2" style="font-size: 10px; letter-spacing: 0.05em;">Cabang</label>
+                                <select class="form-select form-select-solid rounded" id="branch-filter" data-control="select2" data-hide-search="true" data-placeholder="Semua Cabang" style="font-size: 12px; height: 38px; border: 1px solid #e5e7eb; background-color: white;">
+                                    <option value="all">Semua Cabang</option>
+                                    @foreach ($branches as $branch)
+                                        <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Periode Tanggal -->
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="d-block fw-bold text-muted text-uppercase mb-0" style="font-size: 10px; letter-spacing: 0.05em;">Periode Tanggal</label>
+                                    <a href="#" class="text-danger fw-semibold text-decoration-none" style="font-size: 9px;" id="reset-date-btn">Reset</a>
+                                </div>
+                                
+                                <div class="w-100 d-flex flex-column gap-2" id="kt_ecommerce_sales_flatpickr_custom">
+                                    <div class="d-flex align-items-center gap-2 bg-white rounded px-2 py-2 w-100 cursor-pointer flatpickr-trigger" style="border: 1px solid #e5e7eb; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);">
+                                        <span class="text-muted fw-semibold" style="font-size: 10px; width: 32px;">DARI</span>
+                                        <input type="text" class="form-control form-control-flush p-0 fw-semibold text-dark h-auto cursor-pointer" id="date-start" placeholder="Pilih Tanggal" style="font-size: 11px;" readonly />
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2 bg-white rounded px-2 py-2 w-100 cursor-pointer flatpickr-trigger" style="border: 1px solid #e5e7eb; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);">
+                                        <span class="text-muted fw-semibold" style="font-size: 10px; width: 32px;">KE</span>
+                                        <input type="text" class="form-control form-control-flush p-0 fw-semibold text-dark h-auto cursor-pointer" id="date-end" placeholder="Pilih Tanggal" style="font-size: 11px;" readonly />
+                                    </div>
+                                    <!-- Hidden input for Flatpickr -->
+                                    <input type="text" class="d-none" style="display: none !important;" id="kt_ecommerce_sales_flatpickr" />
+                                </div>
+                            </div>
+
+                            <!-- Filter Action Buttons -->
+                            <div class="pt-3 mt-1 border-top d-flex flex-column gap-2">
+                                <div class="d-flex flex-row gap-2">
+                                    <button class="flex-grow-1 py-2 px-1 rounded d-flex align-items-center justify-content-center gap-1 border-0" style="font-size: 11px; font-weight: 600; background-color: #c5f037; color: #1f2937;" id="btn-minggu-ini">
+                                        Minggu Ini
+                                    </button>
+                                    <button class="flex-grow-1 py-2 px-1 rounded d-flex align-items-center justify-content-center gap-1" style="font-size: 11px; font-weight: 600; background-color: #ffffff; color: #374151; border: 1px solid #e5e7eb;" id="btn-hari-ini">
+                                        Hari Ini
+                                    </button>
+                                </div>
+                                <button class="w-100 py-2 px-1 rounded d-flex align-items-center justify-content-center gap-1 border-0" style="font-size: 11px; font-weight: 600; background-color: #fef2f2; color: #ef4444;" id="btn-reset-semua">
+                                    Reset Semua
+                                </button>
+                            </div>
+                        </div>
                     </div>
+                    <!--end::Menu 1-->
                 </div>
-                <!--end::Card toolbar-->
+                <!--end::Filter-->
             </div>
             <!--end::Card header-->
             <!--begin::Card body-->
             <div class="card-body pt-0">
-                <div class="col-12 text-center mb-8">
-                    <span class="fs-6 fw-bold text-gray-700">Laporan Penjualan Produk</span>
-                    <br>
-                    <span class="fs-6 fw-bold text-gray-700">Periode: <span id="date-range-label">Semua Waktu</span></span>
+                <!-- Title removed as per user request -->
+                <div class="d-flex flex-column w-100" style="height: calc(100vh - 280px); min-height: 300px; overflow-y: auto; overflow-x: hidden;" id="transaction-scroll-wrapper">
+                    <div id="transaction-list-container" class="d-flex flex-column w-100"></div>
+                    <div id="lazy-loader" class="text-center py-4 d-none">
+                        <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+                    </div>
                 </div>
-                <!--begin::Table-->
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="transaction-table" width="100%">
-                    <thead>
-                        <tr class="text-start text-gray-500 fw-bold fs-7">
-                            <th class="text-start min-w-150px">Produk</th>
-                            <th class="text-start min-w-50px">Total</th>
-                            <th class="text-start min-w-50px">Kontribusi</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                    <tfoot>
-                        <tr>
-                            <th class="text-end">Grand Total:</th>
-                            <th id="grand-total-cell" class="text-start"></th>
-                            <th>100 %</th>
-                        </tr>
-                    </tfoot>
-                </table>
+                
+                <div class="d-flex justify-content-between align-items-center fw-bolder text-gray-900 pb-4 pt-4 border-top mt-0 px-2">
+                    <span class="fs-5">TOTAL</span>
+                    <span id="grand-total-cell" class="fs-5">Rp 0</span>
+                </div>
+        </div>
+        <!--end::Card body-->
+    </div>
+</div>
 
-                <!--end::Table-->
+<!-- Drawer Riwayat Transaksi -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="history-drawer" style="width: 400px; border-left: none; box-shadow: -4px 0 15px rgba(0,0,0,0.05);">
+    <div class="offcanvas-header pb-2 d-flex flex-column align-items-start border-bottom">
+        <div class="d-flex justify-content-between w-100 align-items-center mb-1">
+            <h5 class="offcanvas-title fw-bolder text-gray-900 fs-4">Riwayat Transaksi</h5>
+            <button type="button" class="btn-close btn-sm btn-light rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <span class="text-muted fw-medium" id="history-product-name" style="font-size: 13px;"></span>
+        
+        <!-- Search and Filter in drawer -->
+        <div class="d-flex align-items-center mt-3 mb-2 w-100 gap-2">
+            <div class="position-relative flex-grow-1">
+                <i class="ki-outline ki-magnifier fs-5 position-absolute ms-3 top-50 translate-middle-y text-gray-400"></i>
+                <input type="text" class="form-control form-control-solid rounded-pill ps-10" id="search-history" placeholder="Cari transaksi..." style="background-color: #f9f9f9; border: 1px solid #f0f0f0; height: 42px; font-size: 12px;">
             </div>
-            <!--end::Card body-->
+            
+            <div class="dropdown" id="history-filter-dropdown-container">
+                <button class="btn btn-icon btn-light rounded-circle border border-gray-200 shadow-sm flex-shrink-0" type="button" id="historyFilterBtn" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style="width: 42px; height: 42px; background-color: white;">
+                    <div class="position-relative d-flex align-items-center justify-content-center" id="historyFilterIconContainer">
+                        <i class="ki-outline ki-filter fs-4 text-gray-600" id="historyFilterIcon"></i>
+                        <span class="position-absolute bg-warning rounded-circle border border-white d-none" id="historyFilterIndicator" style="width: 8px; height: 8px; top: -2px; right: -2px;"></span>
+                    </div>
+                </button>
+                
+                <div class="dropdown-menu dropdown-menu-end p-4 border-gray-100 shadow-lg" aria-labelledby="historyFilterBtn" style="width: 260px; border-radius: 1rem; margin-top: 10px !important;">
+                    <!-- TIPE PEMBAYARAN -->
+                    <div class="mb-4">
+                        <label class="form-label text-muted fw-bold text-uppercase mb-2" style="font-size: 10px; letter-spacing: 0.05em;">Tipe Pembayaran</label>
+                        <select class="form-select form-select-sm form-select-solid" id="historyPaymentFilter" style="border-radius: 8px; font-size: 12px;">
+                            <option value="Semua Metode">Semua Metode</option>
+                            <option value="Tunai">Tunai</option>
+                            <option value="QRIS">QRIS</option>
+                            <option value="Transfer">Transfer</option>
+                            <option value="Split">Split (Tunai & QRIS)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- TANGGAL -->
+                    <div class="mb-4">
+                        <label class="form-label text-muted fw-bold text-uppercase mb-2" style="font-size: 10px; letter-spacing: 0.05em;">Tanggal</label>
+                        <input type="text" class="form-control form-control-sm form-control-solid" id="historyDateFilter" placeholder="Pilih Tanggal" style="border-radius: 8px; font-size: 12px; cursor: pointer; background-color: #fff; border: 1px solid #e4e6ef;" readonly>
+                    </div>
+                    
+                    <!-- ACTION BUTTONS -->
+                    <div class="d-flex gap-2 pt-3 border-top border-gray-100">
+                        <button class="btn btn-sm btn-light-primary flex-grow-1 fw-bold border border-gray-200" id="historyBtnHariIni" style="font-size: 11px; background-color: white; color: #4b5563;">Hari Ini</button>
+                        <button class="btn btn-sm flex-grow-1 fw-bold" id="historyBtnReset" style="font-size: 11px; background-color: #fef2f2; color: #ef4444;">Reset Semua</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+    
+    <div class="offcanvas-body position-relative" style="background-color: #f9fafb;" id="history-content">
+        <!-- Loader -->
+        <div class="position-absolute top-50 start-50 translate-middle d-none" id="history-loader">
+            <span class="spinner-border text-primary" role="status"></span>
+        </div>
+        <!-- Empty State -->
+        <div class="text-center py-10 d-none" id="history-empty">
+            <span class="text-muted fs-6">Tidak ada transaksi</span>
+        </div>
+        <!-- List container -->
+        <div class="d-flex flex-column gap-4" id="history-list">
+        </div>
+    </div>
+</div>
+
 @section('script')
     <script type="text/javascript">
         var dataTable;
@@ -128,79 +202,400 @@
         const segment1 = "{{ Request::segment(1) }}";
 
         $(document).ready(function() {
-            let dataTable = $('#transaction-table').DataTable({
-                processing: true,
-                serverSide: true,
-                scrollX: true,
-                ajax: {
+            let currentStart = 0;
+            const pageLength = 10;
+            let isLoading = false;
+            let hasMore = true;
+
+            function loadTransactions(reset = false) {
+                if (reset) {
+                    currentStart = 0;
+                    hasMore = true;
+                    $('#transaction-list-container').empty();
+                }
+                if (isLoading || !hasMore) return;
+                
+                isLoading = true;
+                $('#lazy-loader').removeClass('d-none');
+                
+                let d = {
+                    draw: 1,
+                    start: currentStart,
+                    length: pageLength,
+                    search: { value: $('#search').val() },
+                    branch_id: $('#branch-filter').val()
+                };
+                let range = $('#kt_ecommerce_sales_flatpickr').val();
+                if (range) {
+                    let dates = range.split(' to ');
+                    d.start_date = dates[0];
+                    d.end_date = dates[1] ?? dates[0];
+                }
+                
+                $.ajax({
                     url: "{{ route('report-product-sales.data') }}",
-                    data: function(d) {
-                        d.branch_id = $('#branch-filter').val();
-                        let range = $('#kt_ecommerce_sales_flatpickr').val();
-                        if (range) {
-                            let dates = range.split(' to ');
-                            d.start_date = dates[0];
-                            d.end_date = dates[1] ?? dates[0];
-                        }
-                    },
-                    dataSrc: function(json) {
-                        // ✅ Update footer grand total setiap kali data diterima
+                    data: d,
+                    success: function(json) {
+                        $('#lazy-loader').addClass('d-none');
+                        
                         if (json.grand_total) {
                             $('#grand-total-cell').html(json.grand_total);
-                        } else {
+                        } else if (reset) {
                             $('#grand-total-cell').html('Rp. 0');
                         }
-
-                        return json.data; // tetap kembalikan data ke datatables
-                    }
-                },
-                columns: [{
-                        data: 'name',
-                        name: 'name'
+                        
+                        if (json.data && json.data.length > 0) {
+                            let html = '';
+                            json.data.forEach(function(row) {
+                                let unit = row.unit ? row.unit : 'pcs';
+                                html += `
+                                    <div class="custom-list-item d-flex flex-column w-100 cursor-pointer history-trigger px-2" style="padding: 1rem 0; border-bottom: 1px solid #f4f4f4;" data-product-id="${row.product_id}">
+                                        <div class="fw-bold text-gray-900 fs-6 mb-1">${row.name}</div>
+                                        <div class="d-flex align-items-center justify-content-between text-muted fs-7 w-100">
+                                            <div>
+                                                <span>${row.qty_formatted} ${unit}</span> &nbsp;<span class="text-gray-400">@</span>&nbsp; 
+                                                <span>${row.price}</span>
+                                            </div>
+                                            <div class="fw-bold text-gray-900">${row.total_formatted}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            $('#transaction-list-container').append(html);
+                            currentStart += pageLength;
+                            
+                            if (json.data.length < pageLength) {
+                                hasMore = false;
+                            }
+                        } else {
+                            hasMore = false;
+                            if (reset) {
+                                $('#transaction-list-container').html('<div class="text-center py-10 text-muted">Tidak ada data penjualan</div>');
+                            }
+                        }
+                        isLoading = false;
                     },
-                    {
-                        data: 'total',
-                        name: 'total'
-                    },
-                    {
-                        data: 'persentase_penjualan',
-                        name: 'persentase_penjualan'
+                    error: function() {
+                        $('#lazy-loader').addClass('d-none');
+                        isLoading = false;
                     }
-                ],
-                order: [
-                    [2, 'desc']
-                ]
-            });
+                });
+            }
 
-            // ✅ reload datatable saat filter diubah
-            $('#branch-filter, #kt_ecommerce_sales_flatpickr').on('change', function() {
-                dataTable.ajax.reload();
-            });
+            // Load initial data
+            loadTransactions(true);
 
-            // Search manual lewat input
-            $('#search').on('keyup', function() {
-                dataTable.search(this.value).draw();
-            });
-
-            $('#branch-filter').on('change', function() {
-                updateDateRangeLabel(); // Update label
-                dataTable.draw(); // Reload data
-            });
-
-            $("#kt_ecommerce_sales_flatpickr").flatpickr({
-                altInput: !0,
-                altFormat: "d/m/Y",
-                dateFormat: "Y-m-d",
-                mode: "range",
-                defaultDate: [defaultDate, defaultDate],
-                onChange: function(selectedDates, dateStr, instance) {
-                    updateDateRangeLabel(); // Update label
-                    dataTable.draw(); // Reload data
+            // Infinite Scroll on container
+            $('#transaction-scroll-wrapper').on('scroll', function() {
+                if ($(this).scrollTop() + $(this).innerHeight() >= this.scrollHeight - 20) {
+                    loadTransactions(false);
                 }
             });
 
+            // ✅ reload data saat filter diubah
             $('#branch-filter, #kt_ecommerce_sales_flatpickr').on('change', function() {
-                dataTable.ajax.reload(null, false);
+                loadTransactions(true);
+            });
+
+            // Search manual lewat input
+            let searchTimeout;
+            $('#search').on('keyup', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    loadTransactions(true);
+                }, 500);
+            });
+
+            // Action: open drawer when clicking item
+            $('#transaction-list-container').on('click', '.history-trigger', function() {
+                const productId = $(this).data('product-id');
+                const productName = $(this).find('.fs-6.mb-1').text();
+                
+                $('#history-product-name').text(productName);
+                $('#history-list').empty();
+                $('#history-empty').addClass('d-none');
+                $('#history-loader').removeClass('d-none');
+                
+                let drawer = bootstrap.Offcanvas.getInstance(document.getElementById('history-drawer'));
+                if (!drawer) {
+                    drawer = new bootstrap.Offcanvas(document.getElementById('history-drawer'));
+                }
+                drawer.show();
+
+                // Fetch data
+                const branch = $('#branch-filter').val();
+                let dates = $('#kt_ecommerce_sales_flatpickr').val();
+                let startDate = '', endDate = '';
+                if (dates) {
+                    const splitted = dates.split(' to ');
+                    startDate = splitted[0];
+                    endDate = splitted.length > 1 ? splitted[1] : splitted[0];
+                }
+
+                // Reset drawer filter state
+                $('#historyPaymentFilter').val('Semua Metode');
+                if (window.historyDateFlatpickr) {
+                    window.historyDateFlatpickr.clear();
+                }
+                updateHistoryFilterUI();
+
+                $.ajax({
+                    url: '{{ route('report-product-sales.history') }}',
+                    data: {
+                        product_id: productId,
+                        branch: branch,
+                        start_date: startDate,
+                        end_date: endDate
+                    },
+                    success: function(res) {
+                        $('#history-loader').addClass('d-none');
+                        if (res.data && res.data.length > 0) {
+                            let html = '';
+                            res.data.forEach(item => {
+                                const isTunai = item.payment.toLowerCase().includes('tunai');
+                                const paymentColorClass = isTunai ? 'text-success' : 'text-primary';
+                                const productDiscountHtml = item.product_discount ? `
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="text-gray-500" style="font-size: 11px;">Diskon Produk</span>
+                                        <span class="fw-medium text-danger" style="font-size: 11px;">${item.product_discount}</span>
+                                    </div>
+                                ` : '';
+                                
+                                const prorataDiscountHtml = item.prorata_discount ? `
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="text-gray-500" style="font-size: 11px;">Diskon Prorata</span>
+                                        <span class="fw-medium text-danger" style="font-size: 11px;">${item.prorata_discount}</span>
+                                    </div>
+                                ` : '';
+                                
+                                const discountHtml = productDiscountHtml + prorataDiscountHtml;
+                                
+                                // Use the exact business date from pos_transaction.date
+                                const dataDate = item.pos_date ? item.pos_date : (item.tx_date ? item.tx_date.substring(0, 10) : '');
+                                
+                                html += `
+                                <div class="position-relative bg-white border border-gray-200 p-4 history-item-card cursor-pointer" onclick="window.location.href='/pos/show/${item.pos_id}'" data-date="${dataDate}" data-payment="${item.payment}" style="border-radius: 0.5rem 0.5rem 0.75rem 0.75rem; box-shadow: 0 2px 10px -3px rgba(0,0,0,0.08); transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 15px -3px rgba(0,0,0,0.15)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='0 2px 10px -3px rgba(0,0,0,0.08)'; this.style.transform='translateY(0)'">
+                                    <div class="position-absolute bg-light rounded-circle border-end border-gray-200" style="width: 16px; height: 16px; left: -8px; top: 55%;"></div>
+                                    <div class="position-absolute bg-light rounded-circle border-start border-gray-200" style="width: 16px; height: 16px; right: -8px; top: 55%;"></div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center pb-3 mb-3" style="border-bottom: 2px dashed #e4e6ef;">
+                                        <div class="d-flex flex-column">
+                                            <span class="text-muted fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">No. Nota</span>
+                                            <span class="fw-bolder text-gray-900 fs-6 mt-1">${item.invoice}</span>
+                                        </div>
+                                        <div class="d-flex flex-column text-end">
+                                            <span class="fw-bold text-gray-900" style="font-size: 11px;">${item.date_formatted}</span>
+                                            <span class="text-muted fw-medium" style="font-size: 10px; margin-top: 2px;">${item.time_formatted}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div class="fw-bold text-gray-700 mb-2 text-truncate" style="font-size: 11px;">${item.branch_name}</div>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="text-gray-600" style="font-size: 11px;">Pembayaran</span>
+                                            <span class="fw-semibold ${paymentColorClass}" style="font-size: 11px;">${item.payment}</span>
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="text-gray-600" style="font-size: 11px;">Jumlah Terjual</span>
+                                            <span class="fw-medium text-gray-900" style="font-size: 11px;">${item.qty}</span>
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="text-gray-600" style="font-size: 11px;">Subtotal</span>
+                                            <span class="fw-semibold text-gray-900" style="font-size: 11px;">${item.subtotal}</span>
+                                        </div>
+                                        
+                                        ${discountHtml}
+                                        
+                                        <div class="d-flex justify-content-between align-items-end pt-3 mt-3 border-top border-gray-100">
+                                            <span class="fw-bold text-gray-900 text-uppercase" style="font-size: 11px; letter-spacing: 0.05em;">Total</span>
+                                            <span class="fw-bolder text-success" style="font-size: 16px; line-height: 1; color: #047857 !important;">${item.total}</span>
+                                        </div>
+                                    </div>
+                                </div>`;
+                            });
+                            $('#history-list').html(html);
+                        } else {
+                            $('#history-empty').removeClass('d-none');
+                        }
+                    },
+                    error: function() {
+                        $('#history-loader').addClass('d-none');
+                        $('#history-empty').removeClass('d-none');
+                    }
+                });
+            });
+
+            $('#search-history').on('keyup', function() {
+                applyHistoryFilter();
+            });
+
+            // Initialize History Drawer Datepicker
+            window.historyDateFlatpickr = flatpickr("#historyDateFilter", {
+                dateFormat: "Y-m-d",
+                onChange: function(selectedDates, dateStr, instance) {
+                    updateHistoryFilterUI();
+                    applyHistoryFilter();
+                }
+            });
+
+            $('#historyPaymentFilter').on('change', function() {
+                updateHistoryFilterUI();
+                applyHistoryFilter();
+            });
+
+            $('#historyBtnHariIni').on('click', function() {
+                window.historyDateFlatpickr.setDate(new Date());
+                updateHistoryFilterUI();
+                applyHistoryFilter();
+            });
+
+            $('#historyBtnReset').on('click', function() {
+                window.historyDateFlatpickr.clear();
+                $('#historyPaymentFilter').val('Semua Metode');
+                updateHistoryFilterUI();
+                applyHistoryFilter();
+            });
+
+            function updateHistoryFilterUI() {
+                const dateStr = $('#historyDateFilter').val();
+                const payment = $('#historyPaymentFilter').val();
+                
+                if (dateStr || payment !== 'Semua Metode') {
+                    $('#historyFilterIndicator').removeClass('d-none');
+                    $('#historyFilterBtn').addClass('border-success').removeClass('border-gray-200');
+                    $('#historyFilterIcon').addClass('text-success').removeClass('text-gray-600');
+                } else {
+                    $('#historyFilterIndicator').addClass('d-none');
+                    $('#historyFilterBtn').removeClass('border-success').addClass('border-gray-200');
+                    $('#historyFilterIcon').removeClass('text-success').addClass('text-gray-600');
+                }
+            }
+
+            function applyHistoryFilter() {
+                const term = $('#search-history').val().toLowerCase();
+                const dateFilter = $('#historyDateFilter').val();
+                let paymentFilter = $('#historyPaymentFilter').val();
+                
+                let hasVisible = false;
+                
+                $('#history-list > .history-item-card').each(function() {
+                    const cardDate = $(this).attr('data-date');
+                    const cardPayment = $(this).attr('data-payment');
+                    const content = $(this).text().toLowerCase();
+                    
+                    let match = true;
+                    
+                    if (term && !content.includes(term)) {
+                        match = false;
+                    }
+                    
+                    if (dateFilter && cardDate !== dateFilter) {
+                        match = false;
+                    }
+                    
+                    if (paymentFilter !== 'Semua Metode') {
+                        if (paymentFilter === 'Split') {
+                            if (!cardPayment.includes('Split')) match = false;
+                        } else if (paymentFilter !== cardPayment) {
+                            match = false;
+                        }
+                    }
+                    
+                    if (match) {
+                        $(this).removeClass('d-none');
+                        hasVisible = true;
+                    } else {
+                        $(this).addClass('d-none');
+                    }
+                });
+                
+                if (!hasVisible && $('#history-list').children('.history-item-card').length > 0) {
+                    // show empty state if needed
+                }
+            }
+
+            $('#branch-filter').on('change', function() {
+                updateDateRangeLabel(); // Update label
+                loadTransactions(true); // Reload data
+            });
+
+            var flatpickrInstance = $("#kt_ecommerce_sales_flatpickr").flatpickr({
+                altInput: false,
+                dateFormat: "Y-m-d",
+                mode: "range",
+                defaultDate: [defaultDate, defaultDate],
+                positionElement: document.getElementById('kt_ecommerce_sales_flatpickr_custom'),
+                disableMobile: true, // Force standard web UI on mobile so positioning works
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length > 0) {
+                        // Format ke nama bulan Indonesia
+                        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                        let startFormat = selectedDates[0].toLocaleDateString('id-ID', options);
+                        $('#date-start').val(startFormat);
+                        
+                        if (selectedDates.length === 2) {
+                            let endFormat = selectedDates[1].toLocaleDateString('id-ID', options);
+                            $('#date-end').val(endFormat);
+                        } else {
+                            $('#date-end').val(startFormat);
+                        }
+                    } else {
+                        $('#date-start').val('');
+                        $('#date-end').val('');
+                    }
+                    
+                    updateDateRangeLabel(); // Update label
+                    loadTransactions(true); // Reload data
+                },
+                onReady: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length > 0) {
+                        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                        let startFormat = selectedDates[0].toLocaleDateString('id-ID', options);
+                        $('#date-start').val(startFormat);
+                        $('#date-end').val(startFormat);
+                    }
+                }
+            });
+
+            // Trigger open flatpickr when the custom container is clicked
+            $('.flatpickr-trigger').on('click', function(e) {
+                e.stopPropagation();
+                flatpickrInstance.open();
+            });
+
+            // Action Buttons
+            $('#reset-date-btn').on('click', function(e) {
+                e.preventDefault();
+                flatpickrInstance.clear();
+            });
+
+            $('#btn-hari-ini').on('click', function(e) {
+                e.preventDefault();
+                flatpickrInstance.setDate([new Date(), new Date()], true);
+            });
+
+            $('#btn-minggu-ini').on('click', function(e) {
+                e.preventDefault();
+                let today = new Date();
+                let day = today.getDay(); // 0 is Sunday
+                let diff = today.getDate() - day + (day == 0 ? -6:1); // Adjust when day is Sunday
+                let firstDay = new Date(today.setDate(diff));
+                let lastDay = new Date(firstDay);
+                lastDay.setDate(firstDay.getDate() + 6);
+                flatpickrInstance.setDate([firstDay, lastDay], true);
+            });
+
+            $('#btn-reset-semua').on('click', function(e) {
+                e.preventDefault();
+                $('#branch-filter').val('all').trigger('change');
+                flatpickrInstance.setDate([new Date(), new Date()], true); // Default to today
+            });
+
+            $('#branch-filter, #kt_ecommerce_sales_flatpickr').on('change', function() {
+                loadTransactions(true);
             });
 
             function updateDateRangeLabel() {
@@ -215,10 +610,14 @@
                 const range = $('#kt_ecommerce_sales_flatpickr').val();
                 if (range) {
                     const dates = range.split(' to ');
-                    if (dates.length === 2) {
-                        dateText = `${dates[0]} – ${dates[1]}`;
+                    
+                    // Format to local id-ID if possible, simple string formatting
+                    let d1 = new Date(dates[0]).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'});
+                    if (dates.length === 2 && dates[0] !== dates[1]) {
+                        let d2 = new Date(dates[1]).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'});
+                        dateText = `${d1} – ${d2}`;
                     } else {
-                        dateText = dates[0];
+                        dateText = d1;
                     }
                 }
 
@@ -231,11 +630,8 @@
         });
 
         function reloadDataTable() {
-            // Pastikan dataTable sudah terinisialisasi sebelumnya
-            if (typeof dataTable !== 'undefined') {
-                dataTable.ajax.reload(null, false); // 'false' untuk tidak mereset ke halaman pertama
-            } else {
-                console.error('DataTable tidak terinisialisasi.');
+            if (typeof loadTransactions === 'function') {
+                loadTransactions(true);
             }
         }
         $("#date").flatpickr({

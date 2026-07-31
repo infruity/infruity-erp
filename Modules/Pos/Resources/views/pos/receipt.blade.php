@@ -575,11 +575,31 @@
                     <div class="info-item">
                         <div class="label">Metode</div>
                         <div class="value">
-                            @if ($data->payment)
-                                {{ $data->payment->name }}
-                            @else
-                                Tunai
-                            @endif
+                            @php
+                                $getAmount = function($amountStr) {
+                                    if (empty($amountStr)) return 0;
+                                    if (is_numeric($amountStr)) return (float) $amountStr;
+                                    $decoded = json_decode($amountStr, true);
+                                    if (is_array($decoded) && count($decoded) > 0) return (float) $decoded[0];
+                                    return 0;
+                                };
+
+                                $methods = collect();
+                                if ($data->paymentDetails && $data->paymentDetails->count() > 0) {
+                                    $methods = $data->paymentDetails->filter(function($p) use ($getAmount) {
+                                        return $getAmount($p->payment_amount) > 0;
+                                    })->map(function($p) {
+                                        $m = $p->payment_method;
+                                        if (empty($m) || strtolower($m) === 'tunai') return 'Tunai';
+                                        if ($m === 'Split') return 'Split';
+                                        $d = json_decode($m, true);
+                                        if (is_array($d) && count($d) > 0) return collect($d)->implode(', ');
+                                        return $m;
+                                    })->filter()->unique()->values();
+                                }
+                                if ($methods->isEmpty()) $methods->push('Tunai');
+                            @endphp
+                            {{ $methods->implode(', ') }}
                         </div>
                     </div>
                 </div>
@@ -737,7 +757,41 @@
                         <span class="value">Rp{{ number_format($data->total_amount ?? $subtotal, 0, ',', '.') }}</span>
                     </div>
 
-                    @if ($data->paid && $data->paid > 0)
+                    @php
+                        $totalPaymentAmount = $data->paymentDetails ? $data->paymentDetails->sum(function($p) use ($getAmount) { 
+                            return $getAmount($p->payment_amount); 
+                        }) : 0;
+                    @endphp
+
+                    @if ($data->paymentDetails && $totalPaymentAmount > 0)
+                        <div class="payment-info">
+                            @foreach ($data->paymentDetails as $payment)
+                                @php $amt = $getAmount($payment->payment_amount); @endphp
+                                @if ($amt > 0)
+                                    @php
+                                        $m = $payment->payment_method;
+                                        if (empty($m) || strtolower($m) === 'tunai') $methodName = 'Tunai';
+                                        elseif ($m === 'Split') $methodName = 'Split';
+                                        else {
+                                            $d = json_decode($m, true);
+                                            if (is_array($d) && count($d) > 0) $methodName = collect($d)->implode(', ');
+                                            else $methodName = $m;
+                                        }
+                                    @endphp
+                                    <div class="summary-row">
+                                        <span class="label">{{ $methodName }}</span>
+                                        <span class="value">Rp{{ number_format($amt, 0, ',', '.') }}</span>
+                                    </div>
+                                @endif
+                            @endforeach
+                            @if ($data->return > 0)
+                                <div class="summary-row return">
+                                    <span class="label">Kembali</span>
+                                    <span class="value">Rp{{ number_format($data->return, 0, ',', '.') }}</span>
+                                </div>
+                            @endif
+                        </div>
+                    @elseif ($data->paid && $data->paid > 0)
                         <div class="payment-info">
                             <div class="summary-row">
                                 <span class="label">Tunai</span>
@@ -771,7 +825,16 @@
             </div>
 
             <div class="actions">
-                <a href="{{ url(Request::segment(1)) }}" class="btn btn-primary" style="flex:none; padding:12px 32px;">
+                @php
+                    $previousUrl = url()->previous();
+                    $parsedPath = parse_url($previousUrl, PHP_URL_PATH);
+                    if ($parsedPath == '/pos' || $parsedPath == '/pos/' || $previousUrl == url()->current()) {
+                        $backUrl = route('pos.index');
+                    } else {
+                        $backUrl = $previousUrl;
+                    }
+                @endphp
+                <a href="{{ $backUrl }}" class="btn btn-primary" style="flex:none; padding:12px 32px;">
                     &#8592; Kembali
                 </a>
             </div>

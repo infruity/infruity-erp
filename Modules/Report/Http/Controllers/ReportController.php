@@ -408,18 +408,20 @@ class ReportController extends Controller
         $data = PosDetailModel::select(
             'pos_transaction_detail.product_id',
             'products.name',
+            'product_units.abbreviation as unit',
             DB::raw('COUNT(pos_transaction_detail.product_id) AS total_beli'),
             DB::raw('SUM(pos_transaction_detail.quantity) AS quantity'),
-            DB::raw('SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.discount, 0) - COALESCE(pos_transaction_detail.diskon_global, 0)) AS total'),
+            DB::raw('SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) AS total'),
             DB::raw("
             ROUND(
-                (SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.discount, 0) - COALESCE(pos_transaction_detail.diskon_global, 0)) * 100.0) /
-                SUM(SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.discount, 0) - COALESCE(pos_transaction_detail.diskon_global, 0))) OVER (),
+                (SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) * 100.0) /
+                SUM(SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0))) OVER (),
                 2
             ) AS persentase_penjualan
         ")
         )
             ->join('products', 'pos_transaction_detail.product_id', '=', 'products.id')
+            ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
             ->join('pos_transaction', 'pos_transaction_detail.pos_id', '=', 'pos_transaction.id')
             ->whereBetween('pos_transaction.date', [$startDate, $endDate])
             ->whereNull('pos_transaction_detail.deleted_at')  // hanya yang belum dihapus
@@ -433,15 +435,27 @@ class ReportController extends Controller
 
         // Clone query untuk menghitung grand total
         $grandTotalQuery = clone $data;
-        $grandTotal      = $grandTotalQuery->sum(DB::raw('pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.discount, 0) - COALESCE(pos_transaction_detail.diskon_global, 0)'));
+        $grandTotal      = $grandTotalQuery->sum(DB::raw('pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)'));
 
         // Grouping dan urutan data
-        $data = $data->groupBy('pos_transaction_detail.product_id', 'products.name')
+        $data = $data->groupBy('pos_transaction_detail.product_id', 'products.name', 'product_units.abbreviation')
             ->orderByDesc('total');
 
         return DataTables::of($data)
             ->filter(function ($queryInstance) use ($request) {
                 $this->applyProductSalesSearch($queryInstance, $request);
+            })
+            ->editColumn('price', function ($row) {
+                $qty = (float)$row->quantity;
+                $price = $qty > 0 ? $row->total / $qty : 0;
+                return 'Rp ' . number_format($price, 0, ',', '.');
+            })
+            ->editColumn('qty_formatted', function ($row) {
+                // Return integer if no decimal part, otherwise up to 2 decimals
+                return round($row->quantity, 2);
+            })
+            ->editColumn('total_formatted', function ($row) {
+                return 'Rp ' . number_format($row->total, 0, ',', '.');
             })
             ->editColumn('total', function ($row) {
                 return 'Rp. ' . number_format($row->total, 0, ',', '.');
@@ -569,5 +583,109 @@ class ReportController extends Controller
                 'grand_total' => number_format($grandTotal, 0, ',', '.'),
             ])
             ->make(true);
+    }
+
+    public function get_product_sales_history(Request $request)
+    {
+        $startDate = $request->start_date;
+        $endDate   = $request->end_date;
+        $branch    = $request->branch ?: 'all';
+        $productId = $request->product_id;
+
+        $query = \Modules\Pos\Entities\PosDetailModel::select(
+            'pos_transaction_detail.*',
+            'pos_transaction.id as pos_id',
+            'pos_transaction.invoice_number as invoice',
+            'pos_transaction.created_at as tx_date',
+            'pos_transaction.date as pos_date',
+            'branch.name as branch_name',
+            'products.name as product_name',
+            'product_units.abbreviation as unit'
+        )
+            ->join('pos_transaction', 'pos_transaction_detail.pos_id', '=', 'pos_transaction.id')
+            ->join('branch', 'pos_transaction.branch_id', '=', 'branch.id')
+            ->join('products', 'pos_transaction_detail.product_id', '=', 'products.id')
+            ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
+            ->where('pos_transaction_detail.product_id', $productId)
+            ->whereNull('pos_transaction_detail.deleted_at')
+            ->whereNull('pos_transaction.deleted_at')
+            ->with(['pos.paymentDetails.paymentMethod']); // to get payment methods
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('pos_transaction.date', [$startDate, $endDate]);
+        }
+
+        if ($branch !== 'all') {
+            $query->where('pos_transaction.branch_id', $branch);
+        }
+
+        $history = $query->orderBy('pos_transaction.created_at', 'desc')->get();
+
+        // Map data to the format needed by the drawer
+        $formattedData = $history->map(function ($detail) {
+            $paymentMethods = collect();
+            if ($detail->pos && $detail->pos->paymentDetails) {
+                $paymentMethods = $detail->pos->paymentDetails->filter(function($payment) {
+                    return $payment->payment_amount > 0;
+                })->map(function($payment) {
+                    $method = $payment->payment_method;
+                    if (empty($method) || strtolower($method) === 'tunai') {
+                        return 'Tunai';
+                    }
+                    if ($method === 'Split') {
+                        return 'Split';
+                    }
+                    $decoded = json_decode($method, true);
+                    if (is_array($decoded) && count($decoded) > 0) {
+                        return collect($decoded)->implode(', ');
+                    }
+                    return $method;
+                })->filter()->unique()->values();
+            }
+            
+            if ($paymentMethods->isEmpty()) {
+                $paymentMethods->push('Tunai');
+            }
+
+            if ($paymentMethods->count() > 1) {
+                $paymentStr = $paymentMethods->implode(', ');
+            } elseif ($paymentMethods->count() == 1) {
+                $paymentStr = $paymentMethods[0];
+            } else {
+                $paymentStr = '-';
+            }
+
+            $txDate = \Carbon\Carbon::parse($detail->tx_date);
+            $subtotal = $detail->price * $detail->quantity;
+            $discount = $detail->discount ?? 0;
+            $diskon_global = $detail->diskon_global ?? 0;
+            $total_discount = $discount + $diskon_global;
+            $total = $detail->subtotal - $diskon_global;
+            
+            $unit = $detail->unit ? $detail->unit : 'pcs';
+            $qty_formatted = round($detail->quantity, 2) . ' ' . $unit;
+
+            return [
+                'invoice' => $detail->invoice,
+                'date_formatted' => $txDate->locale('id')->isoFormat('dddd, D MMMM Y'),
+                'time_formatted' => 'Jam ' . $txDate->format('H:i') . ' WIB',
+                'branch_name' => $detail->branch_name,
+                'payment' => $paymentStr,
+                'qty' => $qty_formatted,
+                'subtotal' => 'Rp ' . number_format($subtotal, 0, ',', '.'),
+                'product_discount' => $discount > 0 ? '- Rp ' . number_format($discount, 0, ',', '.') : null,
+                'prorata_discount' => $diskon_global > 0 ? '- Rp ' . number_format($diskon_global, 0, ',', '.') : null,
+                'total' => 'Rp ' . number_format($total, 0, ',', '.'),
+                'pos_id' => $detail->pos_id,
+                'pos_date' => $detail->pos_date,
+                'tx_date' => $detail->tx_date,
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'product_name' => $history->first() ? $history->first()->product_name : '',
+            'data' => $formattedData
+        ]);
     }
 }

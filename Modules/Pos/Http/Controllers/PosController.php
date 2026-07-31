@@ -77,13 +77,6 @@ class PosController extends Controller
             'courier',
             'branch',
             'branch_proses',
-            'details',
-            'details.parcel',
-            'details.product',
-            'details.product.unit',
-            'details.product.productionParcelDetails',
-            'details.product.productionParcelDetails.product',
-            'details.product.productionParcelDetails.product.productBranches',
         ])
             ->where('created_by', Auth::id())
             ->where('status', 'temp')
@@ -91,6 +84,18 @@ class PosController extends Controller
             ->first();
 
         if ($draft) {
+            $draft->load([
+                'details',
+                'details.parcel',
+                'details.product',
+                'details.product.unit',
+                'details.product.productionParcelDetails' => function($q) use ($draft) {
+                    $q->where('pos_id', $draft->id);
+                },
+                'details.product.productionParcelDetails.product',
+                'details.product.productionParcelDetails.product.productBranches',
+                'details.product.productionParcelDetails.product.get_stock',
+            ]);
             $data['data']           = $draft;
             $data['detail']         = $draft->details;
             $data['invoice_number'] = $draft->invoice_number;
@@ -190,7 +195,7 @@ class PosController extends Controller
             return $denied;
         }
 
-        $data['data']         = PosModel::with('customer')->findOrFail($id);
+        $data['data']         = PosModel::with(['customer', 'paymentDetails'])->findOrFail($id);
         $data['detail']       = PosDetailModel::with('product')->where('pos_id', $id)->get();
         $data['parcelDetail'] = ProductionParcelDetail::with('product')->where('pos_id', $id)->get();
         $data['setting']      = SettingNota::where('branch_id', $data['data']->branch_id)->first() ?? SettingNota::first();
@@ -225,7 +230,20 @@ class PosController extends Controller
             return redirect()->route('pos.index')->with('error', 'Tidak bisa diedit, buatlah transaksi baru.');
         }
 
-        $data['detail']         = PosDetailModel::with('product', 'parcel', 'product.unit', 'product.productionParcelDetails', 'product.productionParcelDetails.product', 'product.productionParcelDetails.product.productBranches', 'product.productReceipt', 'product.productReceipt.ingredients', 'product.productReceipt.ingredients.get_stock')->where('pos_id', $id)->get();
+        $data['detail'] = PosDetailModel::with([
+            'product',
+            'parcel',
+            'product.unit',
+            'product.productionParcelDetails' => function($q) use ($id) {
+                $q->where('pos_id', $id);
+            },
+            'product.productionParcelDetails.product',
+            'product.productionParcelDetails.product.get_stock',
+            'product.productionParcelDetails.product.productBranches',
+            'product.productReceipt',
+            'product.productReceipt.ingredients',
+            'product.productReceipt.ingredients.get_stock'
+        ])->where('pos_id', $id)->get();
         $data['invoice_number'] = $data['data']->invoice_number;
         return view('pos::pos.create2', $data);
     }
@@ -259,16 +277,6 @@ class PosController extends Controller
         try {
             DB::beginTransaction();
             $pos = PosModel::findOrFail($id);
-
-            // Hapus parcel products
-            $parcelProductIds = PosDetailModel::where('pos_id', $id)
-                ->whereNotNull('parcel_id')
-                ->pluck('product_id')
-                ->filter()
-                ->all();
-            if (! empty($parcelProductIds)) {
-                Product::whereIn('id', $parcelProductIds)->delete();
-            }
 
             // Hapus production parcel details
             ProductionParcelDetail::where('pos_id', $id)->delete();
@@ -795,12 +803,18 @@ class PosController extends Controller
             // Simpan item transaksi
             $transaksiId = $pos->id;
             $settingExp  = SettingExp::first();
-            $totalPrice  = $this->sumTotalPrice($data['items']);
+
+            // Convert global discount to nominal if it is a percentage (<= 100)
+            $globalDiscountInput = $data['discount'] ?? 0;
+            $globalDiscountNominal = ($globalDiscountInput > 0 && $globalDiscountInput <= 100) 
+                ? ($data['subtotal'] * ($globalDiscountInput / 100)) 
+                : $globalDiscountInput;
+
             foreach ($data['items'] as $item) {
                 if (is_numeric($item['id'])) {
                     $itemTotal   = isset($item['total_input']) ? $item['total_input'] : (($item['price'] * $item['qty']) - ($item['discount'] ?? 0));
-                    $prosentase  = $totalPrice > 0 ? round(($itemTotal / $totalPrice) * 100, 2) : 0;
-                    $posDiscount = ($itemTotal * $pos->discount) / 100;
+                    $prosentase  = $data['subtotal'] > 0 ? ($itemTotal / $data['subtotal']) : 0;
+                    $posDiscount = $prosentase * $globalDiscountNominal;
                     $product     = Product::find($item['id']);
 
                     // Ambil parent/child dari product yang dipilih
@@ -881,6 +895,12 @@ class PosController extends Controller
                         ]
                     );
 
+                    $parcelSubtotal = $product->price;
+                    $parcelProrate  = $data['subtotal'] > 0 ? ($parcelSubtotal / $data['subtotal']) : 0;
+                    $parcelDiscount = $parcelProrate * $globalDiscountNominal;
+
+                    $parcelHpp = preg_replace('/[^0-9]/', '', $parcel['hpp']);
+
                     PosDetailModel::insert([
                         'pos_id'        => $transaksiId,
                         'parcel_id'     => ! empty($parcel['kemasanId']) ? $parcel['kemasanId'] : ($kemasanProduct->id ?? null),
@@ -888,12 +908,12 @@ class PosController extends Controller
                         'price'         => $product->price,
                         'quantity'      => $parcel['qty'],
                         'discount'      => 0,
-                        'diskon_global' => 0,
-                        'subtotal'      => $product->price,
+                        'diskon_global' => $parcelDiscount,
+                        'subtotal'      => $parcelSubtotal,
                         'kemasan_price' => isset($parcel['kemasanPrice']) ? preg_replace('/[^0-9]/', '', $parcel['kemasanPrice']) : ($kemasanProduct->price ?? 0),
-                        'hpp'           => $product->hpp,
-                        'exp'           => $product->price - $product->hpp,
-                        'exp_value'     => ($product->price - $product->hpp) * $settingExp->value_exp,
+                        'hpp'           => $parcelHpp,
+                        'exp'           => $product->price - $parcelHpp,
+                        'exp_value'     => ($product->price - $parcelHpp) * $settingExp->value_exp,
                         'created_at'    => now(),
                         'updated_at'    => now(),
                         'type'          => 'parcel',
@@ -974,14 +994,18 @@ class PosController extends Controller
                         }
                     }
 
+                    $jusSubtotal = isset($value['total_input']) ? $value['total_input'] : (($value['price'] * $value['qty']) - ($value['discount'] ?? 0));
+                    $jusProrate  = $data['subtotal'] > 0 ? ($jusSubtotal / $data['subtotal']) : 0;
+                    $jusDiscount = $jusProrate * $globalDiscountNominal;
+
                     PosDetailModel::insert([
                         'pos_id'     => $transaksiId,
                         'product_id' => $value['productId'],
                         'price'      => $value['price'],
                         'quantity'   => $value['qty'],
                         'discount'   => $value['discount'],
-                        'diskon_global' => 0,
-                        'subtotal'   => isset($value['total_input']) ? $value['total_input'] : (($value['price'] * $value['qty']) - ($value['discount'] ?? 0)),
+                        'diskon_global' => $jusDiscount,
+                        'subtotal'   => $jusSubtotal,
                         'hpp'        => $value['hpp'],
                         'exp'        => $value['price'] - $value['hpp'],
                         'exp_value'  => ($value['price'] - $value['hpp']) * $settingExp->value_exp,
@@ -1027,16 +1051,6 @@ class PosController extends Controller
 
     private function clearExistingPosRelations(int $posId): void
     {
-        $parcelProductIds = PosDetailModel::where('pos_id', $posId)
-            ->whereNotNull('parcel_id')
-            ->pluck('product_id')
-            ->filter()
-            ->all();
-
-        if (! empty($parcelProductIds)) {
-            Product::whereIn('id', $parcelProductIds)->delete();
-        }
-
         ProductionParcelDetail::where('pos_id', $posId)->delete();
         PosDetailModel::where('pos_id', $posId)->forceDelete();
 
