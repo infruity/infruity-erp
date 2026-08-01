@@ -47,7 +47,9 @@
                             <div class="row">
                                 <div class="col-9 mb-3">
                                     <label class="form-label">Produk</label>
-                                    <select class="form-select parcel-select" :data-index="index"></select>
+                                    <select class="form-select parcel-select" :data-index="index" x-model="item.product" style="width: 100%">
+                                        <option :value="item.product" x-text="item.displayName || formatParcelProductName(item)"></option>
+                                    </select>
                                 </div>
                                 <div class="col-3 mb-3">
                                     <label class="form-label">Qty</label>
@@ -132,7 +134,7 @@
                             <div class="row">
                                 <div class="col-9 mb-3">
                                     <label class="form-label">Produk</label>
-                                    <select class="form-select parcel-select-edit" :data-index="index">
+                                    <select class="form-select parcel-select-edit" :data-index="index" x-model="item.product" style="width: 100%">
                                         <option :value="item.product" x-text="item.displayName || formatParcelProductName(item)"></option>
                                     </select>
                                 </div>

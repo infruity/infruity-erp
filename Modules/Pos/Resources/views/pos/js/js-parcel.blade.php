@@ -21,6 +21,25 @@
             //     // return this.parcels.reduce((sum, p) => sum + (Number(p.qty||0) * Number(p.priceAwal||0)), 0);
             // },
 
+            refreshSelect2Values() {
+                $('.parcel-select, .parcel-select-edit').each(function() {
+                    if ($(this).hasClass('select2-hidden-accessible')) {
+                        $(this).select2('destroy');
+                    }
+                });
+                this.initSelect2();
+                
+                $('.parcel-select, .parcel-select-edit').each((i, el) => {
+                    let idx = $(el).data('index');
+                    if (this.parcels[idx] && this.parcels[idx].product) {
+                        if ($(el).find(`option[value='${this.parcels[idx].product}']`).length === 0) {
+                            let newOption = new Option(this.parcels[idx].displayName, this.parcels[idx].product, true, true);
+                            $(el).append(newOption);
+                        }
+                        $(el).val(this.parcels[idx].product).trigger('change.select2');
+                    }
+                });
+            },
             setParcelId(id) {
                 this.parcelId = id;
             },
@@ -41,7 +60,7 @@
                     })
                 }); // masukkan data baru
                 this.$nextTick(() => {
-                    this.initSelect2();
+                    this.refreshSelect2Values();
                     this.updateTotal();
                 });
             },
@@ -59,13 +78,16 @@
                     hpp: 0
                 });
                 this.$nextTick(() => {
-                    this.initSelect2();
+                    this.refreshSelect2Values();
                     this.updateTotal();
                 });
             },
             removeParcel(index) {
                 this.parcels.splice(index, 1);
-                this.updateTotal();
+                this.$nextTick(() => {
+                    this.refreshSelect2Values();
+                    this.updateTotal();
+                });
             },
             updatePrice(index) {
                 let raw = (this.parcels[index].priceFormatted || '').replace(/\D/g, '');
