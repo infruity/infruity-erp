@@ -401,8 +401,8 @@ class ReportController extends Controller
 
     public function get_data_product_sales(Request $request)
     {
-        $startDate = $request->start_date ?? date('Y-m-d');
-        $endDate   = $request->end_date ?? date('Y-m-d');
+        $startDate = $request->filled('start_date') ? $request->start_date : date('Y-m-d');
+        $endDate   = $request->filled('end_date') ? $request->end_date : date('Y-m-d');
 
         // Query utama
         $data = PosDetailModel::select(
@@ -433,13 +433,15 @@ class ReportController extends Controller
 
         $this->applyProductSalesSearch($data, $request);
 
-        // Clone query untuk menghitung grand total
-        $grandTotalQuery = clone $data;
-        $grandTotal      = $grandTotalQuery->sum(DB::raw('pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)'));
-
         // Grouping dan urutan data
         $data = $data->groupBy('pos_transaction_detail.product_id', 'products.name', 'product_units.abbreviation')
             ->orderByDesc('total');
+
+        // Clone query untuk menghitung grand total dari data yang sudah di-group dan di-filter
+        $grandTotalQuery = clone $data;
+        $grandTotal = DB::table(DB::raw("({$grandTotalQuery->toSql()}) as sub"))
+            ->mergeBindings($grandTotalQuery->getQuery())
+            ->sum('total');
 
         return DataTables::of($data)
             ->filter(function ($queryInstance) use ($request) {
