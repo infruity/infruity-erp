@@ -103,23 +103,23 @@
             </div>
             <!--end::Card header-->
             <!--begin::Card body-->
-            <div class="card-body pt-0">
+            <div class="card-body pt-0 px-3 px-md-6" style="display: flex; flex-direction: column;">
                 <!-- Title removed as per user request -->
-                <div class="d-flex flex-column w-100" style="height: calc(100vh - 280px); min-height: 300px; overflow-y: auto; overflow-x: hidden;" id="transaction-scroll-wrapper">
+                <div class="d-flex flex-column w-100 flex-grow-1" style="height: calc(100dvh - 200px); min-height: 300px; overflow-y: auto; overflow-x: hidden;" id="transaction-scroll-wrapper">
                     <div id="transaction-list-container" class="d-flex flex-column w-100"></div>
                     <div id="lazy-loader" class="text-center py-4 d-none">
                         <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
                     </div>
                 </div>
                 
-                <div class="d-flex justify-content-between align-items-center fw-bolder text-gray-900 pb-4 pt-4 border-top mt-0 px-2">
-                    <span class="fs-5">TOTAL</span>
-                    <span id="grand-total-cell" class="fs-5">Rp 0</span>
+                <div class="position-sticky bg-white border-top shadow-sm mobile-sticky-bottom" style="bottom: 0; z-index: 99; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; margin-left: -1rem; margin-right: -1rem; margin-bottom: -2.25rem; border-bottom-left-radius: 0.475rem; border-bottom-right-radius: 0.475rem;" id="desktop-total-bar">
+                    <span class="fs-5 fw-bolder text-gray-900">TOTAL</span>
+                    <span id="grand-total-cell" class="fs-3 fw-bolder">Rp 0</span>
                 </div>
+            </div>
+            <!--end::Card body-->
         </div>
-        <!--end::Card body-->
     </div>
-</div>
 
 <!-- Drawer Riwayat Transaksi -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="history-drawer" style="width: 400px; border-left: none; box-shadow: -4px 0 15px rgba(0,0,0,0.05);">
@@ -190,6 +190,28 @@
 </div>
 
 @section('script')
+    <style>
+        @media (max-width: 991.98px) {
+            .mobile-sticky-bottom {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                z-index: 999 !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+            }
+            #transaction-scroll-wrapper {
+                padding-bottom: 80px !important;
+            }
+        }
+        @media (min-width: 768px) {
+            #desktop-total-bar {
+                margin-left: -2rem !important;
+                margin-right: -2rem !important;
+            }
+        }
+    </style>
     <script type="text/javascript">
         var dataTable;
         const defaultDate = @json($defaultDate ?? date('Y-m-d'));

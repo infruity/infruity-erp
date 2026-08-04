@@ -905,7 +905,7 @@
         <!--end:Menu content-->
     </div>
 @endif
-@if (check_access('report.transaction') ||
+{{-- @if (check_access('report.transaction') ||
         check_access('report.customer.transaction') ||
         check_access('report.branch.transaction') ||
         check_access('report.product.sales') ||
@@ -936,7 +936,7 @@
         <!--end:Menu link-->
         <!--begin:Menu sub-->
         <div class="menu-sub menu-sub-accordion">
-            {{-- @if (check_access('report.transaction'))
+            @if (check_access('report.transaction'))
                 <!--begin:Menu item-->
                 <div class="menu-item">
                     <!--begin:Menu link-->
@@ -980,7 +980,7 @@
                     <!--end:Menu link-->
                 </div>
                 <!--end:Menu item-->
-            @endif --}}
+            @endif
             @if (check_access('report.product.sales'))
                 <!--begin:Menu item-->
                 <div class="menu-item">
@@ -1026,7 +1026,7 @@
                 </div>
                 <!--end:Menu item-->
             @endif
-            {{-- @if (check_access('report.branch.product'))
+            @if (check_access('report.branch.product'))
                 <!--begin:Menu item-->
                 <div class="menu-item">
                     <!--begin:Menu link-->
@@ -1055,8 +1055,56 @@
                     <!--end:Menu link-->
                 </div>
                 <!--end:Menu item-->
-            @endif --}}
+            @endif
         </div>
         <!--end:Menu sub-->
+    </div>
+@endif --}}
+@if (check_access('report.product.sales'))
+    <div class="menu-item">
+        <!--begin:Menu link-->
+        <a class="menu-link {{ Request::segment(1) == 'report-product-sales' ? 'active' : '' }}"
+            href="{{ url('crm-dashboard') }}">
+            <span class="menu-icon">
+                <i class="ki-duotone ki-basket fs-2">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+            </span>
+            <span class="menu-title">Laporan Penjualan</span>
+        </a>
+        <!--end:Menu link-->
+    </div>
+@endif
+@if (check_access('report.product.buang'))
+    <div class="menu-item">
+        <!--begin:Menu link-->
+        <a class="menu-link {{ Request::segment(1) == 'report-product-buang' ? 'active' : '' }}"
+            href="{{ url('crm-dashboard') }}">
+            <span class="menu-icon">
+                <i class="ki-duotone ki-basket fs-2">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+            </span>
+            <span class="menu-title">Produk Buang</span>
+        </a>
+        <!--end:Menu link-->
+    </div>
+@endif
+@if (check_access('report.total.aset'))
+    <div class="menu-item">
+        <!--begin:Menu link-->
+        <a class="menu-link {{ Request::segment(1) == 'report-total-aset' ? 'active' : '' }}"
+            href="{{ url('crm-dashboard') }}">
+            <span class="menu-icon">
+                <i class="ki-duotone ki-basket fs-2">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+            </span>
+            <span class="menu-title">Total Aset</span>
+        </a>
+        <!--end:Menu link-->
     </div>
 @endif
