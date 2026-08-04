@@ -197,7 +197,7 @@
                 bottom: 0 !important;
                 left: 0 !important;
                 width: 100% !important;
-                z-index: 999 !important;
+                z-index: 90 !important;
                 margin: 0 !important;
                 border-radius: 0 !important;
             }
