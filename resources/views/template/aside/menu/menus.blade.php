@@ -1064,7 +1064,7 @@
     <div class="menu-item">
         <!--begin:Menu link-->
         <a class="menu-link {{ Request::segment(1) == 'report-product-sales' ? 'active' : '' }}"
-            href="{{ url('crm-dashboard') }}">
+            href="{{ url('report-product-sales') }}">
             <span class="menu-icon">
                 <i class="ki-duotone ki-basket fs-2">
                     <span class="path1"></span>
@@ -1080,7 +1080,7 @@
     <div class="menu-item">
         <!--begin:Menu link-->
         <a class="menu-link {{ Request::segment(1) == 'report-product-buang' ? 'active' : '' }}"
-            href="{{ url('crm-dashboard') }}">
+            href="{{ url('report-product-buang') }}">
             <span class="menu-icon">
                 <i class="ki-duotone ki-basket fs-2">
                     <span class="path1"></span>
@@ -1096,7 +1096,7 @@
     <div class="menu-item">
         <!--begin:Menu link-->
         <a class="menu-link {{ Request::segment(1) == 'report-total-aset' ? 'active' : '' }}"
-            href="{{ url('crm-dashboard') }}">
+            href="{{ url('report-total-aset') }}">
             <span class="menu-icon">
                 <i class="ki-duotone ki-basket fs-2">
                     <span class="path1"></span>
