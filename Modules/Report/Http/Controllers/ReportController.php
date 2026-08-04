@@ -438,23 +438,29 @@ class ReportController extends Controller
             ->orderByDesc('total');
 
         // Clone query untuk menghitung grand total dari data yang sudah di-group dan di-filter
-        $grandTotalQuery = clone $data;
-        $grandTotal = DB::table(DB::raw("({$grandTotalQuery->toSql()}) as sub"))
-            ->mergeBindings($grandTotalQuery->getQuery())
-            ->sum('total');
-
-        return DataTables::of($data)
+        $response = DataTables::of($data)
             ->filter(function ($queryInstance) use ($request) {
                 $this->applyProductSalesSearch($queryInstance, $request);
-            })
-            ->editColumn('price', function ($row) {
+            });
+
+        if ($request->input('start') == 0) {
+            $grandTotalQuery = clone $data;
+            $grandTotal = DB::table(DB::raw("({$grandTotalQuery->toSql()}) as sub"))
+                ->mergeBindings($grandTotalQuery->getQuery())
+                ->sum('total');
+
+            $response->with([
+                'grand_total' => 'Rp. ' . number_format($grandTotal, 0, ',', '.'),
+            ]);
+        }
+
+        return $response->addColumn('price', function ($row) {
                 $qty = (float)$row->quantity;
                 $price = $qty > 0 ? $row->total / $qty : 0;
                 return 'Rp ' . number_format($price, 0, ',', '.');
             })
             ->editColumn('qty_formatted', function ($row) {
-                // Return integer if no decimal part, otherwise up to 2 decimals
-                return round($row->quantity, 2);
+                return (int) $row->quantity == $row->quantity ? number_format($row->quantity, 0, ',', '.') : number_format($row->quantity, 2, ',', '.');
             })
             ->editColumn('total_formatted', function ($row) {
                 return 'Rp ' . number_format($row->total, 0, ',', '.');
@@ -465,9 +471,6 @@ class ReportController extends Controller
             ->editColumn('persentase_penjualan', function ($row) {
                 return number_format($row->persentase_penjualan, 2, ',', '.') . ' %';
             })
-            ->with([
-                'grand_total' => 'Rp. ' . number_format($grandTotal, 0, ',', '.'),
-            ])
             ->make(true);
     }
 
