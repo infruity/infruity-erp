@@ -92,10 +92,9 @@ class SortirController extends Controller
             return $denied;
         }
 
-        // dd($id);
-        $data['product'] = DB::table('sortir_view')->where('id', $id)->first();
-        // $data['productChild'] = ProductChild::with('product')->where('parent_id', $data['product']->id)->get();
-        // dd($data);
+        $data['data']           = Sortir::with('branch', 'createdBy')->findOrFail($id);
+        $data['detail']         = SortirDetail::with('product', 'product.unit')->where('sortir_id', $id)->get();
+        $data['invoice_number'] = $data['data']->invoice_number;
         return view('transaction::sortir.show', $data);
     }
 
