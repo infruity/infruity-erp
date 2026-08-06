@@ -356,7 +356,12 @@ class ReportController extends Controller
             )->whereBetween('B.date', [$startDate, $endDate]);
 
         if ($request->has('branch_id') && $request->branch_id !== 'all') {
-            $query->where('branch_id', $request->branch_id);
+            $query->where('B.branch_id', $request->branch_id);
+        }
+
+        $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
+        if ($searchValue !== '') {
+            $query->where('C.name', 'like', '%' . $searchValue . '%');
         }
 
         $grandTotalQuery = clone $query;
@@ -365,6 +370,9 @@ class ReportController extends Controller
         $query = $query->groupBy('sortir_transaction_detail.product_id')->orderByDesc('total_hpp');
 
         return DataTables::of($query)
+            ->filter(function ($queryInstance) {
+                // Search is already applied before groupBy
+            })
             ->editColumn('satuan', function ($row) {
                 switch ($row->unit_id) {
                     case 1:
@@ -384,13 +392,13 @@ class ReportController extends Controller
                 }
             })
             ->editColumn('quantity', function ($row) {
-                return number_format($row->quantity, 2);
+                return fmod($row->quantity, 1) == 0 ? number_format($row->quantity, 0, ',', '.') : number_format($row->quantity, 2, ',', '.');
             })
             ->editColumn('hpp', function ($row) {
-                return number_format($row->hpp, 2);
+                return number_format($row->hpp, 0, ',', '.');
             })
             ->editColumn('total_hpp', function ($row) {
-                return number_format($row->quantity * $row->hpp, 2);
+                return number_format($row->quantity * $row->hpp, 0, ',', '.');
             })
             ->rawColumns(['satuan'])
             ->with([
@@ -683,6 +691,69 @@ class ReportController extends Controller
                 'total' => 'Rp ' . number_format($total, 0, ',', '.'),
                 'pos_id' => $detail->pos_id,
                 'pos_date' => $detail->pos_date,
+                'tx_date' => $detail->tx_date,
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'product_name' => $history->first() ? $history->first()->product_name : '',
+            'data' => $formattedData
+        ]);
+    }
+
+    public function get_product_buang_history(Request $request)
+    {
+        $startDate = $request->start_date;
+        $endDate   = $request->end_date;
+        $branch    = $request->branch ?: 'all';
+        $productId = $request->product_id;
+
+        $query = \Modules\Transaction\Entities\SortirDetail::select(
+            'sortir_transaction_detail.*',
+            'sortir_transaction.id as sortir_id',
+            'sortir_transaction.invoice_number as invoice',
+            'sortir_transaction.created_at as tx_date',
+            'sortir_transaction.date as sortir_date',
+            'branch.name as branch_name',
+            'products.name as product_name',
+            'product_units.abbreviation as unit'
+        )
+            ->join('sortir_transaction', 'sortir_transaction_detail.sortir_id', '=', 'sortir_transaction.id')
+            ->leftJoin('branch', 'sortir_transaction.branch_id', '=', 'branch.id')
+            ->join('products', 'sortir_transaction_detail.product_id', '=', 'products.id')
+            ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
+            ->where('sortir_transaction_detail.product_id', $productId);
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('sortir_transaction.date', [$startDate, $endDate]);
+        }
+
+        if ($branch !== 'all') {
+            $query->where('sortir_transaction.branch_id', $branch);
+        }
+
+        $history = $query->orderBy('sortir_transaction.created_at', 'desc')->get();
+
+        $formattedData = $history->map(function ($detail) {
+            $txDate = \Carbon\Carbon::parse($detail->tx_date);
+            $subtotal = $detail->price * $detail->quantity;
+            $total = $detail->subtotal;
+            
+            $unit = $detail->unit ? $detail->unit : 'pcs';
+            $qty_formatted = fmod($detail->quantity, 1) == 0 ? number_format($detail->quantity, 0, ',', '.') : number_format($detail->quantity, 2, ',', '.');
+            $qty_formatted .= ' ' . $unit;
+
+            return [
+                'invoice' => $detail->invoice,
+                'date_formatted' => $txDate->locale('id')->isoFormat('dddd, D MMMM Y'),
+                'time_formatted' => 'Jam ' . $txDate->format('H:i') . ' WIB',
+                'branch_name' => $detail->branch_name ?? 'Pusat',
+                'qty' => $qty_formatted,
+                'subtotal' => 'Rp ' . number_format($subtotal, 0, ',', '.'),
+                'total' => 'Rp ' . number_format($total, 0, ',', '.'),
+                'sortir_id' => $detail->sortir_id,
+                'sortir_date' => $detail->sortir_date,
                 'tx_date' => $detail->tx_date,
             ];
         });
