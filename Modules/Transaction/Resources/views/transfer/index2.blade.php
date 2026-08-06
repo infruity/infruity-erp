@@ -70,11 +70,13 @@
                                         <select class="form-select form-select-solid" data-control="select2"
                                             data-hide-search="true" data-placeholder="Cabang"
                                             data-kt-ecommerce-product-filter="cabang">
-                                            <option value="all">All</option>
-                                        @foreach ($branches as $branch)
+                                            @if (count($branches) > 1)
+                                                <option value="all">All</option>
+                                            @endif
+                                            @foreach ($branches as $branch)
                                                 <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
                                             @endforeach
-                                            </select>
+                                        </select>
                                     </div>
                                     <!--end::Input group-->
                                 </div>
@@ -126,11 +128,11 @@
         </div>
     </div>
     @if (request()->segment(1) != 'transfer-penerima')
-    <a href="{{ url(request()->segment(1) . '/create') }}"
-        class="btn btn-primary rounded-circle shadow-lg position-fixed"
-        style="bottom: 60px; right: 30px; width: 60px; height: 60px; z-index: 1050; display: flex; align-items: center; justify-content: center;">
-        <i class="fa fa-plus text-white"></i>
-    </a>
+        <a href="{{ url(request()->segment(1) . '/create') }}"
+            class="btn btn-primary rounded-circle shadow-lg position-fixed"
+            style="bottom: 60px; right: 30px; width: 60px; height: 60px; z-index: 1050; display: flex; align-items: center; justify-content: center;">
+            <i class="fa fa-plus text-white"></i>
+        </a>
     @endif
 @endsection
 
@@ -170,8 +172,7 @@
                 order: [
                     [1, 'desc'], // Sort by date column DESC
                 ],
-                columns: [
-                    {
+                columns: [{
                         data: 'name',
                         name: 'name'
                     },

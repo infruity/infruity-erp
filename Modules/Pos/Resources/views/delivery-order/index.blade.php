@@ -149,11 +149,13 @@
                                     <select class="form-select form-select-solid" data-control="select2"
                                         data-hide-search="true" data-placeholder="Cabang"
                                         data-kt-ecommerce-product-filter="cabang">
-                                        <option value="all">All</option>
-                                    @foreach ($branches as $branch)
+                                        @if (count($branches) > 1)
+                                            <option value="all">All</option>
+                                        @endif
+                                        @foreach ($branches as $branch)
                                             <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
                                         @endforeach
-                                        </select>
+                                    </select>
                                 </div>
                                 <!--end::Input group-->
                             </div>

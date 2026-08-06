@@ -97,11 +97,13 @@
                                     <select class="form-select form-select-solid" data-control="select2"
                                         data-hide-search="true" data-placeholder="Cabang"
                                         data-kt-ecommerce-product-filter="cabang">
-                                        <option value="all">All</option>
-                                    @foreach ($branches as $branch)
+                                        @if (count($branches) > 1)
+                                            <option value="all">All</option>
+                                        @endif
+                                        @foreach ($branches as $branch)
                                             <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
                                         @endforeach
-                                        </select>
+                                    </select>
                                 </div>
                             </div>
                             <div class="px-7 py-5" data-kt-user-table-filter="form">
@@ -162,9 +164,9 @@
                     return `<span class="badge badge-light-danger me-1 mb-1">${p.name} (${p.branch_name})</span>`;
                 }).join('');
 
-                const remainingHtml = count > 10
-                    ? `<br><small>...dan ${count - 10} produk lainnya</small>`
-                    : '';
+                const remainingHtml = count > 10 ?
+                    `<br><small>...dan ${count - 10} produk lainnya</small>` :
+                    '';
 
                 const scopeText = selectedBranchId === 'all' ? 'pada seluruh cabang' : 'pada cabang ini';
                 const alertHtml = `Terdapat <strong>${count}</strong> produk dengan stok kosong ${scopeText}.<br><br>` +

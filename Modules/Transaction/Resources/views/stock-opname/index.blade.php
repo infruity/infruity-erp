@@ -498,11 +498,11 @@
                 position: relative;
             }
 
-        .last-border-none:last-child {
-            border-bottom: none !important;
-            padding-bottom: 0 !important;
-            margin-bottom: 0 !important;
-        }
+            .last-border-none:last-child {
+                border-bottom: none !important;
+                padding-bottom: 0 !important;
+                margin-bottom: 0 !important;
+            }
 
             .history-action-badge {
                 font-size: 10px;
@@ -658,14 +658,16 @@
                 <div class="card-toolbar w-100 w-md-auto ms-md-auto">
                     <div class="d-flex align-items-center justify-content-md-end pos-index-filter-toolbar gap-3"
                         data-kt-user-table-toolbar="base">
-                        <button type="button" class="btn btn-light-success px-4 pos-index-filter-btn" onclick="exportExcel()">
+                        <button type="button" class="btn btn-light-success px-4 pos-index-filter-btn"
+                            onclick="exportExcel()">
                             <i class="ki-duotone ki-file-down fs-2">
                                 <span class="path1"></span>
                                 <span class="path2"></span>
                             </i>
                             <span class="d-none d-sm-inline">Export Excel</span>
                         </button>
-                        <button type="button" class="btn btn-light-info px-4 pos-index-filter-btn" onclick="previewStock()">
+                        <button type="button" class="btn btn-light-info px-4 pos-index-filter-btn"
+                            onclick="previewStock()">
                             <i class="ki-duotone ki-eye fs-2">
                                 <span class="path1"></span>
                                 <span class="path2"></span>
@@ -692,6 +694,9 @@
                                     <select class="form-select form-select-solid" data-control="select2"
                                         data-hide-search="true" data-placeholder="Cabang"
                                         data-kt-ecommerce-product-filter="cabang">
+                                        @if (count($branches) > 1)
+                                            <option value="all">All</option>
+                                        @endif
                                         @foreach ($branches as $branch)
                                             <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
                                         @endforeach
@@ -832,7 +837,8 @@
                                 <label class="form-label text-gray-800 fw-bold fs-7 mb-2">Detail Quantity</label>
                                 <div id="detail-qty-container" class="d-flex flex-column gap-3">
                                 </div>
-                                <button type="button" class="btn btn-sm btn-light-primary mt-3" onclick="addDetailRow()">
+                                <button type="button" class="btn btn-sm btn-light-primary mt-3"
+                                    onclick="addDetailRow()">
                                     <i class="bi bi-plus"></i> Tambah Detail
                                 </button>
                             </div>
@@ -853,8 +859,7 @@
                         <button type="button" class="btn btn-light btn-sm fw-bold px-6"
                             style="color: #4b5563; background-color: transparent;" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" id="kt_modal_add_customer_submit"
-                            class="btn btn-primary btn-sm text-white fw-bold px-6"
-                            style="border-radius: 8px;">
+                            class="btn btn-primary btn-sm text-white fw-bold px-6" style="border-radius: 8px;">
                             <span class="indicator-label">Simpan Final</span>
                             <span class="indicator-progress">Mohon tunggu...
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -1165,7 +1170,7 @@
 
             const isMinus = selisih < 0;
             const hppText =
-            `HPP: Rp ${formatRupiah(Math.round(Math.abs(hpp)))}/${row?.product?.unit?.abbreviation || 'Kg'}`;
+                `HPP: Rp ${formatRupiah(Math.round(Math.abs(hpp)))}/${row?.product?.unit?.abbreviation || 'Kg'}`;
             const nilaiText = `Rp ${formatRupiah(Math.abs(nilaiSelisih))}`;
 
             // Dynamic Stock Match Label & Color
@@ -1329,13 +1334,13 @@
 
                         <!-- Finalize (if pending) -->
                         ${isPending ? `
-                        <button class="so-btn-icon-clean text-success" onclick="finalizeStockOpname(${id})" title="Finalisasi Transaksi">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M9 12l2 2 4-4"></path>
-                            </svg>
-                        </button>
-                        ` : ''}
+                            <button class="so-btn-icon-clean text-success" onclick="finalizeStockOpname(${id})" title="Finalisasi Transaksi">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9 12l2 2 4-4"></path>
+                                </svg>
+                            </button>
+                            ` : ''}
 
                         <!-- Delete -->
                         <button class="so-btn-delete-clean" onclick="deleteProduct(${id})" title="Hapus Transaksi">
@@ -1370,8 +1375,9 @@
                     startDate = dates[0];
                     endDate = dates[1] ?? dates[0];
                 }
-                
-                let url = "{{ route('stock-opname.export') }}?cabang_filter=" + cabang + "&start_date=" + startDate + "&end_date=" + endDate;
+
+                let url = "{{ route('stock-opname.export') }}?cabang_filter=" + cabang + "&start_date=" +
+                    startDate + "&end_date=" + endDate;
                 window.open(url, '_blank');
             };
 
@@ -1385,8 +1391,9 @@
                     startDate = dates[0];
                     endDate = dates[1] ?? dates[0];
                 }
-                
-                let url = "{{ route('stock-opname.preview') }}?cabang_filter=" + cabang + "&start_date=" + startDate + "&end_date=" + endDate;
+
+                let url = "{{ route('stock-opname.preview') }}?cabang_filter=" + cabang + "&start_date=" +
+                    startDate + "&end_date=" + endDate;
                 window.open(url, '_blank');
             };
 
@@ -1504,7 +1511,7 @@
                             } else {
                                 $btn.append(
                                     `<span class="position-absolute badge rounded-pill bg-danger text-white" style="top: 2px; right: 2px; font-size: 8px; padding: 0.25em 0.5em; z-index: 1;">1</span>`
-                                    );
+                                );
                             }
                         }
                     },
@@ -1614,11 +1621,12 @@
                 form.trigger('reset');
                 form.find('input[name="_method"]').remove();
                 $('select[name="product_id"]').val(null).trigger('change');
-                
+
                 var filterBranch = $('[data-kt-ecommerce-product-filter="cabang"]').val();
-                var defaultBranch = (filterBranch && filterBranch !== 'all') ? filterBranch : $('select[name="branch_id"] option:first').val();
+                var defaultBranch = (filterBranch && filterBranch !== 'all') ? filterBranch : $(
+                    'select[name="branch_id"] option:first').val();
                 $('select[name="branch_id"]').val(defaultBranch).trigger('change');
-                
+
                 form.attr('action', '{{ url(Request::segment(1)) }}');
                 $('#kt_modal_add_customer_header h2').text('Catat Stock Opname');
                 $('#kt_modal_add_customer_submit .indicator-label').html(
@@ -1985,11 +1993,14 @@
                             const userId = item.created_by || 1;
                             const avatarNum = (userId % 30) + 1;
                             const avatarUrl = `/assets/media/avatars/300-${avatarNum}.jpg`;
-                            
+
                             let detailsHtml = '';
-                            if (item.details && Array.isArray(item.details) && item.details.length > 0) {
-                                detailsHtml = '<div class="history-details-box mt-3 mb-3 p-3 bg-light rounded">';
-                                detailsHtml += '<div class="fw-bold fs-8 text-muted mb-2">Detail Stock Fisik:</div>';
+                            if (item.details && Array.isArray(item.details) && item.details.length >
+                                0) {
+                                detailsHtml =
+                                    '<div class="history-details-box mt-3 mb-3 p-3 bg-light rounded">';
+                                detailsHtml +=
+                                    '<div class="fw-bold fs-8 text-muted mb-2">Detail Stock Fisik:</div>';
                                 item.details.forEach(det => {
                                     detailsHtml += `<div class="d-flex justify-content-between align-items-center fs-8 text-gray-700 border-bottom border-gray-300 pb-1 mb-1 last-border-none">
                                         <span>${escapeHtml(det.name)}</span>
@@ -2095,7 +2106,7 @@
                     } else {
                         $items.append(
                             '<div class="text-muted text-center py-20 fs-6">Belum ada diskusi. Mulai percakapan terkait selisih stock ini.</div>'
-                            );
+                        );
                     }
 
                     // Show Metronic Drawer
@@ -2207,7 +2218,7 @@
                         }
                         // Format preview
                         const formattedResult = Number(result % 1 === 0 ? result.toString() : result.toFixed(
-                        2));
+                            2));
                         $('#adj-result-stock-label').text(`${formattedResult} ${unit}`);
                     }
 
@@ -2414,7 +2425,8 @@
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Gagal',
-                                text: xhr.responseJSON?.message || 'Terjadi kesalahan saat memproses data.'
+                                text: xhr.responseJSON?.message ||
+                                    'Terjadi kesalahan saat memproses data.'
                             });
                         }
                     });

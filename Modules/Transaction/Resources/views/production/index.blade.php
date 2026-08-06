@@ -69,10 +69,10 @@
                         <!--begin::Filter-->
                         <button type="button" class="btn btn-light-primary px-4 pos-index-filter-btn"
                             data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                                <i class="ki-duotone ki-filter fs-2">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                </i>
+                            <i class="ki-duotone ki-filter fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
                             <span id="active-branch-button-label">Cabang</span>
                         </button>
                         <!--begin::Menu 1-->
@@ -113,11 +113,13 @@
                                     <select class="form-select form-select-solid" data-control="select2"
                                         data-hide-search="true" data-placeholder="Cabang"
                                         data-kt-ecommerce-product-filter="cabang">
-                                        <option value="all">All</option>
-                                    @foreach ($branches as $branch)
+                                        @if (count($branches) > 1)
+                                            <option value="all">All</option>
+                                        @endif
+                                        @foreach ($branches as $branch)
                                             <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
                                         @endforeach
-                                        </select>
+                                    </select>
                                 </div>
                                 <!--end::Input group-->
                             </div>
@@ -153,17 +155,17 @@
                 <table class="table align-middle table-row-dashed fs-6 gy-5" id="production-table" width="100%">
                     <thead>
                         <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-             {{-- <th class="w-10px pe-2">
+                            {{-- <th class="w-10px pe-2">
                  <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
                      <input class="form-check-input" type="checkbox" data-kt-check="true"
                          data-kt-check-target="#kt_ecommerce_production_table .form-check-input"
                          value="1" />
                  </div>
              </th> --}}
-             <th class="text-start min-w-100px">Name</th>
-             <th class="text-center min-w-100px">Status</th>
-             <th class="text-center min-w-100px">Prod Date</th>
-             <th class="text-end min-w-70px" style="position: relative; z-index: 1;">Actions</th>
+                            <th class="text-start min-w-100px">Name</th>
+                            <th class="text-center min-w-100px">Status</th>
+                            <th class="text-center min-w-100px">Prod Date</th>
+                            <th class="text-end min-w-70px" style="position: relative; z-index: 1;">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="fw-semibold text-gray-600"></tbody>

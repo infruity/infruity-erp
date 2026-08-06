@@ -123,7 +123,9 @@
                                     <select class="form-select form-select-solid" data-control="select2"
                                         data-hide-search="true" data-placeholder="Cabang"
                                         data-kt-ecommerce-product-filter="cabang">
-                                        <option value="all">All</option>
+                                        @if (count($branches) > 1)
+                                            <option value="all">All</option>
+                                        @endif
                                         @foreach ($branches as $branch)
                                             <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
                                         @endforeach
@@ -200,9 +202,9 @@
                     return `<span class="badge badge-light-danger me-1 mb-1">${p.name} (${p.branch_name})</span>`;
                 }).join('');
 
-                const remainingHtml = count > 10
-                    ? `<br><small>...dan ${count - 10} produk lainnya</small>`
-                    : '';
+                const remainingHtml = count > 10 ?
+                    `<br><small>...dan ${count - 10} produk lainnya</small>` :
+                    '';
 
                 const scopeText = selectedBranchId === 'all' ? 'pada seluruh cabang' : 'pada cabang ini';
                 const alertHtml = `Terdapat <strong>${count}</strong> produk dengan stok kosong ${scopeText}.<br><br>` +
@@ -222,14 +224,14 @@
             }
         }
 
-        @if(session('error'))
-        document.addEventListener("DOMContentLoaded", function() {
-            Swal.fire({
-                icon: 'error',
-                title: 'Tidak Bisa Diedit',
-                text: "{{ session('error') }}"
+        @if (session('error'))
+            document.addEventListener("DOMContentLoaded", function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Tidak Bisa Diedit',
+                    text: "{{ session('error') }}"
+                });
             });
-        });
         @endif
 
         var dataTable;
@@ -287,9 +289,9 @@
             });
 
             // Fix dropdown z-index in fixed columns
-            $('body').on('show.bs.dropdown', '.dropstart', function (e) {
+            $('body').on('show.bs.dropdown', '.dropstart', function(e) {
                 $(e.target).closest('td').css('z-index', '1050');
-            }).on('hide.bs.dropdown', '.dropstart', function (e) {
+            }).on('hide.bs.dropdown', '.dropstart', function(e) {
                 $(e.target).closest('td').css('z-index', '');
             });
             // Search manual lewat input
@@ -312,7 +314,9 @@
                 };
                 var color = statusColors[state.text] || '';
                 if (color) {
-                    return $('<span><span class="badge badge-light-' + (state.text === 'Lunas' ? 'success' : state.text === 'Piutang' ? 'danger' : state.text === 'Pending' ? 'secondary' : 'dark') + '">' + state.text + '</span></span>');
+                    return $('<span><span class="badge badge-light-' + (state.text === 'Lunas' ? 'success' : state
+                            .text === 'Piutang' ? 'danger' : state.text === 'Pending' ? 'secondary' : 'dark') +
+                        '">' + state.text + '</span></span>');
                 }
                 return state.text;
             }
