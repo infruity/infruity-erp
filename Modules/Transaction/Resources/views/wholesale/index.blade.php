@@ -96,11 +96,11 @@
                                     <select class="form-select form-select-solid" data-control="select2"
                                         data-hide-search="true" data-placeholder="Cabang"
                                         data-kt-ecommerce-product-filter="cabang">
-                                        @foreach ($branches as $branch)
+                                        <option value="all">All</option>
+                                    @foreach ($branches as $branch)
                                             <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
                                         @endforeach
-                                        <option value="all">All</option>
-                                    </select>
+                                        </select>
                                 </div>
                             </div>
                             <div class="px-7 py-5" data-kt-user-table-filter="form">
