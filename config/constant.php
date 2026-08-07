@@ -311,6 +311,7 @@ return [
                 'branch.product' => 'Lihat Laporan Penjualan Per Channel',
                 'customer.product' => 'Lihat Laporan Transaksi Penjualan per Produk',
                 'product.buang' => 'Lihat Laporan Produk Buang',
+                'shipping.cost' => 'Lihat Laporan Ongkos Kirim',
                 'total.aset' => 'Lihat Laporan Total Aset',
             ],
         ],

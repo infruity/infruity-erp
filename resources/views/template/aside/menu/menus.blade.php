@@ -1076,6 +1076,22 @@
         <!--end:Menu link-->
     </div>
 @endif
+@if (check_access('report.shipping.cost'))
+    <div class="menu-item">
+        <!--begin:Menu link-->
+        <a class="menu-link {{ Request::segment(1) == 'report-shipping-cost' ? 'active' : '' }}"
+            href="{{ url('report-shipping-cost') }}">
+            <span class="menu-icon">
+                <i class="ki-duotone ki-basket fs-2">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+            </span>
+            <span class="menu-title">Laporan Ongkos Kirim</span>
+        </a>
+        <!--end:Menu link-->
+    </div>
+@endif
 @if (check_access('report.product.buang'))
     <div class="menu-item">
         <!--begin:Menu link-->

@@ -23,6 +23,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::get('report-customer-product', [ReportController::class, 'customer_product'])->name('report-customer-product');
     Route::get('report-product-buang', [ReportController::class, 'product_buang'])->name('report-product-buang');
     Route::get('report-product-sales', [ReportController::class, 'product_sales'])->name('report-product-sales');
+    Route::get('report-shipping-cost', [ReportController::class, 'shipping_cost'])->name('report-shipping-cost');
     Route::get('report-total-aset', [ReportController::class, 'total_aset'])->name('report-total-aset');
 });
 
@@ -36,5 +37,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::get('report-product-buang/history', [ReportController::class, 'get_product_buang_history'])->name('report-product-buang.history');
     Route::get('report-product-sales/data', [ReportController::class, 'get_data_product_sales'])->name('report-product-sales.data');
     Route::get('report-product-sales/history', [ReportController::class, 'get_product_sales_history'])->name('report-product-sales.history');
+    Route::get('report-shipping-cost/data', [ReportController::class, 'get_data_shipping_cost'])->name('report-shipping-cost.data');
+    Route::get('report-shipping-cost/history', [ReportController::class, 'get_shipping_cost_history'])->name('report-shipping-cost.history');
     Route::get('report-total-aset/data', [ReportController::class, 'get_data_total_aset'])->name('report-total-aset.data');
 });

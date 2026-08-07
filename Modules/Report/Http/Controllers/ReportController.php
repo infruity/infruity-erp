@@ -84,6 +84,16 @@ class ReportController extends Controller
         $data['defaultDate'] = date('Y-m-d');
         return view('report::product-sales', $data);
     }
+    public function shipping_cost(Request $request)
+    {
+        if ($denied = $this->requireAccess('report.shipping.cost')) {
+            return $denied;
+        }
+
+        $data['branches']    = Branch::all();
+        $data['defaultDate'] = date('Y-m-d');
+        return view('report::shipping-cost', $data);
+    }
     public function total_aset(Request $request)
     {
         if ($denied = $this->requireAccess('report.total.aset')) {
@@ -480,6 +490,164 @@ class ReportController extends Controller
                 return number_format($row->persentase_penjualan, 2, ',', '.') . ' %';
             })
             ->make(true);
+    }
+
+    public function get_data_shipping_cost(Request $request)
+    {
+        $startDate = $request->filled('start_date') ? $request->start_date : date('Y-m-d');
+        $endDate   = $request->filled('end_date') ? $request->end_date : date('Y-m-d');
+
+        // Query
+        $data = \Modules\Pos\Entities\PosModel::select(
+            'pos_transaction.courier_id',
+            'kurir.name as courier_name',
+            DB::raw('COUNT(pos_transaction.id) AS total_transaksi'),
+            DB::raw('SUM(pos_transaction.ongkir) AS total_ongkir')
+        )
+            ->leftJoin('kurir', 'pos_transaction.courier_id', '=', 'kurir.id')
+            ->whereBetween('pos_transaction.date', [$startDate, $endDate])
+            ->whereNull('pos_transaction.deleted_at')
+            ->where('pos_transaction.status', '!=', 'draft');
+
+        if ($request->has('branch_id') && $request->branch_id != 'all') {
+            $data = $data->where('pos_transaction.branch_id', $request->branch_id);
+        }
+
+        $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
+        if ($searchValue !== '') {
+            $data->where('kurir.name', 'like', '%' . $searchValue . '%');
+        }
+
+        // Grouping
+        $data = $data->groupBy('pos_transaction.courier_id', 'kurir.name')
+            ->orderByDesc('total_ongkir');
+
+        $response = DataTables::of($data);
+
+        if ($request->input('start') == 0) {
+            $grandTotalQuery = clone $data;
+            $grandTotal = DB::table(DB::raw("({$grandTotalQuery->toSql()}) as sub"))
+                ->mergeBindings($grandTotalQuery->getQuery())
+                ->sum('total_ongkir');
+
+            $response->with([
+                'grand_total' => 'Rp. ' . number_format($grandTotal, 0, ',', '.'),
+            ]);
+        }
+
+        return $response
+            ->editColumn('courier_name', function ($row) {
+                return $row->courier_name ?? 'Tanpa Kurir / Lainnya';
+            })
+            ->editColumn('total_transaksi', function ($row) {
+                return number_format($row->total_transaksi, 0, ',', '.') . ' Transaksi';
+            })
+            ->editColumn('total_ongkir_formatted', function ($row) {
+                return 'Rp ' . number_format($row->total_ongkir, 0, ',', '.');
+            })
+            ->make(true);
+    }
+
+    public function get_shipping_cost_history(Request $request)
+    {
+        $startDate = $request->start_date;
+        $endDate   = $request->end_date;
+        $branch    = $request->branch ?: 'all';
+        $courierId = $request->courier_id;
+
+        $query = \Modules\Pos\Entities\PosModel::select(
+            'pos_transaction.*',
+            'pos_transaction.id as pos_id',
+            'pos_transaction.invoice_number as invoice',
+            'pos_transaction.created_at as tx_date',
+            'pos_transaction.date as pos_date',
+            'branch.name as branch_name',
+            'kurir.name as courier_name',
+            'customer.name as customer_name'
+        )
+            ->leftJoin('branch', 'pos_transaction.branch_id', '=', 'branch.id')
+            ->leftJoin('kurir', 'pos_transaction.courier_id', '=', 'kurir.id')
+            ->leftJoin('customer', 'pos_transaction.customer_id', '=', 'customer.id')
+            ->whereNull('pos_transaction.deleted_at')
+            ->where('pos_transaction.status', '!=', 'draft');
+            
+        if ($courierId == "null" || empty($courierId)) {
+            $query->whereNull('pos_transaction.courier_id');
+        } else {
+            $query->where('pos_transaction.courier_id', $courierId);
+        }
+            
+        $query->with(['paymentDetails.paymentMethod']);
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('pos_transaction.date', [$startDate, $endDate]);
+        }
+
+        if ($branch !== 'all') {
+            $query->where('pos_transaction.branch_id', $branch);
+        }
+
+        $history = $query->orderBy('pos_transaction.created_at', 'desc')->get();
+
+        $formattedData = $history->map(function ($detail) {
+            $paymentMethods = collect();
+            if ($detail->paymentDetails) {
+                $paymentMethods = $detail->paymentDetails->filter(function($payment) {
+                    return $payment->payment_amount > 0;
+                })->map(function($payment) {
+                    $method = $payment->payment_method;
+                    if (empty($method) || strtolower($method) === 'tunai') {
+                        return 'Tunai';
+                    }
+                    if ($method === 'Split') {
+                        return 'Split';
+                    }
+                    $decoded = json_decode($method, true);
+                    if (is_array($decoded) && count($decoded) > 0) {
+                        return collect($decoded)->implode(', ');
+                    }
+                    return $method;
+                })->filter()->unique()->values();
+            }
+            
+            if ($paymentMethods->isEmpty()) {
+                $paymentMethods->push('Tunai');
+            }
+
+            if ($paymentMethods->count() > 1) {
+                $paymentStr = $paymentMethods->implode(', ');
+            } elseif ($paymentMethods->count() == 1) {
+                $paymentStr = $paymentMethods[0];
+            } else {
+                $paymentStr = '-';
+            }
+
+            $txDate = \Carbon\Carbon::parse($detail->tx_date);
+            $ongkir = $detail->ongkir ?? 0;
+            $customerName = $detail->customer_name ?? 'Pelanggan Umum';
+            $address = $detail->ongkir_address ?? '-';
+            
+            return [
+                'invoice' => $detail->invoice,
+                'date_formatted' => $txDate->locale('id')->isoFormat('dddd, D MMMM Y'),
+                'time_formatted' => 'Jam ' . $txDate->format('H:i') . ' WIB',
+                'branch_name' => $detail->branch_name,
+                'payment' => $paymentStr,
+                'customer_name' => $customerName,
+                'address' => $address,
+                'ongkir' => 'Rp ' . number_format($ongkir, 0, ',', '.'),
+                'total' => 'Rp ' . number_format($detail->total, 0, ',', '.'),
+                'pos_id' => $detail->pos_id,
+                'pos_date' => $detail->pos_date,
+                'tx_date' => $detail->tx_date,
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'courier_name' => $history->first() ? ($history->first()->courier_name ?? 'Tanpa Kurir / Lainnya') : '',
+            'data' => $formattedData
+        ]);
     }
 
     private function applyProductSalesSearch($query, Request $request): void
