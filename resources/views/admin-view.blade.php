@@ -102,6 +102,8 @@
 <script>
     $(document).ready(function() {
         $('#usersTable').DataTable({
+                pageLength: 100,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
             processing: true,
             serverSide: true,
             ajax: {

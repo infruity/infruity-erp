@@ -11,6 +11,8 @@
 
         $(document).ready(function() {
             dataTable = $('#transaction-table').DataTable({
+                pageLength: 100,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                 processing: true,
                 serverSide: true,
                 scrollX: true, // Aktifkan scroll horizontal

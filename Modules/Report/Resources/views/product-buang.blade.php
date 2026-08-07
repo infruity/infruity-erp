@@ -191,7 +191,7 @@
 
         $(document).ready(function() {
             let currentStart = 0;
-            const pageLength = 10;
+            const pageLength = 100;
             let isLoading = false;
             let hasMore = true;
 

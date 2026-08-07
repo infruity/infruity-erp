@@ -154,6 +154,8 @@
 
         $(document).ready(function() {
             const table = $('#kt_ecommerce_edit_order_product_table').DataTable({
+                pageLength: 100,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                 order: [],
                 scrollY: "400px",
                 scrollCollapse: true,
@@ -167,6 +169,8 @@
 
             var url = `{{ url('wholesale/get-product/${wholsaleId}') }}`;
             tableSelectedProduct = $('#kt_ecommerce_edit_order_selected_products_table').DataTable({
+                pageLength: 100,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                 processing: true,
                 serverSide: false,
                 info: false,

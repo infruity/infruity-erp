@@ -7,6 +7,8 @@
         $(document).ready(function() {
 
             var listDatatable = $('#kt_ecommerce_edit_order_product_table').DataTable({
+                pageLength: 100,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                 processing: true,
                 serverSide: true,
                 scrollY: "400px",
@@ -58,6 +60,8 @@
             });
 
             // const table = $('#kt_ecommerce_edit_order_product_table').DataTable({
+                pageLength: 100,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
             //     order: [],
             //     scrollY: "400px",
             //     scrollCollapse: true,
@@ -72,6 +76,8 @@
             var url = `{{ url('parcel/get-product/${parcelId}') }}`;
             console.log(url);
             tableSelectedProduct = $('#kt_ecommerce_edit_order_selected_products_table').DataTable({
+                pageLength: 100,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                 processing: true,
                 serverSide: false,
                 info: false,

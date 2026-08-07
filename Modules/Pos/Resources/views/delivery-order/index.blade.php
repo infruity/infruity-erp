@@ -288,6 +288,8 @@
             }
 
             dataTable = $('#pos-table').DataTable({
+                pageLength: 100,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                 processing: true,
                 serverSide: true,
                 fixedColumns: {
@@ -521,11 +523,12 @@
 
                     // baru init ulang
                     $('#kurir-table').DataTable({
+                pageLength: 100,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                         responsive: true,
                         searching: true,
                         paging: true,
-                        lengthChange: false,
-                        pageLength: isMobileView ? 5 : 10,
+                        lengthChange: false,
                         info: !isMobileView,
                         autoWidth: false
                     });

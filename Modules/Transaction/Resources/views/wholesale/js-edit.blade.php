@@ -4,6 +4,8 @@
 
         $(document).ready(function() {
             const table = $('#kt_ecommerce_edit_order_product_table').DataTable({
+                pageLength: 100,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                 order: [],
                 scrollY: "400px",
                 scrollCollapse: true,
