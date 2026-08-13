@@ -384,7 +384,7 @@
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="text-gray-600 fw-medium" style="font-size: 13px;">Koreksi Stok</span>
-                                            <span class="text-danger fw-bolder" style="font-size: 13px;">${item.koreksi_stock}</span>
+                                            <span class="${item.koreksi_stock_raw < 0 ? 'text-success' : (item.koreksi_stock_raw > 0 ? 'text-danger' : 'text-gray-900')} fw-bolder" style="font-size: 13px;">${item.koreksi_stock}</span>
                                         </div>
                                     </div>
                                 </div>`;
