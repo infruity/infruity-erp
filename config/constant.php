@@ -309,6 +309,7 @@ return [
                 'branch.transaction' => 'Lihat Laporan Penjualan Per Cabang',
                 'product.sales' => 'Lihat Laporan Penjualan Produk',
                 'profit.revenue' => 'Lihat Laporan Keuntungan Pendapatan',
+                'profit.adjusted' => 'Lihat Laporan Keuntungan Setelah Penyesuaian',
                 'branch.product' => 'Lihat Laporan Penjualan Per Channel',
                 'customer.product' => 'Lihat Laporan Transaksi Penjualan per Produk',
                 'product.buang' => 'Lihat Laporan Produk Buang',

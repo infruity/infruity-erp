@@ -1093,6 +1093,23 @@
         <!--end:Menu link-->
     </div>
 @endif
+@if (check_access('report.profit.adjusted'))
+    <div class="menu-item">
+        <!--begin:Menu link-->
+        <a class="menu-link {{ Request::segment(1) == 'report-profit-adjusted' ? 'active' : '' }}"
+            href="{{ url('report-profit-adjusted') }}">
+            <span class="menu-icon">
+                <i class="ki-duotone ki-chart-line-star fs-2">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                    <span class="path3"></span>
+                </i>
+            </span>
+            <span class="menu-title">Laporan Keuntungan Setelah Penyesuaian</span>
+        </a>
+        <!--end:Menu link-->
+    </div>
+@endif
 @if (check_access('report.shipping.cost'))
     <div class="menu-item">
         <!--begin:Menu link-->

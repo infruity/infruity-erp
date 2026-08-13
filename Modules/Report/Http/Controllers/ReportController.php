@@ -94,6 +94,16 @@ class ReportController extends Controller
         $data['defaultDate'] = date('Y-m-d');
         return view('report::profit-revenue', $data);
     }
+    public function profit_adjusted(Request $request)
+    {
+        if ($denied = $this->requireAccess('report.profit.adjusted')) {
+            return $denied;
+        }
+
+        $data['branches']    = Branch::all();
+        $data['defaultDate'] = date('Y-m-d');
+        return view('report::profit-adjusted', $data);
+    }
     public function shipping_cost(Request $request)
     {
         if ($denied = $this->requireAccess('report.shipping.cost')) {
@@ -542,7 +552,7 @@ class ReportController extends Controller
             $grandTotalQuery = clone $data;
             
             $subQuery = DB::table(DB::raw("({$grandTotalQuery->toSql()}) as sub"))
-                ->mergeBindings($grandTotalQuery->getQuery());
+                ->mergeBindings($grandTotalQuery);
                 
             $grandTotalPendapatan = $subQuery->sum('total_pendapatan');
             $grandTotalHpp = $subQuery->sum('total_hpp');
@@ -952,6 +962,220 @@ class ReportController extends Controller
         ]);
     }
 
+    public function get_data_profit_adjusted(Request $request)
+    {
+        $startDate = $request->filled('start_date') ? $request->start_date : date('Y-m-d');
+        $endDate   = $request->filled('end_date') ? $request->end_date : date('Y-m-d');
+        $branchId  = $request->input('branch_id', 'all');
+
+        $posQuery = DB::table('pos_transaction_detail')
+            ->select(
+                'pos_transaction_detail.product_id',
+                DB::raw('SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) - SUM(COALESCE(pos_transaction_detail.subtotal_hpp, 0)) AS laba_kotor')
+            )
+            ->join('pos_transaction', 'pos_transaction_detail.pos_id', '=', 'pos_transaction.id')
+            ->whereBetween('pos_transaction.date', [$startDate, $endDate])
+            ->whereNull('pos_transaction_detail.deleted_at')
+            ->whereNull('pos_transaction.deleted_at')
+            ->where('pos_transaction.status', '!=', 'draft');
+
+        if ($branchId != 'all') {
+            $posQuery->where('pos_transaction.branch_id', $branchId);
+        }
+        $posQuery->groupBy('pos_transaction_detail.product_id');
+
+        $sortirQuery = DB::table('sortir_transaction_detail')
+            ->select(
+                'sortir_transaction_detail.product_id',
+                DB::raw('SUM(sortir_transaction_detail.subtotal) AS koreksi_stock')
+            )
+            ->join('sortir_transaction', 'sortir_transaction_detail.sortir_id', '=', 'sortir_transaction.id')
+            ->whereBetween('sortir_transaction.date', [$startDate, $endDate]);
+
+        if ($branchId != 'all') {
+            $sortirQuery->where('sortir_transaction.branch_id', $branchId);
+        }
+        $sortirQuery->groupBy('sortir_transaction_detail.product_id');
+
+        $data = DB::table('products')
+            ->select(
+                'products.id as product_id',
+                'products.name',
+                'product_units.abbreviation as unit',
+                DB::raw('COALESCE(pos.laba_kotor, 0) AS laba_kotor'),
+                DB::raw('COALESCE(srt.koreksi_stock, 0) AS koreksi_stock'),
+                DB::raw('COALESCE(pos.laba_kotor, 0) - COALESCE(srt.koreksi_stock, 0) AS laba_disesuaikan')
+            )
+            ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
+            ->leftJoinSub($posQuery, 'pos', function ($join) {
+                $join->on('products.id', '=', 'pos.product_id');
+            })
+            ->leftJoinSub($sortirQuery, 'srt', function ($join) {
+                $join->on('products.id', '=', 'srt.product_id');
+            })
+            ->where(function ($q) {
+                $q->whereNotNull('pos.product_id')->orWhereNotNull('srt.product_id');
+            });
+
+        $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
+        if ($searchValue !== '') {
+            $data->where('products.name', 'like', '%' . $searchValue . '%');
+        }
+
+        $data->orderByDesc('laba_disesuaikan');
+
+        $response = \Yajra\DataTables\Facades\DataTables::of($data);
+
+        if ($request->input('start') == 0) {
+            $grandTotalQuery = clone $data;
+            
+            $subQuery = DB::table(DB::raw("({$grandTotalQuery->toSql()}) as sub"))
+                ->mergeBindings($grandTotalQuery);
+                
+            $grandTotalLabaKotor = $subQuery->sum('laba_kotor');
+            $grandTotalKoreksiStock = $subQuery->sum('koreksi_stock');
+            $grandTotalLabaDisesuaikan = $subQuery->sum('laba_disesuaikan');
+
+            $response->with([
+                'grand_total_laba_kotor' => 'Rp ' . number_format($grandTotalLabaKotor, 0, ',', '.'),
+                'grand_total_koreksi_stock' => '- Rp ' . number_format($grandTotalKoreksiStock, 0, ',', '.'),
+                'grand_total_laba_disesuaikan' => 'Rp ' . number_format($grandTotalLabaDisesuaikan, 0, ',', '.'),
+            ]);
+        }
+
+        return $response
+            ->addColumn('laba_kotor_formatted', function ($row) {
+                return 'Rp ' . number_format($row->laba_kotor, 0, ',', '.');
+            })
+            ->addColumn('koreksi_stock_formatted', function ($row) {
+                return '- Rp ' . number_format($row->koreksi_stock, 0, ',', '.');
+            })
+            ->addColumn('laba_disesuaikan_formatted', function ($row) {
+                return 'Rp ' . number_format($row->laba_disesuaikan, 0, ',', '.');
+            })
+            ->make(true);
+    }
+
+
+    public function get_profit_adjusted_history(Request $request)
+    {
+        $startDate = $request->start_date;
+        $endDate   = $request->end_date;
+        $branch    = $request->branch ?: 'all';
+        $productId = $request->product_id;
+
+        $posQuery = \Modules\Pos\Entities\PosDetailModel::select(
+            'pos_transaction_detail.*',
+            'pos_transaction.id as pos_id',
+            'pos_transaction.invoice_number as invoice',
+            'pos_transaction.created_at as tx_date',
+            'pos_transaction.date as pos_date',
+            'branch.name as branch_name',
+            'products.name as product_name',
+            'product_units.abbreviation as unit'
+        )
+            ->join('pos_transaction', 'pos_transaction_detail.pos_id', '=', 'pos_transaction.id')
+            ->join('branch', 'pos_transaction.branch_id', '=', 'branch.id')
+            ->join('products', 'pos_transaction_detail.product_id', '=', 'products.id')
+            ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
+            ->where('pos_transaction_detail.product_id', $productId)
+            ->whereNull('pos_transaction_detail.deleted_at')
+            ->whereNull('pos_transaction.deleted_at');
+
+        if ($startDate && $endDate) {
+            $posQuery->whereBetween('pos_transaction.date', [$startDate, $endDate]);
+        }
+        if ($branch !== 'all') {
+            $posQuery->where('pos_transaction.branch_id', $branch);
+        }
+        $posHistory = $posQuery->get();
+
+        $sortirQuery = \Modules\Transaction\Entities\SortirDetail::select(
+            'sortir_transaction_detail.*',
+            'sortir_transaction.id as sortir_id',
+            'sortir_transaction.invoice_number as invoice',
+            'sortir_transaction.created_at as tx_date',
+            'sortir_transaction.date as sortir_date',
+            'branch.name as branch_name',
+            'products.name as product_name',
+            'product_units.abbreviation as unit'
+        )
+            ->join('sortir_transaction', 'sortir_transaction_detail.sortir_id', '=', 'sortir_transaction.id')
+            ->leftJoin('branch', 'sortir_transaction.branch_id', '=', 'branch.id')
+            ->join('products', 'sortir_transaction_detail.product_id', '=', 'products.id')
+            ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
+            ->where('sortir_transaction_detail.product_id', $productId);
+
+        if ($startDate && $endDate) {
+            $sortirQuery->whereBetween('sortir_transaction.date', [$startDate, $endDate]);
+        }
+        if ($branch !== 'all') {
+            $sortirQuery->where('sortir_transaction.branch_id', $branch);
+        }
+        $sortirHistory = $sortirQuery->get();
+
+        $formattedPos = $posHistory->map(function ($detail) {
+            $txDate = \Carbon\Carbon::parse($detail->tx_date);
+            $diskon_global = $detail->diskon_global ?? 0;
+            $unit = $detail->unit ? $detail->unit : 'pcs';
+            $qty_formatted = round($detail->quantity, 2) . ' ' . $unit;
+            
+            $harga_satuan = $detail->price;
+            $penjualan_kotor = $harga_satuan * $detail->quantity;
+            $pendapatan_bersih = $detail->subtotal - $diskon_global;
+            $hpp_satuan = $detail->hpp ?? 0;
+            $total_hpp = $hpp_satuan * $detail->quantity;
+            $laba_kotor = $pendapatan_bersih - $total_hpp;
+
+            return [
+                'type' => 'pos',
+                'invoice' => $detail->invoice,
+                'tx_date_raw' => $detail->tx_date,
+                'date_formatted' => $txDate->locale('id')->isoFormat('dddd, D MMMM Y'),
+                'time_formatted' => 'Jam ' . $txDate->format('H:i') . ' WIB',
+                'branch_name' => $detail->branch_name,
+                'qty' => $qty_formatted,
+                'harga_satuan' => 'Rp ' . number_format($harga_satuan, 0, ',', '.'),
+                'penjualan_kotor' => 'Rp ' . number_format($penjualan_kotor, 0, ',', '.'),
+                'pendapatan_bersih' => 'Rp ' . number_format($pendapatan_bersih, 0, ',', '.'),
+                'hpp_satuan' => 'Rp ' . number_format($hpp_satuan, 0, ',', '.'),
+                'total_hpp' => '- Rp ' . number_format($total_hpp, 0, ',', '.'),
+                'laba_kotor' => 'Rp ' . number_format($laba_kotor, 0, ',', '.'),
+                'product_name' => $detail->product_name
+            ];
+        });
+
+        $formattedSortir = $sortirHistory->map(function ($detail) {
+            $txDate = \Carbon\Carbon::parse($detail->tx_date);
+            $unit = $detail->unit ? $detail->unit : 'pcs';
+            $qty_formatted = round($detail->quantity, 2) . ' ' . $unit;
+            
+            $hpp_satuan = $detail->price ?? 0;
+            $total_hpp = $detail->subtotal ?? 0;
+
+            return [
+                'type' => 'sortir',
+                'invoice' => $detail->invoice ?? '-',
+                'tx_date_raw' => $detail->tx_date,
+                'date_formatted' => $txDate->locale('id')->isoFormat('dddd, D MMMM Y'),
+                'time_formatted' => 'Jam ' . $txDate->format('H:i') . ' WIB',
+                'branch_name' => $detail->branch_name ?? '-',
+                'qty' => $qty_formatted,
+                'hpp_satuan' => 'Rp ' . number_format($hpp_satuan, 0, ',', '.'),
+                'total_hpp' => '- Rp ' . number_format($total_hpp, 0, ',', '.'),
+                'product_name' => $detail->product_name
+            ];
+        });
+
+        $combined = $formattedPos->concat($formattedSortir)->sortByDesc('tx_date_raw')->values();
+
+        return response()->json([
+            'status' => 'success',
+            'product_name' => $combined->first() ? $combined->first()['product_name'] : '',
+            'data' => $combined
+        ]);
+    }
+
     public function get_profit_revenue_history(Request $request)
     {
         $startDate = $request->start_date;
@@ -1090,3 +1314,4 @@ class ReportController extends Controller
         ]);
     }
 }
+
