@@ -84,6 +84,16 @@ class ReportController extends Controller
         $data['defaultDate'] = date('Y-m-d');
         return view('report::product-sales', $data);
     }
+    public function profit_revenue(Request $request)
+    {
+        if ($denied = $this->requireAccess('report.profit.revenue')) {
+            return $denied;
+        }
+
+        $data['branches']    = Branch::all();
+        $data['defaultDate'] = date('Y-m-d');
+        return view('report::profit-revenue', $data);
+    }
     public function shipping_cost(Request $request)
     {
         if ($denied = $this->requireAccess('report.shipping.cost')) {
@@ -492,6 +502,78 @@ class ReportController extends Controller
             ->make(true);
     }
 
+    public function get_data_profit_revenue(Request $request)
+    {
+        $startDate = $request->filled('start_date') ? $request->start_date : date('Y-m-d');
+        $endDate   = $request->filled('end_date') ? $request->end_date : date('Y-m-d');
+
+        $data = \Modules\Pos\Entities\PosDetailModel::select(
+            'pos_transaction_detail.product_id',
+            'products.name',
+            'product_units.abbreviation as unit',
+            DB::raw('SUM(pos_transaction_detail.quantity) AS quantity'),
+            DB::raw('SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) AS total_pendapatan'),
+            DB::raw('SUM(COALESCE(pos_transaction_detail.subtotal_hpp, 0)) AS total_hpp'),
+            DB::raw('SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) - SUM(COALESCE(pos_transaction_detail.subtotal_hpp, 0)) AS laba_kotor')
+        )
+            ->join('products', 'pos_transaction_detail.product_id', '=', 'products.id')
+            ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
+            ->join('pos_transaction', 'pos_transaction_detail.pos_id', '=', 'pos_transaction.id')
+            ->whereBetween('pos_transaction.date', [$startDate, $endDate])
+            ->whereNull('pos_transaction_detail.deleted_at')
+            ->whereNull('pos_transaction.deleted_at')
+            ->where('pos_transaction.status', '!=', 'draft');
+
+        if ($request->has('branch_id') && $request->branch_id != 'all') {
+            $data = $data->where('pos_transaction.branch_id', $request->branch_id);
+        }
+
+        $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
+        if ($searchValue !== '') {
+            $data->where('products.name', 'like', '%' . $searchValue . '%');
+        }
+
+        $data = $data->groupBy('pos_transaction_detail.product_id', 'products.name', 'product_units.abbreviation')
+            ->orderByDesc('laba_kotor');
+
+        $response = DataTables::of($data);
+
+        if ($request->input('start') == 0) {
+            $grandTotalQuery = clone $data;
+            
+            $subQuery = DB::table(DB::raw("({$grandTotalQuery->toSql()}) as sub"))
+                ->mergeBindings($grandTotalQuery->getQuery());
+                
+            $grandTotalPendapatan = $subQuery->sum('total_pendapatan');
+            $grandTotalHpp = $subQuery->sum('total_hpp');
+            $grandTotalLaba = $subQuery->sum('laba_kotor');
+            
+            $labaPercentage = $grandTotalPendapatan > 0 ? ($grandTotalLaba / $grandTotalPendapatan) * 100 : 0;
+
+            $response->with([
+                'grand_total_pendapatan' => 'Rp ' . number_format($grandTotalPendapatan, 0, ',', '.'),
+                'grand_total_hpp' => '- Rp ' . number_format($grandTotalHpp, 0, ',', '.'),
+                'grand_total_laba' => 'Rp ' . number_format($grandTotalLaba, 0, ',', '.'),
+                'laba_percentage' => number_format($labaPercentage, 1, ',', '.') . '%',
+            ]);
+        }
+
+        return $response
+            ->editColumn('qty_formatted', function ($row) {
+                return fmod($row->quantity, 1) == 0 ? number_format($row->quantity, 0, ',', '.') : number_format($row->quantity, 2, ',', '.');
+            })
+            ->editColumn('pendapatan_formatted', function ($row) {
+                return 'Rp ' . number_format($row->total_pendapatan, 0, ',', '.');
+            })
+            ->editColumn('hpp_formatted', function ($row) {
+                return 'Rp ' . number_format($row->total_hpp, 0, ',', '.');
+            })
+            ->editColumn('laba_formatted', function ($row) {
+                return 'Rp ' . number_format($row->laba_kotor, 0, ',', '.');
+            })
+            ->make(true);
+    }
+
     public function get_data_shipping_cost(Request $request)
     {
         $startDate = $request->filled('start_date') ? $request->start_date : date('Y-m-d');
@@ -860,6 +942,81 @@ class ReportController extends Controller
                 'pos_id' => $detail->pos_id,
                 'pos_date' => $detail->pos_date,
                 'tx_date' => $detail->tx_date,
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'product_name' => $history->first() ? $history->first()->product_name : '',
+            'data' => $formattedData
+        ]);
+    }
+
+    public function get_profit_revenue_history(Request $request)
+    {
+        $startDate = $request->start_date;
+        $endDate   = $request->end_date;
+        $branch    = $request->branch ?: 'all';
+        $productId = $request->product_id;
+
+        $query = \Modules\Pos\Entities\PosDetailModel::select(
+            'pos_transaction_detail.*',
+            'pos_transaction.id as pos_id',
+            'pos_transaction.invoice_number as invoice',
+            'pos_transaction.created_at as tx_date',
+            'pos_transaction.date as pos_date',
+            'branch.name as branch_name',
+            'products.name as product_name',
+            'product_units.abbreviation as unit'
+        )
+            ->join('pos_transaction', 'pos_transaction_detail.pos_id', '=', 'pos_transaction.id')
+            ->join('branch', 'pos_transaction.branch_id', '=', 'branch.id')
+            ->join('products', 'pos_transaction_detail.product_id', '=', 'products.id')
+            ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
+            ->where('pos_transaction_detail.product_id', $productId)
+            ->whereNull('pos_transaction_detail.deleted_at')
+            ->whereNull('pos_transaction.deleted_at');
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('pos_transaction.date', [$startDate, $endDate]);
+        }
+
+        if ($branch !== 'all') {
+            $query->where('pos_transaction.branch_id', $branch);
+        }
+
+        $history = $query->orderBy('pos_transaction.created_at', 'desc')->get();
+
+        $formattedData = $history->map(function ($detail) {
+            $txDate = \Carbon\Carbon::parse($detail->tx_date);
+            $diskon_global = $detail->diskon_global ?? 0;
+            
+            $unit = $detail->unit ? $detail->unit : 'pcs';
+            $qty_formatted = round($detail->quantity, 2) . ' ' . $unit;
+
+            $harga_satuan = $detail->price;
+            $penjualan_kotor = $harga_satuan * $detail->quantity;
+            
+            // Pendapatan bersih = subtotal (price*qty - diskon item) - diskon global
+            $pendapatan_bersih = $detail->subtotal - $diskon_global;
+            
+            $hpp_satuan = $detail->hpp ?? 0;
+            $total_hpp = $hpp_satuan * $detail->quantity;
+            
+            $laba_kotor = $pendapatan_bersih - $total_hpp;
+
+            return [
+                'invoice' => $detail->invoice,
+                'date_formatted' => $txDate->locale('id')->isoFormat('dddd, D MMMM Y'),
+                'time_formatted' => 'Jam ' . $txDate->format('H:i') . ' WIB',
+                'branch_name' => $detail->branch_name,
+                'qty' => $qty_formatted,
+                'harga_satuan' => 'Rp ' . number_format($harga_satuan, 0, ',', '.'),
+                'penjualan_kotor' => 'Rp ' . number_format($penjualan_kotor, 0, ',', '.'),
+                'pendapatan_bersih' => 'Rp ' . number_format($pendapatan_bersih, 0, ',', '.'),
+                'hpp_satuan' => 'Rp ' . number_format($hpp_satuan, 0, ',', '.'),
+                'total_hpp' => '- Rp ' . number_format($total_hpp, 0, ',', '.'),
+                'laba_kotor' => 'Rp ' . number_format($laba_kotor, 0, ',', '.'),
             ];
         });
 

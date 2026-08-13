@@ -1076,6 +1076,23 @@
         <!--end:Menu link-->
     </div>
 @endif
+@if (check_access('report.profit.revenue'))
+    <div class="menu-item">
+        <!--begin:Menu link-->
+        <a class="menu-link {{ Request::segment(1) == 'report-profit-revenue' ? 'active' : '' }}"
+            href="{{ url('report-profit-revenue') }}">
+            <span class="menu-icon">
+                <i class="ki-duotone ki-chart-pie-4 fs-2">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                    <span class="path3"></span>
+                </i>
+            </span>
+            <span class="menu-title">Laporan Keuntungan Pendapatan</span>
+        </a>
+        <!--end:Menu link-->
+    </div>
+@endif
 @if (check_access('report.shipping.cost'))
     <div class="menu-item">
         <!--begin:Menu link-->
