@@ -149,42 +149,7 @@
         <div class="d-flex align-items-center mt-3 mb-2 w-100 gap-2">
             <div class="position-relative flex-grow-1">
                 <i class="ki-outline ki-magnifier fs-5 position-absolute ms-3 top-50 translate-middle-y text-gray-400"></i>
-                <input type="text" class="form-control form-control-solid rounded-pill ps-10" id="search-history" placeholder="Cari transaksi..." style="background-color: #f9f9f9; border: 1px solid #f0f0f0; height: 42px; font-size: 12px;">
-            </div>
-            
-            <div class="dropdown" id="history-filter-dropdown-container">
-                <button class="btn btn-icon btn-light rounded-circle border border-gray-200 shadow-sm flex-shrink-0" type="button" id="historyFilterBtn" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style="width: 42px; height: 42px; background-color: white;">
-                    <div class="position-relative d-flex align-items-center justify-content-center" id="historyFilterIconContainer">
-                        <i class="ki-outline ki-filter fs-4 text-gray-600" id="historyFilterIcon"></i>
-                        <span class="position-absolute bg-warning rounded-circle border border-white d-none" id="historyFilterIndicator" style="width: 8px; height: 8px; top: -2px; right: -2px;"></span>
-                    </div>
-                </button>
-                
-                <div class="dropdown-menu dropdown-menu-end p-4 border-gray-100 shadow-lg" aria-labelledby="historyFilterBtn" style="width: 260px; border-radius: 1rem; margin-top: 10px !important;">
-                    <!-- TIPE PEMBAYARAN -->
-                    <div class="mb-4">
-                        <label class="form-label text-muted fw-bold text-uppercase mb-2" style="font-size: 10px; letter-spacing: 0.05em;">Tipe Pembayaran</label>
-                        <select class="form-select form-select-sm form-select-solid" id="historyPaymentFilter" style="border-radius: 8px; font-size: 12px;">
-                            <option value="Semua Metode">Semua Metode</option>
-                            <option value="Tunai">Tunai</option>
-                            <option value="QRIS">QRIS</option>
-                            <option value="Transfer">Transfer</option>
-                            <option value="Split">Split (Tunai & QRIS)</option>
-                        </select>
-                    </div>
-                    
-                    <!-- TANGGAL -->
-                    <div class="mb-4">
-                        <label class="form-label text-muted fw-bold text-uppercase mb-2" style="font-size: 10px; letter-spacing: 0.05em;">Tanggal</label>
-                        <input type="text" class="form-control form-control-sm form-control-solid" id="historyDateFilter" placeholder="Pilih Tanggal" style="border-radius: 8px; font-size: 12px; cursor: pointer; background-color: #fff; border: 1px solid #e4e6ef;" readonly>
-                    </div>
-                    
-                    <!-- ACTION BUTTONS -->
-                    <div class="d-flex gap-2 pt-3 border-top border-gray-100">
-                        <button class="btn btn-sm btn-light-primary flex-grow-1 fw-bold border border-gray-200" id="historyBtnHariIni" style="font-size: 11px; background-color: white; color: #4b5563;">Hari Ini</button>
-                        <button class="btn btn-sm flex-grow-1 fw-bold" id="historyBtnReset" style="font-size: 11px; background-color: #fef2f2; color: #ef4444;">Reset Semua</button>
-                    </div>
-                </div>
+                <input type="text" class="form-control form-control-solid rounded-pill ps-10" id="search-history" placeholder="Cari tanggal..." style="background-color: #f9f9f9; border: 1px solid #f0f0f0; height: 42px; font-size: 12px;">
             </div>
         </div>
     </div>
@@ -381,12 +346,8 @@
                     endDate = splitted.length > 1 ? splitted[1] : splitted[0];
                 }
 
-                // Reset drawer filter state
-                $('#historyPaymentFilter').val('Semua Metode');
-                if (window.historyDateFlatpickr) {
-                    window.historyDateFlatpickr.clear();
-                }
-                updateHistoryFilterUI();
+                // Clear search input
+                $('#search-history').val('');
 
                 $.ajax({
                     url: "{{ route('report-profit-adjusted.history') }}",
@@ -401,100 +362,32 @@
                         if (res.data && res.data.length > 0) {
                             let html = '';
                             res.data.forEach(item => {
-                                const dataDate = item.pos_date ? item.pos_date : (item.tx_date ? item.tx_date.substring(0, 10) : '');
-                                if (item.type === 'sortir') {
-                                    html += `
-                                    <div class="card mb-4" style="border: 1px solid #f0f0f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); border-radius: 8px;">
-                                        <div class="card-body p-4 p-md-5">
-                                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                                <div>
-                                                    <div class="text-gray-400 fw-bold" style="font-size: 10px; letter-spacing: 0.1em;">NO. NOTA (SORTIR)</div>
-                                                    <div class="text-gray-900 fw-bolder fs-5" style="letter-spacing: 0.5px;">${item.invoice}</div>
-                                                </div>
-                                                <div class="text-end">
-                                                    <div class="text-gray-900 fw-bolder" style="font-size: 13px;">${item.date_formatted}</div>
-                                                    <div class="text-gray-500" style="font-size: 11px;">${item.time_formatted}</div>
-                                                </div>
+                                html += `
+                                <div class="card mb-4" style="border: 1px solid #f0f0f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); border-radius: 8px;">
+                                    <div class="card-body p-4 p-md-5">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div>
+                                                <div class="text-gray-400 fw-bold" style="font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;">TANGGAL</div>
+                                                <div class="text-gray-900 fw-bolder fs-5" style="letter-spacing: 0.5px;">${item.date_formatted}</div>
                                             </div>
-                                            
-                                            <div style="border-top: 2px dashed #f0f0f0; margin: 12px 0;"></div>
-                                            
-                                            <div class="fw-bolder text-gray-800 mb-4" style="font-size: 13px;">${item.branch_name}</div>
-                                            
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="text-gray-500" style="font-size: 12px;">Jumlah Disortir</span>
-                                                <span class="text-gray-800 fw-bolder" style="font-size: 12px;">${item.qty}</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="text-gray-500" style="font-size: 12px;">HPP Satuan</span>
-                                                <span class="text-gray-800 fw-medium" style="font-size: 12px;">${item.hpp_satuan}</span>
-                                            </div>
-                                            
-                                            <div style="border-top: 1px solid #f0f0f0; margin: 12px 0;"></div>
-                                            
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="text-gray-500 fw-bold" style="font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase;">Koreksi Stock</span>
-                                                <span class="fs-4 fw-bolder text-danger">${item.total_hpp}</span>
+                                            <div class="text-end">
+                                                <div class="fw-bolder" style="font-size: 16px; color: #047857;">${item.laba_disesuaikan}</div>
+                                                <div class="text-gray-400 fw-medium" style="font-size: 11px;">Laba Disesuaikan</div>
                                             </div>
                                         </div>
-                                    </div>`;
-                                } else {
-                                    html += `
-                                    <div class="card mb-4" style="border: 1px solid #f0f0f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); border-radius: 8px;">
-                                        <div class="card-body p-4 p-md-5">
-                                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                                <div>
-                                                    <div class="text-gray-400 fw-bold" style="font-size: 10px; letter-spacing: 0.1em;">NO. NOTA</div>
-                                                    <div class="text-gray-900 fw-bolder fs-5" style="letter-spacing: 0.5px;">${item.invoice}</div>
-                                                </div>
-                                                <div class="text-end">
-                                                    <div class="text-gray-900 fw-bolder" style="font-size: 13px;">${item.date_formatted}</div>
-                                                    <div class="text-gray-500" style="font-size: 11px;">${item.time_formatted}</div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div style="border-top: 2px dashed #f0f0f0; margin: 12px 0;"></div>
-                                            
-                                            <div class="fw-bolder text-gray-800 mb-4" style="font-size: 13px;">${item.branch_name}</div>
-                                            
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="text-gray-500" style="font-size: 12px;">Jumlah Terjual</span>
-                                                <span class="text-gray-800 fw-bolder" style="font-size: 12px;">${item.qty}</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="text-gray-500" style="font-size: 12px;">Harga Jual Satuan</span>
-                                                <span class="text-gray-800 fw-bolder" style="font-size: 12px;">${item.harga_satuan}</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <span class="text-gray-500" style="font-size: 12px;">Penjualan Kotor</span>
-                                                <span class="text-gray-800 fw-bolder" style="font-size: 12px;">${item.penjualan_kotor}</span>
-                                            </div>
-                                            
-                                            <div style="border-top: 1px solid #f0f0f0; margin: 12px 0;"></div>
-                                            
-                                            <div class="d-flex justify-content-between align-items-center my-3">
-                                                <span class="text-gray-800 fw-bolder" style="font-size: 13px;">Pendapatan Bersih</span>
-                                                <span class="text-gray-800 fw-bolder" style="font-size: 13px;">${item.pendapatan_bersih}</span>
-                                            </div>
-                                            
-                                            <div style="border-top: 2px dashed #f0f0f0; margin: 12px 0;"></div>
-                                            
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="text-gray-500" style="font-size: 12px;">HPP Satuan</span>
-                                                <span class="text-gray-800 fw-medium" style="font-size: 12px;">${item.hpp_satuan}</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <span class="text-gray-500" style="font-size: 12px;">Total HPP</span>
-                                                <span class="text-danger fw-medium" style="font-size: 12px;">${item.total_hpp}</span>
-                                            </div>
-                                            
-                                            <div class="d-flex justify-content-between align-items-center p-3 mt-4" style="background-color: #f9fafb; border-radius: 6px;">
-                                                <span class="text-gray-700 fw-bold" style="font-size: 12px;">TOTAL LABA KOTOR</span>
-                                                <span class="fs-4 fw-bolder text-gray-900">${item.laba_kotor}</span>
-                                            </div>
+                                        
+                                        <div style="border-top: 2px dashed #f0f0f0; margin: 16px 0;"></div>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-gray-600 fw-medium" style="font-size: 13px;">Laba Kotor</span>
+                                            <span class="text-gray-900 fw-bolder" style="font-size: 13px;">${item.laba_kotor}</span>
                                         </div>
-                                    </div>`;
-                                }
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-gray-600 fw-medium" style="font-size: 13px;">Koreksi Stok</span>
+                                            <span class="text-danger fw-bolder" style="font-size: 13px;">${item.koreksi_stock}</span>
+                                        </div>
+                                    </div>
+                                </div>`;
                             });
                             $('#history-list').html(html);
                         } else {
@@ -512,76 +405,18 @@
                 applyHistoryFilter();
             });
 
-            // Initialize History Drawer Datepicker
-            window.historyDateFlatpickr = flatpickr("#historyDateFilter", {
-                dateFormat: "Y-m-d",
-                onChange: function(selectedDates, dateStr, instance) {
-                    updateHistoryFilterUI();
-                    applyHistoryFilter();
-                }
-            });
-
-            $('#historyPaymentFilter').on('change', function() {
-                updateHistoryFilterUI();
-                applyHistoryFilter();
-            });
-
-            $('#historyBtnHariIni').on('click', function() {
-                window.historyDateFlatpickr.setDate(new Date());
-                updateHistoryFilterUI();
-                applyHistoryFilter();
-            });
-
-            $('#historyBtnReset').on('click', function() {
-                window.historyDateFlatpickr.clear();
-                $('#historyPaymentFilter').val('Semua Metode');
-                updateHistoryFilterUI();
-                applyHistoryFilter();
-            });
-
-            function updateHistoryFilterUI() {
-                const dateStr = $('#historyDateFilter').val();
-                const payment = $('#historyPaymentFilter').val();
-                
-                if (dateStr || payment !== 'Semua Metode') {
-                    $('#historyFilterIndicator').removeClass('d-none');
-                    $('#historyFilterBtn').addClass('border-success').removeClass('border-gray-200');
-                    $('#historyFilterIcon').addClass('text-success').removeClass('text-gray-600');
-                } else {
-                    $('#historyFilterIndicator').addClass('d-none');
-                    $('#historyFilterBtn').removeClass('border-success').addClass('border-gray-200');
-                    $('#historyFilterIcon').removeClass('text-success').addClass('text-gray-600');
-                }
-            }
-
             function applyHistoryFilter() {
                 const term = $('#search-history').val().toLowerCase();
-                const dateFilter = $('#historyDateFilter').val();
-                let paymentFilter = $('#historyPaymentFilter').val();
                 
                 let hasVisible = false;
                 
-                $('#history-list > .history-item-card').each(function() {
-                    const cardDate = $(this).attr('data-date');
-                    const cardPayment = $(this).attr('data-payment');
+                $('#history-list > .card').each(function() {
                     const content = $(this).text().toLowerCase();
                     
                     let match = true;
                     
                     if (term && !content.includes(term)) {
                         match = false;
-                    }
-                    
-                    if (dateFilter && cardDate !== dateFilter) {
-                        match = false;
-                    }
-                    
-                    if (paymentFilter !== 'Semua Metode') {
-                        if (paymentFilter === 'Split') {
-                            if (!cardPayment.includes('Split')) match = false;
-                        } else if (paymentFilter !== cardPayment) {
-                            match = false;
-                        }
                     }
                     
                     if (match) {
@@ -592,8 +427,10 @@
                     }
                 });
                 
-                if (!hasVisible && $('#history-list').children('.history-item-card').length > 0) {
-                    // show empty state if needed
+                if (hasVisible || $('#history-list > .card').length === 0) {
+                    $('#history-empty').addClass('d-none');
+                } else {
+                    $('#history-empty').removeClass('d-none');
                 }
             }
 
