@@ -552,7 +552,7 @@ class ReportController extends Controller
             $grandTotalQuery = clone $data;
             
             $subQuery = DB::table(DB::raw("({$grandTotalQuery->toSql()}) as sub"))
-                ->mergeBindings($grandTotalQuery);
+                ->mergeBindings($grandTotalQuery->getQuery());
                 
             $grandTotalPendapatan = $subQuery->sum('total_pendapatan');
             $grandTotalHpp = $subQuery->sum('total_hpp');
