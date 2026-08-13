@@ -1071,7 +1071,7 @@
                     <span class="path2"></span>
                 </i>
             </span>
-            <span class="menu-title">Laporan Penjualan</span>
+            <span class="menu-title">Pendapatan Penjualan</span>
         </a>
         <!--end:Menu link-->
     </div>
@@ -1088,7 +1088,7 @@
                     <span class="path3"></span>
                 </i>
             </span>
-            <span class="menu-title">Laporan Keuntungan Pendapatan</span>
+            <span class="menu-title">Keuntungan Pendapatan</span>
         </a>
         <!--end:Menu link-->
     </div>
@@ -1105,7 +1105,7 @@
                     <span class="path3"></span>
                 </i>
             </span>
-            <span class="menu-title">Laporan Keuntungan Setelah Penyesuaian</span>
+            <span class="menu-title">Keuntungan Setelah Penyesuaian</span>
         </a>
         <!--end:Menu link-->
     </div>
@@ -1121,7 +1121,7 @@
                     <span class="path2"></span>
                 </i>
             </span>
-            <span class="menu-title">Laporan Ongkos Kirim</span>
+            <span class="menu-title">Ongkos Kirim</span>
         </a>
         <!--end:Menu link-->
     </div>
@@ -1137,7 +1137,7 @@
                     <span class="path2"></span>
                 </i>
             </span>
-            <span class="menu-title">Produk Buang</span>
+            <span class="menu-title">Kerugian Barang Buang</span>
         </a>
         <!--end:Menu link-->
     </div>
