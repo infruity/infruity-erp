@@ -970,10 +970,11 @@ class ReportController extends Controller
 
         $posQuery = DB::table('pos_transaction_detail')
             ->select(
-                'pos_transaction_detail.product_id',
+                DB::raw('COALESCE(product_child.parent_id, pos_transaction_detail.product_id) as product_id'),
                 DB::raw('SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) - SUM(COALESCE(pos_transaction_detail.subtotal_hpp, 0)) AS laba_kotor')
             )
             ->join('pos_transaction', 'pos_transaction_detail.pos_id', '=', 'pos_transaction.id')
+            ->leftJoin('product_child', 'pos_transaction_detail.product_id', '=', 'product_child.product_id')
             ->whereBetween('pos_transaction.date', [$startDate, $endDate])
             ->whereNull('pos_transaction_detail.deleted_at')
             ->whereNull('pos_transaction.deleted_at')
@@ -982,31 +983,33 @@ class ReportController extends Controller
         if ($branchId != 'all') {
             $posQuery->where('pos_transaction.branch_id', $branchId);
         }
-        $posQuery->groupBy('pos_transaction_detail.product_id');
+        $posQuery->groupBy(DB::raw('COALESCE(product_child.parent_id, pos_transaction_detail.product_id)'));
 
         $sortirQuery = DB::table('sortir_transaction_detail')
             ->select(
-                'sortir_transaction_detail.product_id',
+                DB::raw('COALESCE(product_child.parent_id, sortir_transaction_detail.product_id) as product_id'),
                 DB::raw('SUM(sortir_transaction_detail.subtotal) AS koreksi_stock')
             )
             ->join('sortir_transaction', 'sortir_transaction_detail.sortir_id', '=', 'sortir_transaction.id')
+            ->leftJoin('product_child', 'sortir_transaction_detail.product_id', '=', 'product_child.product_id')
             ->whereBetween('sortir_transaction.date', [$startDate, $endDate]);
 
         if ($branchId != 'all') {
             $sortirQuery->where('sortir_transaction.branch_id', $branchId);
         }
-        $sortirQuery->groupBy('sortir_transaction_detail.product_id');
+        $sortirQuery->groupBy(DB::raw('COALESCE(product_child.parent_id, sortir_transaction_detail.product_id)'));
 
         $opnameQuery = \Modules\Transaction\Entities\StockOpname::select(
-                'stock_opname.product_id',
+                DB::raw('COALESCE(product_child.parent_id, stock_opname.product_id) as product_id'),
                 DB::raw('SUM(stock_opname.difference * COALESCE(stock_opname.hpp, stock_opname.avg_price, 0)) AS opname_value')
             )
+            ->leftJoin('product_child', 'stock_opname.product_id', '=', 'product_child.product_id')
             ->whereBetween('stock_opname.date', [$startDate, $endDate]);
         
         if ($branchId != 'all') {
             $opnameQuery->where('stock_opname.branch_id', $branchId);
         }
-        $opnameQuery->groupBy('stock_opname.product_id');
+        $opnameQuery->groupBy(DB::raw('COALESCE(product_child.parent_id, stock_opname.product_id)'));
 
         $data = DB::table('products')
             ->select(
@@ -1018,6 +1021,7 @@ class ReportController extends Controller
                 DB::raw('COALESCE(pos.laba_kotor, 0) - (COALESCE(srt.koreksi_stock, 0) - COALESCE(opn.opname_value, 0)) AS laba_disesuaikan')
             )
             ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
+            ->leftJoin('product_child', 'products.id', '=', 'product_child.product_id')
             ->leftJoinSub($posQuery, 'pos', function ($join) {
                 $join->on('products.id', '=', 'pos.product_id');
             })
@@ -1027,6 +1031,7 @@ class ReportController extends Controller
             ->leftJoinSub($opnameQuery, 'opn', function ($join) {
                 $join->on('products.id', '=', 'opn.product_id');
             })
+            ->whereNull('product_child.product_id') // Exclude products that are children
             ->where(function ($q) {
                 $q->whereNotNull('pos.product_id')->orWhereNotNull('srt.product_id')->orWhereNotNull('opn.product_id');
             });
@@ -1083,14 +1088,19 @@ class ReportController extends Controller
         $branch    = $request->branch ?: 'all';
         $productId = $request->product_id;
 
+        $productIds = \DB::table('product_child')->where('parent_id', $productId)->pluck('product_id')->toArray();
+        $productIds[] = $productId;
+        $parentProductName = \DB::table('products')->where('id', $productId)->value('name');
+
         $posQuery = \Modules\Pos\Entities\PosDetailModel::select(
-            'pos_transaction.date as tx_date',
-            \DB::raw('SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) - SUM(COALESCE(pos_transaction_detail.subtotal_hpp, 0)) AS laba_kotor'),
-            'products.name as product_name'
+            'pos_transaction.created_at as tx_date',
+            'pos_transaction.invoice_number as invoice',
+            \DB::raw('(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) - COALESCE(pos_transaction_detail.subtotal_hpp, 0) AS laba_kotor'),
+            \DB::raw('0 AS koreksi_stock'),
+            \DB::raw('"Penjualan" as type')
         )
             ->join('pos_transaction', 'pos_transaction_detail.pos_id', '=', 'pos_transaction.id')
-            ->join('products', 'pos_transaction_detail.product_id', '=', 'products.id')
-            ->where('pos_transaction_detail.product_id', $productId)
+            ->whereIn('pos_transaction_detail.product_id', $productIds)
             ->whereNull('pos_transaction_detail.deleted_at')
             ->whereNull('pos_transaction.deleted_at')
             ->where('pos_transaction.status', '!=', 'draft');
@@ -1101,16 +1111,17 @@ class ReportController extends Controller
         if ($branch !== 'all') {
             $posQuery->where('pos_transaction.branch_id', $branch);
         }
-        $posHistory = $posQuery->groupBy('pos_transaction.date', 'products.name')->get();
+        $posHistory = $posQuery->get();
 
         $sortirQuery = \Modules\Transaction\Entities\SortirDetail::select(
-            'sortir_transaction.date as tx_date',
-            \DB::raw('SUM(sortir_transaction_detail.subtotal) AS koreksi_stock'),
-            'products.name as product_name'
+            'sortir_transaction.created_at as tx_date',
+            'sortir_transaction.invoice_number as invoice',
+            \DB::raw('0 AS laba_kotor'),
+            \DB::raw('sortir_transaction_detail.subtotal AS koreksi_stock'),
+            \DB::raw('"Sortir Barang Buang" as type')
         )
             ->join('sortir_transaction', 'sortir_transaction_detail.sortir_id', '=', 'sortir_transaction.id')
-            ->join('products', 'sortir_transaction_detail.product_id', '=', 'products.id')
-            ->where('sortir_transaction_detail.product_id', $productId);
+            ->whereIn('sortir_transaction_detail.product_id', $productIds);
 
         if ($startDate && $endDate) {
             $sortirQuery->whereBetween('sortir_transaction.date', [$startDate, $endDate]);
@@ -1118,15 +1129,16 @@ class ReportController extends Controller
         if ($branch !== 'all') {
             $sortirQuery->where('sortir_transaction.branch_id', $branch);
         }
-        $sortirHistory = $sortirQuery->groupBy('sortir_transaction.date', 'products.name')->get();
+        $sortirHistory = $sortirQuery->get();
 
         $opnameQuery = \Modules\Transaction\Entities\StockOpname::select(
-            'stock_opname.date as tx_date',
-            \DB::raw('SUM(stock_opname.difference * COALESCE(stock_opname.hpp, stock_opname.avg_price, 0)) AS opname_value'),
-            'products.name as product_name'
+            'stock_opname.created_at as tx_date',
+            'stock_opname.code as invoice',
+            \DB::raw('0 AS laba_kotor'),
+            \DB::raw('-(stock_opname.difference * COALESCE(stock_opname.hpp, stock_opname.avg_price, 0)) AS koreksi_stock'),
+            \DB::raw('"Stock Opname" as type')
         )
-            ->join('products', 'stock_opname.product_id', '=', 'products.id')
-            ->where('stock_opname.product_id', $productId);
+            ->whereIn('stock_opname.product_id', $productIds);
 
         if ($startDate && $endDate) {
             $opnameQuery->whereBetween('stock_opname.date', [$startDate, $endDate]);
@@ -1134,50 +1146,16 @@ class ReportController extends Controller
         if ($branch !== 'all') {
             $opnameQuery->where('stock_opname.branch_id', $branch);
         }
-        $opnameHistory = $opnameQuery->groupBy('stock_opname.date', 'products.name')->get();
+        $opnameHistory = $opnameQuery->get();
 
-        // Combine by date
-        $combinedDates = [];
-        foreach ($posHistory as $pos) {
-            $combinedDates[$pos->tx_date] = [
-                'tx_date' => $pos->tx_date,
-                'laba_kotor' => (float) $pos->laba_kotor,
-                'koreksi_stock' => 0,
-                'product_name' => $pos->product_name
-            ];
-        }
-
-        foreach ($sortirHistory as $srt) {
-            if (!isset($combinedDates[$srt->tx_date])) {
-                $combinedDates[$srt->tx_date] = [
-                    'tx_date' => $srt->tx_date,
-                    'laba_kotor' => 0,
-                    'koreksi_stock' => (float) $srt->koreksi_stock,
-                    'product_name' => $srt->product_name
-                ];
-            } else {
-                $combinedDates[$srt->tx_date]['koreksi_stock'] += (float) $srt->koreksi_stock;
-            }
-        }
-        
-        foreach ($opnameHistory as $opn) {
-            if (!isset($combinedDates[$opn->tx_date])) {
-                $combinedDates[$opn->tx_date] = [
-                    'tx_date' => $opn->tx_date,
-                    'laba_kotor' => 0,
-                    'koreksi_stock' => -(float) $opn->opname_value,
-                    'product_name' => $opn->product_name
-                ];
-            } else {
-                $combinedDates[$opn->tx_date]['koreksi_stock'] -= (float) $opn->opname_value;
-            }
-        }
+        // Combine all histories
+        $combined = $posHistory->concat($sortirHistory)->concat($opnameHistory)->sortByDesc('tx_date')->values();
 
         // Format for output
-        $formatted = collect(array_values($combinedDates))->map(function($item) {
-            $txDate = \Carbon\Carbon::parse($item['tx_date']);
-            $laba_kotor = $item['laba_kotor'];
-            $koreksi_stock = $item['koreksi_stock'];
+        $formatted = $combined->map(function($item) use ($parentProductName) {
+            $txDate = \Carbon\Carbon::parse($item->tx_date);
+            $laba_kotor = $item->laba_kotor;
+            $koreksi_stock = $item->koreksi_stock;
             $laba_disesuaikan = $laba_kotor - $koreksi_stock;
 
             $koreksi_stock_formatted = 'Rp 0';
@@ -1188,15 +1166,17 @@ class ReportController extends Controller
             }
 
             return [
-                'tx_date_raw' => $item['tx_date'],
-                'date_formatted' => $txDate->locale('id')->isoFormat('dddd, D MMMM Y'),
+                'tx_date_raw' => $item->tx_date,
+                'date_formatted' => $txDate->locale('id')->isoFormat('dddd, D MMMM Y HH:mm'),
+                'type' => $item->type,
+                'invoice' => $item->invoice,
                 'laba_kotor' => 'Rp ' . number_format($laba_kotor, 0, ',', '.'),
                 'koreksi_stock' => $koreksi_stock_formatted,
                 'koreksi_stock_raw' => $koreksi_stock,
                 'laba_disesuaikan' => 'Rp ' . number_format($laba_disesuaikan, 0, ',', '.'),
-                'product_name' => $item['product_name']
+                'product_name' => $parentProductName
             ];
-        })->sortByDesc('tx_date_raw')->values();
+        });
 
         return response()->json([
             'status' => 'success',

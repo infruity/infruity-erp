@@ -367,8 +367,9 @@
                                     <div class="card-body p-4 p-md-5">
                                         <div class="d-flex justify-content-between align-items-start mb-3">
                                             <div>
-                                                <div class="text-gray-400 fw-bold" style="font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;">TANGGAL</div>
-                                                <div class="text-gray-900 fw-bolder fs-5" style="letter-spacing: 0.5px;">${item.date_formatted}</div>
+                                                <div class="text-gray-400 fw-bold" style="font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;">${item.type}</div>
+                                                <div class="text-gray-900 fw-bolder fs-5" style="letter-spacing: 0.5px;">${item.invoice}</div>
+                                                <div class="text-gray-500 fs-7 mt-1">${item.date_formatted}</div>
                                             </div>
                                             <div class="text-end">
                                                 <div class="fw-bolder" style="font-size: 16px; color: #047857;">${item.laba_disesuaikan}</div>
