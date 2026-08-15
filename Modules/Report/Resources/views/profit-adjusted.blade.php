@@ -379,14 +379,17 @@
                                         
                                         <div style="border-top: 2px dashed #f0f0f0; margin: 16px 0;"></div>
                                         
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                        ${item.type === 'Penjualan' ? `
+                                        <div class="d-flex justify-content-between align-items-center">
                                             <span class="text-gray-600 fw-medium" style="font-size: 13px;">Laba Kotor</span>
                                             <span class="text-gray-900 fw-bolder" style="font-size: 13px;">${item.laba_kotor}</span>
                                         </div>
+                                        ` : `
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="text-gray-600 fw-medium" style="font-size: 13px;">Koreksi Stok</span>
                                             <span class="${item.koreksi_stock_raw < 0 ? 'text-success' : (item.koreksi_stock_raw > 0 ? 'text-danger' : 'text-gray-900')} fw-bolder" style="font-size: 13px;">${item.koreksi_stock}</span>
                                         </div>
+                                        `}
                                     </div>
                                 </div>`;
                             });
