@@ -626,10 +626,18 @@
                 e.preventDefault();
                 let today = new Date();
                 let day = today.getDay(); // 0 is Sunday
-                let diff = today.getDate() - day + (day == 0 ? -6:1); // Adjust when day is Sunday
-                let firstDay = new Date(today.setDate(diff));
+                
+                // Find most recent Saturday (day 6)
+                // If today is Sat (6), diff = 0.
+                // If today is Sun (0), diff = -1. Mon (1), diff = -2, etc.
+                let diff = day === 6 ? 0 : -1 - day;
+                
+                let firstDay = new Date(today);
+                firstDay.setDate(today.getDate() + diff); // Saturday
+                
                 let lastDay = new Date(firstDay);
-                lastDay.setDate(firstDay.getDate() + 6);
+                lastDay.setDate(firstDay.getDate() + 6); // Friday (7 days total)
+                
                 flatpickrInstance.setDate([firstDay, lastDay], true);
             });
 
