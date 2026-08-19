@@ -148,10 +148,8 @@
                     },
                     dataSrc: function(json) {
                         // ✅ Update footer grand total setiap kali data diterima
-                        if (json.grand_total) {
+                        if (json.grand_total !== undefined) {
                             $('#grand-total-cell').html(json.grand_total);
-                        } else {
-                            $('#grand-total-cell').html('Rp. 0');
                         }
 
                         return json.data; // tetap kembalikan data ke datatables
@@ -194,9 +192,14 @@
                 dataTable.ajax.reload();
             });
 
-            // Search manual lewat input
+            // Search manual lewat input dengan debounce
+            let searchTimeout;
             $('#search').on('keyup', function() {
-                dataTable.search(this.value).draw();
+                clearTimeout(searchTimeout);
+                let searchValue = this.value;
+                searchTimeout = setTimeout(function() {
+                    dataTable.search(searchValue).draw();
+                }, 500); // Tunggu 500ms setelah selesai mengetik
             });
 
             $('#branch-filter').on('change', function() {

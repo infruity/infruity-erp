@@ -804,6 +804,11 @@ class ReportController extends Controller
             $query->where('A.branch_id', $request->branch_id);
         }
 
+        $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
+        if ($searchValue !== '') {
+            $query->where('PARENT.name', 'like', '%' . $searchValue . '%');
+        }
+
         $query->groupBy(
             DB::raw('COALESCE(pc.parent_id, A.product_id)'),
             'PARENT.name',
@@ -812,29 +817,16 @@ class ReportController extends Controller
         );
             // ->having('total_stock', '>', 0);
 
-        // GRAND TOTAL HPP (semua baris yang tampil)
-        $grandTotal = DB::table(DB::raw("({$query->toSql()}) as sub"))
-            ->mergeBindings($query)
-            ->sum('total_hpp');
+        $grandTotal = 0;
+        if ($request->input('start') == 0) {
+            $grandTotal = DB::table(DB::raw("({$query->toSql()}) as sub"))
+                ->mergeBindings($query)
+                ->sum('total_hpp');
+        }
 
-        return DataTables::of($query)
-            ->filterColumn('name', function ($query, $keyword) {
-                $query->where('PARENT.name', 'like', '%' . $keyword . '%');
-            })
-            ->filterColumn('abbreviation', function ($query, $keyword) {
-                $query->where('C.abbreviation', 'like', '%' . $keyword . '%');
-            })
-            ->filterColumn('hpp', function ($query, $keyword) {
-                $normalizedKeyword = str_replace(',', '.', $keyword);
-                $query->whereRaw('CAST(PARENT.hpp AS CHAR) LIKE ?', ['%' . $normalizedKeyword . '%']);
-            })
-            ->filterColumn('total_stock', function ($query, $keyword) {
-                $normalizedKeyword = preg_replace('/[^0-9.,-]/', '', $keyword);
-                $query->havingRaw('CAST(SUM(A.quantity) AS CHAR) LIKE ?', ['%' . $normalizedKeyword . '%']);
-            })
-            ->filterColumn('total_hpp', function ($query, $keyword) {
-                $normalizedKeyword = str_replace(',', '.', $keyword);
-                $query->whereRaw('CAST(COALESCE(hpp_last.total_aset_berjalan, 0) AS CHAR) LIKE ?', ['%' . $normalizedKeyword . '%']);
+        $response = DataTables::of($query)
+            ->filter(function ($queryInstance) {
+                // Search is already applied before groupBy
             })
             ->editColumn('total_hpp', function ($row) {
                 return 'Rp' . number_format($row->total_hpp, 0, ',', '.');
@@ -851,11 +843,15 @@ class ReportController extends Controller
                         <i class="fa fa-eye"></i>
                     </a>
                 ';
-            })
-            ->with([
-                'grand_total' => number_format($grandTotal, 0, ',', '.'),
-            ])
-            ->make(true);
+            });
+
+        if ($request->input('start') == 0) {
+            $response->with([
+                'grand_total' => 'Rp. ' . number_format($grandTotal, 0, ',', '.'),
+            ]);
+        }
+
+        return $response->make(true);
     }
 
     public function get_product_sales_history(Request $request)
