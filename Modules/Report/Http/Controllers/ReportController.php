@@ -1204,7 +1204,8 @@ class ReportController extends Controller
             ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
             ->where('pos_transaction_detail.product_id', $productId)
             ->whereNull('pos_transaction_detail.deleted_at')
-            ->whereNull('pos_transaction.deleted_at');
+            ->whereNull('pos_transaction.deleted_at')
+            ->with(['pos.paymentDetails.paymentMethod']);
 
         if ($startDate && $endDate) {
             $query->whereBetween('pos_transaction.date', [$startDate, $endDate]);
@@ -1217,6 +1218,38 @@ class ReportController extends Controller
         $history = $query->orderBy('pos_transaction.created_at', 'desc')->get();
 
         $formattedData = $history->map(function ($detail) {
+            $paymentMethods = collect();
+            if ($detail->pos && $detail->pos->paymentDetails) {
+                $paymentMethods = $detail->pos->paymentDetails->filter(function($payment) {
+                    return $payment->payment_amount > 0;
+                })->map(function($payment) {
+                    $method = $payment->payment_method;
+                    if (empty($method) || strtolower($method) === 'tunai') {
+                        return 'Tunai';
+                    }
+                    if ($method === 'Split') {
+                        return 'Split';
+                    }
+                    $decoded = json_decode($method, true);
+                    if (is_array($decoded) && count($decoded) > 0) {
+                        return collect($decoded)->implode(', ');
+                    }
+                    return $method;
+                })->filter()->unique()->values();
+            }
+            
+            if ($paymentMethods->isEmpty()) {
+                $paymentMethods->push('Tunai');
+            }
+
+            if ($paymentMethods->count() > 1) {
+                $paymentStr = $paymentMethods->implode(', ');
+            } elseif ($paymentMethods->count() == 1) {
+                $paymentStr = $paymentMethods[0];
+            } else {
+                $paymentStr = '-';
+            }
+
             $txDate = \Carbon\Carbon::parse($detail->tx_date);
             $diskon_global = $detail->diskon_global ?? 0;
             
@@ -1246,6 +1279,10 @@ class ReportController extends Controller
                 'hpp_satuan' => 'Rp ' . number_format($hpp_satuan, 0, ',', '.'),
                 'total_hpp' => '- Rp ' . number_format($total_hpp, 0, ',', '.'),
                 'laba_kotor' => 'Rp ' . number_format($laba_kotor, 0, ',', '.'),
+                'pos_id' => $detail->pos_id,
+                'pos_date' => $detail->pos_date,
+                'tx_date' => $detail->tx_date,
+                'payment' => $paymentStr,
             ];
         });
 

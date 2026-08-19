@@ -358,7 +358,7 @@
             // Action: open drawer when clicking item
             $('#transaction-list-container').on('click', '.history-trigger', function() {
                 const productId = $(this).data('product-id');
-                const productName = $(this).find('.fs-6.mb-1').text();
+                const productName = $(this).find('.text-truncate').text();
                 
                 $('#history-product-name').text(productName);
                 $('#history-list').empty();
@@ -404,59 +404,61 @@
                                 const dataDate = item.pos_date ? item.pos_date : (item.tx_date ? item.tx_date.substring(0, 10) : '');
                                 
                                 html += `
-                                <div class="card mb-4" style="border: 1px solid #f0f0f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); border-radius: 8px;">
-                                    <div class="card-body p-4 p-md-5">
-                                        <div class="d-flex justify-content-between align-items-start mb-3">
-                                            <div>
-                                                <div class="text-gray-400 fw-bold" style="font-size: 10px; letter-spacing: 0.1em;">NO. NOTA</div>
-                                                <div class="text-gray-900 fw-bolder fs-5" style="letter-spacing: 0.5px;">${item.invoice}</div>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="text-gray-900 fw-bolder" style="font-size: 13px;">${item.date_formatted}</div>
-                                                <div class="text-gray-500" style="font-size: 11px;">${item.time_formatted}</div>
-                                            </div>
+                                <div class="position-relative bg-white border border-gray-200 p-4 history-item-card cursor-pointer" onclick="window.location.href='/pos/show/${item.pos_id}'" data-date="${dataDate}" data-payment="${item.payment}" style="border-radius: 0.5rem 0.5rem 0.75rem 0.75rem; box-shadow: 0 2px 10px -3px rgba(0,0,0,0.08); transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 15px -3px rgba(0,0,0,0.15)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='0 2px 10px -3px rgba(0,0,0,0.08)'; this.style.transform='translateY(0)'">
+                                    <div class="position-absolute bg-light rounded-circle border-end border-gray-200" style="width: 16px; height: 16px; left: -8px; top: 55%;"></div>
+                                    <div class="position-absolute bg-light rounded-circle border-start border-gray-200" style="width: 16px; height: 16px; right: -8px; top: 55%;"></div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center pb-3 mb-3" style="border-bottom: 2px dashed #e4e6ef;">
+                                        <div class="d-flex flex-column">
+                                            <span class="text-muted fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">No. Nota</span>
+                                            <span class="fw-bolder text-gray-900 fs-6 mt-1">${item.invoice}</span>
+                                        </div>
+                                        <div class="d-flex flex-column text-end">
+                                            <span class="fw-bold text-gray-900" style="font-size: 11px;">${item.date_formatted}</span>
+                                            <span class="text-muted fw-medium" style="font-size: 10px; margin-top: 2px;">${item.time_formatted}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div class="fw-bold text-gray-700 mb-2 text-truncate" style="font-size: 11px;">${item.branch_name}</div>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="text-gray-500" style="font-size: 11px;">Jumlah Terjual</span>
+                                            <span class="text-gray-800 fw-medium" style="font-size: 11px;">${item.qty}</span>
                                         </div>
                                         
-                                        <div style="border-top: 2px dashed #f0f0f0; margin: 12px 0;"></div>
-                                        
-                                        <div class="fw-bolder text-gray-800 mb-4" style="font-size: 13px;">${item.branch_name}</div>
-                                        
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="text-gray-500" style="font-size: 12px;">Jumlah Terjual</span>
-                                            <span class="text-gray-800 fw-bolder" style="font-size: 12px;">${item.qty}</span>
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="text-gray-500" style="font-size: 11px;">Harga Jual Satuan</span>
+                                            <span class="text-gray-800 fw-medium" style="font-size: 11px;">${item.harga_satuan}</span>
                                         </div>
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="text-gray-500" style="font-size: 12px;">Harga Jual Satuan</span>
-                                            <span class="text-gray-800 fw-bolder" style="font-size: 12px;">${item.harga_satuan}</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <span class="text-gray-500" style="font-size: 12px;">Penjualan Kotor</span>
-                                            <span class="text-gray-800 fw-bolder" style="font-size: 12px;">${item.penjualan_kotor}</span>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="text-gray-500" style="font-size: 11px;">Penjualan Kotor</span>
+                                            <span class="text-gray-800 fw-medium" style="font-size: 11px;">${item.penjualan_kotor}</span>
                                         </div>
                                         
                                         <div style="border-top: 1px solid #f0f0f0; margin: 12px 0;"></div>
                                         
                                         <div class="d-flex justify-content-between align-items-center my-3">
-                                            <span class="text-gray-800 fw-bolder" style="font-size: 13px;">Pendapatan Bersih</span>
-                                            <span class="text-gray-800 fw-bolder" style="font-size: 13px;">${item.pendapatan_bersih}</span>
+                                            <span class="text-gray-800 fw-bolder" style="font-size: 12px;">Pendapatan Bersih</span>
+                                            <span class="text-gray-800 fw-bolder" style="font-size: 12px;">${item.pendapatan_bersih}</span>
                                         </div>
                                         
                                         <div style="border-top: 2px dashed #f0f0f0; margin: 12px 0;"></div>
                                         
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="text-gray-500" style="font-size: 12px;">HPP Satuan</span>
-                                            <span class="text-gray-800 fw-medium" style="font-size: 12px;">${item.hpp_satuan}</span>
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="text-gray-500" style="font-size: 11px;">HPP Satuan</span>
+                                            <span class="text-gray-800 fw-medium" style="font-size: 11px;">${item.hpp_satuan}</span>
                                         </div>
+                                        
                                         <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <span class="text-gray-500" style="font-size: 12px;">Total HPP</span>
-                                            <span class="text-danger fw-medium" style="font-size: 12px;">${item.total_hpp}</span>
+                                            <span class="text-gray-500" style="font-size: 11px;">Total HPP</span>
+                                            <span class="text-danger fw-medium" style="font-size: 11px;">${item.total_hpp}</span>
                                         </div>
                                         
-                                        <div style="border-top: 1px solid #f0f0f0; margin: 12px 0;"></div>
-                                        
-                                        <div class="d-flex justify-content-between align-items-center mt-3 pt-1">
-                                            <span class="text-gray-900 fw-bolder text-uppercase" style="font-size: 13px;">TOTAL LABA KOTOR</span>
-                                            <span class="fw-bolder fs-4" style="color: #047857;">${item.laba_kotor}</span>
+                                        <div class="d-flex justify-content-between align-items-end pt-3 mt-3 border-top border-gray-100">
+                                            <span class="fw-bold text-gray-900 text-uppercase" style="font-size: 11px; letter-spacing: 0.05em;">Total Laba Kotor</span>
+                                            <span class="fw-bolder text-success" style="font-size: 16px; line-height: 1; color: #047857 !important;">${item.laba_kotor}</span>
                                         </div>
                                     </div>
                                 </div>`;

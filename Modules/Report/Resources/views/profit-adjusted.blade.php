@@ -238,11 +238,21 @@
                         if (json.grand_total_laba_kotor) {
                             $('#grand-total-laba-kotor').html(json.grand_total_laba_kotor);
                             $('#grand-total-koreksi-stock').html(json.grand_total_koreksi_stock);
+                            
+                            $('#grand-total-koreksi-stock').removeClass('text-danger text-success text-gray-600');
+                            if (json.grand_total_koreksi_stock && json.grand_total_koreksi_stock.trim().startsWith('+')) {
+                                $('#grand-total-koreksi-stock').addClass('text-success');
+                            } else if (json.grand_total_koreksi_stock && json.grand_total_koreksi_stock.trim().startsWith('-')) {
+                                $('#grand-total-koreksi-stock').addClass('text-danger');
+                            } else {
+                                $('#grand-total-koreksi-stock').addClass('text-gray-600');
+                            }
+
                             $('#grand-total-laba-disesuaikan').html(json.grand_total_laba_disesuaikan);
                             $('#grand-laba-percentage').hide(); // percentage not needed or adjust later
                         } else if (reset) {
                             $('#grand-total-laba-kotor').html('Rp 0');
-                            $('#grand-total-koreksi-stock').html('- Rp 0');
+                            $('#grand-total-koreksi-stock').html('Rp 0').removeClass('text-danger text-success text-gray-600').addClass('text-gray-600');
                             $('#grand-total-laba-disesuaikan').html('Rp 0');
                             $('#grand-laba-percentage').hide();
                         }
@@ -251,6 +261,14 @@
                             let html = '';
                             json.data.forEach(function(row) {
                                 let unit = row.unit ? row.unit : 'pcs';
+                                
+                                let koreksiColor = 'text-gray-600';
+                                if (row.koreksi_stock_formatted && row.koreksi_stock_formatted.trim().startsWith('+')) {
+                                    koreksiColor = 'text-success';
+                                } else if (row.koreksi_stock_formatted && row.koreksi_stock_formatted.trim().startsWith('-')) {
+                                    koreksiColor = 'text-danger';
+                                }
+
                                 html += `
                                     <div class="custom-list-item w-100 cursor-pointer history-trigger px-3 py-4 mb-2 bg-white" style="border-bottom: 1px solid #f4f4f4;" data-product-id="${row.product_id}">
                                         <div class="row align-items-center w-100 m-0">
@@ -264,7 +282,7 @@
                                                 </div>
                                                 <div class="d-none d-md-flex flex-column align-items-end" style="min-width: 80px;">
                                                     <span class="text-gray-400 text-uppercase d-block mb-1" style="font-size: 9px; letter-spacing: 0.05em;">Koreksi Stock</span>
-                                                    <span class="text-danger fw-medium" style="font-size: 11px;">${row.koreksi_stock_formatted}</span>
+                                                    <span class="${koreksiColor} fw-medium" style="font-size: 11px;">${row.koreksi_stock_formatted}</span>
                                                 </div>
                                                 <div class="d-flex flex-column align-items-end" style="min-width: 85px;">
                                                     <span class="text-gray-400 text-uppercase d-block mb-1" style="font-size: 9px; letter-spacing: 0.05em;">Laba Disesuaikan</span>
@@ -323,7 +341,7 @@
             // Action: open drawer when clicking item
             $('#transaction-list-container').on('click', '.history-trigger', function() {
                 const productId = $(this).data('product-id');
-                const productName = $(this).find('.fs-6.mb-1').text();
+                const productName = $(this).find('.text-truncate').text();
                 
                 $('#history-product-name').text(productName);
                 $('#history-list').empty();
