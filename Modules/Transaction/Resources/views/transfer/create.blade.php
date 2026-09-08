@@ -145,6 +145,7 @@
                             <label class="required form-label">Nomor Faktur</label>
                             <!--end::Label-->
                             <!--begin::Editor-->
+                            <input type="hidden" name="transfer_id" value="{{ $data->id ?? '' }}">
                             <input type="text" class="form-control" name="invoice_number" value="{{ $invoice_number }}"
                                 readonly>
                             <!--end::Editor-->

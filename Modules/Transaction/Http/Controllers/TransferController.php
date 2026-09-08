@@ -42,12 +42,48 @@ class TransferController extends Controller
             return $denied;
         }
 
-        $data['alpinejs']       = true;
-        $data['data']           = null;
-        $data['detail']         = null;
-        $data['invoice_number'] = Transfer::getOrderNumber();
-        $data['type']           = request()->segment(1);
-        $data['branches']       = Branch::whereIn('id', UserBranch::getUserBranch())->get();
+        $data['alpinejs'] = true;
+        $userId           = Auth::id();
+
+        // Cek apakah ada temp transaksi untuk user ini (seperti pada PosController)
+        $draft = Transfer::with([
+            'branch',
+            'branchDestination',
+            'createdBy',
+            'detail',
+            'detail.product',
+            'detail.product.unit',
+            'detail.corrections.user',
+        ])
+            ->where('created_by', $userId)
+            ->where('status', 'temp')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if ($draft) {
+            $data['data']           = $draft;
+            $data['detail']         = $draft->detail;
+            $data['invoice_number'] = $draft->invoice_number;
+        } else {
+            $invoiceNumber = Transfer::getOrderNumber();
+
+            $draft = new Transfer();
+            $draft->uuid           = Str::uuid();
+            $draft->invoice_number = $invoiceNumber;
+            $draft->created_by     = $userId;
+            $draft->status         = 'temp';
+            $draft->date           = date('Y-m-d');
+            $draft->total          = 0;
+            $draft->save();
+
+            $data['data']           = $draft;
+            $data['detail']         = [];
+            $data['invoice_number'] = $invoiceNumber;
+        }
+
+        $data['type']     = request()->segment(1);
+        $data['branches'] = Branch::whereIn('id', UserBranch::getUserBranch())->get();
+
         return view('transaction::transfer.create', $data);
     }
 
@@ -166,6 +202,7 @@ class TransferController extends Controller
 
         // dd($request->all());
         $data = $request->validate([
+            'transfer_id'           => 'nullable|exists:transfer,id',
             'branch_id'             => 'required|exists:branch,id',
             'branch_destination_id' => 'required|exists:branch,id',
             'date'                  => 'required|date',
@@ -177,28 +214,74 @@ class TransferController extends Controller
         ]);
 
         try {
-            $userId = Auth::id();
+            $userId        = Auth::id();
+            $invoiceNumber = $data['invoice_number'] ?? null;
+            $transferId    = $data['transfer_id'] ?? null;
+
             DB::beginTransaction();
-            $cek = Transfer::where('invoice_number', $data['invoice_number'])->first();
-            if ($cek) {
-                $pos       = Transfer::find($cek->id);
-                $posDetail = TransferDetail::where('transfer_id', $cek->id);
-                TransferDetail::where('transfer_id', $cek->id)->delete();
-                $pos->delete();
+
+            $pos = null;
+            if (!empty($transferId)) {
+                $pos = Transfer::where('id', $transferId)
+                    ->where(function ($q) use ($userId) {
+                        $q->where('created_by', $userId)
+                          ->orWhere('status', '!=', 'temp');
+                    })
+                    ->first();
             }
-            // Simpan ke tabel transfer (buat dulu kalau belum ada)
-            $pos = new Transfer([
-                'uuid'                  => Str::uuid(),
-                'branch_id'             => $data['branch_id'],
-                'branch_destination_id' => $data['branch_destination_id'],
-                'date'                  => $data['date'],
-                'invoice_number'        => Transfer::getOrderNumber(),
-                'total'                 => $data['total'],
-                'status'                => $data['status'] ?? 'draft',
-                'created_by'            => $userId,
-            ]);
-            $pos->created_at = now();
-            $pos->save();
+
+            if (!$pos && !empty($invoiceNumber)) {
+                $pos = Transfer::where('invoice_number', $invoiceNumber)
+                    ->where('created_by', $userId)
+                    ->first();
+            }
+
+            if ($pos) {
+                // Update transaksi transfer yang sudah ada
+                if ($pos->status === 'selesai') {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Transaksi yang sudah selesai tidak dapat diubah.',
+                    ], 422);
+                }
+
+                $pos->update([
+                    'branch_id'             => $data['branch_id'],
+                    'branch_destination_id' => $data['branch_destination_id'],
+                    'date'                  => $data['date'],
+                    'total'                 => $data['total'],
+                    'status'                => $data['status'] ?? 'draft',
+                    'updated_by'            => $userId,
+                ]);
+
+                TransferDetail::where('transfer_id', $pos->id)->delete();
+            } else {
+                // Pastikan invoice_number unik dan belum pernah dipakai transaksi lain
+                $newInvoice = $invoiceNumber;
+                if (empty($newInvoice) || Transfer::where('invoice_number', $newInvoice)->exists()) {
+                    $newInvoice = Transfer::getOrderNumber();
+                }
+
+                $pos = new Transfer([
+                    'uuid'                  => Str::uuid(),
+                    'branch_id'             => $data['branch_id'],
+                    'branch_destination_id' => $data['branch_destination_id'],
+                    'date'                  => $data['date'],
+                    'invoice_number'        => $newInvoice,
+                    'total'                 => $data['total'],
+                    'status'                => $data['status'] ?? 'draft',
+                    'created_by'            => $userId,
+                ]);
+                $pos->created_at = now();
+                $pos->save();
+            }
+
+            // Hapus temp draft lain milik user ini jika ada (seperti deleteDuplicatePosDrafts)
+            Transfer::where('created_by', $userId)
+                ->where('status', 'temp')
+                ->where('id', '!=', $pos->id)
+                ->delete();
 
             // Simpan item transaksi
             $transaksiId = $pos->id;
@@ -218,7 +301,6 @@ class TransferController extends Controller
             }
 
             DB::commit();
-            DB::disconnect();
 
             $type = request('type');
             $redirectUrl = '/transfer';
@@ -236,7 +318,6 @@ class TransferController extends Controller
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
-            DB::disconnect();
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan transaksi',

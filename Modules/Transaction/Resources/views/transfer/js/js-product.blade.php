@@ -66,9 +66,9 @@
                 const self = this; // simpan konteks Alpine
                 let url = '{{ Request::segment(3) }}';
                 let segment2 = '{{ Request::segment(2) }}';
-                if ((segment2 == 'edit' || segment2 == 'show') && !this._loaded) {
-                    const data = @json($data ?? null);
-                    const detail = @json($detail ?? null);
+                const data = @json($data ?? null);
+                const detail = @json($detail ?? null);
+                if ((segment2 == 'edit' || segment2 == 'show' || (data && detail && detail.length > 0)) && !this._loaded) {
                     this.loadExistingData(data, detail);
                     // console.log('loadExisting', url, segment2, data, detail);
                     this._loaded = true;
@@ -730,9 +730,11 @@
                 const invoiceNumber = document.querySelector('input[name="invoice_number"]').value;
                 const branchId = document.querySelector('select[name="branch_id"]').value;
                 const branchDestinationId = document.querySelector('select[name="branch_destination_id"]').value;
+                const transferId = document.querySelector('input[name="transfer_id"]')?.value || null;
 
                 let type = window.location.pathname.split('/')[1];
                 const data = {
+                    transfer_id: transferId,
                     date: transactionDate,
                     invoice_number: invoiceNumber,
                     branch_id: branchId,
@@ -809,9 +811,11 @@
                 const invoiceNumber = document.querySelector('input[name="invoice_number"]').value;
                 const branchId = document.querySelector('select[name="branch_id"]').value;
                 const branchDestinationId = document.querySelector('select[name="branch_destination_id"]').value;
+                const transferId = document.querySelector('input[name="transfer_id"]')?.value || null;
 
                 let type = window.location.pathname.split('/')[1];
                 const data = {
+                    transfer_id: transferId,
                     date: transactionDate,
                     invoice_number: invoiceNumber,
                     items: this.cart,

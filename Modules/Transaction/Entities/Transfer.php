@@ -18,7 +18,6 @@ class Transfer extends Model
         'uuid',
         'date',
         'invoice_number',
-        'subtotal',
         'total',
         'status',
         'type',
@@ -60,20 +59,27 @@ class Transfer extends Model
 
     public static function getOrderNumber()
     {
-        $orderData = self::select(DB::raw('CAST(RIGHT(invoice_number, 3) AS UNSIGNED) + 1 AS order_number'))
-            ->whereRaw('MONTH(created_at) = MONTH(NOW())')
-            ->whereRaw('YEAR(created_at) = YEAR(NOW())')
-            ->whereRaw('SUBSTRING(invoice_number, 1, 3) = ?', ['TRF'])
-            ->orderByRaw('CAST(RIGHT(invoice_number, 3) AS UNSIGNED) DESC')
-            ->limit(1)
+        $prefix = 'TRF' . now()->format('Ym');
+        $prefixLen = strlen($prefix);
+
+        $orderData = self::where('invoice_number', 'LIKE', $prefix . '%')
+            ->lockForUpdate()
+            ->select(DB::raw("MAX(CAST(SUBSTRING(invoice_number, " . ($prefixLen + 1) . ") AS UNSIGNED)) as max_order"))
             ->first();
-        $orderPad = '001';
-        if ($orderData && $orderData->order_number) {
-            $orderPad = str_pad($orderData->order_number, 3, '0', STR_PAD_LEFT);
+
+        $nextNumber = 1;
+        if ($orderData && $orderData->max_order) {
+            $nextNumber = (int) $orderData->max_order + 1;
         }
 
-        $prefix = 'TRF' . now()->format('Ym');
+        $orderPad = str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
         $newCode = $prefix . $orderPad;
+
+        while (self::where('invoice_number', $newCode)->exists()) {
+            $nextNumber++;
+            $orderPad = str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+            $newCode = $prefix . $orderPad;
+        }
 
         return $newCode;
     }
