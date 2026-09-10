@@ -265,9 +265,9 @@
                                 :class="activePage === '002. Master/001. Produk/index.html' ? 'active' : ''">
                                 <span>Produk</span>
                             </a>
-                            <a href="#" @click.prevent="navigateTo('#', 'master')"
+                            <a href="#" @click.prevent="navigateTo('002. Master/002. Resep Produk/index.html', 'master')"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
-                                :class="activePage === '#' ? 'active' : ''">
+                                :class="activePage === '002. Master/002. Resep Produk/index.html' ? 'active' : ''">
                                 <span>Resep Produk</span>
                             </a>
 
@@ -291,29 +291,29 @@
                                 :class="activePage === '002. Master/006. Cabang/index.html' ? 'active' : ''">
                                 <span>Cabang</span>
                             </a>
-                            <a href="#" @click.prevent="navigateTo('002. Master/011. Akun Pengguna/index.html', 'master')"
+                            <a href="#" @click.prevent="navigateTo('002. Master/007. Akun Pengguna/index.html', 'master')"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
-                                :class="activePage === '002. Master/011. Akun Pengguna/index.html' ? 'active' : ''">
+                                :class="activePage === '002. Master/007. Akun Pengguna/index.html' ? 'active' : ''">
                                 <span>Akun Pengguna</span>
                             </a>
-                            <a href="#" @click.prevent="navigateTo('002. Master/007. Jabatan/index.html', 'master')"
+                            <a href="#" @click.prevent="navigateTo('002. Master/008. Jabatan/index.html', 'master')"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
-                                :class="activePage === '002. Master/007. Jabatan/index.html' ? 'active' : ''">
+                                :class="activePage === '002. Master/008. Jabatan/index.html' ? 'active' : ''">
                                 <span>Jabatan</span>
                             </a>
-                            <a href="#" @click.prevent="navigateTo('002. Master/008. Karyawan/index.html', 'master')"
+                            <a href="#" @click.prevent="navigateTo('002. Master/009. Karyawan/index.html', 'master')"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
-                                :class="activePage === '002. Master/008. Karyawan/index.html' ? 'active' : ''">
+                                :class="activePage === '002. Master/009. Karyawan/index.html' ? 'active' : ''">
                                 <span>Karyawan</span>
                             </a>
-                            <a href="#" @click.prevent="navigateTo('002. Master/009. Kurir/index.html', 'master')"
+                            <a href="#" @click.prevent="navigateTo('002. Master/010. Kurir/index.html', 'master')"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
-                                :class="activePage === '002. Master/009. Kurir/index.html' ? 'active' : ''">
+                                :class="activePage === '002. Master/010. Kurir/index.html' ? 'active' : ''">
                                 <span>Kurir</span>
                             </a>
-                            <a href="#" @click.prevent="navigateTo('002. Master/010. Metode Pembayaran/index.html', 'master')"
+                            <a href="#" @click.prevent="navigateTo('002. Master/011. Metode Pembayaran/index.html', 'master')"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
-                                :class="activePage === '002. Master/010. Metode Pembayaran/index.html' ? 'active' : ''">
+                                :class="activePage === '002. Master/011. Metode Pembayaran/index.html' ? 'active' : ''">
                                 <span>Metode Pembayaran</span>
                             </a>
                         </div>
@@ -612,12 +612,22 @@
         <!-- ================================ -->
         <!-- MAIN CONTENT AREA (iframe)       -->
         <!-- ================================ -->
-        <div class="flex-1 flex flex-col overflow-hidden relative z-50">
+        <div class="flex-1 flex flex-col overflow-hidden relative z-50 bg-[#e5e9f3]">
+
+            <!-- Top Navigation Loading Bar -->
+            <div class="absolute top-0 left-0 right-0 h-[3px] z-[9999] pointer-events-none transition-opacity duration-200"
+                 :class="pageLoading ? 'opacity-100' : 'opacity-0'">
+                <div class="h-full bg-gradient-to-r from-primary via-emerald-400 to-accent shadow-[0_0_8px_rgba(209,243,110,0.8)] transition-all duration-300 ease-out"
+                     :style="`width: ${loadingProgress}%;`">
+                </div>
+            </div>
 
             <iframe id="content-frame" 
                 src="001. Dashboard/index.html"
-                class="w-full h-full border-none"
-                style="border: none;">
+                @load="handleFrameLoaded()"
+                class="w-full h-full border-none transition-all duration-200 ease-out"
+                :class="pageLoading ? 'opacity-30 scale-[0.998] pointer-events-none' : 'opacity-100 scale-100'"
+                style="border: none; background-color: #e5e9f3;">
             </iframe>
 
         </div>
@@ -626,25 +636,109 @@
 
     <!-- ALPINE.JS SHELL APPLICATION LOGIC -->
     <script>
+        function getMenuFromPage(page) {
+            if (!page) return 'dashboard';
+            if (page.includes('001. Dashboard')) return 'dashboard';
+            if (page.includes('002. Master')) return 'master';
+            if (page.includes('003. Pembelian')) return 'pembelian';
+            if (page.includes('004. Inventaris')) return 'inventaris';
+            if (page.includes('005. Produksi')) return 'produksi';
+            if (page.includes('006. Penjualan')) return 'penjualan';
+            if (page.includes('007. Keuangan')) return 'keuangan';
+            if (page.includes('008. Laporan')) return 'laporan';
+            if (page.includes('009. Pengaturan')) return 'pengaturan';
+            return 'dashboard';
+        }
+
         function shellApp() {
+            const rawHash = window.location.hash.slice(1);
+            const initialPage = rawHash ? decodeURIComponent(rawHash) : '001. Dashboard/index.html';
+            const initialMenu = getMenuFromPage(initialPage);
+
             return {
                 sidebarOpen: false,
                 sidebarCollapsed: false,
                 theme: 'dark',
-                activeMenu: 'dashboard',
-                activePage: '001. Dashboard/index.html',
+                activeMenu: initialMenu,
+                activePage: initialPage,
                 drawerOverlay: false,
+                pageLoading: false,
+                loadingProgress: 0,
+                _progressInterval: null,
+                _safetyTimer: null,
 
-                navigateTo(page, menu) {
-                    if (this.activePage !== page) {
-                        this.activePage = page;
-                        const frame = document.getElementById('content-frame');
-                        if (frame) {
-                            frame.src = page;
+                startLoading() {
+                    this.pageLoading = true;
+                    this.loadingProgress = 25;
+                    clearInterval(this._progressInterval);
+                    this._progressInterval = setInterval(() => {
+                        if (this.loadingProgress < 80) {
+                            this.loadingProgress += Math.floor(Math.random() * 10) + 5;
+                            if (this.loadingProgress > 80) this.loadingProgress = 80;
                         }
+                    }, 80);
+                },
+
+                finishLoading() {
+                    clearInterval(this._progressInterval);
+                    this.loadingProgress = 100;
+                    setTimeout(() => {
+                        this.pageLoading = false;
+                        setTimeout(() => {
+                            if (!this.pageLoading) this.loadingProgress = 0;
+                        }, 250);
+                    }, 100);
+                },
+
+                handleFrameLoaded() {
+                    this.finishLoading();
+                },
+
+                detectMenuFromPage(page) {
+                    return getMenuFromPage(page);
+                },
+
+                navigateTo(page, menu, updateHash = true) {
+                    if (!menu) {
+                        menu = this.detectMenuFromPage(page);
                     }
                     this.activeMenu = menu;
                     this.sidebarOpen = false; // Close mobile sidebar after navigation
+
+                    if (this.activePage !== page) {
+                        this.activePage = page;
+                        if (updateHash) {
+                            try {
+                                window.history.replaceState(null, '', '#' + page);
+                            } catch(e) {
+                                window.location.hash = page;
+                            }
+                        }
+
+                        this.startLoading();
+
+                        const frame = document.getElementById('content-frame');
+                        if (frame) {
+                            setTimeout(() => {
+                                frame.src = page;
+                            }, 40);
+                        }
+
+                        clearTimeout(this._safetyTimer);
+                        this._safetyTimer = setTimeout(() => {
+                            if (this.pageLoading) {
+                                this.finishLoading();
+                            }
+                        }, 1500);
+                    } else {
+                        if (updateHash && window.location.hash.slice(1) !== page) {
+                            try {
+                                window.history.replaceState(null, '', '#' + page);
+                            } catch(e) {
+                                window.location.hash = page;
+                            }
+                        }
+                    }
                 },
 
                 closeIframeDrawer() {
@@ -662,6 +756,30 @@
                 },
 
                 init() {
+                    // Set frame src if initial page is different from default
+                    const frame = document.getElementById('content-frame');
+                    if (frame && this.activePage !== '001. Dashboard/index.html') {
+                        frame.src = this.activePage;
+                    }
+
+                    if (!window.location.hash) {
+                        try {
+                            window.history.replaceState(null, '', '#' + this.activePage);
+                        } catch(e) {}
+                    }
+
+                    // Listen to hashchange for browser back/forward navigation
+                    window.addEventListener('hashchange', () => {
+                        const newHash = window.location.hash.slice(1);
+                        if (newHash) {
+                            const targetPage = decodeURIComponent(newHash);
+                            if (this.activePage !== targetPage) {
+                                const targetMenu = this.detectMenuFromPage(targetPage);
+                                this.navigateTo(targetPage, targetMenu, false);
+                            }
+                        }
+                    });
+
                     // Listen for messages from iframe (mobile hamburger + drawer overlay + navigation)
                     window.addEventListener('message', (e) => {
                         if (e.data === 'toggleSidebar') {

@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cabang - Master | ERP Portal</title>
-    <meta name="description" content="Modul Master Cabang - Sistem ERP Infruity.">
+    <title>Kurir - Master | ERP Portal</title>
+    <meta name="description" content="Modul Master Kurir - Sistem ERP Infruity.">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,6 +20,7 @@
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/anchor@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <!-- Tailwind CSS -->
@@ -231,7 +232,7 @@
         if (window.self !== window.top) {
             document.body.classList.add("in-iframe");
         } else if (!window.location.search.includes("standalone=true")) {
-            window.location.replace("../../app.html#002. Master/006. Cabang/index.html");
+            window.location.replace("../../app.html#002. Master/010. Kurir/index.html");
         }
     </script>
 
@@ -333,7 +334,7 @@
                                 <span>Pelanggan</span>
                             </a>
                             <a href="../../002. Master/006. Cabang/index.html"
-                                class="submenu-link active relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
                                 <i class="ph ph-map-pin sidebar-icon text-lg w-5 text-center text-white/35"></i>
                                 <span>Cabang</span>
                             </a>
@@ -353,7 +354,7 @@
                                 <span>Karyawan</span>
                             </a>
                             <a href="../../002. Master/010. Kurir/index.html"
-                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                class="submenu-link active relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
                                 <i class="ph ph-user-focus sidebar-icon text-lg w-5 text-center text-white/35"></i>
                                 <span>Kurir</span>
                             </a>
@@ -695,11 +696,11 @@
                         <i class="ph ph-list text-2xl"></i>
                     </button>
                     <div class="hidden sm:block">
-                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5">Cabang</h1>
+                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5">Kurir</h1>
                         <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
                             <span>Master</span>
                             <i class="ph ph-caret-right text-[0.55rem]"></i>
-                            <span>Cabang</span>
+                            <span>Kurir</span>
                         </div>
                     </div>
 
@@ -799,7 +800,7 @@
                             <div class="flex items-center gap-2">
                                 <img src="../../assets/logo/Infruity Logo - 6.png" alt="Infruity Logo" style="height: 20px; width: auto; max-width: 100px;" class="object-contain" />
                                 <span class="text-gray-300 font-light text-sm">|</span>
-                                <span class="text-[12px] font-bold text-gray-800">Cabang</span>
+                                <span class="text-[12px] font-bold text-gray-800">Kurir</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <div class="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition cursor-pointer relative">
@@ -821,7 +822,7 @@
                              style="top: 58px;"
                              x-cloak>
                             <div class="pointer-events-auto bg-white/95 backdrop-blur-md border border-gray-200/90 px-4 py-1.5 rounded-full shadow-[0_6px_24px_rgba(0,0,0,0.12)] text-[11px] text-gray-700 font-medium">
-                                Menampilkan <strong class="text-gray-900 font-semibold" x-text="Math.min(visibleCount, filteredProducts.length)"></strong> dari <strong class="text-gray-900 font-semibold" x-text="filteredProducts.length"></strong> cabang
+                                Menampilkan <strong class="text-gray-900 font-semibold" x-text="Math.min(visibleCount, filteredProducts.length)"></strong> dari <strong class="text-gray-900 font-semibold" x-text="filteredProducts.length"></strong> kurir
                             </div>
                         </div>
 
@@ -833,7 +834,7 @@
                                     <circle cx="11" cy="11" r="8"></circle>
                                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                 </svg>
-                                <input x-model="searchQuery" type="text" placeholder="Cari cabang..."
+                                <input x-model="searchQuery" type="text" placeholder="Cari kurir..."
                                     class="w-full bg-gray-50/50 border border-gray-100 rounded-full pl-10 pr-10 h-11 text-[13px] outline-none focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all">
                                 <!-- Clear button -->
                                 <button x-show="searchQuery" @click="searchQuery = ''" x-cloak
@@ -842,13 +843,22 @@
                                 </button>
                             </div>
 
-
+                            <!-- Filter Tabs (Desktop) -->
+                            <div class="hidden md:flex bg-gray-100/80 p-1 rounded-full items-center shrink-0">
+                                <template x-for="type in allTypes" :key="type">
+                                    <button @click="selectedType = type === 'Semua' ? [] : [type]"
+                                        class="px-4 h-9 rounded-full text-[13px] font-semibold transition-all duration-200 whitespace-nowrap"
+                                        :class="(selectedType.length === 0 && type === 'Semua') || selectedType.includes(type) ? 'bg-white text-[#0b595b] shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                                        x-text="type">
+                                    </button>
+                                </template>
+                            </div>
 
                             <!-- Add Button (Desktop) -->
                             <button @click="openDrawer()"
                                 class="hidden sm:flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold transition-colors shadow-sm shrink-0">
                                 <i class="ph-bold ph-plus text-sm"></i>
-                                <span>Tambah Cabang</span>
+                                <span>Tambah Kurir</span>
                             </button>
 
                             <!-- Mobile Sidebar Toggle -->
@@ -863,7 +873,7 @@
                         <div class="sticky top-0 z-20 hidden sm:flex px-4 py-3 bg-gray-50/50 backdrop-blur-md border-b border-gray-100 items-center justify-between">
                             <span class="text-xs text-gray-400 font-medium">
                                 Menampilkan <span class="text-gray-700 font-semibold" x-text="Math.min(visibleCount, filteredProducts.length)"></span>
-                                dari <span class="text-gray-700 font-semibold" x-text="filteredProducts.length"></span> cabang
+                                dari <span class="text-gray-700 font-semibold" x-text="filteredProducts.length"></span> kurir
                             </span>
                         </div>
 
@@ -898,9 +908,9 @@
                                                 <!-- Left: Name + meta -->
                                                 <div class="flex-1 min-w-0">
                                                     <div class="text-sm font-semibold text-gray-900 truncate" x-text="product.name"></div>
-                                                    <div class="text-xs text-gray-400 mt-0.5 truncate">
-                                                        <span class="text-[11px] font-medium text-gray-400 truncate block" 
-                                                              x-text="product.address ? product.address : 'Alamat belum diinput'"></span>
+                                                    <div class="text-xs mt-0.5 flex items-center gap-2">
+                                                        <span class="text-[11px] font-medium text-gray-400" 
+                                                              x-text="product.type"></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -922,8 +932,8 @@
                                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                         </svg>
                                     </div>
-                                    <p class="text-sm text-gray-500 font-medium">Cabang tidak ditemukan</p>
-                                    <p class="text-xs text-gray-400 mt-1">Coba ubah pencarian</p>
+                                    <p class="text-sm text-gray-500 font-medium">Kurir tidak ditemukan</p>
+                                    <p class="text-xs text-gray-400 mt-1">Coba ubah kata kunci pencarian atau filter</p>
                                 </div>
 
                                 <!-- Load More (Desktop) -->
@@ -956,64 +966,22 @@
                                                 <!-- Left: Name + meta -->
                                                 <div class="flex-1 min-w-0">
                                                     <div class="text-sm font-semibold text-gray-900 truncate" x-text="product.name"></div>
-                                                    <div class="text-xs text-gray-400 mt-0.5 truncate">
-                                                        <span class="text-[11px] font-medium text-gray-400 truncate block" 
-                                                              x-text="product.address ? product.address : 'Alamat belum diinput'"></span>
+                                                    <div class="text-xs mt-0.5 flex items-center gap-2">
+                                                        <span class="text-[11px] font-medium text-gray-400" 
+                                                              x-text="product.type"></span>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <!-- Right: Price (range for variant, single for normal) + action -->
-                                            <div class="shrink-0 flex items-center gap-1 ml-2">
-
-                                                
-
-
+                                            <!-- Right: Action -->
+                                            <div class="shrink-0 flex items-center gap-2 ml-2">
                                                 </div>
                                             </div>
 
 
                                         </div>
 
-                                        <!-- Mobile variant sub-rows: always visible (tree-line style) -->
-                                        <template x-if="product.variants && product.variants.length > 0">
-                                            <div class="border-t border-emerald-100/60 bg-emerald-50/20 px-4 py-1.5">
-                                                <!-- vertical trunk line: starts from center of emoji (px-4=16px + half w-9=18px = 34px → ml-[18px] after padding) -->
-                                                <div class="ml-[18px] border-l-2 border-emerald-100">
-                                                    <template x-for="(variant, vi) in product.variants" :key="variant.id">
-                                                        <div class="flex items-center py-1.5">
-                                                            <!-- horizontal branch connector: w-[26px] so name aligns with parent name (border at 34px + 26px + 8px pl = 68px) -->
-                                                            <div class="w-[26px] shrink-0">
-                                                                <div class="w-full h-px bg-emerald-100"></div>
-                                                            </div>
-                                                            <span class="flex-1 text-sm text-gray-500 font-medium truncate pl-2" x-text="variant.name"></span>
-                                                            <!-- Variant price button -->
-                                                            <button
-                                                                x-show="!(editingVariantPrice.productId === product.id && editingVariantPrice.variantId === variant.id)"
-                                                                @click="startEditVariantPrice(product, variant)"
-                                                                class="text-sm font-semibold text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-2 py-1 rounded-lg transition-colors whitespace-nowrap">
-                                                                <span x-text="'Rp ' + variant.price.toLocaleString('id-ID')"></span><span class="text-gray-400 font-normal text-xs" x-text="'/' + product.unit"></span>
-                                                            </button>
-                                                            
-                                                            <!-- Inline Variant Price Edit (Opsi C) -->
-                                                            <div x-show="editingVariantPrice.productId === product.id && editingVariantPrice.variantId === variant.id" x-cloak
-                                                                 class="flex items-center bg-emerald-50 rounded-lg ring-1 ring-emerald-500 overflow-hidden"
-                                                                 @click.outside="cancelVariantPrice()">
-                                                                <span class="text-xs font-semibold text-emerald-700 pl-2">Rp</span>
-                                                                <input :id="'inlineVariantPriceInput_' + variant.id"
-                                                                       type="number" x-model.number="editingVariantPrice.value"
-                                                                       @keydown.enter="saveVariantPrice(product, variant)"
-                                                                       @keydown.escape="cancelVariantPrice()"
-                                                                       class="w-20 sm:w-24 bg-transparent text-sm font-bold text-right text-emerald-900 outline-none px-1.5 py-1">
-                                                                <button @click="saveVariantPrice(product, variant)" class="bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1.5 flex items-center justify-center transition-colors">
-                                                                    <i class="ph-bold ph-check text-xs"></i>
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </template>
-                                                </div>
-                                            </div>
-                                        </template>
+
                                     </div>
                                 </template>
 
@@ -1025,7 +993,7 @@
                                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                         </svg>
                                     </div>
-                                    <p class="text-sm text-gray-500 font-medium">Cabang tidak ditemukan</p>
+                                    <p class="text-sm text-gray-500 font-medium">Kurir tidak ditemukan</p>
                                     <p class="text-xs text-gray-400 mt-1">Coba ubah pencarian atau filter</p>
                                 </div>
 
@@ -1034,7 +1002,7 @@
                                     <button @click="loadMore()"
                                         class="w-full h-11 rounded-xl border-2 border-dashed border-gray-200 text-sm font-semibold text-gray-500 hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2">
                                         <i class="ph ph-arrow-circle-down text-base"></i>
-                                        <span x-text="'Muat ' + Math.min(PAGE_SIZE, filteredProducts.length - visibleCount) + ' Cabang Lagi'"></span>
+                                        <span x-text="'Muat ' + Math.min(PAGE_SIZE, filteredProducts.length - visibleCount) + ' Kurir Lagi'"></span>
                                     </button>
                                 </div>
                             </div>
@@ -1060,7 +1028,7 @@
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                    <input type="text" x-model="searchQuery" id="mobileSearchInputBottom" placeholder="Cari cabang..."
+                    <input type="text" x-model="searchQuery" id="mobileSearchInputBottom" placeholder="Cari kurir..."
                            class="w-full bg-transparent pl-11 pr-10 h-full text-[13.5px] font-medium text-gray-800 placeholder-gray-500 outline-none rounded-full">
                     <button x-show="searchQuery" @click="searchQuery = ''; document.getElementById('mobileSearchInputBottom').focus()" x-cloak
                             class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full hover:bg-black/5 flex items-center justify-center transition-colors">
@@ -1145,7 +1113,7 @@
 
 
 
-                        <!-- 4. Tambah Cabang -->
+                        <!-- 4. Tambah Kurir -->
                         <button @click="openDrawer(); profileOpen = false"
                                 :class="drawerOpen ? 'text-[#0b595b] w-12' : 'text-gray-500 hover:text-[#0b595b] w-12'" 
                                 style="transition: color 300ms ease;"
@@ -1176,7 +1144,7 @@
 
 
     <!-- ================================ -->
-    <!-- DRAWER: Tambah / Edit Cabang     -->
+    <!-- DRAWER: Tambah / Edit Kurir     -->
     <!-- ================================ -->
     <div x-show="drawerOpen" class="fixed top-0 left-0 right-0 bottom-0 z-[100] overflow-hidden flex flex-col justify-end lg:flex-row lg:justify-end" x-cloak>
         <!-- Backdrop -->
@@ -1207,8 +1175,8 @@
             <!-- Header -->
             <div class="bg-white shrink-0 border-b border-gray-100 px-5 py-4 flex items-center justify-between">
                 <div class="flex flex-col">
-                    <h3 class="text-[15px] font-bold text-gray-900" x-text="editingProduct ? 'Edit Cabang' : 'Tambah Cabang'"></h3>
-                    <p class="text-[12px] text-gray-400 mt-0.5" x-text="editingProduct ? 'Perbarui data cabang' : 'Isi data cabang baru'"></p>
+                    <h3 class="text-[15px] font-bold text-gray-900" x-text="editingProduct ? 'Edit Kurir' : 'Tambah Kurir'"></h3>
+                    <p class="text-[12px] text-gray-400 mt-0.5" x-text="editingProduct ? 'Perbarui data metode' : 'Isi data metode baru'"></p>
                 </div>
                 <button @click="closeDrawer()" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors shrink-0">
                     <i class="ph-bold ph-x text-base"></i>
@@ -1242,160 +1210,86 @@
                      @scroll="updateScroll(); isScrolling = true; clearTimeout(scrollTimeout); scrollTimeout = setTimeout(() => isScrolling = false, 800)" 
                      class="h-full overflow-y-auto overscroll-none scrollbar-hide px-5 pb-6 pt-5">
                 <div class="flex flex-col gap-5">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <!-- Provinsi -->
-                    <div x-data="{ pickerOpen: false, pickerSearch: '', pickerDirection: 'down' }" class="relative">
-                        <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Provinsi <span class="text-red-400">*</span></label>
-                        <button @click="let rect = $event.currentTarget.getBoundingClientRect(); pickerDirection = (window.innerHeight - rect.bottom) < 250 ? 'up' : 'down'; pickerOpen = !pickerOpen"
-                                class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 flex items-center justify-between text-sm transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                                :class="!form.provinceId ? 'text-gray-400' : 'text-gray-900'">
-                            <span x-text="form.provinceId ? getProvinceName(form.provinceId) : 'Pilih Provinsi'"></span>
-                            <i class="ph-bold ph-caret-down text-gray-400 shrink-0 transition-transform" :class="pickerOpen ? 'rotate-180' : ''"></i>
-                        </button>
-                        
-                        <div x-show="pickerOpen" class="fixed inset-0 z-[15]" @click="pickerOpen = false" x-cloak></div>
-                        <div x-show="pickerOpen" x-transition class="absolute z-20 w-full flex flex-col bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden" :class="pickerDirection === 'up' ? 'bottom-full mb-1' : 'mt-1'">
-                            <div class="relative border-b border-gray-100 shrink-0">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                <input type="text" x-model="pickerSearch" placeholder="Cari..." class="w-full bg-transparent pl-8 pr-3 py-3 text-xs outline-none focus:bg-gray-50 transition-colors">
-                            </div>
-                            <div class="max-h-32 overflow-y-auto overscroll-none scrollbar-hide">
-                                <template x-for="item in regions.provinsi.filter(i => i.name.toLowerCase().includes(pickerSearch.toLowerCase()))" :key="item.id">
-                                    <label class="flex items-center gap-3 px-3 py-2.5 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors last:border-b-0">
-                                        <input type="radio" name="provRadio" :value="item.id" x-model="form.provinceId" @change="pickerOpen = false; form.regencyId=''; form.districtId=''; form.villageId=''" class="hidden">
-                                        <div class="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center shrink-0 transition-colors"
-                                             :class="form.provinceId === item.id ? 'border-emerald-500' : ''">
-                                            <div class="w-2 h-2 rounded-full bg-emerald-500 transition-transform duration-200"
-                                                 :class="form.provinceId === item.id ? 'scale-100' : 'scale-0'"></div>
-                                        </div>
-                                        <span class="text-xs" :class="form.provinceId === item.id ? 'font-bold text-gray-900' : 'font-medium text-gray-700'" x-text="item.name"></span>
-                                    </label>
-                                </template>
-                                <div x-show="regions.provinsi.filter(i => i.name.toLowerCase().includes(pickerSearch.toLowerCase())).length === 0" class="text-center py-4 text-xs text-gray-400">Tidak ditemukan</div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Kabupaten -->
-                    <div x-data="{ pickerOpen: false, pickerSearch: '', pickerDirection: 'down' }" class="relative">
-                        <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Kabupaten / Kota <span class="text-red-400">*</span></label>
-                        <button @click="let rect = $event.currentTarget.getBoundingClientRect(); pickerDirection = (window.innerHeight - rect.bottom) < 250 ? 'up' : 'down'; pickerOpen = !pickerOpen" :disabled="!form.provinceId"
-                                class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 flex items-center justify-between text-sm transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-50 disabled:text-gray-400"
-                                :class="!form.regencyId ? 'text-gray-400' : 'text-gray-900'">
-                            <span x-text="form.regencyId ? getRegencyName(form.provinceId, form.regencyId) : 'Pilih Kabupaten / Kota'"></span>
-                            <i class="ph-bold ph-caret-down text-gray-400 shrink-0 transition-transform" :class="pickerOpen ? 'rotate-180' : ''"></i>
-                        </button>
-                        
-                        <div x-show="pickerOpen" class="fixed inset-0 z-[15]" @click="pickerOpen = false" x-cloak></div>
-                        <div x-show="pickerOpen" x-transition class="absolute z-20 w-full flex flex-col bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden" :class="pickerDirection === 'up' ? 'bottom-full mb-1' : 'mt-1'">
-                            <div class="relative border-b border-gray-100 shrink-0">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                <input type="text" x-model="pickerSearch" placeholder="Cari..." class="w-full bg-transparent pl-8 pr-3 py-3 text-xs outline-none focus:bg-gray-50 transition-colors">
-                            </div>
-                            <div class="max-h-32 overflow-y-auto overscroll-none scrollbar-hide">
-                                <template x-if="form.provinceId && regions.kabupaten[form.provinceId]">
-                                    <template x-for="item in regions.kabupaten[form.provinceId].filter(i => i.name.toLowerCase().includes(pickerSearch.toLowerCase()))" :key="item.id">
-                                        <label class="flex items-center gap-3 px-3 py-2.5 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors last:border-b-0">
-                                            <input type="radio" name="regRadio" :value="item.id" x-model="form.regencyId" @change="pickerOpen = false; form.districtId=''; form.villageId=''" class="hidden">
-                                            <div class="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center shrink-0 transition-colors"
-                                                 :class="form.regencyId === item.id ? 'border-emerald-500' : ''">
-                                                <div class="w-2 h-2 rounded-full bg-emerald-500 transition-transform duration-200"
-                                                     :class="form.regencyId === item.id ? 'scale-100' : 'scale-0'"></div>
-                                            </div>
-                                            <span class="text-xs" :class="form.regencyId === item.id ? 'font-bold text-gray-900' : 'font-medium text-gray-700'" x-text="item.name"></span>
-                                        </label>
-                                    </template>
-                                </template>
-                                <div x-show="form.provinceId && regions.kabupaten[form.provinceId] && regions.kabupaten[form.provinceId].filter(i => i.name.toLowerCase().includes(pickerSearch.toLowerCase())).length === 0" class="text-center py-4 text-xs text-gray-400">Tidak ditemukan</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Kecamatan -->
-                    <div x-data="{ pickerOpen: false, pickerSearch: '', pickerDirection: 'down' }" class="relative">
-                        <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Kecamatan <span class="text-red-400">*</span></label>
-                        <button @click="let rect = $event.currentTarget.getBoundingClientRect(); pickerDirection = (window.innerHeight - rect.bottom) < 250 ? 'up' : 'down'; pickerOpen = !pickerOpen" :disabled="!form.regencyId"
-                                class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 flex items-center justify-between text-sm transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-50 disabled:text-gray-400"
-                                :class="!form.districtId ? 'text-gray-400' : 'text-gray-900'">
-                            <span x-text="form.districtId ? getDistrictName(form.regencyId, form.districtId) : 'Pilih Kecamatan'"></span>
-                            <i class="ph-bold ph-caret-down text-gray-400 shrink-0 transition-transform" :class="pickerOpen ? 'rotate-180' : ''"></i>
-                        </button>
-                        
-                        <div x-show="pickerOpen" class="fixed inset-0 z-[15]" @click="pickerOpen = false" x-cloak></div>
-                        <div x-show="pickerOpen" x-transition class="absolute z-20 w-full flex flex-col bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden" :class="pickerDirection === 'up' ? 'bottom-full mb-1' : 'mt-1'">
-                            <div class="relative border-b border-gray-100 shrink-0">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                <input type="text" x-model="pickerSearch" placeholder="Cari..." class="w-full bg-transparent pl-8 pr-3 py-3 text-xs outline-none focus:bg-gray-50 transition-colors">
-                            </div>
-                            <div class="max-h-32 overflow-y-auto overscroll-none scrollbar-hide">
-                                <template x-if="form.regencyId && regions.kecamatan[form.regencyId]">
-                                    <template x-for="item in regions.kecamatan[form.regencyId].filter(i => i.name.toLowerCase().includes(pickerSearch.toLowerCase()))" :key="item.id">
-                                        <label class="flex items-center gap-3 px-3 py-2.5 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors last:border-b-0">
-                                            <input type="radio" name="distRadio" :value="item.id" x-model="form.districtId" @change="pickerOpen = false; form.villageId=''" class="hidden">
-                                            <div class="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center shrink-0 transition-colors"
-                                                 :class="form.districtId === item.id ? 'border-emerald-500' : ''">
-                                                <div class="w-2 h-2 rounded-full bg-emerald-500 transition-transform duration-200"
-                                                     :class="form.districtId === item.id ? 'scale-100' : 'scale-0'"></div>
-                                            </div>
-                                            <span class="text-xs" :class="form.districtId === item.id ? 'font-bold text-gray-900' : 'font-medium text-gray-700'" x-text="item.name"></span>
-                                        </label>
-                                    </template>
-                                </template>
-                                <div x-show="form.regencyId && regions.kecamatan[form.regencyId] && regions.kecamatan[form.regencyId].filter(i => i.name.toLowerCase().includes(pickerSearch.toLowerCase())).length === 0" class="text-center py-4 text-xs text-gray-400">Tidak ditemukan</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Kelurahan -->
-                    <div x-data="{ pickerOpen: false, pickerSearch: '', pickerDirection: 'down' }" class="relative">
-                        <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Kelurahan <span class="text-red-400">*</span></label>
-                        <button @click="let rect = $event.currentTarget.getBoundingClientRect(); pickerDirection = (window.innerHeight - rect.bottom) < 250 ? 'up' : 'down'; pickerOpen = !pickerOpen" :disabled="!form.districtId"
-                                class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 flex items-center justify-between text-sm transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-50 disabled:text-gray-400"
-                                :class="!form.villageId ? 'text-gray-400' : 'text-gray-900'">
-                            <span x-text="form.villageId ? getVillageName(form.districtId, form.villageId) : 'Pilih Kelurahan'"></span>
-                            <i class="ph-bold ph-caret-down text-gray-400 shrink-0 transition-transform" :class="pickerOpen ? 'rotate-180' : ''"></i>
-                        </button>
-                        
-                        <div x-show="pickerOpen" class="fixed inset-0 z-[15]" @click="pickerOpen = false" x-cloak></div>
-                        <div x-show="pickerOpen" x-transition class="absolute z-20 w-full flex flex-col bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden" :class="pickerDirection === 'up' ? 'bottom-full mb-1' : 'mt-1'">
-                            <div class="relative border-b border-gray-100 shrink-0">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                <input type="text" x-model="pickerSearch" placeholder="Cari..." class="w-full bg-transparent pl-8 pr-3 py-3 text-xs outline-none focus:bg-gray-50 transition-colors">
-                            </div>
-                            <div class="max-h-32 overflow-y-auto overscroll-none scrollbar-hide">
-                                <template x-if="form.districtId && regions.kelurahan[form.districtId]">
-                                    <template x-for="item in regions.kelurahan[form.districtId].filter(i => i.name.toLowerCase().includes(pickerSearch.toLowerCase()))" :key="item.id">
-                                        <label class="flex items-center gap-3 px-3 py-2.5 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors last:border-b-0">
-                                            <input type="radio" name="vilRadio" :value="item.id" x-model="form.villageId" @change="pickerOpen = false" class="hidden">
-                                            <div class="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center shrink-0 transition-colors"
-                                                 :class="form.villageId === item.id ? 'border-emerald-500' : ''">
-                                                <div class="w-2 h-2 rounded-full bg-emerald-500 transition-transform duration-200"
-                                                     :class="form.villageId === item.id ? 'scale-100' : 'scale-0'"></div>
-                                            </div>
-                                            <span class="text-xs" :class="form.villageId === item.id ? 'font-bold text-gray-900' : 'font-medium text-gray-700'" x-text="item.name"></span>
-                                        </label>
-                                    </template>
-                                </template>
-                                <div x-show="form.districtId && regions.kelurahan[form.districtId] && regions.kelurahan[form.districtId].filter(i => i.name.toLowerCase().includes(pickerSearch.toLowerCase())).length === 0" class="text-center py-4 text-xs text-gray-400">Tidak ditemukan</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    </div>
-
-                    <!-- Alamat Cabang -->
+                    <!-- Tipe Kurir Dropdown (Custom, No Search) -->
                     <div>
-                        <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Alamat Cabang <span class="text-red-400">*</span></label>
-                        <textarea x-model="form.address" placeholder="Masukkan alamat lengkap cabang" rows="3"
-                            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all resize-none"></textarea>
+                        <div x-data="{ pickerOpen: false, triggerWidth: '100%', options: [{id: 'Internal', name: 'Internal'}, {id: 'Eksternal', name: 'Eksternal'}] }" class="relative">
+                            <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Tipe Kurir <span class="text-red-400">*</span></label>
+                            <button x-ref="trigger" @click="pickerOpen = !pickerOpen; triggerWidth = $el.offsetWidth + 'px'" type="button"
+                                    class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 flex items-center justify-between text-sm transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                                    :class="!form.tipeKurir ? 'text-gray-400' : 'text-gray-900'">
+                                <span x-text="form.tipeKurir ? form.tipeKurir : 'Pilih Tipe'"></span>
+                                <i class="ph-bold ph-caret-down text-gray-400 shrink-0 transition-transform" :class="pickerOpen ? 'rotate-180' : ''"></i>
+                            </button>
+                            
+                            <template x-teleport="body">
+                                <div x-show="pickerOpen" class="fixed inset-0 z-[110]" @click="pickerOpen = false" x-cloak></div>
+                            </template>
+                            <template x-teleport="body">
+                                <div x-show="pickerOpen" x-anchor.bottom-start.offset.4="$refs.trigger" :style="`width: ${triggerWidth}`" x-transition class="absolute z-[120] flex flex-col bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden py-1" x-cloak>
+                                    <template x-for="item in options" :key="item.id">
+                                        <label class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors">
+                                            <input type="radio" name="tipeKurirRadio" :value="item.id" x-model="form.tipeKurir" @change="pickerOpen = false; form.name=''" class="hidden">
+                                            <div class="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center shrink-0 transition-colors"
+                                                 :class="form.tipeKurir === item.id ? 'border-emerald-500' : ''">
+                                                <div class="w-2 h-2 rounded-full bg-emerald-500 transition-transform duration-200"
+                                                     :class="form.tipeKurir === item.id ? 'scale-100' : 'scale-0'"></div>
+                                            </div>
+                                            <span class="text-xs" :class="form.tipeKurir === item.id ? 'font-bold text-gray-900' : 'font-medium text-gray-700'" x-text="item.name"></span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
                     </div>
 
-                    <!-- Link Google Maps -->
-                    <div>
-                        <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Link Google Maps</label>
-                        <input x-model="form.mapLink" type="text" placeholder="https://maps.google.com/..."
+                    <!-- Input Nama Kurir (Eksternal) -->
+                    <div x-show="form.tipeKurir === 'Eksternal'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0">
+                        <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Nama Kurir <span class="text-red-400">*</span></label>
+                        <input x-model="form.name" type="text" placeholder="Misal: Gojek, Grab, Maxim"
                             class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all">
                     </div>
+
+                    <!-- Pilihan Karyawan (Internal) -->
+                    <div x-show="form.tipeKurir === 'Internal'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
+                        <div x-data="{ pickerOpen: false, pickerSearch: '', triggerWidth: '100%' }" class="relative">
+                            <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Pilih Karyawan <span class="text-red-400">*</span></label>
+                            <button x-ref="trigger" @click="pickerOpen = !pickerOpen; triggerWidth = $el.offsetWidth + 'px'" type="button"
+                                    class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 flex items-center justify-between text-sm transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                                    :class="!form.name ? 'text-gray-400' : 'text-gray-900'">
+                                <span x-text="form.name ? form.name : 'Pilih karyawan...'"></span>
+                                <i class="ph-bold ph-caret-down text-gray-400 shrink-0 transition-transform" :class="pickerOpen ? 'rotate-180' : ''"></i>
+                            </button>
+                            
+                            <template x-teleport="body">
+                                <div x-show="pickerOpen" class="fixed inset-0 z-[110]" @click="pickerOpen = false" x-cloak></div>
+                            </template>
+                            <template x-teleport="body">
+                                <div x-show="pickerOpen" x-anchor.bottom-start.offset.4="$refs.trigger" :style="`width: ${triggerWidth}`" x-transition class="absolute z-[120] flex flex-col bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden" x-cloak>
+                                <div class="relative border-b border-gray-100 shrink-0">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                    <input type="text" x-model="pickerSearch" placeholder="Cari karyawan..." class="w-full bg-transparent pl-8 pr-3 py-3 text-xs outline-none focus:bg-gray-50 transition-colors">
+                                </div>
+                                <div class="max-h-32 overflow-y-auto overscroll-none scrollbar-hide">
+                                    <template x-for="item in karyawanList.filter(i => i.name.toLowerCase().includes(pickerSearch.toLowerCase()))" :key="item.id">
+                                        <label class="flex items-center gap-3 px-3 py-2.5 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors last:border-b-0">
+                                            <input type="radio" name="karyawanRadio" :value="item.name" x-model="form.name" @change="pickerOpen = false" class="hidden">
+                                            <div class="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center shrink-0 transition-colors"
+                                                 :class="form.name === item.name ? 'border-emerald-500' : ''">
+                                                <div class="w-2 h-2 rounded-full bg-emerald-500 transition-transform duration-200"
+                                                     :class="form.name === item.name ? 'scale-100' : 'scale-0'"></div>
+                                            </div>
+                                            <span class="text-xs" :class="form.name === item.name ? 'font-bold text-gray-900' : 'font-medium text-gray-700'" x-text="item.name"></span>
+                                        </label>
+                                    </template>
+                                    <div x-show="karyawanList.filter(i => i.name.toLowerCase().includes(pickerSearch.toLowerCase())).length === 0" class="text-center py-4 text-xs text-gray-400">Tidak ditemukan</div>
+                                </div>
+                            </div>
+                            </template>
+                        </div>
+                    </div>
+
+
                 </div>
             </div>
 
@@ -1414,7 +1308,7 @@
                     Batal
                 </button>
                 <button @click="saveProduct()" class="flex-1 h-11 rounded-xl bg-[#0b595b] hover:bg-[#0a4e50] text-white text-sm font-semibold transition-colors shadow-sm">
-                    <span x-text="editingProduct ? 'Simpan Perubahan' : 'Tambah Cabang'"></span>
+                    <span x-text="editingProduct ? 'Simpan Perubahan' : 'Tambah Kurir'"></span>
                 </button>
             </div>
         </div>
@@ -1448,9 +1342,9 @@
                 <div class="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
                     <i class="ph-fill ph-trash text-2xl text-red-500"></i>
                 </div>
-                <h4 class="text-base font-bold text-gray-900 mb-1.5">Hapus Cabang?</h4>
+                <h4 class="text-base font-bold text-gray-900 mb-1.5">Hapus Kurir?</h4>
                 <p class="text-sm text-gray-500">
-                    Cabang <strong class="text-gray-700" x-text="deletingProduct?.name"></strong> akan dihapus permanen.
+                    Kurir <strong class="text-gray-700" x-text="deletingProduct?.name"></strong> akan dihapus permanen.
                 </p>
             </div>
             <div class="px-6 pb-6 flex items-center gap-3">
@@ -1465,7 +1359,7 @@
     </div>
 
     <!-- ================================ -->
-    <!-- MODAL: Detail Cabang             -->
+    <!-- MODAL: Detail Kurir             -->
     <!-- ================================ -->
     <div x-show="detailModalOpen" class="fixed inset-0 z-[120] flex items-center justify-center px-4" x-cloak>
         <!-- Backdrop -->
@@ -1486,44 +1380,21 @@
              
              <div class="p-6 flex-1 flex flex-col">
                  <div class="flex items-center justify-between mb-6">
-                     <h3 class="text-lg font-bold text-gray-800">Detail Cabang</h3>
+                     <h3 class="text-lg font-bold text-gray-800">Detail Kurir</h3>
                      <button @click="detailModalOpen = false" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
                          <i class="ph-bold ph-x"></i>
                      </button>
                  </div>
-    
+
                  <template x-if="selectedDetailProduct">
                      <div class="flex flex-col gap-5 text-sm mb-2 flex-1 mt-2">
                          <div class="flex gap-3 items-center">
-                             <i class="ph-duotone ph-storefront text-2xl text-emerald-500 shrink-0"></i>
-                             <div class="min-w-0 flex-1">
-                                 <div class="font-bold text-gray-800 break-words" x-text="selectedDetailProduct.name"></div>
-                                 <div class="text-[11px] text-gray-400 font-medium">Nama Lengkap Cabang</div>
+                             <i class="ph-duotone ph-truck text-2xl text-emerald-500 shrink-0"></i>
+                             <div>
+                                 <div class="font-bold text-gray-800" x-text="selectedDetailProduct.name"></div>
+                                 <div class="text-[11px] text-gray-400 font-medium">Nama Kurir</div>
                              </div>
-                         </div>                          <!-- Alamat Cabang (Tampil dengan Link jika ada mapLink, atau Teks biasa jika tanpa mapLink) -->
-                          <div x-show="selectedDetailProduct.address && selectedDetailProduct.address.trim() !== '' && selectedDetailProduct.address !== '-'" class="flex gap-3 items-start">
-                              <i class="ph-duotone ph-map-pin text-2xl text-emerald-500 shrink-0 mt-0.5"></i>
-                              <div class="min-w-0 flex-1">
-                                  <template x-if="selectedDetailProduct.mapLink && selectedDetailProduct.mapLink.trim() !== ''">
-                                      <div>
-                                          <a :href="selectedDetailProduct.mapLink"
-                                             target="_blank"
-                                             class="text-sm font-bold text-blue-600 hover:text-blue-700 border-b border-dashed border-blue-400 hover:border-blue-600 pb-0.5 inline transition-colors break-words cursor-pointer">
-                                              <span x-text="selectedDetailProduct.address"></span>
-                                              <i class="ph-bold ph-arrow-up-right text-xs inline-block ml-1 align-middle"></i>
-                                          </a>
-                                          <div class="text-[11px] text-gray-400 font-medium mt-0.5">Alamat Cabang (Klik untuk Buka Google Maps)</div>
-                                      </div>
-                                  </template>
-                                  <template x-if="!selectedDetailProduct.mapLink || selectedDetailProduct.mapLink.trim() === ''">
-                                      <div>
-                                          <div class="text-sm font-bold text-gray-800 leading-snug break-words" x-text="selectedDetailProduct.address"></div>
-                                          <div class="text-[11px] text-gray-400 font-medium mt-0.5">Alamat Cabang</div>
-                                      </div>
-                                  </template>
-                              </div>
-                          </div>
-
+                         </div>
                         <!-- Terakhir Diperbarui & Diperbarui Oleh (Kombinasi B Tanpa Garis) -->
                         <div class="flex gap-3 items-start">
                             <i class="ph-duotone ph-clock text-2xl text-emerald-500 shrink-0 mt-0.5"></i>
@@ -1574,7 +1445,8 @@
                 tempSelectedType: [],
                 allTypes: [
                     'Semua', 
-                    'Transfer'
+                    'Internal',
+                    'Eksternal'
                 ],
                 
                 allBranches: [
@@ -1620,90 +1492,14 @@
                     }
                 },
 
-                // Price Popup (Floating)
-                editingPriceId: null,
-                editingPriceValue: 0,
-                pricePopupY: 0,
-                pricePopupX: 0,
-                pricePopupW: 0,
-
                 // Drawer (Add/Edit)
                 drawerOpen: false,
                 editingProduct: null,
-                form: { provinceId: '', regencyId: '', districtId: '', villageId: '', address: '', mapLink: '', name: '', uniqueId: '' },
-
-                // Mock Regional Data
-                regions: (() => {
-                    const provinsi = [
-                        { id: '31', name: 'DKI JAKARTA' },
-                        { id: '32', name: 'JAWA BARAT' },
-                        { id: '33', name: 'JAWA TENGAH' },
-                        { id: '34', name: 'DI YOGYAKARTA' },
-                        { id: '35', name: 'JAWA TIMUR' }
-                    ];
-                    
-                    const kabNames = {
-                        '31': ['KOTA JAKARTA SELATAN', 'KOTA JAKARTA TIMUR', 'KOTA JAKARTA PUSAT', 'KOTA JAKARTA BARAT', 'KOTA JAKARTA UTARA'],
-                        '32': ['KOTA BANDUNG', 'KOTA DEPOK', 'KOTA BOGOR', 'KOTA BEKASI', 'KABUPATEN BOGOR'],
-                        '33': ['KOTA SEMARANG', 'KOTA SURAKARTA', 'KABUPATEN CILACAP', 'KABUPATEN BANYUMAS', 'KABUPATEN PURBALINGGA'],
-                        '34': ['KOTA YOGYAKARTA', 'KABUPATEN KULON PROGO', 'KABUPATEN BANTUL', 'KABUPATEN GUNUNG KIDUL', 'KABUPATEN SLEMAN'],
-                        '35': ['KOTA SURABAYA', 'KOTA MALANG', 'KABUPATEN SIDOARJO', 'KABUPATEN GRESIK', 'KABUPATEN JEMBER']
-                    };
-                    
-                    const kecNames = {
-                        '31': ['Kebayoran Baru', 'Tebet', 'Setiabudi', 'Mampang Prapatan', 'Pasar Minggu', 'Matraman', 'Pulogadung', 'Jatinegara', 'Kramat Jati', 'Pasar Rebo', 'Gambir', 'Sawah Besar', 'Kemayoran', 'Senen', 'Cempaka Putih', 'Cengkareng', 'Grogol', 'Taman Sari', 'Tambora', 'Kebon Jeruk', 'Penjaringan', 'Tanjung Priok', 'Koja', 'Cilincing', 'Pademangan'],
-                        '32': ['Sukasari', 'Cidadap', 'Bandung Wetan', 'Astana Anyar', 'Bojongloa Kaler', 'Pancoran Mas', 'Cimanggis', 'Sawangan', 'Limo', 'Sukmajaya', 'Bogor Selatan', 'Bogor Timur', 'Bogor Utara', 'Bogor Tengah', 'Bogor Barat', 'Bekasi Timur', 'Bekasi Barat', 'Bekasi Utara', 'Bekasi Selatan', 'Rawalumbu', 'Cibinong', 'Gunung Putri', 'Cileungsi', 'Jonggol', 'Bogor'],
-                        '33': ['Semarang Tengah', 'Semarang Utara', 'Semarang Timur', 'Gayamsari', 'Genuk', 'Laweyan', 'Serengan', 'Pasar Kliwon', 'Jebres', 'Banjarsari', 'Kedungreja', 'Kroya', 'Majenang', 'Cilacap Selatan', 'Cilacap Tengah', 'Purwokerto Selatan', 'Purwokerto Barat', 'Purwokerto Timur', 'Purwokerto Utara', 'Sokaraja', 'Kemangkon', 'Bukateja', 'Kejobong', 'Kaligondang', 'Purbalingga'],
-                        '34': ['Mantrijeron', 'Kraton', 'Mergangsan', 'Umbulharjo', 'Kotagede', 'Temon', 'Wates', 'Panjatan', 'Galur', 'Lendah', 'Srandakan', 'Sanden', 'Kretek', 'Pundong', 'Bambanglipuro', 'Panggang', 'Purwosari', 'Balikpapan', 'Tepus', 'Rongkop', 'Gamping', 'Godean', 'Moyudan', 'Minggir', 'Seyegan'],
-                        '35': ['Gubeng', 'Tegalsari', 'Simokerto', 'Genteng', 'Bubutan', 'Blimbing', 'Klojen', 'Kedungkandang', 'Sukun', 'Lowokwaru', 'Tarik', 'Prambon', 'Krembung', 'Porong', 'Jabon', 'Wringinanom', 'Driyorejo', 'Kedamean', 'Menganti', 'Cerme', 'Kencong', 'Gumukmas', 'Puger', 'Wuluhan', 'Ambulu']
-                    };
-
-                    const kelNames = ['Maju', 'Jaya', 'Sejahtera', 'Makmur', 'Damai'];
-
-                    let kabupaten = {};
-                    let kecamatan = {};
-                    let kelurahan = {};
-
-                    provinsi.forEach(p => {
-                        kabupaten[p.id] = [];
-                        let provKec = kecNames[p.id];
-                        let kecIdx = 0;
-                        
-                        for (let i = 1; i <= 5; i++) {
-                            const kabId = p.id + String(i).padStart(2, '0');
-                            kabupaten[p.id].push({ id: kabId, name: kabNames[p.id][i-1] });
-                            
-                            kecamatan[kabId] = [];
-                            for (let j = 1; j <= 5; j++) {
-                                const kecId = kabId + String(j).padStart(2, '0');
-                                kecamatan[kabId].push({ id: kecId, name: (provKec[kecIdx++] || 'Kecamatan ' + j).toUpperCase() });
-                                
-                                kelurahan[kecId] = [];
-                                for (let k = 1; k <= 5; k++) {
-                                    const kelId = kecId + String(k).padStart(2, '0');
-                                    kelurahan[kecId].push({ id: kelId, name: 'KELURAHAN ' + kelNames[k-1].toUpperCase() });
-                                }
-                            }
-                        }
-                    });
-
-                    return { provinsi, kabupaten, kecamatan, kelurahan };
-                })(),
+                form: { name: '', uniqueId: '', tipeKurir: 'Internal' },
                 
-                // Branch Picker for Pricing
-                branchPickerOpen: false,
-                activeBranchRule: null,
-                tempSelectedBranches: [],
-
-                // Variant accordion
-                expandedVariantIds: [],
-                editingVariantPrice: { productId: null, variantId: null, value: 0 },
-
-                // Delete Modal
+                // Modals
                 deleteModalOpen: false,
                 deletingProduct: null,
-
-                // Detail Modal
                 detailModalOpen: false,
                 selectedDetailProduct: null,
                 
@@ -1721,29 +1517,37 @@
                     'bg-orange-50 text-orange-600 border-orange-100'
                 ],
 
-                // Sample Data (Cabang)
+                karyawanList: [
+                    { id: 1, name: 'Achmad Noorman Setiawan' },
+                    { id: 2, name: 'Al Afghani' },
+                    { id: 3, name: 'Alfina Zakya Ula' },
+                    { id: 4, name: 'Dwi Febbrianti Robbiatul Adawiyah' },
+                    { id: 5, name: 'Maharani Purwitasari' },
+                    { id: 6, name: 'Muhammad Chamim' },
+                    { id: 7, name: 'Muhammad Nur Wa\'Id' },
+                    { id: 8, name: 'Riniatur Rojiya' },
+                    { id: 9, name: 'Salmatul Farida' },
+                    { id: 10, name: 'Zulki Arga Rahman' }
+                ],
+
+                // Sample Data (Kurir)
                 products: (() => {
                     const bases = [
-                        { name: 'Gresik / Gresik / Sidokumpul - 001', uniqueId: 'CBG-0001', address: 'Jl. Dr. Soetomo No. 15, Sidokumpul, Gresik', mapLink: 'https://maps.google.com/?q=Jl.+Dr.+Soetomo+No.+15,+Sidokumpul,+Gresik', themeClass: 'bg-emerald-50 text-emerald-600 border-emerald-100', createdAt: '2025-01-10T08:00:00Z', updatedAt: '2025-01-10T08:00:00Z' },
-                        { name: 'Gresik / Gresik / Sidokumpul - 002', uniqueId: 'CBG-0002', address: 'Jl. Jaksa Agung Suprapto No. 28, Sidokumpul, Gresik', mapLink: '', themeClass: 'bg-blue-50 text-blue-600 border-blue-100', createdAt: '2025-02-15T10:30:00Z', updatedAt: '2026-08-28T14:15:00Z' },
-                        { name: 'Gresik / Kebomas / Randuagung - 001', uniqueId: 'CBG-0003', address: 'Jl. Wahidin Sudirohusodo No. 45, Randuagung, Kebomas, Gresik', mapLink: 'https://maps.google.com/?q=Jl.+Wahidin+Sudirohusodo+No.+45,+Randuagung,+Kebomas,+Gresik', themeClass: 'bg-amber-50 text-amber-600 border-amber-100', createdAt: '2025-03-20T09:45:00Z', updatedAt: '2026-08-20T11:20:00Z' },
-                        { name: 'Gresik / Manyar / Yosowilangun - 001', uniqueId: 'CBG-0004', address: 'Jl. Kalimantan No. 12, Perum GKB, Yosowilangun, Manyar, Gresik', mapLink: '', themeClass: 'bg-orange-50 text-orange-600 border-orange-100', createdAt: '2025-04-05T13:10:00Z', updatedAt: '2026-08-15T16:05:00Z' },
-                        { name: 'Gresik / Menganti / Pelemwatu - 001', uniqueId: 'CBG-0005', address: 'Jl. Raya Menganti No. 88, Pelemwatu, Menganti, Gresik', mapLink: 'https://maps.google.com/?q=Jl.+Raya+Menganti+No.+88,+Pelemwatu,+Menganti,+Gresik', themeClass: 'bg-purple-50 text-purple-600 border-purple-100', createdAt: '2025-05-12T08:25:00Z', updatedAt: '2026-08-25T09:30:00Z' },
-                        { name: 'Gresik / Driyorejo / Petiken - 001', uniqueId: 'CBG-0006', address: 'Jl. Raya Petiken No. 3A, Driyorejo, Gresik', mapLink: '', themeClass: 'bg-teal-50 text-teal-600 border-teal-100', createdAt: '2025-06-18T15:40:00Z', updatedAt: '2026-08-27T10:10:00Z' }
+                        { name: 'Gojek', uniqueId: 'KRR-0001', type: 'Eksternal', themeClass: 'bg-emerald-50 text-emerald-600 border-emerald-100', createdAt: '2025-01-10T08:00:00Z', updatedAt: '2025-01-10T08:00:00Z' },
+                        { name: 'Grab', uniqueId: 'KRR-0002', type: 'Eksternal', themeClass: 'bg-blue-50 text-blue-600 border-blue-100', createdAt: '2025-02-15T10:30:00Z', updatedAt: '2026-08-28T14:15:00Z' },
+                        { name: 'Maxim', uniqueId: 'KRR-0003', type: 'Eksternal', themeClass: 'bg-amber-50 text-amber-600 border-amber-100', createdAt: '2025-03-20T09:45:00Z', updatedAt: '2026-08-20T11:20:00Z' },
+                        { name: 'ShopeeFood', uniqueId: 'KRR-0004', type: 'Eksternal', themeClass: 'bg-orange-50 text-orange-600 border-orange-100', createdAt: '2025-04-05T13:10:00Z', updatedAt: '2026-08-15T16:05:00Z' },
+                        { name: 'Muhammad Chamim', uniqueId: 'KRR-0005', type: 'Internal', themeClass: 'bg-blue-50 text-blue-600 border-blue-100', createdAt: '2025-05-12T08:25:00Z', updatedAt: '2026-08-25T09:30:00Z' },
+                        { name: 'Al Afghani', uniqueId: 'KRR-0006', type: 'Internal', themeClass: 'bg-teal-50 text-teal-600 border-teal-100', createdAt: '2025-06-18T15:40:00Z', updatedAt: '2026-08-27T10:10:00Z' },
+                        { name: 'Zulki Arga Rahman', uniqueId: 'KRR-0007', type: 'Internal', themeClass: 'bg-purple-50 text-purple-600 border-purple-100', createdAt: '2025-07-22T11:55:00Z', updatedAt: '2026-08-22T14:45:00Z' }
                     ];
                     let id = 1;
                     const result = [];
                     
                     // Add Base Units
-                    bases.forEach((b, idx) => {
-                        const distId = '35040' + ((idx % 5) + 1);
+                    bases.forEach(b => {
                         result.push({
-                            id: id++, name: b.name, uniqueId: b.uniqueId, address: b.address || '',
-                            mapLink: b.mapLink || '',
-                            provinceId: '35',
-                            regencyId: '3504',
-                            districtId: distId,
-                            villageId: distId + '01',
+                            id: id++, name: b.name, uniqueId: b.uniqueId, type: b.type,
                             createdAt: b.createdAt, updatedAt: b.updatedAt,
                             themeClass: b.themeClass, variants: [], branch: 'Gresik / Driyorejo / Petiken - 001',
                             status: Math.random() > 0.1 ? 'Aktif' : 'Nonaktif'
@@ -1764,8 +1568,7 @@
                             const q = this.searchQuery.toLowerCase();
                             const matchName = p.name.toLowerCase().includes(q);
                             const matchType = p.type.toLowerCase().includes(q);
-                            const matchVariant = p.variants && p.variants.some(v => v.name.toLowerCase().includes(q));
-                            if (!matchName && !matchType && !matchVariant) return false;
+                            if (!matchName && !matchType) return false;
                         }
                         return true;
                     });
@@ -1888,24 +1691,10 @@
                         this.form = { 
                             name: product.name, 
                             uniqueId: product.uniqueId,
-                            address: product.address || '',
-                            mapLink: product.mapLink || '',
-                            provinceId: product.provinceId || '',
-                            regencyId: product.regencyId || '',
-                            districtId: product.districtId || '',
-                            villageId: product.villageId || ''
+                            tipeKurir: product.type
                         };
                     } else {
-                        this.form = { 
-                            name: '', 
-                            uniqueId: '', 
-                            address: '', 
-                            mapLink: '',
-                            provinceId: '',
-                            regencyId: '',
-                            districtId: '',
-                            villageId: ''
-                        };
+                        this.form = { name: '', uniqueId: '', tipeKurir: 'Internal' };
                     }
                     this.drawerOpen = true;
                     if (window.self !== window.top) {
@@ -1967,90 +1756,25 @@
                     }
                 },
                 saveProduct() {
-                    if (!this.form.provinceId) {
-                        alert('Provinsi wajib dipilih.');
-                        return;
-                    }
-
-                    let kabName = this.getRegencyName(this.form.provinceId, this.form.regencyId) || '';
-                    if (!this.form.regencyId || !kabName) {
-                        alert('Kabupaten / Kota wajib dipilih.');
-                        return;
-                    }
-
-                    let kecName = this.getDistrictName(this.form.regencyId, this.form.districtId) || '';
-                    if (!this.form.districtId || !kecName) {
-                        alert('Kecamatan wajib dipilih.');
-                        return;
-                    }
-
-                    let kelName = this.getVillageName(this.form.districtId, this.form.villageId) || '';
-                    if (!this.form.villageId || !kelName) {
-                        alert('Kelurahan wajib dipilih.');
-                        return;
-                    }
-
-                    if (!this.form.address || !this.form.address.trim()) {
-                        alert('Alamat cabang wajib diisi.');
-                        return;
-                    }
-
-                    let cleanKab = kabName.replace(/^(KABUPATEN|KOTA)\s+/i, '');
-                    let cleanKec = kecName.replace(/^KECAMATAN\s+/i, '');
-                    let cleanKel = kelName.replace(/^KELURAHAN\s+/i, '');
-
-                    let titleCase = (str) => str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
-                    let baseName = `${titleCase(cleanKab)} / ${titleCase(cleanKec)} / ${titleCase(cleanKel)}`;
-
-                    let newName = baseName + ' - 001';
+                    if (!this.form.name) return;
                     
-                    if (this.editingProduct && this.editingProduct.name.startsWith(baseName)) {
-                        newName = this.editingProduct.name;
-                    } else {
-                        let counter = 1;
-                        let existingNames = this.products.map(p => p.name);
-                        while (existingNames.includes(baseName + ' - ' + String(counter).padStart(3, '0'))) {
-                            counter++;
-                        }
-                        newName = baseName + ' - ' + String(counter).padStart(3, '0');
-                    }
-                    
-                    this.form.name = newName;
-                    let nextIdNum = 1;
-                    if (this.products.length > 0) {
-                        const ids = this.products.map(p => {
-                            const match = p.uniqueId.match(/CBG-(\d+)/);
-                            return match ? parseInt(match[1], 10) : 0;
-                        });
-                        nextIdNum = Math.max(...ids) + 1;
-                    }
-                    const generatedUniqueId = this.form.uniqueId || ('CBG-' + String(nextIdNum).padStart(4, '0'));
+                    const generatedUniqueId = this.form.uniqueId || ('KRR-' + String(Math.floor(Math.random() * 10000)).padStart(4, '0'));
 
                     if (this.editingProduct) {
                         Object.assign(this.editingProduct, {
                             name: this.form.name,
                             uniqueId: generatedUniqueId,
-                            address: this.form.address.trim(),
-                            mapLink: this.form.mapLink ? this.form.mapLink.trim() : '',
-                            provinceId: this.form.provinceId,
-                            regencyId: this.form.regencyId,
-                            districtId: this.form.districtId,
-                            villageId: this.form.villageId
+                            type: this.form.tipeKurir
                         });
                     } else {
                         this.products.push({
                             id: Date.now(),
                             name: this.form.name,
                             uniqueId: generatedUniqueId,
-                            address: this.form.address.trim(),
-                            mapLink: this.form.mapLink ? this.form.mapLink.trim() : '',
-                            provinceId: this.form.provinceId,
-                            regencyId: this.form.regencyId,
-                            districtId: this.form.districtId,
-                            villageId: this.form.villageId,
+                            type: this.form.tipeKurir,
                             createdAt: new Date().toISOString(),
                             updatedAt: new Date().toISOString(),
-                            themeClass: this.avatarThemes ? this.avatarThemes[Math.floor(Math.random() * this.avatarThemes.length)] : 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                            themeClass: this.avatarThemes[Math.floor(Math.random() * this.avatarThemes.length)],
                             variants: [],
                             branch: this.selectedBranch,
                             status: 'Aktif'
@@ -2073,27 +1797,6 @@
                 },
                 
                 // Detail Modal
-                                getProvinceName(id) {
-                    if (!id) return '';
-                    const p = this.regions.provinsi.find(x => x.id === id);
-                    return p ? p.name : '';
-                },
-                getRegencyName(provId, id) {
-                    if (!provId || !id || !this.regions.kabupaten[provId]) return '';
-                    const r = this.regions.kabupaten[provId].find(x => x.id === id);
-                    return r ? r.name : '';
-                },
-                getDistrictName(regId, id) {
-                    if (!regId || !id || !this.regions.kecamatan[regId]) return '';
-                    const d = this.regions.kecamatan[regId].find(x => x.id === id);
-                    return d ? d.name : '';
-                },
-                getVillageName(distId, id) {
-                    if (!distId || !id || !this.regions.kelurahan[distId]) return '';
-                    const v = this.regions.kelurahan[distId].find(x => x.id === id);
-                    return v ? v.name : '';
-                },
-
                 openDetailModal(product) {
                     this.selectedDetailProduct = product;
                     this.detailModalOpen = true;

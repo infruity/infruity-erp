@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pesanan - Penjualan | ERP Portal</title>
-    <meta name="description" content="Modul Penjualan Pesanan - Sistem ERP Infruity.">
+    <title>Kategori - Master | ERP Portal</title>
+    <meta name="description" content="Modul Master Kategori - Sistem ERP Infruity.">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -202,7 +202,13 @@
 </head>
 
 <body class="font-sans bg-[#e5e9f3] text-gray-800 antialiased h-screen overflow-hidden">
-    <script>if(window.self!==window.top){document.body.classList.add("in-iframe");}</script>
+    <script>
+        if (window.self !== window.top) {
+            document.body.classList.add("in-iframe");
+        } else if (!window.location.search.includes("standalone=true")) {
+            window.location.replace("../../app.html#002. Master/012. Kategori/index.html");
+        }
+    </script>
 
     <div x-data="erpApp()" class="flex h-screen w-full">
 
@@ -282,7 +288,7 @@
                                 <span>Produk</span>
                             </a>
                             <a href="../../002. Master/012. Kategori/index.html"
-                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                class="submenu-link active relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
                                 <i class="ph ph-tag sidebar-icon text-lg w-5 text-center text-white/35"></i>
                                 <span>Kategori</span>
                             </a>
@@ -456,7 +462,7 @@
                                 <span>Kasir / POS</span>
                             </a>
                             <a href="../../006. Penjualan/002. Pesanan/index.html"
-                                class="submenu-link active relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
                                 <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
                                 <span>Pesanan</span>
                             </a>
@@ -664,11 +670,11 @@
                         <i class="ph ph-list text-2xl"></i>
                     </button>
                     <div class="hidden sm:block">
-                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5">Pesanan</h1>
+                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5">Kategori</h1>
                         <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
-                            <span>Penjualan</span>
+                            <span>Master</span>
                             <i class="ph ph-caret-right text-[0.55rem]"></i>
-                            <span>Pesanan</span>
+                            <span>Kategori</span>
                         </div>
                     </div>
                 </div>
@@ -698,7 +704,7 @@
                                 <h4 class="font-serif font-semibold text-gray-800">Notifikasi</h4>
                                 <span class="badge bg-strawberry text-white">3 Baru</span>
                             </div>
-                            <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                            <div class="max-h-72 overflow-y-auto overscroll-none divide-y divide-gray-50">
                                 <a href="#" class="notif-item flex gap-3 px-5 py-3.5">
                                     <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                                         <i class="ph-fill ph-package text-primary text-lg"></i>
@@ -721,14 +727,14 @@
             <!-- ================================ -->
             <!-- SCROLLABLE CONTENT AREA          -->
             <!-- ================================ -->
-            <main class="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
+            <main class="flex-1 overflow-y-auto overscroll-none px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
 
-                <!-- CONTENT: Pesanan -->
+                <!-- CONTENT: Kategori -->
                 <div class="animate-fade-in-up flex flex-col items-center justify-center py-16 my-auto text-center w-full">
                     <div class="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center mb-6">
                         <i class="ph-fill ph-chart-pie-slice text-primary text-5xl"></i>
                     </div>
-                    <h2 class="text-2xl font-serif font-bold text-gray-800 mb-2">Pesanan</h2>
+                    <h2 class="text-2xl font-serif font-bold text-gray-800 mb-2">Kategori</h2>
                     <p class="text-gray-400 text-sm max-w-sm mb-6">
                         Halaman ini sedang dalam tahap pengembangan. Navigasi sidebar sudah aktif — silakan klik menu
                         untuk berpindah halaman.
@@ -737,7 +743,7 @@
                         <span
                             class="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-200 text-sm text-gray-500 shadow-card">
                             <i class="ph ph-folder-open text-primary text-lg"></i>
-                            Modul: <strong>Penjualan</strong>
+                            Modul: <strong>Master</strong>
                         </span>
                         <span
                             class="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-200 text-sm text-gray-500 shadow-card">
@@ -760,7 +766,7 @@
                 sidebarOpen: false,
                 sidebarCollapsed: false,
                 theme: 'dark',
-                activeMenu: 'penjualan',
+                activeMenu: 'master',
 
                 toggleMenu(menu) {
                     if (this.sidebarCollapsed) {
