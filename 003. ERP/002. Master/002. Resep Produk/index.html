@@ -791,19 +791,9 @@
                     <!-- Main Content Card -->
                     <div class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
 
-                        <!-- Mobile Header: Logo Infruity + Nama Modul + Notif Bell -->
-                        <div class="sm:hidden px-4 py-3 bg-white/95 backdrop-blur-md border-b border-gray-100 flex items-center justify-between z-20 shrink-0 shadow-xs">
-                            <div class="flex items-center gap-2">
-                                <img src="../../assets/logo/Infruity Logo - 6.png" alt="Infruity Logo" style="height: 20px; width: auto; max-width: 100px;" class="object-contain" />
-                                <span class="text-gray-300 font-light text-sm">|</span>
-                                <span class="text-[12px] font-bold text-gray-800">Resep Produk</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition cursor-pointer relative">
-                                    <i class="ph-bold ph-bell text-xs"></i>
-                                    <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-rose-500 rounded-full ring-1 ring-white"></span>
-                                </div>
-                            </div>
+                        <!-- Mobile Header: Frosted Glass Effect -->
+                        <div class="sm:hidden absolute top-0 left-0 right-0 px-4 py-3.5 bg-white/75 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/50 flex items-center justify-center z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]">
+                            <img src="../../assets/logo/Infruity Logo - 6.png" alt="Infruity Logo" style="height: 30px; width: auto; max-width: 160px;" class="object-contain" />
                         </div>
 
                         <!-- FLOATING COUNTER PILL DI ATAS (MUNCUL SAAT SCROLL) -->
@@ -815,7 +805,7 @@
                              x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                              x-transition:leave-end="opacity-0 -translate-y-3 scale-95"
                              class="sm:hidden absolute left-0 right-0 z-30 pointer-events-none flex justify-center px-4"
-                             style="top: 58px;"
+                             style="top: 72px;"
                              x-cloak>
                             <div class="pointer-events-auto bg-white/95 backdrop-blur-md border border-gray-200/90 px-4 py-1.5 rounded-full shadow-[0_6px_24px_rgba(0,0,0,0.12)] text-[11px] text-gray-700 font-medium">
                                 Menampilkan <strong class="text-gray-900 font-semibold" x-text="Math.min(visibleCount, filteredProducts.length)"></strong> dari <strong class="text-gray-900 font-semibold" x-text="filteredProducts.length"></strong> resep
@@ -913,8 +903,8 @@
                             </span>
                         </div>
 
-                        <!-- Product List -->
-                        <div class="flex-1 overflow-y-auto overscroll-none min-h-0 relative scrollbar-hide" 
+                        <!-- Product List (with pt-[59px] for mobile glass clearance) -->
+                        <div class="flex-1 overflow-y-auto overscroll-none min-h-0 relative scrollbar-hide pt-[59px] sm:pt-0" 
                              :class="hasMore ? 'pb-20 sm:pb-0' : 'pb-24 sm:pb-0'"
                              @scroll.passive="handleScroll()">
                             <!-- Search overlay blocker (mobile) -->
@@ -943,17 +933,9 @@
                                             <!-- Name & Meta -->
                                             <div class="flex-1 min-w-0">
                                                 <div class="text-sm font-semibold text-gray-900 truncate" x-text="product.name"></div>
-                                                <div class="flex items-center gap-1.5 mt-0.5">
-                                                    <span class="text-[11px] text-gray-400">Resep Produk</span>
+                                                <div class="flex items-center text-xs mt-0.5">
+                                                    <span class="font-bold text-gray-800" x-text="'Rp ' + product.hpp.toLocaleString('id-ID')"></span><span class="text-gray-400 font-normal text-[11px]" x-text="'/' + product.unit"></span>
                                                 </div>
-                                            </div>
-
-                                            <!-- HPP / Unit column (read-only) -->
-                                            <div class="shrink-0 w-44 flex items-center justify-end">
-                                                <span class="text-sm font-semibold text-gray-700 px-3 py-1.5 whitespace-nowrap">
-                                                    <span x-text="'Rp ' + product.hpp.toLocaleString('id-ID')"></span>
-                                                    <span class="text-gray-400 font-normal" x-text="'/' + product.unit"></span>
-                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -997,14 +979,9 @@
                                             <!-- Left: Name + meta -->
                                             <div class="flex-1 min-w-0">
                                                 <div class="text-sm font-semibold text-gray-900 truncate" x-text="product.name"></div>
-                                                <div class="text-xs text-gray-400 mt-0.5">Resep Produk</div>
-                                            </div>
-
-                                            <!-- Right: HPP (read-only) -->
-                                            <div class="shrink-0 flex items-center gap-1 ml-2">
-                                                <span class="text-sm font-bold text-gray-800 px-2 py-1 whitespace-nowrap">
-                                                    <span x-text="'Rp ' + product.hpp.toLocaleString('id-ID')"></span><span class="text-gray-400 font-normal text-xs" x-text="'/' + product.unit"></span>
-                                                </span>
+                                                <div class="flex items-center text-xs mt-0.5">
+                                                    <span class="font-bold text-gray-800" x-text="'Rp ' + product.hpp.toLocaleString('id-ID')"></span><span class="text-gray-400 font-normal text-[11px]" x-text="'/' + product.unit"></span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1343,7 +1320,7 @@
             </div>
 
             <!-- Form Content -->
-            <div class="shrink overflow-y-auto overscroll-none min-h-0 relative bg-gray-50/60" 
+            <div class="flex-1 overflow-y-auto overscroll-none min-h-0 relative bg-gray-50/60" 
                  x-data="{ 
                      scrollPos: 0, 
                      thumbHeight: 0, 
@@ -1367,11 +1344,11 @@
                  @resize.window="updateScroll()">
                 <div x-ref="scrollArea" 
                      @scroll="updateScroll(); isScrolling = true; clearTimeout(scrollTimeout); scrollTimeout = setTimeout(() => isScrolling = false, 800)" 
-                     class="h-full overflow-y-auto overscroll-none scrollbar-hide px-5 pb-8 pt-5" style="-webkit-overflow-scrolling: touch;">
-                <div class="flex flex-col gap-5">
+                     class="h-full overflow-y-auto overscroll-none scrollbar-hide px-5 pb-3.5 pt-5" style="-webkit-overflow-scrolling: touch;">
+                <div class="flex flex-col gap-4 h-full min-h-0">
 
                     <!-- 1. PILIH PRODUK (Tipe Perlu Resep) -->
-                    <div x-data="{ pickerOpen: false, pickerSearch: '' }" class="relative">
+                    <div x-data="{ pickerOpen: false, pickerSearch: '' }" class="relative shrink-0">
                         <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Pilih Produk <span class="text-red-400">*</span></label>
                         
                         <!-- Selected Trigger Button -->
@@ -1391,9 +1368,10 @@
                                     </div>
                                 </template>
                                 <div class="flex flex-col min-w-0 flex-1">
-                                    <span class="text-sm font-semibold truncate text-gray-900" 
-                                          x-text="form.productName ? form.productName : 'Pilih produk yang perlu resep...'"></span>
-                                    <span x-show="form.unit" class="text-[11px] text-gray-400" x-text="'Satuan hasil: ' + form.unit"></span>
+                                    <span class="text-sm truncate"
+                                          :class="form.productId ? 'font-semibold text-gray-900' : 'text-gray-400 font-normal'" 
+                                          x-text="form.productName ? form.productName : 'Pilih produk...'"></span>
+                                    <span x-show="form.productId && form.unit" class="text-[11px] text-gray-400 mt-0.5" x-text="'Satuan hasil: ' + form.unit"></span>
                                 </div>
                             </div>
                             <i class="ph-bold ph-caret-down text-gray-400 shrink-0 transition-transform ml-2" :class="pickerOpen ? 'rotate-180' : ''"></i>
@@ -1406,27 +1384,26 @@
                             <!-- Search -->
                             <div class="relative border-b border-gray-100 shrink-0 bg-gray-50/50">
                                 <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                                <input type="text" x-model="pickerSearch" placeholder="Cari produk olahan / resep..."
+                                <input type="text" x-model="pickerSearch" placeholder="Cari produk..."
                                        class="w-full bg-transparent pl-9 pr-4 py-2.5 text-xs outline-none focus:bg-white transition-colors">
                             </div>
                             <!-- Items List -->
                             <div class="max-h-52 overflow-y-auto overscroll-none scrollbar-hide divide-y divide-gray-50">
                                 <template x-for="prod in productsNeedingRecipe.filter(p => p.name.toLowerCase().includes(pickerSearch.toLowerCase()))" :key="prod.id">
                                     <div @click="selectProductForRecipe(prod); pickerOpen = false"
-                                         class="flex items-center gap-3 px-3.5 py-2.5 hover:bg-emerald-50/50 cursor-pointer transition-colors"
+                                         class="flex items-center justify-between gap-3 px-3.5 py-2.5 hover:bg-emerald-50/50 cursor-pointer transition-colors"
                                          :class="form.productId === prod.id ? 'bg-emerald-50' : ''">
-                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 border border-gray-100"
-                                             :style="'background-color:' + (prod.color || '#fff3e0')">
-                                            <span x-text="prod.emoji || '🧃'"></span>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="text-xs font-bold text-gray-900 truncate" x-text="prod.name"></div>
-                                            <div class="text-[10px] text-gray-400 flex items-center gap-1.5 mt-0.5">
-                                                <span class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-medium" x-text="prod.type"></span>
-                                                <span x-text="'Satuan: ' + prod.unit"></span>
+                                        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 border border-gray-100 shadow-2xs"
+                                                 :style="'background-color:' + (prod.color || '#fff3e0')">
+                                                <span x-text="prod.emoji || '🧃'"></span>
                                             </div>
+                                            <div class="text-xs font-bold text-gray-900 truncate" x-text="prod.name"></div>
                                         </div>
-                                        <i x-show="form.productId === prod.id" class="ph-bold ph-check text-emerald-600 text-sm"></i>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <span class="text-xs text-gray-400 font-medium" x-text="prod.unit"></span>
+                                            <i x-show="form.productId === prod.id" class="ph-bold ph-check text-emerald-600 text-sm"></i>
+                                        </div>
                                     </div>
                                 </template>
                                 <div x-show="productsNeedingRecipe.filter(p => p.name.toLowerCase().includes(pickerSearch.toLowerCase())).length === 0"
@@ -1437,168 +1414,85 @@
                         </div>
                     </div>
 
-                    <!-- 2 & 3. DAFTAR BAHAN BAKU (Multi Bahan Baku) -->
-                    <div class="flex flex-col gap-3">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <label class="text-xs font-semibold text-gray-600 block">Bahan Baku Resep <span class="text-red-400">*</span></label>
-                                <span class="text-[11px] text-gray-400">Komposisi bahan baku yang digunakan</span>
+                    <!-- Harga Pokok Produksi (HPP) - Read-only Field -->
+                    <div class="shrink-0">
+                        <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Harga Pokok Produksi (HPP)</label>
+                        <div class="w-full h-11 bg-gray-50 border border-gray-200 rounded-xl px-3.5 flex items-center gap-2.5 cursor-not-allowed select-none">
+                            <div class="w-6 h-6 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm shrink-0">
+                                <i class="ph-duotone ph-coins"></i>
                             </div>
-                            <!-- Button Tambah Bahan Baku -->
-                            <button type="button" @click="addIngredientRow()"
-                                    class="flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-200 transition-colors">
-                                <i class="ph-bold ph-plus text-xs"></i>
-                                <span>Tambah Bahan</span>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-sm font-extrabold text-gray-900" x-text="'Rp ' + calculatedTotalHpp.toLocaleString('id-ID')"></span>
+                                <span class="text-[11px] text-gray-400 font-normal" x-text="form.unit ? '/' + form.unit : '/porsi'"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2 & 3. DAFTAR BAHAN BAKU: TABULAR RECIPE STRIP -->
+                    <div class="bg-white border border-gray-200 rounded-2xl p-3.5 flex flex-col gap-2.5 shadow-xs flex-1 min-h-0 overflow-hidden">
+                        <div class="flex items-center justify-between pb-2 border-b border-gray-100 shrink-0">
+                            <div>
+                                <span class="text-xs font-bold text-gray-800 block">Daftar Bahan Baku <span class="text-red-400">*</span></span>
+                                <span class="text-[10px] text-gray-400" x-text="(form.ingredients || []).length + ' bahan terdaftar'"></span>
+                            </div>
+                            <button type="button" @click="ingredientPickerOpen = true; ingredientSearch = ''"
+                                    class="flex items-center gap-1 text-[11px] font-semibold text-white bg-[#0b595b] hover:bg-[#084547] px-2.5 py-1 rounded-lg shadow-2xs transition-all active:scale-95">
+                                <i class="ph-bold ph-plus text-[10px]"></i>
+                                <span>Tambah</span>
                             </button>
                         </div>
 
-                        <!-- Ingredient Items List -->
-                        <div class="flex flex-col gap-3">
+                        <!-- Empty State -->
+                        <div x-show="!form.ingredients || form.ingredients.length === 0" class="flex-1 flex flex-col items-center justify-center py-6 text-center text-xs text-gray-400 gap-0.5 leading-relaxed">
+                            <span>Belum ada bahan baku.</span>
+                            <span>Klik <span class="font-bold text-emerald-700 cursor-pointer hover:underline" @click="ingredientPickerOpen = true; ingredientSearch = ''">+ Tambah</span> untuk</span>
+                            <span>menambahkan bahan baku.</span>
+                        </div>
+
+                        <!-- Divide-y Rows (with Inner Scroll) -->
+                        <div class="divide-y divide-gray-100 flex-1 overflow-y-auto overscroll-contain scrollbar-hide min-h-0" x-show="form.ingredients && form.ingredients.length > 0">
                             <template x-for="(ing, idx) in form.ingredients" :key="ing.id || idx">
-                                <div class="bg-white border border-gray-200 rounded-xl p-3.5 shadow-sm flex flex-col gap-2.5 relative group">
-                                    <!-- Header Row with Item Index & Delete Button -->
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-[11px] font-bold text-gray-500 flex items-center gap-1.5">
-                                            <span class="w-4 h-4 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-[10px]" x-text="idx + 1"></span>
-                                            Bahan Baku #<span x-text="idx + 1"></span>
-                                        </span>
-                                        
-                                        <button type="button" @click="removeIngredientRow(idx)"
-                                                x-show="form.ingredients.length > 1"
-                                                class="w-7 h-7 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors"
-                                                title="Hapus Bahan">
-                                            <i class="ph-bold ph-trash text-sm"></i>
+                                <div class="py-2.5 flex items-center justify-between gap-3 group">
+                                    
+                                    <!-- Left: Emoji Container Shape & [Nama Buah / Bahan + Total Modal di bawahnya] -->
+                                    <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                        <div class="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0 border"
+                                             :style="'background-color: ' + (getMaterialData(ing.materialId, ing.materialName).color || '#f3f4f6') + '; border-color: ' + (getMaterialData(ing.materialId, ing.materialName).border || '#e5e7eb')">
+                                            <span x-text="getMaterialData(ing.materialId, ing.materialName).emoji"></span>
+                                        </div>
+                                        <div class="flex flex-col min-w-0 flex-1">
+                                            <span class="text-xs font-bold text-gray-900 truncate" x-text="ing.materialName || getMaterialData(ing.materialId, ing.materialName).name"></span>
+                                            <!-- Total Modal Per Item di Bawah Nama Buah (Tanpa titik dua ':') -->
+                                            <div class="mt-0.5 flex items-baseline gap-1">
+                                                <span class="text-[10px] text-gray-400 font-medium">Total Modal</span>
+                                                <span class="text-[11px] font-bold text-emerald-700" x-text="'Rp ' + Math.round(getIngredientCost(ing)).toLocaleString('id-ID')"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right: Takaran Input (Seamless Pill) + Tombol Hapus -->
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <div class="flex items-center bg-gray-100/90 hover:bg-gray-100/70 border border-gray-200/80 rounded-xl px-2.5 h-8 focus-within:bg-white focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 shadow-2xs transition-all">
+                                            <input type="text" inputmode="decimal" maxlength="7"
+                                                   :value="ing.displayAmount"
+                                                   @input="onAmountInput(ing, $event)"
+                                                   placeholder="0"
+                                                   class="w-10 bg-transparent text-xs font-bold text-gray-900 text-right outline-none">
+                                            <span class="text-[11px] font-semibold text-gray-500 select-none pl-1 shrink-0"
+                                                  x-text="ing.unit || getMaterialData(ing.materialId, ing.materialName).unit"></span>
+                                        </div>
+
+                                        <!-- Delete Button -->
+                                        <button type="button" @click="removeIngredientRow(idx)" x-show="form.ingredients.length > 1"
+                                                class="w-6 h-6 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors"
+                                                title="Hapus baris">
+                                            <i class="ph-bold ph-x text-xs"></i>
                                         </button>
                                     </div>
-
-                                    <!-- Pilih Bahan (Dropdown / Selector) -->
-                                    <div x-data="{ matPickerOpen: false, matSearch: '' }" class="relative">
-                                        <button type="button" @click="matPickerOpen = !matPickerOpen"
-                                                class="w-full h-10 bg-gray-50 hover:bg-gray-100/80 border border-gray-200 rounded-lg px-3 flex items-center justify-between text-left text-xs transition-colors"
-                                                :class="!ing.materialId ? 'text-gray-400' : 'text-gray-900 font-semibold'">
-                                            <div class="flex items-center gap-2 min-w-0 flex-1">
-                                                <i class="ph ph-cube text-emerald-600 shrink-0 text-sm"></i>
-                                                <span class="truncate" x-text="ing.materialName ? ing.materialName : 'Pilih Bahan Baku...'"></span>
-                                            </div>
-                                            <i class="ph-bold ph-caret-down text-gray-400 shrink-0 text-[10px] transition-transform ml-1" :class="matPickerOpen ? 'rotate-180' : ''"></i>
-                                        </button>
-
-                                        <!-- Dropdown Menu -->
-                                        <div x-show="matPickerOpen" class="fixed inset-0 z-[25]" @click="matPickerOpen = false" x-cloak></div>
-                                        <div x-show="matPickerOpen" x-transition
-                                             class="absolute z-30 w-full mt-1 flex flex-col bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
-                                            <div class="relative border-b border-gray-100 bg-gray-50/70">
-                                                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                                                <input type="text" x-model="matSearch" placeholder="Cari bahan baku..."
-                                                       class="w-full bg-transparent pl-8 pr-3 py-2 text-xs outline-none">
-                                            </div>
-                                            <div class="max-h-44 overflow-y-auto overscroll-none scrollbar-hide divide-y divide-gray-50">
-                                                <template x-for="mat in rawMaterialProducts.filter(m => m.name.toLowerCase().includes(matSearch.toLowerCase()))" :key="mat.id">
-                                                    <div @click="selectMaterialForIngredient(ing, mat); matPickerOpen = false"
-                                                         class="flex items-center justify-between px-3 py-2 text-xs hover:bg-emerald-50/60 cursor-pointer transition-colors"
-                                                         :class="ing.materialId === mat.id ? 'bg-emerald-50 font-bold text-emerald-800' : 'text-gray-700'">
-                                                        <div class="flex items-center gap-2 min-w-0">
-                                                            <span x-text="mat.emoji || '🍎'"></span>
-                                                            <span class="truncate" x-text="mat.name"></span>
-                                                        </div>
-                                                        <span class="text-[10px] text-gray-400 shrink-0 ml-2" x-text="'Satuan: ' + mat.unit"></span>
-                                                    </div>
-                                                </template>
-                                                <div x-show="rawMaterialProducts.filter(m => m.name.toLowerCase().includes(matSearch.toLowerCase())).length === 0"
-                                                     class="text-center py-4 text-xs text-gray-400">
-                                                    Bahan tidak ditemukan
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Takaran & Satuan Grid -->
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <!-- Jumlah / Takaran -->
-                                        <div>
-                                            <label class="text-[10px] font-semibold text-gray-400 mb-1 block">Takaran / Jumlah <span class="text-red-400">*</span></label>
-                                            <input type="number" step="any" min="0" x-model="ing.amount" placeholder="contoh: 150"
-                                                   class="w-full h-9 bg-gray-50 border border-gray-200 rounded-lg px-3 text-xs font-semibold text-gray-900 outline-none focus:border-emerald-500 focus:bg-white transition-all">
-                                        </div>
-                                        <!-- Satuan -->
-                                        <div>
-                                            <label class="text-[10px] font-semibold text-gray-400 mb-1 block">Satuan Takaran</label>
-                                            <select x-model="ing.unit"
-                                                    class="w-full h-9 bg-gray-50 border border-gray-200 rounded-lg px-2 text-xs font-medium text-gray-700 outline-none focus:border-emerald-500 focus:bg-white transition-all">
-                                                <option value="gr">Gram (gr)</option>
-                                                <option value="kg">Kilogram (kg)</option>
-                                                <option value="ml">Mililiter (ml)</option>
-                                                <option value="l">Liter (l)</option>
-                                                <option value="pcs">Pieces (pcs)</option>
-                                                <option value="pack">Pack</option>
-                                                <option value="cup">Cup</option>
-                                                <option value="sdm">Sendok Makan (sdm)</option>
-                                                <option value="sdt">Sendok Teh (sdt)</option>
-                                                <option value="butir">Butir</option>
-                                                <option value="potong">Potong</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <!-- Biaya Subtotal Bahan (Live Preview) -->
-                                    <div x-show="ing.materialId && parseFloat(ing.amount) > 0" 
-                                         class="flex items-center justify-between px-2.5 py-1.5 bg-emerald-50/60 rounded-lg border border-emerald-100/80 text-[11px] mt-0.5">
-                                        <div class="text-gray-500 flex items-center gap-1 min-w-0">
-                                            <span class="font-medium text-gray-600">Subtotal HPP:</span>
-                                            <span class="text-gray-400 truncate text-[10px]" x-text="getIngredientCostDetail(ing)"></span>
-                                        </div>
-                                        <div class="font-bold text-emerald-700 font-mono shrink-0 ml-2" 
-                                             x-text="'Rp ' + Math.round(getIngredientCost(ing)).toLocaleString('id-ID')"></div>
-                                    </div>
-
                                 </div>
                             </template>
                         </div>
                     </div>
-
-                    <!-- Harga Pokok Produksi (HPP) - Otomatis Terhitung Kumulatif -->
-                    <div class="bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/50 border border-emerald-200/80 rounded-2xl p-4 shadow-sm">
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex items-center gap-2">
-                                <div class="w-7 h-7 rounded-lg bg-emerald-100/80 text-emerald-700 flex items-center justify-center">
-                                    <i class="ph-duotone ph-calculator text-base"></i>
-                                </div>
-                                <div>
-                                    <label class="text-xs font-bold text-gray-800 block">Harga Pokok Produksi (HPP)</label>
-                                    <span class="text-[10px] text-gray-400">Kumulatif HPP seluruh bahan baku</span>
-                                </div>
-                            </div>
-                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-emerald-200/60">
-                                <i class="ph-bold ph-lightning text-[10px]"></i> Otomatis Kumulatif
-                            </span>
-                        </div>
-
-                        <!-- Result Display -->
-                        <div class="flex items-baseline justify-between pt-1 border-t border-emerald-100/60">
-                            <div class="flex items-baseline gap-1.5">
-                                <span class="text-sm font-bold text-emerald-700">Rp</span>
-                                <span class="text-2xl font-black text-gray-900 tracking-tight"
-                                      x-text="calculatedTotalHpp.toLocaleString('id-ID')"></span>
-                                <span class="text-xs font-semibold text-gray-500" x-text="form.unit ? '/' + form.unit : '/porsi'"></span>
-                            </div>
-                            <div class="text-[11px] text-gray-500 font-medium">
-                                <span class="font-bold text-emerald-700" x-text="form.ingredients.filter(i => i.materialId && parseFloat(i.amount) > 0).length"></span> bahan terhitung
-                            </div>
-                        </div>
-
-                        <div class="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
-                            <i class="ph ph-info text-gray-400 shrink-0"></i>
-                            <span>HPP terakumulasi otomatis secara real-time dari takaran & harga pokok bahan baku yang digunakan.</span>
-                        </div>
-                    </div>
-
-                    <!-- Instruksi / Catatan Resep (Opsional) -->
-                    <div>
-                        <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Catatan / Langkah Penyajian</label>
-                        <textarea x-model="form.description" placeholder="Tuliskan catatan atau instruksi racikan..." rows="3"
-                                  class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-xs outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all resize-none"></textarea>
-                    </div>
-
                 </div>
             </div>
 
@@ -1667,6 +1561,88 @@
     </div>
 
     <!-- ================================ -->
+    <!-- MODAL SHEET: Pilih Bahan Baku   -->
+    <!-- ================================ -->
+    <div x-show="ingredientPickerOpen" 
+         class="fixed inset-0 z-[130] overflow-hidden flex items-end lg:items-stretch justify-center lg:justify-end" 
+         x-cloak>
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity duration-300"
+             x-show="ingredientPickerOpen"
+             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             @click="ingredientPickerOpen = false"></div>
+
+        <!-- Sheet Panel: Presisi & Fit dengan Drawer Tambah Resep -->
+        <div x-show="ingredientPickerOpen"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full"
+             x-transition:enter-end="translate-y-0 lg:translate-x-0"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="translate-y-0 lg:translate-x-0"
+             x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full"
+             class="w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col h-[85vh] lg:h-full max-h-[100vh] overflow-hidden border-t lg:border-t-0 lg:border-l border-gray-100 rounded-t-3xl lg:rounded-none relative z-10">
+            
+            <!-- Drag Handle Bar (Mobile) -->
+            <div class="w-full flex justify-center pt-3 pb-1 lg:hidden shrink-0 cursor-pointer" @click="ingredientPickerOpen = false">
+                <div class="w-16 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+
+            <!-- Header -->
+            <div class="bg-white shrink-0 border-b border-gray-100 px-5 py-4 flex items-center justify-between">
+                <div class="flex flex-col">
+                    <h3 class="text-[15px] font-bold text-gray-900">Pilih Bahan Baku</h3>
+                    <p class="text-[12px] text-gray-400 mt-0.5">Pilih bahan untuk racikan resep</p>
+                </div>
+                <button type="button" @click="ingredientPickerOpen = false" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors shrink-0 active:scale-95">
+                    <i class="ph-bold ph-x text-base"></i>
+                </button>
+            </div>
+
+            <!-- Materials List (Scrollable Area) -->
+            <div class="flex-1 overflow-y-auto overscroll-contain px-4 py-2 min-h-0 bg-gray-50/30 divide-y divide-gray-100/80">
+                <template x-for="mat in filteredRawMaterialProducts" :key="mat.id">
+                    <div @click="selectMaterialForRecipe(mat)" 
+                         class="p-2.5 flex items-center justify-between hover:bg-emerald-50/60 rounded-xl cursor-pointer transition-colors group">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0 border border-gray-100 shadow-2xs"
+                                 :style="'background-color: ' + (mat.color || '#f3f4f6') + '; border-color: ' + (mat.border || '#e5e7eb')">
+                                <span x-text="mat.emoji"></span>
+                            </div>
+                            <div class="flex flex-col min-w-0 flex-1">
+                                <span class="text-xs font-bold text-gray-900 truncate group-hover:text-emerald-800 transition-colors" x-text="mat.name"></span>
+                                <span class="text-[11px] text-gray-400 truncate mt-0.5" x-text="'Rp ' + (mat.hpp || 0).toLocaleString('id-ID') + ' / ' + mat.unit"></span>
+                            </div>
+                        </div>
+                        <div class="w-7 h-7 rounded-full bg-emerald-50 group-hover:bg-emerald-600 group-hover:text-white text-emerald-700 border border-emerald-200/60 group-hover:border-emerald-600 flex items-center justify-center shrink-0 ml-2 transition-all active:scale-90">
+                            <i class="ph-bold ph-plus text-xs"></i>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="filteredRawMaterialProducts.length === 0" class="py-16 text-center text-xs text-gray-400">
+                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-2 text-gray-400">
+                        <i class="ph ph-magnifying-glass text-lg"></i>
+                    </div>
+                    Bahan tidak ditemukan
+                </div>
+            </div>
+
+            <!-- Search Field Docked at Bottom (Ergonomic Thumb Reach) -->
+            <div class="shrink-0 px-4 pt-3 pb-[calc(0.875rem+env(safe-area-inset-bottom))] border-t border-gray-100 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
+                <div class="relative flex items-center">
+                    <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input type="text" x-model="ingredientSearch" placeholder="Cari bahan (misal: Stroberi, Susu)..."
+                           class="w-full h-11 bg-gray-50/80 border border-gray-200 rounded-xl pl-9 pr-9 text-xs outline-none focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all">
+                    <button type="button" x-show="ingredientSearch && ingredientSearch.length > 0" @click="ingredientSearch = ''"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100 transition-colors">
+                        <i class="ph-bold ph-x text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================ -->
     <!-- MODAL: Detail Resep             -->
     <!-- ================================ -->
     <div x-show="detailModalOpen" class="fixed inset-0 z-[120] flex items-center justify-center px-4" x-cloak>
@@ -1713,40 +1689,6 @@
                             <div>
                                 <div class="font-bold text-gray-800" x-text="'Rp ' + selectedDetailProduct.hpp.toLocaleString('id-ID') + ' / ' + selectedDetailProduct.unit"></div>
                                 <div class="text-[11px] text-gray-400 font-medium">Harga Pokok Produksi</div>
-                            </div>
-                        </div>
-
-                        <!-- Bahan Baku Resep -->
-                        <div class="flex flex-col gap-2 pt-1 border-t border-gray-100">
-                            <div class="flex items-center gap-2">
-                                <i class="ph-duotone ph-flask text-2xl text-emerald-500 shrink-0"></i>
-                                <div>
-                                    <div class="font-bold text-gray-800 leading-snug">Bahan Baku Resep</div>
-                                    <div class="text-[11px] text-gray-400 font-medium">Komposisi racikan produk</div>
-                                </div>
-                            </div>
-                            <div class="flex flex-col gap-1.5 pl-9">
-                                <template x-if="selectedDetailProduct.ingredients && selectedDetailProduct.ingredients.length > 0">
-                                    <div class="flex flex-col gap-1.5">
-                                        <template x-for="(ing, ii) in selectedDetailProduct.ingredients" :key="ii">
-                                            <div class="flex items-center justify-between text-xs bg-gray-50 px-3 py-2 rounded-xl border border-gray-100">
-                                                <div class="flex items-center gap-2 min-w-0">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-                                                    <span class="font-semibold text-gray-800 truncate" x-text="ing.materialName"></span>
-                                                </div>
-                                                <div class="flex items-center gap-2 shrink-0 ml-2">
-                                                    <span class="text-gray-500 text-[11px] font-mono" x-show="getIngredientCost(ing) > 0" x-text="'Rp ' + Math.round(getIngredientCost(ing)).toLocaleString('id-ID')"></span>
-                                                    <span class="text-emerald-700 font-bold bg-white px-2 py-0.5 rounded-md border border-gray-200 text-[11px]" x-text="ing.amount + ' ' + ing.unit"></span>
-                                                </div>
-                                            </div>
-                                        </template>
-                                    </div>
-                                </template>
-                                <template x-if="!selectedDetailProduct.ingredients || selectedDetailProduct.ingredients.length === 0">
-                                    <div class="text-xs text-gray-400 italic bg-gray-50 px-3 py-2 rounded-xl border border-gray-100">
-                                        Resep standar (belum ada rincian bahan baku tersimpan).
-                                    </div>
-                                </template>
                             </div>
                         </div>
 
@@ -1857,6 +1799,8 @@
                 pricePopupW: 0,
 
                 drawerOpen: false,
+                ingredientPickerOpen: false,
+                ingredientSearch: '',
                 editingProduct: null,
                 form: {
                     id: null,
@@ -1864,12 +1808,10 @@
                     productName: '',
                     emoji: '🧃',
                     color: '#fff3e0',
-                    unit: 'cup',
+                    unit: '',
                     hpp: 0,
                     description: '',
-                    ingredients: [
-                        { id: 1, materialId: '', materialName: '', amount: '', unit: 'gr' }
-                    ]
+                    ingredients: []
                 },
                 typeList: ['Bahan Baku', 'Perlu Resep', 'Produk Olahan', 'Kemasan', 'Jasa / Layanan'],
 
@@ -1980,14 +1922,55 @@
 
                 get rawMaterialProducts() {
                     // Hanya Menampilkan Bahan Baku aja. Untuk produk yang punya varian, hanya main produknya (tidak perlu varian anak)
-                    return this.masterProducts.filter(p => p.type === 'Bahan Baku').map(p => ({
-                        id: p.id,
-                        name: p.name,
-                        unit: p.unit,
-                        hpp: p.hpp,
-                        emoji: p.emoji,
-                        color: p.color
-                    }));
+                    return this.masterProducts.filter(p => p.type === 'Bahan Baku').map(p => {
+                        let border = '#e5e7eb';
+                        if (p.color === '#fce4ec') border = '#f8bbd0';
+                        else if (p.color === '#ffebee') border = '#ffcdd2';
+                        else if (p.color === '#e8f5e9') border = '#c8e6c9';
+                        else if (p.color === '#fff8e1' || p.color === '#fffde7') border = '#ffecb3';
+                        else if (p.color === '#e1f5fe' || p.color === '#e0f2f1') border = '#b2ebf2';
+                        else if (p.color === '#f3e5f5' || p.color === '#ede7f6') border = '#e1bee7';
+                        else if (p.color === '#fff3e0') border = '#ffe0b2';
+                        return {
+                            id: p.id,
+                            name: p.name,
+                            unit: p.unit,
+                            hpp: p.hpp,
+                            emoji: p.emoji || '🍎',
+                            color: p.color || '#f3f4f6',
+                            border: border
+                        };
+                    });
+                },
+
+                get filteredRawMaterialProducts() {
+                    const q = (this.ingredientSearch || '').toLowerCase().trim();
+                    if (!q) return this.rawMaterialProducts;
+                    return this.rawMaterialProducts.filter(m => m.name.toLowerCase().includes(q));
+                },
+
+                getMaterialData(materialId, materialName) {
+                    const mat = this.masterProducts.find(m => m.id === materialId || m.name === materialName);
+                    if (!mat) {
+                        return { id: materialId, name: materialName || 'Bahan', emoji: '🍎', color: '#f3f4f6', border: '#e5e7eb', unit: 'kg', hpp: 0 };
+                    }
+                    let border = '#e5e7eb';
+                    if (mat.color === '#fce4ec') border = '#f8bbd0';
+                    else if (mat.color === '#ffebee') border = '#ffcdd2';
+                    else if (mat.color === '#e8f5e9') border = '#c8e6c9';
+                    else if (mat.color === '#fff8e1' || mat.color === '#fffde7') border = '#ffecb3';
+                    else if (mat.color === '#e1f5fe' || mat.color === '#e0f2f1') border = '#b2ebf2';
+                    else if (mat.color === '#f3e5f5' || mat.color === '#ede7f6') border = '#e1bee7';
+                    else if (mat.color === '#fff3e0') border = '#ffe0b2';
+                    return {
+                        id: mat.id,
+                        name: mat.name,
+                        emoji: mat.emoji || '🍎',
+                        color: mat.color || '#f3f4f6',
+                        border: border,
+                        unit: mat.unit || 'kg',
+                        hpp: mat.hpp || 0
+                    };
                 },
 
                 selectProductForRecipe(prod) {
@@ -1998,10 +1981,29 @@
                     this.form.unit = prod.unit || 'cup';
                 },
 
+                selectMaterialForRecipe(mat) {
+                    let defaultAmt = mat.unit === 'kg' ? 0.1 : 1;
+                    if (!this.form.ingredients) this.form.ingredients = [];
+                    let emptyIdx = this.form.ingredients.findIndex(i => !i.materialName && !i.materialId);
+                    const newRow = {
+                        id: Date.now() + Math.random(),
+                        materialId: mat.id,
+                        materialName: mat.name,
+                        amount: defaultAmt,
+                        displayAmount: this.formatDisplay(defaultAmt),
+                        unit: mat.unit
+                    };
+                    if (emptyIdx !== -1) {
+                        this.form.ingredients[emptyIdx] = newRow;
+                    } else {
+                        this.form.ingredients.push(newRow);
+                    }
+                    this.ingredientPickerOpen = false;
+                },
+
                 selectMaterialForIngredient(ing, mat) {
                     ing.materialId = mat.id;
                     ing.materialName = mat.name;
-                    // Default recipe unit based on material base unit
                     if (mat.unit === 'kg') {
                         ing.unit = 'gr';
                     } else if (mat.unit === 'liter' || mat.unit === 'l') {
@@ -2009,6 +2011,61 @@
                     } else if (mat.unit) {
                         ing.unit = mat.unit;
                     }
+                },
+
+                formatDisplay(val) {
+                    if (val === undefined || val === null || val === '') return '';
+                    let str = val.toString().replace('.', ',');
+                    let parts = str.split(',');
+                    let rawInt = parts[0].replace(/\D/g, '').slice(0, 3);
+                    let formattedInt = rawInt !== '' ? rawInt : '0';
+                    if (parts.length > 1) {
+                        let rawDec = parts[1].replace(/\D/g, '').slice(0, 3);
+                        return formattedInt + ',' + rawDec;
+                    }
+                    return formattedInt;
+                },
+
+                onAmountInput(ing, event) {
+                    let val = event.target.value;
+                    if (!val || val.trim() === '') {
+                        ing.amount = 0;
+                        ing.displayAmount = '';
+                        return;
+                    }
+
+                    // Ubah titik menjadi koma (karena angka maks 999, titik pasti dimaksudkan sebagai pemisah desimal)
+                    val = val.replace(/\./g, ',');
+
+                    // Cek jika ada satu koma di ujung (user sedang mengetik desimal, misal "0," atau "1,")
+                    let hasTrailingComma = val.endsWith(',') && (val.match(/,/g) || []).length === 1;
+
+                    // Pemisah desimal di Indonesia HANYA koma (,)
+                    let parts = val.split(',');
+                    
+                    // Bagian bilangan bulat: maksimal 3 digit (maksimal 999)
+                    let rawInt = parts[0].replace(/\D/g, '').slice(0, 3);
+                    
+                    // Normalisasi leading zero: '05' jadi '5', tapi '0' tetap '0'
+                    if (rawInt.length > 1 && rawInt.startsWith('0')) {
+                        rawInt = String(parseInt(rawInt, 10));
+                    }
+
+                    let formattedInt = rawInt !== '' ? rawInt : '0';
+
+                    if (hasTrailingComma) {
+                        ing.displayAmount = formattedInt + ',';
+                        ing.amount = parseInt(formattedInt, 10) || 0;
+                    } else if (parts.length > 1) {
+                        let rawDec = parts[1].replace(/\D/g, '').slice(0, 3);
+                        ing.displayAmount = formattedInt + ',' + rawDec;
+                        ing.amount = parseFloat(formattedInt + '.' + (rawDec || '0')) || 0;
+                    } else {
+                        ing.displayAmount = formattedInt;
+                        ing.amount = parseInt(formattedInt, 10) || 0;
+                    }
+
+                    event.target.value = ing.displayAmount;
                 },
 
                 getIngredientCost(ing) {
@@ -2022,8 +2079,8 @@
                     const mUnit = (mat.unit || '').toLowerCase().trim();
                     const iUnit = (ing.unit || '').toLowerCase().trim();
 
-                    // Identical unit
-                    if (mUnit === iUnit) {
+                    // Identical unit or empty unit
+                    if (!iUnit || mUnit === iUnit) {
                         return amount * mat.hpp;
                     }
 
@@ -2389,8 +2446,11 @@
                             hpp: product.hpp || 0,
                             description: product.description || '',
                             ingredients: product.ingredients && product.ingredients.length > 0
-                                ? product.ingredients.map(i => ({ ...i }))
-                                : [{ id: Date.now(), materialId: '', materialName: '', amount: '', unit: 'gr' }]
+                                ? product.ingredients.map(i => ({ 
+                                    ...i,
+                                    displayAmount: this.formatDisplay(i.amount)
+                                }))
+                                : []
                         };
                     } else {
                         this.form = {
@@ -2399,12 +2459,10 @@
                             productName: '',
                             emoji: '🧃',
                             color: '#fff3e0',
-                            unit: 'cup',
+                            unit: '',
                             hpp: 0,
                             description: '',
-                            ingredients: [
-                                { id: Date.now(), materialId: '', materialName: '', amount: '', unit: 'gr' }
-                            ]
+                            ingredients: []
                         };
                     }
                     this.drawerOpen = true;
