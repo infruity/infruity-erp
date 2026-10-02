@@ -1,20 +1,5 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        document.querySelectorAll('#add_product_form .nav-link[data-bs-toggle="tab"]').forEach(function(link) {
-            link.addEventListener('click', function(event) {
-                event.preventDefault();
-                document.querySelectorAll('#add_product_form .nav-link').forEach(item => item.classList.remove('active'));
-                document.querySelectorAll('#add_product_form .tab-pane').forEach(item => item.classList.remove('active'));
-                link.classList.add('active');
-                document.querySelector(link.getAttribute('href'))?.classList.add('active');
-            });
-        });
-        document.getElementById('add_product_form')?.addEventListener('invalid', function(event) {
-            const pane = event.target.closest('.tab-pane');
-            if (pane && !pane.classList.contains('active')) {
-                document.querySelector('#add_product_form .nav-link[href="#' + pane.id + '"]')?.click();
-            }
-        }, true);
         $("#add_product_form").submit(function() {
             const overlaySubmit = document.getElementById('product-create-submit');
             if (overlaySubmit) {
@@ -314,19 +299,12 @@
             const branchPanel = form.querySelector('#product-branch-prices');
 
             variantToggle?.addEventListener('change', function () {
+                this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
                 variantPanel.classList.toggle('hidden', !this.checked);
                 branchPanel.classList.toggle('hidden', this.checked);
                 const price = form.querySelector('#product-price');
                 price.value = this.checked ? '0' : (price.value === '0' ? '' : price.value);
                 if (this.checked && !form.querySelector('#kt_ecommerce_edit_order_selected_products_body tr')) addVariant();
-            });
-
-            form.querySelectorAll('.nav-link[data-bs-toggle="tab"]').forEach(function (tab) {
-                tab.addEventListener('click', function () {
-                    form.querySelectorAll('.nav-link').forEach(item => item.classList.toggle('active', item === tab));
-                    form.querySelectorAll('.tab-pane').forEach(pane => pane.classList.toggle('active', '#' + pane.id === tab.getAttribute('href')));
-                    form.querySelectorAll('.nav-link').forEach(item => item.setAttribute('aria-selected', item === tab ? 'true' : 'false'));
-                });
             });
 
             form.querySelectorAll('[data-picker-search]').forEach(function (search) {
@@ -359,36 +337,19 @@
                 });
             });
 
-            const categorySearch = form.querySelector('[data-category-search]');
-            const categoryCreate = form.querySelector('[data-category-create]');
-            const categoryPicker = form.querySelector('[data-category-picker]');
+            const typeSearch = form.querySelector('[data-product-type-search]');
+            const typeCreate = form.querySelector('[data-product-type-create]');
+            const typePicker = form.querySelector('[data-product-type-picker]');
             const categoryValue = form.querySelector('#category_id');
-            const categoryOptions = Array.from(form.querySelectorAll('[data-category-option]'));
-            categorySearch?.addEventListener('input', function () {
-                const query = this.value.trim().toLocaleLowerCase('id');
-                let visible = 0;
-                let exactMatch = false;
-                categoryOptions.forEach(function (option) {
-                    const label = option.dataset.categoryLabel.toLocaleLowerCase('id');
-                    const match = label.includes(query);
-                    option.classList.toggle('hidden', !match);
-                    visible += match ? 1 : 0;
-                    exactMatch = exactMatch || label === query;
-                });
-                categoryCreate.classList.toggle('hidden', !query || exactMatch);
-                categoryCreate.dataset.categoryValue = this.value.trim();
-                categoryCreate.replaceChildren();
-                const icon = document.createElement('i');
-                icon.className = 'ph ph-plus-circle';
-                const label = document.createElement('span');
-                label.textContent = `Tambah kategori “${this.value.trim()}”`;
-                categoryCreate.append(icon, label);
-                form.querySelector('[data-category-empty]')?.classList.toggle('hidden', visible > 0 || !query);
-            });
+            const productTypeValue = form.querySelector('#product-type');
+            const productStatusValue = form.querySelector('#product-status');
+            const typeOptions = Array.from(form.querySelectorAll('[data-product-type-option]'));
 
-            function chooseCategory(option) {
+            function selectProductType(option) {
                 categoryValue.value = option.dataset.categoryValue;
-                categoryPicker.querySelectorAll('[data-category-option]').forEach(function (item) {
+                productTypeValue.value = option.dataset.productTipe;
+                productStatusValue.value = option.dataset.productStatus;
+                typePicker.querySelectorAll('[data-product-type-option]').forEach(function (item) {
                     const selected = item === option;
                     item.classList.toggle('bg-emerald-50/60', selected);
                     item.querySelector('.product-picker-radio')?.classList.toggle('!border-emerald-500', selected);
@@ -397,29 +358,70 @@
                     label?.classList.toggle('!font-bold', selected);
                     label?.classList.toggle('!text-gray-900', selected);
                 });
+                typeCreate?.classList.add('hidden');
+                typePicker.classList.remove('!border-red-400');
             }
-            categoryOptions.forEach(option => option.addEventListener('click', () => chooseCategory(option)));
-            categoryCreate?.addEventListener('click', function () {
-                categoryValue.value = this.dataset.categoryValue;
-                categoryPicker.querySelectorAll('[data-category-option]').forEach(item => {
+
+            function selectCustomProductType(name) {
+                const value = name.trim();
+                if (!value) return;
+                categoryValue.value = value;
+                productTypeValue.value = 'product';
+                productStatusValue.value = 'no-receipt';
+                typeOptions.forEach(item => {
                     item.classList.remove('bg-emerald-50/60');
                     item.querySelector('.product-picker-radio')?.classList.remove('!border-emerald-500');
                     item.querySelector('.product-picker-radio span')?.classList.remove('!scale-100');
+                    const label = item.querySelector('.text-\\[13px\\]');
+                    label?.classList.remove('!font-bold', '!text-gray-900');
                 });
-                this.classList.add('bg-emerald-50/60');
-            });
-            const initialCategory = categoryOptions.find(option => option.dataset.categoryValue === categoryValue.value);
-            if (initialCategory) chooseCategory(initialCategory);
+                typeCreate.replaceChildren();
+                const icon = document.createElement('i');
+                icon.className = 'ph ph-plus-circle';
+                const label = document.createElement('span');
+                label.textContent = `Tambah tipe produk “${value}”`;
+                typeCreate.append(icon, label);
+                typeCreate.classList.add('bg-emerald-50/60');
+                typeCreate.classList.remove('hidden');
+                typeCreate.dataset.selectedName = value;
+                typePicker.classList.remove('!border-red-400');
+            }
 
-            ['product-type', 'product-unit'].forEach(function (id) {
-                const select = form.querySelector('#' + id);
-                const selectedOption = select?.options[select.selectedIndex];
-                const selected = form.querySelector(`[data-picker-select="${id}"][data-picker-value="${selectedOption?.value}"]`);
-                selected?.click();
+            typeSearch?.addEventListener('input', function () {
+                const query = this.value.trim().toLocaleLowerCase('id');
+                let visible = 0;
+                let exactMatch = false;
+                typeOptions.forEach(function (option) {
+                    const label = option.dataset.categoryLabel.toLocaleLowerCase('id');
+                    const match = label.includes(query);
+                    option.classList.toggle('hidden', !match);
+                    visible += match ? 1 : 0;
+                    exactMatch = exactMatch || label === query;
+                });
+                typeCreate.classList.toggle('hidden', !query || exactMatch);
+                typeCreate.dataset.categoryValue = this.value.trim();
+                typeCreate.replaceChildren();
+                const icon = document.createElement('i');
+                icon.className = 'ph ph-plus-circle';
+                const label = document.createElement('span');
+                label.textContent = `Tambah tipe produk “${this.value.trim()}”`;
+                typeCreate.append(icon, label);
+                form.querySelector('[data-product-type-empty]')?.classList.toggle('hidden', visible > 0 || !query);
             });
+            typeOptions.forEach(option => option.addEventListener('click', () => selectProductType(option)));
+            typeCreate?.addEventListener('click', function () { selectCustomProductType(this.dataset.categoryValue); });
+
+            const initialType = typeOptions.find(option => option.dataset.categoryValue === categoryValue.value)
+                || typeOptions.find(option => option.dataset.productTipe === productTypeValue.value && option.dataset.productStatus === productStatusValue.value);
+            if (initialType) selectProductType(initialType);
+            else if (categoryValue.value && !/^\\d+$/.test(categoryValue.value)) selectCustomProductType(categoryValue.value);
+
+            const unitSelect = form.querySelector('#product-unit');
+            const selectedUnit = unitSelect?.options[unitSelect.selectedIndex];
+            form.querySelector(`[data-picker-select="product-unit"][data-picker-value="${selectedUnit?.value}"]`)?.click();
 
             form.addEventListener('submit', function (event) {
-                const missingPicker = ['product-type', 'product-unit'].find(id => !form.querySelector('#' + id)?.value);
+                const missingPicker = !categoryValue.value ? 'product-type' : (!unitSelect?.value ? 'product-unit' : null);
                 if (missingPicker) {
                     event.preventDefault();
                     const picker = form.querySelector(`[data-picker-root="${missingPicker}"]`);

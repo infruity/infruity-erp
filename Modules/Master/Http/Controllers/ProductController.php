@@ -24,6 +24,40 @@ class ProductController extends Controller
 {
     use \App\Traits\HasAccessControl;
 
+    private function productTypeOptions()
+    {
+        $categories = ProductCategory::orderBy('name')->get();
+        $presets = collect([
+            ['name' => 'Bahan Baku', 'tipe' => 'product', 'status' => 'no-receipt'],
+            ['name' => 'Perlu Resep', 'tipe' => 'product', 'status' => 'receipt'],
+            ['name' => 'Produk Olahan', 'tipe' => 'product', 'status' => 'no-receipt'],
+            ['name' => 'Kemasan', 'tipe' => 'kemasan', 'status' => 'no-receipt'],
+            ['name' => 'Jasa / Layanan', 'tipe' => 'product', 'status' => 'no-receipt'],
+        ]);
+
+        $defaultOptions = $presets->map(function ($preset) use ($categories) {
+            $category = $categories->firstWhere('name', $preset['name']);
+            $value = $category?->id ?? $preset['name'];
+
+            return (object) array_merge($preset, [
+                'value' => $value,
+                'category_id' => $value,
+            ]);
+        });
+
+        $customOptions = $categories
+            ->reject(fn ($category) => $presets->contains('name', $category->name))
+            ->map(fn ($category) => (object) [
+                'name' => $category->name,
+                'value' => $category->id,
+                'category_id' => $category->id,
+                'tipe' => 'product',
+                'status' => 'no-receipt',
+            ]);
+
+        return $defaultOptions->concat($customOptions)->values();
+    }
+
     /**
      * Display a listing of the resource.
      * @return Renderable
@@ -37,6 +71,7 @@ class ProductController extends Controller
         $data['branch'] = Branch::whereIn('id', UserBranch::getUserBranch())->get();
         $data['product_units'] = ProductUnit::all();
         $data['productCategories'] = ProductCategory::orderBy('name')->get();
+        $data['productTypeOptions'] = $this->productTypeOptions();
         $data['tipe'] = ['product' => 'Product', 'kemasan' => 'Kemasan'];
         $data['data'] = null;
 
@@ -82,6 +117,7 @@ class ProductController extends Controller
         $data['product_units'] = ProductUnit::all();
         $data['branch'] = Branch::whereIn('id', UserBranch::getUserBranch())->get();
         $data['productCategories'] = ProductCategory::orderBy('name')->get();
+        $data['productTypeOptions'] = $this->productTypeOptions();
         $data['tipe']          = ['product' => 'Product', 'kemasan' => 'Kemasan'];
         $data['data']          = null;
         return view('master::products.create', $data);
@@ -258,6 +294,7 @@ class ProductController extends Controller
         $data    = [
             'data'          => $product,
             'product_units' => ProductUnit::all(),
+            'productTypeOptions' => $this->productTypeOptions(),
         ];
         // dd($data);
         return view('master::products.create', $data);

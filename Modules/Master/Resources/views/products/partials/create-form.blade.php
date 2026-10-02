@@ -10,10 +10,6 @@
     #add_product_form .product-select:focus,
     #add_product_form .form-control:focus,
     #add_product_form .form-select:focus { border-color: #10b981; box-shadow: 0 0 0 2px rgb(16 185 129 / .12); }
-    #add_product_form .product-tabs { display: flex; gap: 1.25rem; border-bottom: 1px solid #e5e7eb; }
-    #add_product_form .product-tabs .nav-link { display: block; padding: 0 0 .75rem; border-bottom: 2px solid transparent; color: #9ca3af; font-size: .8125rem; font-weight: 600; }
-    #add_product_form .product-tabs .nav-link.active { color: #0f5c45; border-color: #0f5c45; }
-    #add_product_form .tab-pane:not(.active) { display: none; }
     #add_product_form .product-price-row,
     #add_product_form .product-option-row { display: flex; align-items: center; gap: .625rem; }
     #add_product_form .product-price-prefix { position: absolute; left: .875rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: .8125rem; pointer-events: none; }
@@ -56,27 +52,28 @@
 
         <div>
             <label for="product-type" class="product-field-label">Tipe Produk <span class="text-red-400">*</span></label>
-            <div data-picker-root="product-type" class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <div data-picker-root="product-type" data-product-type-picker class="overflow-hidden rounded-xl border border-gray-200 bg-white">
                 <div class="relative border-b border-gray-100 bg-gray-50/50">
                     <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
-                    <input type="search" data-picker-search="product-type-options" placeholder="Cari tipe produk..." class="w-full bg-transparent py-3 pl-9 pr-4 text-sm outline-none" aria-label="Cari tipe produk">
+                    <input type="search" data-product-type-search placeholder="Cari tipe produk atau kategori..." class="w-full bg-transparent py-3 pl-9 pr-4 text-sm outline-none" aria-label="Cari tipe produk atau kategori">
                 </div>
                 <div id="product-type-options" class="max-h-40 overflow-y-auto overscroll-contain">
-                    @foreach ($tipe as $key => $value)
-                        <button type="button" data-picker-option data-picker-select="product-type" data-picker-value="{{ $key }}" data-picker-label="{{ $value }}" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left last:border-0 hover:bg-gray-50">
+                    @foreach ($productTypeOptions as $option)
+                        <button type="button" data-product-type-option data-category-value="{{ $option->category_id }}" data-category-label="{{ $option->name }}" data-product-tipe="{{ $option->tipe }}" data-product-status="{{ $option->status }}" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left last:border-0 hover:bg-gray-50">
                             <span class="product-picker-radio flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300"><span class="h-2 w-2 scale-0 rounded-full bg-emerald-500"></span></span>
-                            <span class="text-[13px] font-medium text-gray-700">{{ $value }}</span>
+                            <span class="text-[13px] font-medium text-gray-700">{{ $option->name }}</span>
                         </button>
                     @endforeach
-                    <p data-picker-empty class="hidden py-5 text-center text-[13px] text-gray-400">Tipe tidak ditemukan</p>
+                    <button type="button" data-product-type-create class="hidden w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left text-[13px] font-semibold text-emerald-700 hover:bg-emerald-50/60"></button>
+                    <p data-product-type-empty class="hidden py-5 text-center text-[13px] text-gray-400">Tipe produk tidak ditemukan</p>
                 </div>
             </div>
-            <select id="product-type" name="tipe" class="sr-only" tabindex="-1" aria-hidden="true" aria-required="true">
-                @foreach ($tipe as $key => $value)
-                    <option value="{{ $key }}" {{ old('tipe', $data->tipe ?? 'product') == $key ? 'selected' : '' }}>{{ $value }}</option>
-                @endforeach
-            </select>
+            <input id="product-type" type="hidden" name="tipe" value="{{ old('tipe', $data->tipe ?? '') }}">
+            <input id="product-status" type="hidden" name="status" value="{{ old('status', $data->status ?? '') }}">
+            <input id="category_id" type="hidden" name="category_id" value="{{ old('category_id', $data->category_id ?? '') }}">
             @error('tipe') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+            @error('status') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+            @error('category_id') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
         </div>
 
         <div>
@@ -113,7 +110,11 @@
                 <label for="product-has-variants" class="block text-sm font-semibold text-gray-700">Produk Memiliki Varian</label>
                 <p class="mt-0.5 text-[11px] text-gray-400">Tambahkan pilihan produk seperti ukuran atau grade</p>
             </div>
-            <input id="product-has-variants" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-controls="product-variants">
+            <label class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center" aria-label="Produk memiliki varian">
+                <input id="product-has-variants" type="checkbox" role="switch" class="peer sr-only" aria-checked="false" aria-controls="product-variants">
+                <span class="absolute inset-0 rounded-full bg-gray-200 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-300 peer-focus-visible:ring-offset-2"></span>
+                <span class="absolute left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></span>
+            </label>
         </div>
 
         <section id="product-branch-prices" data-branch-pricing
@@ -209,67 +210,27 @@
             <p class="mt-2 text-[11px] text-gray-400">Pilih produk yang sudah ada atau ketik nama varian baru.</p>
         </section>
 
-        <div>
-            <label for="product-status" class="product-field-label">Status Produk <span class="text-red-400">*</span></label>
-            <select id="product-status" name="status" required class="product-select @error('status') !border-red-400 @enderror">
-                <option value="no-receipt" {{ old('status', $data->status ?? 'no-receipt') == 'no-receipt' ? 'selected' : '' }}>Tanpa Resep</option>
-                <option value="receipt" {{ old('status', $data->status ?? '') == 'receipt' ? 'selected' : '' }}>Dengan Resep</option>
-            </select>
-            @error('status') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
-        </div>
-
-        <div>
-            <label for="category_id" class="product-field-label">Kategori Produk</label>
-            <div data-category-picker class="overflow-hidden rounded-xl border border-gray-200 bg-white">
-                <div class="relative border-b border-gray-100 bg-gray-50/50">
-                    <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
-                    <input type="search" data-category-search placeholder="Cari kategori..." class="w-full bg-transparent py-3 pl-9 pr-4 text-sm outline-none" aria-label="Cari kategori produk">
-                </div>
-                <div class="max-h-48 overflow-y-auto overscroll-contain">
-                    @foreach ($productCategories ?? $categories ?? [] as $categoryOption)
-                        <button type="button" data-category-option data-category-value="{{ $categoryOption->id }}" data-category-label="{{ $categoryOption->name }}" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left last:border-0 hover:bg-gray-50">
-                            <span class="product-picker-radio flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300"><span class="h-2 w-2 scale-0 rounded-full bg-emerald-500"></span></span>
-                            <span class="text-[13px] font-medium text-gray-700">{{ $categoryOption->name }}</span>
-                        </button>
-                    @endforeach
-                    <button type="button" data-category-create class="hidden w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left text-[13px] font-semibold text-emerald-700 hover:bg-emerald-50/60"></button>
-                    <p data-category-empty class="hidden py-5 text-center text-[13px] text-gray-400">Kategori tidak ditemukan</p>
-                </div>
-            </div>
-            <input id="category_id" type="hidden" name="category_id" value="{{ old('category_id', $data->category_id ?? '') }}">
-            @error('category_id') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
-        </div>
-
-        <div class="product-tabs" role="tablist" aria-label="Detail produk">
-            <button type="button" class="nav-link active" data-bs-toggle="tab" href="#product-tab-general" role="tab" aria-selected="true">Umum</button>
-            <button type="button" class="nav-link" data-bs-toggle="tab" href="#product-tab-advanced" role="tab" aria-selected="false">Lanjutan</button>
-        </div>
-
-        <div class="tab-content">
-            <div id="product-tab-general" class="tab-pane active" role="tabpanel">
+        <div class="flex flex-col gap-4">
+            <div>
                 <label for="description_input" class="product-field-label">Deskripsi <span class="font-normal text-gray-400">(Opsional)</span></label>
                 <textarea id="description_input" name="description" rows="3" maxlength="1000" placeholder="Deskripsi singkat produk..." class="product-input resize-none">{{ old('description', $data->description ?? '') }}</textarea>
                 @error('description') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div id="product-tab-advanced" class="tab-pane" role="tabpanel">
-                <div class="flex flex-col gap-4">
-                    <div>
-                        <label for="product-sku" class="product-field-label">SKU</label>
-                        <input id="product-sku" type="text" name="sku" value="{{ old('sku', $data->sku ?? '') }}" placeholder="Nomor SKU" class="product-input">
-                    </div>
-                    <div>
-                        <label for="product-barcode" class="product-field-label">Barcode</label>
-                        <input id="product-barcode" type="text" name="barcode" value="{{ old('barcode', $data->barcode ?? '') }}" placeholder="Nomor barcode" class="product-input">
-                    </div>
-                    <div>
-                        <label for="product-limit" class="product-field-label">Limit Stok</label>
-                        <input id="product-limit" type="number" name="limit" value="{{ old('limit', $data->limit ?? '') }}" placeholder="0" min="0" class="product-input">
-                    </div>
-                    <div>
-                        <label for="product-handling" class="product-field-label">Kondisi Penanganan</label>
-                        <input id="product-handling" type="text" name="handling" value="{{ old('handling', $data->handling ?? '') }}" placeholder="Contoh: simpan di suhu dingin" class="product-input">
-                    </div>
-                </div>
+            <div>
+                <label for="product-sku" class="product-field-label">SKU</label>
+                <input id="product-sku" type="text" name="sku" value="{{ old('sku', $data->sku ?? '') }}" placeholder="Nomor SKU" class="product-input">
+            </div>
+            <div>
+                <label for="product-barcode" class="product-field-label">Barcode</label>
+                <input id="product-barcode" type="text" name="barcode" value="{{ old('barcode', $data->barcode ?? '') }}" placeholder="Nomor barcode" class="product-input">
+            </div>
+            <div>
+                <label for="product-limit" class="product-field-label">Limit Stok</label>
+                <input id="product-limit" type="number" name="limit" value="{{ old('limit', $data->limit ?? '') }}" placeholder="0" min="0" class="product-input">
+            </div>
+            <div>
+                <label for="product-handling" class="product-field-label">Kondisi Penanganan</label>
+                <input id="product-handling" type="text" name="handling" value="{{ old('handling', $data->handling ?? '') }}" placeholder="Contoh: simpan di suhu dingin" class="product-input">
             </div>
         </div>
     </div>
