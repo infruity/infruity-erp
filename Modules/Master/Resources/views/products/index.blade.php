@@ -72,7 +72,9 @@
             hasActiveFilters: false,
             get typeLabel() {
                 if (this.selectedType.length === 0) return 'Semua';
-                if (this.selectedType.length === 1) return ucwordsJs(this.selectedType[0]);
+                if (this.selectedType.length === 1) {
+                    return this.allTypes.find(type => String(type.value) === String(this.selectedType[0]))?.name || this.selectedType[0];
+                }
                 return this.selectedType.length + ' Tipe';
             },
             get filteredBranches() {
@@ -259,11 +261,11 @@
                                     :class="tempSelectedType.length === 0 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'">
                                     Semua
                                 </button>
-                                <template x-for="t in allTypes" :key="t">
-                                    <button @click="toggleTempType(t)"
+                                <template x-for="t in allTypes" :key="t.value">
+                                    <button @click="toggleTempType(t.value)"
                                         class="px-3 py-1.5 rounded-full border text-xs font-medium transition-colors capitalize"
-                                        :class="tempSelectedType.includes(t) ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'">
-                                        <span x-text="t"></span>
+                                        :class="tempSelectedType.includes(t.value) ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'">
+                                        <span x-text="t.name"></span>
                                     </button>
                                 </template>
                             </div>
@@ -326,12 +328,12 @@
                             <span>Semua</span>
                             <i x-show="selectedType.length === 0" class="ph-fill ph-circle text-emerald-500 text-[8px] shrink-0"></i>
                         </button>
-                        <template x-for="t in allTypes" :key="t">
-                            <button @click="toggleType(t)"
+                        <template x-for="t in allTypes" :key="t.value">
+                            <button @click="toggleType(t.value)"
                                 class="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition flex items-center justify-between capitalize"
-                                :class="selectedType.includes(t) ? 'text-emerald-700 font-semibold bg-emerald-50/50' : 'text-gray-600'">
-                                <span x-text="t"></span>
-                                <i x-show="selectedType.includes(t)" class="ph-fill ph-circle text-emerald-500 text-[8px] shrink-0"></i>
+                                :class="selectedType.includes(t.value) ? 'text-emerald-700 font-semibold bg-emerald-50/50' : 'text-gray-600'">
+                                <span x-text="t.name"></span>
+                                <i x-show="selectedType.includes(t.value)" class="ph-fill ph-circle text-emerald-500 text-[8px] shrink-0"></i>
                             </button>
                         </template>
                     </div>

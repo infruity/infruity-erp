@@ -81,12 +81,10 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
-        $data['productTypes'] = (clone $listableProducts)
-            ->whereNotNull('tipe')
-            ->where('tipe', '!=', '')
-            ->distinct()
-            ->orderBy('tipe')
-            ->pluck('tipe');
+        $data['productTypes'] = $data['productTypeOptions']->map(fn ($option) => [
+            'value' => (string) $option->category_id,
+            'name' => $option->name,
+        ])->values();
 
         $data['canCreateProduct'] = check_access('products.create');
 
@@ -989,10 +987,39 @@ class ProductController extends Controller
         }
 
         if ($request->filled('type_filter') && $request->type_filter !== 'all') {
-            if (is_array($request->type_filter)) {
-                $query->whereIn('products.tipe', $request->type_filter);
+            $selectedTypes = is_array($request->type_filter)
+                ? array_map('strval', $request->type_filter)
+                : [(string) $request->type_filter];
+
+            if (collect($selectedTypes)->every(fn ($type) => in_array($type, ['product', 'kemasan', 'parcel'], true))) {
+                $query->whereIn('products.tipe', $selectedTypes);
             } else {
-                $query->where('products.tipe', $request->type_filter);
+                $options = $this->productTypeOptions()->keyBy(fn ($option) => (string) $option->category_id);
+                $selectedOptions = collect($selectedTypes)
+                    ->map(fn ($value) => $options->get($value))
+                    ->filter();
+
+                if ($selectedOptions->isNotEmpty()) {
+                    $query->where(function ($typeQuery) use ($selectedOptions) {
+                        foreach ($selectedOptions as $option) {
+                            $typeQuery->orWhere(function ($optionQuery) use ($option) {
+                                if (is_numeric($option->category_id)) {
+                                    $optionQuery->where('products.category_id', $option->category_id);
+                                } else {
+                                    $optionQuery->whereRaw('1 = 0');
+                                }
+
+                                if ($option->name === 'Perlu Resep') {
+                                    $optionQuery->orWhere('products.status', 'receipt');
+                                } elseif ($option->name === 'Kemasan') {
+                                    $optionQuery->orWhere('products.tipe', 'kemasan');
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    $query->whereRaw('1 = 0');
+                }
             }
         }
 
