@@ -15,26 +15,6 @@
                 document.querySelector('#add_product_form .nav-link[href="#' + pane.id + '"]')?.click();
             }
         }, true);
-        (function () {
-            const input = document.getElementById('product-avatar');
-            const preview = document.getElementById('product-image-preview');
-            const cancel = document.getElementById('product-avatar-cancel');
-            const initialUrl = preview.src;
-            let objectUrl = null;
-            input?.addEventListener('change', function () {
-                if (objectUrl) URL.revokeObjectURL(objectUrl);
-                objectUrl = this.files?.[0] ? URL.createObjectURL(this.files[0]) : null;
-                preview.src = objectUrl || initialUrl;
-                cancel.classList.toggle('hidden', !objectUrl);
-            });
-            cancel?.addEventListener('click', function () {
-                input.value = '';
-                if (objectUrl) URL.revokeObjectURL(objectUrl);
-                objectUrl = null;
-                preview.src = initialUrl;
-                cancel.classList.add('hidden');
-            });
-        })();
         $('#category_id').select2({
             width: '100%',
             placeholder: 'Ketik nama kategori',
@@ -99,6 +79,9 @@
         });
 
         $(document).ready(function() {
+            if (typeof bindFormatNumber === 'function') {
+                bindFormatNumber();
+            }
             const path = window.location.pathname;
             if (/products\/\d+\/show/.test(path)) {
                 // Disable semua input/select/textarea kecuali yang punya class 'variant'
@@ -328,6 +311,137 @@
                 }
             });
         @endif
+    </script>
+    <script>
+        function initializeProductCreateForm(root) {
+            const form = root.querySelector('#add_product_form');
+            if (!form || form.dataset.productDrawerReady) return;
+            form.dataset.productDrawerReady = 'true';
+
+            const variantToggle = form.querySelector('#product-has-variants');
+            const variantPanel = form.querySelector('#product-variants');
+            const basePrice = form.querySelector('#product-base-price');
+            const branchToggle = form.querySelector('#product-branch-toggle');
+            const branchPanel = form.querySelector('#product-branch-prices');
+
+            variantToggle?.addEventListener('change', function () {
+                variantPanel.classList.toggle('hidden', !this.checked);
+                basePrice.classList.toggle('hidden', this.checked);
+                const price = form.querySelector('#product-price');
+                price.required = !this.checked;
+                price.value = this.checked ? '0' : (price.value === '0' ? '' : price.value);
+                if (this.checked && !form.querySelector('#kt_ecommerce_edit_order_selected_products_body tr')) addVariant();
+            });
+            branchToggle?.addEventListener('click', function () {
+                branchPanel.classList.toggle('hidden');
+                if (!branchPanel.classList.contains('hidden') && !form.querySelector('#kt_ecommerce_edit_order_selected_products_branch_body tr')) addBranch();
+            });
+
+            form.querySelectorAll('.nav-link[data-bs-toggle="tab"]').forEach(function (tab) {
+                tab.addEventListener('click', function () {
+                    form.querySelectorAll('.nav-link').forEach(item => item.classList.toggle('active', item === tab));
+                    form.querySelectorAll('.tab-pane').forEach(pane => pane.classList.toggle('active', '#' + pane.id === tab.getAttribute('href')));
+                    form.querySelectorAll('.nav-link').forEach(item => item.setAttribute('aria-selected', item === tab ? 'true' : 'false'));
+                });
+            });
+
+            form.querySelectorAll('[data-picker-search]').forEach(function (search) {
+                search.addEventListener('input', function () {
+                    const options = form.querySelector('#' + search.dataset.pickerSearch);
+                    const query = search.value.trim().toLocaleLowerCase('id');
+                    let visible = 0;
+                    options.querySelectorAll('[data-picker-option]').forEach(function (option) {
+                        const match = option.dataset.pickerLabel.toLocaleLowerCase('id').includes(query);
+                        option.classList.toggle('hidden', !match);
+                        visible += match ? 1 : 0;
+                    });
+                    options.querySelector('[data-picker-empty]')?.classList.toggle('hidden', visible > 0);
+                });
+            });
+
+            form.querySelectorAll('[data-picker-option]').forEach(function (option) {
+                option.addEventListener('click', function () {
+                    const select = form.querySelector('#' + option.dataset.pickerSelect);
+                    select.value = option.dataset.pickerValue;
+                    option.parentElement.querySelectorAll('[data-picker-option]').forEach(item => {
+                        const active = item === option;
+                        item.classList.toggle('bg-emerald-50/60', active);
+                        item.querySelector('.product-picker-radio')?.classList.toggle('!border-emerald-500', active);
+                        item.querySelector('.product-picker-radio span')?.classList.toggle('!scale-100', active);
+                        const label = item.querySelector('.text-\\[13px\\]');
+                        label?.classList.toggle('!font-bold', active);
+                        label?.classList.toggle('!text-gray-900', active);
+                    });
+                });
+            });
+
+            ['product-type', 'product-unit'].forEach(function (id) {
+                const select = form.querySelector('#' + id);
+                const selectedOption = select?.options[select.selectedIndex];
+                const selected = form.querySelector(`[data-picker-select="${id}"][data-picker-value="${selectedOption?.value}"]`);
+                selected?.click();
+            });
+
+            form.addEventListener('submit', function (event) {
+                const missingPicker = ['product-type', 'product-unit'].find(id => !form.querySelector('#' + id)?.value);
+                if (missingPicker) {
+                    event.preventDefault();
+                    const picker = form.querySelector(`[data-picker-root="${missingPicker}"]`);
+                    picker?.classList.add('!border-red-400');
+                    picker?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    picker?.querySelector('input[type="search"]')?.focus({ preventScroll: true });
+                    return;
+                }
+                form.querySelectorAll('[data-picker-root]').forEach(picker => picker.classList.remove('!border-red-400'));
+                if (variantToggle?.checked) {
+                    const variantSelect = form.querySelector('#kt_ecommerce_edit_order_selected_products_body select');
+                    if (!variantSelect?.value) {
+                        event.preventDefault();
+                        variantSelect?.focus();
+                        if (!variantSelect) alert('Tambahkan minimal satu varian produk.');
+                    }
+                }
+            });
+            form.addEventListener('submit', function (event) {
+                if (event.defaultPrevented) return;
+                const submitButton = document.getElementById('product-create-submit');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<span class="ph ph-spinner-gap animate-spin mr-2"></span> Menyimpan...';
+                }
+            });
+
+            const avatar = form.querySelector('#product-avatar');
+            const preview = form.querySelector('#product-image-preview');
+            let objectUrl = null;
+            avatar?.addEventListener('change', function () {
+                if (objectUrl) URL.revokeObjectURL(objectUrl);
+                const file = this.files?.[0];
+                objectUrl = file ? URL.createObjectURL(file) : null;
+                preview.src = objectUrl || '';
+                preview.classList.toggle('hidden', !file);
+                form.querySelector('#product-image-placeholder')?.classList.toggle('hidden', !!file);
+            });
+
+            if ($.fn.select2 && !form.querySelector('#category_id').classList.contains('select2-hidden-accessible')) {
+                $('#category_id').select2({
+                    width: '100%',
+                    placeholder: 'Ketik nama kategori',
+                    tags: true,
+                    ajax: {
+                        url: '{{ route('ajax.category') }}',
+                        dataType: 'json',
+                        delay: 250,
+                        data: params => ({ search: params.term }),
+                        processResults: data => ({ results: data.map(item => ({ id: item.id, text: item.name })) }),
+                        cache: true
+                    }
+                });
+            }
+            if (typeof bindFormatNumber === 'function') bindFormatNumber();
+        }
+        const standaloneProductForm = document.getElementById('add_product_form');
+        if (standaloneProductForm) initializeProductCreateForm(standaloneProductForm.parentElement);
     </script>
     @if (request()->segment(3) === 'show')
         <script>

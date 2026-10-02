@@ -387,7 +387,7 @@
                     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                     @click="productCreateOpen = false" class="absolute inset-0 bg-black/60"></div>
 
-                <section x-show="productCreateOpen"
+                <section x-show="productCreateOpen" x-init="initializeProductCreateForm($el)"
                     x-transition:enter="transition ease-out duration-300 transform"
                     x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full"
                     x-transition:enter-end="translate-y-0 lg:translate-x-0"
@@ -425,6 +425,8 @@
         </template>
     @endif
     </div>
+
+    @include('master::products.partials.create-script')
 
     <script type="text/javascript">
         var dataTable;
