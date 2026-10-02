@@ -35,6 +35,25 @@ class ProductController extends Controller
         }
 
         $data['branch'] = Branch::whereIn('id', UserBranch::getUserBranch())->get();
+        $data['product_units'] = ProductUnit::all();
+        $data['tipe'] = ['product' => 'Product', 'kemasan' => 'Kemasan'];
+        $data['data'] = null;
+
+        $listableProducts = Product::whereDoesntHave('parentProduct')->where('tipe', '!=', 'parcel');
+
+        $data['categories'] = ProductCategory::whereIn('id', (clone $listableProducts)->whereNotNull('category_id')->distinct()->pluck('category_id'))
+            ->orderBy('name')
+            ->get();
+
+        $data['productTypes'] = (clone $listableProducts)
+            ->whereNotNull('tipe')
+            ->where('tipe', '!=', '')
+            ->distinct()
+            ->orderBy('tipe')
+            ->pluck('tipe');
+
+        $data['canCreateProduct'] = check_access('products.create');
+
         return view('master::products.index', $data);
     }
 
@@ -902,9 +921,15 @@ class ProductController extends Controller
         $branchFilter = $request->input('branch_filter');
         $priceOrderExpression = 'products.price';
 
+        $childProductRelations = ['category', 'childProducts.product'];
+        if ($branchFilter && $branchFilter != 0) {
+            $childProductRelations['childProducts.product.productBranches'] = fn($branches) => $branches->where('branch_id', $branchFilter);
+        }
+
         $query = Product::query()
             ->select('products.*', 'product_units.abbreviation as unit_abbreviation')
-            ->with(['category', 'childProducts.product'])
+            ->with($childProductRelations)
+            ->whereDoesntHave('parentProduct')
             ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
             ->where('tipe', '!=', 'parcel');
 
@@ -919,26 +944,42 @@ class ProductController extends Controller
             $query->addSelect(DB::raw('products.price as display_price'));
         }
 
+        if ($request->filled('category_filter') && $request->category_filter !== 'all') {
+            $query->where('products.category_id', $request->category_filter);
+        }
+
+        if ($request->filled('type_filter') && $request->type_filter !== 'all') {
+            if (is_array($request->type_filter)) {
+                $query->whereIn('products.tipe', $request->type_filter);
+            } else {
+                $query->where('products.tipe', $request->type_filter);
+            }
+        }
+
         $data = $query;
         return DataTables::of($data)
             ->filter(function ($q) use ($request) {
-                $search = $request->input('search.value');
-                if ($search) {
-                    $q->where(function ($sub) use ($search) {
-                        $sub->where('products.name', 'LIKE', "%$search%")
-                            ->orWhereHas('category', fn($c) => $c->where('name', 'LIKE', "%$search%"));
-                        // tambahkan kolom lain sesuai kebutuhan
-                    });
+                $search = trim((string) $request->input('search.value', ''));
+                if ($search !== '') {
+                    $terms = preg_split('/\\s+/', $search, -1, PREG_SPLIT_NO_EMPTY);
+                    foreach ($terms as $term) {
+                        $pattern = '%' . $term . '%';
+                        $q->where(function ($sub) use ($pattern) {
+                            $sub->where('products.name', 'LIKE', $pattern)
+                                ->orWhereHas('category', fn($category) => $category->where('name', 'LIKE', $pattern))
+                                ->orWhereHas('childProducts.product', fn($variant) => $variant->where('name', 'LIKE', $pattern));
+                        });
+                    }
                 }
-            }, true)
+            })
             ->order(function ($query) use ($request, $priceOrderExpression) {
                 $order = $request->input('order', []);
 
                 if (empty($order)) {
                     $query->reorder()
-                        ->orderByRaw('CASE WHEN products.parent_id IS NULL THEN 0 ELSE 1 END ASC')
-                        ->orderBy('products.parent_id', 'asc')
-                        ->orderBy('products.id', 'asc');
+                        ->orderByRaw('CASE WHEN EXISTS (SELECT 1 FROM product_child WHERE product_child.parent_id = products.id) THEN 0 ELSE 1 END ASC')
+                        ->orderBy('products.id', 'asc')
+                        ->whereNull('products.parent_id');
                     return;
                 }
 
@@ -965,64 +1006,92 @@ class ProductController extends Controller
                 $query->orderBy('products.id', 'desc');
             })
             ->addIndexColumn()
-            ->editColumn('name', function ($product) {
-                $html = '
-                    <div class="d-flex align-items-center">';
+            ->editColumn('name', function ($product) use ($branchFilter) {
                 if (isset($product->image)) {
-                    $url   = asset('storage/' . $product->image);
-                    $html .= '<img src="' . $url . '" alt="Product Image" width="50">';
+                    $url = asset('storage/' . $product->image);
+                    $avatar = '<div class="w-9 h-9 md:w-12 md:h-12 rounded-xl overflow-hidden shrink-0 shadow-sm border border-gray-100 flex items-center justify-center text-lg md:text-xl bg-gray-100">
+                        <img src="' . $url . '" alt="Product Image" class="w-full h-full object-cover">
+                    </div>';
                 } else {
-                    $html .= '<a href="javascript:void(0)" class="symbol symbol-50px">
-                            <span class="symbol-label" style="background-image:url(assets/media/svg/files/blank-image.svg);"></span>
-                        </a>';
+                    [$emoji, $bgClass] = self::resolveProductIcon($product);
+                    $avatar = '<div class="w-9 h-9 md:w-12 md:h-12 rounded-xl overflow-hidden shrink-0 shadow-sm border border-gray-100 flex items-center justify-center text-lg md:text-xl ' . $bgClass . '">
+                        ' . $emoji . '
+                    </div>';
                 }
 
                 // Check if this product is a child (has parent_id) or has children
-                $isChild = !empty($product->parent_id);
                 $hasChildren = $product->childProducts && $product->childProducts->count() > 0;
 
-                // Tree structure visual
-                if ($isChild) {
-                    // Child product - add indentation and connector
-                    $html .= '<div class="d-flex align-items-center ps-4" style="border-left: 2px solid #e0e0e0;">
-                        <span class="me-2" style="color: #7e8299;">├─</span>
-                        <div>
-                            <a href="' . url('products') . '/' . $product->id . '/show' . '" class="text-gray-800 text-hover-primary fs-5 fw-bold"
-                               data-kt-ecommerce-product-filter="product_name">
-                                ' . e($product->name) . '
-                            </a>
-                            <span class="badge badge-secondary ms-2">Variant</span>
-                        </div>
-                    </div>';
-                } elseif ($hasChildren) {
-                    // Parent product with children
-                    $html .= '<div class="d-flex align-items-center">
-                        <div>
-                            <a href="' . url('products') . '/' . $product->id . '/show' . '" class="text-gray-800 text-hover-primary fs-5 fw-bold"
-                               data-kt-ecommerce-product-filter="product_name">
-                                ' . e($product->name) . '
-                            </a>
-                            <span class="badge badge-primary ms-2">Parent</span>
-                        </div>
-                    </div>';
-                } else {
-                    // Regular product (no children)
-                    $html .= '<div class="d-flex align-items-center">
-                        <div>
-                            <a href="' . url('products') . '/' . $product->id . '/show' . '" class="text-gray-800 text-hover-primary fs-5 fw-bold"
-                               data-kt-ecommerce-product-filter="product_name">
-                                ' . e($product->name) . '
-                            </a>
-                        </div>
-                    </div>';
+                $categoryName = $product->category->name ?? '';
+                $subtitle = $categoryName !== ''
+                    ? '<div class="text-xs text-gray-400 mt-0.5">' . e($categoryName) . '</div>'
+                    : '';
+
+                $mobilePrice = (float) ($product->display_price ?? $product->price ?? 0);
+                $mobilePriceLabel = 'Rp ' . number_format($mobilePrice, 0, ',', '.');
+                if ($hasChildren) {
+                    $childPrices = $product->childProducts
+                        ->map(fn($child) => (float) ($child->product?->productBranches?->first()?->price ?? $child->product?->price ?? 0));
+                    $minimum = $childPrices->min() ?? 0;
+                    $maximum = $childPrices->max() ?? 0;
+                    $mobilePriceLabel = 'Rp ' . number_format($minimum, 0, ',', '.');
+                    if ($minimum !== $maximum) {
+                        $mobilePriceLabel .= ' – ' . number_format($maximum, 0, ',', '.');
+                    }
                 }
 
-                return $html;
-            })
-            ->editColumn('price', function ($product) {
-                $price = $product->display_price ?? $product->price ?? 0;
+                $parentRow = '<div class="flex items-center gap-3 md:gap-4 px-5 py-3.5 min-h-[64px] md:min-h-[76px]">' . $avatar . '
+                    <div class="flex-1 min-w-0">
+                        <a href="' . url('products') . '/' . $product->id . '/show" class="block truncate text-[15px] md:text-base font-semibold text-gray-900 hover:text-emerald-700" data-kt-ecommerce-product-filter="product_name">' . e($product->name) . '</a>' . $subtitle . '
+                    </div>
+                    <span class="md:hidden shrink-0 whitespace-nowrap text-[13px] font-semibold text-emerald-800">' . $mobilePriceLabel . '</span>
+                </div>';
 
-                return '<span class="badge badge-light-primary editable-price" data-id="' . $product->id . '" data-value="' . $price . '">Rp' . toNumber($price) . '</span>';
+                if (!$hasChildren) {
+                    return $parentRow;
+                }
+
+                $childrenHtml = '<div class="border-t border-emerald-100/60 bg-emerald-50/20">
+                    <div class="relative ml-[34px] md:ml-[44px]">
+                        <span aria-hidden="true" class="absolute left-0 top-0 bottom-0 w-[2px] bg-emerald-100"></span>';
+                foreach ($product->childProducts as $child) {
+                    $childName = $child->product->name ?? '';
+                    $childPrice = (float) ($child->product?->productBranches?->first()?->price ?? $child->product?->price ?? 0);
+                    $unit = mb_strtolower($product->unit_abbreviation ?? 'kg');
+                    $childrenHtml .= '<div class="relative min-h-[40px] md:min-h-[44px] flex items-center pr-3 text-[13px] text-gray-500 font-medium">
+                        <span aria-hidden="true" class="absolute left-0 top-1/2 -translate-y-1/2 w-[26px] md:w-8 h-px bg-emerald-100"></span>
+                        <span class="flex-1 min-w-0 truncate pl-[34px] md:pl-10 text-[14px] md:text-[13px]">' . e($childName) . '</span>
+                        <span class="md:hidden shrink-0 whitespace-nowrap text-[13px] font-semibold text-gray-700">Rp ' . number_format($childPrice, 0, ',', '.') . '<span class="font-normal text-gray-400">/' . e($unit) . '</span></span>
+                    </div>';
+                }
+                $childrenHtml .= '</div></div>';
+
+                return '<div class="border-b border-emerald-50">' . $parentRow . $childrenHtml . '</div>';
+            })
+            ->editColumn('price', function ($product) use ($branchFilter) {
+                $hasChildren = $product->childProducts && $product->childProducts->count() > 0;
+
+                if ($hasChildren) {
+                    $childPrices = $product->childProducts
+                        ->map(fn($child) => (float) ($child->product?->productBranches?->first()?->price ?? $child->product?->price ?? 0));
+                    $min = $childPrices->min() ?? 0;
+                    $max = $childPrices->max() ?? 0;
+                    $range = '<div class="flex min-h-[64px] md:min-h-[76px] items-center justify-end px-1 pr-5 md:pr-6 text-sm font-semibold text-emerald-800 whitespace-nowrap">Rp ' . number_format($min, 0, ',', '.') . ' – ' . number_format($max, 0, ',', '.') . '</div>';
+
+                    $variantPrices = '<div class="border-t border-emerald-100/60 bg-emerald-50/20 pr-5 md:pr-6">';
+                    foreach ($product->childProducts as $child) {
+                        $childPrice = (float) ($child->product?->productBranches?->first()?->price ?? $child->product?->price ?? 0);
+                        $unit = mb_strtolower($product->unit_abbreviation ?? 'kg');
+                        $variantPrices .= '<div class="min-h-[40px] md:min-h-[44px] flex items-center justify-end px-2 text-[13px] font-semibold text-gray-700 whitespace-nowrap">Rp ' . number_format($childPrice, 0, ',', '.') . '<span class="text-xs text-gray-400 font-normal">/' . e($unit) . '</span></div>';
+                    }
+                    $variantPrices .= '</div>';
+
+                    return '<div>' . $range . $variantPrices . '</div>';
+                }
+
+                $price = (float) ($product->display_price ?? $product->price ?? 0);
+
+                return '<div class="min-h-[72px] flex items-center justify-end px-5"><span class="editable-price text-sm font-semibold text-emerald-800 whitespace-nowrap cursor-pointer" data-id="' . $product->id . '" data-value="' . $price . '">Rp ' . number_format($price, 0, ',', '.') . '</span></div>';
             })
             ->addColumn('category', function ($product) {
                 return $product->category->name ?? '-';
@@ -1068,39 +1137,62 @@ class ProductController extends Controller
         //     ';
         // })
             ->addColumn('action', function ($row) {
-                $editUrl   = route('products.edit', $row->id);
-                $deleteUrl = route('products.destroy', $row->id);
-                $name      = e($row->name);
+                $editUrl = route('products.edit', $row->id);
+                $name    = e($row->name);
 
-                $html = '
-                <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi ' . $name . '">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
+                $html = '<div class="flex items-center justify-end gap-1" title="Aksi ' . $name . '">';
                 if (check_access('products.edit')) {
                     $html .= '
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="' . $editUrl . '" title="Edit">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>';
+                        <a href="' . $editUrl . '" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors" title="Edit">
+                            <i class="ph ph-pencil-simple text-base"></i>
+                        </a>';
                 }
-                if (check_access('products.delete')) {
+                if (check_access('products.destroy')) {
                     $html .= '
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $row->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>';
+                        <button type="button" onclick="deleteProduct(' . $row->id . ')" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
+                            <i class="ph ph-trash text-base"></i>
+                        </button>';
                 }
-                $html .= '
-                    </ul>
-                </div>';
+                $html .= '</div>';
                 return $html;
             })
             ->rawColumns(['name', 'action', 'price', 'status'])
             ->make(true);
+    }
+
+    /**
+     * Map a product/category name to a presentational emoji + Tailwind bg class.
+     * @return array{0: string, 1: string}
+     */
+    private static function resolveProductIcon($product): array
+    {
+        $needle = mb_strtolower(($product->name ?? '') . ' ' . ($product->category->name ?? ''));
+
+        $map = [
+            'stroberi' => ['🍓', 'bg-pink-100'],
+            'strawberry' => ['🍓', 'bg-pink-100'],
+            'mangga' => ['🥭', 'bg-amber-50'],
+            'apel' => ['🍎', 'bg-red-50'],
+            'pisang' => ['🍌', 'bg-yellow-50'],
+            'jeruk' => ['🍊', 'bg-orange-50'],
+            'anggur' => ['🍇', 'bg-purple-50'],
+            'nanas' => ['🍍', 'bg-yellow-50'],
+            'semangka' => ['🍉', 'bg-red-50'],
+            'melon' => ['🍈', 'bg-lime-50'],
+            'alpukat' => ['🥑', 'bg-green-50'],
+            'nangka' => ['🟡', 'bg-yellow-50'],
+            'durian' => ['🟢', 'bg-green-50'],
+            'sirsak' => ['🟢', 'bg-green-50'],
+            'kelapa' => ['🥥', 'bg-stone-50'],
+        ];
+
+        foreach ($map as $keyword => $icon) {
+            if (str_contains($needle, $keyword)) {
+                return $icon;
+            }
+        }
+
+        return ['📦', 'bg-gray-100'];
     }
 
     /**
