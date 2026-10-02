@@ -131,11 +131,15 @@
             <template x-for="(rule, idx) in priceRules" :key="rule.id">
                 <div class="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
                     <div class="flex items-center gap-2">
-                        <div class="relative flex-1">
+                        <div class="relative flex-1" x-data="{
+                            get displayPrice() { return rule.price ? Number(rule.price).toLocaleString('id-ID') : '' },
+                            set displayPrice(value) {
+                                const clean = value.replace(/\D/g, '');
+                                rule.price = clean ? parseInt(clean, 10) : 0;
+                            }
+                        }">
                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-400">Rp</span>
-                            <input type="text" inputmode="numeric" :value="rule.price ? Number(rule.price).toLocaleString('id-ID') : ''"
-                                @input="rule.price = $event.target.value.replace(/\D/g, '')"
-                                @blur="$event.target.value = rule.price ? Number(rule.price).toLocaleString('id-ID') : ''"
+                            <input type="text" inputmode="numeric" x-model="displayPrice"
                                 placeholder="0" class="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-3 text-right text-sm font-semibold outline-none transition focus:border-emerald-500 focus:bg-white">
                         </div>
                         <button type="button" x-show="priceRules.length > 1" @click="priceRules.splice(idx, 1)"
