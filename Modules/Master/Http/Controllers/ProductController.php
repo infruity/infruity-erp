@@ -1089,10 +1089,15 @@ class ProductController extends Controller
                 // Check if this product is a child (has parent_id) or has children
                 $hasChildren = $product->childProducts && $product->childProducts->count() > 0;
 
-                $categoryName = $product->category->name ?? '';
-                $subtitle = $categoryName !== ''
-                    ? '<div class="text-xs text-gray-400 mt-0.5">' . e($categoryName) . '</div>'
-                    : '';
+                $categoryName = trim((string) ($product->category?->name ?? ''));
+                if ($categoryName === '') {
+                    $categoryName = match (true) {
+                        $product->tipe === 'kemasan' => 'Kemasan',
+                        $product->status === 'receipt' => 'Perlu Resep',
+                        default => 'Bahan Baku',
+                    };
+                }
+                $subtitle = '<div class="mt-0.5 truncate text-[11px] text-gray-400 md:text-xs">' . e($categoryName) . '</div>';
 
                 $mobilePrice = (float) ($product->display_price ?? $product->price ?? 0);
                 $mobilePriceLabel = 'Rp ' . number_format($mobilePrice, 0, ',', '.');
