@@ -262,6 +262,48 @@
         @endif
     </script>
     <script>
+        function productBranchPricing(root) {
+            let branches = [];
+            try {
+                branches = JSON.parse(root.dataset.branches || '[]').map(branch => ({
+                    id: String(branch.id),
+                    name: branch.name || ''
+                }));
+            } catch (error) {
+                console.error('Daftar cabang produk tidak dapat dibaca.', error);
+            }
+
+            return {
+                branches,
+                priceRules: [{
+                    id: Date.now(),
+                    price: root.dataset.initialPrice || '',
+                    branches: ['all']
+                }],
+                addPriceRule() {
+                    this.priceRules.push({ id: Date.now() + Math.random(), price: '', branches: [] });
+                },
+                hasOtherBranchRules(rule, branchId) {
+                    return this.priceRules.some(other => {
+                        if (other.id === rule.id) return false;
+                        if (branchId === 'all') return other.branches.length > 0;
+                        return other.branches.includes('all') || other.branches.includes(String(branchId));
+                    });
+                },
+                toggleBranch(rule, branchId, checked) {
+                    rule.branches = rule.branches.filter(id => id !== 'all');
+                    const id = String(branchId);
+                    if (checked && !rule.branches.includes(id)) rule.branches.push(id);
+                    if (!checked) rule.branches = rule.branches.filter(selected => selected !== id);
+                },
+                branchIdsFor(rule) {
+                    return rule.branches.includes('all')
+                        ? this.branches.map(branch => String(branch.id))
+                        : rule.branches;
+                }
+            };
+        }
+
         function initializeProductCreateForm(root) {
             const form = root.querySelector('#add_product_form');
             if (!form || form.dataset.productDrawerReady) return;
@@ -269,21 +311,14 @@
 
             const variantToggle = form.querySelector('#product-has-variants');
             const variantPanel = form.querySelector('#product-variants');
-            const basePrice = form.querySelector('#product-base-price');
-            const branchToggle = form.querySelector('#product-branch-toggle');
             const branchPanel = form.querySelector('#product-branch-prices');
 
             variantToggle?.addEventListener('change', function () {
                 variantPanel.classList.toggle('hidden', !this.checked);
-                basePrice.classList.toggle('hidden', this.checked);
+                branchPanel.classList.toggle('hidden', this.checked);
                 const price = form.querySelector('#product-price');
-                price.required = !this.checked;
                 price.value = this.checked ? '0' : (price.value === '0' ? '' : price.value);
                 if (this.checked && !form.querySelector('#kt_ecommerce_edit_order_selected_products_body tr')) addVariant();
-            });
-            branchToggle?.addEventListener('click', function () {
-                branchPanel.classList.toggle('hidden');
-                if (!branchPanel.classList.contains('hidden') && !form.querySelector('#kt_ecommerce_edit_order_selected_products_branch_body tr')) addBranch();
             });
 
             form.querySelectorAll('.nav-link[data-bs-toggle="tab"]').forEach(function (tab) {
@@ -326,6 +361,7 @@
 
             const categorySearch = form.querySelector('[data-category-search]');
             const categoryCreate = form.querySelector('[data-category-create]');
+            const categoryPicker = form.querySelector('[data-category-picker]');
             const categoryValue = form.querySelector('#category_id');
             const categoryOptions = Array.from(form.querySelectorAll('[data-category-option]'));
             categorySearch?.addEventListener('input', function () {
@@ -400,7 +436,19 @@
                         variantSelect?.focus();
                         if (!variantSelect) alert('Tambahkan minimal satu varian produk.');
                     }
+                    return;
                 }
+
+                const pricingRoot = form.querySelector('[data-branch-pricing]');
+                const pricing = window.Alpine?.$data(pricingRoot);
+                const rules = pricing?.priceRules || [];
+                const invalidRule = rules.find(rule => !String(rule.price).trim() || pricing.branchIdsFor(rule).length === 0);
+                if (invalidRule) {
+                    event.preventDefault();
+                    alert('Lengkapi harga dan pilih minimal satu cabang untuk setiap aturan harga.');
+                    return;
+                }
+                form.querySelector('#product-price').value = rules[0]?.price || '0';
             });
             form.addEventListener('submit', function (event) {
                 if (event.defaultPrevented) return;

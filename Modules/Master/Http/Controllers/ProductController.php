@@ -80,6 +80,7 @@ class ProductController extends Controller
         }
 
         $data['product_units'] = ProductUnit::all();
+        $data['branch'] = Branch::whereIn('id', UserBranch::getUserBranch())->get();
         $data['productCategories'] = ProductCategory::orderBy('name')->get();
         $data['tipe']          = ['product' => 'Product', 'kemasan' => 'Kemasan'];
         $data['data']          = null;
