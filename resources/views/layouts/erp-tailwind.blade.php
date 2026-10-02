@@ -560,6 +560,9 @@
                     <a href="#" class="flex items-center gap-3 px-5 py-2.5 text-[13px] font-medium text-gray-600 hover:text-[#0b595b] hover:bg-black/5 transition-colors">
                         <i class="ph ph-user-circle text-[18px]"></i> Profil Saya
                     </a>
+                    <a href="{{ route('change-password') }}" class="flex items-center gap-3 px-5 py-2.5 text-[13px] font-medium text-gray-600 hover:text-[#0b595b] hover:bg-black/5 transition-colors">
+                        <i class="ph ph-lock text-[18px]"></i> Ubah Password
+                    </a>
                 </div>
                 <div class="border-t border-white/40 py-1.5 bg-red-50/30">
                     <form method="POST" action="{{ url('/logout') }}">
