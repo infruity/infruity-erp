@@ -409,7 +409,7 @@
                             <i class="ph-bold ph-x text-base"></i>
                         </button>
                     </header>
-                    <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-gray-50/60 px-4 py-4 md:px-5">
+                    <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-gray-50/60">
                         @include('master::products.partials.create-form')
                     </div>
                     <footer class="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-white px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">

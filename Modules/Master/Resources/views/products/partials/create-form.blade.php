@@ -1,6 +1,6 @@
 <style>
     #add_product_form { display: block; padding: 0; }
-    #add_product_form .product-create-content { display: flex; flex-direction: column; gap: 1.25rem; }
+    #add_product_form .product-create-content { display: flex; flex-direction: column; gap: 1.25rem; padding: 1.25rem 1.25rem .5rem; }
     #add_product_form .product-field-label { display: block; margin-bottom: .375rem; color: #4b5563; font-size: .75rem; font-weight: 600; }
     #add_product_form .product-input,
     #add_product_form .product-select,
@@ -159,13 +159,24 @@
 
         <div>
             <label for="category_id" class="product-field-label">Kategori Produk</label>
-            <select id="category_id" name="category_id" class="product-select">
-                @if (old('category_id'))
-                    <option value="{{ old('category_id') }}" selected>{{ \Modules\Master\Entities\ProductCategory::find(old('category_id'))->name ?? old('category_id') }}</option>
-                @elseif (isset($data->category_id))
-                    <option value="{{ $data->category_id }}" selected>{{ $category->name ?? '' }}</option>
-                @endif
-            </select>
+            <div data-category-picker class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                <div class="relative border-b border-gray-100 bg-gray-50/50">
+                    <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
+                    <input type="search" data-category-search placeholder="Cari kategori..." class="w-full bg-transparent py-3 pl-9 pr-4 text-sm outline-none" aria-label="Cari kategori produk">
+                </div>
+                <div class="max-h-48 overflow-y-auto overscroll-contain">
+                    @foreach ($productCategories ?? $categories ?? [] as $categoryOption)
+                        <button type="button" data-category-option data-category-value="{{ $categoryOption->id }}" data-category-label="{{ $categoryOption->name }}" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left last:border-0 hover:bg-gray-50">
+                            <span class="product-picker-radio flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300"><span class="h-2 w-2 scale-0 rounded-full bg-emerald-500"></span></span>
+                            <span class="text-[13px] font-medium text-gray-700">{{ $categoryOption->name }}</span>
+                        </button>
+                    @endforeach
+                    <button type="button" data-category-create class="hidden w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left text-[13px] font-semibold text-emerald-700 hover:bg-emerald-50/60"></button>
+                    <p data-category-empty class="hidden py-5 text-center text-[13px] text-gray-400">Kategori tidak ditemukan</p>
+                </div>
+            </div>
+            <input id="category_id" type="hidden" name="category_id" value="{{ old('category_id', $data->category_id ?? '') }}">
+            @error('category_id') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
         </div>
 
         <div class="product-tabs" role="tablist" aria-label="Detail produk">

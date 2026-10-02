@@ -36,6 +36,7 @@ class ProductController extends Controller
 
         $data['branch'] = Branch::whereIn('id', UserBranch::getUserBranch())->get();
         $data['product_units'] = ProductUnit::all();
+        $data['productCategories'] = ProductCategory::orderBy('name')->get();
         $data['tipe'] = ['product' => 'Product', 'kemasan' => 'Kemasan'];
         $data['data'] = null;
 
@@ -79,6 +80,7 @@ class ProductController extends Controller
         }
 
         $data['product_units'] = ProductUnit::all();
+        $data['productCategories'] = ProductCategory::orderBy('name')->get();
         $data['tipe']          = ['product' => 'Product', 'kemasan' => 'Kemasan'];
         $data['data']          = null;
         return view('master::products.create', $data);

@@ -15,57 +15,6 @@
                 document.querySelector('#add_product_form .nav-link[href="#' + pane.id + '"]')?.click();
             }
         }, true);
-        $('#category_id').select2({
-            width: '100%',
-            placeholder: 'Ketik nama kategori',
-            tags: true, // ini aktifkan fitur menambah item baru
-            ajax: {
-                url: '{{ route('ajax.category') }}',
-                dataType: 'json',
-                delay: 250,
-                data: function(params) {
-                    return {
-                        search: params.term
-                    };
-                },
-                processResults: function(data, params) {
-                    const term = params.term || '';
-
-                    // Map hasil dari server
-                    let results = data.map(item => ({
-                        id: item.id, // penting: pastikan id-nya sesuai yg mau kamu simpan
-                        text: item.name
-                    }));
-
-                    // Kalau term (yang diketik user) tidak ada di hasil, tambahkan manual
-                    if (term && !results.some(r => r.text.toLowerCase() === term.toLowerCase())) {
-                        results.push({
-                            id: term, // kita pakai term sebagai id juga (karena kategori baru)
-                            text: term
-                        });
-                    }
-
-                    return {
-                        results: results
-                    };
-                },
-                cache: true
-            },
-            createTag: function(params) {
-                const term = $.trim(params.term);
-
-                if (term === '') {
-                    return null;
-                }
-
-                return {
-                    id: term,
-                    text: term,
-                    newTag: true // optional: kalau mau tandai item baru
-                };
-            }
-        });
-
         $("#add_product_form").submit(function() {
             const overlaySubmit = document.getElementById('product-create-submit');
             if (overlaySubmit) {
@@ -375,6 +324,57 @@
                 });
             });
 
+            const categorySearch = form.querySelector('[data-category-search]');
+            const categoryCreate = form.querySelector('[data-category-create]');
+            const categoryValue = form.querySelector('#category_id');
+            const categoryOptions = Array.from(form.querySelectorAll('[data-category-option]'));
+            categorySearch?.addEventListener('input', function () {
+                const query = this.value.trim().toLocaleLowerCase('id');
+                let visible = 0;
+                let exactMatch = false;
+                categoryOptions.forEach(function (option) {
+                    const label = option.dataset.categoryLabel.toLocaleLowerCase('id');
+                    const match = label.includes(query);
+                    option.classList.toggle('hidden', !match);
+                    visible += match ? 1 : 0;
+                    exactMatch = exactMatch || label === query;
+                });
+                categoryCreate.classList.toggle('hidden', !query || exactMatch);
+                categoryCreate.dataset.categoryValue = this.value.trim();
+                categoryCreate.replaceChildren();
+                const icon = document.createElement('i');
+                icon.className = 'ph ph-plus-circle';
+                const label = document.createElement('span');
+                label.textContent = `Tambah kategori “${this.value.trim()}”`;
+                categoryCreate.append(icon, label);
+                form.querySelector('[data-category-empty]')?.classList.toggle('hidden', visible > 0 || !query);
+            });
+
+            function chooseCategory(option) {
+                categoryValue.value = option.dataset.categoryValue;
+                categoryPicker.querySelectorAll('[data-category-option]').forEach(function (item) {
+                    const selected = item === option;
+                    item.classList.toggle('bg-emerald-50/60', selected);
+                    item.querySelector('.product-picker-radio')?.classList.toggle('!border-emerald-500', selected);
+                    item.querySelector('.product-picker-radio span')?.classList.toggle('!scale-100', selected);
+                    const label = item.querySelector('.text-\\[13px\\]');
+                    label?.classList.toggle('!font-bold', selected);
+                    label?.classList.toggle('!text-gray-900', selected);
+                });
+            }
+            categoryOptions.forEach(option => option.addEventListener('click', () => chooseCategory(option)));
+            categoryCreate?.addEventListener('click', function () {
+                categoryValue.value = this.dataset.categoryValue;
+                categoryPicker.querySelectorAll('[data-category-option]').forEach(item => {
+                    item.classList.remove('bg-emerald-50/60');
+                    item.querySelector('.product-picker-radio')?.classList.remove('!border-emerald-500');
+                    item.querySelector('.product-picker-radio span')?.classList.remove('!scale-100');
+                });
+                this.classList.add('bg-emerald-50/60');
+            });
+            const initialCategory = categoryOptions.find(option => option.dataset.categoryValue === categoryValue.value);
+            if (initialCategory) chooseCategory(initialCategory);
+
             ['product-type', 'product-unit'].forEach(function (id) {
                 const select = form.querySelector('#' + id);
                 const selectedOption = select?.options[select.selectedIndex];
@@ -423,21 +423,6 @@
                 form.querySelector('#product-image-placeholder')?.classList.toggle('hidden', !!file);
             });
 
-            if ($.fn.select2 && !form.querySelector('#category_id').classList.contains('select2-hidden-accessible')) {
-                $('#category_id').select2({
-                    width: '100%',
-                    placeholder: 'Ketik nama kategori',
-                    tags: true,
-                    ajax: {
-                        url: '{{ route('ajax.category') }}',
-                        dataType: 'json',
-                        delay: 250,
-                        data: params => ({ search: params.term }),
-                        processResults: data => ({ results: data.map(item => ({ id: item.id, text: item.name })) }),
-                        cache: true
-                    }
-                });
-            }
             if (typeof bindFormatNumber === 'function') bindFormatNumber();
         }
         const standaloneProductForm = document.getElementById('add_product_form');
