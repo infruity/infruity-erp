@@ -221,7 +221,7 @@
         <!-- MOBILE SIDEBAR OVERLAY -->
         <div x-show="sidebarOpen" x-transition:enter="transition-opacity duration-300"
             x-transition:leave="transition-opacity duration-200" @click="sidebarOpen = false"
-            class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden">
+            class="fixed inset-0 bg-black/30 z-40 lg:hidden">
         </div>
 
         <!-- ================================ -->
