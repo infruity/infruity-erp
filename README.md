@@ -1,78 +1,218 @@
-<p align="center"><img src="https://res.cloudinary.com/dtfbvvkyp/image/upload/v1566331377/laravel-logolockup-cmyk-red.svg" width="400"></p>
+# Infruity
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+Infruity adalah aplikasi backend berbasis **Laravel 10** dengan arsitektur modular (menggunakan [nwidart/laravel-modules](https://nwidart.com/laravel-modules/)) untuk mengelola operasional bisnis retail/distribusi — mulai dari manajemen data master, transaksi, point of sale (POS), hingga pelaporan dan CRM.
 
-## About Laravel
+## Daftar Isi
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- [Fitur & Modul](#fitur--modul)
+- [Teknologi yang Digunakan](#teknologi-yang-digunakan)
+- [Persyaratan Sistem](#persyaratan-sistem)
+- [Instalasi](#instalasi)
+- [Konfigurasi Environment](#konfigurasi-environment)
+- [Menjalankan Aplikasi](#menjalankan-aplikasi)
+- [Struktur Proyek](#struktur-proyek)
+- [Perintah Artisan Berguna](#perintah-artisan-berguna)
+- [Testing](#testing)
+- [Kontribusi](#kontribusi)
+- [Lisensi](#lisensi)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Fitur & Modul
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Aplikasi ini dibangun secara modular, dengan setiap domain bisnis dipisahkan ke dalam modulnya sendiri di direktori `Modules/`:
 
-## Learning Laravel
+| Modul | Deskripsi |
+|---|---|
+| **Master** | Pengelolaan data master: akun, cabang (branch), pelanggan, kurir, metode pembayaran, posisi/jabatan, kategori produk, satuan produk, staff, dan supplier. |
+| **Transaction** | Transaksi bisnis seperti penerimaan produk (product receipt) dan transaksi POS. |
+| **Pos** | Fitur Point of Sale (penjualan di kasir). |
+| **Crm** | Customer Relationship Management, termasuk dashboard CRM. |
+| **Report** | Modul pelaporan dan rekap data bisnis. |
+| **Chat** | Fitur komunikasi/chat internal aplikasi. |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Fitur pendukung lainnya meliputi:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Autentikasi & otorisasi berbasis role/permission.
+- Notifikasi push (Firebase Cloud Messaging / Web Push).
+- Ekspor data ke Excel (Maatwebsite Excel) dan PDF (DomPDF).
+- Barcode & QR Code generator.
+- Captcha untuk keamanan form.
+- Log viewer bawaan untuk memudahkan debugging.
+- Dokumentasi API berbasis OpenAPI.
 
-## Laravel Sponsors
+## Teknologi yang Digunakan
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+- **Backend:** PHP 8.1+, Laravel 10
+- **Modularisasi:** nwidart/laravel-modules
+- **Database:** MySQL (via Eloquent ORM & DBAL)
+- **Frontend:** Blade, Livewire 3, Bootstrap 4, jQuery, Laravel Mix (Webpack)
+- **Lainnya:** Laravel Sanctum (API auth), Yajra Datatables, Google API Client, Guzzle, Spatie Laravel HTML
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[British Software Development](https://www.britishsoftware.co)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- [UserInsights](https://userinsights.com)
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
-- [CodeBrisk](https://codebrisk.com)
-- [1Forge](https://1forge.com)
-- [TECPRESSO](https://tecpresso.co.jp/)
-- [Runtime Converter](http://runtimeconverter.com/)
-- [WebL'Agence](https://weblagence.com/)
-- [Invoice Ninja](https://www.invoiceninja.com)
-- [iMi digital](https://www.imi-digital.de/)
-- [Earthlink](https://www.earthlink.ro/)
-- [Steadfast Collective](https://steadfastcollective.com/)
-- [We Are The Robots Inc.](https://watr.mx/)
-- [Understand.io](https://www.understand.io/)
-- [Abdel Elrafa](https://abdelelrafa.com)
-- [Hyper Host](https://hyper.host)
-- [Appoly](https://www.appoly.co.uk)
-- [OP.GG](https://op.gg)
+## Persyaratan Sistem
 
-## Contributing
+Pastikan environment pengembangan Anda memiliki:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- PHP >= 8.1
+- Composer
+- Node.js & NPM
+- MySQL (atau database kompatibel lainnya)
+- Ekstensi PHP yang umum dibutuhkan Laravel (mbstring, openssl, pdo, tokenizer, xml, ctype, json, bcmath, fileinfo, gd)
 
-## Code of Conduct
+## Instalasi
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. **Clone repository**
 
-## Security Vulnerabilities
+   ```bash
+   git clone <url-repository-anda>
+   cd infruity-main
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+2. **Install dependency PHP**
 
-## License
+   ```bash
+   composer install
+   ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+3. **Install dependency JavaScript**
+
+   ```bash
+   npm install
+   ```
+
+4. **Salin file environment**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+5. **Generate application key**
+
+   ```bash
+   php artisan key:generate
+   ```
+
+6. **Konfigurasi database** pada file `.env` (lihat [Konfigurasi Environment](#konfigurasi-environment)).
+
+7. **Jalankan migrasi database**
+
+   ```bash
+   php artisan migrate
+   ```
+
+   Jika tersedia seeder untuk data awal:
+
+   ```bash
+   php artisan db:seed
+   ```
+
+8. **Buat symbolic link untuk storage**
+
+   ```bash
+   php artisan storage:link
+   ```
+
+9. **Compile asset frontend**
+
+   ```bash
+   npm run dev
+   # atau untuk production
+   npm run production
+   ```
+
+## Konfigurasi Environment
+
+Beberapa variabel penting yang perlu disesuaikan di file `.env`:
+
+```env
+APP_NAME=Infruity
+APP_ENV=local
+APP_URL=http://localhost
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=infruity
+DB_USERNAME=root
+DB_PASSWORD=
+
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+```
+
+Jika menggunakan fitur notifikasi push (Firebase/Web Push), siapkan juga kredensial VAPID dan Firebase Service Account sesuai konfigurasi yang digunakan pada `app/Services/FcmService.php`.
+
+## Menjalankan Aplikasi
+
+Jalankan server pengembangan bawaan Laravel:
+
+```bash
+php artisan serve
+```
+
+Aplikasi akan tersedia di `http://127.0.0.1:8000`.
+
+Untuk pengembangan asset secara real-time, jalankan di terminal terpisah:
+
+```bash
+npm run watch
+```
+
+## Struktur Proyek
+
+```
+infruity-main/
+├── app/                   # Core application (controller, service, request, dsb.)
+├── Modules/               # Modul-modul bisnis (Master, Transaction, Pos, Crm, Report, Chat)
+│   └── <NamaModul>/
+│       ├── Config/
+│       ├── Http/Controllers/
+│       ├── Resources/views/
+│       └── ...
+├── database/
+│   └── migrations/        # Migrasi database
+├── resources/views/       # View global (layout, admin, dll.)
+├── routes/
+│   ├── web.php
+│   ├── api.php
+│   ├── admin.php
+│   └── channels.php
+└── public/                # Asset publik hasil compile
+```
+
+Setiap modul mengikuti struktur standar `laravel-modules`, sehingga dapat dikembangkan, diaktifkan, atau dinonaktifkan secara independen.
+
+## Perintah Artisan Berguna
+
+```bash
+# Melihat daftar seluruh modul beserta statusnya
+php artisan module:list
+
+# Membuat modul baru
+php artisan module:make <NamaModul>
+
+# Menjalankan migrasi khusus modul tertentu
+php artisan module:migrate <NamaModul>
+
+# Membersihkan cache aplikasi
+php artisan optimize:clear
+```
+
+## Testing
+
+Menjalankan test suite PHPUnit:
+
+```bash
+php artisan test
+```
+
+## Kontribusi
+
+Kontribusi sangat terbuka. Silakan ikuti langkah berikut:
+
+1. Fork repository ini.
+2. Buat branch baru untuk fitur/perbaikan Anda (`git checkout -b fitur/nama-fitur`).
+3. Commit perubahan Anda dengan pesan yang jelas.
+4. Push ke branch Anda dan buat Pull Request.
+
+## Lisensi
+
+Proyek ini bersifat privat/proprietary. Hubungi pemilik proyek untuk informasi lebih lanjut terkait lisensi dan penggunaan.
