@@ -209,7 +209,6 @@
         body.in-iframe aside { display: none !important; }
         body.in-iframe > div > div[x-show="sidebarOpen"] { display: none !important; }
         body.in-iframe [data-hamburger] { display: none !important; }
-        header { display: none !important; }
     
         /* ======================== */
         /* iOS Safari Anti-Zoom Fix */
@@ -235,7 +234,7 @@
         }
     </script>
 
-    <div x-data="erpApp()" x-init="$watch('filterOpen', val => { if (!val) openDropdown = null })" class="flex h-screen w-full">
+    <div x-data="erpApp()" x-init="$watch('filterOpen', val => { if (!val) openDropdown = null })" @scroll.window.passive="handleScrollActivity()" class="flex h-screen w-full">
 
         <!-- MOBILE SIDEBAR OVERLAY -->
         <div x-show="sidebarOpen" x-transition:enter="transition-opacity duration-300"
@@ -686,7 +685,10 @@
 
             <!-- Floating Header -->
             <header
-                class="bg-white rounded-full shadow-sm border border-gray-100 mx-4 sm:mx-6 lg:mx-8 mt-4 sm:mt-6 lg:mt-5 px-5 lg:px-6 py-3 lg:py-4 flex items-center justify-between gap-4 z-30 sticky top-4 sm:top-6 lg:top-5">
+                class="bg-white/65 backdrop-blur-2xl backdrop-saturate-180 border border-white/80 rounded-full mt-4 sm:mt-6 lg:mt-5 hidden sm:flex items-center justify-between gap-4 z-30 sticky top-4 sm:top-6 lg:top-5 transition-all duration-300 ease-out"
+                :class="isScrolled
+                    ? 'mx-6 lg:mx-8 px-4 lg:px-5 py-2.5 lg:py-3 shadow-[0_12px_36px_-6px_rgba(15,92,69,0.12),0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.95)]'
+                    : 'mx-4 sm:mx-5 lg:mx-5 px-5 lg:px-6 py-3.5 lg:py-4 shadow-[0_10px_30px_-4px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.95)]'">
 
                 <!-- Left: Hamburger + Title -->
                 <div class="flex items-center gap-4 pl-2">
@@ -787,16 +789,89 @@
             <!-- ================================ -->
             <!-- SCROLLABLE CONTENT AREA          -->
             <!-- ================================ -->
-            <main class="flex-1 overflow-y-auto overscroll-none px-0 lg:px-8 py-0 lg:py-6 flex flex-col scrollbar-hide">
+            <main @scroll.passive="isScrolled = $event.target.scrollTop > 15; handleScrollActivity()" class="flex-1 overflow-y-auto overscroll-none px-0 lg:px-8 py-0 lg:py-6 flex flex-col scrollbar-hide">
 
                 <div class="animate-fade-in-up w-full flex-1 flex flex-col min-h-0">
 
                     <!-- Main Content Card -->
                     <div class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
 
-                        <!-- Mobile Header: Frosted Glass Effect -->
-                        <div class="sm:hidden absolute top-0 left-0 right-0 px-4 py-3.5 bg-white/75 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/50 flex items-center justify-center z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]">
-                            <img src="../../assets/logo/Infruity Logo - 6.png" alt="Infruity Logo" style="height: 30px; width: auto; max-width: 160px;" class="object-contain" />
+                        <!-- Mobile Header: Frosted Glass Effect with Hamburger, Logo & Notif -->
+                        <div class="sm:hidden absolute top-0 left-0 right-0 px-4 py-3 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]">
+                            <!-- Tombol Kiri: Hamburger Menu -->
+                            <button @click="window.self !== window.top ? window.parent.postMessage('toggleSidebar', '*') : sidebarOpen = !sidebarOpen"
+                                class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 hover:text-emerald-700 hover:bg-emerald-50/70 active:scale-95 transition-all"
+                                title="Menu Navigasi">
+                                <i class="ph-bold ph-list text-[21px]"></i>
+                            </button>
+
+                            <!-- Logo Infruity Center -->
+                            <div class="flex items-center justify-center">
+                                <img src="../../assets/logo/Infruity Logo - 6.png" alt="Infruity Logo" style="height: 30px; width: auto; max-width: 150px;" class="object-contain" onerror="this.onerror=null; this.src='../../../001. Landing Page/000. Logo/Infruity Logo - 6.png';" />
+                            </div>
+
+                                                        <!-- Tombol Kanan: Notifikasi -->
+                            <div class="relative" x-data="{ notifOpen: false }">
+                                <button @click="notifOpen = !notifOpen"
+                                    class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 hover:text-[#0b595b] hover:bg-emerald-50/70 active:scale-95 transition-all shrink-0 relative"
+                                    title="Notifikasi">
+                                    <i class="ph-bold ph-bell text-[21px]"></i>
+                                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white"></span>
+                                </button>
+
+                                <!-- Backdrop for Top Notification Popup -->
+                                <div x-show="notifOpen" x-cloak @click="notifOpen = false" class="fixed inset-0 z-40 bg-transparent cursor-default pointer-events-auto"></div>
+
+                                <!-- TOP NOTIFICATION POPUP -->
+                                <div x-show="notifOpen" x-cloak @click.outside="notifOpen = false"
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 -translate-y-2 scale-95"
+                                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                     x-transition:leave="transition ease-in duration-150"
+                                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                     x-transition:leave-end="opacity-0 -translate-y-2 scale-95"
+                                     class="absolute right-0 top-12 w-80 max-w-[calc(100vw-32px)] bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] border border-gray-200 overflow-hidden pointer-events-auto origin-top-right z-50">
+                                    <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-[14px] text-gray-800">Notifikasi</span>
+                                            <span class="bg-[#0b595b]/10 text-[#0b595b] text-[10px] font-bold px-2 py-0.5 rounded-full">3 Baru</span>
+                                        </div>
+                                        <button @click="notifOpen = false" class="text-xs text-gray-400 hover:text-gray-600">Tutup</button>
+                                    </div>
+                                    <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                                        <div class="p-3.5 flex gap-3 hover:bg-black/[0.02] transition-colors">
+                                            <div class="w-8 h-8 rounded-full bg-emerald-50 text-[#0b595b] flex items-center justify-center shrink-0">
+                                                <i class="ph-bold ph-package text-base"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0 text-left">
+                                                <p class="text-[12px] font-semibold text-gray-800 truncate">Stok Buah Naga Menipis</p>
+                                                <p class="text-[11px] text-gray-500 mt-0.5">Tersisa 5 kg di Cabang Utama</p>
+                                                <span class="text-[10px] text-gray-400 mt-1 block">5 menit yang lalu</span>
+                                            </div>
+                                        </div>
+                                        <div class="p-3.5 flex gap-3 hover:bg-black/[0.02] transition-colors">
+                                            <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+                                                <i class="ph-bold ph-shopping-cart text-base"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0 text-left">
+                                                <p class="text-[12px] font-semibold text-gray-800 truncate">Pesanan Baru #ORD-089</p>
+                                                <p class="text-[11px] text-gray-500 mt-0.5">Kasir 1 · Total Rp 145.000</p>
+                                                <span class="text-[10px] text-gray-400 mt-1 block">12 menit yang lalu</span>
+                                            </div>
+                                        </div>
+                                        <div class="p-3.5 flex gap-3 hover:bg-black/[0.02] transition-colors">
+                                            <div class="w-8 h-8 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+                                                <i class="ph-bold ph-clock text-base"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0 text-left">
+                                                <p class="text-[12px] font-semibold text-gray-800 truncate">Pengadaan Butuh Persetujuan</p>
+                                                <p class="text-[11px] text-gray-500 mt-0.5">PO #PO-2026-031 Supplier Segar</p>
+                                                <span class="text-[10px] text-gray-400 mt-1 block">1 jam yang lalu</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- FLOATING COUNTER PILL DI ATAS (MUNCUL SAAT SCROLL) -->
@@ -971,10 +1046,7 @@
                                 <!-- Empty State -->
                                 <div x-show="filteredProducts.length === 0" class="py-16 text-center">
                                     <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-gray-400">
-                                            <circle cx="11" cy="11" r="8"></circle>
-                                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" class="w-[24px] h-[24px]" viewBox="0 0 16 16"><path d="M0 0h16v16H0z" fill="none"/><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="m11.25 11.25 3 3"/><circle cx="7.5" cy="7.5" r="4.75"/></g></svg>
                                     </div>
                                     <p class="text-sm text-gray-500 font-medium">Akun tidak ditemukan</p>
                                     <p class="text-xs text-gray-400 mt-1">Coba ubah kata kunci pencarian atau filter</p>
@@ -1116,12 +1188,12 @@
             <!-- ================================ -->
             <!-- MOBILE SEARCH BAR                -->
             <!-- ================================ -->
-            <div class="sm:hidden absolute left-0 right-0 px-4 flex justify-center z-[29] opacity-0 pointer-events-none"
+            <div class="sm:hidden absolute left-0 right-0 px-5 flex justify-center z-[29] opacity-0 pointer-events-none"
                  style="bottom: calc(96px + env(safe-area-inset-bottom))"
                  :class="mobileSearchOpen
                      ? 'opacity-100 pointer-events-auto'
                      : 'opacity-0 pointer-events-none'">
-                <div class="relative w-full max-w-[360px] h-12 bg-white/40 backdrop-blur-xl border border-white/60 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center">
+                <div class="relative w-full max-w-[340px] h-12 bg-white/40 backdrop-blur-xl border border-white/60 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px] absolute left-4 top-1/2 -translate-y-1/2 text-[#0b595b]/70">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -1140,98 +1212,59 @@
             <!-- ================================ -->
             <!-- UNIFIED BOTTOM NAVIGATION BAR    -->
             <!-- ================================ -->
-            <div class="w-full absolute bottom-0 left-0 right-0 z-30 sm:hidden pb-[calc(1rem+env(safe-area-inset-bottom))] pt-2 px-4 flex justify-center pointer-events-none" x-data="{ profileOpen: false }">
+            <div class="w-full absolute bottom-0 left-0 right-0 z-30 sm:hidden pb-[calc(1rem+env(safe-area-inset-bottom))] pt-2 px-5 flex justify-center pointer-events-none">
                 
                 <!-- Wrapper to constrain width and provide relative positioning for both the pill and popup -->
-                <div class="relative w-full max-w-[360px]">
-                    
-                    <!-- Transparent Overlay to prevent clicks passing through -->
-                    <div x-show="profileOpen" x-cloak @click="profileOpen = false" class="fixed inset-0 z-30 pointer-events-auto"></div>
-
-                    <!-- PROFILE MENU POPUP (Moved outside the pill to fix nested backdrop-blur bug) -->
-                    <div x-show="profileOpen" x-cloak @click.outside="profileOpen = false"
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0 translate-y-4 scale-95"
-                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                         x-transition:leave="transition ease-in duration-150"
-                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                         x-transition:leave-end="opacity-0 translate-y-4 scale-95"
-                         class="absolute right-0 bottom-[calc(100%+16px)] w-56 bg-white/40 backdrop-blur-xl rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.1)] border border-white/60 overflow-hidden pointer-events-auto origin-bottom-right z-40">
-                        
-                        <!-- Header / User Info -->
-                        <div class="px-5 py-4 border-b border-white/50">
-                            <div class="flex items-center gap-3">
-                                <img src="https://api.dicebear.com/9.x/glass/svg?seed=Finance" alt="Profile" class="w-10 h-10 rounded-full border border-gray-200 bg-white object-cover">
-                                <div>
-                                    <p class="text-[13px] font-bold text-gray-800 leading-tight">Dimas Pratama</p>
-                                    <p class="text-[11px] font-medium text-gray-500 mt-0.5">Admin</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Menu Links -->
-                        <div class="py-1.5">
-                            <a href="#" class="flex items-center gap-3 px-5 py-2.5 text-[13px] font-medium text-gray-600 hover:text-[#0b595b] hover:bg-black/5 transition-colors">
-                                <i class="ph ph-user-circle text-[18px]"></i> Profil Saya
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-2.5 text-[13px] font-medium text-gray-600 hover:text-[#0b595b] hover:bg-black/5 transition-colors">
-                                <i class="ph ph-lock text-[18px]"></i> Ubah Password
-                            </a>
-                        </div>
-                        
-                        <!-- Logout -->
-                        <div class="border-t border-white/40 py-1.5 bg-red-50/30">
-                            <a href="../../../002. Login ERP/index.html"
-                                class="flex items-center gap-3 px-5 py-2.5 text-[13px] font-bold text-red-600 hover:bg-red-500/10 transition-colors">
-                                <i class="ph ph-sign-out text-[18px]"></i> Keluar
-                            </a>
-                        </div>
-                    </div>
+                <div class="relative w-full transition-all duration-300 ease-out"
+                     :class="isScrollActive ? 'max-w-[340px]' : 'max-w-full'">
                     
                     <!-- BOTTOM NAVIGATION PILL -->
-                    <div class="pointer-events-auto bg-white/10 backdrop-blur-md backdrop-saturate-150 border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.1)] rounded-full h-[64px] p-2 flex items-center justify-between w-full relative">
-                        <!-- 1. Menu / Home -->
-                        <button @click="toggleMobileSidebar(); profileOpen = false"
-                                :class="sidebarOpen ? 'text-[#0b595b] w-12' : 'text-gray-500 hover:text-[#0b595b] w-12'" 
-                                style="transition: color 300ms ease;"
-                                class="h-full bg-transparent flex items-center justify-center rounded-full active:scale-95">
-                            <span class="icon-rounded" :class="sidebarOpen ? 'icon-active' : 'icon-inactive'">home</span>
+                    <div class="pointer-events-auto bg-white/45 border border-white/60 shadow-[0_16px_40px_-8px_rgba(15,92,69,0.12),0_4px_16px_rgba(0,0,0,0.04),inset_0_1px_1.5px_rgba(255,255,255,0.85)] rounded-full h-[64px] p-2 flex items-center justify-around w-full relative transition-all duration-300 ease-out"
+                         style="backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);">
+                        <!-- 1. Dashboard -->
+                        <a href="../../001. Dashboard/index.html"
+                           @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '001. Dashboard/index.html', menu: 'dashboard' }, '*'); }"
+                           class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
+                           title="Dashboard">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" class="w-[24px] h-[24px]" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><rect width="8" height="10" x="13" y="11" fill="currentColor" rx="1" ry="1"/><rect width="8" height="6" x="3" y="15" fill="currentColor" rx="1" ry="1"/><rect width="8" height="6" x="13" y="3" fill="currentColor" rx="1" ry="1"/><rect width="8" height="10" x="3" y="3" fill="currentColor" rx="1" ry="1"/></svg>
+                        </a>
+
+                        <!-- Laporan -->
+                        <button class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
+                                title="Laporan">
+                            <span class="icon-rounded icon-inactive">bar_chart</span>
                         </button>
+
+                        <!-- 4. Tambah Akun -->
+                        <button @click="openDrawer(); profileOpen = false"
+                                class="w-[44px] h-[44px] bg-[#0b595b] hover:bg-[#08484a] text-white flex items-center justify-center rounded-[13px] shadow-[0_4px_12px_rgba(11,89,91,0.3)] active:scale-95 transition-all shrink-0"
+                                title="Tambah">
+                            <span class="icon-rounded" style="font-size: 24px; color: white; font-variation-settings: 'FILL' 1, 'wght' 500;">add</span>
+                        </button>
+
+
 
                         <!-- 2. Search -->
                         <button @click="mobileSearchOpen = !mobileSearchOpen; if (mobileSearchOpen) { filterOpen = false; closeDrawer(); profileOpen = false; $nextTick(() => document.getElementById('mobileSearchInputBottom').focus()); }"
                                 :class="mobileSearchOpen || searchQuery.length > 0 ? 'text-[#0b595b] w-12' : 'text-gray-500 hover:text-[#0b595b] w-12'" 
                                 style="transition: color 300ms ease;"
                                 class="h-full bg-transparent flex items-center justify-center rounded-full active:scale-95">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" :stroke-width="mobileSearchOpen || searchQuery.length > 0 ? '2.5' : '1.8'" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 transition-all">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" class="w-[24px] h-[24px]" viewBox="0 0 16 16"><path d="M0 0h16v16H0z" fill="none"/><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="m11.25 11.25 3 3"/><circle cx="7.5" cy="7.5" r="4.75"/></g></svg>
                         </button>
 
-
-
-                        <!-- 4. Tambah Akun -->
-                        <button @click="openDrawer(); profileOpen = false"
-                                :class="drawerOpen ? 'text-[#0b595b] w-12' : 'text-gray-500 hover:text-[#0b595b] w-12'" 
-                                style="transition: color 300ms ease;"
-                                class="h-full bg-transparent flex items-center justify-center rounded-full active:scale-95">
-                            <svg viewBox="0 0 24 24" class="w-[28px] h-[28px] transition-all" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" :stroke-width="drawerOpen ? '2.2' : '1.3'" fill="none">
-                                <path d="M2 12v3.45c0 2.849.698 4.005 1.606 4.944.94.909 2.098 1.608 4.946 1.608h6.896c2.848 0 4.006-.7 4.946-1.608C21.302 19.455 22 18.299 22 15.45V8.552c0-2.849-.698-4.006-1.606-4.945C19.454 2.7 18.296 2 15.448 2H8.552c-2.848 0-4.006.699-4.946 1.607C2.698 4.547 2 5.703 2 8.552Z"></path>
-                                <line x1="7" x2="17" y1="12" y2="12"></line>
-                                <line x1="12" x2="12" y1="7" y2="17"></line>
-                            </svg>
-                        </button>
-
-                        <!-- 5. Profile -->
-                        <button @click="profileOpen = !profileOpen; if(profileOpen) { mobileSearchOpen = false; filterOpen = false; closeDrawer(); }"
-                                :class="profileOpen ? 'text-gray-800 w-12' : 'text-gray-500 hover:text-gray-800 w-12'" 
-                                style="transition: color 300ms ease;"
-                                class="h-full bg-transparent flex items-center justify-center rounded-full active:scale-95">
-                            <div class="relative w-8 h-8 rounded-full border-[2.5px] transition-colors" :class="profileOpen ? 'border-gray-300' : 'border-transparent'">
-                                <img src="https://api.dicebear.com/9.x/glass/svg?seed=Finance" class="w-full h-full object-cover rounded-full" />
-                            </div>
-                        </button>
+                        
+                                    <!-- 4. Profil -->
+                        <a href="../../009. Pengaturan/002. Pengaturan/index.html"
+                           @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '009. Pengaturan/002. Pengaturan/index.html', menu: 'pengaturan' }, '*'); }"
+                           class="h-full w-12 bg-transparent flex items-center justify-center rounded-full active:scale-95 transition-all group"
+                           title="Profil">
+                            <div class="w-7 h-7 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 ring-2 ring-gray-200/70 group-hover:ring-[#0b595b]/50">
+                                            <img src="https://api.dicebear.com/9.x/glass/svg?seed=Citrus"
+                                                 alt="Profil"
+                                                 class="w-full h-full rounded-full object-cover"
+                                                 onerror="this.onerror=null; this.src='https://api.dicebear.com/9.x/glass/svg?seed=Citrus';" />
+                                        </div>
+                        </a>
                     </div> <!-- End of BOTTOM NAVIGATION PILL -->
 
                 </div> <!-- End of Wrapper -->
@@ -1587,6 +1620,20 @@
     <script>
         function erpApp() {
             return {
+                isScrollActive: false,
+                scrollDebounceTimer: null,
+                handleScrollActivity() {
+                    if (this.mobileSearchOpen) {
+                        this.mobileSearchOpen = false;
+                        document.getElementById('mobileSearchInputBottom')?.blur();
+                    }
+                    this.isScrollActive = true;
+                    if (this.scrollDebounceTimer) clearTimeout(this.scrollDebounceTimer);
+                    this.scrollDebounceTimer = setTimeout(() => {
+                        this.isScrollActive = false;
+                    }, 600);
+                },
+                isScrolled: false,
                 sidebarOpen: false,
                 sidebarCollapsed: false,
                 theme: 'dark',

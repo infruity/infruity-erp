@@ -57,6 +57,12 @@
     <style>
         [x-cloak] { display: none !important; }
 
+        /* Sembunyikan tombol reveal & clear bawaan Microsoft Edge / Windows */
+        input::-ms-reveal,
+        input::-ms-clear {
+            display: none !important;
+        }
+
         /* Custom Thin Scrollbar for Sidebar */
         .sidebar-scroll::-webkit-scrollbar { width: 2px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -491,6 +497,11 @@
                     </a>
                     <div class="submenu-wrapper">
                         <div class="py-1 space-y-0.5">
+                            <a href="#" @click.prevent="navigateTo('008. Laporan/index.html', 'laporan')"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
+                                :class="activePage === '008. Laporan/index.html' ? 'active' : ''">
+                                <span>Ringkasan Laporan</span>
+                            </a>
                             <a href="#" @click.prevent="navigateTo('008. Laporan/003. Total Aset/index.html', 'laporan')"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
                                 :class="activePage === '008. Laporan/003. Total Aset/index.html' ? 'active' : ''">
@@ -538,6 +549,12 @@
                     </a>
                     <div class="submenu-wrapper">
                         <div class="py-1 space-y-0.5">
+                            <a href="#" @click.prevent="navigateTo('009. Pengaturan/002. Pengaturan/index.html', 'pengaturan')"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
+                                :class="activePage === '009. Pengaturan/002. Pengaturan/index.html' ? 'active' : ''">
+                                <span>Profil & Akun</span>
+                            </a>
+
                             <a href="#" @click.prevent="navigateTo('009. Pengaturan/001. Nota dan Cetak/index.html', 'pengaturan')"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
                                 :class="activePage === '009. Pengaturan/001. Nota dan Cetak/index.html' ? 'active' : ''">
@@ -571,7 +588,7 @@
                         <p class="text-sm font-semibold text-gray-800">Pengaturan</p>
                         <p class="text-[0.65rem] text-gray-400">Atur preferensi akun</p>
                     </div>
-                    <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
+                    <a href="#" @click.prevent="navigateTo('009. Pengaturan/002. Pengaturan/index.html', 'pengaturan'); settingsOpen = false" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
                         <i class="ph ph-user-circle text-lg"></i> Profil Saya
                     </a>
                     <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
@@ -591,7 +608,7 @@
 
                 <div class="flex items-center w-full transition-all duration-300" :class="sidebarCollapsed ? 'justify-center gap-0' : 'gap-3'">
                     <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 border border-white/20 overflow-hidden relative group cursor-pointer">
-                        <img src="https://api.dicebear.com/9.x/glass/svg?seed=Finance" alt="Profile" class="w-full h-full object-cover">
+                        <img src="https://api.dicebear.com/9.x/glass/svg?seed=Citrus" alt="Profile" class="w-full h-full object-cover">
                     </div>
                     <div class="flex flex-col flex-1 toggle-container overflow-hidden">
                         <span class="text-sm font-semibold text-white whitespace-nowrap">Dimas Pratama</span>
@@ -625,8 +642,8 @@
             <iframe id="content-frame" 
                 src="001. Dashboard/index.html"
                 @load="handleFrameLoaded()"
-                class="w-full h-full border-none transition-all duration-200 ease-out"
-                :class="pageLoading ? 'opacity-30 scale-[0.998] pointer-events-none' : 'opacity-100 scale-100'"
+                class="w-full h-full border-none transition-opacity duration-150 ease-out"
+                :class="pageLoading ? 'opacity-85' : 'opacity-100'"
                 style="border: none; background-color: #e5e9f3;">
             </iframe>
 
@@ -682,12 +699,10 @@
                 finishLoading() {
                     clearInterval(this._progressInterval);
                     this.loadingProgress = 100;
+                    this.pageLoading = false;
                     setTimeout(() => {
-                        this.pageLoading = false;
-                        setTimeout(() => {
-                            if (!this.pageLoading) this.loadingProgress = 0;
-                        }, 250);
-                    }, 100);
+                        if (!this.pageLoading) this.loadingProgress = 0;
+                    }, 250);
                 },
 
                 handleFrameLoaded() {
@@ -719,9 +734,7 @@
 
                         const frame = document.getElementById('content-frame');
                         if (frame) {
-                            setTimeout(() => {
-                                frame.src = page;
-                            }, 40);
+                            frame.src = page;
                         }
 
                         clearTimeout(this._safetyTimer);

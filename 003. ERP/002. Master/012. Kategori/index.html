@@ -186,7 +186,6 @@
         body.in-iframe aside { display: none !important; }
         body.in-iframe > div > div[x-show="sidebarOpen"] { display: none !important; }
         body.in-iframe [data-hamburger] { display: none !important; }
-        header { display: none !important; }
     
         /* ======================== */
         /* iOS Safari Anti-Zoom Fix */
@@ -210,7 +209,7 @@
         }
     </script>
 
-    <div x-data="erpApp()" class="flex h-screen w-full">
+    <div x-data="erpApp()" class="flex h-screen w-full" @scroll.window.passive="handleScrollActivity()">
 
         <!-- MOBILE SIDEBAR OVERLAY -->
         <div x-show="sidebarOpen" x-transition:enter="transition-opacity duration-300"
@@ -661,7 +660,10 @@
 
             <!-- Floating Header -->
             <header
-                class="bg-white rounded-full shadow-sm border border-gray-100 mx-4 sm:mx-6 lg:mx-8 mt-4 sm:mt-6 lg:mt-5 px-5 lg:px-6 py-3 lg:py-4 flex items-center justify-between gap-4 z-30 sticky top-4 sm:top-6 lg:top-5">
+                class="bg-white/65 backdrop-blur-2xl backdrop-saturate-180 border border-white/80 rounded-full mt-4 sm:mt-6 lg:mt-5 flex items-center justify-between gap-4 z-30 sticky top-4 sm:top-6 lg:top-5 transition-all duration-300 ease-out"
+                :class="isScrolled
+                    ? 'mx-6 lg:mx-8 px-4 lg:px-5 py-2.5 lg:py-3 shadow-[0_12px_36px_-6px_rgba(15,92,69,0.12),0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.95)]'
+                    : 'mx-4 sm:mx-5 lg:mx-5 px-5 lg:px-6 py-3.5 lg:py-4 shadow-[0_10px_30px_-4px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.95)]'">
 
                 <!-- Left: Hamburger + Title -->
                 <div class="flex items-center gap-4 pl-2">
@@ -727,7 +729,7 @@
             <!-- ================================ -->
             <!-- SCROLLABLE CONTENT AREA          -->
             <!-- ================================ -->
-            <main class="flex-1 overflow-y-auto overscroll-none px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
+            <main @scroll.passive="isScrolled = $event.target.scrollTop > 15; handleScrollActivity()" class="flex-1 overflow-y-auto overscroll-none px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
 
                 <!-- CONTENT: Kategori -->
                 <div class="animate-fade-in-up flex flex-col items-center justify-center py-16 my-auto text-center w-full">
@@ -763,6 +765,20 @@
     <script>
         function erpApp() {
             return {
+                isScrollActive: false,
+                scrollDebounceTimer: null,
+                handleScrollActivity() {
+                    if (this.mobileSearchOpen) {
+                        this.mobileSearchOpen = false;
+                        document.getElementById('mobileSearchInputBottom')?.blur();
+                    }
+                    this.isScrollActive = true;
+                    if (this.scrollDebounceTimer) clearTimeout(this.scrollDebounceTimer);
+                    this.scrollDebounceTimer = setTimeout(() => {
+                        this.isScrollActive = false;
+                    }, 600);
+                },
+                isScrolled: false,
                 sidebarOpen: false,
                 sidebarCollapsed: false,
                 theme: 'dark',

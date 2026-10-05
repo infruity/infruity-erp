@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan & Profil | ERP Portal</title>
+    <meta name="description" content="Modul Pengaturan & Profil Pengguna - Sistem ERP Infruity.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,700&display=swap"
+        rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=dark_mode,light_mode" />
+
+    <!-- Phosphor Icons -->
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F5C45',
+                        'primary-light': '#1a7d5e',
+                        'primary-dark': '#0a3d2e',
+                        accent: '#F2B400',
+                        'accent-light': '#f5c733',
+                        cream: '#F7F7F7',
+                        'cream-dark': '#EBEBEB',
+                        strawberry: '#D6455D',
+                        'strawberry-light': '#e06a7e',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Poppins"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'input': '0 2px 10px rgba(0,0,0,0.02)',
+                        'card': '0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.04)',
+                        'sidebar': '4px 0 24px rgba(0,0,0,0.06)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Material Symbols Styling for Nav */
+        .icon-rounded {
+            font-family: 'Material Symbols Rounded';
+            font-size: 28px;
+            font-weight: 300;
+            display: inline-block;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        .icon-inactive {
+            font-variation-settings: 'FILL' 0, 'wght' 300;
+        }
+        .icon-active {
+            font-variation-settings: 'FILL' 1, 'wght' 400;
+        }
+
+        /* Glass dock styling */
+        .glass-dock {
+            background: rgba(255, 255, 255, 0.45) !important;
+            backdrop-filter: blur(24px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.60) !important;
+            box-shadow: 0 16px 40px -8px rgba(15, 92, 69, 0.12), 0 4px 16px rgba(0, 0, 0, 0.04), inset 0 1px 1.5px rgba(255, 255, 255, 0.85) !important;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Custom Scrollbar Styling */
+        .minimal-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .minimal-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .minimal-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 9999px;
+        }
+        .minimal-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
+        }
+
+        /* Sidebar Styling */
+        .dark-sidebar { background-color: #0b595b; }
+        .sidebar-link { transition: all 0.2s ease; }
+        .sidebar-link:hover { background-color: rgba(255, 255, 255, 0.08); }
+        .sidebar-link.active { background-color: #d1f36e; color: #102f31; }
+        .sidebar-icon { transition: transform 0.2s ease; }
+        .sidebar-link:hover .sidebar-icon { transform: scale(1.1); }
+        .sidebar-link.active .sidebar-icon { color: #102f31; }
+
+        /* Animation */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+        /* iOS Anti-Zoom Fix */
+        input, select, textarea {
+            font-size: 16px !important;
+            touch-action: manipulation;
+        }
+
+        /* Light Sidebar Overrides */
+        .light-sidebar { background-color: #ffffff; border-right: 1px solid #f3f4f6; }
+        .light-sidebar .text-white { color: #4b5563 !important; }
+        .light-sidebar .sidebar-link.active { background-color: #d1f36e !important; color: #102f31 !important; }
+
+        /* Hide scrollbars */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Sembunyikan tombol reveal & clear bawaan Microsoft Edge / Windows */
+        input::-ms-reveal,
+        input::-ms-clear {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="font-sans bg-[#e5e9f3] text-gray-800 antialiased h-screen overflow-hidden">
+    <script>if(window.self!==window.top){document.body.classList.add("in-iframe");}</script>
+
+    <!-- ============================== -->
+    <!-- ALPINE.JS ROOT APPLICATION     -->
+    <!-- ============================== -->
+    <div x-data="erpApp()" class="flex h-screen w-full">
+
+        <!-- ================================ -->
+        <!-- MOBILE SIDEBAR OVERLAY           -->
+        <!-- ================================ -->
+        <div x-show="sidebarOpen" x-transition:enter="transition-opacity duration-300"
+            x-transition:leave="transition-opacity duration-200" @click="sidebarOpen = false"
+            class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden" x-cloak>
+        </div>
+
+        <!-- ================================ -->
+        <!-- SIDEBAR (Desktop)                -->
+        <!-- ================================ -->
+        <aside
+            :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', sidebarCollapsed ? 'w-24' : 'w-64', theme === 'light' ? 'light-sidebar' : 'dark-sidebar']"
+            class="-translate-x-full fixed lg:static inset-y-0 left-0 z-50 shadow-none flex flex-col transition-all duration-300 lg:translate-x-0 lg:rounded-3xl lg:my-5 lg:ml-5 lg:h-[calc(100vh-2.5rem)] overflow-hidden shrink-0">
+
+            <!-- Logo & Toggle -->
+            <div class="flex items-center pt-5 pb-10"
+                :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-6'">
+                <a href="../../001. Dashboard/index.html"
+                   @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '001. Dashboard/index.html', menu: 'dashboard' }, '*'); }"
+                   class="flex items-center logo-link transition-transform duration-200 h-9">
+                    <img :src="theme === 'light' ? '../../assets/logo/Infruity Logo - 6.png' : '../../assets/logo/Logo Putih 1.png'" alt="Infruity Logo" class="h-9 logo-full">
+                </a>
+                <button @click="sidebarOpen = false"
+                    class="lg:hidden p-2 rounded-xl hover:bg-white/10 text-white/50 hover:text-white/80 transition">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 overflow-y-auto minimal-scrollbar px-3 pb-4 space-y-2">
+                <!-- Dashboard -->
+                <div>
+                    <a href="../../001. Dashboard/index.html"
+                       @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '001. Dashboard/index.html', menu: 'dashboard' }, '*'); }"
+                       class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-white">
+                        <i class="ph ph-squares-four sidebar-icon text-xl w-6 text-center text-white"></i>
+                        <span class="font-medium">Dashboard</span>
+                    </a>
+                </div>
+
+                <!-- Master -->
+                <div>
+                    <a href="../../002. Master/001. Produk/index.html"
+                       @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '002. Master/001. Produk/index.html', menu: 'master' }, '*'); }"
+                       class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-white">
+                        <i class="ph ph-database sidebar-icon text-xl w-6 text-center text-white"></i>
+                        <span class="font-medium">Master</span>
+                    </a>
+                </div>
+
+                <!-- Pengaturan (Active) -->
+                <div>
+                    <a href="index.html"
+                       class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-sm shadow-lg shadow-black/10">
+                        <i class="ph ph-gear sidebar-icon text-xl w-6 text-center !text-[#102f31]"></i>
+                        <span class="font-medium">Pengaturan</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- User Mini Profile in Sidebar -->
+            <div class="px-4 pb-6 pt-4 border-t border-white/10 flex items-center gap-3">
+                <img :src="profileData.photoUrl"
+                     alt="Foto Profil" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/30">
+                <div class="flex flex-col text-white text-xs truncate">
+                    <span class="font-semibold text-white truncate" x-text="profileData.fullName">Budi Santoso</span>
+                    <span class="text-white/60 text-[11px] truncate">Super Admin</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ================================ -->
+        <!-- MAIN CONTENT AREA                -->
+        <!-- ================================ -->
+        <div class="flex-1 flex flex-col overflow-hidden h-full lg:h-auto relative">
+
+            <!-- Floating Header (Desktop) -->
+            <header
+                class="bg-white/65 backdrop-blur-2xl backdrop-saturate-180 border border-white/80 rounded-full mt-4 sm:mt-6 lg:mt-5 hidden sm:flex items-center justify-between gap-4 z-30 sticky top-4 sm:top-6 lg:top-5 mx-4 sm:mx-5 lg:mx-8 px-5 lg:px-6 py-3.5 lg:py-4 shadow-[0_10px_30px_-4px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.95)]">
+                <!-- Left: Title -->
+                <div class="flex items-center gap-4 pl-2">
+                    <button @click="sidebarOpen = !sidebarOpen"
+                        class="lg:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-500 transition shrink-0">
+                        <i class="ph ph-list text-2xl"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1" x-text="activeSubPage === 'password' ? 'Ganti Kata Sandi' : 'Pengaturan'">Pengaturan</h1>
+                        <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
+                            <span>Sistem</span>
+                            <i class="ph ph-caret-right text-[0.55rem]"></i>
+                            <span :class="activeSubPage ? 'hover:text-[#0b595b] cursor-pointer font-medium' : ''" @click="activeSubPage = null">Profil Pengguna</span>
+                            <template x-if="activeSubPage === 'password'">
+                                <div class="flex items-center gap-1">
+                                    <i class="ph ph-caret-right text-[0.55rem]"></i>
+                                    <span class="text-[#0b595b] font-bold">Ganti Kata Sandi</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Quick actions -->
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-[#0F5C45] border border-emerald-200/60">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online
+                    </span>
+                </div>
+            </header>
+
+            <!-- ================================ -->
+            <!-- SCROLLABLE CONTENT BODY          -->
+            <!-- ================================ -->
+            <main @scroll.passive="isScrolled = $event.target.scrollTop > 15; handleScrollActivity()"
+                  class="flex-1 overflow-y-auto overscroll-none px-0 lg:px-8 py-0 lg:py-6 flex flex-col scrollbar-hide">
+
+                <div class="animate-fade-in-up w-full flex-1 flex flex-col min-h-0">
+
+                    <!-- Main White Surface Card -->
+                    <div class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
+
+                        <!-- Mobile Header: Frosted Glass Effect with Hamburger, Logo & Notif -->
+                        <div class="sm:hidden absolute top-0 left-0 right-0 px-4 py-3 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]">
+                            <!-- Tombol Kiri: Hamburger Menu atau Tombol Kembali saat di Sub-Page -->
+                            <button @click="activeSubPage ? closeSubPage() : (window.self !== window.top ? window.parent.postMessage('toggleSidebar', '*') : sidebarOpen = !sidebarOpen)"
+                                class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 hover:text-emerald-700 hover:bg-emerald-50/70 active:scale-95 transition-all"
+                                :title="activeSubPage ? 'Kembali' : 'Menu Navigasi'">
+                                <i :class="activeSubPage ? 'ph-bold ph-caret-left text-[22px] text-[#0b595b]' : 'ph-bold ph-list text-[21px]'"></i>
+                            </button>
+
+                            <!-- Logo Infruity Center -->
+                            <div class="flex items-center justify-center">
+                                <img src="../../assets/logo/Infruity Logo - 6.png" alt="Infruity Logo" style="height: 30px; width: auto; max-width: 150px;" class="object-contain" onerror="this.onerror=null; this.src='../../../001. Landing Page/000. Logo/Infruity Logo - 6.png';" />
+                            </div>
+
+                            <!-- Tombol Kanan: Notifikasi -->
+                            <div class="relative" x-data="{ notifOpen: false }">
+                                <button @click="notifOpen = !notifOpen"
+                                    class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 hover:text-[#0b595b] hover:bg-emerald-50/70 active:scale-95 transition-all shrink-0 relative"
+                                    title="Notifikasi">
+                                    <i class="ph-bold ph-bell text-[21px]"></i>
+                                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white"></span>
+                                </button>
+
+                                <!-- Backdrop for Top Notification Popup -->
+                                <div x-show="notifOpen" x-cloak @click="notifOpen = false" class="fixed inset-0 z-40 bg-transparent cursor-default pointer-events-auto"></div>
+
+                                <!-- TOP NOTIFICATION POPUP -->
+                                <div x-show="notifOpen" x-cloak @click.outside="notifOpen = false"
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 -translate-y-2 scale-95"
+                                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                     x-transition:leave="transition ease-in duration-150"
+                                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                     x-transition:leave-end="opacity-0 -translate-y-2 scale-95"
+                                     class="absolute right-0 top-12 w-80 max-w-[calc(100vw-32px)] bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] border border-gray-200 overflow-hidden pointer-events-auto origin-top-right z-50">
+                                    <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-[14px] text-gray-800">Notifikasi</span>
+                                            <span class="bg-[#0b595b]/10 text-[#0b595b] text-[10px] font-bold px-2 py-0.5 rounded-full">3 Baru</span>
+                                        </div>
+                                        <button @click="notifOpen = false" class="text-xs text-gray-400 hover:text-gray-600">Tutup</button>
+                                    </div>
+                                    <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                                        <div class="p-3.5 flex gap-3 hover:bg-black/[0.02] transition-colors">
+                                            <div class="w-8 h-8 rounded-full bg-emerald-50 text-[#0b595b] flex items-center justify-center shrink-0">
+                                                <i class="ph-bold ph-package text-base"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0 text-left">
+                                                <p class="text-[12px] font-semibold text-gray-800 truncate">Stok Buah Naga Menipis</p>
+                                                <p class="text-[11px] text-gray-500 mt-0.5">Tersisa 5 kg di Cabang Utama</p>
+                                                <span class="text-[10px] text-gray-400 mt-1 block">5 menit yang lalu</span>
+                                            </div>
+                                        </div>
+                                        <div class="p-3.5 flex gap-3 hover:bg-black/[0.02] transition-colors">
+                                            <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+                                                <i class="ph-bold ph-shopping-cart text-base"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0 text-left">
+                                                <p class="text-[12px] font-semibold text-gray-800 truncate">Pesanan Baru #ORD-089</p>
+                                                <p class="text-[11px] text-gray-500 mt-0.5">Kasir 1 · Total Rp 145.000</p>
+                                                <span class="text-[10px] text-gray-400 mt-1 block">12 menit yang lalu</span>
+                                            </div>
+                                        </div>
+                                        <div class="p-3.5 flex gap-3 hover:bg-black/[0.02] transition-colors">
+                                            <div class="w-8 h-8 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+                                                <i class="ph-bold ph-clock text-base"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0 text-left">
+                                                <p class="text-[12px] font-semibold text-gray-800 truncate">Pengadaan Butuh Persetujuan</p>
+                                                <p class="text-[11px] text-gray-500 mt-0.5">PO #PO-2026-031 Supplier Segar</p>
+                                                <span class="text-[10px] text-gray-400 mt-1 block">1 jam yang lalu</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content Area (Clean Simple Layout with Slide Sub-Page) -->
+                        <div class="flex-1 overflow-y-auto px-4 sm:px-8 pt-20 sm:pt-8 pb-28 sm:pb-24 flex flex-col items-center bg-[#f8fafc] w-full relative">
+
+                            <!-- ============================================== -->
+                            <!-- SCREEN 1: MAIN PENGATURAN MENU VIEW            -->
+                            <!-- ============================================== -->
+                            <div x-show="!activeSubPage"
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 -translate-x-full"
+                                 x-transition:enter-end="opacity-100 translate-x-0"
+                                 x-transition:leave="transition ease-in duration-200"
+                                 x-transition:leave-start="opacity-100 translate-x-0"
+                                 x-transition:leave-end="opacity-0 -translate-x-full"
+                                 class="w-full max-w-sm sm:max-w-md mx-auto flex flex-col gap-3.5 mt-1 sm:mt-4">
+
+                                <!-- 1. USER PROFILE ROW CARD -->
+                                <button type="button" @click="openProfileSubPage()" class="w-full text-left bg-white rounded-2xl p-3.5 flex items-center justify-between border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-md transition active:scale-[0.99] group cursor-pointer">
+                                    <div class="flex items-center gap-3.5 min-w-0">
+                                        <!-- Avatar with colorful border ring -->
+                                        <div class="w-12 h-12 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-pink-400 to-indigo-500 shadow-sm shrink-0">
+                                            <img :src="profileData.photoUrl"
+                                                 :alt="profileData.fullName"
+                                                 class="w-full h-full rounded-full object-cover ring-2 ring-white">
+                                        </div>
+                                        <div class="flex flex-col min-w-0">
+                                            <span x-text="profileData.fullName" class="text-[15px] font-bold text-gray-900 tracking-tight leading-tight group-hover:text-[#0b595b] transition-colors truncate">
+                                                Budi Santoso
+                                            </span>
+                                            <span x-text="profileData.email" class="text-xs text-gray-500 font-medium truncate mt-0.5">
+                                                budi.santoso@infruity.co.id
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 group-hover:text-[#0b595b] group-hover:translate-x-0.5 transition shrink-0">
+                                        <i class="ph-bold ph-caret-right text-xs"></i>
+                                    </div>
+                                </button>
+
+                                <!-- 2. INFO USER: TANGGAL BERGABUNG, LAMA BEKERJA, JABATAN & PENEMPATAN (SLEEK SEMIBOLD) -->
+                                <div class="w-full bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col gap-3.5">
+                                    <!-- Tanggal Bergabung -->
+                                    <div>
+                                        <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Tanggal Bergabung</span>
+                                        <p class="text-[13.5px] font-semibold text-gray-800 mt-1">12 Januari 2023</p>
+                                    </div>
+
+                                    <!-- Divider -->
+                                    <div class="border-t border-gray-100"></div>
+
+                                    <!-- Lama Bekerja -->
+                                    <div>
+                                        <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Lama Bekerja</span>
+                                        <p class="text-[13.5px] font-semibold text-gray-800 mt-1">3 Tahun, 8 Bulan, 24 Hari</p>
+                                    </div>
+
+                                    <!-- Divider -->
+                                    <div class="border-t border-gray-100"></div>
+
+                                    <!-- Jabatan (Multi Jabatan) -->
+                                    <div>
+                                        <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Jabatan</span>
+                                        <p class="text-[13.5px] font-semibold text-gray-800 mt-1">Super Admin, Kepala Operasional</p>
+                                    </div>
+
+                                    <!-- Divider -->
+                                    <div class="border-t border-gray-100"></div>
+
+                                    <!-- Penempatan (Multi Cabang) -->
+                                    <div>
+                                        <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Penempatan</span>
+                                        <p class="text-[13.5px] font-semibold text-gray-800 mt-1">Toko GBA, Toko GKB</p>
+                                    </div>
+                                </div>
+
+                                <!-- 3. MENU GROUP: GANTI KATA SANDI, TEMA, BAHASA -->
+                                <div class="w-full bg-white rounded-2xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] overflow-hidden divide-y divide-gray-100 mb-6">
+                                    <!-- Ganti Kata Sandi (Triggers Slide Sub-Page Opsi B) -->
+                                    <button type="button" 
+                                            @click="openPasswordSubPage()" 
+                                            class="w-full px-4 py-3.5 flex items-center justify-between hover:bg-gray-50/75 transition-colors group text-left">
+                                        <div class="flex items-center gap-3">
+                                            <i class="ph ph-lock-key text-lg text-gray-500 group-hover:text-[#0b595b] transition-colors"></i>
+                                            <span class="text-[13.5px] font-semibold text-gray-800 group-hover:text-[#0b595b] transition-colors">Ganti Kata Sandi</span>
+                                        </div>
+                                        <i class="ph-bold ph-caret-right text-xs text-gray-400 group-hover:text-gray-600 transition-colors"></i>
+                                    </button>
+
+                                    <!-- Tema (Light / Dark Mode Toggle) -->
+                                    <button type="button" 
+                                            x-data="{ isDarkMode: false }" 
+                                            @click="isDarkMode = !isDarkMode" 
+                                            class="w-full px-4 py-3.5 flex items-center justify-between hover:bg-gray-50/75 transition-colors group text-left">
+                                        <div class="flex items-center gap-3">
+                                            <!-- Mode Terang Icon (light_mode) -->
+                                            <span x-show="!isDarkMode" class="material-symbols-outlined text-[20px] text-gray-500 group-hover:text-[#0b595b] transition-colors leading-none flex items-center justify-center">light_mode</span>
+                                            <!-- Mode Gelap Icon (dark_mode) -->
+                                            <span x-show="isDarkMode" x-cloak class="material-symbols-outlined text-[20px] text-gray-500 group-hover:text-[#0b595b] transition-colors leading-none flex items-center justify-center">dark_mode</span>
+                                            <span class="text-[13.5px] font-semibold text-gray-800">Tema</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5 text-xs text-gray-400">
+                                            <span x-text="isDarkMode ? 'Gelap' : 'Terang'">Terang</span>
+                                            <i class="ph-bold ph-caret-right text-xs"></i>
+                                        </div>
+                                    </button>
+
+                                    <!-- Bahasa (Interactive Flag Toggle Model 1: Bendera di Kiri) -->
+                                    <button type="button" 
+                                            x-data="{ lang: 'id' }" 
+                                            @click="lang = lang === 'id' ? 'en' : 'id'" 
+                                            class="w-full px-4 py-3.5 flex items-center justify-between hover:bg-gray-50/75 transition-colors group text-left">
+                                        <div class="flex items-center gap-3">
+                                            <!-- Bendera Indonesia (ID) -->
+                                            <div x-show="lang === 'id'" class="w-5 h-5 rounded-full ring-1 ring-black/10 shrink-0 shadow-xs overflow-hidden flex items-center justify-center">
+                                                <svg viewBox="0 0 512 512" class="w-full h-full object-cover">
+                                                    <rect width="512" height="256" fill="#e70011"/>
+                                                    <rect y="256" width="512" height="256" fill="#ffffff"/>
+                                                </svg>
+                                            </div>
+                                            <!-- Bendera Inggris (UK) -->
+                                            <div x-show="lang === 'en'" x-cloak class="w-5 h-5 rounded-full ring-1 ring-black/10 shrink-0 shadow-xs overflow-hidden flex items-center justify-center">
+                                                <svg viewBox="0 0 512 512" class="w-full h-full object-cover">
+                                                    <rect width="512" height="512" fill="#012169"/>
+                                                    <path d="M0 0l512 512M512 0L0 512" stroke="#fff" stroke-width="60"/>
+                                                    <path d="M0 0l512 512M512 0L0 512" stroke="#c8102e" stroke-width="36"/>
+                                                    <path d="M256 0v512M0 256h512" stroke="#fff" stroke-width="100"/>
+                                                    <path d="M256 0v512M0 256h512" stroke="#c8102e" stroke-width="60"/>
+                                                </svg>
+                                            </div>
+
+                                            <span class="text-[13.5px] font-semibold text-gray-800 group-hover:text-[#0b595b] transition-colors">Bahasa</span>
+                                        </div>
+
+                                        <div class="flex items-center gap-1.5 text-xs text-gray-400">
+                                            <span x-text="lang === 'id' ? 'Indonesia' : 'English'" class="font-medium text-gray-500">Indonesia</span>
+                                            <i class="ph-bold ph-caret-right text-xs"></i>
+                                        </div>
+                                    </button>
+                                </div>
+
+                            </div>
+
+                            <!-- ============================================== -->
+                            <!-- SCREEN 2: DEDICATED SLIDE SUB-PAGE VIEW        -->
+                            <!-- ============================================== -->
+                            <div x-show="activeSubPage === 'password'" x-cloak
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 translate-x-full"
+                                 x-transition:enter-end="opacity-100 translate-x-0"
+                                 x-transition:leave="transition ease-in duration-200"
+                                 x-transition:leave-start="opacity-100 translate-x-0"
+                                 x-transition:leave-end="opacity-0 translate-x-full"
+                                 class="w-full max-w-sm sm:max-w-md mx-auto flex flex-col gap-4 mt-1 sm:mt-4">
+
+                                <!-- Sub-Page Form Container Card (Ultra Breathable & Spacious) -->
+                                <div class="w-full bg-white rounded-2xl p-6 sm:p-7 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col gap-6">
+                                    <!-- Header with Clean Divider -->
+                                    <div class="pb-5 border-b border-gray-100">
+                                        <h3 class="text-[17px] font-bold text-gray-900 tracking-tight">Perbarui Kata Sandi</h3>
+                                        <p class="text-[12.5px] text-gray-500 mt-1.5 leading-relaxed">
+                                            Buat kata sandi minimal 8 karakter dengan 1 huruf besar, 1 angka, dan 1 karakter spesial.
+                                        </p>
+                                    </div>
+
+                                    <!-- Password Form Inputs with Generous 24px (gap-6) Spacing -->
+                                    <div class="flex flex-col gap-6">
+                                        <!-- Current Password -->
+                                        <div class="flex flex-col gap-2.5">
+                                            <label class="text-[11.5px] font-semibold text-gray-400 uppercase tracking-wider">Kata Sandi Saat Ini</label>
+                                            <div class="relative">
+                                                <input :type="showOld ? 'text' : 'password'" 
+                                                       x-model="oldPassword"
+                                                       placeholder="Ketik kata sandi saat ini..."
+                                                       class="w-full h-[50px] bg-gray-50/80 border border-gray-200 rounded-xl px-4 text-[14px] text-gray-800 outline-none focus:border-[#0b595b] focus:bg-white transition pr-12">
+                                                <button type="button" @mousedown.prevent @click="showOld = !showOld" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg flex items-center justify-center w-7 h-7">
+                                                    <i :class="showOld ? 'ph ph-eye-slash' : 'ph ph-eye'"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- New Password -->
+                                        <div class="flex flex-col gap-2.5">
+                                            <label class="text-[11.5px] font-semibold text-gray-400 uppercase tracking-wider">Kata Sandi Baru</label>
+                                            <div class="relative">
+                                                <input :type="showNew ? 'text' : 'password'" 
+                                                       x-model="newPassword"
+                                                       @input="if (newPassword.length === 0) newPasswordTouched = false"
+                                                       @blur="newPasswordTouched = true"
+                                                       @keydown.enter="$event.preventDefault(); newPasswordTouched = true; $refs.confirmInput ? $refs.confirmInput.focus() : $event.target.blur()"
+                                                       placeholder="Minimal 8 karakter..."
+                                                       :class="newPasswordInputClasses"
+                                                       class="w-full h-[50px] rounded-xl px-4 text-[14px] text-gray-800 outline-none transition pr-12">
+                                                <button type="button" @mousedown.prevent @click="showNew = !showNew" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg flex items-center justify-center w-7 h-7">
+                                                    <i :class="showNew ? 'ph ph-eye-slash' : 'ph ph-eye'"></i>
+                                                </button>
+                                            </div>
+
+                                            <!-- Dynamic Validation Feedback Message (Only shows when user pressed Enter or blurred field) -->
+                                            <div x-show="newPasswordTouched && newPassword.length > 0 && !isAllRequirementsMet" 
+                                                 x-transition:enter="transition ease-out duration-200"
+                                                 x-transition:enter-start="opacity-0 -translate-y-1"
+                                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                                 class="flex items-start gap-1.5 text-[11.5px] font-semibold text-rose-600 mt-0.5 leading-snug">
+                                                <i class="ph-bold ph-warning-circle text-sm shrink-0 mt-0.5"></i>
+                                                <span x-text="inlineErrorMessage"></span>
+                                            </div>
+                                            <div x-show="isAllRequirementsMet" 
+                                                 x-transition:enter="transition ease-out duration-200"
+                                                 x-transition:enter-start="opacity-0 -translate-y-1"
+                                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                                 class="flex items-center gap-1.5 text-[11.5px] font-semibold text-emerald-600 mt-0.5">
+                                                <i class="ph-bold ph-check-circle text-sm"></i>
+                                                <span>Kata sandi diterima.</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Confirm Password -->
+                                        <div class="flex flex-col gap-2.5">
+                                            <label class="text-[11.5px] font-semibold text-gray-400 uppercase tracking-wider">Konfirmasi Kata Sandi Baru</label>
+                                            <div class="relative">
+                                                <input :type="showConfirm ? 'text' : 'password'" 
+                                                       x-ref="confirmInput"
+                                                       x-model="confirmPassword"
+                                                       @input="if (confirmPassword.length === 0) confirmPasswordTouched = false"
+                                                       @blur="confirmPasswordTouched = true"
+                                                       @keydown.enter="$event.preventDefault(); confirmPasswordTouched = true; $event.target.blur()"
+                                                       placeholder="Ulangi kata sandi baru..."
+                                                       :class="confirmPasswordInputClasses"
+                                                       class="w-full h-[50px] rounded-xl px-4 text-[14px] text-gray-800 outline-none transition pr-12">
+                                                <button type="button" @mousedown.prevent @click="showConfirm = !showConfirm" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg flex items-center justify-center w-7 h-7">
+                                                    <i :class="showConfirm ? 'ph ph-eye-slash' : 'ph ph-eye'"></i>
+                                                </button>
+                                            </div>
+                                            <div x-show="confirmPassword.length > 0 && (isMatch || confirmPasswordTouched)" class="text-[11.5px] font-semibold mt-1">
+                                                <span x-show="isMatch" class="text-emerald-600 flex items-center gap-1.5">
+                                                    <i class="ph-bold ph-check text-xs"></i> Kata sandi cocok
+                                                </span>
+                                                <span x-show="!isMatch && confirmPasswordTouched" class="text-rose-600 flex items-center gap-1.5">
+                                                    <i class="ph-bold ph-x text-xs"></i> Kata sandi belum cocok
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- ============================================== -->
+                            <!-- SCREEN 3: EDIT PROFIL SLIDE SUB-PAGE VIEW      -->
+                            <!-- ============================================== -->
+                            <div x-show="activeSubPage === 'profile'" x-cloak
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 translate-x-full"
+                                 x-transition:enter-end="opacity-100 translate-x-0"
+                                 x-transition:leave="transition ease-in duration-200"
+                                 x-transition:leave-start="opacity-100 translate-x-0"
+                                 x-transition:leave-end="opacity-0 translate-x-full"
+                                 class="w-full max-w-sm sm:max-w-md mx-auto flex flex-col gap-4 mt-1 sm:mt-4">
+
+                                <!-- Sub-Page Form Container Card (Ultra Breathable & Spacious) -->
+                                <div class="w-full bg-white rounded-2xl p-6 sm:p-7 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col gap-6">
+                                    <!-- Header with Clean Divider -->
+                                    <div class="pb-5 border-b border-gray-100">
+                                        <h3 class="text-[17px] font-bold text-gray-900 tracking-tight">Edit Profil</h3>
+                                        <p class="text-[12.5px] text-gray-500 mt-1.5 leading-relaxed">
+                                            Perbarui data pribadi dan informasi kontak akun Anda.
+                                        </p>
+                                    </div>
+
+                                    <!-- Profile Form Inputs with Generous 24px (gap-6) Spacing -->
+                                    <div class="flex flex-col gap-6">
+                                        <!-- 1. Photo Profile (Paling Atas) -->
+                                        <div class="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-gray-50/80 border border-gray-100">
+                                            <label class="relative group cursor-pointer block" title="Klik untuk ubah foto">
+                                                <div class="w-20 h-20 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-pink-400 to-indigo-500 shadow-sm shrink-0 group-hover:scale-105 transition-transform">
+                                                    <img :src="profileForm.photoUrl"
+                                                         :alt="profileForm.fullName"
+                                                         class="w-full h-full rounded-full object-cover ring-2 ring-white">
+                                                </div>
+                                                <div class="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#0b595b] group-hover:bg-[#08484a] text-white flex items-center justify-center shadow-md transition active:scale-95">
+                                                    <i class="ph-bold ph-camera text-xs"></i>
+                                                </div>
+                                                <input type="file" accept="image/*" @change="handlePhotoUpload($event)" class="hidden">
+                                            </label>
+                                            <div class="flex flex-col items-center sm:items-start text-center sm:text-left min-w-0">
+                                                <span class="text-xs font-bold text-gray-800">Foto Profil</span>
+                                                <span class="text-[11px] text-gray-400 mt-0.5">JPG, PNG atau WebP (Maks. 2MB)</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- 2. Nama Lengkap -->
+                                        <div class="flex flex-col gap-2.5">
+                                            <label class="text-[11.5px] font-semibold text-gray-400 uppercase tracking-wider">Nama Lengkap</label>
+                                            <input type="text" 
+                                                   x-model="profileForm.fullName"
+                                                   placeholder="Ketik nama lengkap..."
+                                                   class="w-full h-[50px] bg-gray-50/80 border border-gray-200 rounded-xl px-4 text-[14px] text-gray-800 outline-none focus:border-[#0b595b] focus:bg-white transition">
+                                        </div>
+
+                                        <!-- 3. Nama Panggilan -->
+                                        <div class="flex flex-col gap-2.5">
+                                            <label class="text-[11.5px] font-semibold text-gray-400 uppercase tracking-wider">Nama Panggilan</label>
+                                            <input type="text" 
+                                                   x-model="profileForm.nickName"
+                                                   placeholder="Ketik nama panggilan..."
+                                                   class="w-full h-[50px] bg-gray-50/80 border border-gray-200 rounded-xl px-4 text-[14px] text-gray-800 outline-none focus:border-[#0b595b] focus:bg-white transition">
+                                        </div>
+
+                                        <!-- 4. Tanggal Lahir -->
+                                        <div class="flex flex-col gap-2.5">
+                                            <label class="text-[11.5px] font-semibold text-gray-400 uppercase tracking-wider">Tanggal Lahir</label>
+                                            <input type="date" 
+                                                   x-model="profileForm.birthDate"
+                                                   class="w-full h-[50px] bg-gray-50/80 border border-gray-200 rounded-xl px-4 text-[14px] text-gray-800 outline-none focus:border-[#0b595b] focus:bg-white transition cursor-pointer">
+                                        </div>
+
+                                        <!-- 5. Email -->
+                                        <div class="flex flex-col gap-2.5">
+                                            <label class="text-[11.5px] font-semibold text-gray-400 uppercase tracking-wider">Email</label>
+                                            <div class="relative">
+                                                <input type="email" 
+                                                       x-model="profileForm.email"
+                                                       placeholder="nama@infruity.co.id"
+                                                       class="w-full h-[50px] bg-gray-50/80 border border-gray-200 rounded-xl px-4 text-[14px] text-gray-800 outline-none focus:border-[#0b595b] focus:bg-white transition pr-11">
+                                                <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                                    <i class="ph ph-envelope text-lg"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 6. Nomer Handphone -->
+                                        <div class="flex flex-col gap-2.5">
+                                            <label class="text-[11.5px] font-semibold text-gray-400 uppercase tracking-wider">Nomer Handphone</label>
+                                            <div class="relative">
+                                                <input type="tel" 
+                                                       x-model="profileForm.phone"
+                                                       placeholder="Contoh: 081234567890"
+                                                       class="w-full h-[50px] bg-gray-50/80 border border-gray-200 rounded-xl px-4 text-[14px] text-gray-800 outline-none focus:border-[#0b595b] focus:bg-white transition pr-11">
+                                                <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                                    <i class="ph ph-phone text-lg"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- ================================ -->
+                        <!-- BOTTOM ACTION BAR                -->
+                        <!-- ================================ -->
+                        <!-- Soft Gradient Fade for smooth scrolling under the button -->
+                        <div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc]/80 to-transparent pointer-events-none z-20"></div>
+
+                        <!-- Fixed Action Button at the bottom (Keluar on main, Perbarui Kata Sandi on subpage) -->
+                        <div class="w-full absolute bottom-0 left-0 right-0 z-30 pb-[calc(1.2rem+env(safe-area-inset-bottom))] pt-2 px-4 sm:px-8 flex justify-center pointer-events-none">
+                            <div class="w-full max-w-sm sm:max-w-md pointer-events-auto">
+                                <!-- Tombol Keluar (Hanya tampil di Halaman Profil Utama) -->
+                                <a x-show="!activeSubPage"
+                                   href="../../../002. Login ERP/index.html"
+                                   @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.location.href = '../../../002. Login ERP/index.html'; }"
+                                   class="w-full bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white rounded-2xl h-[52px] px-5 flex items-center justify-center gap-2.5 font-semibold text-[14.5px] transition-all active:scale-[0.98] shadow-none border-0 group">
+                                    <i class="ph-bold ph-sign-out text-lg text-white group-hover:-translate-x-0.5 transition-transform"></i>
+                                    <span>Keluar</span>
+                                </a>
+
+                                <!-- Tombol Perbarui Kata Sandi (Tampil di Sub-Page Password) -->
+                                <button x-show="activeSubPage === 'password'" x-cloak
+                                        type="button" 
+                                        @click="submitPasswordChange()" 
+                                        :disabled="!canSubmit"
+                                        :class="canSubmit ? 'bg-[#0b595b] hover:bg-[#08484a] cursor-pointer active:scale-[0.98]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                                        class="w-full rounded-2xl h-[52px] px-5 flex items-center justify-center font-semibold text-[14.5px] text-white transition-all shadow-none border-0">
+                                    <span>Perbarui Kata Sandi</span>
+                                </button>
+
+                                <!-- Tombol Simpan Perubahan (Tampil di Sub-Page Edit Profil) -->
+                                <button x-show="activeSubPage === 'profile'" x-cloak
+                                        type="button" 
+                                        @click="submitProfileChange()" 
+                                        class="w-full bg-[#0b595b] hover:bg-[#08484a] cursor-pointer active:scale-[0.98] rounded-2xl h-[52px] px-5 flex items-center justify-center font-semibold text-[14.5px] text-white transition-all shadow-none border-0">
+                                    <span>Simpan Perubahan</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Floating Success Toast Notification -->
+                        <div x-show="toastShow" x-cloak
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 -translate-y-4"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-200"
+                             x-transition:leave-start="opacity-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 -translate-y-4"
+                             class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-gray-800 max-w-sm w-[90%] pointer-events-auto">
+                            <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                                <i class="ph-bold ph-check text-lg"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-bold text-white">Berhasil Diperbarui!</p>
+                                <p class="text-[10.5px] text-gray-300" x-text="toastMessage"></p>
+                            </div>
+                            <button @click="toastShow = false" class="text-gray-400 hover:text-white">
+                                <i class="ph-bold ph-x text-xs"></i>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- ALPINE.JS APPLICATION LOGIC -->
+    <script>
+        function erpApp() {
+            return {
+                isScrollActive: false,
+                scrollDebounceTimer: null,
+                handleScrollActivity() {
+                    if (this.mobileSearchOpen) {
+                        this.mobileSearchOpen = false;
+                        document.getElementById('mobileSearchInputBottom')?.blur();
+                    }
+                    this.isScrollActive = true;
+                    if (this.scrollDebounceTimer) clearTimeout(this.scrollDebounceTimer);
+                    this.scrollDebounceTimer = setTimeout(() => {
+                        this.isScrollActive = false;
+                    }, 600);
+                },
+                isScrolled: false,
+                activeMenu: 'pengaturan',
+                sidebarOpen: false,
+                sidebarCollapsed: false,
+                theme: 'dark',
+                mobileSearchOpen: false,
+                toggleMobileSidebar() {
+                    if (window.self !== window.top) {
+                        window.parent.postMessage('toggleSidebar', '*');
+                    } else {
+                        this.sidebarOpen = !this.sidebarOpen;
+                    }
+                },
+
+                // User Profile Data Management
+                profileData: {
+                    photoUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=Citrus',
+                    fullName: 'Budi Santoso',
+                    nickName: 'Budi',
+                    birthDate: '1992-08-15',
+                    email: 'budi.santoso@infruity.co.id',
+                    phone: '0812-3456-7890',
+                },
+                profileForm: {
+                    photoUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=Citrus',
+                    fullName: 'Budi Santoso',
+                    nickName: 'Budi',
+                    birthDate: '1992-08-15',
+                    email: 'budi.santoso@infruity.co.id',
+                    phone: '0812-3456-7890',
+                },
+
+                openProfileSubPage() {
+                    this.profileForm = { ...this.profileData };
+                    this.activeSubPage = 'profile';
+                },
+                closeProfileSubPage() {
+                    this.closeSubPage();
+                },
+                closeSubPage() {
+                    this.activeSubPage = null;
+                    this.newPasswordTouched = false;
+                    this.confirmPasswordTouched = false;
+                },
+                handlePhotoUpload(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.profileForm.photoUrl = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                },
+                submitProfileChange() {
+                    this.profileData = { ...this.profileForm };
+                    this.activeSubPage = null;
+                    this.toastMessage = 'Informasi profil Anda berhasil diperbarui.';
+                    this.toastShow = true;
+                    setTimeout(() => { this.toastShow = false; }, 4000);
+                },
+
+                // Sub-Page & Password Management (Opsi B)
+                activeSubPage: null,
+                oldPassword: '',
+                newPassword: '',
+                confirmPassword: '',
+                newPasswordTouched: false,
+                confirmPasswordTouched: false,
+                showOld: false,
+                showNew: false,
+                showConfirm: false,
+                toastShow: false,
+                toastMessage: '',
+
+                openPasswordSubPage() {
+                    this.activeSubPage = 'password';
+                    this.newPasswordTouched = false;
+                    this.confirmPasswordTouched = false;
+                },
+                closePasswordSubPage() {
+                    this.closeSubPage();
+                },
+
+                // Password Validation Rules & Feedback
+                get hasMinLength() {
+                    return this.newPassword.length >= 8;
+                },
+                get hasUppercase() {
+                    return /[A-Z]/.test(this.newPassword);
+                },
+                get hasNumber() {
+                    return /[0-9]/.test(this.newPassword);
+                },
+                get hasSpecial() {
+                    return /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(this.newPassword);
+                },
+                get isAllRequirementsMet() {
+                    return this.hasMinLength && this.hasUppercase && this.hasNumber && this.hasSpecial;
+                },
+                get inlineErrorMessage() {
+                    if (this.newPassword.length === 0) return '';
+                    if (!this.hasMinLength) {
+                        return 'Kata sandi terlalu pendek. Kata sandi harus memiliki minimal 8 karakter.';
+                    }
+                    if (!this.isAllRequirementsMet) {
+                        return 'Kata sandi belum memenuhi ketentuan. Minimal 8 karakter, mengandung 1 huruf besar, 1 angka, dan 1 karakter spesial.';
+                    }
+                    return '';
+                },
+                get newPasswordInputClasses() {
+                    if (this.newPassword.length === 0) {
+                        return 'bg-gray-50/80 border border-gray-200 focus:border-[#0b595b] focus:bg-white';
+                    }
+                    if (this.isAllRequirementsMet) {
+                        return 'bg-emerald-50/20 border-2 border-emerald-500 focus:border-emerald-600 focus:bg-white';
+                    }
+                    if (this.newPasswordTouched) {
+                        return 'bg-rose-50/20 border-2 border-rose-400 focus:border-rose-500 focus:bg-white';
+                    }
+                    return 'bg-gray-50/80 border border-gray-200 focus:border-[#0b595b] focus:bg-white';
+                },
+                get confirmPasswordInputClasses() {
+                    if (this.confirmPassword.length === 0) {
+                        return 'bg-gray-50/80 border border-gray-200 focus:border-[#0b595b] focus:bg-white';
+                    }
+                    if (this.isMatch) {
+                        return 'bg-emerald-50/20 border-2 border-emerald-500 focus:border-emerald-600 focus:bg-white';
+                    }
+                    if (this.confirmPasswordTouched) {
+                        return 'bg-rose-50/20 border-2 border-rose-400 focus:border-rose-500 focus:bg-white';
+                    }
+                    return 'bg-gray-50/80 border border-gray-200 focus:border-[#0b595b] focus:bg-white';
+                },
+                get isMatch() {
+                    return this.newPassword.length > 0 && this.newPassword === this.confirmPassword;
+                },
+                get canSubmit() {
+                    return this.oldPassword.length >= 4 && this.isAllRequirementsMet && this.isMatch;
+                },
+
+                submitPasswordChange() {
+                    this.newPasswordTouched = true;
+                    this.confirmPasswordTouched = true;
+                    if (!this.canSubmit) return;
+                    this.activeSubPage = null; // Slide back to main view
+                    this.toastMessage = 'Kata sandi akun Anda berhasil diperbarui.';
+                    this.toastShow = true;
+                    // Reset fields
+                    this.oldPassword = '';
+                    this.newPassword = '';
+                    this.confirmPassword = '';
+                    this.newPasswordTouched = false;
+                    this.confirmPasswordTouched = false;
+                    setTimeout(() => { this.toastShow = false; }, 4000);
+                }
+            };
+        }
+    </script>
+</body>
+
+</html>

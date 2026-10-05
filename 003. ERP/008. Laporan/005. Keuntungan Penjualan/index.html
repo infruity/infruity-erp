@@ -16,6 +16,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,700&display=swap"
         rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
 
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -63,6 +64,24 @@
             display: none !important;
         }
 
+        button, [role="button"] {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Material Symbols Styling */
+        .icon-rounded {
+            font-family: 'Material Symbols Rounded';
+            font-size: 20px;
+            display: inline-block;
+            line-height: 1;
+            font-variation-settings: 'wght' 400;
+            transition: font-variation-settings 0.15s ease, color 0.15s ease;
+        }
+
+        .icon-rounded.is-bold {
+            font-variation-settings: 'wght' 600;
+        }
+
         /* Custom Thin Scrollbar for Sidebar */
         .sidebar-scroll::-webkit-scrollbar { width: 2px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -107,7 +126,7 @@
         /* Animations */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
+            to { opacity: 1; transform: none; }
         }
         .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
@@ -196,7 +215,6 @@
         body.in-iframe aside { display: none !important; }
         body.in-iframe > div > div[x-show="sidebarOpen"] { display: none !important; }
         body.in-iframe [data-hamburger] { display: none !important; }
-        header { display: none !important; }
     
         /* ======================== */
         /* iOS Safari Anti-Zoom Fix */
@@ -666,7 +684,73 @@
         <!-- ================================ -->
         <div class="flex-1 flex flex-col overflow-hidden">
 
-            
+            <!-- Floating Header (Desktop) -->
+            <header
+                class="bg-white/65 backdrop-blur-2xl backdrop-saturate-180 border border-white/80 rounded-full mt-4 sm:mt-6 lg:mt-5 hidden sm:flex items-center justify-between gap-4 z-30 sticky top-4 sm:top-6 lg:top-5 mx-4 sm:mx-5 lg:mx-8 px-5 lg:px-6 py-3.5 lg:py-4 shadow-[0_10px_30px_-4px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.95)]">
+                <!-- Left: Title & Breadcrumb -->
+                <div class="flex items-center gap-4 pl-2">
+                    <button data-hamburger @click="window.self !== window.top ? window.parent.postMessage('toggleSidebar', '*') : sidebarOpen = !sidebarOpen"
+                        class="lg:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-500 transition shrink-0">
+                        <i class="ph ph-list text-2xl"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5">Keuntungan Penjualan</h1>
+                        <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
+                            <span>Laporan</span>
+                            <i class="ph ph-caret-right text-[0.55rem]"></i>
+                            <span>Keuntungan Penjualan</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Quick actions (Notification + Online Status) -->
+                <div class="flex items-center gap-3">
+                    <!-- Notification Bell -->
+                    <div class="relative" x-data="{ notifOpen: false, hasUnread: true }">
+                        <button @click="notifOpen = !notifOpen; hasUnread = false"
+                            class="w-9 h-9 rounded-full border border-gray-200/80 bg-white/60 hover:bg-white flex items-center justify-center text-gray-600 transition shrink-0 shadow-xs"
+                            title="Notifikasi Laporan">
+                            <div class="relative flex items-center justify-center">
+                                <i class="ph ph-bell text-lg"></i>
+                                <span x-show="hasUnread" class="absolute top-[2px] right-[-2px] w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-white"></span>
+                            </div>
+                        </button>
+
+                        <!-- Notification Dropdown -->
+                        <div x-show="notifOpen" @click.outside="notifOpen = false" x-cloak
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute right-0 top-12 w-80 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                            <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-xs text-gray-800">Notifikasi Laporan</span>
+                                    <span class="bg-[#0b595b]/10 text-[#0b595b] text-[10px] font-bold px-2 py-0.5 rounded-full">Terkini</span>
+                                </div>
+                                <button @click="notifOpen = false" class="text-xs text-gray-400 hover:text-gray-600">Tutup</button>
+                            </div>
+                            <div class="divide-y divide-gray-50 max-h-72 overflow-y-auto">
+                                <div class="p-3.5 flex gap-3 hover:bg-black/[0.02] transition-colors">
+                                    <div class="w-8 h-8 rounded-full bg-emerald-50 text-[#0b595b] flex items-center justify-center shrink-0">
+                                        <i class="ph-bold ph-trend-up text-base"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0 text-left">
+                                        <p class="text-[12px] font-semibold text-gray-800 truncate">Margin Keuntungan Optimal</p>
+                                        <p class="text-[11px] text-gray-500 mt-0.5">Laba kotor penjualan periode ini meningkat</p>
+                                        <span class="text-[10px] text-gray-400 mt-1 block">15 menit yang lalu</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-[#0F5C45] border border-emerald-200/60 shadow-2xs">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online
+                    </span>
+                </div>
+            </header>
 
             <!-- ================================ -->
             <!-- SCROLLABLE CONTENT AREA          -->
@@ -676,355 +760,444 @@
                 <!-- CONTENT: Target -->
                 <div class="animate-fade-in-up w-full flex-1 flex flex-col min-h-0">
 
+                    <!-- Main Content Card -->
+                    <div class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
 
-        <!-- Main Content Card -->
-
-        <div class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0">
-            <!-- Filter & Search Bar -->
-            <div class="p-4 border-b border-gray-100 flex flex-row gap-3 sm:gap-4 items-center bg-white relative z-10">
-                <div class="flex-1 relative w-full">
-                    <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    <input x-model="searchQuery" type="text" placeholder="Cari transaksi..." class="w-full bg-gray-50/50 border border-gray-100 rounded-full pl-10 pr-4 h-11 text-[13px] outline-none focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all">
-                </div>
-                
-                <div class="relative shrink-0" x-data="{ calOpen: false }" x-effect="document.body.style.overflow = (filterOpen && window.innerWidth < 768) ? 'hidden' : ''">
-                    <!-- Filter Trigger -->
-                    <button @click="filterOpen = !filterOpen; expanded = true"
-                        @mouseenter="expanded = true" 
-                        @mouseleave="if(!filterOpen) expanded = false"
-                        class="flex items-center bg-white rounded-full border h-11 p-1 shadow-sm transition-colors duration-300 shrink-0"
-                        :class="filterOpen ? 'border-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
-                        <div class="w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-300 z-10 shrink-0"
-                            :class="expanded ? 'bg-emerald-50 text-emerald-600' : 'bg-white text-gray-600'">
-                            <div class="relative flex items-center justify-center">
-                                <i class="ph ph-funnel text-[20px]"></i>
-                                <span x-cloak x-show="isFiltered" class="absolute -top-[2px] -right-[2px] w-3 h-3 bg-orange-500 rounded-full border-[2px] border-white"></span>
-                            </div>
-                        </div>
-                        <div class="overflow-hidden transition-all duration-500 ease-out hidden sm:flex items-center"
-                             :class="expanded ? 'max-w-[280px] opacity-100 pr-4' : 'max-w-0 opacity-0 pr-0'">
-                            <span class="text-[13px] font-medium text-gray-700 whitespace-nowrap pl-2" x-text="period"></span>
-                            <i class="ph-bold ph-caret-down text-[10px] ml-2 transition-transform duration-200 text-gray-400" :class="filterOpen ? 'rotate-180' : ''"></i>
-                        </div>
-                    </button>
-                    
-                    <!-- Backdrop for Filter (intercepts clicks to close filter only) -->
-                    <div x-show="filterOpen" x-cloak
-                         @click.stop.prevent="filterOpen = false; expanded = false; setTimeout(() => calOpen = false, 150)"
-                         class="fixed inset-0 z-40 bg-transparent cursor-default pointer-events-auto">
-                    </div>
-                    
-                    <!-- Filter Dropdown Popup -->
-                    <div x-show="filterOpen" @click.outside="filterOpen = false; expanded = false; setTimeout(() => calOpen = false, 150)" x-cloak
-                        x-transition:enter="transition ease-out duration-100"
-                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-75"
-                        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                        class="absolute top-12 right-0 flex flex-col w-[280px] md:w-[260px] bg-white rounded-2xl shadow-xl border border-gray-100 z-50">
-                        
-                        <div x-show="!calOpen" class="flex flex-col gap-4 w-full p-4 md:!flex"
-                             x-transition:enter="transition ease-out duration-200"
-                             x-transition:enter-start="opacity-0 -translate-x-4"
-                             x-transition:enter-end="opacity-100 translate-x-0"
-                             x-transition:leave="transition ease-in duration-150 absolute top-0 left-0 w-full md:relative md:w-auto md:!transition-none"
-                             x-transition:leave-start="opacity-100 translate-x-0"
-                             x-transition:leave-end="opacity-0 -translate-x-4">
-                        
-                        <!-- Grouping Field -->
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Grup Berdasarkan</label>
-                            <div class="flex flex-row gap-2">
-                                <div @click="groupBy = 'produk'" class="flex-1 py-2 px-2 text-[11px] font-semibold rounded-lg flex items-center justify-center gap-1.5 shadow-sm cursor-pointer transition-colors"
-                                     :class="groupBy === 'produk' ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : 'text-gray-500 bg-gray-50 border border-gray-200 hover:bg-gray-100'">
-                                    <i class="ph-fill ph-package text-[14px]" :class="groupBy === 'produk' ? 'text-emerald-600' : 'text-gray-400'"></i>
-                                    Produk
-                                </div>
-                                <div @click="groupBy = 'tanggal'" class="flex-1 py-2 px-2 text-[11px] font-semibold rounded-lg flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-colors"
-                                     :class="groupBy === 'tanggal' ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : 'text-gray-500 bg-gray-50 border border-gray-200 hover:bg-gray-100'">
-                                    <i class="ph ph-calendar-blank text-[14px]" :class="groupBy === 'tanggal' ? 'text-emerald-600' : 'text-gray-400'"></i>
-                                    Tanggal
-                                </div>
-                            </div>
-                            
-                            <!-- Date/Product Sub-Grouping Dropdown -->
-                            <div x-cloak class="mt-2" x-data="{ dgOpen: false }">
-                                <div class="relative w-full">
-                                    <button @click="dgOpen = !dgOpen" @click.outside="dgOpen = false"
-                                        class="w-full bg-white border text-gray-700 text-xs rounded-lg flex justify-between items-center p-2 outline-none transition-colors shadow-sm"
-                                        :class="dgOpen ? 'border-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
-                                        <span class="font-medium text-left truncate pr-2" x-text="timeGroupBy === 'harian' ? 'Harian' : 'Mingguan'"></span>
-                                        <i class="ph-bold ph-caret-down text-gray-400 transition-transform duration-200 shrink-0" :class="dgOpen ? 'rotate-180' : ''"></i>
-                                    </button>
-                                    <div x-show="dgOpen" x-cloak
-                                        x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                                        x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                                        class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-lg shadow-lg py-1 z-[70] max-h-48 overflow-y-auto overscroll-none minimal-scrollbar">
-                                        <div @click="timeGroupBy = 'harian'; dgOpen = false; setHariIni()"
-                                            class="px-3 py-2 text-[11px] cursor-pointer transition-colors flex justify-between items-center"
-                                            :class="timeGroupBy === 'harian' ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'">
-                                            <span>Harian</span>
-                                            <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="timeGroupBy === 'harian'"></i>
-                                        </div>
-                                        <div @click="timeGroupBy = 'mingguan'; dgOpen = false; applyPeriodFilter()"
-                                            class="px-3 py-2 text-[11px] cursor-pointer transition-colors flex justify-between items-center"
-                                            :class="timeGroupBy === 'mingguan' ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'">
-                                            <span>Mingguan</span>
-                                            <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="timeGroupBy === 'mingguan'"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Cabang Field -->
-                        <div>
-                            <div class="flex justify-between items-center mb-1.5">
-                                <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Cabang</label>
-                                <button x-show="selectedBranch !== 'Semua Cabang'" @click="selectedBranch = 'Semua Cabang'" class="text-[9px] text-red-500 hover:text-red-600 font-semibold cursor-pointer transition-colors">Reset</button>
-                            </div>
-                            <div x-data="{ open: false }" class="relative w-full">
-                                <button @click="open = !open" @click.outside="open = false" 
-                                    class="w-full bg-white border text-gray-700 text-xs rounded-lg flex justify-between items-center p-2 outline-none transition-colors shadow-sm"
-                                    :class="open ? 'border-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
-                                    <span x-text="selectedBranch" class="font-medium text-left truncate pr-2"></span>
-                                    <i class="ph-bold ph-caret-down text-gray-400 transition-transform duration-200 shrink-0" :class="open ? 'rotate-180' : ''"></i>
-                                </button>
-                                
-                                <div x-show="open" x-cloak
-                                    x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                                    x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                                    class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-lg shadow-lg py-1 z-[70] max-h-48 overflow-y-auto overscroll-none minimal-scrollbar">
-                                    <template x-for="cabang in branches">
-                                        <div @click="selectedBranch = cabang; open = false" 
-                                            class="px-3 py-2 text-[11px] cursor-pointer transition-colors flex justify-between items-center group"
-                                            :class="selectedBranch === cabang ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'">
-                                            <span x-text="cabang"></span>
-                                            <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="selectedBranch === cabang"></i>
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div x-show="timeGroupBy === 'mingguan'" class="flex flex-col gap-4 w-full">
-                            <!-- Year Selection -->
-                            <div>
-                                <div class="flex justify-between items-center mb-1.5">
-                                    <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Tahun</label>
-                                    <button x-show="filterYear !== 'Semua Tahun'" @click="filterYear = 'Semua Tahun'; generateFilterWeeks(); filterPeriod = ''; filterPeriodLabel = 'Semua Periode'; applyPeriodFilter()" class="text-[9px] text-red-500 hover:text-red-600 font-semibold cursor-pointer transition-colors">Reset</button>
-                                </div>
-                                <div x-data="{ openYear: false }" class="relative w-full">
-                                    <button @click="openYear = !openYear" @click.outside="openYear = false" 
-                                        class="w-full bg-white border text-gray-700 text-xs rounded-lg flex justify-between items-center p-2 outline-none transition-colors shadow-sm"
-                                        :class="openYear ? 'border-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
-                                        <span x-text="filterYear" class="font-medium text-left truncate pr-2"></span>
-                                        <i class="ph-bold ph-caret-down text-gray-400 transition-transform duration-200 shrink-0" :class="openYear ? 'rotate-180' : ''"></i>
-                                    </button>
-                                    
-                                    <div x-show="openYear" x-cloak
-                                        x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                                        x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                                        class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-lg shadow-lg py-1 z-[70] max-h-48 overflow-y-auto overscroll-none minimal-scrollbar">
-                                        <template x-for="y in ['Semua Tahun', new Date().getFullYear(), new Date().getFullYear()-1, new Date().getFullYear()-2]">
-                                            <div @click="filterYear = y; openYear = false; generateFilterWeeks(); filterPeriod = ''; filterPeriodLabel = 'Semua Periode'; applyPeriodFilter()" 
-                                                class="px-3 py-2 text-[11px] cursor-pointer transition-colors flex justify-between items-center group"
-                                                :class="filterYear === y ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'">
-                                                <span x-text="y"></span>
-                                                <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="filterYear === y"></i>
-                                            </div>
-                                        </template>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Period Selection -->
-                            <div>
-                                <div class="flex justify-between items-center mb-1.5">
-                                    <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Periode Mingguan</label>
-                                    <button x-show="filterPeriod !== ''" @click="filterPeriod = ''; filterPeriodLabel = 'Semua Periode'; applyPeriodFilter()" class="text-[9px] text-red-500 hover:text-red-600 font-semibold cursor-pointer transition-colors">Reset</button>
-                                </div>
-                                 <div x-data="{ 
-                                     openPeriod: false,
-                                     scrollToSelected() {
-                                         $nextTick(() => {
-                                             const el = $refs.periodDropdown?.querySelector('[data-selected=true]');
-                                             if (el) el.scrollIntoView({ block: 'center' });
-                                         });
-                                     }
-                                 }" class="relative w-full">
-                                     <button @click="openPeriod = !openPeriod; if(openPeriod) scrollToSelected()" @click.outside="openPeriod = false" 
-                                        class="w-full bg-white border text-gray-700 text-xs rounded-lg flex justify-between items-center p-2 outline-none transition-colors shadow-sm"
-                                        :class="openPeriod ? 'border-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
-                                        <span x-text="filterPeriodLabel" class="font-medium text-left truncate pr-2"></span>
-                                        <i class="ph-bold ph-caret-down text-gray-400 transition-transform duration-200 shrink-0" :class="openPeriod ? 'rotate-180' : ''"></i>
-                                    </button>
-                                    
-                                    <div x-show="openPeriod" x-cloak x-ref="periodDropdown"
-                                        x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                                        x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                                        class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-lg shadow-lg py-1 z-[70] max-h-48 overflow-y-auto overscroll-none minimal-scrollbar">
-                                        
-                                        <template x-for="w in filterWeeksList">
-                                            <div :data-selected="filterPeriod === w.val" @click="if(!w.disabled) { filterPeriod = w.val; filterPeriodLabel = w.label; openPeriod = false; applyPeriodFilter(); }" 
-                                                class="px-3 py-2 text-[11px] transition-colors flex justify-between items-center group"
-                                                :class="w.disabled ? 'cursor-not-allowed opacity-60 bg-gray-50 text-gray-400' : (filterPeriod === w.val ? 'bg-gray-50 text-emerald-600 font-semibold cursor-pointer' : 'text-gray-600 hover:bg-gray-50 cursor-pointer')">
-                                                <span x-text="w.label" class="truncate"></span>
-                                                <i class="ph-fill ph-circle text-[8px] text-emerald-500 shrink-0" x-show="!w.disabled && filterPeriod === w.val"></i>
-                                            </div>
-                                        </template>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Date Range (Original Calendar) -->
-                        <div x-show="timeGroupBy === 'harian'">
-                            <div class="flex justify-between items-center mb-1.5">
-                                <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Periode Tanggal</label>
-                                <button x-show="startDate || endDate" @click="startDate = ''; endDate = ''" class="text-[9px] text-red-500 hover:text-red-600 font-semibold cursor-pointer transition-colors">Reset</button>
-                            </div>
-                            
-                            <div class="w-full">
-                                <!-- Trigger -->
-                                <div class="flex flex-col gap-2 w-full cursor-pointer" @click="calOpen = !calOpen">
-                                    <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-2 py-2 text-xs text-gray-700 transition-colors shadow-sm w-full" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : ''">
-                                        <span class="text-gray-400 font-medium text-[10px] w-8">DARI</span>
-                                        <span class="font-medium text-[11px]" :class="startDate ? 'text-gray-700' : 'text-gray-400'" x-text="startDate ? formatDisplayDate(startDate) : 'Pilih Tanggal'"></span>
-                                    </div>
-                                    <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-2 py-2 text-xs text-gray-700 transition-colors shadow-sm w-full" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : ''">
-                                        <span class="text-gray-400 font-medium text-[10px] w-8">KE</span>
-                                        <span class="font-medium text-[11px]" :class="endDate ? 'text-gray-700' : 'text-gray-400'" x-text="endDate ? formatDisplayDate(endDate) : 'Pilih Tanggal'"></span>
-                                    </div>
-                                </div>
-                                
-                            </div>
-                        </div>
-
-                        <!-- Filter Action Buttons -->
-                        <div class="pt-3 mt-1 border-t border-gray-100 flex flex-col gap-2">
-                            <div class="flex flex-row gap-2" x-show="timeGroupBy === 'harian'">
-                                <button @click="setMingguIni()" 
-                                    class="flex-1 py-2 px-1 text-[11px] font-semibold text-sidebar bg-lime hover:bg-lime/90 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm" style="background-color: #c5f037; color: #1f2937;" title="Tampilkan Minggu Ini">
-                                    Minggu Ini
-                                </button>
-                                <button @click="setHariIni()" 
-                                    class="flex-1 py-2 px-1 text-[11px] font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm" title="Tampilkan Hari Ini">
-                                    Hari Ini
-                                </button>
-                            </div>
-                            <div x-show="timeGroupBy === 'mingguan'">
-                                <button @click="setMingguIni()" 
-                                    class="w-full py-2 px-1 text-[11px] font-semibold text-sidebar bg-lime hover:bg-lime/90 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm" style="background-color: #c5f037; color: #1f2937;" title="Tampilkan Minggu Ini">
-                                    Minggu Ini
-                                </button>
-                            </div>
-                            <button @click="searchQuery = ''; selectedBranch = 'Semua Cabang'; filterYear = 'Semua Tahun'; generateFilterWeeks(); filterPeriod = ''; filterPeriodLabel = 'Semua Periode'; applyPeriodFilter(); startDate = ''; endDate = ''" 
-                                class="w-full py-2 px-1 text-[11px] font-semibold text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 rounded-lg flex items-center justify-center gap-1.5 transition-colors" title="Reset Semua Filter">
-                                Reset Semua
+                        <!-- Mobile Header: Frosted Glass Effect with Hamburger, Logo & Notif -->
+                        <div class="sm:hidden px-4 py-3 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]">
+                            <!-- Tombol Kiri: Hamburger Menu -->
+                            <button @click="window.self !== window.top ? window.parent.postMessage('toggleSidebar', '*') : sidebarOpen = !sidebarOpen"
+                                class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 hover:text-emerald-700 hover:bg-emerald-50/70 active:scale-95 transition-all"
+                                title="Menu Navigasi">
+                                <i class="ph-bold ph-list text-[21px]"></i>
                             </button>
-                        </div>
-                        </div>
 
-                        <!-- Dropdown Calendar (Soft & Pill) -->
-                        <div x-show="calOpen" x-cloak
-                            x-transition:enter="transition ease-out duration-200" 
-                            x-transition:enter-start="opacity-0 translate-x-4 md:translate-x-2" 
-                            x-transition:enter-end="opacity-100 translate-x-0"
-                            x-transition:leave="transition ease-in duration-150 absolute top-0 left-0 w-full md:relative md:w-auto" 
-                            x-transition:leave-start="opacity-100 translate-x-0" 
-                            x-transition:leave-end="opacity-0 translate-x-4 md:translate-x-2"
-                            class="w-full md:absolute md:right-[calc(100%+24px)] md:bottom-0 md:w-[280px] sm:w-[300px] bg-white md:rounded-3xl md:shadow-[0_8px_30px_rgb(0,0,0,0.12)] md:border md:border-gray-100 p-4 sm:p-5 md:z-[70]">
-                            
-                            <!-- Header -->
-                            <div class="flex items-center justify-between mb-5">
-                                <h3 class="font-bold text-[13px] sm:text-[14px] text-gray-800 cursor-pointer hover:text-emerald-600 transition" 
-                                    @click="calendarView = calendarView === 'date' ? 'month' : (calendarView === 'month' ? 'year' : 'date')"
-                                    x-text="calendarView === 'date' ? calendarMonthName : (calendarView === 'month' ? currentYear : (currentYear - 4) + ' - ' + (currentYear + 7))"></h3>
-                                <div class="flex gap-1">
-                                    <button @click.prevent="navigateCalendar(-1)" class="w-7 h-7 flex items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 transition"><i class="ph-bold ph-caret-left text-[12px]"></i></button>
-                                    <button @click.prevent="navigateCalendar(1)" class="w-7 h-7 flex items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 transition"><i class="ph-bold ph-caret-right text-[12px]"></i></button>
-                                </div>
+                            <!-- Logo Infruity Center -->
+                            <div class="flex items-center justify-center">
+                                <img src="../../assets/logo/Infruity Logo - 6.png" alt="Infruity Logo" style="height: 30px; width: auto; max-width: 150px;" class="object-contain" />
                             </div>
-                            
-                            <!-- View: Date -->
-                            <div x-show="calendarView === 'date'">
-                                <!-- Days -->
-                                <div class="grid grid-cols-7 gap-1 text-center mb-3">
-                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">M</div>
-                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">S</div>
-                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">S</div>
-                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">R</div>
-                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">K</div>
-                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">J</div>
-                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">S</div>
-                                </div>
-                                
-                                <!-- Dates -->
-                                <div class="grid grid-cols-7 gap-y-1 sm:gap-y-2 text-center">
-                                    <template x-for="blankday in blankDays">
-                                        <div class="text-[12px] sm:text-[13px] py-1 text-gray-300"></div>
-                                    </template>
-                                    
-                                    <template x-for="day in noOfDays">
-                                        <div class="relative mt-1 mb-1"
-                                             :class="{
-                                                'bg-lime/20': isDateInRange(day),
-                                                'bg-lime/20 rounded-l-full': getDateString(day) === startDate && endDate && startDate !== endDate,
-                                                'bg-lime/20 rounded-r-full': getDateString(day) === endDate && startDate !== endDate
-                                             }">
-                                            <div @click="selectDate(day)"
-                                                class="text-[12px] sm:text-[13px] py-1.5 cursor-pointer flex items-center justify-center mx-auto"
-                                                :class="{
-                                                    'font-bold text-gray-900 bg-lime rounded-full shadow-sm relative z-10 w-7 h-7 sm:w-8 sm:h-8': isDateSelected(day),
-                                                    'text-gray-700 font-medium': isDateInRange(day) && !isDateSelected(day),
-                                                    'text-gray-700 hover:bg-gray-50 rounded-full w-7 h-7 sm:w-8 sm:h-8': !isDateSelected(day) && !isDateInRange(day)
-                                                }"
-                                                :style="isDateSelected(day) ? 'background-color: #c5f037;' : ''"
-                                                x-text="day"></div>
+
+                            <!-- Tombol Kanan: Notifikasi -->
+                            <div class="relative" x-data="{ notifOpen: false }">
+                                <button @click="notifOpen = !notifOpen"
+                                    class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 hover:text-[#0b595b] hover:bg-emerald-50/70 active:scale-95 transition-all shrink-0 relative"
+                                    title="Notifikasi">
+                                    <i class="ph-bold ph-bell text-[21px]"></i>
+                                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white"></span>
+                                </button>
+                                <!-- Notification Drawer / Dropdown -->
+                                <div x-show="notifOpen" @click.outside="notifOpen = false" x-cloak
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                     class="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+                                    <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                                        <h4 class="text-xs font-bold text-gray-900">Notifikasi Laporan</h4>
+                                        <span class="text-[10px] bg-emerald-100 text-[#0F5C45] px-2 py-0.5 rounded-full font-semibold">Terkini</span>
+                                    </div>
+                                    <div class="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+                                        <div class="p-3.5 flex gap-3 hover:bg-black/[0.02] transition-colors">
+                                            <div class="w-8 h-8 rounded-full bg-emerald-50 text-[#0F5C45] flex items-center justify-center shrink-0">
+                                                <i class="ph-bold ph-trend-up text-base"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0 text-left">
+                                                <p class="text-[12px] font-semibold text-gray-800 truncate">Margin Keuntungan Optimal</p>
+                                                <p class="text-[11px] text-gray-500 mt-0.5">Laba kotor penjualan periode ini meningkat</p>
+                                                <span class="text-[10px] text-gray-400 mt-1 block">15 menit yang lalu</span>
+                                            </div>
                                         </div>
-                                    </template>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <!-- View: Month -->
-                            <div x-show="calendarView === 'month'" x-cloak class="grid grid-cols-3 gap-2 mt-2">
-                                <template x-for="(m, i) in monthNames">
-                                    <div class="text-[13px] py-2.5 text-center rounded-xl cursor-pointer transition-colors font-medium"
-                                         :class="currentMonth === i ? 'bg-lime text-gray-900 shadow-sm' : 'text-gray-700 hover:bg-gray-50'"
-                                         :style="currentMonth === i ? 'background-color: #c5f037;' : ''"
-                                         @click="currentMonth = i; calendarView = 'date'"
-                                         x-text="m.substring(0, 3)"></div>
-                                </template>
-                            </div>
-                            
-                            <!-- View: Year -->
-                            <div x-show="calendarView === 'year'" x-cloak class="grid grid-cols-3 gap-2 mt-2">
-                                <template x-for="y in Array.from({length: 12}, (_, i) => currentYear - 4 + i)">
-                                    <div class="text-[13px] py-2.5 text-center rounded-xl cursor-pointer transition-colors font-medium"
-                                         :class="currentYear === y ? 'bg-lime text-gray-900 shadow-sm' : 'text-gray-700 hover:bg-gray-50'"
-                                         :style="currentYear === y ? 'background-color: #c5f037;' : ''"
-                                         @click="currentYear = y; calendarView = 'month'"
-                                         x-text="y"></div>
-                                </template>
-                            </div>
-                            
-                            <!-- Mobile Back Button -->
-                            <button @click.prevent="calOpen = false" class="md:hidden w-full py-2 mt-4 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors">
-                                <i class="ph-bold ph-arrow-left"></i> Kembali ke Filter
-                            </button>
                         </div>
-                        
-                    </div>
-                </div>
+                        <!-- Filter & Search Bar: Integrated Single Unified Pill -->
+                        <div class="p-4 border-b border-gray-100 flex flex-row items-center bg-white relative z-10">
+                            <!-- Integrated Search + Filter Input Container -->
+                            <div x-data="{ isSearchFocused: false }"
+                                 class="flex-1 relative flex items-center rounded-full h-11 pl-4 pr-1.5 transition-all"
+                                 :class="isSearchFocused ? 'bg-white border border-emerald-500 ring-1 ring-emerald-500' : 'bg-gray-50/50 border border-gray-200/80'">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px] text-[#0b595b]/80 shrink-0 mr-2.5">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input x-model="searchQuery" 
+                                       @focus="isSearchFocused = true" 
+                                       @blur="isSearchFocused = false"
+                                       type="text" placeholder="Cari transaksi..."
+                                    class="flex-1 bg-transparent text-[13.5px] font-medium text-gray-800 placeholder-gray-400 outline-none h-full">
+                                
+                                <!-- Clear button -->
+                                <button x-show="searchQuery" @click="searchQuery = ''" x-cloak
+                                    class="w-6 h-6 rounded-full hover:bg-black/5 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors shrink-0 mr-1"
+                                    title="Hapus pencarian">
+                                    <i class="ph-bold ph-x text-xs"></i>
+                                </button>
 
-                <!-- Mobile Sidebar Toggle -->
-                <button @click="toggleMobileSidebar()" 
-                    class="relative shrink-0 lg:hidden w-11 h-11 flex items-center justify-center bg-white rounded-full border border-gray-200 hover:border-emerald-400 hover:text-emerald-600 shadow-sm text-gray-500 transition-all duration-300"
-                    title="Tampilkan Sidebar">
-                    <i class="ph-bold ph-list text-[18px]"></i>
-                </button>
+                                <!-- Divider -->
+                                <div class="h-4 w-px bg-gray-200 shrink-0 mx-1"></div>
 
-            </div>
+                                <!-- Filter Trigger inside Container -->
+                                <div class="relative shrink-0" x-data="{ calOpen: false }" x-effect="document.body.style.overflow = filterOpen ? 'hidden' : ''">
+                                    <!-- Filter Button inside Search Bar at Right Corner -->
+                                    <button @click="filterOpen = !filterOpen"
+                                        style="-webkit-tap-highlight-color: transparent; outline: none;"
+                                        class="w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 relative focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none active:scale-95 select-none"
+                                        :class="(filterOpen || isFiltered) ? 'text-[#0b595b]' : 'text-gray-400 hover:text-[#0b595b]'"
+                                        title="Filter">
+                                        <span class="icon-rounded" 
+                                              :class="(filterOpen || isFiltered) ? 'is-bold' : ''" 
+                                              style="font-size: 20px;">tune</span>
+                                    </button>
+                                    
+                                    <!-- ========================================== -->
+                                    <!-- BOTTOM SHEET FILTER DRAWER (SLIDE BAWAH)   -->
+                                    <!-- ========================================== -->
+                                    <template x-teleport="body">
+                                        <div class="fixed inset-0 z-[100] pointer-events-none">
+                                            <!-- Backdrop Overlay Gelap -->
+                                            <div x-show="filterOpen" x-cloak
+                                                 @click="filterOpen = false; setTimeout(() => calOpen = false, 150)"
+                                                 x-transition:enter="transition-opacity ease-out duration-300"
+                                                 x-transition:enter-start="opacity-0"
+                                                 x-transition:enter-end="opacity-100"
+                                                 x-transition:leave="transition-opacity ease-in duration-200"
+                                                 x-transition:leave-start="opacity-100"
+                                                 x-transition:leave-end="opacity-0"
+                                                 class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-xs cursor-default pointer-events-auto">
+                                            </div>
+
+                                            <!-- Drawer Container & Panel Meluncur dari Bawah -->
+                                            <div x-show="filterOpen" x-cloak
+                                                 class="fixed inset-0 z-[101] flex items-end justify-center pointer-events-none">
+                                        <div x-show="filterOpen"
+                                             @click.outside="filterOpen = false; setTimeout(() => calOpen = false, 150)"
+                                             x-transition:enter="transition ease-out duration-300 transform"
+                                             x-transition:enter-start="translate-y-full"
+                                             x-transition:enter-end="translate-y-0"
+                                             x-transition:leave="transition ease-in duration-200 transform"
+                                             x-transition:leave-start="translate-y-0"
+                                             x-transition:leave-end="translate-y-full"
+                                             class="pointer-events-auto relative bg-white rounded-t-3xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] overflow-hidden pb-[env(safe-area-inset-bottom)]">
+                                            
+                                            <!-- Drag Handle Indicator -->
+                                            <div class="w-full flex justify-center pt-3 pb-1 shrink-0 cursor-pointer" @click="filterOpen = false; setTimeout(() => calOpen = false, 150)">
+                                                <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                                            </div>
+
+                                            <!-- Header -->
+                                            <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between shrink-0">
+                                                <div>
+                                                    <h3 class="font-bold text-gray-800 text-base">Filter Laporan</h3>
+                                                    <p class="text-xs text-gray-400 mt-0.5">Sesuaikan parameter data laporan</p>
+                                                </div>
+                                                <button @click="filterOpen = false; setTimeout(() => calOpen = false, 150)" 
+                                                        class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors active:scale-95">
+                                                    <i class="ph-bold ph-x text-sm"></i>
+                                                </button>
+                                            </div>
+
+                                            <!-- Scrollable Content Area -->
+                                            <div class="p-5 overflow-y-auto space-y-4 minimal-scrollbar flex-1">
+                                                <!-- Main Filter Controls (when !calOpen) -->
+                                                <div x-show="!calOpen" class="flex flex-col gap-4 w-full">
+                                                    <!-- Grouping Field -->
+                                                    <div>
+                                                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Grup Berdasarkan</label>
+                                                        <div class="flex flex-row gap-2">
+                                                            <div @click="groupBy = 'produk'" class="flex-1 py-2.5 px-3 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-colors"
+                                                                 :class="groupBy === 'produk' ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : 'text-gray-500 bg-gray-50 border border-gray-200 hover:bg-gray-100'">
+                                                                <i class="ph-fill ph-package text-base" :class="groupBy === 'produk' ? 'text-emerald-600' : 'text-gray-400'"></i>
+                                                                Produk
+                                                            </div>
+                                                            <div @click="groupBy = 'tanggal'" class="flex-1 py-2.5 px-3 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
+                                                                 :class="groupBy === 'tanggal' ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : 'text-gray-500 bg-gray-50 border border-gray-200 hover:bg-gray-100'">
+                                                                <i class="ph ph-calendar-blank text-base" :class="groupBy === 'tanggal' ? 'text-emerald-600' : 'text-gray-400'"></i>
+                                                                Tanggal
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <!-- Date/Product Sub-Grouping Dropdown -->
+                                                        <div x-cloak class="mt-2" x-data="{ dgOpen: false }">
+                                                            <div class="relative w-full">
+                                                                <button @click="dgOpen = !dgOpen" @click.outside="dgOpen = false"
+                                                                    class="w-full bg-white border text-gray-700 text-xs rounded-xl flex justify-between items-center p-2.5 outline-none transition-colors shadow-xs"
+                                                                    :class="dgOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
+                                                                    <span class="font-medium text-left truncate pr-2" x-text="timeGroupBy === 'harian' ? 'Harian' : 'Mingguan'"></span>
+                                                                    <i class="ph-bold ph-caret-down text-gray-400 transition-transform duration-200 shrink-0" :class="dgOpen ? 'rotate-180' : ''"></i>
+                                                                </button>
+                                                                <div x-show="dgOpen" x-cloak
+                                                                    x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                                                    x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                                                    class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-[70] max-h-48 overflow-y-auto overscroll-none minimal-scrollbar">
+                                                                    <div @click="timeGroupBy = 'harian'; dgOpen = false; setHariIni()"
+                                                                        class="px-3 py-2 text-xs cursor-pointer transition-colors flex justify-between items-center"
+                                                                        :class="timeGroupBy === 'harian' ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'">
+                                                                        <span>Harian</span>
+                                                                        <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="timeGroupBy === 'harian'"></i>
+                                                                    </div>
+                                                                    <div @click="timeGroupBy = 'mingguan'; dgOpen = false; applyPeriodFilter()"
+                                                                        class="px-3 py-2 text-xs cursor-pointer transition-colors flex justify-between items-center"
+                                                                        :class="timeGroupBy === 'mingguan' ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'">
+                                                                        <span>Mingguan</span>
+                                                                        <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="timeGroupBy === 'mingguan'"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Cabang Field -->
+                                                    <div>
+                                                        <div class="flex justify-between items-center mb-1.5">
+                                                            <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Cabang</label>
+                                                            <button x-show="selectedBranch !== 'Semua Cabang'" @click="selectedBranch = 'Semua Cabang'" class="text-[10px] text-red-500 hover:text-red-600 font-semibold cursor-pointer transition-colors">Reset</button>
+                                                        </div>
+                                                        <div x-data="{ open: false }" class="relative w-full">
+                                                            <button @click="open = !open" @click.outside="open = false" 
+                                                                class="w-full bg-white border text-gray-700 text-xs rounded-xl flex justify-between items-center p-2.5 outline-none transition-colors shadow-xs"
+                                                                :class="open ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
+                                                                <span x-text="selectedBranch" class="font-medium text-left truncate pr-2"></span>
+                                                                <i class="ph-bold ph-caret-down text-gray-400 transition-transform duration-200 shrink-0" :class="open ? 'rotate-180' : ''"></i>
+                                                            </button>
+                                                            
+                                                            <div x-show="open" x-cloak
+                                                                x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                                                x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                                                class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-[70] max-h-48 overflow-y-auto overscroll-none minimal-scrollbar">
+                                                                <template x-for="cabang in branches">
+                                                                    <div @click="selectedBranch = cabang; open = false" 
+                                                                        class="px-3 py-2 text-xs cursor-pointer transition-colors flex justify-between items-center group"
+                                                                        :class="selectedBranch === cabang ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'">
+                                                                        <span x-text="cabang"></span>
+                                                                        <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="selectedBranch === cabang"></i>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div x-show="timeGroupBy === 'mingguan'" class="flex flex-col gap-4 w-full">
+                                                        <!-- Year Selection -->
+                                                        <div>
+                                                            <div class="flex justify-between items-center mb-1.5">
+                                                                <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Tahun</label>
+                                                                <button x-show="filterYear !== 'Semua Tahun'" @click="filterYear = 'Semua Tahun'; generateFilterWeeks(); filterPeriod = ''; filterPeriodLabel = 'Semua Periode'; applyPeriodFilter()" class="text-[10px] text-red-500 hover:text-red-600 font-semibold cursor-pointer transition-colors">Reset</button>
+                                                            </div>
+                                                            <div x-data="{ openYear: false }" class="relative w-full">
+                                                                <button @click="openYear = !openYear" @click.outside="openYear = false" 
+                                                                    class="w-full bg-white border text-gray-700 text-xs rounded-xl flex justify-between items-center p-2.5 outline-none transition-colors shadow-xs"
+                                                                    :class="openYear ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
+                                                                    <span x-text="filterYear" class="font-medium text-left truncate pr-2"></span>
+                                                                    <i class="ph-bold ph-caret-down text-gray-400 transition-transform duration-200 shrink-0" :class="openYear ? 'rotate-180' : ''"></i>
+                                                                </button>
+                                                                
+                                                                <div x-show="openYear" x-cloak
+                                                                    x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                                                    x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                                                    class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-[70] max-h-48 overflow-y-auto overscroll-none minimal-scrollbar">
+                                                                    <template x-for="y in ['Semua Tahun', new Date().getFullYear(), new Date().getFullYear()-1, new Date().getFullYear()-2]">
+                                                                        <div @click="filterYear = y; openYear = false; generateFilterWeeks(); filterPeriod = ''; filterPeriodLabel = 'Semua Periode'; applyPeriodFilter()" 
+                                                                            class="px-3 py-2 text-xs cursor-pointer transition-colors flex justify-between items-center group"
+                                                                            :class="filterYear === y ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'">
+                                                                            <span x-text="y"></span>
+                                                                            <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="filterYear === y"></i>
+                                                                        </div>
+                                                                    </template>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Period Selection -->
+                                                        <div>
+                                                            <div class="flex justify-between items-center mb-1.5">
+                                                                <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Periode Mingguan</label>
+                                                                <button x-show="filterPeriod !== ''" @click="filterPeriod = ''; filterPeriodLabel = 'Semua Periode'; applyPeriodFilter()" class="text-[10px] text-red-500 hover:text-red-600 font-semibold cursor-pointer transition-colors">Reset</button>
+                                                            </div>
+                                                             <div x-data="{ 
+                                                                 openPeriod: false,
+                                                                 scrollToSelected() {
+                                                                     $nextTick(() => {
+                                                                         const el = $refs.periodDropdown?.querySelector('[data-selected=true]');
+                                                                         if (el) el.scrollIntoView({ block: 'center' });
+                                                                     });
+                                                                 }
+                                                             }" class="relative w-full">
+                                                                 <button @click="openPeriod = !openPeriod; if(openPeriod) scrollToSelected()" @click.outside="openPeriod = false" 
+                                                                    class="w-full bg-white border text-gray-700 text-xs rounded-xl flex justify-between items-center p-2.5 outline-none transition-colors shadow-xs"
+                                                                    :class="openPeriod ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
+                                                                    <span x-text="filterPeriodLabel" class="font-medium text-left truncate pr-2"></span>
+                                                                    <i class="ph-bold ph-caret-down text-gray-400 transition-transform duration-200 shrink-0" :class="openPeriod ? 'rotate-180' : ''"></i>
+                                                                </button>
+                                                                
+                                                                <div x-show="openPeriod" x-cloak x-ref="periodDropdown"
+                                                                    x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                                                    x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                                                    class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-[70] max-h-48 overflow-y-auto overscroll-none minimal-scrollbar">
+                                                                    
+                                                                    <template x-for="w in filterWeeksList">
+                                                                        <div :data-selected="filterPeriod === w.val" @click="if(!w.disabled) { filterPeriod = w.val; filterPeriodLabel = w.label; openPeriod = false; applyPeriodFilter(); }" 
+                                                                            class="px-3 py-2 text-xs transition-colors flex justify-between items-center group"
+                                                                            :class="w.disabled ? 'cursor-not-allowed opacity-60 bg-gray-50 text-gray-400' : (filterPeriod === w.val ? 'bg-gray-50 text-emerald-600 font-semibold cursor-pointer' : 'text-gray-600 hover:bg-gray-50 cursor-pointer')">
+                                                                            <span x-text="w.label" class="truncate"></span>
+                                                                            <i class="ph-fill ph-circle text-[8px] text-emerald-500 shrink-0" x-show="!w.disabled && filterPeriod === w.val"></i>
+                                                                        </div>
+                                                                    </template>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Date Range (Original Calendar) -->
+                                                    <div x-show="timeGroupBy === 'harian'">
+                                                        <div class="flex justify-between items-center mb-1.5">
+                                                            <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Periode Tanggal</label>
+                                                            <button x-show="startDate || endDate" @click="startDate = ''; endDate = ''" class="text-[10px] text-red-500 hover:text-red-600 font-semibold cursor-pointer transition-colors">Reset</button>
+                                                        </div>
+                                                        
+                                                        <div class="w-full">
+                                                            <!-- Trigger -->
+                                                            <div class="flex flex-col sm:flex-row gap-2 w-full cursor-pointer" @click="calOpen = !calOpen">
+                                                                <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs text-gray-700 transition-colors shadow-xs flex-1" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : 'hover:border-emerald-400'">
+                                                                    <span class="text-gray-400 font-bold text-[10px] w-8">DARI</span>
+                                                                    <span class="font-medium text-xs" :class="startDate ? 'text-gray-800' : 'text-gray-400'" x-text="startDate ? formatDisplayDate(startDate) : 'Pilih Tanggal'"></span>
+                                                                </div>
+                                                                <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs text-gray-700 transition-colors shadow-xs flex-1" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : 'hover:border-emerald-400'">
+                                                                    <span class="text-gray-400 font-bold text-[10px] w-8">KE</span>
+                                                                    <span class="font-medium text-xs" :class="endDate ? 'text-gray-800' : 'text-gray-400'" x-text="endDate ? formatDisplayDate(endDate) : 'Pilih Tanggal'"></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Quick Presets -->
+                                                    <div class="pt-2 flex flex-col gap-2">
+                                                        <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Pilihan Cepat</label>
+                                                        <div class="flex flex-row gap-2" x-show="timeGroupBy === 'harian'">
+                                                            <button @click="setMingguIni()" 
+                                                                class="flex-1 py-2.5 px-2 text-xs font-semibold text-sidebar bg-lime hover:bg-lime/90 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-xs active:scale-95" style="background-color: #c5f037; color: #1f2937;" title="Tampilkan Minggu Ini">
+                                                                Minggu Ini
+                                                            </button>
+                                                            <button @click="setHariIni()" 
+                                                                class="flex-1 py-2.5 px-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-xs active:scale-95" title="Tampilkan Hari Ini">
+                                                                Hari Ini
+                                                            </button>
+                                                        </div>
+                                                        <div x-show="timeGroupBy === 'mingguan'">
+                                                            <button @click="setMingguIni()" 
+                                                                class="w-full py-2.5 px-2 text-xs font-semibold text-sidebar bg-lime hover:bg-lime/90 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-xs active:scale-95" style="background-color: #c5f037; color: #1f2937;" title="Tampilkan Minggu Ini">
+                                                                Minggu Ini
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Calendar View (when calOpen is active) -->
+                                                <div x-show="calOpen" x-cloak
+                                                     x-transition:enter="transition ease-out duration-200" 
+                                                     x-transition:enter-start="opacity-0 translate-y-2" 
+                                                     x-transition:enter-end="opacity-100 translate-y-0"
+                                                     class="w-full bg-white rounded-2xl border border-gray-100 p-4 shadow-xs">
+                                                    
+                                                    <!-- Header -->
+                                                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+                                                        <h3 class="font-bold text-sm text-gray-800 cursor-pointer hover:text-emerald-600 transition flex items-center gap-1.5" 
+                                                            @click="calendarView = calendarView === 'date' ? 'month' : (calendarView === 'month' ? 'year' : 'date')">
+                                                            <span x-text="calendarView === 'date' ? calendarMonthName : (calendarView === 'month' ? currentYear : (currentYear - 4) + ' - ' + (currentYear + 7))"></span>
+                                                            <i class="ph-bold ph-caret-down text-xs text-gray-400"></i>
+                                                        </h3>
+                                                        <div class="flex gap-1.5">
+                                                            <button @click.prevent="navigateCalendar(-1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-600 transition active:scale-95"><i class="ph-bold ph-caret-left text-xs"></i></button>
+                                                            <button @click.prevent="navigateCalendar(1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-600 transition active:scale-95"><i class="ph-bold ph-caret-right text-xs"></i></button>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- View: Date -->
+                                                    <div x-show="calendarView === 'date'">
+                                                        <!-- Days -->
+                                                        <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                                                            <div class="text-[11px] font-bold text-gray-400">M</div>
+                                                            <div class="text-[11px] font-bold text-gray-400">S</div>
+                                                            <div class="text-[11px] font-bold text-gray-400">S</div>
+                                                            <div class="text-[11px] font-bold text-gray-400">R</div>
+                                                            <div class="text-[11px] font-bold text-gray-400">K</div>
+                                                            <div class="text-[11px] font-bold text-gray-400">J</div>
+                                                            <div class="text-[11px] font-bold text-gray-400">S</div>
+                                                        </div>
+                                                        
+                                                        <!-- Dates -->
+                                                        <div class="grid grid-cols-7 gap-y-1.5 text-center">
+                                                            <template x-for="blankday in blankDays">
+                                                                <div class="text-xs py-1 text-gray-300"></div>
+                                                            </template>
+                                                            
+                                                            <template x-for="day in noOfDays">
+                                                                <div class="relative py-0.5"
+                                                                     :class="{
+                                                                        'bg-lime/20': isDateInRange(day),
+                                                                        'bg-lime/20 rounded-l-full': getDateString(day) === startDate && endDate && startDate !== endDate,
+                                                                        'bg-lime/20 rounded-r-full': getDateString(day) === endDate && startDate !== endDate
+                                                                     }">
+                                                                    <div @click="selectDate(day)"
+                                                                        class="text-xs py-1.5 cursor-pointer flex items-center justify-center mx-auto transition-all"
+                                                                        :class="{
+                                                                            'font-bold text-gray-900 bg-lime rounded-full shadow-xs relative z-10 w-8 h-8': isDateSelected(day),
+                                                                            'text-gray-700 font-medium': isDateInRange(day) && !isDateSelected(day),
+                                                                            'text-gray-700 hover:bg-gray-100 rounded-full w-8 h-8': !isDateSelected(day) && !isDateInRange(day)
+                                                                        }"
+                                                                        :style="isDateSelected(day) ? 'background-color: #c5f037;' : ''"
+                                                                        x-text="day"></div>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- View: Month -->
+                                                    <div x-show="calendarView === 'month'" x-cloak class="grid grid-cols-3 gap-2 mt-2">
+                                                        <template x-for="(m, i) in monthNames">
+                                                            <div class="text-xs py-2.5 text-center rounded-xl cursor-pointer transition-colors font-medium"
+                                                                 :class="currentMonth === i ? 'bg-lime text-gray-900 shadow-xs font-bold' : 'text-gray-700 hover:bg-gray-50'"
+                                                                 :style="currentMonth === i ? 'background-color: #c5f037;' : ''"
+                                                                 @click="currentMonth = i; calendarView = 'date'"
+                                                                 x-text="m"></div>
+                                                        </template>
+                                                    </div>
+                                                    
+                                                    <!-- View: Year -->
+                                                    <div x-show="calendarView === 'year'" x-cloak class="grid grid-cols-3 gap-2 mt-2">
+                                                        <template x-for="y in Array.from({length: 12}, (_, i) => currentYear - 4 + i)">
+                                                            <div class="text-xs py-2.5 text-center rounded-xl cursor-pointer transition-colors font-medium"
+                                                                 :class="currentYear === y ? 'bg-lime text-gray-900 shadow-xs font-bold' : 'text-gray-700 hover:bg-gray-50'"
+                                                                 :style="currentYear === y ? 'background-color: #c5f037;' : ''"
+                                                                 @click="currentYear = y; calendarView = 'month'"
+                                                                 x-text="y"></div>
+                                                        </template>
+                                                    </div>
+                                                    
+                                                    <!-- Kembali ke Filter Button -->
+                                                    <button @click.prevent="calOpen = false" class="w-full py-2.5 mt-4 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors active:scale-95">
+                                                        <i class="ph-bold ph-arrow-left"></i> Selesai Memilih Tanggal
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Footer Action Buttons -->
+                                            <div class="p-4 border-t border-gray-100 bg-gray-50/70 flex items-center gap-3 shrink-0">
+                                                <button @click="searchQuery = ''; selectedBranch = 'Semua Cabang'; filterYear = 'Semua Tahun'; generateFilterWeeks(); filterPeriod = ''; filterPeriodLabel = 'Semua Periode'; applyPeriodFilter(); startDate = ''; endDate = ''" 
+                                                        class="flex-1 h-11 rounded-xl border border-gray-200 bg-white text-xs sm:text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors active:scale-95 shadow-2xs">
+                                                    Reset Filter
+                                                </button>
+                                                <button @click="filterOpen = false; setTimeout(() => calOpen = false, 150)" 
+                                                        class="flex-1 h-11 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs sm:text-sm font-semibold transition-colors shadow-sm active:scale-95">
+                                                    Terapkan Filter
+                                                </button>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                </div>
+                            </div>
+                        </div>
 
             <!-- Laporan List (3-Column with HPP & Keuntungan) -->
             <div class="flex-1 overflow-auto overscroll-none bg-white">
@@ -1406,6 +1579,19 @@
 
         function erpApp() {
             return {
+                isScrollActive: false,
+                scrollDebounceTimer: null,
+                handleScrollActivity() {
+                    if (this.mobileSearchOpen) {
+                        this.mobileSearchOpen = false;
+                        document.getElementById('mobileSearchInputBottom')?.blur();
+                    }
+                    this.isScrollActive = true;
+                    if (this.scrollDebounceTimer) clearTimeout(this.scrollDebounceTimer);
+                    this.scrollDebounceTimer = setTimeout(() => {
+                        this.isScrollActive = false;
+                    }, 600);
+                },
                 sidebarOpen: false,
                 sidebarCollapsed: false,
                 theme: 'dark',
