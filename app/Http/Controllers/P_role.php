@@ -26,13 +26,19 @@ class P_role extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         if ($denied = $this->requireAccess('role.index')) {
             return $denied;
         }
 
-        $data["data"] = Role::get();
+        $search = trim((string) $request->query('q', ''));
+        $data['data'] = Role::withCount('roleMenu')
+            ->when($search !== '', fn ($query) => $query->where('nm_role', 'like', '%' . $search . '%'))
+            ->orderBy('nm_role')
+            ->paginate(30)
+            ->withQueryString();
+        $data['search'] = $search;
 
         return view("admin.role.index", $data);
     }
@@ -48,7 +54,7 @@ class P_role extends Controller
             return $denied;
         }
 
-        return view("role");
+        return redirect()->route('roles.index', ['create' => 1]);
     }
 
     /**
@@ -63,26 +69,27 @@ class P_role extends Controller
             return $denied;
         }
 
-        try {
+        if (strtolower($request->nm_role) === 'administrator') {
+            return redirect()->back()->with('error', 'Akses Terbatas');
+        }
 
+        try {
             DB::beginTransaction();
 
             $role = new Role();
             $role->nm_role = $request->nm_role;
+            $role->description = $request->description;
             $role->id_creator = Auth::user()->id_user;
-
-            if (strtolower($role->nm_role) == "administrator") {
-                return redirect()->back()->with('error', 'Akses Terbatas');
-            }
 
             $role->save();
 
             DB::commit();
         } catch (Exception $e) {
+            DB::rollback();
             return redirect()->back()->with('error', 'Data role Gagal Disimpan' . $e->getMessage());
         }
 
-        return redirect("role")->with('success', 'Data role Disimpan');
+        return redirect()->route('roles.index')->with('success', 'Data role Disimpan');
     }
 
     /**

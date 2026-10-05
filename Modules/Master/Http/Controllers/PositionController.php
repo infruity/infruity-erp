@@ -35,6 +35,7 @@ class PositionController extends Controller
         $departments = Department::all();
         $data = [
             'departments' => $departments,
+            'records' => Position::query()->with('department:id,name')->select('id', 'name', 'code', 'department_id', 'description')->orderByDesc('id')->get(),
         ];
         return view('master::position.index', $data);
     }
@@ -49,7 +50,7 @@ class PositionController extends Controller
             return $denied;
         }
 
-        return view('master::create');
+        return redirect()->route('position.index', ['create' => 1]);
     }
 
     /**
@@ -191,7 +192,7 @@ class PositionController extends Controller
             $position->name = $validated['name'];
             $position->department_id = $validated['department_id'];
             $position->description = $validated['description'] ?? null;
-            if ($position->depertent_id != $validated['department_id']) {
+            if ($position->getOriginal('department_id') != $validated['department_id']) {
                 $position->code = $newCode;
             }
             $position->save();

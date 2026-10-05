@@ -24,7 +24,7 @@ class PaymentMethodController extends Controller
             return $denied;
         }
 
-        return view('master::payment-method.index');
+        return view('master::payment-method.index', ['records' => PaymentMethod::query()->select('id', 'name', 'code')->orderByDesc('id')->get()]);
     }
 
     /**
@@ -37,7 +37,7 @@ class PaymentMethodController extends Controller
             return $denied;
         }
 
-        return view('master::create');
+        return redirect()->route('payment-method.index', ['create' => 1]);
     }
 
     /**

@@ -28,13 +28,42 @@ class ProductReceiptController extends Controller
      * Display a listing of the resource.
      * @return Renderable
      */
-    public function index()
+    public function index(Request $request)
     {
         if ($denied = $this->requireAccess('product-receipt.index')) {
             return $denied;
         }
 
-        return view('transaction::receipt.index');
+        $search = trim((string) $request->query('q', ''));
+        $type = in_array($request->query('type'), ['product', 'kemasan'], true)
+            ? $request->query('type')
+            : 'all';
+        $receipts = Receipt::with([
+            'products.category',
+            'products.unit',
+            'recipeIngredients.ingredients.unit',
+        ])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($matches) use ($search) {
+                    $matches->where('code', 'like', '%' . $search . '%')
+                        ->orWhereHas('products', fn ($product) => $product->where('name', 'like', '%' . $search . '%'));
+                });
+            })
+            ->when($type !== 'all', fn ($query) => $query->whereHas('products', fn ($product) => $product->where('tipe', $type)))
+            ->latest('id')
+            ->paginate(50)
+            ->withQueryString();
+
+        if ($request->boolean('partial')) {
+            return response()->json([
+                'html' => view('transaction::receipt.partials.items', compact('receipts'))->render(),
+                'count' => $receipts->count(),
+                'hasMore' => $receipts->hasMorePages(),
+                'nextPageUrl' => $receipts->nextPageUrl(),
+            ]);
+        }
+
+        return view('transaction::receipt.index', compact('receipts', 'search', 'type'));
     }
 
     /**

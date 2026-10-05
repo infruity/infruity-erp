@@ -57,7 +57,7 @@
                     <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
                     <input type="search" data-product-type-search placeholder="Cari tipe produk atau kategori..." class="w-full bg-transparent py-3 pl-9 pr-4 text-sm outline-none" aria-label="Cari tipe produk atau kategori">
                 </div>
-                <div id="product-type-options" class="max-h-40 overflow-y-auto overscroll-contain">
+                <div id="product-type-options" class="max-h-44 overflow-y-auto overscroll-contain scrollbar-hide">
                     @foreach ($productTypeOptions as $option)
                         <button type="button" data-product-type-option data-category-value="{{ $option->category_id }}" data-category-label="{{ $option->name }}" data-product-tipe="{{ $option->tipe }}" data-product-status="{{ $option->status }}" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left last:border-0 hover:bg-gray-50">
                             <span class="product-picker-radio flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300"><span class="h-2 w-2 scale-0 rounded-full bg-emerald-500"></span></span>
@@ -83,7 +83,7 @@
                     <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
                     <input type="search" data-picker-search="product-unit-options" placeholder="Cari satuan..." class="w-full bg-transparent py-3 pl-9 pr-4 text-sm outline-none" aria-label="Cari satuan">
                 </div>
-                <div id="product-unit-options" class="max-h-48 overflow-y-auto overscroll-contain">
+                <div id="product-unit-options" class="max-h-48 overflow-y-auto overscroll-contain scrollbar-hide">
                     @foreach ($product_units as $item)
                         <button type="button" data-picker-option data-picker-select="product-unit" data-picker-value="{{ $item->id }}" data-picker-label="{{ $item->name }} {{ $item->abbreviation }}" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left last:border-0 hover:bg-gray-50">
                             <span class="product-picker-radio flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300"><span class="h-2 w-2 scale-0 rounded-full bg-emerald-500"></span></span>

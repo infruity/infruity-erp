@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keuntungan Setelah Penyesuaian - Laporan | ERP Portal</title>
+    <meta name="description" content="Modul Keuntungan Setelah Penyesuaian - Sistem ERP Infruity.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../../assets/logo/Infruity Logo - 5.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,700&display=swap"
+        rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F5C45',
+                        'primary-light': '#1a7d5e',
+                        'primary-dark': '#0a3d2e',
+                        accent: '#F2B400',
+                        'accent-light': '#f5c733',
+                        cream: '#F7F7F7',
+                        'cream-dark': '#EBEBEB',
+                        strawberry: '#D6455D',
+                        'strawberry-light': '#e06a7e',
+                        lime: '#C6ED2C',
+                        sidebar: '#1E293B',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Poppins"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'input': '0 2px 10px rgba(0,0,0,0.02)',
+                        'card': '0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.04)',
+                        'sidebar': '4px 0 24px rgba(0,0,0,0.06)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Custom Thin Scrollbar for Sidebar */
+        .sidebar-scroll::-webkit-scrollbar { width: 2px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+        .sidebar-scroll { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }
+
+        /* Minimalist Scrollbar (Menggunakan standar CSS baru, OS Native) */
+        .minimal-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #d1d5db transparent;
+        }
+
+        /* General Scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #c4c4c4 transparent;
+        }
+
+        /* Dark Sidebar */
+        .dark-sidebar { background-color: #0b595b; }
+        .dark-sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); }
+        .dark-sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+        .glass-header { background: rgba(247, 247, 247, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+
+        /* Sidebar Navigation */
+        .sidebar-link {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        a.sidebar-link[href="#"] {
+            cursor: default !important;
+        }
+        
+        .sidebar-link.active {
+            background-color: #d1f36e;
+            color: #102f31 !important;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(209, 243, 110, 0.2);
+        }.sidebar-link.active i { color: #102f31 !important; }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+        /* Notification Dropdown */
+        .notif-item { transition: background 0.15s ease; }
+        .notif-item:hover { background: rgba(15, 92, 69, 0.04); }
+        .badge { font-size: 0.65rem; padding: 2px 8px; border-radius: 100px; font-weight: 600; letter-spacing: 0.02em; }
+
+        .submenu-link { transition: all 0.2s ease; }
+        .submenu-link i.sidebar-icon { display: none !important; }
+
+        /* Bullet (Inactive) */
+        .submenu-link::before {
+            content: ''; position: absolute; left: 28px; top: 50%; transform: translateY(-50%);
+            width: 6px; height: 6px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.25);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .submenu-link:hover::before { background-color: rgba(255, 255, 255, 0.6); transform: translateY(-50%) scale(1.2); }
+        .submenu-link:hover { color: rgba(255, 255, 255, 0.9); }
+
+        /* Bullet (Active) */
+        .submenu-link.active { color: #ffffff; font-weight: 600; }
+        .submenu-link.active::before { background-color: #F2B400; transform: translateY(-50%) scale(1.2); }
+
+        .submenu-link.level-3::before { left: 44px; }
+        .chevron-rotate { transition: transform 0.25s ease; }
+        .chevron-rotate.open { transform: rotate(180deg); }
+
+        /* Smooth Collapse Transitions */
+        .sidebar-link, .submenu-link { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; overflow: hidden; white-space: nowrap; }
+        .sidebar-link span, .submenu-link span, .chevron-rotate { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 200px; opacity: 1; }
+        .toggle-container { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 100px; opacity: 1; overflow: hidden; }
+
+        /* Collapsed State */
+        .sidebar-collapsed span, .sidebar-collapsed .chevron-rotate { max-width: 0 !important; opacity: 0 !important; margin-left: 0 !important; }
+        .sidebar-collapsed .logo-full { display: none !important; }
+        .sidebar-collapsed .logo-mini { display: block !important; }
+        .sidebar-collapsed .toggle-container { max-width: 0 !important; opacity: 0 !important; padding: 0 !important; margin: 0 !important; pointer-events: none; }
+        .sidebar-collapsed .sidebar-link { justify-content: flex-start !important; padding-left: 1.5rem !important; padding-right: 0 !important; gap: 0 !important;  }
+        
+        
+        .resize-animation-stopper * { animation: none !important; transition: none !important; }
+        .sidebar-collapsed .toggle-container { max-width: 0 !important; opacity: 0 !important; padding: 0 !important; margin: 0 !important; pointer-events: none; }
+        .sidebar-collapsed .sidebar-link { justify-content: flex-start !important; padding-left: 1.5rem !important; padding-right: 0 !important; gap: 0 !important; }
+        .resize-animation-stopper * { animation: none !important; transition: none !important; }
+        
+        /* Light Sidebar Overrides */
+        .light-sidebar { background-color: #ffffff; border-right: 1px solid #f3f4f6; }
+        .light-sidebar .text-white, 
+        .light-sidebar .text-white\/50, 
+        .light-sidebar .text-white\/45,
+        .light-sidebar .text-white\/40,
+        .light-sidebar .text-white\/35,
+        .light-sidebar .text-white\/30 { color: #4b5563 !important; }
+        .light-sidebar .font-medium { color: #374151 !important; }
+        
+        .light-sidebar .sidebar-link.active { background-color: #d1f36e !important; color: #102f31 !important; }
+        .light-sidebar .submenu-link:hover { color: #111827 !important; }
+        .light-sidebar .submenu-link::before { background-color: #d1d5db; }
+        .light-sidebar .submenu-link:hover::before { background-color: #9ca3af; }
+        .light-sidebar .submenu-link.active { color: #0F5C45 !important; font-weight: 600; }
+        .light-sidebar .submenu-link.active::before { background-color: #0F5C45; }
+        .light-sidebar .border-white\/10 { border-color: #f3f4f6 !important; }
+        .light-sidebar .border-white\/20 { border-color: #e5e7eb !important; }
+        .light-sidebar .bg-white\/10 { background-color: #f9fafb !important; }
+
+    
+        /* Smooth CSS Grid Collapse for Submenus */
+        .submenu-wrapper {
+            display: grid;
+            grid-template-rows: 1fr;
+            transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+        }
+        .submenu-wrapper > div {
+            overflow: hidden;
+        }
+        .sidebar-collapsed .submenu-wrapper {
+            grid-template-rows: 0fr !important;
+            opacity: 0 !important;
+            display: none !important;
+        }
+    
+        /* === iframe Mode: Hide sidebar when loaded inside shell === */
+        body.in-iframe { background: transparent !important; }
+        body.in-iframe aside { display: none !important; }
+        body.in-iframe > div > div[x-show="sidebarOpen"] { display: none !important; }
+        body.in-iframe [data-hamburger] { display: none !important; }
+        header { display: none !important; }
+    
+        /* ======================== */
+        /* iOS Safari Anti-Zoom Fix */
+        /* ======================== */
+        input, input[type="text"], input[type="email"], input[type="password"],
+        input[type="number"], input[type="search"], input[type="tel"],
+        input[type="url"], input[type="date"], input[type="datetime-local"],
+        input[type="time"], select, textarea {
+            font-size: 16px !important;
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+
+<body class="font-sans bg-[#e5e9f3] text-gray-800 antialiased h-screen overflow-hidden overscroll-none">
+    <script>if(window.self!==window.top){document.body.classList.add("in-iframe");}</script>
+
+    <div x-data="erpApp()" x-init="setHariIni()" @resize.window.debounce.100ms="handleResize()" 
+         @message.window="if($event.data && $event.data.type === 'closeDrawer') closeHistoryDrawer();"
+         class="flex h-screen w-full">
+
+        <!-- MOBILE SIDEBAR OVERLAY -->
+        <div x-show="sidebarOpen" x-transition:enter="transition-opacity duration-300"
+            x-transition:leave="transition-opacity duration-200" @click="sidebarOpen = false"
+            class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden">
+        </div>
+
+        <!-- ================================ -->
+        <!-- SIDEBAR                          -->
+        <!-- ================================ -->
+                                <aside
+            :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', sidebarCollapsed ? 'sidebar-collapsed w-24' : 'w-64', theme === 'light' ? 'light-sidebar' : 'dark-sidebar']"
+            class="fixed lg:static inset-y-0 left-0 z-50 shadow-none flex flex-col transition-all duration-300 lg:translate-x-0 lg:rounded-3xl lg:my-5 lg:ml-5 lg:h-[calc(100vh-2.5rem)] overflow-hidden shrink-0">
+
+            <!-- Logo & Toggle -->
+            <div class="flex items-center pt-5 pb-14"
+                :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-6'">
+                <a href="#" @click.prevent="if(sidebarCollapsed) { sidebarCollapsed = false; }"
+                    class="flex items-center logo-link transition-transform duration-200 h-9"
+                    :title="sidebarCollapsed ? 'Perbesar Sidebar' : 'Infruity ERP'"
+                    :class="sidebarCollapsed ? 'hover:scale-110' : ''">
+                    <img :src="theme === 'light' ? '../../assets/logo/Infruity Logo - 6.png' : '../../assets/logo/Logo Putih 1.png'" alt="Infruity Logo" class="h-9 logo-full ">
+                    <img :src="theme === 'light' ? '../../assets/logo/Infruity Logo - 7.png' : '../../assets/logo/Logo IN Putih.png'" alt="Infruity Icon" class="h-8 logo-mini hidden ">
+                </a>
+                <div class="flex items-center gap-2 toggle-container">
+                    <button @click="sidebarCollapsed = !sidebarCollapsed"
+                        class="hidden lg:block text-white transition hover:opacity-80 shrink-0" title="Toggle Sidebar">
+                        <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-[1.65rem] transition-transform duration-300"
+                            :class="sidebarCollapsed ? 'rotate-180' : ''">
+                            <rect x="3" y="3" width="18" height="18" rx="4" ry="4"></rect>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                        </svg>
+                    </button>
+                    <button @click="sidebarOpen = false"
+                        class="lg:hidden p-2 rounded-xl hover:bg-white/10 text-white/50 hover:text-white/80 transition">
+                        <i class="ph ph-x text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav id="sidebar-nav" class="flex-1 overflow-y-auto overscroll-none sidebar-scroll px-3 pb-4 space-y-3">
+                <!-- === Dashboard === -->
+                <div>
+                    <a href="../../001. Dashboard/index.html"
+                        
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'dashboard' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-squares-four sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'dashboard' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Dashboard</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- === Master === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('master')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'master' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-database sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'master' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Master</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../002. Master/001. Produk/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-shopping-cart sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Produk</span>
+                            </a>
+                            <a href="../../002. Master/012. Kategori/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-tag sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Kategori</span>
+                            </a>
+                            <a href="../../002. Master/003. Satuan Produk/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-list-dashes sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Satuan Produk</span>
+                            </a>
+                            <a href="../../002. Master/004. Pemasok/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-storefront sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pemasok</span>
+                            </a>
+                            <a href="../../002. Master/005. Pelanggan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-users sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pelanggan</span>
+                            </a>
+                            <a href="../../002. Master/006. Cabang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-map-pin sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Cabang</span>
+                            </a>
+                            <a href="../../002. Master/007. Akun Pengguna/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Akun Pengguna</span>
+                            </a>
+                            <a href="../../002. Master/008. Jabatan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-identification-badge sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Jabatan</span>
+                            </a>
+                            <a href="../../002. Master/009. Karyawan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-user sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Karyawan</span>
+                            </a>
+                            <a href="../../002. Master/010. Kurir/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-user-focus sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Kurir</span>
+                            </a>
+                            <a href="../../002. Master/011. Metode Pembayaran/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-credit-card sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Metode Pembayaran</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Pembelian === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('pembelian')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'pembelian' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-bag sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'pembelian' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Pembelian</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../003. Pembelian/001. Pengadaan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pengadaan</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Inventaris === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('inventaris')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'inventaris' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-package sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'inventaris' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Inventaris</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../004. Inventaris/001. Stok Barang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Stok Barang</span>
+                            </a>
+                            <a href="../../004. Inventaris/002. Sortir Barang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Sortir Barang</span>
+                            </a>
+                            <!-- Sub-sub modul: Pindah Stok -->
+                            <div x-data="{ openTransfer: false }"
+                                x-effect="if(activeMenu !== 'inventaris') openTransfer = false">
+                                <a href="#" @click.prevent="openTransfer = !openTransfer"
+                                    class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45">
+                                    <span>Pindah Stok</span>
+                                    <i class="ph ph-caret-down ml-auto text-white/30 chevron-rotate"
+                                        :class="openTransfer ? 'open' : ''" style="display: block !important;"></i>
+                                </a>
+                                <div x-show="openTransfer" x-collapse.duration.300ms>
+                                    <div class="py-1 space-y-0.5">
+                                        <a href="../../004. Inventaris/003. Pindah Stok - Mengirim/index.html"
+                                            class="submenu-link level-3 relative flex items-center gap-3 pl-16 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                            <span>Mengirim</span>
+                                        </a>
+                                        <a href="../../004. Inventaris/004. Pindah Stok - Menerima/index.html"
+                                            class="submenu-link level-3 relative flex items-center gap-3 pl-16 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                            <span>Menerima</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="../../004. Inventaris/005. Stok Opname/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Stok Opname</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Produksi === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('produksi')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'produksi' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-factory sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'produksi' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Produksi</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../005. Produksi/001. Produksi Barang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Produksi Barang</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Penjualan === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('penjualan')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'penjualan' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-shopping-cart sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'penjualan' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Penjualan</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../006. Penjualan/001. Kasir - POS/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Kasir / POS</span>
+                            </a>
+                            <a href="../../006. Penjualan/002. Pesanan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pesanan</span>
+                            </a>
+                            <a href="../../006. Penjualan/003. Pengiriman/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pengiriman</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Keuangan === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('keuangan')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'keuangan' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-currency-circle-dollar sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'keuangan' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Keuangan</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../007. Keuangan/001. Pemasukan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pemasukan</span>
+                            </a>
+                            <a href="../../007. Keuangan/002. Pengeluaran/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pengeluaran</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Laporan === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('laporan')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'laporan' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-chart-line-up sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'laporan' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Laporan</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+
+                            <a href="../../008. Laporan/003. Total Aset/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-briefcase sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Total Aset</span>
+                            </a>                            <a href="../../008. Laporan/001. Pendapatan Penjualan/index.html"
+                                class="submenu-link active relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-calendar-blank sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pendapatan Penjualan</span>
+                            </a>
+                            <a href="../../008. Laporan/005. Keuntungan Penjualan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-money sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Keuntungan Penjualan</span>
+                            </a>
+                            <a href="../../008. Laporan/006. Keuntungan Setelah Penyesuaian/index.html"
+                                class="submenu-link active relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-chart-line-up sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span class="whitespace-normal leading-tight">Keuntungan Setelah Penyesuaian</span>
+                            </a>
+                            <a href="../../008. Laporan/002. Ongkos Kirim/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-truck sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Ongkos Kirim</span>
+                            </a>
+                            <a href="../../008. Laporan/004. Kerugian Barang Buang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-trash sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Kerugian Barang Buang</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Pengaturan === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('pengaturan')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'pengaturan' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-gear sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'pengaturan' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Pengaturan</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../009. Pengaturan/001. Nota dan Cetak/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Nota & Cetak</span>
+                            </a>
+                            <a href="../../009. Pengaturan/003. Target/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Target</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <script>
+                (function(){
+                    const nav = document.getElementById('sidebar-nav');
+                    if (!nav) return;
+                    
+                    const savedScroll = sessionStorage.getItem('sidebarScroll');
+                    if (savedScroll !== null) {
+                        nav.scrollTop = parseInt(savedScroll, 10);
+                    } else {
+                        const active = nav.querySelector('.active');
+                        if (active) {
+                            nav.scrollTop = active.offsetTop - (nav.clientHeight / 2);
+                        }
+                    }
+
+                    nav.addEventListener('scroll', () => {
+                        sessionStorage.setItem('sidebarScroll', nav.scrollTop);
+                    }, { passive: true });
+                })();
+            </script>
+
+            <!-- User Profile Section -->
+            <div class="px-4 pb-6 pt-4 border-t border-white/10 shrink-0 transition-all duration-300 flex items-center relative"
+                 :class="sidebarCollapsed ? 'justify-center' : 'justify-between'" x-data="{ settingsOpen: false }">
+                 
+                <!-- Settings Dropdown Menu (Escaped from overflow-hidden) -->
+                <div x-show="settingsOpen" @click.outside="settingsOpen = false"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                    class="absolute right-4 bottom-[calc(100%-1rem)] mb-2 w-52 bg-white rounded-2xl shadow-xl shadow-black/5 border border-gray-100 overflow-hidden z-50 py-2">
+                    <div class="px-4 py-3 border-b border-gray-50">
+                        <p class="text-sm font-semibold text-gray-800">Pengaturan</p>
+                        <p class="text-[0.65rem] text-gray-400">Atur preferensi akun</p>
+                    </div>
+                    <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
+                        <i class="ph ph-user-circle text-lg"></i> Profil Saya
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
+                        <i class="ph ph-lock text-lg"></i> Ubah Password
+                    </a>
+                    <a href="#" @click.prevent="theme = theme === 'light' ? 'dark' : 'light'; settingsOpen = false" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
+                        <i class="ph text-lg" :class="theme === 'light' ? 'ph-moon' : 'ph-sun'"></i> 
+                        <span x-text="theme === 'light' ? 'Mode Gelap' : 'Mode Terang'"></span>
+                    </a>
+                    <div class="border-t border-gray-50 mt-1 pt-1">
+                        <a href="../../../002. Login ERP/index.html"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-strawberry hover:bg-strawberry/5 transition">
+                            <i class="ph ph-sign-out text-lg"></i> Keluar
+                        </a>
+                    </div>
+                </div>
+
+                <div class="flex items-center w-full transition-all duration-300" :class="sidebarCollapsed ? 'justify-center gap-0' : 'gap-3'">
+                    <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 border border-white/20 overflow-hidden relative group cursor-pointer">
+                        <i class="ph ph-user text-xl text-white"></i>
+                    </div>
+                    <div class="flex flex-col flex-1 toggle-container overflow-hidden">
+                        <span class="text-sm font-semibold text-white whitespace-nowrap">Dimas Pratama</span>
+                        <span class="text-xs text-white/50 whitespace-nowrap">Admin</span>
+                    </div>
+                    <!-- Settings Button -->
+                    <div class="toggle-container shrink-0 ml-auto flex items-center">
+                        <button @click="settingsOpen = !settingsOpen" class="text-white/40 hover:text-white transition flex items-center justify-center" title="Pengaturan">
+                            <i class="ph ph-gear text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+
+
+        <!-- ================================ -->
+        <!-- MAIN CONTENT AREA                -->
+        <!-- ================================ -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+
+            
+
+            <!-- ================================ -->
+            <!-- SCROLLABLE CONTENT AREA          -->
+            <!-- ================================ -->
+            <main class="flex-1 overflow-y-auto overscroll-none px-0 lg:px-8 py-0 lg:py-6 flex flex-col">
+
+                <!-- CONTENT: Target -->
+                <div class="animate-fade-in-up w-full flex-1 flex flex-col min-h-0">
+
+
+        <!-- Main Content Card -->
+
+        <div class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0">
+            <!-- Filter & Search Bar -->
+            <div class="p-4 border-b border-gray-100 flex flex-row gap-3 sm:gap-4 items-center bg-white relative z-10">
+                <div class="flex-1 relative w-full">
+                    <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input x-model="searchQuery" type="text" placeholder="Cari transaksi..." class="w-full bg-gray-50/50 border border-gray-100 rounded-full pl-10 pr-4 h-11 text-[13px] outline-none focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all">
+                </div>
+                
+                <div class="relative shrink-0" x-data="{ calOpen: false }" x-effect="document.body.style.overflow = (filterOpen && window.innerWidth < 768) ? 'hidden' : ''">
+                    <!-- Filter Trigger -->
+                    <button @click="filterOpen = !filterOpen; expanded = true"
+                        @mouseenter="expanded = true" 
+                        @mouseleave="if(!filterOpen) expanded = false"
+                        class="flex items-center bg-white rounded-full border h-11 p-1 shadow-sm transition-colors duration-300 shrink-0"
+                        :class="filterOpen ? 'border-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-300 z-10 shrink-0"
+                            :class="expanded ? 'bg-emerald-50 text-emerald-600' : 'bg-white text-gray-600'">
+                            <div class="relative flex items-center justify-center">
+                                <i class="ph ph-funnel text-[20px]"></i>
+                                <span x-cloak x-show="isFiltered" class="absolute -top-[2px] -right-[2px] w-3 h-3 bg-orange-500 rounded-full border-[2px] border-white"></span>
+                            </div>
+                        </div>
+                        <div class="overflow-hidden transition-all duration-500 ease-out hidden sm:flex items-center"
+                             :class="expanded ? 'max-w-[280px] opacity-100 pr-4' : 'max-w-0 opacity-0 pr-0'">
+                            <span class="text-[13px] font-medium text-gray-700 whitespace-nowrap pl-2" x-text="period"></span>
+                            <i class="ph-bold ph-caret-down text-[10px] ml-2 transition-transform duration-200 text-gray-400" :class="filterOpen ? 'rotate-180' : ''"></i>
+                        </div>
+                    </button>
+                    
+                    <!-- Backdrop for Filter (intercepts clicks to close filter only) -->
+                    <div x-show="filterOpen" x-cloak
+                         @click.stop.prevent="filterOpen = false; expanded = false; setTimeout(() => calOpen = false, 150)"
+                         class="fixed inset-0 z-40 bg-transparent cursor-default pointer-events-auto">
+                    </div>
+                    
+                    <!-- Filter Dropdown Popup -->
+                    <div x-show="filterOpen" @click.outside="filterOpen = false; expanded = false; setTimeout(() => calOpen = false, 150)" x-cloak
+                        x-transition:enter="transition ease-out duration-100"
+                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-75"
+                        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute top-12 right-0 flex flex-col w-[280px] md:w-[260px] bg-white rounded-2xl shadow-xl border border-gray-100 z-50">
+                        
+                        <div x-show="!calOpen" class="flex flex-col gap-4 w-full p-4 md:!flex"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 -translate-x-4"
+                             x-transition:enter-end="opacity-100 translate-x-0"
+                             x-transition:leave="transition ease-in duration-150 absolute top-0 left-0 w-full md:relative md:w-auto md:!transition-none"
+                             x-transition:leave-start="opacity-100 translate-x-0"
+                             x-transition:leave-end="opacity-0 -translate-x-4">
+                        
+                        <!-- Grouping Field -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Grup Berdasarkan</label>
+                            <div class="flex flex-row gap-2">
+                                <div @click="groupBy = 'produk'" class="flex-1 py-2 px-2 text-[11px] font-semibold rounded-lg flex items-center justify-center gap-1.5 shadow-sm cursor-pointer transition-colors"
+                                     :class="groupBy === 'produk' ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : 'text-gray-500 bg-gray-50 border border-gray-200 hover:bg-gray-100'">
+                                    <i class="ph-fill ph-package text-[14px]" :class="groupBy === 'produk' ? 'text-emerald-600' : 'text-gray-400'"></i>
+                                    Produk
+                                </div>
+                                <div @click="groupBy = 'tanggal'" class="flex-1 py-2 px-2 text-[11px] font-semibold rounded-lg flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-colors"
+                                     :class="groupBy === 'tanggal' ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : 'text-gray-500 bg-gray-50 border border-gray-200 hover:bg-gray-100'">
+                                    <i class="ph ph-calendar-blank text-[14px]" :class="groupBy === 'tanggal' ? 'text-emerald-600' : 'text-gray-400'"></i>
+                                    Tanggal
+                                </div>
+                            </div>
+                            
+                            <!-- Date/Product Sub-Grouping Dropdown -->
+                            <div x-cloak class="mt-2" x-data="{ dgOpen: false }">
+                                <div class="relative w-full">
+                                    <button @click="dgOpen = !dgOpen" @click.outside="dgOpen = false"
+                                        class="w-full bg-white border text-gray-700 text-xs rounded-lg flex justify-between items-center p-2 outline-none transition-colors shadow-sm"
+                                        :class="dgOpen ? 'border-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
+                                        <span class="font-medium text-left truncate pr-2" x-text="timeGroupBy === 'harian' ? 'Harian' : 'Mingguan'"></span>
+                                        <i class="ph-bold ph-caret-down text-gray-400 transition-transform duration-200 shrink-0" :class="dgOpen ? 'rotate-180' : ''"></i>
+                                    </button>
+                                    <div x-show="dgOpen" x-cloak
+                                        x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                        x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                        class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-lg shadow-lg py-1 z-[70] max-h-48 overflow-y-auto overscroll-none minimal-scrollbar">
+                                        <div @click="timeGroupBy = 'harian'; dgOpen = false; setHariIni()"
+                                            class="px-3 py-2 text-[11px] cursor-pointer transition-colors flex justify-between items-center"
+                                            :class="timeGroupBy === 'harian' ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'">
+                                            <span>Harian</span>
+                                            <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="timeGroupBy === 'harian'"></i>
+                                        </div>
+                                        <div @click="timeGroupBy = 'mingguan'; dgOpen = false; applyPeriodFilter()"
+                                            class="px-3 py-2 text-[11px] cursor-pointer transition-colors flex justify-between items-center"
+                                            :class="timeGroupBy === 'mingguan' ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'">
+                                            <span>Mingguan</span>
+                                            <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="timeGroupBy === 'mingguan'"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cabang Field -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Cabang</label>
+                                <button x-show="selectedBranch !== 'Semua Cabang'" @click="selectedBranch = 'Semua Cabang'" class="text-[9px] text-red-500 hover:text-red-600 font-semibold cursor-pointer transition-colors">Reset</button>
+                            </div>
+                            <div x-data="{ open: false }" class="relative w-full">
+                                <button @click="open = !open" @click.outside="open = false" 
+                                    class="w-full bg-white border text-gray-700 text-xs rounded-lg flex justify-between items-center p-2 outline-none transition-colors shadow-sm"
+                                    :class="open ? 'border-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
+                                    <span x-text="selectedBranch" class="font-medium text-left truncate pr-2"></span>
+                                    <i class="ph-bold ph-caret-down text-gray-400 transition-transform duration-200 shrink-0" :class="open ? 'rotate-180' : ''"></i>
+                                </button>
+                                
+                                <div x-show="open" x-cloak
+                                    x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                    class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-lg shadow-lg py-1 z-[70] max-h-48 overflow-y-auto overscroll-none minimal-scrollbar">
+                                    <template x-for="cabang in branches">
+                                        <div @click="selectedBranch = cabang; open = false" 
+                                            class="px-3 py-2 text-[11px] cursor-pointer transition-colors flex justify-between items-center group"
+                                            :class="selectedBranch === cabang ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'">
+                                            <span x-text="cabang"></span>
+                                            <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="selectedBranch === cabang"></i>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="timeGroupBy === 'mingguan'" class="flex flex-col gap-4 w-full">
+                            <!-- Year Selection -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Tahun</label>
+                                    <button x-show="filterYear !== 'Semua Tahun'" @click="filterYear = 'Semua Tahun'; generateFilterWeeks(); filterPeriod = ''; filterPeriodLabel = 'Semua Periode'; applyPeriodFilter()" class="text-[9px] text-red-500 hover:text-red-600 font-semibold cursor-pointer transition-colors">Reset</button>
+                                </div>
+                                <div x-data="{ openYear: false }" class="relative w-full">
+                                    <button @click="openYear = !openYear" @click.outside="openYear = false" 
+                                        class="w-full bg-white border text-gray-700 text-xs rounded-lg flex justify-between items-center p-2 outline-none transition-colors shadow-sm"
+                                        :class="openYear ? 'border-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
+                                        <span x-text="filterYear" class="font-medium text-left truncate pr-2"></span>
+                                        <i class="ph-bold ph-caret-down text-gray-400 transition-transform duration-200 shrink-0" :class="openYear ? 'rotate-180' : ''"></i>
+                                    </button>
+                                    
+                                    <div x-show="openYear" x-cloak
+                                        x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                        x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                        class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-lg shadow-lg py-1 z-[70] max-h-48 overflow-y-auto overscroll-none minimal-scrollbar">
+                                        <template x-for="y in ['Semua Tahun', new Date().getFullYear(), new Date().getFullYear()-1, new Date().getFullYear()-2]">
+                                            <div @click="filterYear = y; openYear = false; generateFilterWeeks(); filterPeriod = ''; filterPeriodLabel = 'Semua Periode'; applyPeriodFilter()" 
+                                                class="px-3 py-2 text-[11px] cursor-pointer transition-colors flex justify-between items-center group"
+                                                :class="filterYear === y ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'">
+                                                <span x-text="y"></span>
+                                                <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="filterYear === y"></i>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Period Selection -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Periode Mingguan</label>
+                                    <button x-show="filterPeriod !== ''" @click="filterPeriod = ''; filterPeriodLabel = 'Semua Periode'; applyPeriodFilter()" class="text-[9px] text-red-500 hover:text-red-600 font-semibold cursor-pointer transition-colors">Reset</button>
+                                </div>
+                                 <div x-data="{ 
+                                     openPeriod: false,
+                                     scrollToSelected() {
+                                         $nextTick(() => {
+                                             const el = $refs.periodDropdown?.querySelector('[data-selected=true]');
+                                             if (el) el.scrollIntoView({ block: 'center' });
+                                         });
+                                     }
+                                 }" class="relative w-full">
+                                     <button @click="openPeriod = !openPeriod; if(openPeriod) scrollToSelected()" @click.outside="openPeriod = false" 
+                                        class="w-full bg-white border text-gray-700 text-xs rounded-lg flex justify-between items-center p-2 outline-none transition-colors shadow-sm"
+                                        :class="openPeriod ? 'border-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
+                                        <span x-text="filterPeriodLabel" class="font-medium text-left truncate pr-2"></span>
+                                        <i class="ph-bold ph-caret-down text-gray-400 transition-transform duration-200 shrink-0" :class="openPeriod ? 'rotate-180' : ''"></i>
+                                    </button>
+                                    
+                                    <div x-show="openPeriod" x-cloak x-ref="periodDropdown"
+                                        x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                        x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                        class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-lg shadow-lg py-1 z-[70] max-h-48 overflow-y-auto overscroll-none minimal-scrollbar">
+                                        
+                                        <template x-for="w in filterWeeksList">
+                                            <div :data-selected="filterPeriod === w.val" @click="if(!w.disabled) { filterPeriod = w.val; filterPeriodLabel = w.label; openPeriod = false; applyPeriodFilter(); }" 
+                                                class="px-3 py-2 text-[11px] transition-colors flex justify-between items-center group"
+                                                :class="w.disabled ? 'cursor-not-allowed opacity-60 bg-gray-50 text-gray-400' : (filterPeriod === w.val ? 'bg-gray-50 text-emerald-600 font-semibold cursor-pointer' : 'text-gray-600 hover:bg-gray-50 cursor-pointer')">
+                                                <span x-text="w.label" class="truncate"></span>
+                                                <i class="ph-fill ph-circle text-[8px] text-emerald-500 shrink-0" x-show="!w.disabled && filterPeriod === w.val"></i>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date Range (Original Calendar) -->
+                        <div x-show="timeGroupBy === 'harian'">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Periode Tanggal</label>
+                                <button x-show="startDate || endDate" @click="startDate = ''; endDate = ''" class="text-[9px] text-red-500 hover:text-red-600 font-semibold cursor-pointer transition-colors">Reset</button>
+                            </div>
+                            
+                            <div class="w-full">
+                                <!-- Trigger -->
+                                <div class="flex flex-col gap-2 w-full cursor-pointer" @click="calOpen = !calOpen">
+                                    <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-2 py-2 text-xs text-gray-700 transition-colors shadow-sm w-full" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : ''">
+                                        <span class="text-gray-400 font-medium text-[10px] w-8">DARI</span>
+                                        <span class="font-medium text-[11px]" :class="startDate ? 'text-gray-700' : 'text-gray-400'" x-text="startDate ? formatDisplayDate(startDate) : 'Pilih Tanggal'"></span>
+                                    </div>
+                                    <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-2 py-2 text-xs text-gray-700 transition-colors shadow-sm w-full" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : ''">
+                                        <span class="text-gray-400 font-medium text-[10px] w-8">KE</span>
+                                        <span class="font-medium text-[11px]" :class="endDate ? 'text-gray-700' : 'text-gray-400'" x-text="endDate ? formatDisplayDate(endDate) : 'Pilih Tanggal'"></span>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+
+                        <!-- Filter Action Buttons -->
+                        <div class="pt-3 mt-1 border-t border-gray-100 flex flex-col gap-2">
+                            <div class="flex flex-row gap-2" x-show="timeGroupBy === 'harian'">
+                                <button @click="setMingguIni()" 
+                                    class="flex-1 py-2 px-1 text-[11px] font-semibold text-sidebar bg-lime hover:bg-lime/90 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm" style="background-color: #c5f037; color: #1f2937;" title="Tampilkan Minggu Ini">
+                                    Minggu Ini
+                                </button>
+                                <button @click="setHariIni()" 
+                                    class="flex-1 py-2 px-1 text-[11px] font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm" title="Tampilkan Hari Ini">
+                                    Hari Ini
+                                </button>
+                            </div>
+                            <div x-show="timeGroupBy === 'mingguan'">
+                                <button @click="setMingguIni()" 
+                                    class="w-full py-2 px-1 text-[11px] font-semibold text-sidebar bg-lime hover:bg-lime/90 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm" style="background-color: #c5f037; color: #1f2937;" title="Tampilkan Minggu Ini">
+                                    Minggu Ini
+                                </button>
+                            </div>
+                            <button @click="searchQuery = ''; selectedBranch = 'Semua Cabang'; filterYear = 'Semua Tahun'; generateFilterWeeks(); filterPeriod = ''; filterPeriodLabel = 'Semua Periode'; applyPeriodFilter(); startDate = ''; endDate = ''" 
+                                class="w-full py-2 px-1 text-[11px] font-semibold text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 rounded-lg flex items-center justify-center gap-1.5 transition-colors" title="Reset Semua Filter">
+                                Reset Semua
+                            </button>
+                        </div>
+                        </div>
+
+                        <!-- Dropdown Calendar (Soft & Pill) -->
+                        <div x-show="calOpen" x-cloak
+                            x-transition:enter="transition ease-out duration-200" 
+                            x-transition:enter-start="opacity-0 translate-x-4 md:translate-x-2" 
+                            x-transition:enter-end="opacity-100 translate-x-0"
+                            x-transition:leave="transition ease-in duration-150 absolute top-0 left-0 w-full md:relative md:w-auto" 
+                            x-transition:leave-start="opacity-100 translate-x-0" 
+                            x-transition:leave-end="opacity-0 translate-x-4 md:translate-x-2"
+                            class="w-full md:absolute md:right-[calc(100%+24px)] md:bottom-0 md:w-[280px] sm:w-[300px] bg-white md:rounded-3xl md:shadow-[0_8px_30px_rgb(0,0,0,0.12)] md:border md:border-gray-100 p-4 sm:p-5 md:z-[70]">
+                            
+                            <!-- Header -->
+                            <div class="flex items-center justify-between mb-5">
+                                <h3 class="font-bold text-[13px] sm:text-[14px] text-gray-800 cursor-pointer hover:text-emerald-600 transition" 
+                                    @click="calendarView = calendarView === 'date' ? 'month' : (calendarView === 'month' ? 'year' : 'date')"
+                                    x-text="calendarView === 'date' ? calendarMonthName : (calendarView === 'month' ? currentYear : (currentYear - 4) + ' - ' + (currentYear + 7))"></h3>
+                                <div class="flex gap-1">
+                                    <button @click.prevent="navigateCalendar(-1)" class="w-7 h-7 flex items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 transition"><i class="ph-bold ph-caret-left text-[12px]"></i></button>
+                                    <button @click.prevent="navigateCalendar(1)" class="w-7 h-7 flex items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 transition"><i class="ph-bold ph-caret-right text-[12px]"></i></button>
+                                </div>
+                            </div>
+                            
+                            <!-- View: Date -->
+                            <div x-show="calendarView === 'date'">
+                                <!-- Days -->
+                                <div class="grid grid-cols-7 gap-1 text-center mb-3">
+                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">M</div>
+                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">S</div>
+                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">S</div>
+                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">R</div>
+                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">K</div>
+                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">J</div>
+                                    <div class="text-[10px] sm:text-[11px] font-medium text-gray-400">S</div>
+                                </div>
+                                
+                                <!-- Dates -->
+                                <div class="grid grid-cols-7 gap-y-1 sm:gap-y-2 text-center">
+                                    <template x-for="blankday in blankDays">
+                                        <div class="text-[12px] sm:text-[13px] py-1 text-gray-300"></div>
+                                    </template>
+                                    
+                                    <template x-for="day in noOfDays">
+                                        <div class="relative mt-1 mb-1"
+                                             :class="{
+                                                'bg-lime/20': isDateInRange(day),
+                                                'bg-lime/20 rounded-l-full': getDateString(day) === startDate && endDate && startDate !== endDate,
+                                                'bg-lime/20 rounded-r-full': getDateString(day) === endDate && startDate !== endDate
+                                             }">
+                                            <div @click="selectDate(day)"
+                                                class="text-[12px] sm:text-[13px] py-1.5 cursor-pointer flex items-center justify-center mx-auto"
+                                                :class="{
+                                                    'font-bold text-gray-900 bg-lime rounded-full shadow-sm relative z-10 w-7 h-7 sm:w-8 sm:h-8': isDateSelected(day),
+                                                    'text-gray-700 font-medium': isDateInRange(day) && !isDateSelected(day),
+                                                    'text-gray-700 hover:bg-gray-50 rounded-full w-7 h-7 sm:w-8 sm:h-8': !isDateSelected(day) && !isDateInRange(day)
+                                                }"
+                                                :style="isDateSelected(day) ? 'background-color: #c5f037;' : ''"
+                                                x-text="day"></div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                            
+                            <!-- View: Month -->
+                            <div x-show="calendarView === 'month'" x-cloak class="grid grid-cols-3 gap-2 mt-2">
+                                <template x-for="(m, i) in monthNames">
+                                    <div class="text-[13px] py-2.5 text-center rounded-xl cursor-pointer transition-colors font-medium"
+                                         :class="currentMonth === i ? 'bg-lime text-gray-900 shadow-sm' : 'text-gray-700 hover:bg-gray-50'"
+                                         :style="currentMonth === i ? 'background-color: #c5f037;' : ''"
+                                         @click="currentMonth = i; calendarView = 'date'"
+                                         x-text="m.substring(0, 3)"></div>
+                                </template>
+                            </div>
+                            
+                            <!-- View: Year -->
+                            <div x-show="calendarView === 'year'" x-cloak class="grid grid-cols-3 gap-2 mt-2">
+                                <template x-for="y in Array.from({length: 12}, (_, i) => currentYear - 4 + i)">
+                                    <div class="text-[13px] py-2.5 text-center rounded-xl cursor-pointer transition-colors font-medium"
+                                         :class="currentYear === y ? 'bg-lime text-gray-900 shadow-sm' : 'text-gray-700 hover:bg-gray-50'"
+                                         :style="currentYear === y ? 'background-color: #c5f037;' : ''"
+                                         @click="currentYear = y; calendarView = 'month'"
+                                         x-text="y"></div>
+                                </template>
+                            </div>
+                            
+                            <!-- Mobile Back Button -->
+                            <button @click.prevent="calOpen = false" class="md:hidden w-full py-2 mt-4 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors">
+                                <i class="ph-bold ph-arrow-left"></i> Kembali ke Filter
+                            </button>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <!-- Mobile Sidebar Toggle -->
+                <button @click="toggleMobileSidebar()" 
+                    class="relative shrink-0 lg:hidden w-11 h-11 flex items-center justify-center bg-white rounded-full border border-gray-200 hover:border-emerald-400 hover:text-emerald-600 shadow-sm text-gray-500 transition-all duration-300"
+                    title="Tampilkan Sidebar">
+                    <i class="ph-bold ph-list text-[18px]"></i>
+                </button>
+
+            </div>
+
+            <!-- Laporan List (Rekonsiliasi per Tanggal/Produk) -->
+            <div class="flex-1 overflow-auto overscroll-none bg-white">
+                <div class="divide-y divide-gray-100 w-full">
+
+                    <template x-for="(item, index) in filteredSales" :key="index">
+                        <div @click="openHistoryDrawer(item)" 
+                             class="px-6 sm:px-8 py-4 flex items-center justify-between cursor-pointer hover:bg-emerald-50/40 transition-colors group relative border-b border-gray-100/60 last:border-none">
+                            <div class="flex flex-col flex-1 min-w-0 mr-4">
+                                <div class="font-semibold text-gray-900 text-sm group-hover:text-emerald-700 transition-colors truncate" x-text="item.isDateGroup ? item.displayTitle : item.productName"></div>
+                                <template x-if="item.isDateGroup">
+                                    <span class="text-xs text-gray-500 font-medium mt-0.5" x-text="item.branch"></span>
+                                </template>
+                            </div>
+                            <div class="flex items-center gap-6 shrink-0">
+                                <!-- Keunt. Penjualan -->
+                                <div class="hidden sm:flex flex-col items-end">
+                                    <span class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Laba Kotor</span>
+                                    <span class="text-xs font-semibold text-gray-700" x-text="'Rp ' + (item.totalKeuntungan || 0).toLocaleString('id-ID', { maximumFractionDigits: 0 })"></span>
+                                </div>
+                                <!-- Selisih Opname -->
+                                <div class="hidden sm:flex flex-col items-end">
+                                    <span class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Koreksi Stok</span>
+                                    <span class="text-xs font-semibold" :class="(item.selisihOpname || 0) >= 0 ? 'text-emerald-600' : 'text-red-500'" x-text="((item.selisihOpname || 0) >= 0 ? '+' : '') + 'Rp ' + Math.abs(item.selisihOpname || 0).toLocaleString('id-ID', { maximumFractionDigits: 0 })"></span>
+                                </div>
+                                <!-- Setelah Penyesuaian -->
+                                <div class="flex flex-col items-end min-w-[100px]">
+                                    <span class="text-[10px] text-gray-400 font-medium uppercase tracking-wider sm:block hidden">Laba Disesuaikan</span>
+                                    <span class="font-bold text-sm"
+                                          :class="(item.hasilAkhir || 0) >= 0 ? 'text-emerald-700' : 'text-red-600'"
+                                          x-text="'Rp ' + Math.abs(item.hasilAkhir || 0).toLocaleString('id-ID', { maximumFractionDigits: 0 })"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Empty State -->
+                    <div x-show="filteredSales.length === 0" class="px-6 py-16 text-center">
+                        <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="ph ph-receipt text-2xl text-gray-400"></i>
+                        </div>
+                        <h3 class="text-gray-900 font-medium mb-1">Tidak Ada Data</h3>
+                        <p class="text-sm text-gray-500">Belum ada transaksi pada kriteria ini.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Summary (Rekonsiliasi) -->
+            <div class="bg-gray-50 px-6 sm:px-8 py-4 border-t border-gray-200 mt-auto">
+                <div class="flex flex-col gap-2">
+                    <!-- Baris 1: Keuntungan Penjualan -->
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Laba Kotor</span>
+                        <span class="text-sm font-semibold text-gray-900"
+                              x-text="'Rp ' + totalKeuntunganPenjualan.toLocaleString('id-ID', { maximumFractionDigits: 0 })"></span>
+                    </div>
+                    <!-- Baris 2: Selisih Opname -->
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">± Koreksi Stok</span>
+                        <span class="text-sm font-semibold"
+                              :class="totalSelisihOpname >= 0 ? 'text-emerald-600' : 'text-red-500'"
+                              x-text="(totalSelisihOpname >= 0 ? '+' : '') + 'Rp ' + Math.abs(totalSelisihOpname).toLocaleString('id-ID', { maximumFractionDigits: 0 })"></span>
+                    </div>
+                    <!-- Garis Pemisah -->
+                    <div class="border-t border-gray-300 pt-2 mt-1 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-gray-900 text-[14px] uppercase tracking-wider">Laba Disesuaikan</span>
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                                  :class="totalHasilAkhir >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'"
+                                  x-text="marginPct + '%'"></span>
+                        </div>
+                        <span class="font-bold text-[15px]"
+                              :class="totalHasilAkhir >= 0 ? 'text-emerald-700' : 'text-red-600'"
+                              x-text="'Rp ' + Math.abs(totalHasilAkhir).toLocaleString('id-ID', { maximumFractionDigits: 0 })"></span>
+                    </div>
+                </div>
+            </div>
+
+    </main>
+
+    <!-- Side Drawer: Detail Rekonsiliasi -->
+    <div x-show="historyDrawerOpen"
+         class="fixed inset-0 z-[100] overflow-hidden flex flex-col justify-end lg:flex-row lg:justify-end" x-cloak>
+        <div x-show="historyDrawerOpen"
+             x-transition:enter="transition-opacity ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="closeHistoryDrawer()" class="absolute inset-0 bg-black/70"></div>
+        <div x-show="historyDrawerOpen"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full"
+             x-transition:enter-end="translate-y-0 lg:translate-x-0"
+             x-transition:leave="transition ease-in duration-300 transform"
+             x-transition:leave-start="translate-y-0 lg:translate-x-0"
+             x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full"
+             class="w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col h-[85vh] lg:h-full max-h-[100vh] overflow-hidden border-t lg:border-t-0 lg:border-l border-gray-100 rounded-t-3xl lg:rounded-none relative z-10">
+
+             <!-- Drag Handle (Mobile Only) -->
+             <div class="w-full flex justify-center pt-3 pb-1 lg:hidden shrink-0" @click="closeHistoryDrawer()" style="cursor: pointer;">
+                 <div class="w-16 h-1.5 bg-gray-300 rounded-full"></div>
+             </div>
+
+             <!-- Header -->
+             <div class="bg-white shrink-0 border-b border-gray-100 px-5 py-4 flex items-center justify-between">
+                 <div class="flex flex-col">
+                     <h3 class="text-[15px] font-bold text-gray-900">Detail Rekonsiliasi</h3>
+                     <p class="text-[12px] text-gray-400 mt-0.5"
+                        x-text="selectedHistoryProduct ? (selectedHistoryProduct.isDateGroup ? selectedHistoryProduct.displayTitle : selectedHistoryProduct.productName) : ''"></p>
+                 </div>
+                                 <button @click="closeHistoryDrawer()" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors shrink-0">
+                     <i class="ph-bold ph-x text-base"></i>
+                 </button>
+             </div>
+
+                 <!-- Content: Ringkasan & Riwayat -->
+             <div class="flex-1 overflow-y-auto min-h-0 px-5 pb-8 pt-4 bg-gray-50/60" style="-webkit-overflow-scrolling: touch;">
+                 <div class="flex flex-col gap-6">
+
+                     <!-- SUMMARY DASHBOARD -->
+                     <div class="bg-gradient-to-br from-[#0b595b] to-[#147976] rounded-2xl p-5 shadow-lg relative overflow-hidden text-white">
+                         <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+                         <div class="relative z-10">
+                             <div class="text-xs font-medium text-white/80 uppercase tracking-wide mb-1">Total Laba Disesuaikan</div>
+                             <div class="text-2xl font-black mb-4 flex items-center gap-2 whitespace-nowrap">
+                                 <span x-text="(drawerHasilAkhir >= 0 ? 'Rp ' : '-Rp ') + Math.abs(drawerHasilAkhir).toLocaleString('id-ID')"></span>
+                             </div>
+                             
+                             <div class="grid grid-cols-2 gap-3 pt-3 border-t border-white/20">
+                                 <div>
+                                     <div class="text-[10px] text-white/70 uppercase">Laba Kotor</div>
+                                     <div class="font-semibold text-sm mt-0.5 whitespace-nowrap" x-text="'Rp ' + Math.abs(drawerTotalKeuntungan).toLocaleString('id-ID')"></div>
+                                 </div>
+                                 <div>
+                                     <div class="text-[10px] text-white/70 uppercase">Koreksi Stok</div>
+                                     <div class="font-semibold text-sm mt-0.5 whitespace-nowrap"
+                                          :class="drawerTotalOpname >= 0 ? 'text-blue-300' : 'text-red-300'">
+                                         <span x-text="(drawerTotalOpname >= 0 ? '+' : '') + 'Rp ' + Math.abs(drawerTotalOpname).toLocaleString('id-ID')"></span>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+
+                     <!-- TIMELINE LEDGER -->
+                     <div class="relative pl-3">
+                         <!-- Timeline Line -->
+                         <div class="absolute top-2 bottom-0 left-[27px] w-0.5 bg-gray-200"></div>
+
+                         <div class="flex flex-col gap-6 relative z-10">
+                             <template x-for="daily in drawerDailyBreakdown" :key="daily.date">
+                                <div class="relative">
+                                    <!-- Date Marker & Label -->
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-8 h-8 rounded-full bg-white border-[3px] border-emerald-500 shadow-sm flex items-center justify-center shrink-0 z-10">
+                                            <i class="ph-fill ph-calendar-blank text-emerald-500 text-sm"></i>
+                                        </div>
+                                        <div class="font-bold text-gray-900 text-sm bg-white px-3 py-1.5 rounded-full shadow-sm border border-gray-100" x-text="formatDisplayDate(daily.date)"></div>
+                                    </div>
+                                    
+                                    <!-- Cards Container -->
+                                    <div class="pl-11 flex flex-col gap-3">
+                                        
+                                        <!-- Card: Penjualan (Laba Kotor) -->
+                                        <div x-show="daily.keuntungan !== 0 || daily.pendapatan !== 0" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:border-emerald-200 transition-colors">
+                                            <div class="px-4 py-3 border-b border-gray-50 flex items-center justify-between bg-emerald-50/30">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-6 h-6 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                                                        <i class="ph-bold ph-shopping-cart-simple text-xs"></i>
+                                                    </div>
+                                                    <span class="text-[13px] font-bold text-gray-800 whitespace-nowrap">Laba Kotor</span>
+                                                </div>
+                                                <span class="text-[14px] font-black text-emerald-700 whitespace-nowrap" x-text="'Rp ' + daily.keuntungan.toLocaleString('id-ID')"></span>
+                                            </div>
+                                            <div class="px-4 py-3 bg-white grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <div class="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-0.5">Pendapatan</div>
+                                                    <div class="text-xs font-semibold text-gray-700 whitespace-nowrap" x-text="'Rp ' + daily.pendapatan.toLocaleString('id-ID')"></div>
+                                                </div>
+                                                <div>
+                                                    <div class="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-0.5">HPP</div>
+                                                    <div class="text-xs font-semibold text-gray-700 whitespace-nowrap" x-text="'Rp ' + daily.hpp.toLocaleString('id-ID')"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Card: Koreksi Stok -->
+                                        <div x-show="daily.opname !== 0" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group transition-colors"
+                                             :class="daily.opname > 0 ? 'hover:border-blue-200' : 'hover:border-red-200'">
+                                            <div class="px-4 py-3 border-b border-gray-50 flex items-center justify-between"
+                                                 :class="daily.opname > 0 ? 'bg-blue-50/30' : 'bg-red-50/30'">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-6 h-6 rounded-md flex items-center justify-center"
+                                                         :class="daily.opname > 0 ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'">
+                                                        <i class="ph-bold ph-package text-xs"></i>
+                                                    </div>
+                                                    <span class="text-[13px] font-bold text-gray-800 whitespace-nowrap">Koreksi Stok</span>
+                                                </div>
+                                                <span class="text-[14px] font-black whitespace-nowrap" 
+                                                      :class="daily.opname > 0 ? 'text-blue-600' : 'text-red-600'"
+                                                      x-text="(daily.opname > 0 ? '+' : '') + 'Rp ' + Math.abs(daily.opname).toLocaleString('id-ID')"></span>
+                                            </div>
+                                            <div class="px-4 py-2.5 bg-white flex items-center gap-2">
+                                                <i class="ph-fill ph-info text-gray-400 text-sm"></i>
+                                                <div class="text-xs text-gray-500" x-text="daily.opname > 0 ? 'Surplus (Keuntungan)' : 'Defisit (Kerugian)'"></div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                             </template>
+                             
+                             <div x-show="drawerDailyBreakdown.length === 0" class="py-8 pl-11 text-center">
+                                 <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 flex flex-col items-center justify-center">
+                                     <i class="ph ph-calendar-blank text-3xl text-gray-300 mb-2"></i>
+                                     <p class="text-xs text-gray-500">Tidak ada riwayat transaksi</p>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+
+                 </div>
+             </div>
+            </div>
+        </div>
+    <script src="../assets/laporan-data.js"></script>
+
+    <script>
+        const {
+            globalReceiptData,
+            globalSalesData,
+            globalOpnameData,
+            gresikBranches,
+            todayStr,
+            yesterdayStr,
+        } = window.LAPORAN_DATA;
+
+        function erpApp() {
+            return {
+                sidebarOpen: false,
+                sidebarCollapsed: false,
+                theme: 'dark',
+                activeMenu: 'laporan',
+                handleResize() {
+                    this.navbarHidden = window.innerWidth < 1024;
+                    if (window.innerWidth >= 1024) this.sidebarOpen = false;
+                },
+                toggleMenu(menu) {
+                    if (this.sidebarCollapsed) this.sidebarCollapsed = false;
+                },
+                toggleMobileSidebar() {
+                    if (window.self !== window.top) {
+                        window.parent.postMessage('toggleSidebar', '*');
+                    } else {
+                        this.sidebarOpen = !this.sidebarOpen;
+                    }
+                },
+
+                // ── Drawer ──────────────────────────────────────────────
+                historyDrawerOpen: false,
+                isAnimatingDrawer: false,
+                selectedHistoryProduct: null,
+                openHistoryDrawer(item) {
+                    if (this.isAnimatingDrawer) return;
+                    this.isAnimatingDrawer = true;
+                    this.selectedHistoryProduct = item;
+                    this.$nextTick(() => {
+                        requestAnimationFrame(() => {
+                            if (window.self !== window.top)
+                                window.parent.postMessage({ type: 'drawerOverlay', active: true }, '*');
+                            this.historyDrawerOpen = true;
+                            setTimeout(() => { this.isAnimatingDrawer = false; }, 320);
+                        });
+                    });
+                },
+                closeHistoryDrawer() {
+                    if (this.isAnimatingDrawer) return;
+                    this.isAnimatingDrawer = true;
+                    if (window.self !== window.top)
+                        window.parent.postMessage({ type: 'drawerOverlay', active: false }, '*');
+                    this.historyDrawerOpen = false;
+                    setTimeout(() => { this.isAnimatingDrawer = false; }, 320);
+                },
+
+                // ── Drawer: Riwayat Transaksi ────────────────────────────
+                navbarHidden: window.innerWidth < 1024,
+                searchQuery: '',
+                historySearchQuery: '',
+                historyFilterDate: '',
+                selectedHistoryPayment: 'Semua Metode',
+                get filteredReceipts() {
+                    if (!this.selectedHistoryProduct) return [];
+                    return globalReceiptData.filter(r => {
+                        if (this.selectedHistoryProduct.isDateGroup) {
+                            if (this.selectedHistoryProduct.isWeekly) {
+                                if (r.date < this.selectedHistoryProduct.weekStart || r.date > this.selectedHistoryProduct.weekEnd) return false;
+                            } else {
+                                if (r.date !== this.selectedHistoryProduct.date) return false;
+                            }
+                            if (this.selectedHistoryProduct.branch && r.branch !== this.selectedHistoryProduct.branch) return false;
+                        } else {
+                            if (r.productName !== this.selectedHistoryProduct.productName) return false;
+                            if (r.price !== this.selectedHistoryProduct.price) return false;
+                        }
+                        if (this.selectedBranch !== 'Semua Cabang' && r.branch !== this.selectedBranch) return false;
+                        if (this.startDate && r.date < this.startDate) return false;
+                        if (this.endDate && r.date > this.endDate) return false;
+                        if (this.historyFilterDate && r.date !== this.historyFilterDate) return false;
+                        if (this.selectedHistoryPayment !== 'Semua Metode') {
+                            if (this.selectedHistoryPayment === 'Multi/Split') {
+                                if (!Array.isArray(r.paymentMethod) || r.paymentMethod.length < 2) return false;
+                            } else {
+                                if (Array.isArray(r.paymentMethod)) {
+                                    if (!r.paymentMethod.includes(this.selectedHistoryPayment)) return false;
+                                } else {
+                                    if (r.paymentMethod !== this.selectedHistoryPayment) return false;
+                                }
+                            }
+                        }
+                        if (this.historySearchQuery && !r.receiptNo.toLowerCase().includes(this.historySearchQuery.toLowerCase())) return false;
+                        return true;
+                    });
+                },
+                // Riwayat koreksi opname untuk item yang sedang dibuka
+                get filteredOpname() {
+                    if (!this.selectedHistoryProduct) return [];
+                    return globalOpnameData.filter(o => {
+                        if (this.selectedHistoryProduct.isDateGroup) {
+                            if (this.selectedHistoryProduct.isWeekly) {
+                                if (o.date < this.selectedHistoryProduct.weekStart || o.date > this.selectedHistoryProduct.weekEnd) return false;
+                            } else {
+                                if (o.date !== this.selectedHistoryProduct.date) return false;
+                            }
+                            if (this.selectedHistoryProduct.branch && o.branch !== this.selectedHistoryProduct.branch) return false;
+                        } else {
+                            if (o.productName !== this.selectedHistoryProduct.productName) return false;
+                        }
+                        if (this.selectedBranch !== 'Semua Cabang' && o.branch !== this.selectedBranch) return false;
+                        if (this.startDate && o.date < this.startDate) return false;
+                        if (this.endDate && o.date > this.endDate) return false;
+                        return true;
+                    });
+                },
+                // Agregasi penjualan per produk untuk drawer
+                get drawerProductSales() {
+                    const map = new Map();
+                    this.filteredReceipts.forEach(r => {
+                        const key = r.productName + '_' + r.price;
+                        if (!map.has(key)) {
+                            map.set(key, { productName: r.productName, unit: r.unit || 'kg', qty: 0, pendapatan: 0, hpp: 0 });
+                        }
+                        const e = map.get(key);
+                        e.qty        += r.qty;
+                        e.pendapatan += (r.qty * r.price) - (r.diskonProduk || 0) - (r.diskonProrata || 0);
+                        e.hpp        += r.qty * (r.hppSatuan || 0);
+                    });
+                    return Array.from(map.values()).map(e => ({ ...e, keuntungan: e.pendapatan - e.hpp }));
+                },
+                // Daftar item opname untuk drawer (tidak diagregasi, tampilkan per baris)
+                get drawerOpnameSummary() {
+                    return this.filteredOpname;
+                },
+                get drawerTotalPenjualan() {
+                    return this.filteredReceipts.reduce((s, r) => s + ((r.qty * r.price) - (r.diskonProduk || 0) - (r.diskonProrata || 0)), 0);
+                },
+                get drawerTotalHpp() {
+                    return this.filteredReceipts.reduce((s, r) => s + (r.qty * (r.hppSatuan || 0)), 0);
+                },
+                get drawerTotalKeuntungan() {
+                    return this.drawerTotalPenjualan - this.drawerTotalHpp;
+                },
+                get drawerTotalOpname() {
+                    return this.filteredOpname.reduce((s, o) => s + o.selisihRp, 0);
+                },
+                get drawerHasilAkhir() {
+                    return this.drawerTotalKeuntungan + this.drawerTotalOpname;
+                },
+                get drawerDailyBreakdown() {
+                    const map = new Map();
+                    this.filteredReceipts.forEach(r => {
+                        if (!map.has(r.date)) {
+                            map.set(r.date, { date: r.date, keuntungan: 0, pendapatan: 0, hpp: 0, opname: 0 });
+                        }
+                        const e = map.get(r.date);
+                        e.pendapatan += (r.qty * r.price) - (r.diskonProduk || 0) - (r.diskonProrata || 0);
+                        e.hpp += r.qty * (r.hppSatuan || 0);
+                        e.keuntungan = e.pendapatan - e.hpp;
+                    });
+                    this.filteredOpname.forEach(o => {
+                        if (!map.has(o.date)) {
+                            map.set(o.date, { date: o.date, keuntungan: 0, pendapatan: 0, hpp: 0, opname: 0 });
+                        }
+                        const e = map.get(o.date);
+                        e.opname += o.selisihRp;
+                    });
+                    return Array.from(map.values())
+                        .sort((a, b) => b.date.localeCompare(a.date))
+                        .map(e => ({ ...e, hasilAkhir: e.keuntungan + e.opname }));
+                },
+
+                filterOpen: false,
+                historyFilterExpanded: false,
+                get historyPeriod() {
+                    return this.historyFilterDate ? this.formatDisplayDate(this.historyFilterDate) : 'Semua Periode';
+                },
+                get isHistoryFiltered() {
+                    return this.historyFilterDate !== '' || this.selectedHistoryPayment !== 'Semua Metode';
+                },
+                expanded: false,
+                get period() {
+                    if (this.startDate && this.endDate) {
+                        if (this.startDate === this.endDate) return this.formatDisplayDate(this.startDate);
+                        return this.formatDisplayDate(this.startDate) + ' - ' + this.formatDisplayDate(this.endDate);
+                    } else if (this.startDate) {
+                        return this.formatDisplayDate(this.startDate);
+                    }
+                    return 'Semua Periode';
+                },
+
+                // ── Filter & Calendar ────────────────────────────────────
+                groupBy: 'produk',
+                timeGroupBy: 'harian',
+                calendarView: 'date',
+                startDate: '',
+                endDate: '',
+                currentMonth: new Date().getMonth(),
+                currentYear: new Date().getFullYear(),
+                monthNames: ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],
+                get calendarMonthName() { return this.monthNames[this.currentMonth] + ' ' + this.currentYear; },
+                get blankDays() {
+                    let days = []; let startDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
+                    for (let i = 0; i < startDay; i++) days.push(i); return days;
+                },
+                get noOfDays() {
+                    let days = []; let n = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+                    for (let i = 1; i <= n; i++) days.push(i); return days;
+                },
+                navigateCalendar(step) {
+                    if (this.calendarView === 'date') this.changeMonth(step);
+                    else if (this.calendarView === 'month') this.currentYear += step;
+                    else if (this.calendarView === 'year') this.currentYear += (step * 12);
+                },
+                changeMonth(step) {
+                    this.currentMonth += step;
+                    if (this.currentMonth < 0) { this.currentMonth = 11; this.currentYear--; }
+                    if (this.currentMonth > 11) { this.currentMonth = 0; this.currentYear++; }
+                },
+                formatDate(year, month, day) { return `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; },
+                formatDisplayDate(dateStr) {
+                    if (!dateStr) return '';
+                    const d = new Date(dateStr + 'T00:00:00');
+                    const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+                    const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+                    return `${days[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
+                },
+                getDateString(day) { return this.formatDate(this.currentYear, this.currentMonth, day); },
+                selectDate(day) {
+                    let dateStr = this.getDateString(day);
+                    if (!this.startDate || (this.startDate && this.endDate)) { this.startDate = dateStr; this.endDate = ''; }
+                    else if (this.startDate && !this.endDate) {
+                        if (dateStr < this.startDate) { this.endDate = this.startDate; this.startDate = dateStr; }
+                        else { this.endDate = dateStr; }
+                    }
+                },
+                isDateSelected(day) { let d = this.getDateString(day); return d === this.startDate || d === this.endDate; },
+                isDateInRange(day) {
+                    if (!this.startDate || !this.endDate) return false;
+                    let d = this.getDateString(day); return d > this.startDate && d < this.endDate;
+                },
+                selectHistoryDate(day) { if (!this.isHistoryDateDisabled(day)) this.historyFilterDate = this.getDateString(day); },
+                isHistoryDateDisabled(day) {
+                    let dateStr = this.getDateString(day);
+                    if (this.startDate && this.endDate && (dateStr < this.startDate || dateStr > this.endDate)) return true;
+                    else if (this.startDate && dateStr < this.startDate) return true;
+                    else if (this.endDate && dateStr > this.endDate) return true;
+                    return false;
+                },
+                isHistoryDateSelected(day) { return this.getDateString(day) === this.historyFilterDate; },
+                setHistoryHariIni() {
+                    const d = new Date();
+                    this.historyFilterDate = d.toISOString().split('T')[0];
+                    this.currentMonth = d.getMonth(); this.currentYear = d.getFullYear(); this.calendarView = 'date';
+                },
+
+                selectedBranch: 'Semua Cabang',
+                branches: ['Semua Cabang', ...gresikBranches],
+                get isFiltered() { return this.selectedBranch !== 'Semua Cabang' || this.startDate || this.endDate; },
+
+                filterYear: new Date().getFullYear(),
+                filterPeriod: '',
+                filterPeriodLabel: '',
+                filterWeeksList: [],
+                generateFilterWeeks() {
+                    this.filterWeeksList = [{ label: 'Semua Periode', val: '', disabled: false }];
+                    const yNum = (typeof this.filterYear === 'number') ? this.filterYear : new Date().getFullYear();
+                    let d = new Date(yNum, 0, 1);
+                    const jsDay = d.getDay(); const diffToSaturday = (jsDay === 6) ? 0 : (jsDay + 1);
+                    d.setDate(d.getDate() - diffToSaturday);
+                    const endOfYear = new Date(yNum, 11, 31); let weekNum = 1;
+                    while (d <= endOfYear || d.getFullYear() == yNum) {
+                        const wStart = new Date(d); const wEnd = new Date(d); wEnd.setDate(wEnd.getDate() + 6);
+                        if (wStart.getFullYear() > yNum) break;
+                        const fmt = dt => new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short' }).format(dt);
+                        const getLocal = dt => { const p = n => String(n).padStart(2,'0'); return dt.getFullYear()+'-'+p(dt.getMonth()+1)+'-'+p(dt.getDate()); };
+                        const label = 'Minggu ' + weekNum + ' : ' + fmt(wStart) + ' s.d ' + fmt(wEnd);
+                        const val = getLocal(wStart) + '|' + getLocal(wEnd);
+                        const todayS = getLocal(new Date()); const disabled = getLocal(wStart) > todayS;
+                        this.filterWeeksList.push({ label, val, disabled });
+                        d.setDate(d.getDate() + 7); weekNum++;
+                    }
+                },
+                setDefaultWeek() {
+                    const getLocal = dt => { const p = n => String(n).padStart(2,'0'); return dt.getFullYear()+'-'+p(dt.getMonth()+1)+'-'+p(dt.getDate()); };
+                    const tStr = getLocal(new Date());
+                    let cw = this.filterWeeksList.find(w => { if (!w.val) return false; const p = w.val.split('|'); return tStr >= p[0] && tStr <= p[1]; });
+                    if (cw) { this.filterPeriod = cw.val; this.filterPeriodLabel = cw.label; }
+                    else if (this.filterWeeksList.length > 1) { this.filterPeriod = this.filterWeeksList[1].val; this.filterPeriodLabel = this.filterWeeksList[1].label; }
+                },
+                applyPeriodFilter() {
+                    if (this.filterPeriod) { const p = this.filterPeriod.split('|'); if (p.length === 2) { this.startDate = p[0]; this.endDate = p[1]; } }
+                    else {
+                        if (typeof this.filterYear === 'number') { this.startDate = `${this.filterYear}-01-01`; this.endDate = `${this.filterYear}-12-31`; }
+                        else { this.startDate = ''; this.endDate = ''; }
+                    }
+                },
+                setHariIni() {
+                    const d = new Date(); const today = d.toISOString().split('T')[0];
+                    this.startDate = today; this.endDate = today;
+                    this.currentMonth = d.getMonth(); this.currentYear = d.getFullYear(); this.calendarView = 'date';
+                },
+                setMingguIni() {
+                    if (this.timeGroupBy === 'mingguan') {
+                        this.filterYear = new Date().getFullYear(); this.generateFilterWeeks(); this.setDefaultWeek(); this.applyPeriodFilter();
+                    } else {
+                        const d = new Date(); this.currentMonth = d.getMonth(); this.currentYear = d.getFullYear(); this.calendarView = 'date';
+                        const day = d.getDay() || 7; d.setDate(d.getDate() - day + 1);
+                        const start = d.toISOString().split('T')[0]; d.setDate(d.getDate() + 6); const end = d.toISOString().split('T')[0];
+                        this.startDate = start; this.endDate = end;
+                    }
+                },
+
+                // ── Data & Kalkulasi ─────────────────────────────────────
+                // filteredSales: grup per tanggal+cabang (atau per produk),
+                // masing-masing item sudah include totalKeuntungan, selisihOpname, hasilAkhir
+                get filteredSales() {
+                    const filtered = globalSalesData.filter(item => {
+                        if (this.selectedBranch !== 'Semua Cabang' && item.branch !== this.selectedBranch) return false;
+                        if (this.startDate && item.date < this.startDate) return false;
+                        if (this.endDate && item.date > this.endDate) return false;
+                        if (this.searchQuery) {
+                            const q = this.searchQuery.toLowerCase();
+                            if (!item.productName.toLowerCase().includes(q) && !this.formatDisplayDate(item.date).toLowerCase().includes(q)) return false;
+                        }
+                        return true;
+                    });
+
+                    const map = new Map();
+                    filtered.forEach(item => {
+                        const isDate = this.groupBy === 'tanggal';
+                        let key = isDate ? (item.date + '_' + item.branch) : (item.productName + '_' + item.price);
+                        let displayTitle = isDate ? this.formatDisplayDate(item.date) : item.productName;
+                        let isWeekly = false, weekStart = null, weekEnd = null;
+
+                        if (isDate && this.timeGroupBy === 'mingguan') {
+                            const d = new Date(item.date); const jsDay = d.getDay();
+                            const diff = (jsDay === 6) ? 0 : (jsDay + 1); d.setDate(d.getDate() - diff);
+                            weekStart = d.toISOString().split('T')[0]; d.setDate(d.getDate() + 6); weekEnd = d.toISOString().split('T')[0];
+                            key = weekStart + '_' + item.branch;
+                            displayTitle = this.formatDisplayDate(weekStart) + ' - ' + this.formatDisplayDate(weekEnd);
+                            isWeekly = true;
+                        }
+
+                        if (!map.has(key)) {
+                            map.set(key, { ...item, isDateGroup: isDate, isWeekly, weekStart, weekEnd, displayTitle, qty: 0, total: 0, totalHpp: 0 });
+                        }
+                        const existing = map.get(key);
+                        existing.qty       += item.qty;
+                        existing.total     += item.total;
+                        existing.totalHpp  += (item.totalHpp || 0);
+                    });
+
+                    // Hitung totalKeuntungan & selisihOpname per grup
+                    return Array.from(map.values()).map(item => {
+                        const keuntunganPenjualan = item.total - item.totalHpp;
+
+                        // Ambil selisih opname yang sesuai filter item ini
+                        const selisihOpname = globalOpnameData.reduce((sum, o) => {
+                            if (item.isDateGroup) {
+                                if (item.isWeekly) { if (o.date < item.weekStart || o.date > item.weekEnd) return sum; }
+                                else { if (o.date !== item.date) return sum; }
+                                if (o.branch !== item.branch) return sum;
+                            } else {
+                                if (o.productName !== item.productName) return sum;
+                                if (this.startDate && o.date < this.startDate) return sum;
+                                if (this.endDate && o.date > this.endDate) return sum;
+                                if (this.selectedBranch !== 'Semua Cabang' && o.branch !== this.selectedBranch) return sum;
+                            }
+                            return sum + o.selisihRp;
+                        }, 0);
+
+                        return {
+                            ...item,
+                            totalKeuntungan: keuntunganPenjualan,
+                            selisihOpname,
+                            hasilAkhir: keuntunganPenjualan + selisihOpname,
+                        };
+                    });
+                },
+
+                // ── Footer Aggregates ────────────────────────────────────
+                get totalKeuntunganPenjualan() {
+                    return this.filteredSales.reduce((s, i) => s + (i.totalKeuntungan || 0), 0);
+                },
+                get totalSelisihOpname() {
+                    return this.filteredSales.reduce((s, i) => s + (i.selisihOpname || 0), 0);
+                },
+                get totalHasilAkhir() {
+                    return this.totalKeuntunganPenjualan + this.totalSelisihOpname;
+                },
+                get subTotal() { return this.totalHasilAkhir; },
+                get marginPct() {
+                    const pendapatan = this.filteredSales.reduce((s, i) => s + (i.total || 0), 0);
+                    if (!pendapatan) return '0.0';
+                    return (this.totalHasilAkhir / pendapatan * 100).toFixed(1);
+                },
+
+                init() {
+                    this.generateFilterWeeks();
+                    this.setDefaultWeek();
+                    this.applyPeriodFilter();
+                    window.addEventListener('message', e => {
+                        if (e.data && e.data.type === 'closeDrawer') this.closeHistoryDrawer();
+                    });
+                }
+            };
+        }
+    </script>
+    <script>
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            document.body.classList.add('resize-animation-stopper');
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => { document.body.classList.remove('resize-animation-stopper'); }, 200);
+        });
+    </script>
+</body>
+</html>

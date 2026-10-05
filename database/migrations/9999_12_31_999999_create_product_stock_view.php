@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $wilayah       = file_get_contents(database_path('wilayah_indonesia.sql'));
+        $wilayah              = file_get_contents(database_path('wilayah_indonesia.sql'));
+        $transactionStock     = file_get_contents(database_path('sql/transaction_stock.sql'));
+        $transactionStockShow = file_get_contents(database_path('sql/transaction_stock_show.sql'));
         $sql           = file_get_contents(database_path('sql/views.sql'));
         $report        = file_get_contents(database_path('sql/report.sql'));
         $function      = file_get_contents(database_path('sql/function.sql'));
@@ -25,6 +27,16 @@ return new class extends Migration
             }
         }
 
+        foreach (array_filter(array_map('trim', explode(';', $transactionStock))) as $query) {
+            if ($query) {
+                DB::statement($query);
+            }
+        }
+        foreach (array_filter(array_map('trim', explode(';', $transactionStockShow))) as $query) {
+            if ($query) {
+                DB::statement($query);
+            }
+        }
         foreach (array_filter(array_map('trim', explode(';', $sql))) as $query) {
             if ($query) {
                 DB::statement($query);
@@ -64,6 +76,7 @@ return new class extends Migration
         DB::statement("DROP VIEW IF EXISTS product_hpp");
         DB::statement("DROP VIEW IF EXISTS report_total_belanja");
         DB::statement("DROP VIEW IF EXISTS transaction_stock");
+        DB::statement("DROP VIEW IF EXISTS transaction_stock_show");
         DB::statement("DROP VIEW IF EXISTS sortir_view");
         DB::statement("DROP VIEW IF EXISTS view_wholesale");
         DB::statement("DROP VIEW IF EXISTS vw_customer_transaction");

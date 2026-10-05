@@ -33,13 +33,28 @@ class CustomerController extends Controller
      * Display a listing of the resource.
      * @return Renderable
      */
-    public function index()
+    public function index(Request $request)
     {
         if ($denied = $this->requireAccess('customers.index')) {
             return $denied;
         }
 
-        return view('master::customer.index');
+        $search = mb_substr(trim((string) $request->query('q', '')), 0, 100);
+        $records = Customer::query()
+            ->select('id', 'name', 'code', 'whatsapp', 'email', 'address', 'gender', 'birth_of_date')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%")
+                        ->orWhere('whatsapp', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->orderByDesc('id')
+            ->paginate(50)
+            ->withQueryString();
+
+        return view('master::customer.index', compact('records'));
     }
 
     /**

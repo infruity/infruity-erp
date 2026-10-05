@@ -27,6 +27,17 @@ class UserController extends Controller
 
         $data['role'] = Role::all();
         $data['branch'] = Branch::all();
+        $data['users'] = User::with('RoleUser.role', 'branches.branch')
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $search = '%' . $request->input('q') . '%';
+                $query->where(function ($users) use ($search) {
+                    $users->where('nm_user', 'like', $search)
+                        ->orWhere('email', 'like', $search);
+                });
+            })
+            ->orderBy('nm_user')
+            ->paginate(50)
+            ->withQueryString();
         return view("admin.user.index", $data);
     }
 
@@ -35,6 +46,8 @@ class UserController extends Controller
         if ($denied = $this->requireAccess('user.create')) {
             return $denied;
         }
+
+        return redirect()->route('user.index', ['create' => 1]);
     }
 
     public function edit($id)
@@ -106,7 +119,9 @@ class UserController extends Controller
             $user->username = $request->email;
             $user->email = $request->email;
             $user->nm_user = $request->full_name;
-            $user->password = Hash::make($request->password);
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->password);
+            }
             $user->save();
             // add roles
             RoleUser::where('id_user', $id)->delete();
@@ -127,6 +142,7 @@ class UserController extends Controller
             UserBranch::insert($userBranch);
             DB::commit();
         } catch (Exception $e) {
+            DB::rollback();
             return redirect()->back()->with('error', 'Data User Gagal Disimpan');
         }
 

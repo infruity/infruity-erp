@@ -46,7 +46,7 @@ class LoginController extends Controller
         if (Auth::attempt(array(
             'username' => $request->email,
             'password' => $request->password,
-        ))) {
+        ), $request->boolean('remember'))) {
             $role_user = RoleUser::where("id_user", Auth::user()->id_user)->OrderBy("created_at", "asc")->first();
             $notif = "User tidak terdaftar di Role Apapun";
             if ($role_user == null) {

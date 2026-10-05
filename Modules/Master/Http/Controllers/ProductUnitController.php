@@ -27,7 +27,12 @@ class ProductUnitController extends Controller
             return $denied;
         }
 
-        return view('master::unit.index');
+        $units = ProductUnit::query()
+            ->select(['id', 'name', 'abbreviation', 'description', 'created_at', 'updated_at'])
+            ->orderBy('name')
+            ->get();
+
+        return view('master::unit.index', compact('units'));
     }
 
     /**
@@ -40,7 +45,7 @@ class ProductUnitController extends Controller
             return $denied;
         }
 
-        return view('master::create');
+        return redirect()->route('unit.index', ['create' => 1]);
     }
 
     /**
@@ -138,7 +143,7 @@ class ProductUnitController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            return response()->json(['message' => 'Unit updated failed']);
+            return response()->json(['success' => false, 'message' => 'Satuan gagal diperbarui.'], 500);
         }
 
         return response()->json(['message' => 'Unit updated successfully']);

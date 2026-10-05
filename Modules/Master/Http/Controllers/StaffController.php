@@ -28,7 +28,7 @@ class StaffController extends Controller
             return $denied;
         }
 
-        return view('master::staff.index');
+        return view('master::staff.index', ['records' => Staff::query()->with(['department:id,name', 'position:id,name'])->select('id', 'name', 'nickname', 'contact', 'email', 'department_id', 'position_id', 'status')->orderByDesc('id')->get()]);
     }
 
     /**
@@ -206,7 +206,7 @@ class StaffController extends Controller
             $staff->position_id   = $request->position;
             $staff->description   = strip_tags($request->description ?? '');
             $staff->status        = $request->status ?? 'aktif';
-            $staff->created_by    = Auth::user()->id_user;
+            $staff->updated_by    = Auth::user()->id_user;
 
             if ($request->hasFile('avatar')) {
                 // Hapus foto lama jika ada

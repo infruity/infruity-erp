@@ -32,7 +32,13 @@ class SupplierController extends Controller
             return $denied;
         }
 
-        return view('master::supllier.index');
+        return view('master::supllier.index', [
+            'records' => Supplier::query()
+                ->leftJoin('users as updater', 'supplier.updated_by', '=', 'updater.id_user')
+                ->select('supplier.id', 'supplier.name', 'supplier.pic_name', 'supplier.pic_whatsapp', 'supplier.address', 'supplier.email', 'supplier.updated_at', 'updater.nm_user as updated_by_name')
+                ->orderByDesc('supplier.id')
+                ->get(),
+        ]);
     }
 
     /**
@@ -45,7 +51,7 @@ class SupplierController extends Controller
             return $denied;
         }
 
-        return view('master::create');
+        return redirect()->route('supplier.index', ['create' => 1]);
     }
 
     /**

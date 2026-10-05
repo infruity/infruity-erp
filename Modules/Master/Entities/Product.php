@@ -34,6 +34,16 @@ class Product extends Model
     {
         return $this->belongsTo(ProductCategory::class);
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(\App\User::class, 'created_by', 'id_user');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(\App\User::class, 'updated_by', 'id_user');
+    }
     public function unit()
     {
         return $this->belongsTo(ProductUnit::class, 'product_unit');

@@ -1,238 +1,246 @@
 <!DOCTYPE html>
-<!--
-Author: Keenthemes
-Product Name: Metronic
-Product Version: 8.2.3
-Purchase: https://1.envato.market/EA4JP
-Website: http://www.keenthemes.com
-Contact: support@keenthemes.com
-Follow: www.twitter.com/keenthemes
-Dribbble: www.dribbble.com/keenthemes
-Like: www.facebook.com/keenthemes
-License: For each use you must have a valid license purchased only from above link in order to legally use the theme for your project.
--->
-<html lang="en">
-<!--begin::Head-->
+<html lang="id">
 
 <head>
-    <base href="/" />
-    <title>Infruity - UMKM Jual Buah Terbaik di Negeri Ini</title>
-    <meta charset="utf-8" />
-    <meta name="description" content="UMKM jual buah dengan harga terjangkau" />
-    <meta name="keywords" content="buah, umkm, pasar" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:type" content="article" />
-    <meta property="og:title" content="Infruity - UMKM Olahan Buah Terbesar di Abad Ini" />
-    <meta property="og:url" content="https://keenthemes.com/metronic" />
-    <meta property="og:site_name" content="Infruity" />
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    {{-- <link rel="canonical" href="https://preview.keenthemes.com/metronic8" /> --}}
-    <link rel="shortcut icon" href="{{ asset('assets/media/logos/logo-infruity.png') }}" />
-    <!--begin::Fonts(mandatory for all pages)-->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
-    <!--end::Fonts-->
-    <!--begin::Vendor Stylesheets(used for this page only)-->
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}">
-    <!--end::Vendor Stylesheets-->
-    <!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/global/plugins.bundle.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.bundle.css') }}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!--end::Global Stylesheets Bundle-->
-    <script>
-        // Frame-busting to prevent site from being loaded within a frame without permission (click-jacking) if (window.top != window.self) { window.top.location.replace(window.self.location.href); }
-    </script>
-</head>
-<!--end::Head-->
-<!--begin::Body-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login ERP | Infruity</title>
+    <link rel="icon" type="image/png" href="{{ asset('infruity-ui/001. Landing Page/000. Logo/Infruity Logo - 5.png') }}">
 
-<body id="kt_body" class="app-blank">
-    <!--begin::Theme mode setup on page load-->
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,700&display=swap"
+        rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        var defaultThemeMode = "light";
-        var themeMode;
-        if (document.documentElement) {
-            if (document.documentElement.hasAttribute("data-bs-theme-mode")) {
-                themeMode = document.documentElement.getAttribute("data-bs-theme-mode");
-            } else {
-                if (localStorage.getItem("data-bs-theme") !== null) {
-                    themeMode = localStorage.getItem("data-bs-theme");
-                } else {
-                    themeMode = defaultThemeMode;
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F5C45',      // Green
+                        accent: '#F2B400',       // Golden Accent
+                        cream: '#FAF8F2',        // Background
+                        strawberry: '#D6455D',   // Highlight
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Poppins"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'input': '0 2px 10px rgba(0,0,0,0.02)',
+                    }
                 }
             }
-            if (themeMode === "system") {
-                themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-            }
-            document.documentElement.setAttribute("data-bs-theme", themeMode);
         }
     </script>
-    <!--end::Theme mode setup on page load-->
-    <!--begin::Root-->
-    <div class="d-flex flex-column flex-root" id="kt_app_root">
-        <!--begin::Authentication - Sign-in -->
-        <div class="d-flex flex-column flex-lg-row flex-column-fluid">
-            <!--begin::Body-->
-            <div class="d-flex flex-column flex-lg-row-fluid w-lg-50 p-10 order-2 order-lg-1">
-                <!--begin::Form-->
-                <div class="d-flex flex-center flex-column flex-lg-row-fluid">
-                    <!--begin::Wrapper-->
-                    <div class="w-lg-500px p-10">
-                        <!--begin::Form-->
-                        @include('template.notif')
-                        <form class="form w-100" novalidate="novalidate" id="kt_sign_in_form"
-                            action="{{ url('auth/login') }}" method="POST">
-                            @csrf
-                            <!--begin::Heading-->
-                            <div class="text-center mb-11">
-                                <!--begin::Title-->
-                                <h1 class="text-gray-900 fw-bolder mb-3">Sign In</h1>
-                                <!--end::Title-->
-                                <!--begin::Subtitle-->
-                                <div class="text-gray-500 fw-semibold fs-6">Your Social Campaigns</div>
-                                <!--end::Subtitle=-->
-                            </div>
-                            <!--begin::Heading-->
-                            {{-- @include('auth.login-option') --}}
-                            <!--begin::Separator-->
-                            {{-- <div class="separator separator-content my-14">
-                                <span class="w-125px text-gray-500 fw-semibold fs-7">Or with email</span>
-                            </div> --}}
-                            <!--end::Separator-->
-                            <!--begin::Input group=-->
-                            <div class="fv-row mb-8">
-                                <!--begin::Email-->
-                                <input type="text" placeholder="Email" name="email" autocomplete="off"
-                                    class="form-control bg-transparent" />
-                                <!--end::Email-->
-                            </div>
-                            <!--end::Input group=-->
-                            <div class="fv-row mb-3 position-relative">
-                                <!--begin::Password-->
-                                <input type="password" placeholder="Password" name="password" autocomplete="off"
-                                    class="form-control bg-transparent" id="password" />
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
 
-                                <!--begin::Toggle Button-->
-                                <span class="btn btn-sm btn-icon position-absolute top-50 end-0 translate-middle-y me-3"
-                                    onclick="togglePassword()" style="cursor: pointer;">
-                                    <i class="bi bi-eye-slash" id="togglePasswordIcon"></i>
-                                </span>
-                                <!--end::Toggle Button-->
-                                <!--end::Password-->
-                            </div>
-                            <!--end::Input group=-->
-                            <!--begin::Wrapper-->
-                            <div class="d-flex flex-stack flex-wrap gap-3 fs-base fw-semibold mb-8">
-                                <div></div>
-                                <!--begin::Link-->
-                                <a href="{{ url('/') }}" class="link-primary">Forgot Password ?</a>
-                                <!--end::Link-->
-                            </div>
-                            <!--end::Wrapper-->
-                            <!--begin::Submit button-->
-                            <div class="d-grid mb-10">
-                                <button type="submit" id="kt_sign_in_submit" class="btn btn-primary">
-                                    <!--begin::Indicator label-->
-                                    <span class="indicator-label">Sign In</span>
-                                    <!--end::Indicator label-->
-                                    <!--begin::Indicator progress-->
-                                    <span class="indicator-progress">Please wait...
-                                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                                    <!--end::Indicator progress-->
-                                </button>
-                            </div>
-                            <!--end::Submit button-->
-                            <!--begin::Sign up-->
-                            <div class="text-gray-500 text-center fw-semibold fs-6">Not a Member yet?
-                                <a href="authentication/layouts/corporate/sign-up.html" class="link-primary">Sign up</a>
-                            </div>
-                            <!--end::Sign up-->
-                        </form>
-                        <!--end::Form-->
-                    </div>
-                    <!--end::Wrapper-->
-                </div>
-                <!--end::Form-->
+        .image-overlay {
+            background: linear-gradient(135deg, rgba(15, 92, 69, 0.85) 0%, rgba(0, 0, 0, 0.6) 100%);
+        }
+    </style>
+</head>
 
-            </div>
-            <!--end::Body-->
-            <!--begin::Aside-->
-            <div class="d-flex flex-lg-row-fluid w-lg-50 bgi-size-cover bgi-position-center order-1 order-lg-2"
-                style="background-image: url({{ asset('assets/media/misc/auth-bg.png') }})">
-                <!--begin::Content-->
-                <div class="d-flex flex-column flex-center py-7 py-lg-15 px-5 px-md-15 w-100">
-                    <!--begin::Logo-->
-                    <a href="{{ url('/') }}">
-                        {{-- <img alt="Logo" src="{{ asset('images/logo-infruity.png') }}" class="h-25px h-lg-25px" /> --}}
-                        <h1 class="text-white fw-bold fs-1">in!fruity</h1>
-                    </a>
-                    <!--end::Logo-->
-                    <!--begin::Image-->
-                    <img class="d-none d-lg-block mx-auto w-275px w-md-50 w-xl-500px mb-10 mb-lg-20"
-                        src="{{ asset('assets/media/misc/auth-screens.png') }}" alt="" />
-                    <!--end::Image-->
-                    <!--begin::Title-->
-                    <h1 class="d-none d-lg-block text-white fs-2qx fw-bolder text-center mb-7">Fast, Efficient and
-                        Productive</h1>
-                    <!--end::Title-->
-                    <!--begin::Text-->
-                    <div class="d-none d-lg-block text-white fs-base text-center">In this kind of post,
-                        <a href="#" class="opacity-75-hover text-warning fw-bold me-1">the blogger</a>introduces
-                        a person they’ve interviewed
-                        <br />and provides some background information about
-                        <a href="#" class="opacity-75-hover text-warning fw-bold me-1">the interviewee</a>and
-                        their
-                        <br />work following this is a transcript of the interview.
-                    </div>
-                    <!--end::Text-->
-                </div>
-                <!--end::Content-->
-            </div>
-            <!--end::Aside-->
+<body class="font-sans bg-cream text-gray-800 antialiased h-screen flex overflow-hidden">
+
+    <!-- Left Side: Image and Branding -->
+    <div class="hidden lg:flex lg:w-3/5 relative bg-primary items-center justify-start overflow-hidden">
+        <!-- Background Image -->
+        <img src="{{ asset('infruity-ui/002. Login ERP/001. Aset/Login 3.png') }}" alt="Farm Background"
+            class="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-overlay">
+
+        <!-- Gradient Overlay -->
+        <div class="absolute inset-0 image-overlay"></div>
+
+        <!-- Decorative Elements -->
+        <div class="absolute top-12 left-12">
+            <a href="{{ url('/') }}"
+                class="flex items-center gap-3 text-white hover:text-accent transition-colors">
+                <i class="ph ph-arrow-left text-2xl"></i>
+                <span class="font-medium">Kembali ke Website</span>
+            </a>
         </div>
-        <!--end::Authentication - Sign-in-->
-    </div>
-    <!--end::Root-->
-    <!--begin::Javascript-->
-    <script>
-        var hostUrl = "assets/";
-        $("form").submit(function() {
-            $(this).find(":submit").attr('disabled', 'disabled');
-            $(this).find(":submit").html(
-                `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...`
-            );
-        });
 
+        <div
+            class="absolute bottom-0 right-0 w-96 h-96 bg-accent rounded-full blur-[120px] opacity-20 transform translate-x-1/2 translate-y-1/2 pointer-events-none">
+        </div>
+        <div
+            class="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-[120px] opacity-10 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+        </div>
+
+        <!-- Content -->
+        <div class="relative z-10 p-12 lg:px-20 xl:px-24 max-w-3xl text-white w-full">
+            <img src="{{ asset('infruity-ui/001. Landing Page/000. Logo/Logo Putih 1.png') }}" alt="Infruity Logo" class="h-16 mb-12">
+
+            <h1 class="text-5xl md:text-6xl font-serif font-bold leading-tight mb-6">
+                Portal <br>
+                <span class="text-accent italic font-light">Internal</span>
+            </h1>
+            <p class="text-lg text-white/80 leading-relaxed max-w-xl font-light">
+                Sistem manajemen terpusat untuk operasional.<br>
+                Akses terbatas hanya untuk pihak internal Infruity.
+            </p>
+
+            <div class="mt-12 flex items-center gap-4 text-sm text-white/80">
+                <div class="flex -space-x-3">
+                    <div
+                        class="w-10 h-10 rounded-full border-2 border-white/30 bg-white/20 backdrop-blur-md flex items-center justify-center">
+                        <i class="ph-fill ph-plant text-accent"></i>
+                    </div>
+                    <div
+                        class="w-10 h-10 rounded-full border-2 border-white/30 bg-white/20 backdrop-blur-md flex items-center justify-center">
+                        <i class="ph-fill ph-truck text-accent"></i>
+                    </div>
+                    <div
+                        class="w-10 h-10 rounded-full border-2 border-white/30 bg-white/20 backdrop-blur-md flex items-center justify-center">
+                        <i class="ph-fill ph-chart-line-up text-accent"></i>
+                    </div>
+                </div>
+                <span>Infruity Internal Management System</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side: Login Form -->
+    <div
+        class="w-full lg:w-2/5 flex flex-col justify-center items-center p-8 sm:p-12 md:p-16 relative bg-white lg:bg-cream">
+
+        <!-- Mobile Logo (Visible only on small screens) -->
+        <div class="lg:hidden absolute top-8 left-1/2 transform -translate-x-1/2">
+            <img src="{{ asset('infruity-ui/001. Landing Page/000. Logo/INFRUITY emas hijau.png') }}" alt="Infruity Logo" class="h-10">
+        </div>
+
+        <div class="w-full max-w-md">
+
+            <!-- Header -->
+            <div class="mb-10 text-center lg:text-left">
+                <h2 class="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-3">Selamat Datang</h2>
+                <p class="text-gray-600 text-sm sm:text-base">Gunakan kredensial internal Anda untuk mengakses sistem.
+                </p>
+            </div>
+
+            @if ($errors->any() || session('error'))
+                <div role="alert" class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {{ session('error') ?: $errors->first() }}
+                </div>
+            @endif
+
+            <!-- Form -->
+            <form action="{{ url('auth/login') }}" method="POST" class="space-y-6">
+                @csrf
+
+                <!-- Email/Username -->
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-2">ID Karyawan /
+                        Email</label>
+                    <div class="relative group">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                            <i class="ph ph-user text-xl"></i>
+                        </div>
+                        <input type="text" id="username" name="email" value="{{ old('email') }}" autocomplete="username" placeholder="Masukkan ID atau Email"
+                            class="block w-full pl-14 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-2xl text-gray-900 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all duration-300 shadow-input outline-none"
+                            required>
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Kata Sandi</label>
+                    <div class="relative group">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                            <i class="ph ph-lock-key text-xl"></i>
+                        </div>
+                        <input type="password" id="password" name="password" autocomplete="current-password" placeholder="Masukkan Kata Sandi"
+                            class="block w-full pl-14 pr-12 py-3.5 bg-gray-50/50 border border-gray-200 rounded-2xl text-gray-900 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all duration-300 shadow-input outline-none"
+                            required>
+                        <!-- Show/Hide Password Toggle -->
+                        <button type="button"
+                            class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                            onclick="togglePassword()">
+                            <i id="eye-icon" class="ph ph-eye text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="flex items-center justify-between mt-4">
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember" type="checkbox"
+                            class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer accent-primary">
+                        <label for="remember-me" class="ml-2 block text-sm text-gray-600 cursor-pointer select-none">
+                            Ingat saya
+                        </label>
+                    </div>
+
+                    <div class="text-sm">
+                        <a href="{{ url('forgot-password') }}" class="font-medium text-primary hover:text-primary/80 transition-colors">Lupa
+                            sandi?</a>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex gap-4">
+                    <!-- Submit Button -->
+                    <button type="submit"
+                        class="flex-1 flex justify-center py-4 px-4 border border-transparent rounded-2xl shadow-lg shadow-primary/20 text-sm font-bold tracking-wide text-white bg-primary hover:bg-[#0c4a37] hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        Masuk ke Sistem
+                    </button>
+
+                    <!-- Guest Button -->
+                    <button type="button" onclick="window.location.href='{{ url('infruity-ui/003. ERP/app.html') }}'"
+                        class="flex-none flex items-center justify-center py-4 px-6 border-2 border-primary rounded-2xl text-sm font-bold tracking-wide text-primary bg-transparent hover:bg-primary/5 transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                        title="Masuk sebagai Guest">
+                        Guest
+                    </button>
+                </div>
+            </form>
+
+            <!-- Footer Text -->
+            <div class="mt-8 text-center text-sm text-gray-500">
+                <p>Mengalami kendala akses? <a href="#" class="font-medium text-primary hover:underline">Hubungi Tim IT
+                        Internal</a></p>
+            </div>
+
+        </div>
+
+
+
+    </div>
+
+    <script>
+        // Simple password toggle functionality
         function togglePassword() {
             const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('togglePasswordIcon');
+            const eyeIcon = document.getElementById('eye-icon');
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
-                toggleIcon.classList.remove('bi-eye-slash');
-                toggleIcon.classList.add('bi-eye');
+                eyeIcon.classList.remove('ph-eye');
+                eyeIcon.classList.add('ph-eye-slash');
             } else {
                 passwordInput.type = 'password';
-                toggleIcon.classList.remove('bi-eye');
-                toggleIcon.classList.add('bi-eye-slash');
+                eyeIcon.classList.remove('ph-eye-slash');
+                eyeIcon.classList.add('ph-eye');
             }
         }
     </script>
-    <!--begin::Global Javascript Bundle(mandatory for all pages)-->
-    <script src="{{ asset('assets/plugins/global/plugins.bundle.js') }}"></script>
-    <script src="{{ asset('assets/js/scripts.bundle.js') }}"></script>
-    <!--end::Global Javascript Bundle-->
-    <!--begin::Vendors Javascript(used for this page only)-->
-    <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
-    @if (isset($page_plugin_js))
-        @foreach ($page_plugin_js as $item)
-            <script type="text/javascript" src="{{ asset($item) }}"></script>
-        @endforeach
-    @endif
-    @yield('script')
-    <!--end::Custom Javascript-->
-    <!--end::Javascript-->
 </body>
-<!--end::Body-->
 
 </html>

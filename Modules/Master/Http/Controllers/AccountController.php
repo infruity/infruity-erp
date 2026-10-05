@@ -27,7 +27,7 @@ class AccountController extends Controller
             return $denied;
         }
 
-        return view('master::account.index');
+        return view('master::account.index', ['records' => Account::query()->select('id', 'name', 'code')->orderByDesc('id')->get()]);
     }
 
     /**
@@ -40,7 +40,7 @@ class AccountController extends Controller
             return $denied;
         }
 
-        return view('master::create');
+        return redirect()->route('account.index', ['create' => 1]);
     }
 
     /**
@@ -56,6 +56,7 @@ class AccountController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:account,name',
+            'code' => 'required|string|max:255|unique:account,code',
         ]);
 
         // Simpan data ke database
@@ -63,6 +64,7 @@ class AccountController extends Controller
             DB::beginTransaction();
             $account = new Account();
             $account->name = $validated['name'];
+            $account->code = $validated['code'];
             $account->save();
             DB::commit();
         } catch (Exception $e) {
@@ -119,6 +121,7 @@ class AccountController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:account,name,' . $id,
+            'code' => 'required|string|max:255|unique:account,code,' . $id,
         ]);
 
         // Simpan data ke database
@@ -126,6 +129,7 @@ class AccountController extends Controller
             DB::beginTransaction();
             $account = Account::findOrFail($id);
             $account->name = $validated['name'];
+            $account->code = $validated['code'];
             $account->save();
             DB::commit();
         } catch (Exception $e) {

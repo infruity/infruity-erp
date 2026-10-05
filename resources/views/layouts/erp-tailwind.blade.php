@@ -312,8 +312,8 @@
                                 <i class="ph ph-map-pin sidebar-icon text-lg w-5 text-center text-white/35"></i>
                                 <span>Cabang</span>
                             </a>
-                            <a href="{{ route('account.index') }}"
-                                class="submenu-link {{ request()->routeIs('account.*') ? 'active' : '' }} relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45">
+                            <a href="{{ route('user.index') }}"
+                                class="submenu-link {{ request()->routeIs('user.*') ? 'active' : '' }} relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45">
                                 <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
                                 <span>Akun Pengguna</span>
                             </a>
@@ -411,7 +411,8 @@
 
             <!-- Mobile Header Bar -->
             @unless(trim($__env->yieldContent('dashboard-fullscreen')))
-            <div class="md:hidden px-4 py-3 bg-white/95 backdrop-blur-md border-b border-gray-100 flex items-center justify-between z-20 shrink-0 shadow-xs">
+            @unless(trim($__env->yieldContent('hide-mobile-header')))
+            <div class="sm:hidden px-4 py-3 bg-white/95 backdrop-blur-md border-b border-gray-100 flex items-center justify-between z-20 shrink-0 shadow-xs">
                 <div class="flex items-center gap-2">
                     <img src="{{ asset('images/infruity-wordmark.png') }}" alt="Infruity Logo" style="height: 20px; width: auto; max-width: 100px;" class="object-contain" />
                     <span class="text-gray-300 font-light text-sm">|</span>
@@ -425,11 +426,12 @@
                 </div>
             </div>
             @endunless
+            @endunless
 
             @unless(trim($__env->yieldContent('hide-global-header')))
             <!-- Floating Header (hidden on mobile; mobile header bar above replaces it) -->
             <header
-                class="hidden md:flex bg-white rounded-full shadow-sm border border-gray-100 mx-4 md:mx-6 lg:mx-8 mt-4 md:mt-6 lg:mt-5 px-5 lg:px-6 py-3 lg:py-4 items-center justify-between gap-4 z-30 sticky top-4 md:top-6 lg:top-5">
+                class="hidden sm:flex bg-white rounded-full shadow-sm border border-gray-100 mx-4 sm:mx-6 lg:mx-8 mt-4 sm:mt-6 lg:mt-5 px-5 lg:px-6 py-3 lg:py-4 items-center justify-between gap-4 z-30 sticky top-4 sm:top-6 lg:top-5">
 
                 <!-- Left: Hamburger + Title -->
                 <div class="flex items-center gap-4 pl-2">
@@ -437,8 +439,8 @@
                         class="lg:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-500 transition shrink-0">
                         <i class="ph ph-list text-2xl"></i>
                     </button>
-                    <div class="hidden md:block">
-                        <h1 class="text-base md:text-lg font-bold text-gray-900 leading-none mb-1.5">@yield('page-title', 'Master')</h1>
+                    <div class="hidden sm:block">
+                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5">@yield('page-title', 'Master')</h1>
                         <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
                             @yield('page-breadcrumb', 'Master')
                         </div>
@@ -518,7 +520,7 @@
     @php
         $simpleMasterMobile = request()->routeIs(
             'unit.*', 'category.*', 'supplier.*', 'customers.*', 'branch.*',
-            'account.*', 'position.*', 'staff.*', 'kurir.*', 'payment-method.*',
+            'user.*', 'position.*', 'staff.*', 'kurir.*', 'payment-method.*',
             'receipt.index', 'roles.index'
         );
         $showMasterFilter = request()->routeIs('receipt.index');

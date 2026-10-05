@@ -33,7 +33,12 @@ class ProductCategoryController extends Controller
             return $denied;
         }
 
-        return view('master::category.index');
+        $categories = ProductCategory::query()
+            ->select(['id', 'name', 'description'])
+            ->orderBy('name')
+            ->get();
+
+        return view('master::category.index', compact('categories'));
     }
 
     /**
@@ -46,7 +51,7 @@ class ProductCategoryController extends Controller
             return $denied;
         }
 
-        return view('master::create');
+        return redirect()->route('category.index', ['create' => 1]);
     }
 
     /**
@@ -141,7 +146,7 @@ class ProductCategoryController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            return response()->json(['message' => 'Category updated failed']);
+            return response()->json(['success' => false, 'message' => 'Kategori gagal diperbarui.'], 500);
         }
 
         return response()->json(['message' => 'Category updated successfully']);

@@ -59,6 +59,28 @@
             typeExpanded: false,
             mobileSearchOpen: false,
             productCreateOpen: @js($errors->any()),
+            productEditId: null,
+            productDetailOpen: false,
+            productDetail: null,
+            openProductCreate() {
+                resetProductDrawer();
+                this.productEditId = null;
+                this.productCreateOpen = true;
+            },
+            async openProductEdit(detail) {
+                this.productDetailOpen = false;
+                try {
+                    const branchId = this.selectedBranchId;
+                    const response = await fetch(detail.editUrl + '?branch_id=' + encodeURIComponent(branchId), { headers: { Accept: 'application/json' } });
+                    if (!response.ok) throw new Error('Data produk tidak dapat dimuat.');
+                    const product = await response.json();
+                    populateProductDrawer(product, branchId);
+                    this.productEditId = product.id;
+                    this.productCreateOpen = true;
+                } catch (error) {
+                    Swal.fire('Gagal', error.message, 'error');
+                }
+            },
             isScrolling: false,
             scrollTimer: null,
             branchSearchQuery: '',
@@ -125,12 +147,13 @@
                 this.filterOpen = false;
             }
         }"
-         x-effect="document.body.classList.toggle('overflow-hidden', productCreateOpen)"
+         x-effect="document.body.classList.toggle('overflow-hidden', productCreateOpen || productDetailOpen)"
          x-init="syncHiddenInputs(); refreshActiveFilters()"
+         @product-detail-open.window="productDetail = $event.detail; productDetailOpen = true"
          @mobile-search-toggle.window="mobileSearchOpen = !mobileSearchOpen; filterOpen = false; if (mobileSearchOpen) $nextTick(() => $refs.mobileSearch.focus())"
          @mobile-filter-toggle.window="if (!filterOpen) { openMobileFilter() } else { filterOpen = false }; mobileSearchOpen = false"
-         @mobile-add-toggle.window="productCreateOpen = true; mobileSearchOpen = false; filterOpen = false"
-         @keydown.escape.window="productCreateOpen = false"
+         @mobile-add-toggle.window="openProductCreate(); mobileSearchOpen = false; filterOpen = false"
+         @keydown.escape.window="productCreateOpen = false; productDetailOpen = false"
          class="product-list-fullbleed w-[calc(100%+2rem)] flex-1 flex flex-col min-h-0 -mx-4 md:w-full md:mx-0">
         <!-- Main Content Card -->
         <div class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
@@ -341,7 +364,7 @@
 
                 <!-- Add Button -->
                 @if ($canCreateProduct)
-                    <button type="button" @click="productCreateOpen = true"
+                    <button type="button" @click="openProductCreate()"
                         class="flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold transition-colors shadow-sm shrink-0">
                         <i class="ph-bold ph-plus text-sm"></i>
                         <span>Tambah Produk</span>
@@ -396,14 +419,14 @@
                     x-transition:leave="transition ease-in duration-200 transform"
                     x-transition:leave-start="translate-y-0 lg:translate-y-0 lg:translate-x-0"
                     x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full"
-                    class="product-create-overlay relative z-10 flex h-[85vh] max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border-t border-gray-100 bg-white shadow-2xl md:mx-auto md:max-w-lg lg:mx-0 lg:h-full lg:max-w-sm lg:rounded-none lg:border-l lg:border-t-0">
+                    class="product-create-overlay relative z-10 flex h-[82.5vh] max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border-t border-gray-100 bg-white shadow-2xl md:mx-auto md:max-w-lg lg:mx-0 lg:h-full lg:max-w-sm lg:rounded-none lg:border-l lg:border-t-0">
                     <div class="flex shrink-0 justify-center pt-3 pb-1 lg:hidden" @click="productCreateOpen = false" style="cursor: pointer;">
                         <div class="h-1.5 w-16 rounded-full bg-gray-300"></div>
                     </div>
                     <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-5 py-3.5">
                         <div>
-                            <h2 id="product-create-title" class="text-[15px] font-bold text-gray-900">Tambah Produk</h2>
-                            <p class="mt-0.5 text-xs text-gray-400">Isi data produk baru</p>
+                            <h2 id="product-create-title" class="text-[15px] font-bold text-gray-900" x-text="productEditId ? 'Edit Produk' : 'Tambah Produk'"></h2>
+                            <p class="mt-0.5 text-xs text-gray-400" x-text="productEditId ? 'Perbarui data produk' : 'Isi data produk baru'"></p>
                         </div>
                         <button type="button" @click="productCreateOpen = false"
                             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200"
@@ -419,13 +442,70 @@
                             class="h-11 flex-1 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">Batal</button>
                         <button type="submit" form="add_product_form" id="product-create-submit"
                             class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white shadow-sm transition hover:bg-[#0a4e50]">
-                            <span>Tambah Produk</span>
+                            <span x-text="productEditId ? 'Simpan Perubahan' : 'Tambah Produk'"></span>
                         </button>
                     </footer>
                 </section>
             </div>
         </template>
     @endif
+    <template x-teleport="body">
+    <div x-show="productDetailOpen" x-cloak
+         class="fixed inset-0 z-[120] flex items-center justify-center px-4"
+         role="dialog" aria-modal="true" aria-labelledby="product-detail-title">
+        <div class="absolute inset-0 bg-black/60" @click="productDetailOpen = false"
+             x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+        <div class="relative z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
+             x-transition:enter="transition-all duration-300" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition-all duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95 translate-y-2">
+            <div class="flex flex-col gap-5 p-6 text-sm">
+                <div class="mb-1 flex items-center justify-between">
+                    <h2 id="product-detail-title" class="text-lg font-bold text-gray-800">Detail Produk</h2>
+                    <button type="button" @click="productDetailOpen = false" aria-label="Tutup detail produk" class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200">
+                        <i class="ph-bold ph-x"></i>
+                    </button>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="ph-duotone ph-tag shrink-0 text-2xl text-emerald-500"></i>
+                    <div class="min-w-0">
+                        <div class="font-bold leading-snug text-gray-800" x-text="productDetail?.name"></div>
+                        <div class="mt-0.5 text-[11px] font-medium text-gray-400" x-text="productDetail?.type"></div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="ph-duotone ph-coins shrink-0 text-2xl text-emerald-500"></i>
+                    <div>
+                        <div class="font-bold text-gray-800" x-text="productDetail?.price"></div>
+                        <div class="mt-0.5 text-[11px] font-medium text-gray-400">Harga Jual</div>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <i class="ph-duotone ph-clock mt-0.5 shrink-0 text-2xl text-emerald-500"></i>
+                    <div class="min-w-0">
+                        <div class="text-xs font-bold leading-snug text-gray-800" x-text="productDetail?.updatedBy || 'Administrator'"></div>
+                        <div class="mt-0.5 text-[11px] font-medium text-gray-400" x-text="'Memperbarui pada ' + (productDetail?.updatedAt || '-')"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex w-full border-t border-gray-100">
+                @if (check_access('products.edit'))
+                    <button type="button" @click="openProductEdit(productDetail)" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-[#0b595b] hover:bg-emerald-50">
+                        <i class="ph-bold ph-pencil-simple"></i> Edit
+                    </button>
+                @endif
+                @if (check_access('products.edit') && check_access('products.destroy'))
+                    <div class="w-px bg-gray-100"></div>
+                @endif
+                @if (check_access('products.destroy'))
+                    <button type="button" @click="productDetailOpen = false; deleteProduct(productDetail.id)" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-red-500 hover:bg-red-50">
+                        <i class="ph-bold ph-trash"></i> Hapus
+                    </button>
+                @endif
+            </div>
+        </div>
+    </div>
+    </template>
     </div>
 
     @include('master::products.partials.create-script')
@@ -450,12 +530,132 @@
             }
         }
 
+        function resetProductDrawer() {
+            const form = document.getElementById('add_product_form');
+            if (!form) return;
+            form.reset();
+            form.action = @js(route('products.store'));
+            form.querySelector('input[name="_method"]')?.remove();
+            form.querySelector('input[name="selected_branch_id"]')?.remove();
+            form.querySelector('#product-type').value = '';
+            form.querySelector('#product-status').value = '';
+            form.querySelector('#category_id').value = '';
+            form.querySelector('#product-unit').value = '';
+            const $variantSelects = $(form).find('#kt_ecommerce_edit_order_selected_products_body .select2-hidden-accessible');
+            if ($variantSelects.length) $variantSelects.select2('destroy');
+            form.querySelector('#kt_ecommerce_edit_order_selected_products_body')?.replaceChildren();
+            const variantToggle = form.querySelector('#product-has-variants');
+            variantToggle.checked = false;
+            variantToggle.setAttribute('aria-checked', 'false');
+            form.querySelector('#product-variants').classList.add('hidden');
+            form.querySelector('#product-branch-prices').classList.remove('hidden');
+            const pricing = window.Alpine?.$data(form.querySelector('[data-branch-pricing]'));
+            if (pricing) pricing.priceRules = [{ id: Date.now(), price: '', branches: ['all'] }];
+            form.querySelector('#product-image-preview').src = '';
+            form.querySelector('#product-image-preview').classList.add('hidden');
+            form.querySelector('#product-image-placeholder').classList.remove('hidden');
+            form.querySelectorAll('[data-picker-option], [data-product-type-option]').forEach(option => {
+                option.classList.remove('bg-emerald-50/60');
+                option.querySelector('.product-picker-radio')?.classList.remove('!border-emerald-500');
+                option.querySelector('.product-picker-radio span')?.classList.remove('!scale-100');
+            });
+            const submit = document.getElementById('product-create-submit');
+            if (submit) submit.disabled = false;
+        }
+
+        function populateProductDrawer(product, branchId) {
+            resetProductDrawer();
+            const form = document.getElementById('add_product_form');
+            form.action = product.updateUrl;
+            const method = document.createElement('input');
+            method.type = 'hidden'; method.name = '_method'; method.value = 'PUT';
+            form.appendChild(method);
+            if (branchId) {
+                const selectedBranch = document.createElement('input');
+                selectedBranch.type = 'hidden'; selectedBranch.name = 'selected_branch_id'; selectedBranch.value = branchId;
+                form.appendChild(selectedBranch);
+            }
+            const setValue = (selector, value) => { const field = form.querySelector(selector); if (field) field.value = value ?? ''; };
+            setValue('#product-name', product.name);
+            setValue('#description_input', product.description);
+            setValue('#product-sku', product.sku);
+            setValue('#product-barcode', product.barcode);
+            setValue('#product-limit', product.limit);
+            setValue('#product-handling', product.handling);
+            setValue('#product-price', product.price);
+            setValue('#category_id', product.categoryId);
+            setValue('#product-type', product.tipe);
+            setValue('#product-status', product.status);
+            const typeOption = [...form.querySelectorAll('[data-product-type-option]')]
+                .find(option => String(option.dataset.categoryValue) === String(product.categoryId))
+                || [...form.querySelectorAll('[data-product-type-option]')]
+                    .find(option => option.dataset.productTipe === product.tipe && option.dataset.productStatus === product.status);
+            typeOption?.click();
+            setValue('#product-unit', product.unitId);
+            form.querySelector(`[data-picker-select="product-unit"][data-picker-value="${product.unitId}"]`)?.click();
+            if (product.imageUrl) {
+                const preview = form.querySelector('#product-image-preview');
+                preview.src = product.imageUrl;
+                preview.classList.remove('hidden');
+                form.querySelector('#product-image-placeholder').classList.add('hidden');
+            }
+
+            const pricing = window.Alpine?.$data(form.querySelector('[data-branch-pricing]'));
+            if (pricing) {
+                const groups = new Map();
+                for (const branch of product.branchPrices || []) {
+                    const key = String(branch.price ?? 0);
+                    if (!groups.has(key)) groups.set(key, []);
+                    groups.get(key).push(String(branch.branchId));
+                }
+                const allIds = pricing.branches.map(branch => String(branch.id));
+                const rules = groups.size
+                    ? [...groups].map(([price, ids], index) => ({
+                        id: Date.now() + index,
+                        price,
+                        branches: ids.length === allIds.length && allIds.every(id => ids.includes(id)) ? ['all'] : ids.filter(id => allIds.includes(id))
+                    })).filter(rule => rule.branches.length)
+                    : [{ id: Date.now(), price: product.price || '', branches: ['all'] }];
+                pricing.priceRules = rules.length ? rules : [{ id: Date.now(), price: product.price || '', branches: ['all'] }];
+            }
+
+            const $body = $(form).find('#kt_ecommerce_edit_order_selected_products_body');
+            for (const variant of product.variants || []) {
+                const $row = $('<tr>');
+                const $select = $('<select name="variant[id][]" class="form-select mb-2 select2_product">')
+                    .append($('<option selected>').val(variant.id).text(variant.name));
+                $row.append($('<td>').append($select));
+                $row.append($('<td>').append($('<input type="text" name="variant[price][]" class="form-control format-number mb-2">').val(variant.price ?? 0)));
+                $row.append($('<td>').append('<button type="button" class="product-remove-row remove_variant" aria-label="Hapus varian"><i class="ph ph-x"></i></button>'));
+                $body.append($row);
+            }
+            if ($body.children().length) {
+                $body.find('.select2_product').select2({
+                    placeholder: 'Ketik nama produk', tags: true,
+                    ajax: {
+                        url: @js(route('ajax.getProduct')),
+                        dataType: 'json', delay: 250,
+                        data: params => ({ search: params.term }),
+                        processResults: data => ({ results: data.map(item => ({ id: item.id, text: item.name })) })
+                    }
+                });
+                const toggle = form.querySelector('#product-has-variants');
+                toggle.checked = true;
+                toggle.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+
         $(document).ready(function() {
+            $.fn.dataTable.ext.errMode = 'none';
             dataTable = $('#products-table').DataTable({
-                pageLength: 20,
+                pageLength: 50,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                 processing: true,
                 serverSide: true,
+                language: {
+                    emptyTable: '<div class="py-12 text-center text-sm text-gray-500">Produk tidak ditemukan</div>',
+                    zeroRecords: '<div class="py-12 text-center"><div class="text-sm font-medium text-gray-500">Produk tidak ditemukan</div><div class="mt-1 text-xs text-gray-400">Coba ubah kata kunci pencarian atau filter</div></div>'
+                },
                 order: [],
                 columnDefs: [{
                     orderable: false,
@@ -469,6 +669,14 @@
                 },
                 ajax: {
                     url: "{{ route('products-data') }}",
+                    headers: { Accept: 'application/json' },
+                    error: function(xhr) {
+                        if (xhr.status === 401 || xhr.status === 419 || (xhr.responseURL && xhr.responseURL.includes('/login')) || (xhr.responseText && xhr.responseText.includes('Login ERP'))) {
+                            window.location.assign(@js(url('/login')));
+                            return;
+                        }
+                        Swal.fire('Gagal', 'Daftar produk tidak dapat dimuat. Coba muat ulang halaman.', 'error');
+                    },
                     data: function(d) {
                         d.searchValue = $('#search').val();
                         d.url = "{{ request()->segment(1) }}";
@@ -519,7 +727,24 @@
             });
 
             $('#products-load-more button').on('click', function() {
-                dataTable.page.len(dataTable.page.len() + 20).draw();
+                dataTable.page.len(dataTable.page.len() + 50).draw();
+            });
+
+            $('#products-table').on('click', '.product-detail-row', function(event) {
+                if ($(event.target).closest('.editable-price').length) return;
+                var detail = $(this).data('product-detail');
+                if (detail) window.dispatchEvent(new CustomEvent('product-detail-open', { detail: detail }));
+            });
+
+            $('#products-table').on('click', '.product-price-range', function() {
+                const detail = $(this).closest('tr').find('.product-detail-row').first().data('product-detail');
+                if (detail) window.dispatchEvent(new CustomEvent('product-detail-open', { detail: detail }));
+            });
+
+            $('#products-table').on('keydown', '.product-detail-trigger, .product-price-range, .editable-price[role="button"]', function(event) {
+                if (event.key !== 'Enter' && event.key !== ' ') return;
+                event.preventDefault();
+                $(this).trigger('click');
             });
         });
 
@@ -575,31 +800,32 @@
             });
         }
 
-        $('#products-table').on('click', '.editable-price', function() {
+            $('#products-table').on('click', '.editable-price', function(event) {
+            event.stopPropagation();
             var $span = $(this);
             var currentValue = $span.data('value');
             var id = $span.data('id');
-
-            var input = $('<input type="number" min="0" step="1" class="w-28 h-9 rounded-lg border border-emerald-500 px-2 text-right text-sm outline-none">')
-                .val(currentValue)
-                .blur(function() {
-                    var newValue = $(this).val();
-                    if (newValue != currentValue) {
-                        updatePrice(id, newValue);
-                    } else {
-                        $span.text(currentValue).show();
-                        $(this).remove();
-                    }
-                })
-                .keypress(function(e) {
-                    if (e.which === 13) {
-                        $(this).blur();
-                    }
-                });
-
-            $span.hide().after(input);
-            input.focus().select();
-
+            var $editor = $('<span class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 p-1 ring-1 ring-emerald-500"></span>');
+            var $input = $('<input type="number" min="0" step="1" aria-label="Harga baru" class="w-20 md:w-28 bg-transparent px-1 text-right text-sm font-semibold text-emerald-900 outline-none">').val(currentValue);
+            var $save = $('<button type="button" aria-label="Simpan harga" class="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500 text-white"><i class="ph-bold ph-check text-xs"></i></button>');
+            var $cancel = $('<button type="button" aria-label="Batal ubah harga" class="hidden md:flex h-7 w-7 items-center justify-center rounded-md bg-gray-100 text-gray-500"><i class="ph-bold ph-x text-xs"></i></button>');
+            function closeEditor() { $editor.remove(); $span.show(); }
+            function saveEditor() {
+                var value = $input.val();
+                if (value === '' || Number(value) < 0) { $input.focus(); return; }
+                if (Number(value) !== Number(currentValue)) updatePrice(id, value);
+                closeEditor();
+            }
+            $editor.append($('<span class="pl-1 text-xs font-semibold text-emerald-700">Rp</span>'), $input, $save, $cancel);
+            $editor.on('click', function(e) { e.stopPropagation(); });
+            $save.on('click', saveEditor);
+            $cancel.on('click', closeEditor);
+            $input.on('keydown', function(e) {
+                if (e.key === 'Enter') saveEditor();
+                if (e.key === 'Escape') closeEditor();
+            });
+            $span.hide().after($editor);
+            $input.trigger('focus').trigger('select');
         });
 
         function updatePrice(id, price) {

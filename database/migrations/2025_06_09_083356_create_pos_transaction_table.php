@@ -64,7 +64,6 @@ return new class extends Migration
             $table->decimal('price_after_discount', 15, 2)->nullable()->default(0);
             $table->decimal('kemasan_price', 15, 2)->nullable()->default(0);
             $table->decimal('debt_quantity', 15, 2)->nullable()->default(0);
-            $table->decimal('subtotal_hpp', 15, 2)->nullable()->default(0);
             $table->enum('type', ['product', 'parcel'])->default('product');
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();

@@ -1,527 +1,224 @@
-@extends('template.root')
+@extends('layouts.erp-tailwind')
+
+@section('title', 'Dashboard')
+@section('page-title', 'Dashboard')
+@section('page-breadcrumb', 'Dashboard')
+@section('dashboard-fullscreen', '1')
+
+@section('extra-style')
+    .erp-dashboard { --dashboard-accent: 211 236 90; --dashboard-dark: #0f5c45; }
+    .erp-dashboard[data-mode="expense"] { --dashboard-accent: 249 115 22; --dashboard-dark: #5c2009; }
+    .erp-dashboard[data-mode="profit"] { --dashboard-accent: 56 189 248; --dashboard-dark: #1e3a8a; }
+    .erp-dashboard[data-mode="loss"] { --dashboard-accent: 239 68 68; --dashboard-dark: #7f1d1d; }
+    .erp-dashboard .mobile-bg-layer { position: absolute; inset: 0; pointer-events: none; transition: opacity .4s ease; }
+    .erp-dashboard .mobile-bg-income { background: linear-gradient(to bottom, #0f5c45 0%, #0f5c45 60%, #ebf2ef 90%, #ebf2ef 100%); }
+    .erp-dashboard .mobile-bg-expense { background: linear-gradient(to bottom, #5c2009 0%, #5c2009 60%, #fff7ed 90%, #fff7ed 100%); }
+    .erp-dashboard .mobile-bg-profit { background: linear-gradient(to bottom, #1e3a8a 0%, #1e3a8a 60%, #eff6ff 90%, #eff6ff 100%); }
+    .erp-dashboard .mobile-bg-loss { background: linear-gradient(to bottom, #7f1d1d 0%, #7f1d1d 60%, #fef2f2 90%, #fef2f2 100%); }
+    .erp-dashboard .mobile-bg-layer { opacity: 0; }
+    .erp-dashboard[data-mode="revenue"] .mobile-bg-income,
+    .erp-dashboard[data-mode="expense"] .mobile-bg-expense,
+    .erp-dashboard[data-mode="profit"] .mobile-bg-profit,
+    .erp-dashboard[data-mode="loss"] .mobile-bg-loss { opacity: 1; }
+    .erp-dashboard .dashboard-scroll { scrollbar-width: none; }
+    .erp-dashboard .dashboard-scroll::-webkit-scrollbar { display: none; }
+    .erp-dashboard .dashboard-bar { background: rgb(var(--dashboard-accent)); }
+    .erp-dashboard .dashboard-bar.active { box-shadow: 0 0 15px rgb(var(--dashboard-accent) / .4); }
+    @media (max-width: 767px) {
+        .erp-dashboard { height: 100dvh; max-height: 100dvh; margin-top: 0; margin-bottom: 0; }
+    }
+@endsection
 
 @section('content')
-    <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
-        <!--begin::Post-->
-        <div class="post d-flex flex-column-fluid" id="kt_post">
-            <!--begin::Container-->
-            <div id="kt_content_container" class="container-xxl">
-                <!--begin::Row-->
-                <div class="row g-5 g-xl-10">
-                    <!--begin::Col-->
-                    <div class="col-xl-4 mb-xl-10">
-                        <!--begin::Lists Widget 19-->
-                        <div class="card card-flush h-xl-100">
-                            <!--begin::Heading-->
-                            <div class="card-header rounded bgi-no-repeat bgi-size-cover bgi-position-y-top bgi-position-x-center align-items-start h-250px"
-                                style="background-image:url('assets/media/svg/shapes/top-green.png" data-bs-theme="light">
-                                <!--begin::Title-->
-                                <h3 class="card-title align-items-start flex-column text-white pt-15">
-                                    <span class="fw-bold fs-2x mb-3">Overview</span>
-                                    <div class="fs-4 text-white">
-                                        <span class="opacity-75">You have</span>
-                                        <span class="position-relative d-inline-block">
-                                            <a href="{{ route('crm.dashboard') }}"
-                                                class="link-white opacity-75-hover fw-bold d-block mb-1">4 data</a>
-                                            <!--begin::Separator-->
-                                            <span
-                                                class="position-absolute opacity-50 bottom-0 start-0 border-2 border-body border-bottom w-100"></span>
-                                            <!--end::Separator-->
-                                        </span>
-                                        <span class="opacity-75">to overview</span>
-                                    </div>
-                                </h3>
-                                <!--end::Title-->
-                                <!--begin::Toolbar-->
-                                <div class="card-toolbar pt-5">
-                                    <!--begin::Menu-->
-                                    <button
-                                        class="btn btn-sm btn-icon btn-active-color-primary btn-color-white bg-white bg-opacity-25 bg-hover-opacity-100 bg-hover-white bg-active-opacity-25 w-20px h-20px"
-                                        data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end"
-                                        data-kt-menu-overflow="true">
-                                        <i class="ki-duotone ki-dots-square fs-4">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                            <span class="path4"></span>
-                                        </i>
-                                    </button>
-                                    <!--begin::Menu 2-->
-                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-200px"
-                                        data-kt-menu="true">
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <div class="menu-content fs-6 text-gray-900 fw-bold px-3 py-4">Quick Actions
-                                            </div>
-                                        </div>
-                                        <!--end::Menu item-->
-                                        <!--begin::Menu separator-->
-                                        <div class="separator mb-3 opacity-75"></div>
-                                        <!--end::Menu separator-->
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <a href="#" class="menu-link px-3">New Ticket</a>
-                                        </div>
-                                        <!--end::Menu item-->
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <a href="#" class="menu-link px-3">New Customer</a>
-                                        </div>
-                                        <!--end::Menu item-->
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3" data-kt-menu-trigger="hover"
-                                            data-kt-menu-placement="right-start">
-                                            <!--begin::Menu item-->
-                                            <a href="#" class="menu-link px-3">
-                                                <span class="menu-title">New Group</span>
-                                                <span class="menu-arrow"></span>
-                                            </a>
-                                            <!--end::Menu item-->
-                                            <!--begin::Menu sub-->
-                                            <div class="menu-sub menu-sub-dropdown w-175px py-4">
-                                                <!--begin::Menu item-->
-                                                <div class="menu-item px-3">
-                                                    <a href="#" class="menu-link px-3">Admin Group</a>
-                                                </div>
-                                                <!--end::Menu item-->
-                                                <!--begin::Menu item-->
-                                                <div class="menu-item px-3">
-                                                    <a href="#" class="menu-link px-3">Staff Group</a>
-                                                </div>
-                                                <!--end::Menu item-->
-                                                <!--begin::Menu item-->
-                                                <div class="menu-item px-3">
-                                                    <a href="#" class="menu-link px-3">Member Group</a>
-                                                </div>
-                                                <!--end::Menu item-->
-                                            </div>
-                                            <!--end::Menu sub-->
-                                        </div>
-                                        <!--end::Menu item-->
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <a href="#" class="menu-link px-3">New Contact</a>
-                                        </div>
-                                        <!--end::Menu item-->
-                                        <!--begin::Menu separator-->
-                                        <div class="separator mt-3 opacity-75"></div>
-                                        <!--end::Menu separator-->
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <div class="menu-content px-3 py-3">
-                                                <a class="btn btn-primary btn-sm px-4" href="#">Generate Reports</a>
-                                            </div>
-                                        </div>
-                                        <!--end::Menu item-->
-                                    </div>
-                                    <!--end::Menu 2-->
-                                    <!--end::Menu-->
-                                </div>
-                                <!--end::Toolbar-->
-                            </div>
-                            <!--end::Heading-->
-                            <!--begin::Body-->
-                            <div class="card-body mt-n20">
-                                <!--begin::Stats-->
-                                <div class="mt-n20 position-relative">
-                                    <!--begin::Row-->
-                                    <div class="row g-3 g-lg-6">
-                                        <!--begin::Col-->
-                                        <div class="col-6">
-                                            <!--begin::Items-->
-                                            <div class="bg-gray-100 bg-opacity-70 rounded-2 px-6 py-5">
-                                                <!--begin::Symbol-->
-                                                <div class="symbol symbol-30px me-5 mb-8">
-                                                    <span class="symbol-label">
-                                                        <i class="ki-duotone ki-flask fs-1 text-primary">
-                                                            <span class="path1"></span>
-                                                            <span class="path2"></span>
-                                                        </i>
-                                                    </span>
-                                                </div>
-                                                <!--end::Symbol-->
-                                                <!--begin::Stats-->
-                                                <div class="m-0">
-                                                    <!--begin::Number-->
-                                                    <span
-                                                        class="text-gray-700 fw-bolder d-block fs-2qx lh-1 ls-n1 mb-1">{{ $totalCustomer }}</span>
-                                                    <!--end::Number-->
-                                                    <!--begin::Desc-->
-                                                    <span class="text-gray-500 fw-semibold fs-6">New Customer</span>
-                                                    <!--end::Desc-->
-                                                </div>
-                                                <!--end::Stats-->
-                                            </div>
-                                            <!--end::Items-->
-                                        </div>
-                                        <!--end::Col-->
-                                        <!--begin::Col-->
-                                        <div class="col-6">
-                                            <!--begin::Items-->
-                                            <div class="bg-gray-100 bg-opacity-70 rounded-2 px-6 py-5">
-                                                <!--begin::Symbol-->
-                                                <div class="symbol symbol-30px me-5 mb-8">
-                                                    <span class="symbol-label">
-                                                        <i class="ki-duotone ki-bank fs-1 text-primary">
-                                                            <span class="path1"></span>
-                                                            <span class="path2"></span>
-                                                        </i>
-                                                    </span>
-                                                </div>
-                                                <!--end::Symbol-->
-                                                <!--begin::Stats-->
-                                                <div class="m-0">
-                                                    <!--begin::Number-->
-                                                    <span
-                                                        class="text-gray-700 fw-bolder d-block fs-2qx lh-1 ls-n1 mb-1">{{ $totalCustomer }}</span>
-                                                    <!--end::Number-->
-                                                    <!--begin::Desc-->
-                                                    <span class="text-gray-500 fw-semibold fs-6">Total Customer</span>
-                                                    <!--end::Desc-->
-                                                </div>
-                                                <!--end::Stats-->
-                                            </div>
-                                            <!--end::Items-->
-                                        </div>
-                                        <!--end::Col-->
-                                        <!--begin::Col-->
-                                        <div class="col-6">
-                                            <!--begin::Items-->
-                                            <div class="bg-gray-100 bg-opacity-70 rounded-2 px-6 py-5">
-                                                <!--begin::Symbol-->
-                                                <div class="symbol symbol-30px me-5 mb-8">
-                                                    <span class="symbol-label">
-                                                        <i class="ki-duotone ki-award fs-1 text-primary">
-                                                            <span class="path1"></span>
-                                                            <span class="path2"></span>
-                                                            <span class="path3"></span>
-                                                        </i>
-                                                    </span>
-                                                </div>
-                                                <!--end::Symbol-->
-                                                <!--begin::Stats-->
-                                                <div class="m-0">
-                                                    <!--begin::Number-->
-                                                    <span
-                                                        class="text-gray-700 fw-bolder d-block fs-2qx lh-1 ls-n1 mb-1">{{ $totalCustomer }}</span>
-                                                    <!--end::Number-->
-                                                    <!--begin::Desc-->
-                                                    <span class="text-gray-500 fw-semibold fs-6">Customer Active</span>
-                                                    <!--end::Desc-->
-                                                </div>
-                                                <!--end::Stats-->
-                                            </div>
-                                            <!--end::Items-->
-                                        </div>
-                                        <!--end::Col-->
-                                        <!--begin::Col-->
-                                        <div class="col-6">
-                                            <!--begin::Items-->
-                                            <div class="bg-gray-100 bg-opacity-70 rounded-2 px-6 py-5">
-                                                <!--begin::Symbol-->
-                                                <div class="symbol symbol-30px me-5 mb-8">
-                                                    <span class="symbol-label">
-                                                        <i class="ki-duotone ki-timer fs-1 text-primary">
-                                                            <span class="path1"></span>
-                                                            <span class="path2"></span>
-                                                            <span class="path3"></span>
-                                                        </i>
-                                                    </span>
-                                                </div>
-                                                <!--end::Symbol-->
-                                                <!--begin::Stats-->
-                                                <div class="m-0">
-                                                    <!--begin::Number-->
-                                                    <span
-                                                        class="text-gray-700 fw-bolder d-block fs-2qx lh-1 ls-n1 mb-1">{{ $totalCustomer }}</span>
-                                                    <!--end::Number-->
-                                                    <!--begin::Desc-->
-                                                    <span class="text-gray-500 fw-semibold fs-6">Customer inactive</span>
-                                                    <!--end::Desc-->
-                                                </div>
-                                                <!--end::Stats-->
-                                            </div>
-                                            <!--end::Items-->
-                                        </div>
-                                        <!--end::Col-->
-                                    </div>
-                                    <!--end::Row-->
-                                </div>
-                                <!--end::Stats-->
-                            </div>
-                            <!--end::Body-->
-                        </div>
-                        <!--end::Lists Widget 19-->
-                    </div>
-                    <!--end::Col-->
-                    <div class="col-lg-12 col-xl-8 col-xxl-8 mb-5 mb-xl-0">
-                        <!--begin::Chart widget 3-->
-                        <div class="card card-flush overflow-hidden h-md-99">
-                            <!--begin::Header-->
-                            <div class="card-header py-5">
-                                <!--begin::Title-->
-                                <h3 class="card-title align-items-start flex-column">
-                                    <span class="card-label fw-bold text-gray-900">Trend New Customer</span>
-                                    <span class="text-gray-500 mt-1 fw-semibold fs-6">All Customer</span>
-                                </h3>
-                                <!--end::Title-->
-                            </div>
-                            <!--end::Header-->
-                            <!--begin::Card body-->
-                            <div class="card-body d-flex justify-content-between flex-column pb-1 px-0">
-                                <!--begin::Chart-->
-                                <div id="kt_charts_widget_3" class="min-h-auto ps-4 pe-6" style="height: 400px"></div>
-                                <!--end::Chart-->
-                            </div>
-                            <!--end::Card body-->
-                        </div>
-                        <!--end::Chart widget 3-->
-                    </div>
-                    <!--begin::Col-->
-                    <div class="col-xl-4 mb-xl-10">
-                        <!--begin::List widget 20-->
-                        <div class="card h-xl-100">
-                            <!--begin::Header-->
-                            <div class="card-header border-0 pt-5">
-                                <h3 class="card-title align-items-start flex-column">
-                                    <span class="card-label fw-bold text-gray-900">Top Domisili Distribution</span>
-                                    <span class="text-muted mt-1 fw-semibold fs-7">8k social visitors</span>
-                                </h3>
-                                <!--begin::Toolbar-->
-                                <div class="card-toolbar">
-                                    <a href="#" class="btn btn-sm btn-light">All Courses</a>
-                                </div>
-                                <!--end::Toolbar-->
-                            </div>
-                            <!--end::Header-->
-                            <!--begin::Body-->
-                            <div id="segment-top-retribusion">
-                                <div class="text-center py-10 text-primary">
-                                    Loading...
-                                </div>
-                            </div>
-                            <!--end::Body-->
-                        </div>
-                        <!--end::List widget 20-->
-                    </div>
-                    <div class="col-xxl-8 mb-xl-10">
-                        <!--begin::Chart widget 22-->
-                        <div class="card h-xl-100">
-                            <!--begin::Body-->
-                            <div class="card-body pb-3">
-                                <!--begin::Tab Content-->
-                                <div class="d-flex flex-wrap flex-md-nowrap">
-                                    <!--begin::Container-->
-                                    <div
-                                        class="d-flex justify-content-between flex-column w-225px w-md-600px mx-auto mx-md-0 pt-3 pb-10">
-                                        <!--begin::Title-->
-                                        <div class="fs-4 fw-bold text-gray-900 text-center mb-5">Gender Distribution
-                                            <br />for All Customer
-                                        </div>
-                                        <!--end::Title-->
-                                        <!--begin::Chart-->
-                                        <div id="kt_chart_widgets_22_chart_1" class="mx-auto mb-4"></div>
-                                        <!--end::Chart-->
-                                        {{-- <!--begin::Labels-->
-                                        <div class="mx-auto">
-                                            <!--begin::Label-->
-                                            <div class="d-flex align-items-center mb-2">
-                                                <!--begin::Bullet-->
-                                                <div class="bullet bullet-dot w-8px h-7px bg-success me-2"></div>
-                                                <!--end::Bullet-->
-                                                <!--begin::Label-->
-                                                <div class="fs-8 fw-semibold text-muted">Male(133)</div>
-                                                <!--end::Label-->
-                                            </div>
-                                            <!--end::Label-->
-                                            <!--begin::Label-->
-                                            <div class="d-flex align-items-center mb-2">
-                                                <!--begin::Bullet-->
-                                                <div class="bullet bullet-dot w-8px h-7px bg-primary me-2"></div>
-                                                <!--end::Bullet-->
-                                                <!--begin::Label-->
-                                                <div class="fs-8 fw-semibold text-muted">Female(9)</div>
-                                                <!--end::Label-->
-                                            </div>
-                                            <!--end::Label-->
-                                        </div>
-                                        <!--end::Labels--> --}}
-                                    </div>
-                                    <!--end::Container-->
-                                </div>
-                                <!--end::Tab Content-->
-                            </div>
-                            <!--end: Card Body-->
-                        </div>
-                        <!--end::Chart widget 22-->
-                    </div>
-                    <!--end::Col-->
-                    {{-- sini --}}
+@php
+    $periodTitle = $period === 'year'
+        ? $start->format('Y')
+        : ($period === 'month' ? $start->locale('id')->isoFormat('MMMM Y') : $start->locale('id')->isoFormat('D MMM') . ' - ' . $end->locale('id')->isoFormat('D MMM Y'));
+    $branchName = $branchId ? optional($branches->firstWhere('id', $branchId))->name : 'Semua Cabang';
+    $currency = static function ($amount) { return 'Rp ' . number_format((float) $amount, 0, ',', '.'); };
+    $nextUrl = route('crm.dashboard', array_filter(['period' => $period, 'offset' => min(0, $offset + 1), 'branch_id' => $branchId], static function ($value) { return $value !== null; }));
+    $prevUrl = route('crm.dashboard', array_filter(['period' => $period, 'offset' => max(-120, $offset - 1), 'branch_id' => $branchId], static function ($value) { return $value !== null; }));
+@endphp
+<div class="erp-dashboard flex flex-col min-h-0 w-full" x-data="erpDashboard()" :data-mode="mode">
+    {{-- The source dashboard has a separate edge-to-edge mobile canvas. --}}
+    <section class="md:hidden relative flex flex-col text-white overflow-hidden bg-[#ebf2ef] h-full">
+        <div class="mobile-bg-layer mobile-bg-income"></div>
+        <div class="mobile-bg-layer mobile-bg-expense"></div>
+        <div class="mobile-bg-layer mobile-bg-profit"></div>
+        <div class="mobile-bg-layer mobile-bg-loss"></div>
+        <div class="absolute -top-32 -left-40 w-[500px] h-[500px] rounded-full blur-[100px] pointer-events-none z-0 transition-colors duration-500" style="background:rgb(var(--dashboard-accent) / .4)"></div>
+        <div class="absolute -top-16 -left-16 w-[250px] h-[250px] bg-white/25 rounded-full blur-[70px] pointer-events-none z-0 mix-blend-overlay"></div>
+
+        <div class="flex-1 overflow-y-auto dashboard-scroll pb-[115px] px-5 flex flex-col relative z-10">
+            <div class="mt-8 px-1 relative z-10 flex flex-col items-center text-center">
+                <div class="flex items-center justify-between w-full max-w-xs">
+                    <a href="{{ $prevUrl }}" aria-label="Periode sebelumnya" class="text-white/60 hover:text-white p-1"><i class="ph-bold ph-caret-left text-[16px]"></i></a>
+                    <button type="button" @click="filterOpen = true" class="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity">
+                        <span class="text-[14px] font-bold text-white tracking-wide leading-none">{{ $branchName }}</span>
+                        <span class="text-[11px] font-medium text-white/60 tracking-wide">{{ $periodTitle }}</span>
+                    </button>
+                    <a href="{{ $nextUrl }}" aria-label="Periode berikutnya" class="text-white/60 hover:text-white p-1 {{ $offset >= 0 ? 'opacity-30 pointer-events-none' : '' }}"><i class="ph-bold ph-caret-right text-[16px]"></i></a>
                 </div>
-                <!--end::Row-->
-                <!--begin::Row-->
-                <div class="row g-5 g-xl-10">
-                    <!--begin::Col-->
-                    <div class="col-xl-4">
-                        <!--begin::List widget 21-->
-                        <div class="card card-flush h-xl-100">
-                            <!--begin::Header-->
-                            <div class="card-header border-0 pt-5">
-                                <h3 class="card-title align-items-start flex-column">
-                                    <span class="card-label fw-bold text-gray-900">Top Tier Distribution</span>
-                                    <span class="text-muted mt-1 fw-semibold fs-7">Avg. 72% completed tiers</span>
-                                </h3>
-                                <!--begin::Toolbar-->
-                                <div class="card-toolbar">
-                                    <a href="#" class="btn btn-sm btn-light">All Tier</a>
-                                </div>
-                                <!--end::Toolbar-->
-                            </div>
-                            <!--end::Header-->
-                            <!--begin::Body-->
-                            <div id="segment-top-tier">
-                                <div class="text-center py-10 text-primary">
-                                    Loading...
-                                </div>
-                            </div>
-                            <!--end::Body-->
-                        </div>
-                        <!--end::List widget 21-->
+                <div class="mt-5 mb-5 flex flex-col items-center">
+                    <p class="text-[14px] text-white/80 font-medium mb-1" x-text="modeTitle"></p>
+                    <h1 class="text-[34px] font-bold text-white tracking-tight leading-none mt-[4px] mb-[6px]" x-text="rupiah(total)"></h1>
+                    <div class="flex items-center justify-center gap-1 text-[10px] mt-1 text-white/70">
+                        <i class="ph-fill ph-chart-bar text-[10px]" style="color:rgb(var(--dashboard-accent))"></i>
+                        <span>Data transaksi {{ $periodTitle }}</span>
                     </div>
-                    <!--end::Col-->
-                    <!--begin::Col-->
-                    <div class="col-xl-8">
-                        <!--begin::Chart widget 18-->
-                        <div class="card card-flush h-xl-100">
-                            <!--begin::Header-->
-                            <div class="card-header pt-7">
-                                <!--begin::Title-->
-                                <h3 class="card-title align-items-start flex-column">
-                                    <span class="card-label fw-bold text-gray-800">Tier Distribution (Count)</span>
-                                    {{-- <span class="text-gray-500 mt-1 fw-semibold fs-6">Tier per Customer</span> --}}
-                                </h3>
-                                <!--end::Title-->
-                                {{-- <!--begin::Toolbar-->
-                                <div class="card-toolbar">
-                                    <!--begin::Daterangepicker(defined in src/js/layout/app.js)-->
-                                    <div data-kt-daterangepicker="true" data-kt-daterangepicker-opens="left"
-                                        class="btn btn-sm btn-light d-flex align-items-center px-4">
-                                        <!--begin::Display range-->
-                                        <div class="text-gray-600 fw-bold">Loading date range...</div>
-                                        <!--end::Display range-->
-                                        <i class="ki-duotone ki-calendar-8 text-gray-500 lh-0 fs-2 ms-2 me-0">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                            <span class="path3"></span>
-                                            <span class="path4"></span>
-                                            <span class="path5"></span>
-                                            <span class="path6"></span>
-                                        </i>
-                                    </div>
-                                    <!--end::Daterangepicker-->
-                                </div>
-                                <!--end::Toolbar--> --}}
-                            </div>
-                            <!--end::Header-->
-                            <!--begin::Body-->
-                            <div class="card-body d-flex align-items-end px-0 pt-3 pb-5">
-                                <!--begin::Chart-->
-                                <div id="kt_charts_widget_18_chart" class="h-325px w-100 min-h-auto ps-4 pe-6"></div>
-                                <!--end::Chart-->
-                            </div>
-                            <!--end: Card Body-->
-                        </div>
-                        <!--end::Chart widget 18-->
-                    </div>
-                    <!--end::Col-->
                 </div>
-                <!--end::Row-->
             </div>
-            <!--end::Container-->
+
+            <div class="mt-auto mb-0 px-1 relative z-10 pt-7">
+                <div class="flex items-end justify-between h-[160px] relative px-1 w-full gap-1">
+                    <template x-for="(point, index) in chart" :key="index">
+                        <button type="button" @click="selectedIndex = index" class="flex-1 min-w-0 flex flex-col items-center justify-end gap-2.5 z-10 h-full group" :aria-label="point.label + ': ' + rupiah(point[mode])">
+                            <div class="w-full max-w-8 dashboard-bar rounded-t-[6px] rounded-b-[2px] transition-all cursor-pointer relative min-h-[4px]" :class="selectedIndex === index ? 'active' : 'opacity-30'" :style="'height:' + barHeight(point) + '%'">
+                                <span class="absolute -top-7 left-1/2 -translate-x-1/2 text-[9px] tracking-tighter font-bold px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap" :class="selectedIndex === index ? 'text-[#06261c]' : 'text-white opacity-0'" :style="selectedIndex === index ? 'background:rgb(var(--dashboard-accent))' : 'background:rgb(255 255 255 / .2)'" x-text="rupiah(point[mode])"></span>
+                            </div>
+                            <div class="flex flex-col items-center relative">
+                                <span class="text-[10px] truncate max-w-[38px]" :class="selectedIndex === index ? 'font-bold text-white' : 'font-medium text-white/40'" x-text="point.label"></span>
+                                <span class="text-[9px] absolute top-full mt-0.5" :class="selectedIndex === index ? 'font-bold' : 'text-white/40'" :style="selectedIndex === index ? 'color:rgb(var(--dashboard-accent))' : ''" x-text="point.day"></span>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="mt-[33px] mb-4 bg-white rounded-[20px] p-3 px-4 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="text-[13px] font-bold text-[#0a3d2e] tracking-tight" x-text="showBottom ? 'Produk Pendapatan Terendah' : 'Produk Pendapatan Tertinggi'"></h4>
+                    <button type="button" @click="showBottom = !showBottom" class="w-7 h-7 shrink-0 rounded-full bg-[#d3ec5a]/30 flex items-center justify-center text-[#06261c] cursor-pointer active:scale-90 transition-all duration-300" :aria-label="showBottom ? 'Lihat produk tertinggi' : 'Lihat produk terendah'">
+                        <i class="ph ph-arrows-down-up text-[14px]"></i>
+                    </button>
+                </div>
+                <div class="flex flex-col gap-3" x-show="!showBottom">
+                    @forelse ($topProducts as $product)
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <img src="{{ $product->image ? asset('storage/' . $product->image) : asset('assets/media/svg/files/blank-image.svg') }}" alt="{{ $product->name }}" class="w-8 h-8 rounded-[8px] object-cover shadow-sm border border-gray-100 shrink-0">
+                                <div class="min-w-0"><h5 class="text-[13px] font-medium text-[#334155] leading-tight truncate">{{ $product->name }}</h5><p class="text-[12px] font-bold text-[#0F5C45] mt-0.5">{{ $currency($product->amount) }}</p></div>
+                            </div>
+                            <span class="text-[13px] font-bold text-[#10b981]">{{ $metrics['revenue'] > 0 ? number_format($product->amount / $metrics['revenue'] * 100, 0, ',', '.') : 0 }}%</span>
+                        </div>
+                    @empty
+                        <p class="text-[12px] text-gray-500 py-2">Belum ada penjualan pada periode ini.</p>
+                    @endforelse
+                </div>
+                <div class="flex flex-col gap-3" x-show="showBottom" x-cloak>
+                    @forelse ($bottomProducts as $product)
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <img src="{{ $product->image ? asset('storage/' . $product->image) : asset('assets/media/svg/files/blank-image.svg') }}" alt="{{ $product->name }}" class="w-8 h-8 rounded-[8px] object-cover shadow-sm border border-gray-100 shrink-0">
+                                <div class="min-w-0"><h5 class="text-[13px] font-medium text-[#334155] leading-tight truncate">{{ $product->name }}</h5><p class="text-[12px] font-bold text-[#0F5C45] mt-0.5">{{ $currency($product->amount) }}</p></div>
+                            </div>
+                            <span class="text-[13px] font-bold text-[#10b981]">{{ $metrics['revenue'] > 0 ? number_format($product->amount / $metrics['revenue'] * 100, 0, ',', '.') : 0 }}%</span>
+                        </div>
+                    @empty
+                        <p class="text-[12px] text-gray-500 py-2">Belum ada penjualan pada periode ini.</p>
+                    @endforelse
+                </div>
+            </div>
         </div>
-        <!--end::Post-->
-    </div>
-@section('script')
-    {{-- <script src="{{ asset('assets/js/widgets.bundle.js') }}"></script> --}}
-    <script>
-        $.ajax({
-            url: "{{ route('campaign.get-near-event') }}",
-            method: 'GET',
-            success: function(response) {
-                if (response.success) {
-                    const promo = response.data;
 
-                    const today = new Date().toISOString().split('T')[0]; // format YYYY-MM-DD
-                    let statusText = '';
+        <nav class="absolute bottom-6 left-1/2 bg-white/10 backdrop-blur-md border border-white/20 rounded-[32px] px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.12)] z-20 w-[90%]" style="transform:translateX(-50%); -webkit-backdrop-filter:blur(12px)" aria-label="Metrik dashboard">
+            <div class="relative flex items-center justify-between w-full h-[48px]" x-init="$nextTick(() => { $refs.activePill.style.left = $el.querySelector('button').offsetLeft + 'px' })">
+                <div x-ref="activePill" class="absolute top-0 left-0 h-[48px] w-[48px] bg-[#d3ec5a] rounded-full transition-all duration-300 ease-in-out z-0 shadow-sm"></div>
+                <template x-for="item in modes" :key="item.key">
+                    <button type="button" @click="if (item.key === 'menu') { sidebarOpen = true } else { mode = item.key; $refs.activePill.style.left = $el.offsetLeft + 'px' }" class="relative z-10 flex items-center justify-center w-[48px] h-full rounded-full transition-all duration-300" :class="mode === item.key ? 'text-[#022c22]' : 'text-[#0f5132]/40 hover:text-[#0f5132]/80'" :aria-label="item.label">
+                        <i class="ph text-[26px]" :class="item.icon"></i>
+                    </button>
+                </template>
+            </div>
+        </nav>
 
-                    if (promo.start_date > today) {
-                        statusText = '<span class="text-warning">✨ Segera hadir!</span>';
-                    } else if (promo.start_date <= today && promo.end_date >= today) {
-                        statusText = '<span class="text-success">🔥 Sedang berlangsung!</span>';
-                    } else {
-                        statusText = '<span class="text-muted">✅ Sudah berakhir</span>';
-                    }
+        <div x-show="filterOpen" x-cloak x-transition.opacity @click.self="filterOpen = false" class="absolute inset-0 bg-black/50 z-50 flex items-end justify-center backdrop-blur-[2px]">
+            <form method="GET" action="{{ route('crm.dashboard') }}" class="bg-white rounded-t-[24px] w-full p-6 max-h-[85%] overflow-y-auto dashboard-scroll text-black shadow-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-[18px] font-bold text-[#0a3d2e] tracking-tight">Filter Data</h3>
+                    <button type="button" @click="filterOpen = false" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"><i class="ph-bold ph-x text-[16px]"></i></button>
+                </div>
+                <div class="flex flex-col gap-6">
+                    <label class="flex flex-col gap-3"><span class="text-[13px] font-bold text-gray-700">Pilih Cabang</span>
+                        <select name="branch_id" class="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 text-[14px] font-medium rounded-2xl px-4 py-3.5">
+                            <option value="">Semua Cabang</option>
+                            @foreach ($branches as $branch)<option value="{{ $branch->id }}" {{ $branchId === (int) $branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>@endforeach
+                        </select>
+                    </label>
+                    <label class="flex flex-col gap-3"><span class="text-[13px] font-bold text-gray-700">Periode Berdasarkan</span>
+                        <select name="period" class="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 text-[14px] font-medium rounded-2xl px-4 py-3.5">
+                            <option value="week" {{ $period === 'week' ? 'selected' : '' }}>Hari dalam Minggu</option>
+                            <option value="month" {{ $period === 'month' ? 'selected' : '' }}>Bulan dalam Tahun</option>
+                            <option value="year" {{ $period === 'year' ? 'selected' : '' }}>Tahunan</option>
+                        </select>
+                    </label>
+                    <label class="flex flex-col gap-3"><span class="text-[13px] font-bold text-gray-700">Geser Periode</span>
+                        <select name="offset" class="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 text-[14px] font-medium rounded-2xl px-4 py-3.5">
+                            @for ($i = 0; $i >= -12; $i--)<option value="{{ $i }}" {{ $offset === $i ? 'selected' : '' }}>{{ $i === 0 ? 'Periode ini' : abs($i) . ' periode lalu' }}</option>@endfor
+                        </select>
+                    </label>
+                </div>
+                <div class="flex gap-3 mt-8">
+                    <a href="{{ route('crm.dashboard') }}" class="px-5 bg-[#0F5C45]/10 text-[#0F5C45] border border-[#0F5C45]/20 rounded-full py-3.5 text-[13px] font-bold whitespace-nowrap">Minggu Ini</a>
+                    <button type="submit" class="flex-1 bg-[#0F5C45] text-white rounded-full py-3.5 text-[14px] font-bold shadow-[0_8px_20px_rgba(15,92,69,0.3)]">Terapkan Filter</button>
+                </div>
+            </form>
+        </div>
+    </section>
 
-                    let promoInfo = "";
-                    if (promo.type_promo === "discount") {
-                        promoInfo = `<b>Jenis Promo:</b> Diskon ${promo.value}% <br>`;
-                    } else {
-                        promoInfo = `<b>Jenis Promo:</b> Potongan Harga ${formatRupiah(promo.value)} <br>`;
-                    }
-
-                    Swal.fire({
-                        title: `🎉 ${promo.name} 🎁`,
-                        html: `
-                                <b>Periode:</b> ${formatTanggalIndo(promo.start_date)} s/d ${formatTanggalIndo(promo.end_date)} <br>
-                    ${promoInfo} <br>
-                    ${statusText}
-                `,
-                        iconHtml: '🎁', // custom emoji hadiah
-                        customClass: {
-                            icon: 'no-border'
-                        },
-                        confirmButtonText: 'Mantap!',
-                        backdrop: `rgba(0,0,123,0.4) url("/images/confetti.gif") repeat`
-                    });
-                }
-            }
-        });
-
-        function formatTanggalIndo(dateString) {
-            const bulanIndo = [
-                "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-            ];
-
-            const date = new Date(dateString);
-            const day = date.getDate();
-            const month = bulanIndo[date.getMonth()];
-            const year = date.getFullYear();
-
-            return `${day} ${month} ${year}`;
-        }
-
-        function formatRupiah(angka) {
-            return new Intl.NumberFormat("id-ID", {
-                style: "currency",
-                currency: "IDR"
-            }).format(angka);
-        }
-
-        if ('Notification' in window && 'serviceWorker' in navigator) {
-            Notification.requestPermission().then(permission => {
-                // alert('Permission:', permission);
-                if (permission === 'granted') {
-                    // alert('✅ Izin notifikasi diberikan');
-                } else {
-                    alert(
-                        '❌ Izin notifikasi ditolak, Dimohon untuk memberikan izin notifikasi agar dapat notifikasi dari aplikasi');
-                }
-            });
-        } else {
-            alert('Browser tidak mendukung notifikasi');
-        }
-    </script>
-    @include('crm::dashboard.js-dashboard')
+    {{-- Desktop cards use the same data and visual hierarchy as the HTML reference. --}}
+    <section class="hidden md:flex flex-col gap-4 xl:gap-5 min-h-0 pb-5">
+        <div class="flex items-center justify-between gap-4">
+            <div><p class="text-[11px] font-bold uppercase tracking-[.18em] text-[#0F5C45]">Ringkasan Bisnis</p><h2 class="font-serif text-[24px] font-semibold text-gray-800 mt-1">{{ $periodTitle }}</h2></div>
+            <form method="GET" action="{{ route('crm.dashboard') }}" class="flex items-center gap-2">
+                <select name="branch_id" class="bg-white border border-gray-200 rounded-full px-4 py-2 text-[12px] text-gray-700 font-semibold" onchange="this.form.submit()"><option value="">Semua Cabang</option>@foreach ($branches as $branch)<option value="{{ $branch->id }}" {{ $branchId === (int) $branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>@endforeach</select>
+                <select name="period" class="bg-white border border-gray-200 rounded-full px-4 py-2 text-[12px] text-gray-700 font-semibold" onchange="this.form.submit()"><option value="week" {{ $period === 'week' ? 'selected' : '' }}>Mingguan</option><option value="month" {{ $period === 'month' ? 'selected' : '' }}>Bulanan</option><option value="year" {{ $period === 'year' ? 'selected' : '' }}>Tahunan</option></select>
+                <input type="hidden" name="offset" value="{{ $offset }}">
+                <a href="{{ $prevUrl }}" class="bg-white border border-gray-200 rounded-full w-9 h-9 flex items-center justify-center"><i class="ph-bold ph-caret-left"></i></a>
+                <a href="{{ $nextUrl }}" class="bg-white border border-gray-200 rounded-full w-9 h-9 flex items-center justify-center {{ $offset >= 0 ? 'opacity-30 pointer-events-none' : '' }}"><i class="ph-bold ph-caret-right"></i></a>
+            </form>
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-5">
+            <div class="rounded-[14px] p-5 text-white flex flex-col justify-between min-h-[190px]" style="background-color:#0b595b"><div class="flex justify-between items-start"><h3 class="text-[14px] font-medium">Total Pendapatan</h3><i class="ph-bold ph-dots-three-vertical"></i></div><div><p class="text-[24px] font-bold tracking-tight">{{ $currency($metrics['revenue']) }}</p><span class="text-[11px] text-white/70">Penjualan terbayar & piutang</span></div><div class="flex justify-between text-[10px] text-white/70"><span>{{ $branchName }}</span><span>{{ $periodTitle }}</span></div></div>
+            <div class="rounded-[14px] p-5 text-gray-800 flex flex-col justify-between min-h-[190px] bg-white border border-gray-100 shadow-sm"><div class="flex justify-between items-start"><h3 class="text-[14px] font-medium">Total Pengeluaran</h3><i class="ph-bold ph-dots-three-vertical"></i></div><div><p class="text-[24px] font-bold tracking-tight">{{ $currency($metrics['expense']) }}</p><span class="text-[11px] text-gray-500">Pengeluaran terbayar & utang</span></div><div class="flex justify-between text-[10px] text-gray-400"><span>{{ $branchName }}</span><span>{{ $periodTitle }}</span></div></div>
+            <div class="rounded-[14px] p-5 text-gray-800 flex flex-col justify-between min-h-[190px] bg-white border border-gray-100 shadow-sm"><div class="flex justify-between items-start"><h3 class="text-[14px] font-medium">Total Keuntungan</h3><i class="ph ph-plant text-xl text-emerald-500"></i></div><div><p class="text-[24px] font-bold tracking-tight text-[#0F5C45]">{{ $currency($metrics['profit']) }}</p><span class="text-[11px] text-gray-500">Setelah HPP dan pengeluaran</span></div><div class="flex justify-between text-[10px] text-gray-400"><span>{{ $branchName }}</span><span>{{ $periodTitle }}</span></div></div>
+            <div class="rounded-[14px] p-5 text-gray-800 flex flex-col justify-between min-h-[190px] bg-white border border-gray-100 shadow-sm"><div class="flex justify-between items-start"><h3 class="text-[14px] font-medium">Total Kerugian</h3><i class="ph ph-fire text-xl text-red-500"></i></div><div><p class="text-[24px] font-bold tracking-tight text-red-600">{{ $currency($metrics['loss']) }}</p><span class="text-[11px] text-gray-500">Saat biaya melebihi pendapatan</span></div><div class="flex justify-between text-[10px] text-gray-400"><span>{{ $branchName }}</span><span>{{ $periodTitle }}</span></div></div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)] gap-4 xl:gap-5">
+            <div class="rounded-[14px] bg-white border border-gray-100 shadow-sm p-5 min-h-[270px]"><div class="flex items-center justify-between mb-7"><div><h3 class="text-[15px] font-bold text-gray-800">Tren Pendapatan</h3><p class="text-[11px] text-gray-400 mt-1">{{ $periodTitle }}</p></div><span class="w-2 h-2 rounded-full bg-[#0b595b]"></span></div><div class="flex items-end justify-between h-[160px] gap-2">@php $maxRevenue = max(1, max(array_column($chart, 'revenue') ?: [0])); @endphp @foreach ($chart as $point)<div class="flex-1 flex flex-col items-center justify-end h-full gap-2" title="{{ $point['label'] }}: {{ $currency($point['revenue']) }}"><div class="w-full max-w-[34px] bg-[#0b595b] rounded-t-[5px]" style="height:{{ max(2, $point['revenue'] / $maxRevenue * 100) }}%"></div><span class="text-[10px] text-gray-500 truncate max-w-full">{{ $point['label'] }}</span></div>@endforeach</div></div>
+            <div class="rounded-[14px] bg-white border border-gray-100 shadow-sm p-5"><div class="flex items-center justify-between mb-6"><div><h3 class="text-[15px] font-bold text-gray-800">Produk Pendapatan Tertinggi</h3><p class="text-[11px] text-gray-400 mt-1">{{ $periodTitle }}</p></div><i class="ph ph-chart-bar text-xl text-[#0b595b]"></i></div><div class="flex flex-col gap-4">@forelse ($topProducts as $product)<div class="flex items-center justify-between gap-3"><div class="flex items-center gap-3 min-w-0"><img src="{{ $product->image ? asset('storage/' . $product->image) : asset('assets/media/svg/files/blank-image.svg') }}" alt="{{ $product->name }}" class="w-9 h-9 rounded-lg object-cover border border-gray-100"><span class="text-[12px] font-semibold text-gray-700 truncate">{{ $product->name }}</span></div><span class="text-[12px] font-bold text-[#0F5C45] whitespace-nowrap">{{ $currency($product->amount) }}</span></div>@empty<p class="text-[12px] text-gray-500">Belum ada penjualan pada periode ini.</p>@endforelse</div></div>
+        </div>
+    </section>
+</div>
 @endsection
-@endsection
+
+@push('scripts')
+<script>
+    function erpDashboard() {
+        const chart = @json($chart);
+        const metrics = @json($metrics);
+        return {
+            chart,
+            metrics,
+            mode: 'revenue',
+            selectedIndex: Math.max(0, chart.length - 1),
+            filterOpen: false,
+            showBottom: false,
+            modes: [
+                { key: 'revenue', label: 'Pendapatan', icon: 'ph-cardholder' },
+                { key: 'expense', label: 'Pengeluaran', icon: 'ph-shopping-bag' },
+                { key: 'menu', label: 'Buka menu', icon: 'ph-list' },
+                { key: 'profit', label: 'Keuntungan', icon: 'ph-plant' },
+                { key: 'loss', label: 'Kerugian', icon: 'ph-fire' },
+            ],
+            get modeTitle() { return {revenue: 'Total Pendapatan', expense: 'Total Pengeluaran', profit: 'Total Keuntungan', loss: 'Total Kerugian'}[this.mode]; },
+            get total() { return Number(this.metrics[this.mode] || 0); },
+            rupiah(value) { return 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(Number(value || 0)); },
+            barHeight(point) {
+                const highest = Math.max(1, ...this.chart.map(item => Number(item[this.mode] || 0)));
+                return Math.max(3, Number(point[this.mode] || 0) / highest * 100);
+            },
+        };
+    }
+</script>
+@endpush

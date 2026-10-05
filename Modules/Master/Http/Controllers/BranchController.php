@@ -26,7 +26,7 @@ class BranchController extends Controller
             return $denied;
         }
 
-        return view('master::branch.index');
+        return view('master::branch.index', ['records' => Branch::query()->select('id', 'name', 'code', 'address')->orderByDesc('id')->get()]);
     }
 
     /**
@@ -39,7 +39,7 @@ class BranchController extends Controller
             return $denied;
         }
 
-        return view('master::create');
+        return redirect()->route('branch.index', ['create' => 1]);
     }
 
     /**
@@ -55,6 +55,7 @@ class BranchController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:branch,name',
+            'code' => 'required|string|max:255|unique:branch,code',
             'address' => 'nullable|string|max:1000',
         ]);
 
@@ -63,6 +64,7 @@ class BranchController extends Controller
             DB::beginTransaction();
             $branch = new Branch();
             $branch->name = $validated['name'];
+            $branch->code = $validated['code'];
             $branch->address = $validated['address'] ?? null;
             $branch->save();
             DB::commit();
@@ -120,6 +122,7 @@ class BranchController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:branch,name,' . $id,
+            'code' => 'required|string|max:255|unique:branch,code,' . $id,
             'address' => 'nullable|string|max:1000',
         ]);
 
@@ -128,6 +131,7 @@ class BranchController extends Controller
             DB::beginTransaction();
             $branch = Branch::findOrFail($id);
             $branch->name = $validated['name'];
+            $branch->code = $validated['code'];
             $branch->address = $validated['address'] ?? null;
             $branch->save();
             DB::commit();

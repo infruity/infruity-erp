@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Http\Requests;
-use Request;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UserRequest extends FormRequest
 {
@@ -23,43 +23,22 @@ class UserRequest extends FormRequest
      */
     public function rules()
     {
-        $id = Request::segment(2) != null ? Request::segment(2) : null;
-        if ($this->getMethod() == 'POST') {
-            return [
-                'full_name' => 'bail|required',
-                'email' => 'required|email|unique:users,email',
-                // 'captcha' => 'required|captcha',
-                'password' => [
-                    'required',
-                    // 'string',
-                    // 'min:12',
-                    // 'regex:/[A-Z]/', // Harus ada huruf besar
-                    // 'regex:/[a-z]/', // Harus ada huruf kecil
-                    // 'regex:/[0-9]/', // Harus ada angka
-                    // 'regex:/[!@#$%^&*()_+\-]/', // Harus ada karakter spesial
-                ],
-            ];
-        } else {
-            return [
-                'full_name' => 'bail|required',
-                'email' => 'bail|required|unique:users,email,' . $id . ',id_user',
-                'password' => [
-                    'required',
-                    // 'string',
-                    // 'min:12',
-                    // 'regex:/[A-Z]/', // Harus ada huruf besar
-                    // 'regex:/[a-z]/', // Harus ada huruf kecil
-                    // 'regex:/[0-9]/', // Harus ada angka
-                    // 'regex:/[!@#$%^&*()_+\-]/', // Harus ada karakter spesial
-                ],
-            ];
-        }
+        $isCreate = $this->isMethod('post');
+
+        return [
+            'full_name' => ['required', 'string'],
+            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($isCreate ? null : $this->route('user'), 'id_user')],
+            'password' => [$isCreate ? 'required' : 'nullable', 'string'],
+            'id_role' => ['required', 'exists:role,id_role'],
+            'id_branch' => ['required', 'array', 'min:1'],
+            'id_branch.*' => ['required', 'distinct', 'exists:branch,id'],
+        ];
     }
 
     public function messages()
     {
         return [
-            'email' => 'Email sudah digunakan user lain, mohon untuk menggunakan email yang lain',
+            'email.unique' => 'Email sudah digunakan user lain, mohon untuk menggunakan email yang lain',
             // 'captcha' => 'captcha tidak sesuai',
             'password.required' => 'Password wajib diisi.',
             // 'password.string' => 'Password harus berupa teks.',

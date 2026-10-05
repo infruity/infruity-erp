@@ -25,7 +25,10 @@ class KurirController extends Controller
             return $denied;
         }
 
-        return view('master::kurir.index');
+        return view('master::kurir.index', [
+            'records' => Kurir::query()->select('id', 'name', 'type', 'staff_id', 'description')->orderByDesc('id')->get(),
+            'staffOptions' => \Modules\Master\Entities\Staff::query()->select('id', 'name')->orderBy('name')->get(),
+        ]);
     }
 
     /**
@@ -38,7 +41,7 @@ class KurirController extends Controller
             return $denied;
         }
 
-        return view('master::create');
+        return redirect()->route('kurir.index', ['create' => 1]);
     }
 
     /**
@@ -56,7 +59,7 @@ class KurirController extends Controller
             'type' => 'required|in:internal,external',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'staff_id' => 'nullable|integer|exists:staff,id',
+            'staff_id' => 'required_if:type,internal|nullable|integer|exists:staff,id',
         ]);
 
         try {
@@ -129,7 +132,7 @@ class KurirController extends Controller
             'type' => 'required|in:internal,external',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'staff_id' => 'nullable|integer|exists:staff,id',
+            'staff_id' => 'required_if:type,internal|nullable|integer|exists:staff,id',
         ]);
 
         try {

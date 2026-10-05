@@ -1,0 +1,2558 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resep Produk - Master | ERP Portal</title>
+    <meta name="description" content="Modul Master Resep Produk - Sistem ERP Infruity.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F5C45',
+                        'primary-light': '#1a7d5e',
+                        'primary-dark': '#0a3d2e',
+                        accent: '#F2B400',
+                        'accent-light': '#f5c733',
+                        cream: '#F7F7F7',
+                        'cream-dark': '#EBEBEB',
+                        strawberry: '#D6455D',
+                        'strawberry-light': '#e06a7e',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Poppins"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'input': '0 2px 10px rgba(0,0,0,0.02)',
+                        'card': '0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.04)',
+                        'sidebar': '4px 0 24px rgba(0,0,0,0.06)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Material Symbols Styling for Nav */
+        .icon-rounded {
+            font-family: 'Material Symbols Rounded';
+            font-size: 28px;
+            font-weight: 300;
+        }
+        .icon-inactive {
+            font-variation-settings: 'FILL' 0, 'wght' 300;
+        }
+        .icon-active {
+            font-variation-settings: 'FILL' 1, 'wght' 400;
+        }
+
+        /* ================================ */
+        /* CUSTOM SCROLLBARS                */
+        /* ================================ */
+        /* Custom Thin Scrollbar for Sidebar */
+        .sidebar-scroll::-webkit-scrollbar { width: 2px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+
+        /* Minimalist Dropdown Scrollbar (Auto-Hide effect) */
+        .minimal-scrollbar::-webkit-scrollbar { width: 4px; }
+        .minimal-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .minimal-scrollbar::-webkit-scrollbar-thumb { background: transparent; border-radius: 4px; }
+        .minimal-scrollbar.is-scrolling::-webkit-scrollbar-thumb { background: #d1d5db; }
+        .minimal-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+        /* General Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c4c4c4; border-radius: 100px; }
+        ::-webkit-scrollbar-thumb:hover { background: #999; }
+
+        /* Dark Sidebar */
+        .dark-sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); }
+        .dark-sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+
+        .sidebar-scroll { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }
+        .dark-sidebar { background-color: #0b595b; }
+        .glass-header { background: rgba(247, 247, 247, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+
+        /* Hide Scrollbar Utility */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Sidebar Navigation */
+        .sidebar-link {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        a.sidebar-link[href="#"] {
+            cursor: default !important;
+        }
+        
+        .sidebar-link.active { background-color: #d1f36e; color: #102f31 !important; font-weight: 600; box-shadow: 0 2px 6px rgba(209, 243, 110, 0.2); }
+        .sidebar-link.active i { color: #102f31 !important; }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+        /* Notification Dropdown */
+        .notif-item { transition: background 0.15s ease; }
+        .notif-item:hover { background: rgba(15, 92, 69, 0.04); }
+        .badge { font-size: 0.65rem; padding: 2px 8px; border-radius: 100px; font-weight: 600; letter-spacing: 0.02em; }
+
+        .submenu-link { transition: all 0.2s ease; }
+        .submenu-link i.sidebar-icon { display: none !important; }
+
+        /* Bullet (Inactive) */
+        .submenu-link::before {
+            content: ''; position: absolute; left: 28px; top: 50%; transform: translateY(-50%);
+            width: 6px; height: 6px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.25);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .submenu-link:hover::before { background-color: rgba(255, 255, 255, 0.6); transform: translateY(-50%) scale(1.2); }
+        .submenu-link:hover { color: rgba(255, 255, 255, 0.9); }
+
+        /* Bullet (Active) */
+        .submenu-link.active { color: #ffffff; font-weight: 600; }
+        .submenu-link.active::before { background-color: #F2B400; transform: translateY(-50%) scale(1.2); box-shadow: 0 0 10px rgba(242, 180, 0, 0.5); }
+
+        .submenu-link.level-3::before { left: 44px; }
+        .chevron-rotate { transition: transform 0.25s ease; }
+        .chevron-rotate.open { transform: rotate(180deg); }
+
+        /* Smooth Collapse Transitions */
+        .sidebar-link, .submenu-link { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; overflow: hidden; white-space: nowrap; }
+        .sidebar-link span, .submenu-link span, .chevron-rotate { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 200px; opacity: 1; }
+        .toggle-container { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 100px; opacity: 1; overflow: hidden; }
+
+        /* Collapsed State */
+        .sidebar-collapsed span, .sidebar-collapsed .chevron-rotate { max-width: 0 !important; opacity: 0 !important; margin-left: 0 !important; }
+        .sidebar-collapsed .logo-full { display: none !important; }
+        .sidebar-collapsed .logo-mini { display: block !important; }
+        .sidebar-collapsed .toggle-container { max-width: 0 !important; opacity: 0 !important; padding: 0 !important; margin: 0 !important; pointer-events: none; }
+        .sidebar-collapsed .sidebar-link { justify-content: flex-start !important; padding-left: 1.5rem !important; padding-right: 0 !important; gap: 0 !important;  }
+        
+        
+        .sidebar-collapsed .toggle-container { max-width: 0 !important; opacity: 0 !important; padding: 0 !important; margin: 0 !important; pointer-events: none; }
+        .sidebar-collapsed .sidebar-link { justify-content: flex-start !important; padding-left: 1.5rem !important; padding-right: 0 !important; gap: 0 !important; }
+        .resize-animation-stopper * { animation: none !important; transition: none !important; }
+        
+        /* Light Sidebar Overrides */
+        .light-sidebar { background-color: #ffffff; border-right: 1px solid #f3f4f6; }
+        .light-sidebar .text-white, 
+        .light-sidebar .text-white\/50, 
+        .light-sidebar .text-white\/45,
+        .light-sidebar .text-white\/40,
+        .light-sidebar .text-white\/35,
+        .light-sidebar .text-white\/30 { color: #4b5563 !important; }
+        .light-sidebar .font-medium { color: #374151 !important; }
+        
+        .light-sidebar .sidebar-link.active { background-color: #d1f36e !important; color: #102f31 !important; }
+        .light-sidebar .submenu-link:hover { color: #111827 !important; }
+        .light-sidebar .submenu-link::before { background-color: #d1d5db; }
+        .light-sidebar .submenu-link:hover::before { background-color: #9ca3af; }
+        .light-sidebar .submenu-link.active { color: #0F5C45 !important; font-weight: 600; }
+        .light-sidebar .submenu-link.active::before { background-color: #0F5C45; }
+        .light-sidebar .border-white\/10 { border-color: #f3f4f6 !important; }
+        .light-sidebar .border-white\/20 { border-color: #e5e7eb !important; }
+        .light-sidebar .bg-white\/10 { background-color: #f9fafb !important; }
+
+    
+        /* Smooth CSS Grid Collapse for Submenus */
+        .submenu-wrapper {
+            display: grid;
+            grid-template-rows: 1fr;
+            transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+        }
+        .submenu-wrapper > div {
+            overflow: hidden;
+        }
+        .sidebar-collapsed .submenu-wrapper {
+            grid-template-rows: 0fr !important;
+            opacity: 0 !important;
+            display: none !important;
+        }
+    
+        /* === iframe Mode: Hide sidebar when loaded inside shell === */
+        body.in-iframe { background: transparent !important; }
+        body.in-iframe aside { display: none !important; }
+        body.in-iframe > div > div[x-show="sidebarOpen"] { display: none !important; }
+        body.in-iframe [data-hamburger] { display: none !important; }
+        header { display: none !important; }
+    
+        /* ======================== */
+        /* iOS Safari Anti-Zoom Fix */
+        /* ======================== */
+        input, input[type="text"], input[type="email"], input[type="password"],
+        input[type="number"], input[type="search"], input[type="tel"],
+        input[type="url"], input[type="date"], input[type="datetime-local"],
+        input[type="time"], select, textarea {
+            font-size: 16px !important;
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+
+<body class="font-sans bg-[#e5e9f3] text-gray-800 antialiased h-screen overflow-hidden">
+    <script>
+        if (window.self !== window.top) {
+            document.body.classList.add("in-iframe");
+        } else if (!window.location.search.includes("standalone=true")) {
+            window.location.replace("../../app.html#002. Master/002. Resep Produk/index.html");
+        }
+    </script>
+
+    <div x-data="erpApp()" x-init="$watch('filterOpen', val => { if (!val) openDropdown = null })" class="flex h-screen w-full">
+
+        <!-- MOBILE SIDEBAR OVERLAY -->
+        <div x-show="sidebarOpen" x-transition:enter="transition-opacity duration-300"
+            x-transition:leave="transition-opacity duration-200" @click="sidebarOpen = false"
+            class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden">
+        </div>
+
+        <!-- ================================ -->
+        <!-- SIDEBAR                          -->
+        <!-- ================================ -->
+                <aside
+            :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', sidebarCollapsed ? 'sidebar-collapsed w-24' : 'w-64', theme === 'light' ? 'light-sidebar' : 'dark-sidebar']"
+            class="fixed lg:static inset-y-0 left-0 z-50 shadow-none flex flex-col transition-all duration-300 lg:translate-x-0 lg:rounded-3xl lg:my-5 lg:ml-5 lg:h-[calc(100vh-2.5rem)] overflow-hidden shrink-0">
+
+            <!-- Logo & Toggle -->
+            <div class="flex items-center pt-5 pb-14"
+                :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-6'">
+                <a href="#" @click.prevent="if(sidebarCollapsed) { sidebarCollapsed = false; }"
+                    class="flex items-center logo-link transition-transform duration-200 h-9"
+                    :title="sidebarCollapsed ? 'Perbesar Sidebar' : 'Infruity ERP'"
+                    :class="sidebarCollapsed ? 'hover:scale-110' : ''">
+                    <img :src="theme === 'light' ? '../../assets/logo/Infruity Logo - 6.png' : '../../assets/logo/Logo Putih 1.png'" alt="Infruity Logo" class="h-9 logo-full ">
+                    <img :src="theme === 'light' ? '../../assets/logo/Infruity Logo - 7.png' : '../../assets/logo/Logo IN Putih.png'" alt="Infruity Icon" class="h-8 logo-mini hidden ">
+                </a>
+                <div class="flex items-center gap-2 toggle-container">
+                    <button @click="sidebarCollapsed = !sidebarCollapsed"
+                        class="hidden lg:block text-white transition hover:opacity-80 shrink-0" title="Toggle Sidebar">
+                        <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-[1.65rem] transition-transform duration-300"
+                            :class="sidebarCollapsed ? 'rotate-180' : ''">
+                            <rect x="3" y="3" width="18" height="18" rx="4" ry="4"></rect>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                        </svg>
+                    </button>
+                    <button @click="sidebarOpen = false"
+                        class="lg:hidden p-2 rounded-xl hover:bg-white/10 text-white/50 hover:text-white/80 transition">
+                        <i class="ph ph-x text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav id="sidebar-nav" class="flex-1 overflow-y-auto overscroll-none sidebar-scroll px-3 pb-4 space-y-3">
+                <!-- === Dashboard === -->
+                <div>
+                    <a href="../../001. Dashboard/index.html"
+                        
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'dashboard' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-squares-four sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'dashboard' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Dashboard</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- === Master === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('master')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'master' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-database sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'master' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Master</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../002. Master/001. Produk/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-shopping-cart sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Produk</span>
+                            </a>
+                            <a href="../../002. Master/002. Resep Produk/index.html"
+                                class="submenu-link active relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-receipt sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Resep Produk</span>
+                            </a>
+                            <a href="../../002. Master/003. Satuan Produk/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-list-dashes sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Satuan Produk</span>
+                            </a>
+                            <a href="../../002. Master/004. Pemasok/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-storefront sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pemasok</span>
+                            </a>
+                            <a href="../../002. Master/005. Pelanggan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-users sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pelanggan</span>
+                            </a>
+                            <a href="../../002. Master/006. Cabang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-map-pin sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Cabang</span>
+                            </a>
+                            <a href="../../002. Master/007. Akun Pengguna/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Akun Pengguna</span>
+                            </a>
+                            <a href="../../002. Master/008. Jabatan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-identification-badge sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Jabatan</span>
+                            </a>
+                            <a href="../../002. Master/009. Karyawan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-user sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Karyawan</span>
+                            </a>
+                            <a href="../../002. Master/010. Kurir/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-user-focus sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Kurir</span>
+                            </a>
+                            <a href="../../002. Master/011. Metode Pembayaran/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-credit-card sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Metode Pembayaran</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Pembelian === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('pembelian')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'pembelian' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-bag sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'pembelian' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Pembelian</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../003. Pembelian/001. Pengadaan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pengadaan</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Inventaris === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('inventaris')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'inventaris' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-package sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'inventaris' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Inventaris</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../004. Inventaris/001. Stok Barang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Stok Barang</span>
+                            </a>
+                            <a href="../../004. Inventaris/002. Sortir Barang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Sortir Barang</span>
+                            </a>
+                            <!-- Sub-sub modul: Pindah Stok -->
+                            <div x-data="{ openTransfer: false }"
+                                x-effect="if(activeMenu !== 'inventaris') openTransfer = false">
+                                <a href="#" @click.prevent="openTransfer = !openTransfer"
+                                    class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45">
+                                    <span>Pindah Stok</span>
+                                    <i class="ph ph-caret-down ml-auto text-white/30 chevron-rotate"
+                                        :class="openTransfer ? 'open' : ''" style="display: block !important;"></i>
+                                </a>
+                                <div x-show="openTransfer" x-collapse.duration.300ms>
+                                    <div class="py-1 space-y-0.5">
+                                        <a href="../../004. Inventaris/003. Pindah Stok - Mengirim/index.html"
+                                            class="submenu-link level-3 relative flex items-center gap-3 pl-16 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                            <span>Mengirim</span>
+                                        </a>
+                                        <a href="../../004. Inventaris/004. Pindah Stok - Menerima/index.html"
+                                            class="submenu-link level-3 relative flex items-center gap-3 pl-16 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                            <span>Menerima</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="../../004. Inventaris/005. Stok Opname/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Stok Opname</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Produksi === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('produksi')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'produksi' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-factory sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'produksi' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Produksi</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../005. Produksi/001. Produksi Barang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Produksi Barang</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Penjualan === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('penjualan')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'penjualan' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-shopping-cart sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'penjualan' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Penjualan</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../006. Penjualan/001. Kasir - POS/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Kasir / POS</span>
+                            </a>
+                            <a href="../../006. Penjualan/002. Pesanan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pesanan</span>
+                            </a>
+                            <a href="../../006. Penjualan/003. Pengiriman/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pengiriman</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Keuangan === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('keuangan')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'keuangan' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-currency-circle-dollar sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'keuangan' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Keuangan</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../007. Keuangan/001. Pemasukan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pemasukan</span>
+                            </a>
+                            <a href="../../007. Keuangan/002. Pengeluaran/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pengeluaran</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Laporan === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('laporan')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'laporan' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-chart-line-up sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'laporan' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Laporan</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+
+                            <a href="../../008. Laporan/003. Total Aset/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-briefcase sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Total Aset</span>
+                            </a>                            <a href="../../008. Laporan/001. Pendapatan Penjualan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-calendar-blank sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pendapatan Penjualan</span>
+                            </a>
+                            <a href="../../008. Laporan/005. Keuntungan Penjualan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-money sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Keuntungan Penjualan</span>
+                            </a>
+                            <a href="../../008. Laporan/006. Keuntungan Setelah Penyesuaian/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-chart-line-up sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span class="whitespace-normal leading-tight">Keuntungan Setelah Penyesuaian</span>
+                            </a>
+                            <a href="../../008. Laporan/002. Ongkos Kirim/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-truck sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Ongkos Kirim</span>
+                            </a>
+                            <a href="../../008. Laporan/004. Kerugian Barang Buang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-trash sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Kerugian Barang Buang</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Pengaturan === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('pengaturan')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'pengaturan' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-gear sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'pengaturan' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Pengaturan</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../009. Pengaturan/001. Nota dan Cetak/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Nota & Cetak</span>
+                            </a>
+                            <a href="../../009. Pengaturan/003. Target/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Target</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <script>
+                (function(){
+                    const nav = document.getElementById('sidebar-nav');
+                    if (!nav) return;
+                    
+                    const savedScroll = sessionStorage.getItem('sidebarScroll');
+                    if (savedScroll !== null) {
+                        nav.scrollTop = parseInt(savedScroll, 10);
+                    } else {
+                        const active = nav.querySelector('.active');
+                        if (active) {
+                            nav.scrollTop = active.offsetTop - (nav.clientHeight / 2);
+                        }
+                    }
+
+                    nav.addEventListener('scroll', () => {
+                        sessionStorage.setItem('sidebarScroll', nav.scrollTop);
+                    }, { passive: true });
+                })();
+            </script>
+
+            <!-- User Profile Section -->
+            <div class="px-4 pb-6 pt-4 border-t border-white/10 shrink-0 transition-all duration-300 flex items-center relative"
+                 :class="sidebarCollapsed ? 'justify-center' : 'justify-between'" x-data="{ settingsOpen: false }">
+                 
+                <!-- Settings Dropdown Menu (Escaped from overflow-hidden) -->
+                <div x-show="settingsOpen" @click.outside="settingsOpen = false"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                    class="absolute right-4 bottom-[calc(100%-1rem)] mb-2 w-52 bg-white rounded-2xl shadow-xl shadow-black/5 border border-gray-100 overflow-hidden z-50 py-2">
+                    <div class="px-4 py-3 border-b border-gray-50">
+                        <p class="text-sm font-semibold text-gray-800">Pengaturan</p>
+                        <p class="text-[0.65rem] text-gray-400">Atur preferensi akun</p>
+                    </div>
+                    <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
+                        <i class="ph ph-user-circle text-lg"></i> Profil Saya
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
+                        <i class="ph ph-lock text-lg"></i> Ubah Password
+                    </a>
+                    <a href="#" @click.prevent="theme = theme === 'light' ? 'dark' : 'light'; settingsOpen = false" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
+                        <i class="ph text-lg" :class="theme === 'light' ? 'ph-moon' : 'ph-sun'"></i> 
+                        <span x-text="theme === 'light' ? 'Mode Gelap' : 'Mode Terang'"></span>
+                    </a>
+                    <div class="border-t border-gray-50 mt-1 pt-1">
+                        <a href="../../../002. Login ERP/index.html"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-strawberry hover:bg-strawberry/5 transition">
+                            <i class="ph ph-sign-out text-lg"></i> Keluar
+                        </a>
+                    </div>
+                </div>
+
+                <div class="flex items-center w-full transition-all duration-300" :class="sidebarCollapsed ? 'justify-center gap-0' : 'gap-3'">
+                    <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 border border-white/20 overflow-hidden relative group cursor-pointer">
+                        <i class="ph ph-user text-xl text-white"></i>
+                    </div>
+                    <div class="flex flex-col flex-1 toggle-container overflow-hidden">
+                        <span class="text-sm font-semibold text-white whitespace-nowrap">Dimas Pratama</span>
+                        <span class="text-xs text-white/50 whitespace-nowrap">Admin</span>
+                    </div>
+                    <!-- Settings Button -->
+                    <div class="toggle-container shrink-0 ml-auto flex items-center">
+                        <button @click="settingsOpen = !settingsOpen" class="text-white/40 hover:text-white transition flex items-center justify-center" title="Pengaturan">
+                            <i class="ph ph-gear text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+
+        <!-- ================================ -->
+        <!-- MAIN CONTENT AREA                -->
+        <!-- ================================ -->
+        <div class="flex-1 flex flex-col overflow-hidden h-full lg:h-auto">
+
+            <!-- Floating Header -->
+            <header
+                class="bg-white rounded-full shadow-sm border border-gray-100 mx-4 sm:mx-6 lg:mx-8 mt-4 sm:mt-6 lg:mt-5 px-5 lg:px-6 py-3 lg:py-4 flex items-center justify-between gap-4 z-30 sticky top-4 sm:top-6 lg:top-5">
+
+                <!-- Left: Hamburger + Title -->
+                <div class="flex items-center gap-4 pl-2">
+                    <button data-hamburger @click="sidebarOpen = !sidebarOpen"
+                        class="lg:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-500 transition shrink-0">
+                        <i class="ph ph-list text-2xl"></i>
+                    </button>
+                    <div class="hidden sm:block">
+                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5">Resep Produk</h1>
+                        <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
+                            <span>Master</span>
+                            <i class="ph ph-caret-right text-[0.55rem]"></i>
+                            <span>Resep Produk</span>
+                        </div>
+                    </div>
+
+                    <!-- Cabang Dropdown (Top Header) -->
+                    <div class="relative ml-0 sm:ml-4" x-data="{ branchOpen: false }">
+                        <button @click="branchOpen = !branchOpen" class="flex items-center gap-2 h-9 px-3 sm:px-4 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-700 transition shadow-sm">
+                            <i class="ph-bold ph-storefront text-[#0b595b] text-base"></i>
+                            <span class="text-xs font-semibold truncate max-w-[140px] sm:max-w-[180px]" 
+                                  x-text="selectedBranch"></span>
+                            <i class="ph-bold ph-caret-down text-[10px] text-gray-400"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div x-show="branchOpen" @click.outside="branchOpen = false" x-cloak
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute left-0 top-12 w-[280px] bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden z-50">
+                             <div class="px-4 py-3 border-b border-gray-50 flex items-center justify-between">
+                                 <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Pilih Cabang</p>
+                                 <button @click="branchOpen = false" class="text-gray-400 hover:text-gray-600"><i class="ph-bold ph-x"></i></button>
+                             </div>
+                             <div class="max-h-64 overflow-y-auto overscroll-none p-2">
+                                 <template x-for="branch in allBranches" :key="branch">
+                                     <button @click="selectedBranch = branch; branchOpen = false"
+                                             class="w-full text-left px-3 py-2.5 text-sm rounded-xl hover:bg-gray-50 transition flex items-center justify-between mb-1"
+                                             :class="selectedBranch === branch ? 'text-[#0b595b] font-bold' : 'text-gray-600 font-medium'">
+                                         <span class="truncate pr-2 text-[13px]" x-text="branch"></span>
+                                         <i x-show="selectedBranch === branch" class="ph-fill ph-circle text-[#0b595b] text-[8px] shrink-0"></i>
+                                     </button>
+                                 </template>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Notif + Profile -->
+                <div class="flex items-center gap-3">
+
+                    <!-- Notification Bell -->
+                    <div class="relative" x-data="{ notifOpen: false, hasUnread: true }">
+                        <button @click="notifOpen = !notifOpen; hasUnread = false"
+                            class="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-600 transition shrink-0">
+                            <div class="relative flex items-center justify-center">
+                                <i class="ph ph-bell text-lg"></i>
+                                <span x-show="hasUnread" class="absolute top-[3px] right-[1.5px] w-2 h-2 bg-strawberry rounded-full border border-white"></span>
+                            </div>
+                        </button>
+
+                        <!-- Dropdown -->
+                        <div x-show="notifOpen" @click.outside="notifOpen = false"
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden z-50">
+                            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                                <h4 class="font-serif font-semibold text-gray-800">Notifikasi</h4>
+                                <span class="badge bg-strawberry text-white">3 Baru</span>
+                            </div>
+                            <div class="max-h-72 overflow-y-auto overscroll-none divide-y divide-gray-50">
+                                <a href="#" class="notif-item flex gap-3 px-5 py-3.5">
+                                    <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                        <i class="ph-fill ph-package text-primary text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-700 font-medium">Stok Buah Naga Merah menipis</p>
+                                        <p class="text-xs text-gray-400 mt-0.5">5 menit yang lalu</p>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="px-5 py-3 border-t border-gray-100 text-center">
+                                <a href="#" class="text-sm font-medium text-primary hover:underline">Lihat Semua Notifikasi</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    </div>
+            </header>
+
+            <!-- ================================ -->
+            <!-- SCROLLABLE CONTENT AREA          -->
+            <!-- ================================ -->
+            <main class="flex-1 overflow-y-auto overscroll-none px-0 lg:px-8 py-0 lg:py-6 flex flex-col scrollbar-hide">
+
+                <div class="animate-fade-in-up w-full flex-1 flex flex-col min-h-0">
+
+                    <!-- Main Content Card -->
+                    <div class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
+
+                        <!-- Mobile Header: Logo Infruity + Nama Modul + Notif Bell -->
+                        <div class="sm:hidden px-4 py-3 bg-white/95 backdrop-blur-md border-b border-gray-100 flex items-center justify-between z-20 shrink-0 shadow-xs">
+                            <div class="flex items-center gap-2">
+                                <img src="../../assets/logo/Infruity Logo - 6.png" alt="Infruity Logo" style="height: 20px; width: auto; max-width: 100px;" class="object-contain" />
+                                <span class="text-gray-300 font-light text-sm">|</span>
+                                <span class="text-[12px] font-bold text-gray-800">Resep Produk</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition cursor-pointer relative">
+                                    <i class="ph-bold ph-bell text-xs"></i>
+                                    <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-rose-500 rounded-full ring-1 ring-white"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FLOATING COUNTER PILL DI ATAS (MUNCUL SAAT SCROLL) -->
+                        <div x-show="!mobileSearchOpen && isScrolling" 
+                             x-transition:enter="transition cubic-bezier(0.16, 1, 0.3, 1) duration-300"
+                             x-transition:enter-start="opacity-0 -translate-y-3 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave="transition cubic-bezier(0.4, 0, 1, 1) duration-250"
+                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave-end="opacity-0 -translate-y-3 scale-95"
+                             class="sm:hidden absolute left-0 right-0 z-30 pointer-events-none flex justify-center px-4"
+                             style="top: 58px;"
+                             x-cloak>
+                            <div class="pointer-events-auto bg-white/95 backdrop-blur-md border border-gray-200/90 px-4 py-1.5 rounded-full shadow-[0_6px_24px_rgba(0,0,0,0.12)] text-[11px] text-gray-700 font-medium">
+                                Menampilkan <strong class="text-gray-900 font-semibold" x-text="Math.min(visibleCount, filteredProducts.length)"></strong> dari <strong class="text-gray-900 font-semibold" x-text="filteredProducts.length"></strong> resep
+                            </div>
+                        </div>
+
+                        <!-- Toolbar: Search + Filter + Add -->
+                        <div class="hidden sm:flex p-4 border-b border-gray-100 flex-row gap-3 items-center bg-white relative z-10 transition-all duration-300">
+                            <!-- Search -->
+                            <div class="flex-1 relative">
+                                <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input x-model="searchQuery" type="text" placeholder="Cari resep..."
+                                    class="w-full bg-gray-50/50 border border-gray-100 rounded-full pl-10 pr-10 h-11 text-[13px] outline-none focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all">
+                                <!-- Clear button -->
+                                <button x-show="searchQuery" @click="searchQuery = ''" x-cloak
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors">
+                                    <i class="ph-bold ph-x text-[10px] text-gray-500"></i>
+                                </button>
+                            </div>
+
+                            <!-- Filter Button -->
+                            <div class="relative shrink-0 hidden sm:block" x-data="{ expanded: false }" x-effect="document.body.style.overflow = (filterOpen && window.innerWidth < 768) ? 'hidden' : ''">
+                                <!-- Filter Trigger -->
+                                <button @click="filterOpen = !filterOpen; expanded = true"
+                                    @mouseenter="expanded = true" 
+                                    @mouseleave="if(!filterOpen) expanded = false"
+                                    class="flex items-center bg-white rounded-full border h-11 p-1 shadow-sm transition-colors duration-300 shrink-0"
+                                    :class="filterOpen ? 'border-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
+                                    <div class="w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-300 z-10 shrink-0"
+                                        :class="expanded ? 'bg-emerald-50 text-emerald-600' : 'bg-white text-gray-600'">
+                                        <div class="relative flex items-center justify-center">
+                                            <i class="ph ph-funnel text-[20px]"></i>
+
+                                        </div>
+                                    </div>
+                                    <div class="overflow-hidden transition-all duration-500 ease-out hidden sm:flex items-center"
+                                         :class="expanded ? 'max-w-[280px] opacity-100 pr-4' : 'max-w-0 opacity-0 pr-0'">
+                                        <span class="text-[13px] font-medium text-gray-700 whitespace-nowrap pl-2" x-text="selectedType.length === 0 || selectedType.includes('Semua') ? 'Semua' : (selectedType.length === 1 ? selectedType[0] : selectedType.length + ' Tipe')"></span>
+                                        <i class="ph-bold ph-caret-down text-[10px] ml-2 transition-transform duration-200 text-gray-400" :class="filterOpen ? 'rotate-180' : ''"></i>
+                                    </div>
+                                </button>
+                                
+                                <!-- Backdrop for Filter -->
+                                <div x-show="filterOpen" x-cloak
+                                     @click.stop.prevent="filterOpen = false; expanded = false"
+                                     class="fixed inset-0 z-40 bg-transparent cursor-default pointer-events-auto">
+                                </div>
+
+                                <!-- Filter Dropdown -->
+                                <div x-show="filterOpen" x-cloak @click.outside="filterOpen = false; expanded = false"
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="opacity-0 scale-95"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="opacity-100 scale-100"
+                                    x-transition:leave-end="opacity-0 scale-95"
+                                    x-data="{ scrollTimer: null, isScrolling: false }"
+                                    @scroll="isScrolling = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => isScrolling = false, 600)"
+                                    :class="isScrolling ? 'is-scrolling' : ''"
+                                    class="absolute right-0 top-14 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 py-2 minimal-scrollbar">
+                                    <div class="px-4 py-2.5 border-b border-gray-50">
+                                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Tipe Produk</p>
+                                    </div>
+                                    <template x-for="t in allTypes" :key="t">
+                                        <button @click="if (t === 'Semua') { selectedType = []; } else { if (selectedType.includes('Semua')) selectedType = []; if (selectedType.includes(t)) { selectedType = selectedType.filter(c => c !== t); } else { selectedType.push(t); } }"
+                                            class="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition flex items-center justify-between"
+                                            :class="(selectedType.includes(t) || (t === 'Semua' && (selectedType.length === 0 || selectedType.includes('Semua')))) ? 'text-emerald-700 font-semibold bg-emerald-50/50' : 'text-gray-600'">
+                                            <span x-text="t"></span>
+                                            <i x-show="selectedType.includes(t) || (t === 'Semua' && (selectedType.length === 0 || selectedType.includes('Semua')))" class="ph-fill ph-circle text-emerald-500 text-[8px] shrink-0"></i>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Add Button (Desktop) -->
+                            <button @click="openDrawer()"
+                                class="hidden sm:flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold transition-colors shadow-sm shrink-0">
+                                <i class="ph-bold ph-plus text-sm"></i>
+                                <span>Tambah Resep</span>
+                            </button>
+
+                            <!-- Mobile Sidebar Toggle -->
+                            <button @click="toggleMobileSidebar()" 
+                                class="hidden shrink-0 w-11 h-11 items-center justify-center bg-white rounded-full border border-gray-200 hover:border-emerald-400 hover:text-emerald-600 shadow-sm text-gray-500 transition-all duration-300"
+                                title="Tampilkan Sidebar">
+                                <i class="ph-bold ph-list text-[18px]"></i>
+                            </button>
+                        </div>
+
+                        <!-- Product Count (Desktop only) -->
+                        <div class="sticky top-0 z-20 hidden sm:flex px-4 py-3 bg-gray-50/50 backdrop-blur-md border-b border-gray-100 items-center justify-between">
+                            <span class="text-xs text-gray-400 font-medium">
+                                Menampilkan <span class="text-gray-700 font-semibold" x-text="Math.min(visibleCount, filteredProducts.length)"></span>
+                                dari <span class="text-gray-700 font-semibold" x-text="filteredProducts.length"></span> resep
+                            </span>
+                        </div>
+
+                        <!-- Product List -->
+                        <div class="flex-1 overflow-y-auto overscroll-none min-h-0 relative scrollbar-hide" 
+                             :class="hasMore ? 'pb-20 sm:pb-0' : 'pb-24 sm:pb-0'"
+                             @scroll.passive="handleScroll()">
+                            <!-- Search overlay blocker (mobile) -->
+                            <div x-show="mobileSearchOpen" x-cloak
+                                 @click="mobileSearchOpen = false; searchQuery = ''"
+                                 class="sm:hidden absolute inset-0 z-20 bg-transparent cursor-default"></div>
+
+                            <!-- Desktop List View -->
+                            <div class="hidden lg:block divide-y divide-gray-50" x-effect="searchQuery; selectedType; resetPagination()">
+                                <template x-for="(product, index) in visibleProducts" :key="product.id">
+                                    <!-- wrapper: single root for x-for -->
+                                    <div class="border-b border-gray-100 last:border-none relative">
+                                        <!-- Click Overlay -->
+                                        <div class="absolute inset-0 z-10 cursor-pointer" @click="openDetailModal(product)"></div>
+                                        <!-- Main product row -->
+                                        <div class="flex items-center gap-4 px-5 py-4 hover:bg-gray-50/50 transition-colors group"
+                                             :style="'animation-delay:' + (index * 40) + 'ms'" 
+                                             style="animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;">
+                                            
+                                            <!-- Photo -->
+                                            <div class="w-12 h-12 rounded-xl overflow-hidden shrink-0 shadow-sm border border-gray-100 flex items-center justify-center text-xl"
+                                                 :style="'background-color:' + product.color">
+                                                <span x-text="product.emoji"></span>
+                                            </div>
+
+                                            <!-- Name & Meta -->
+                                            <div class="flex-1 min-w-0">
+                                                <div class="text-sm font-semibold text-gray-900 truncate" x-text="product.name"></div>
+                                                <div class="flex items-center gap-1.5 mt-0.5">
+                                                    <span class="text-[11px] text-gray-400">Resep Produk</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- HPP / Unit column (read-only) -->
+                                            <div class="shrink-0 w-44 flex items-center justify-end">
+                                                <span class="text-sm font-semibold text-gray-700 px-3 py-1.5 whitespace-nowrap">
+                                                    <span x-text="'Rp ' + product.hpp.toLocaleString('id-ID')"></span>
+                                                    <span class="text-gray-400 font-normal" x-text="'/' + product.unit"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- Empty State -->
+                                <div x-show="filteredProducts.length === 0" class="py-16 text-center">
+                                    <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                                        <i class="ph ph-magnifying-glass text-2xl text-gray-400"></i>
+                                    </div>
+                                    <p class="text-sm text-gray-500 font-medium">Resep tidak ditemukan</p>
+                                    <p class="text-xs text-gray-400 mt-1">Coba ubah kata kunci pencarian atau filter</p>
+                                </div>
+
+                                <!-- Load More (Desktop) -->
+                                <div x-show="hasMore" class="py-5 flex justify-center border-t border-gray-50">
+                                    <button @click="loadMore()"
+                                        class="flex items-center gap-2 px-6 py-2.5 rounded-full border border-gray-200 text-sm font-semibold text-gray-600 hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">
+                                        <i class="ph ph-arrow-circle-down text-base"></i>
+                                        <span>Muat Lebih Banyak</span>
+                                        <span class="text-xs text-gray-400 font-normal" x-text="'(' + (filteredProducts.length - visibleCount) + ' tersisa)'"></span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Mobile List View (Laporan style: divide-y) -->
+                            <div class="lg:hidden divide-y divide-gray-100">
+                                <template x-for="(product, index) in visibleProducts" :key="'m-' + product.id">
+                                    <div class="group relative">
+                                        <!-- Click Overlay -->
+                                        <div class="absolute inset-0 z-10 cursor-pointer" @click="openDetailModal(product)"></div>
+
+                                        <!-- Main row -->
+                                        <div class="px-5 py-3.5 flex items-center">
+                                            <!-- Emoji avatar -->
+                                            <div class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-lg mr-3 border border-gray-100"
+                                                 :style="'background-color:' + product.color">
+                                                <span x-text="product.emoji"></span>
+                                            </div>
+
+                                            <!-- Left: Name + meta -->
+                                            <div class="flex-1 min-w-0">
+                                                <div class="text-sm font-semibold text-gray-900 truncate" x-text="product.name"></div>
+                                                <div class="text-xs text-gray-400 mt-0.5">Resep Produk</div>
+                                            </div>
+
+                                            <!-- Right: HPP (read-only) -->
+                                            <div class="shrink-0 flex items-center gap-1 ml-2">
+                                                <span class="text-sm font-bold text-gray-800 px-2 py-1 whitespace-nowrap">
+                                                    <span x-text="'Rp ' + product.hpp.toLocaleString('id-ID')"></span><span class="text-gray-400 font-normal text-xs" x-text="'/' + product.unit"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- Empty State (Mobile) -->
+                                <div x-show="filteredProducts.length === 0" class="py-12 text-center">
+                                    <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                                        <i class="ph ph-magnifying-glass text-xl text-gray-400"></i>
+                                    </div>
+                                    <p class="text-sm text-gray-500 font-medium">Resep tidak ditemukan</p>
+                                    <p class="text-xs text-gray-400 mt-1">Coba ubah pencarian atau filter</p>
+                                </div>
+
+                                <!-- Load More (Mobile) -->
+                                <div x-show="hasMore" class="px-5 py-4">
+                                    <button @click="loadMore()"
+                                        class="w-full h-11 rounded-xl border-2 border-dashed border-gray-200 text-sm font-semibold text-gray-500 hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2">
+                                        <i class="ph ph-arrow-circle-down text-base"></i>
+                                        <span x-text="'Muat ' + Math.min(PAGE_SIZE, filteredProducts.length - visibleCount) + ' Produk Lagi'"></span>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+
+            <!-- ================================ -->
+            <!-- MOBILE FILTER BOTTOM SHEET       -->
+            <!-- ================================ -->
+            <div x-show="filterOpen" class="sm:hidden fixed top-0 left-0 right-0 bottom-0 z-[100] overflow-hidden flex flex-col justify-end" x-cloak>
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-black/70" @click="filterOpen = false"
+                     x-show="filterOpen"
+                     x-transition:enter="transition-opacity ease-out duration-300"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="transition-opacity ease-in duration-300"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"></div>
+                
+                <!-- Drawer Panel -->
+                <div x-show="filterOpen"
+                     x-transition:enter="transition ease-out duration-300 transform"
+                     x-transition:enter-start="translate-y-full"
+                     x-transition:enter-end="translate-y-0"
+                     x-transition:leave="transition ease-in duration-300 transform"
+                     x-transition:leave-start="translate-y-0"
+                     x-transition:leave-end="translate-y-full"
+                     class="w-full bg-white shadow-2xl flex flex-col max-h-[85vh] overflow-hidden rounded-t-3xl relative z-10 pb-[env(safe-area-inset-bottom)]">
+                     
+                    <!-- Drag Handle -->
+                    <div class="w-full flex justify-center pt-3 pb-1 shrink-0" @click="filterOpen = false" style="cursor: pointer;">
+                        <div class="w-16 h-1.5 bg-gray-300 rounded-full"></div>
+                    </div>
+
+                    <!-- Header -->
+                    <div class="bg-white shrink-0 px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                        <h3 class="font-bold text-gray-800 text-lg">Filter</h3>
+                        <button @click="filterOpen = false" class="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full transition-colors active:scale-95">
+                            <i class="ph-bold ph-x"></i>
+                        </button>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1 overflow-y-auto overscroll-none p-4 scrollbar-hide">
+                        <!-- Cabang -->
+                        <div class="mb-6 px-2">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Cabang</label>
+                            </div>
+                            <div class="bg-white border border-gray-200 rounded-lg flex flex-col overflow-hidden shadow-sm">
+                                <!-- Search Box -->
+                                <div class="relative border-b border-gray-100 shrink-0">
+                                    <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                                    <input type="text" x-model="branchSearchQuery" placeholder="Cari cabang..." 
+                                           class="w-full bg-transparent pl-8 pr-3 py-3 text-xs outline-none focus:bg-gray-50 transition-colors">
+                                </div>
+                                
+                                <!-- List -->
+                                <div class="relative w-full h-[220px]" 
+                                     x-data="{ 
+                                         isScrolling: false, 
+                                         scrollTimeout: null, 
+                                         scrollPos: 0, 
+                                         thumbHeight: 20,
+                                         updateScroll() {
+                                             const el = $refs.scrollArea;
+                                             if(!el) return;
+                                             if(el.scrollHeight <= el.clientHeight) {
+                                                 this.isScrolling = false;
+                                                 return;
+                                             }
+                                             const ratio = el.clientHeight / el.scrollHeight;
+                                             this.thumbHeight = Math.max(ratio * el.clientHeight, 20);
+                                             this.scrollPos = (el.scrollTop / el.scrollHeight) * el.clientHeight;
+                                             
+                                             this.isScrolling = true;
+                                             clearTimeout(this.scrollTimeout);
+                                             this.scrollTimeout = setTimeout(() => { this.isScrolling = false; }, 800);
+                                         }
+                                     }" 
+                                     x-init="$watch('branchSearchQuery', () => { $nextTick(() => updateScroll()) })">
+                                     
+                                    <div x-ref="scrollArea" @scroll="updateScroll()" class="h-full overflow-y-auto overscroll-none bg-gray-50/30 scrollbar-hide">
+                                        <template x-for="branch in allBranches.filter(b => b.toLowerCase().includes(branchSearchQuery.toLowerCase()))" :key="branch">
+                                            <label class="flex items-center gap-3 px-3 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors last:border-b-0">
+                                                <div class="relative flex items-center justify-center w-4 h-4 shrink-0">
+                                                    <input type="radio" name="cabangFilter" :value="branch" x-model="tempSelectedBranch" class="peer appearance-none w-4 h-4 border-2 border-gray-300 rounded-full checked:border-emerald-500 transition-colors cursor-pointer">
+                                                    <div class="absolute w-2 h-2 bg-emerald-500 rounded-full scale-0 peer-checked:scale-100 transition-transform duration-200"></div>
+                                                </div>
+                                                <span class="text-xs text-gray-700" :class="tempSelectedBranch === branch ? 'font-bold text-gray-900' : 'font-medium'" x-text="branch"></span>
+                                            </label>
+                                        </template>
+                                        <div x-show="allBranches.filter(b => b.toLowerCase().includes(branchSearchQuery.toLowerCase())).length === 0" class="text-center py-4 text-xs text-gray-400">
+                                            Cabang tidak ditemukan
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Custom Smooth Scrollbar Thumb -->
+                                    <div class="absolute top-0 right-0.5 w-1 h-full pointer-events-none py-1">
+                                        <div class="w-full bg-gray-300 rounded-full transition-opacity duration-300 ease-in-out"
+                                             :style="`height: ${thumbHeight}px; transform: translateY(${scrollPos}px);`"
+                                             :class="isScrolling ? 'opacity-100' : 'opacity-0'">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Tipe Produk -->
+                        <div class="mb-0 px-2">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Tipe Produk</label>
+                            </div>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <template x-for="t in allTypes" :key="t">
+                                    <button @click="if (t === 'Semua') { tempSelectedType = []; } else { if (tempSelectedType.includes('Semua')) tempSelectedType = []; if (tempSelectedType.includes(t)) { tempSelectedType = tempSelectedType.filter(c => c !== t); } else { tempSelectedType.push(t); } }"
+                                        class="px-3 py-1.5 rounded-full border text-xs font-medium transition-colors"
+                                        :class="(tempSelectedType.includes(t) || (t === 'Semua' && (tempSelectedType.length === 0 || tempSelectedType.includes('Semua')))) ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'">
+                                        <span x-text="t"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="shrink-0 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 bg-white flex items-center gap-2">
+
+                        <button @click="filterOpen = false" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+                            Batal
+                        </button>
+                        <button @click="selectedType = [...tempSelectedType]; selectedBranch = tempSelectedBranch; filterOpen = false" class="flex-1 h-11 rounded-xl bg-[#0b595b] hover:bg-[#0a4e50] text-white text-sm font-semibold transition-colors shadow-sm">
+                            Terapkan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================ -->
+            <!-- MOBILE SEARCH BAR                -->
+            <!-- ================================ -->
+            <div class="sm:hidden absolute left-0 right-0 px-4 flex justify-center z-[29] opacity-0 pointer-events-none"
+                 style="bottom: calc(96px + env(safe-area-inset-bottom))"
+                 :class="mobileSearchOpen
+                     ? 'opacity-100 pointer-events-auto'
+                     : 'opacity-0 pointer-events-none'">
+                <div class="relative w-full max-w-[360px] h-12 bg-white/40 backdrop-blur-xl border border-white/60 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px] absolute left-4 top-1/2 -translate-y-1/2 text-[#0b595b]/70">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" x-model="searchQuery" id="mobileSearchInputBottom" placeholder="Cari resep..."
+                           class="w-full bg-transparent pl-11 pr-10 h-full text-[13.5px] font-medium text-gray-800 placeholder-gray-500 outline-none rounded-full">
+                    <button x-show="searchQuery" @click="searchQuery = ''; document.getElementById('mobileSearchInputBottom').focus()" x-cloak
+                            class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full hover:bg-black/5 flex items-center justify-center transition-colors">
+                        <i class="ph-bold ph-x text-xs text-gray-500"></i>
+                    </button>
+                </div>
+            </div>
+
+
+
+            <!-- ================================ -->
+            <!-- UNIFIED BOTTOM NAVIGATION BAR    -->
+            <!-- ================================ -->
+            <div class="w-full absolute bottom-0 left-0 right-0 z-30 sm:hidden pb-[calc(1rem+env(safe-area-inset-bottom))] pt-2 px-4 flex justify-center pointer-events-none" x-data="{ profileOpen: false }">
+                
+                <!-- Wrapper to constrain width and provide relative positioning for both the pill and popup -->
+                <div class="relative w-full max-w-[360px]">
+                    
+                    <!-- Transparent Overlay to prevent clicks passing through -->
+                    <div x-show="profileOpen" x-cloak @click="profileOpen = false" class="fixed inset-0 z-30 pointer-events-auto"></div>
+
+                    <!-- PROFILE MENU POPUP -->
+                    <div x-show="profileOpen" x-cloak @click.outside="profileOpen = false"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+                         class="absolute right-0 bottom-[calc(100%+16px)] w-56 bg-white/40 backdrop-blur-xl rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.1)] border border-white/60 overflow-hidden pointer-events-auto origin-bottom-right z-40">
+                        
+                        <!-- Header / User Info -->
+                        <div class="px-5 py-4 border-b border-white/50">
+                            <div class="flex items-center gap-3">
+                                <img src="https://api.dicebear.com/9.x/glass/svg?seed=Finance" alt="Profile" class="w-10 h-10 rounded-full border border-gray-200 bg-white object-cover">
+                                <div>
+                                    <p class="text-[13px] font-bold text-gray-800 leading-tight">Dimas Pratama</p>
+                                    <p class="text-[11px] font-medium text-gray-500 mt-0.5">Admin</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Menu Links -->
+                        <div class="py-1.5">
+                            <a href="#" class="flex items-center gap-3 px-5 py-2.5 text-[13px] font-medium text-gray-600 hover:text-[#0b595b] hover:bg-black/5 transition-colors">
+                                <i class="ph ph-user-circle text-[18px]"></i> Profil Saya
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-2.5 text-[13px] font-medium text-gray-600 hover:text-[#0b595b] hover:bg-black/5 transition-colors">
+                                <i class="ph ph-lock text-[18px]"></i> Ubah Password
+                            </a>
+                        </div>
+                        
+                        <!-- Logout -->
+                        <div class="border-t border-white/40 py-1.5 bg-red-50/30">
+                            <a href="../../../002. Login ERP/index.html"
+                                class="flex items-center gap-3 px-5 py-2.5 text-[13px] font-bold text-red-600 hover:bg-red-500/10 transition-colors">
+                                <i class="ph ph-sign-out text-[18px]"></i> Keluar
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- BOTTOM NAVIGATION PILL -->
+                    <div class="pointer-events-auto bg-white/10 backdrop-blur-md backdrop-saturate-150 border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.1)] rounded-full h-[64px] p-2 flex items-center justify-between w-full relative">
+                        
+                        <!-- 1. Menu / Home -->
+                        <button @click="toggleMobileSidebar(); profileOpen = false"
+                                :class="sidebarOpen ? 'text-[#0b595b] w-12' : 'text-gray-500 hover:text-[#0b595b] w-12'" 
+                                style="transition: color 300ms ease;"
+                                class="h-full bg-transparent flex items-center justify-center rounded-full active:scale-95">
+                            <span class="icon-rounded" :class="sidebarOpen ? 'icon-active' : 'icon-inactive'">home</span>
+                        </button>
+
+                        <!-- 2. Search -->
+                        <button @click="mobileSearchOpen = !mobileSearchOpen; if (mobileSearchOpen) { filterOpen = false; closeDrawer(); profileOpen = false; $nextTick(() => document.getElementById('mobileSearchInputBottom').focus()); }"
+                                :class="mobileSearchOpen || searchQuery.length > 0 ? 'text-[#0b595b] w-12' : 'text-gray-500 hover:text-[#0b595b] w-12'" 
+                                style="transition: color 300ms ease;"
+                                class="h-full bg-transparent flex items-center justify-center rounded-full active:scale-95">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" :stroke-width="mobileSearchOpen || searchQuery.length > 0 ? '2.5' : '1.8'" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 transition-all">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </button>
+
+                        <!-- 3. Filter -->
+                        <button @click="filterOpen = !filterOpen; if(filterOpen) { mobileSearchOpen = false; closeDrawer(); profileOpen = false; tempSelectedType = [...selectedType]; tempSelectedBranch = selectedBranch; branchSearchQuery = ''; }"
+                                :class="filterOpen || ((selectedType.length > 0 && !selectedType.includes('Semua')) || selectedBranch !== 'Gresik / Driyorejo / Petiken - 001') ? 'text-[#0b595b] w-12' : 'text-gray-500 hover:text-[#0b595b] w-12'" 
+                                style="transition: color 300ms ease;"
+                                class="h-full bg-transparent flex items-center justify-center rounded-full active:scale-95">
+                            <span class="icon-rounded" :class="filterOpen || ((selectedType.length > 0 && !selectedType.includes('Semua')) || selectedBranch !== 'Gresik / Driyorejo / Petiken - 001') ? 'icon-active' : 'icon-inactive'">tune</span>
+                        </button>
+
+                        <!-- 4. Tambah Produk -->
+                        <button @click="openDrawer(); profileOpen = false"
+                                :class="drawerOpen ? 'text-[#0b595b] w-12' : 'text-gray-500 hover:text-[#0b595b] w-12'" 
+                                style="transition: color 300ms ease;"
+                                class="h-full bg-transparent flex items-center justify-center rounded-full active:scale-95">
+                            <svg viewBox="0 0 24 24" class="w-[28px] h-[28px] transition-all" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" :stroke-width="drawerOpen ? '2.2' : '1.3'" fill="none">
+                                <path d="M2 12v3.45c0 2.849.698 4.005 1.606 4.944.94.909 2.098 1.608 4.946 1.608h6.896c2.848 0 4.006-.7 4.946-1.608C21.302 19.455 22 18.299 22 15.45V8.552c0-2.849-.698-4.006-1.606-4.945C19.454 2.7 18.296 2 15.448 2H8.552c-2.848 0-4.006.699-4.946 1.607C2.698 4.547 2 5.703 2 8.552Z"></path>
+                                <line x1="7" x2="17" y1="12" y2="12"></line>
+                                <line x1="12" x2="12" y1="7" y2="17"></line>
+                            </svg>
+                        </button>
+
+                        <!-- 5. Profile -->
+                        <button @click="profileOpen = !profileOpen; if(profileOpen) { mobileSearchOpen = false; filterOpen = false; closeDrawer(); }"
+                                :class="profileOpen ? 'text-gray-800 w-12' : 'text-gray-500 hover:text-gray-800 w-12'" 
+                                style="transition: color 300ms ease;"
+                                class="h-full bg-transparent flex items-center justify-center rounded-full active:scale-95">
+                            <div class="relative w-8 h-8 rounded-full border-[2.5px] transition-colors" :class="profileOpen ? 'border-gray-300' : 'border-transparent'">
+                                <img src="https://api.dicebear.com/9.x/glass/svg?seed=Finance" class="w-full h-full object-cover rounded-full" />
+                            </div>
+                        </button>
+                    </div> <!-- End of BOTTOM NAVIGATION PILL -->
+                </div> <!-- End of Wrapper -->
+
+        </div>
+
+
+
+    <!-- ================================ -->
+    <!-- DRAWER: Tambah / Edit Produk     -->
+    <!-- ================================ -->
+    <div x-show="drawerOpen" class="fixed top-0 left-0 right-0 bottom-0 z-[100] overflow-hidden flex flex-col justify-end lg:flex-row lg:justify-end" x-cloak>
+        <!-- Backdrop -->
+        <div x-show="drawerOpen"
+             x-transition:enter="transition-opacity ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="closeDrawer()" class="absolute inset-0 bg-black/70"></div>
+
+        <!-- Drawer Panel -->
+        <div x-show="drawerOpen"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full"
+             x-transition:enter-end="translate-y-0 lg:translate-x-0"
+             x-transition:leave="transition ease-in duration-300 transform"
+             x-transition:leave-start="translate-y-0 lg:translate-x-0"
+             x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full"
+             class="w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col h-[85vh] lg:h-full max-h-[100vh] overflow-hidden border-t lg:border-t-0 lg:border-l border-gray-100 rounded-t-3xl lg:rounded-none relative z-10">
+
+            <!-- Drag Handle (Mobile) -->
+            <div class="w-full flex justify-center pt-3 pb-1 lg:hidden shrink-0" @click="closeDrawer()" style="cursor: pointer;">
+                <div class="w-16 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+
+            <!-- Header -->
+            <div class="bg-white shrink-0 border-b border-gray-100 px-5 py-4 flex items-center justify-between">
+                <div class="flex flex-col">
+                    <h3 class="text-[15px] font-bold text-gray-900" x-text="editingProduct ? 'Edit Resep' : 'Tambah Resep'"></h3>
+                    <p class="text-[12px] text-gray-400 mt-0.5" x-text="editingProduct ? 'Perbarui data resep' : 'Isi data resep baru'"></p>
+                </div>
+                <button @click="closeDrawer()" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors shrink-0">
+                    <i class="ph-bold ph-x text-base"></i>
+                </button>
+            </div>
+
+            <!-- Form Content -->
+            <div class="shrink overflow-y-auto overscroll-none min-h-0 relative bg-gray-50/60" 
+                 x-data="{ 
+                     scrollPos: 0, 
+                     thumbHeight: 0, 
+                     isScrolling: false, 
+                     scrollTimeout: null,
+                     updateScroll() {
+                         if (!this.$refs.scrollArea) return;
+                         const el = this.$refs.scrollArea;
+                         const scrollRatio = el.clientHeight / el.scrollHeight;
+                         this.thumbHeight = Math.max(el.clientHeight * scrollRatio, 30);
+                         const maxScrollTop = el.scrollHeight - el.clientHeight;
+                         const maxThumbTop = el.clientHeight - this.thumbHeight - 16;
+                         if (maxScrollTop <= 0) {
+                             this.scrollPos = 0;
+                         } else {
+                             this.scrollPos = (el.scrollTop / maxScrollTop) * maxThumbTop;
+                         }
+                     }
+                 }" 
+                 x-init="$nextTick(() => updateScroll())"
+                 @resize.window="updateScroll()">
+                <div x-ref="scrollArea" 
+                     @scroll="updateScroll(); isScrolling = true; clearTimeout(scrollTimeout); scrollTimeout = setTimeout(() => isScrolling = false, 800)" 
+                     class="h-full overflow-y-auto overscroll-none scrollbar-hide px-5 pb-8 pt-5" style="-webkit-overflow-scrolling: touch;">
+                <div class="flex flex-col gap-5">
+
+                    <!-- 1. PILIH PRODUK (Tipe Perlu Resep) -->
+                    <div x-data="{ pickerOpen: false, pickerSearch: '' }" class="relative">
+                        <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Pilih Produk <span class="text-red-400">*</span></label>
+                        
+                        <!-- Selected Trigger Button -->
+                        <button @click="pickerOpen = !pickerOpen" type="button"
+                                class="w-full min-h-[48px] bg-white border border-gray-200 rounded-xl px-3.5 py-2 flex items-center justify-between text-left transition-all hover:border-gray-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                                :class="!form.productId ? 'text-gray-400' : 'text-gray-900'">
+                            <div class="flex items-center gap-3 min-w-0 flex-1">
+                                <template x-if="form.productId">
+                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0 border border-gray-100"
+                                         :style="'background-color:' + (form.color || '#fff3e0')">
+                                        <span x-text="form.emoji || '🧃'"></span>
+                                    </div>
+                                </template>
+                                <template x-if="!form.productId">
+                                    <div class="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 flex items-center justify-center shrink-0">
+                                        <i class="ph ph-bag text-base"></i>
+                                    </div>
+                                </template>
+                                <div class="flex flex-col min-w-0 flex-1">
+                                    <span class="text-sm font-semibold truncate text-gray-900" 
+                                          x-text="form.productName ? form.productName : 'Pilih produk yang perlu resep...'"></span>
+                                    <span x-show="form.unit" class="text-[11px] text-gray-400" x-text="'Satuan hasil: ' + form.unit"></span>
+                                </div>
+                            </div>
+                            <i class="ph-bold ph-caret-down text-gray-400 shrink-0 transition-transform ml-2" :class="pickerOpen ? 'rotate-180' : ''"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div x-show="pickerOpen" class="fixed inset-0 z-[15]" @click="pickerOpen = false" x-cloak></div>
+                        <div x-show="pickerOpen" x-transition
+                             class="absolute z-20 w-full mt-1.5 flex flex-col bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                            <!-- Search -->
+                            <div class="relative border-b border-gray-100 shrink-0 bg-gray-50/50">
+                                <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                <input type="text" x-model="pickerSearch" placeholder="Cari produk olahan / resep..."
+                                       class="w-full bg-transparent pl-9 pr-4 py-2.5 text-xs outline-none focus:bg-white transition-colors">
+                            </div>
+                            <!-- Items List -->
+                            <div class="max-h-52 overflow-y-auto overscroll-none scrollbar-hide divide-y divide-gray-50">
+                                <template x-for="prod in productsNeedingRecipe.filter(p => p.name.toLowerCase().includes(pickerSearch.toLowerCase()))" :key="prod.id">
+                                    <div @click="selectProductForRecipe(prod); pickerOpen = false"
+                                         class="flex items-center gap-3 px-3.5 py-2.5 hover:bg-emerald-50/50 cursor-pointer transition-colors"
+                                         :class="form.productId === prod.id ? 'bg-emerald-50' : ''">
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 border border-gray-100"
+                                             :style="'background-color:' + (prod.color || '#fff3e0')">
+                                            <span x-text="prod.emoji || '🧃'"></span>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-xs font-bold text-gray-900 truncate" x-text="prod.name"></div>
+                                            <div class="text-[10px] text-gray-400 flex items-center gap-1.5 mt-0.5">
+                                                <span class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-medium" x-text="prod.type"></span>
+                                                <span x-text="'Satuan: ' + prod.unit"></span>
+                                            </div>
+                                        </div>
+                                        <i x-show="form.productId === prod.id" class="ph-bold ph-check text-emerald-600 text-sm"></i>
+                                    </div>
+                                </template>
+                                <div x-show="productsNeedingRecipe.filter(p => p.name.toLowerCase().includes(pickerSearch.toLowerCase())).length === 0"
+                                     class="text-center py-6 text-xs text-gray-400">
+                                    Produk tidak ditemukan
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2 & 3. DAFTAR BAHAN BAKU (Multi Bahan Baku) -->
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-600 block">Bahan Baku Resep <span class="text-red-400">*</span></label>
+                                <span class="text-[11px] text-gray-400">Komposisi bahan baku yang digunakan</span>
+                            </div>
+                            <!-- Button Tambah Bahan Baku -->
+                            <button type="button" @click="addIngredientRow()"
+                                    class="flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-200 transition-colors">
+                                <i class="ph-bold ph-plus text-xs"></i>
+                                <span>Tambah Bahan</span>
+                            </button>
+                        </div>
+
+                        <!-- Ingredient Items List -->
+                        <div class="flex flex-col gap-3">
+                            <template x-for="(ing, idx) in form.ingredients" :key="ing.id || idx">
+                                <div class="bg-white border border-gray-200 rounded-xl p-3.5 shadow-sm flex flex-col gap-2.5 relative group">
+                                    <!-- Header Row with Item Index & Delete Button -->
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[11px] font-bold text-gray-500 flex items-center gap-1.5">
+                                            <span class="w-4 h-4 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-[10px]" x-text="idx + 1"></span>
+                                            Bahan Baku #<span x-text="idx + 1"></span>
+                                        </span>
+                                        
+                                        <button type="button" @click="removeIngredientRow(idx)"
+                                                x-show="form.ingredients.length > 1"
+                                                class="w-7 h-7 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors"
+                                                title="Hapus Bahan">
+                                            <i class="ph-bold ph-trash text-sm"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Pilih Bahan (Dropdown / Selector) -->
+                                    <div x-data="{ matPickerOpen: false, matSearch: '' }" class="relative">
+                                        <button type="button" @click="matPickerOpen = !matPickerOpen"
+                                                class="w-full h-10 bg-gray-50 hover:bg-gray-100/80 border border-gray-200 rounded-lg px-3 flex items-center justify-between text-left text-xs transition-colors"
+                                                :class="!ing.materialId ? 'text-gray-400' : 'text-gray-900 font-semibold'">
+                                            <div class="flex items-center gap-2 min-w-0 flex-1">
+                                                <i class="ph ph-cube text-emerald-600 shrink-0 text-sm"></i>
+                                                <span class="truncate" x-text="ing.materialName ? ing.materialName : 'Pilih Bahan Baku...'"></span>
+                                            </div>
+                                            <i class="ph-bold ph-caret-down text-gray-400 shrink-0 text-[10px] transition-transform ml-1" :class="matPickerOpen ? 'rotate-180' : ''"></i>
+                                        </button>
+
+                                        <!-- Dropdown Menu -->
+                                        <div x-show="matPickerOpen" class="fixed inset-0 z-[25]" @click="matPickerOpen = false" x-cloak></div>
+                                        <div x-show="matPickerOpen" x-transition
+                                             class="absolute z-30 w-full mt-1 flex flex-col bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                                            <div class="relative border-b border-gray-100 bg-gray-50/70">
+                                                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                                                <input type="text" x-model="matSearch" placeholder="Cari bahan baku..."
+                                                       class="w-full bg-transparent pl-8 pr-3 py-2 text-xs outline-none">
+                                            </div>
+                                            <div class="max-h-44 overflow-y-auto overscroll-none scrollbar-hide divide-y divide-gray-50">
+                                                <template x-for="mat in rawMaterialProducts.filter(m => m.name.toLowerCase().includes(matSearch.toLowerCase()))" :key="mat.id">
+                                                    <div @click="selectMaterialForIngredient(ing, mat); matPickerOpen = false"
+                                                         class="flex items-center justify-between px-3 py-2 text-xs hover:bg-emerald-50/60 cursor-pointer transition-colors"
+                                                         :class="ing.materialId === mat.id ? 'bg-emerald-50 font-bold text-emerald-800' : 'text-gray-700'">
+                                                        <div class="flex items-center gap-2 min-w-0">
+                                                            <span x-text="mat.emoji || '🍎'"></span>
+                                                            <span class="truncate" x-text="mat.name"></span>
+                                                        </div>
+                                                        <span class="text-[10px] text-gray-400 shrink-0 ml-2" x-text="'Satuan: ' + mat.unit"></span>
+                                                    </div>
+                                                </template>
+                                                <div x-show="rawMaterialProducts.filter(m => m.name.toLowerCase().includes(matSearch.toLowerCase())).length === 0"
+                                                     class="text-center py-4 text-xs text-gray-400">
+                                                    Bahan tidak ditemukan
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Takaran & Satuan Grid -->
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <!-- Jumlah / Takaran -->
+                                        <div>
+                                            <label class="text-[10px] font-semibold text-gray-400 mb-1 block">Takaran / Jumlah <span class="text-red-400">*</span></label>
+                                            <input type="number" step="any" min="0" x-model="ing.amount" placeholder="contoh: 150"
+                                                   class="w-full h-9 bg-gray-50 border border-gray-200 rounded-lg px-3 text-xs font-semibold text-gray-900 outline-none focus:border-emerald-500 focus:bg-white transition-all">
+                                        </div>
+                                        <!-- Satuan -->
+                                        <div>
+                                            <label class="text-[10px] font-semibold text-gray-400 mb-1 block">Satuan Takaran</label>
+                                            <select x-model="ing.unit"
+                                                    class="w-full h-9 bg-gray-50 border border-gray-200 rounded-lg px-2 text-xs font-medium text-gray-700 outline-none focus:border-emerald-500 focus:bg-white transition-all">
+                                                <option value="gr">Gram (gr)</option>
+                                                <option value="kg">Kilogram (kg)</option>
+                                                <option value="ml">Mililiter (ml)</option>
+                                                <option value="l">Liter (l)</option>
+                                                <option value="pcs">Pieces (pcs)</option>
+                                                <option value="pack">Pack</option>
+                                                <option value="cup">Cup</option>
+                                                <option value="sdm">Sendok Makan (sdm)</option>
+                                                <option value="sdt">Sendok Teh (sdt)</option>
+                                                <option value="butir">Butir</option>
+                                                <option value="potong">Potong</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Biaya Subtotal Bahan (Live Preview) -->
+                                    <div x-show="ing.materialId && parseFloat(ing.amount) > 0" 
+                                         class="flex items-center justify-between px-2.5 py-1.5 bg-emerald-50/60 rounded-lg border border-emerald-100/80 text-[11px] mt-0.5">
+                                        <div class="text-gray-500 flex items-center gap-1 min-w-0">
+                                            <span class="font-medium text-gray-600">Subtotal HPP:</span>
+                                            <span class="text-gray-400 truncate text-[10px]" x-text="getIngredientCostDetail(ing)"></span>
+                                        </div>
+                                        <div class="font-bold text-emerald-700 font-mono shrink-0 ml-2" 
+                                             x-text="'Rp ' + Math.round(getIngredientCost(ing)).toLocaleString('id-ID')"></div>
+                                    </div>
+
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Harga Pokok Produksi (HPP) - Otomatis Terhitung Kumulatif -->
+                    <div class="bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/50 border border-emerald-200/80 rounded-2xl p-4 shadow-sm">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-lg bg-emerald-100/80 text-emerald-700 flex items-center justify-center">
+                                    <i class="ph-duotone ph-calculator text-base"></i>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-gray-800 block">Harga Pokok Produksi (HPP)</label>
+                                    <span class="text-[10px] text-gray-400">Kumulatif HPP seluruh bahan baku</span>
+                                </div>
+                            </div>
+                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-emerald-200/60">
+                                <i class="ph-bold ph-lightning text-[10px]"></i> Otomatis Kumulatif
+                            </span>
+                        </div>
+
+                        <!-- Result Display -->
+                        <div class="flex items-baseline justify-between pt-1 border-t border-emerald-100/60">
+                            <div class="flex items-baseline gap-1.5">
+                                <span class="text-sm font-bold text-emerald-700">Rp</span>
+                                <span class="text-2xl font-black text-gray-900 tracking-tight"
+                                      x-text="calculatedTotalHpp.toLocaleString('id-ID')"></span>
+                                <span class="text-xs font-semibold text-gray-500" x-text="form.unit ? '/' + form.unit : '/porsi'"></span>
+                            </div>
+                            <div class="text-[11px] text-gray-500 font-medium">
+                                <span class="font-bold text-emerald-700" x-text="form.ingredients.filter(i => i.materialId && parseFloat(i.amount) > 0).length"></span> bahan terhitung
+                            </div>
+                        </div>
+
+                        <div class="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
+                            <i class="ph ph-info text-gray-400 shrink-0"></i>
+                            <span>HPP terakumulasi otomatis secara real-time dari takaran & harga pokok bahan baku yang digunakan.</span>
+                        </div>
+                    </div>
+
+                    <!-- Instruksi / Catatan Resep (Opsional) -->
+                    <div>
+                        <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Catatan / Langkah Penyajian</label>
+                        <textarea x-model="form.description" placeholder="Tuliskan catatan atau instruksi racikan..." rows="3"
+                                  class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-xs outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all resize-none"></textarea>
+                    </div>
+
+                </div>
+            </div>
+
+                <!-- Custom Smooth Scrollbar Thumb -->
+                <div class="absolute top-0 right-1 w-1.5 h-full pointer-events-none py-2">
+                    <div class="w-full bg-gray-400/50 rounded-full transition-opacity duration-300 ease-in-out"
+                         :style="`height: ${thumbHeight}px; transform: translateY(${scrollPos}px);`"
+                         :class="isScrolling ? 'opacity-100' : 'opacity-0'">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="shrink-0 px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 bg-white flex items-center gap-3">
+                <button @click="closeDrawer()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+                    Batal
+                </button>
+                <button @click="saveProduct()" class="flex-1 h-11 rounded-xl bg-[#0b595b] hover:bg-[#0a4e50] text-white text-sm font-semibold transition-colors shadow-sm">
+                    <span x-text="editingProduct ? 'Simpan Perubahan' : 'Tambah Resep'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================ -->
+    <!-- MODAL: Konfirmasi Hapus          -->
+    <!-- ================================ -->
+    <div x-show="deleteModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center px-4" x-cloak>
+        <!-- Backdrop -->
+        <div x-show="deleteModalOpen"
+             x-transition:enter="transition-opacity ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="deleteModalOpen = false" class="absolute inset-0 bg-black/60"></div>
+
+        <!-- Modal Card -->
+        <div x-show="deleteModalOpen"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-90 translate-y-4"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-90 translate-y-4"
+             class="relative z-10 bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+            <div class="px-6 pt-7 pb-5 text-center">
+                <div class="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
+                    <i class="ph-fill ph-trash text-2xl text-red-500"></i>
+                </div>
+                <h4 class="text-base font-bold text-gray-900 mb-1.5">Hapus Resep?</h4>
+                <p class="text-sm text-gray-500">
+                    Resep <strong class="text-gray-700" x-text="deletingProduct?.name"></strong> akan dihapus permanen.
+                </p>
+            </div>
+            <div class="px-6 pb-6 flex items-center gap-3">
+                <button @click="deleteModalOpen = false" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+                    Batal
+                </button>
+                <button @click="deleteProduct()" class="flex-1 h-11 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors shadow-sm">
+                    Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================ -->
+    <!-- MODAL: Detail Resep             -->
+    <!-- ================================ -->
+    <div x-show="detailModalOpen" class="fixed inset-0 z-[120] flex items-center justify-center px-4" x-cloak>
+        <!-- Backdrop -->
+        <div x-show="detailModalOpen"
+             x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             @click="detailModalOpen = false" class="absolute inset-0 bg-black/60"></div>
+
+        <!-- Modal Content -->
+        <div x-show="detailModalOpen"
+             x-transition:enter="transition-all duration-300 cubic-bezier(0.16, 1, 0.3, 1)"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition-all duration-200 ease-in"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+             class="relative bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden flex flex-col z-10">
+
+            <div class="p-6 flex-1 flex flex-col">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold text-gray-800">Detail Resep</h3>
+                    <button @click="detailModalOpen = false" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
+                        <i class="ph-bold ph-x"></i>
+                    </button>
+                </div>
+
+                <template x-if="selectedDetailProduct">
+                    <div class="flex flex-col gap-5 text-sm">
+
+                        <!-- Nama Produk -->
+                        <div class="flex gap-3 items-center">
+                            <i class="ph-duotone ph-tag text-2xl text-emerald-500 shrink-0"></i>
+                            <div>
+                                <div class="font-bold text-gray-800 leading-snug" x-text="selectedDetailProduct.name"></div>
+                                <div class="text-[11px] text-gray-400 font-medium mt-0.5">Nama Produk</div>
+                            </div>
+                        </div>
+
+                        <!-- Harga Pokok Produksi -->
+                        <div class="flex gap-3 items-center">
+                            <i class="ph-duotone ph-coins text-2xl text-emerald-500 shrink-0"></i>
+                            <div>
+                                <div class="font-bold text-gray-800" x-text="'Rp ' + selectedDetailProduct.hpp.toLocaleString('id-ID') + ' / ' + selectedDetailProduct.unit"></div>
+                                <div class="text-[11px] text-gray-400 font-medium">Harga Pokok Produksi</div>
+                            </div>
+                        </div>
+
+                        <!-- Bahan Baku Resep -->
+                        <div class="flex flex-col gap-2 pt-1 border-t border-gray-100">
+                            <div class="flex items-center gap-2">
+                                <i class="ph-duotone ph-flask text-2xl text-emerald-500 shrink-0"></i>
+                                <div>
+                                    <div class="font-bold text-gray-800 leading-snug">Bahan Baku Resep</div>
+                                    <div class="text-[11px] text-gray-400 font-medium">Komposisi racikan produk</div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-1.5 pl-9">
+                                <template x-if="selectedDetailProduct.ingredients && selectedDetailProduct.ingredients.length > 0">
+                                    <div class="flex flex-col gap-1.5">
+                                        <template x-for="(ing, ii) in selectedDetailProduct.ingredients" :key="ii">
+                                            <div class="flex items-center justify-between text-xs bg-gray-50 px-3 py-2 rounded-xl border border-gray-100">
+                                                <div class="flex items-center gap-2 min-w-0">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                                                    <span class="font-semibold text-gray-800 truncate" x-text="ing.materialName"></span>
+                                                </div>
+                                                <div class="flex items-center gap-2 shrink-0 ml-2">
+                                                    <span class="text-gray-500 text-[11px] font-mono" x-show="getIngredientCost(ing) > 0" x-text="'Rp ' + Math.round(getIngredientCost(ing)).toLocaleString('id-ID')"></span>
+                                                    <span class="text-emerald-700 font-bold bg-white px-2 py-0.5 rounded-md border border-gray-200 text-[11px]" x-text="ing.amount + ' ' + ing.unit"></span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template x-if="!selectedDetailProduct.ingredients || selectedDetailProduct.ingredients.length === 0">
+                                    <div class="text-xs text-gray-400 italic bg-gray-50 px-3 py-2 rounded-xl border border-gray-100">
+                                        Resep standar (belum ada rincian bahan baku tersimpan).
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Terakhir Diperbarui & Diperbarui Oleh (Kombinasi B Tanpa Garis) -->
+                        <div class="flex gap-3 items-start">
+                            <i class="ph-duotone ph-clock text-2xl text-emerald-500 shrink-0 mt-0.5"></i>
+                            <div class="min-w-0">
+                                <div class="text-xs font-bold text-gray-800 leading-snug" x-text="selectedDetailProduct.updatedBy?.name || 'Administrator'"></div>
+                                <div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Memperbarui pada ' + formatDate(selectedDetailProduct.updatedAt || selectedDetailProduct.createdAt || new Date().toISOString())"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </template>
+            </div>
+
+            <!-- Action Buttons -->
+            <template x-if="selectedDetailProduct">
+                <div class="flex w-full border-t border-gray-100">
+                    <button @click="openDrawer(selectedDetailProduct); detailModalOpen = false"
+                            class="flex items-center justify-center gap-2 flex-1 py-4 text-sm font-semibold text-[#0b595b] hover:bg-emerald-50 transition-colors">
+                        <i class="ph-bold ph-pencil-simple"></i>
+                        Edit
+                    </button>
+                    <div class="w-px bg-gray-100"></div>
+                    <button @click="confirmDelete(selectedDetailProduct); detailModalOpen = false"
+                            class="flex items-center justify-center gap-2 flex-1 py-4 text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors">
+                        <i class="ph-bold ph-trash"></i>
+                        Hapus
+                    </button>
+                </div>
+            </template>
+        </div>
+    </div>
+
+</div><!-- /x-data -->
+
+    <!-- ALPINE.JS APPLICATION LOGIC -->
+    <script>
+        function erpApp() {
+            return {
+                sidebarOpen: false,
+                sidebarCollapsed: false,
+                theme: 'dark',
+                activeMenu: 'master',
+
+                // Search & Filter
+                mobileSearchOpen: false,
+                searchQuery: '',
+                filterOpen: false,
+                selectedType: [],
+                tempSelectedType: [],
+                allTypes: [
+                    'Semua', 
+                    'Buah Potong',
+                    'Jus & Smoothie',
+                    'Olahan Buah'
+                ],
+                
+                allBranches: [
+                    'Gresik / Driyorejo / Petiken - 001',
+                    'Gresik / Gresik / Sidokumpul - 001',
+                    'Gresik / Gresik / Sidokumpul - 002',
+                    'Gresik / Kebomas / Randuagung - 001',
+                    'Gresik / Manyar / Yosowilangun - 001',
+                    'Gresik / Menganti / Pelemwatu - 001',
+                    'Malang / Blimbing / Purwantoro - 001',
+                    'Malang / Klojen / Bareng - 001',
+                    'Malang / Lowokwaru / Ketawanggede - 001',
+                    'Malang / Sukun / Bandulan - 001',
+                    'Sidoarjo / Buduran / Siwalanpanji - 001',
+                    'Sidoarjo / Gedangan / Keboansikep - 001',
+                    'Sidoarjo / Sidoarjo / Lemahputro - 001',
+                    'Sidoarjo / Taman / Sepanjang - 001',
+                    'Sidoarjo / Waru / Pepelegi - 001',
+                    'Surabaya / Genteng / Embong Kaliasin - 001',
+                    'Surabaya / Gubeng / Airlangga - 001',
+                    'Surabaya / Tambaksari / Pacar Keling - 001',
+                    'Surabaya / Tegalsari / Keputran - 001',
+                    'Surabaya / Wonokromo / Darmo - 001'
+                ],
+                selectedBranch: 'Gresik / Driyorejo / Petiken - 001',
+                tempSelectedBranch: 'Gresik / Driyorejo / Petiken - 001',
+                branchSearchQuery: '',
+
+                // Mobile Filter Dropdown State
+                openDropdown: null,
+                dropY: 0, 
+                dropX: 0, 
+                dropW: 0,
+                toggleDropdown(name, btn) {
+                    if (this.openDropdown !== name) {
+                        const r = btn.getBoundingClientRect();
+                        this.dropY = r.bottom + 6;
+                        this.dropX = r.left;
+                        this.dropW = r.width;
+                        this.openDropdown = name;
+                    } else {
+                        this.openDropdown = null;
+                    }
+                },
+
+                // Price Popup (Floating)
+                editingPriceId: null,
+                editingPriceValue: 0,
+                pricePopupY: 0,
+                pricePopupX: 0,
+                pricePopupW: 0,
+
+                drawerOpen: false,
+                editingProduct: null,
+                form: {
+                    id: null,
+                    productId: '',
+                    productName: '',
+                    emoji: '🧃',
+                    color: '#fff3e0',
+                    unit: 'cup',
+                    hpp: 0,
+                    description: '',
+                    ingredients: [
+                        { id: 1, materialId: '', materialName: '', amount: '', unit: 'gr' }
+                    ]
+                },
+                typeList: ['Bahan Baku', 'Perlu Resep', 'Produk Olahan', 'Kemasan', 'Jasa / Layanan'],
+
+                // Master Products Catalog
+                masterProducts: (() => {
+                    // Raw materials (Bahan Baku)
+                    const bahanBaku = [
+                        { id: 'bb-01', name: 'Buah Naga Merah', type: 'Bahan Baku', unit: 'kg', hpp: 18000, emoji: '🐉', color: '#fce4ec' },
+                        { id: 'bb-02', name: 'Buah Naga Putih', type: 'Bahan Baku', unit: 'kg', hpp: 16000, emoji: '🐉', color: '#f3e5f5' },
+                        { id: 'bb-03', name: 'Alpukat Mentega', type: 'Bahan Baku', unit: 'kg', hpp: 22000, emoji: '🥑', color: '#e8f5e9' },
+                        { id: 'bb-04', name: 'Alpukat Miki', type: 'Bahan Baku', unit: 'kg', hpp: 25000, emoji: '🥑', color: '#e0f2f1' },
+                        { id: 'bb-05', name: 'Mangga Harum Manis', type: 'Bahan Baku', unit: 'kg', hpp: 20000, emoji: '🥭', color: '#fff8e1' },
+                        { id: 'bb-06', name: 'Mangga Gedong Gincu', type: 'Bahan Baku', unit: 'kg', hpp: 28000, emoji: '🥭', color: '#fff3e0' },
+                        { id: 'bb-07', name: 'Stroberi Lokal', type: 'Bahan Baku', unit: 'kg', hpp: 30000, emoji: '🍓', color: '#fce4ec' },
+                        { id: 'bb-08', name: 'Stroberi Import', type: 'Bahan Baku', unit: 'kg', hpp: 65000, emoji: '🍓', color: '#fce4ec' },
+                        { id: 'bb-09', name: 'Semangka Merah', type: 'Bahan Baku', unit: 'kg', hpp: 7000, emoji: '🍉', color: '#ffebee' },
+                        { id: 'bb-10', name: 'Semangka Kuning', type: 'Bahan Baku', unit: 'kg', hpp: 8000, emoji: '🍉', color: '#fffde7' },
+                        { id: 'bb-11', name: 'Melon Hijau', type: 'Bahan Baku', unit: 'kg', hpp: 12000, emoji: '🍈', color: '#e8f5e9' },
+                        { id: 'bb-12', name: 'Melon Golden', type: 'Bahan Baku', unit: 'kg', hpp: 15000, emoji: '🍈', color: '#fff8e1' },
+                        { id: 'bb-13', name: 'Jeruk Sunkist', type: 'Bahan Baku', unit: 'kg', hpp: 28000, emoji: '🍊', color: '#fff3e0' },
+                        { id: 'bb-14', name: 'Jeruk Pontianak', type: 'Bahan Baku', unit: 'kg', hpp: 16000, emoji: '🍊', color: '#fff8e1' },
+                        { id: 'bb-15', name: 'Jeruk Nipis', type: 'Bahan Baku', unit: 'kg', hpp: 12000, emoji: '🍋', color: '#f1f8e9' },
+                        { id: 'bb-16', name: 'Jeruk Lemon Import', type: 'Bahan Baku', unit: 'kg', hpp: 32000, emoji: '🍋', color: '#fffde7' },
+                        { id: 'bb-17', name: 'Pisang Cavendish', type: 'Bahan Baku', unit: 'kg', hpp: 18000, emoji: '🍌', color: '#fff8e1' },
+                        { id: 'bb-18', name: 'Apel Malang', type: 'Bahan Baku', unit: 'kg', hpp: 19000, emoji: '🍎', color: '#fce4ec' },
+                        { id: 'bb-19', name: 'Anggur Merah', type: 'Bahan Baku', unit: 'kg', hpp: 45000, emoji: '🍇', color: '#f3e5f5' },
+                        { id: 'bb-20', name: 'Anggur Hijau', type: 'Bahan Baku', unit: 'kg', hpp: 55000, emoji: '🍇', color: '#e8f5e9' },
+                        { id: 'bb-21', name: 'Kelapa Muda', type: 'Bahan Baku', unit: 'butir', hpp: 10000, emoji: '🥥', color: '#efebe9' },
+                        { id: 'bb-22', name: 'Pepaya California', type: 'Bahan Baku', unit: 'kg', hpp: 8000, emoji: '🍈', color: '#fff3e0' },
+                        { id: 'bb-23', name: 'Nanas Madu', type: 'Bahan Baku', unit: 'pcs', hpp: 8000, emoji: '🍍', color: '#fffde7' },
+                        { id: 'bb-24', name: 'Kiwi Green', type: 'Bahan Baku', unit: 'kg', hpp: 48000, emoji: '🥝', color: '#e8f5e9' },
+                        { id: 'bb-25', name: 'Sirsak Segar', type: 'Bahan Baku', unit: 'kg', hpp: 15000, emoji: '🍏', color: '#e8f5e9' },
+                        { id: 'bb-26', name: 'Jambu Biji Merah', type: 'Bahan Baku', unit: 'kg', hpp: 11000, emoji: '🍏', color: '#ffebee' },
+                        { id: 'bb-27', name: 'Bit Merah Segar', type: 'Bahan Baku', unit: 'kg', hpp: 14000, emoji: '🍎', color: '#ffebee' },
+                        // Bahan pelengkap / racikan
+                        { id: 'bb-28', name: 'Gula Pasir Kristal', type: 'Bahan Baku', unit: 'kg', hpp: 16000, emoji: '🧂', color: '#f5f5f5' },
+                        { id: 'bb-29', name: 'Susu Kental Manis', type: 'Bahan Baku', unit: 'kaleng', hpp: 12500, emoji: '🥛', color: '#f3e5f5' },
+                        { id: 'bb-30', name: 'Susu UHT Full Cream', type: 'Bahan Baku', unit: 'liter', hpp: 18000, emoji: '🥛', color: '#e1f5fe' },
+                        { id: 'bb-31', name: 'Es Batu Higienis', type: 'Bahan Baku', unit: 'kg', hpp: 2000, emoji: '🧊', color: '#e1f5fe' },
+                        { id: 'bb-32', name: 'Madu Murni Randu', type: 'Bahan Baku', unit: 'kg', hpp: 85000, emoji: '🍯', color: '#fff8e1' },
+                        { id: 'bb-33', name: 'Yogurt Plain Kental', type: 'Bahan Baku', unit: 'kg', hpp: 42000, emoji: '🍨', color: '#ede7f6' },
+                        { id: 'bb-34', name: 'Nata de Coco', type: 'Bahan Baku', unit: 'kg', hpp: 14000, emoji: '🍮', color: '#e0f2f1' },
+                        { id: 'bb-35', name: 'Biji Selasih', type: 'Bahan Baku', unit: 'gr', hpp: 100, emoji: '🌾', color: '#f5f5f5' },
+                        { id: 'bb-36', name: 'Keju Cheddar Parut', type: 'Bahan Baku', unit: 'kg', hpp: 65000, emoji: '🧀', color: '#fff8e1' },
+                        { id: 'bb-37', name: 'Mayones Salad', type: 'Bahan Baku', unit: 'kg', hpp: 28000, emoji: '🥣', color: '#fffde7' },
+                        // Produk bahan baku yang punya varian di Master Produk (HANYA PRODUK UTAMA, TANPA VARIAN ANAK)
+                        { id: 'bb-v1', name: 'Strawberry Mencir', type: 'Bahan Baku', unit: 'kg', hpp: 12000, emoji: '🍓', color: '#fce4ec', variants: [{ id: 'sv1', name: 'Super' }, { id: 'sv2', name: 'A' }, { id: 'sv3', name: 'AB' }] },
+                        { id: 'bb-v2', name: 'Mangga Gedong', type: 'Bahan Baku', unit: 'kg', hpp: 18000, emoji: '🥭', color: '#fff8e1', variants: [{ id: 'mv1', name: 'Super' }, { id: 'mv2', name: 'A' }] },
+                        { id: 'bb-v3', name: 'Apel Fuji', type: 'Bahan Baku', unit: 'kg', hpp: 25000, emoji: '🍎', color: '#ffebee', variants: [{ id: 'av1', name: 'Jumbo' }, { id: 'av2', name: 'Regular' }] },
+                        { id: 'bb-v4', name: 'Pisang Sunpride', type: 'Bahan Baku', unit: 'sisir', hpp: 15000, emoji: '🍌', color: '#fffde7', variants: [{ id: 'pv1', name: 'Besar' }, { id: 'pv2', name: 'Sedang' }] }
+                    ];
+
+                    // Products needing recipes (Perlu Resep)
+                    const perluResep = [
+                        { id: 'pr-01', name: 'Semangka Merah Potong 250g', type: 'Perlu Resep', unit: 'pack', hpp: 4500, emoji: '🍉', color: '#ffebee' },
+                        { id: 'pr-02', name: 'Semangka Merah Potong 500g', type: 'Perlu Resep', unit: 'pack', hpp: 8500, emoji: '🍉', color: '#ffebee' },
+                        { id: 'pr-03', name: 'Semangka Kuning Potong 250g', type: 'Perlu Resep', unit: 'pack', hpp: 5000, emoji: '🍉', color: '#fffde7' },
+                        { id: 'pr-04', name: 'Melon Hijau Potong 250g', type: 'Perlu Resep', unit: 'pack', hpp: 5500, emoji: '🍈', color: '#e8f5e9' },
+                        { id: 'pr-05', name: 'Melon Golden Potong 250g', type: 'Perlu Resep', unit: 'pack', hpp: 6000, emoji: '🍈', color: '#fff8e1' },
+                        { id: 'pr-06', name: 'Pepaya California Potong 250g', type: 'Perlu Resep', unit: 'pack', hpp: 4000, emoji: '🍈', color: '#fff3e0' },
+                        { id: 'pr-07', name: 'Nanas Potong', type: 'Perlu Resep', unit: 'pcs', hpp: 5000, emoji: '🍍', color: '#fffde7' },
+                        { id: 'pr-08', name: 'Mangga Harum Manis Slice', type: 'Perlu Resep', unit: 'pack', hpp: 7500, emoji: '🥭', color: '#fff8e1' },
+                        { id: 'pr-09', name: 'Buah Naga Merah Potong', type: 'Perlu Resep', unit: 'pack', hpp: 9000, emoji: '🐉', color: '#fce4ec' },
+                        { id: 'pr-10', name: 'Stroberi Cup 200g', type: 'Perlu Resep', unit: 'cup', hpp: 12000, emoji: '🍓', color: '#fce4ec' },
+                        { id: 'pr-11', name: 'Kiwi Slice Cup', type: 'Perlu Resep', unit: 'cup', hpp: 11000, emoji: '🥝', color: '#e8f5e9' },
+                        { id: 'pr-12', name: 'Anggur Mix Cup', type: 'Perlu Resep', unit: 'cup', hpp: 14000, emoji: '🍇', color: '#f3e5f5' },
+                        { id: 'pr-13', name: 'Mix Fruit Cup S', type: 'Perlu Resep', unit: 'cup', hpp: 8000, emoji: '🍱', color: '#e8f5e9' },
+                        { id: 'pr-14', name: 'Mix Fruit Cup M', type: 'Perlu Resep', unit: 'cup', hpp: 13000, emoji: '🍱', color: '#e8f5e9' },
+                        { id: 'pr-15', name: 'Salad Buah Kecil', type: 'Perlu Resep', unit: 'pack', hpp: 10000, emoji: '🥗', color: '#f1f8e9' },
+                        { id: 'pr-16', name: 'Salad Buah Besar', type: 'Perlu Resep', unit: 'pack', hpp: 18000, emoji: '🥗', color: '#f1f8e9' },
+                        { id: 'pr-17', name: 'Salad Buah Family', type: 'Perlu Resep', unit: 'pack', hpp: 28000, emoji: '🥗', color: '#e8f5e9' },
+                        { id: 'pr-18', name: 'Tropical Bowl', type: 'Perlu Resep', unit: 'pcs', hpp: 16000, emoji: '🥣', color: '#fff3e0' },
+                        { id: 'pr-19', name: 'Fruit Box Mini', type: 'Perlu Resep', unit: 'pcs', hpp: 12000, emoji: '📦', color: '#e1f5fe' },
+                        { id: 'pr-20', name: 'Dessert Cup Mangga', type: 'Perlu Resep', unit: 'cup', hpp: 11000, emoji: '🥭', color: '#fffde7' },
+                        { id: 'pr-21', name: 'Buah Meeting Pack', type: 'Perlu Resep', unit: 'pack', hpp: 45000, emoji: '🍱', color: '#e0f2f1' },
+                        { id: 'pr-22', name: 'Jus Jeruk Peras', type: 'Perlu Resep', unit: 'cup', hpp: 6000, emoji: '🍊', color: '#fff3e0' },
+                        { id: 'pr-23', name: 'Jus Alpukat', type: 'Perlu Resep', unit: 'cup', hpp: 9000, emoji: '🥑', color: '#e8f5e9' },
+                        { id: 'pr-24', name: 'Jus Mangga Harum Manis', type: 'Perlu Resep', unit: 'cup', hpp: 8000, emoji: '🥭', color: '#fff8e1' },
+                        { id: 'pr-25', name: 'Jus Stroberi', type: 'Perlu Resep', unit: 'cup', hpp: 11000, emoji: '🍓', color: '#fce4ec' },
+                        { id: 'pr-26', name: 'Jus Semangka', type: 'Perlu Resep', unit: 'cup', hpp: 5500, emoji: '🍉', color: '#ffebee' },
+                        { id: 'pr-27', name: 'Jus Melon Hijau', type: 'Perlu Resep', unit: 'cup', hpp: 6500, emoji: '🍈', color: '#e8f5e9' },
+                        { id: 'pr-28', name: 'Jus Nanas', type: 'Perlu Resep', unit: 'cup', hpp: 6000, emoji: '🍍', color: '#fffde7' },
+                        { id: 'pr-29', name: 'Jus Sirsak', type: 'Perlu Resep', unit: 'cup', hpp: 8500, emoji: '🍏', color: '#e8f5e9' },
+                        { id: 'pr-30', name: 'Jus Bit Wortel', type: 'Perlu Resep', unit: 'cup', hpp: 7500, emoji: '🥕', color: '#ffebee' },
+                        { id: 'pr-31', name: 'Smoothie Mangga Pisang', type: 'Perlu Resep', unit: 'cup', hpp: 10000, emoji: '🥤', color: '#fff8e1' },
+                        { id: 'pr-32', name: 'Smoothie Stroberi Pisang', type: 'Perlu Resep', unit: 'cup', hpp: 12000, emoji: '🍓', color: '#fce4ec' },
+                        { id: 'pr-33', name: 'Smoothie Alpukat Cokelat', type: 'Perlu Resep', unit: 'cup', hpp: 13000, emoji: '🥑', color: '#efebe9' },
+                        { id: 'pr-34', name: 'Smoothie Mix Berry', type: 'Perlu Resep', unit: 'cup', hpp: 14000, emoji: '🫐', color: '#ede7f6' },
+                        { id: 'pr-35', name: 'Smoothie Green Detox', type: 'Perlu Resep', unit: 'cup', hpp: 10000, emoji: '🥬', color: '#e8f5e9' },
+                        { id: 'pr-36', name: 'Es Buah Campur', type: 'Perlu Resep', unit: 'cup', hpp: 7000, emoji: '🧊', color: '#e1f5fe' },
+                        { id: 'pr-37', name: 'Es Teler', type: 'Perlu Resep', unit: 'cup', hpp: 8500, emoji: '🧊', color: '#e8f5e9' },
+                        { id: 'pr-38', name: 'Cold Press Immunity', type: 'Perlu Resep', unit: 'btl', hpp: 18000, emoji: '🧃', color: '#fff8e1' },
+                        { id: 'pr-39', name: 'Milkshake Stroberi', type: 'Perlu Resep', unit: 'cup', hpp: 13000, emoji: '🍓', color: '#fce4ec' },
+                        { id: 'pr-40', name: 'Milkshake Alpukat', type: 'Perlu Resep', unit: 'cup', hpp: 14000, emoji: '🥑', color: '#e8f5e9' },
+                        { id: 'pr-41', name: 'Keripik Mangga', type: 'Perlu Resep', unit: 'pack', hpp: 15000, emoji: '🥭', color: '#fff8e1' },
+                        { id: 'pr-42', name: 'Keripik Pisang', type: 'Perlu Resep', unit: 'pack', hpp: 9000, emoji: '🍌', color: '#fffde7' },
+                        { id: 'pr-43', name: 'Selai Stroberi', type: 'Perlu Resep', unit: 'btl', hpp: 16000, emoji: '🍓', color: '#fce4ec' },
+                        { id: 'pr-44', name: 'Puding Mangga Cup', type: 'Perlu Resep', unit: 'cup', hpp: 6000, emoji: '🍮', color: '#fffde7' },
+                        { id: 'pr-45', name: 'Mochi Stroberi', type: 'Perlu Resep', unit: 'pcs', hpp: 4500, emoji: '🍡', color: '#fce4ec' }
+                    ];
+
+                    return [...perluResep, ...bahanBaku];
+                })(),
+
+                get productsNeedingRecipe() {
+                    return this.masterProducts.filter(p => p.type === 'Perlu Resep' || p.type === 'Produk Olahan');
+                },
+
+                get rawMaterialProducts() {
+                    // Hanya Menampilkan Bahan Baku aja. Untuk produk yang punya varian, hanya main produknya (tidak perlu varian anak)
+                    return this.masterProducts.filter(p => p.type === 'Bahan Baku').map(p => ({
+                        id: p.id,
+                        name: p.name,
+                        unit: p.unit,
+                        hpp: p.hpp,
+                        emoji: p.emoji,
+                        color: p.color
+                    }));
+                },
+
+                selectProductForRecipe(prod) {
+                    this.form.productId = prod.id;
+                    this.form.productName = prod.name;
+                    this.form.emoji = prod.emoji || '🧃';
+                    this.form.color = prod.color || '#fff3e0';
+                    this.form.unit = prod.unit || 'cup';
+                },
+
+                selectMaterialForIngredient(ing, mat) {
+                    ing.materialId = mat.id;
+                    ing.materialName = mat.name;
+                    // Default recipe unit based on material base unit
+                    if (mat.unit === 'kg') {
+                        ing.unit = 'gr';
+                    } else if (mat.unit === 'liter' || mat.unit === 'l') {
+                        ing.unit = 'ml';
+                    } else if (mat.unit) {
+                        ing.unit = mat.unit;
+                    }
+                },
+
+                getIngredientCost(ing) {
+                    if (!ing || !ing.amount || isNaN(parseFloat(ing.amount))) return 0;
+                    const amount = parseFloat(ing.amount);
+                    if (amount <= 0) return 0;
+
+                    const mat = this.masterProducts.find(m => m.id === ing.materialId || m.name === ing.materialName);
+                    if (!mat || !mat.hpp) return 0;
+
+                    const mUnit = (mat.unit || '').toLowerCase().trim();
+                    const iUnit = (ing.unit || '').toLowerCase().trim();
+
+                    // Identical unit
+                    if (mUnit === iUnit) {
+                        return amount * mat.hpp;
+                    }
+
+                    // Weight conversions (kg, gr)
+                    if (mUnit === 'kg' && iUnit === 'gr') {
+                        return (amount / 1000) * mat.hpp;
+                    }
+                    if (mUnit === 'gr' && iUnit === 'kg') {
+                        return (amount * 1000) * mat.hpp;
+                    }
+
+                    // Volume conversions (liter, l, ml)
+                    if ((mUnit === 'liter' || mUnit === 'l') && iUnit === 'ml') {
+                        return (amount / 1000) * mat.hpp;
+                    }
+                    if (mUnit === 'ml' && (iUnit === 'liter' || iUnit === 'l')) {
+                        return (amount * 1000) * mat.hpp;
+                    }
+
+                    // Spoon conversions (sdm = sendok makan ~15g/ml, sdt = sendok teh ~5g/ml)
+                    if (iUnit === 'sdm') {
+                        if (mUnit === 'kg' || mUnit === 'liter' || mUnit === 'l') return (amount * 15 / 1000) * mat.hpp;
+                        if (mUnit === 'gr' || mUnit === 'ml') return (amount * 15) * mat.hpp;
+                        if (mUnit === 'kaleng') return (amount * 15 / 370) * mat.hpp;
+                    }
+                    if (iUnit === 'sdt') {
+                        if (mUnit === 'kg' || mUnit === 'liter' || mUnit === 'l') return (amount * 5 / 1000) * mat.hpp;
+                        if (mUnit === 'gr' || mUnit === 'ml') return (amount * 5) * mat.hpp;
+                        if (mUnit === 'kaleng') return (amount * 5 / 370) * mat.hpp;
+                    }
+
+                    // Cup conversion (~200 ml or ~200 gr)
+                    if (iUnit === 'cup') {
+                        if (mUnit === 'kg' || mUnit === 'liter' || mUnit === 'l') return (amount * 200 / 1000) * mat.hpp;
+                        if (mUnit === 'gr' || mUnit === 'ml') return (amount * 200) * mat.hpp;
+                    }
+
+                    // Can / Kaleng (e.g. SKM kaleng 370g/ml)
+                    if (mUnit === 'kaleng') {
+                        if (iUnit === 'ml' || iUnit === 'gr') return (amount / 370) * mat.hpp;
+                    }
+
+                    return amount * mat.hpp;
+                },
+
+                getIngredientCostDetail(ing) {
+                    if (!ing || !ing.amount || isNaN(parseFloat(ing.amount))) return '';
+                    const mat = this.masterProducts.find(m => m.id === ing.materialId || m.name === ing.materialName);
+                    if (!mat || !mat.hpp) return '';
+                    return `${ing.amount} ${ing.unit} @ Rp ${mat.hpp.toLocaleString('id-ID')}/${mat.unit}`;
+                },
+
+                get calculatedTotalHpp() {
+                    let total = 0;
+                    for (const ing of (this.form.ingredients || [])) {
+                        total += this.getIngredientCost(ing);
+                    }
+                    return Math.round(total);
+                },
+
+                addIngredientRow() {
+                    this.form.ingredients.push({
+                        id: Date.now() + Math.random(),
+                        materialId: '',
+                        materialName: '',
+                        amount: '',
+                        unit: 'gr'
+                    });
+                },
+
+                removeIngredientRow(idx) {
+                    if (this.form.ingredients.length > 1) {
+                        this.form.ingredients.splice(idx, 1);
+                    }
+                },
+                unitList: [
+                    { name: 'Kilogram', symbol: 'kg' },
+                    { name: 'Gram', symbol: 'gr' },
+                    { name: 'Pieces', symbol: 'pcs' },
+                    { name: 'Box', symbol: 'box' },
+                    { name: 'Karton', symbol: 'krt' },
+                    { name: 'Pack', symbol: 'pck' },
+                    { name: 'Lusin', symbol: 'lsn' },
+                    { name: 'Kodi', symbol: 'kdi' },
+                    { name: 'Liter', symbol: 'l' },
+                    { name: 'Mililiter', symbol: 'ml' }
+                ],
+                
+                // Branch Picker for Pricing
+                branchPickerOpen: false,
+                activeBranchRule: null,
+                tempSelectedBranches: [],
+
+                // Variant accordion
+                expandedVariantIds: [],
+                editingVariantPrice: { productId: null, variantId: null, value: 0 },
+
+                // Delete Modal
+                deleteModalOpen: false,
+                deletingProduct: null,
+
+                // Detail Modal
+                detailModalOpen: false,
+                selectedDetailProduct: null,
+
+                // Resep Produk Olahan Buah
+                products: (() => {
+                    const branches = [
+                        'Gresik / Gresik / Sidokumpul - 001',
+                        'Gresik / Gresik / Sidokumpul - 002',
+                        'Gresik / Kebomas / Randuagung - 001',
+                        'Gresik / Manyar / Yosowilangun - 001',
+                        'Gresik / Menganti / Pelemwatu - 001',
+                        'Gresik / Driyorejo / Petiken - 001'
+                    ];
+                    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+                    const recipes = [
+                        // Buah Potong
+                        { id: 1,  name: 'Semangka Merah Potong 250g',    emoji: '🍉', color: '#ffebee', type: 'Buah Potong',    unit: 'pack', hpp: 1750, ingredients: [{ materialId: 'bb-09', materialName: 'Semangka Merah', amount: 250, unit: 'gr' }] },
+                        { id: 2,  name: 'Semangka Merah Potong 500g',    emoji: '🍉', color: '#ffebee', type: 'Buah Potong',    unit: 'pack', hpp: 3500, ingredients: [{ materialId: 'bb-09', materialName: 'Semangka Merah', amount: 500, unit: 'gr' }] },
+                        { id: 3,  name: 'Semangka Kuning Potong 250g',   emoji: '🍉', color: '#fffde7', type: 'Buah Potong',    unit: 'pack', hpp: 2000, ingredients: [{ materialId: 'bb-10', materialName: 'Semangka Kuning', amount: 250, unit: 'gr' }] },
+                        { id: 4,  name: 'Melon Hijau Potong 250g',       emoji: '🍈', color: '#e8f5e9', type: 'Buah Potong',    unit: 'pack', hpp: 3000, ingredients: [{ materialId: 'bb-11', materialName: 'Melon Hijau', amount: 250, unit: 'gr' }] },
+                        { id: 5,  name: 'Melon Golden Potong 250g',      emoji: '🍈', color: '#fff8e1', type: 'Buah Potong',    unit: 'pack', hpp: 6000  },
+                        { id: 6,  name: 'Pepaya California Potong 250g', emoji: '🍈', color: '#fff3e0', type: 'Buah Potong',    unit: 'pack', hpp: 4000  },
+                        { id: 7,  name: 'Nanas Potong',                  emoji: '🍍', color: '#fffde7', type: 'Buah Potong',    unit: 'pcs',  hpp: 5000  },
+                        { id: 8,  name: 'Mangga Harum Manis Slice',      emoji: '🥭', color: '#fff8e1', type: 'Buah Potong',    unit: 'pack', hpp: 7500  },
+                        { id: 9,  name: 'Buah Naga Merah Potong',        emoji: '🐉', color: '#fce4ec', type: 'Buah Potong',    unit: 'pack', hpp: 9000  },
+                        { id: 10, name: 'Stroberi Cup 200g',             emoji: '🍓', color: '#fce4ec', type: 'Buah Potong',    unit: 'cup',  hpp: 12000 },
+                        { id: 11, name: 'Kiwi Slice Cup',                emoji: '🥝', color: '#e8f5e9', type: 'Buah Potong',    unit: 'cup',  hpp: 11000 },
+                        { id: 12, name: 'Anggur Mix Cup',                emoji: '🍇', color: '#f3e5f5', type: 'Buah Potong',    unit: 'cup',  hpp: 14000 },
+                        { id: 13, name: 'Mix Fruit Cup S',               emoji: '🍱', color: '#e8f5e9', type: 'Buah Potong',    unit: 'cup',  hpp: 8000  },
+                        { id: 14, name: 'Mix Fruit Cup M',               emoji: '🍱', color: '#e8f5e9', type: 'Buah Potong',    unit: 'cup',  hpp: 13000 },
+                        { id: 15, name: 'Mix Fruit Cup L',               emoji: '🍱', color: '#e8f5e9', type: 'Buah Potong',    unit: 'cup',  hpp: 18000 },
+                        { id: 16, name: 'Salad Buah Kecil',              emoji: '🥗', color: '#f1f8e9', type: 'Buah Potong',    unit: 'pack', hpp: 10000 },
+                        { id: 17, name: 'Salad Buah Besar',              emoji: '🥗', color: '#f1f8e9', type: 'Buah Potong',    unit: 'pack', hpp: 18000 },
+                        { id: 18, name: 'Salad Buah Family',             emoji: '🥗', color: '#e8f5e9', type: 'Buah Potong',    unit: 'pack', hpp: 28000 },
+                        { id: 19, name: 'Tropical Bowl',                 emoji: '🥣', color: '#fff3e0', type: 'Buah Potong',    unit: 'pcs',  hpp: 16000 },
+                        { id: 20, name: 'Rainbow Fruit Bowl',            emoji: '🌈', color: '#f3e5f5', type: 'Buah Potong',    unit: 'pcs',  hpp: 20000 },
+                        { id: 21, name: 'Fruit Box Mini',                emoji: '📦', color: '#e1f5fe', type: 'Buah Potong',    unit: 'pcs',  hpp: 12000 },
+                        { id: 22, name: 'Fruit Box Regular',             emoji: '📦', color: '#e1f5fe', type: 'Buah Potong',    unit: 'pcs',  hpp: 22000 },
+                        { id: 23, name: 'Fruit Box Premium',             emoji: '🎁', color: '#f3e5f5', type: 'Buah Potong',    unit: 'pcs',  hpp: 38000 },
+                        { id: 24, name: 'Fruit Jar 250ml',               emoji: '🫙', color: '#f1f8e9', type: 'Buah Potong',    unit: 'pcs',  hpp: 9000  },
+                        { id: 25, name: 'Fruit Jar 500ml',               emoji: '🫙', color: '#f1f8e9', type: 'Buah Potong',    unit: 'pcs',  hpp: 16000 },
+                        { id: 26, name: 'Fruit Parfait Cup',             emoji: '🍨', color: '#fce4ec', type: 'Buah Potong',    unit: 'cup',  hpp: 14000 },
+                        { id: 27, name: 'Dessert Cup Mangga',            emoji: '🥭', color: '#fffde7', type: 'Buah Potong',    unit: 'cup',  hpp: 11000 },
+                        { id: 28, name: 'Dessert Cup Stroberi',          emoji: '🍓', color: '#fce4ec', type: 'Buah Potong',    unit: 'cup',  hpp: 13000 },
+                        { id: 29, name: 'Buah Potong Harian',            emoji: '🍱', color: '#e8f5e9', type: 'Buah Potong',    unit: 'pack', hpp: 7500  },
+                        { id: 30, name: 'Buah Meeting Pack',             emoji: '🍱', color: '#e0f2f1', type: 'Buah Potong',    unit: 'pack', hpp: 45000 },
+                        // Jus & Smoothie
+                        { id: 31, name: 'Jus Jeruk Peras',              emoji: '🍊', color: '#fff3e0', type: 'Jus & Smoothie', unit: 'cup',  hpp: 3620, ingredients: [{ materialId: 'bb-14', materialName: 'Jeruk Pontianak', amount: 200, unit: 'gr' }, { materialId: 'bb-28', materialName: 'Gula Pasir Kristal', amount: 20, unit: 'gr' }, { materialId: 'bb-31', materialName: 'Es Batu Higienis', amount: 50, unit: 'gr' }] },
+                        { id: 32, name: 'Jus Alpukat',                  emoji: '🥑', color: '#e8f5e9', type: 'Jus & Smoothie', unit: 'cup',  hpp: 4654, ingredients: [{ materialId: 'bb-03', materialName: 'Alpukat Mentega', amount: 150, unit: 'gr' }, { materialId: 'bb-29', materialName: 'Susu Kental Manis', amount: 30, unit: 'ml' }, { materialId: 'bb-28', materialName: 'Gula Pasir Kristal', amount: 15, unit: 'gr' }, { materialId: 'bb-31', materialName: 'Es Batu Higienis', amount: 50, unit: 'gr' }] },
+                        { id: 33, name: 'Jus Mangga Harum Manis',       emoji: '🥭', color: '#fff8e1', type: 'Jus & Smoothie', unit: 'cup',  hpp: 8000, ingredients: [{ materialId: 'bb-05', materialName: 'Mangga Harum Manis', amount: 160, unit: 'gr' }, { materialId: 'bb-28', materialName: 'Gula Pasir Kristal', amount: 20, unit: 'gr' }, { materialId: 'bb-31', materialName: 'Es Batu Higienis', amount: 50, unit: 'gr' }] },
+                        { id: 34, name: 'Jus Stroberi',                 emoji: '🍓', color: '#fce4ec', type: 'Jus & Smoothie', unit: 'cup',  hpp: 11000, ingredients: [{ materialId: 'bb-v1', materialName: 'Strawberry Mencir', amount: 120, unit: 'gr' }, { materialId: 'bb-29', materialName: 'Susu Kental Manis', amount: 25, unit: 'ml' }, { materialId: 'bb-31', materialName: 'Es Batu Higienis', amount: 50, unit: 'gr' }] },
+                        { id: 35, name: 'Jus Semangka',                 emoji: '🍉', color: '#ffebee', type: 'Jus & Smoothie', unit: 'cup',  hpp: 5500  },
+                        { id: 36, name: 'Jus Melon Hijau',              emoji: '🍈', color: '#e8f5e9', type: 'Jus & Smoothie', unit: 'cup',  hpp: 6500  },
+                        { id: 37, name: 'Jus Nanas',                    emoji: '🍍', color: '#fffde7', type: 'Jus & Smoothie', unit: 'cup',  hpp: 6000  },
+                        { id: 38, name: 'Jus Jambu Biji Merah',         emoji: '🍏', color: '#ffebee', type: 'Jus & Smoothie', unit: 'cup',  hpp: 7000  },
+                        { id: 39, name: 'Jus Sirsak',                   emoji: '🍏', color: '#e8f5e9', type: 'Jus & Smoothie', unit: 'cup',  hpp: 8500  },
+                        { id: 40, name: 'Jus Bit Wortel',               emoji: '🥕', color: '#ffebee', type: 'Jus & Smoothie', unit: 'cup',  hpp: 7500  },
+                        { id: 41, name: 'Smoothie Mangga Pisang',       emoji: '🥤', color: '#fff8e1', type: 'Jus & Smoothie', unit: 'cup',  hpp: 10000 },
+                        { id: 42, name: 'Smoothie Stroberi Pisang',     emoji: '🍓', color: '#fce4ec', type: 'Jus & Smoothie', unit: 'cup',  hpp: 12000 },
+                        { id: 43, name: 'Smoothie Alpukat Cokelat',     emoji: '🥑', color: '#efebe9', type: 'Jus & Smoothie', unit: 'cup',  hpp: 13000 },
+                        { id: 44, name: 'Smoothie Mix Berry',           emoji: '🫐', color: '#ede7f6', type: 'Jus & Smoothie', unit: 'cup',  hpp: 14000 },
+                        { id: 45, name: 'Smoothie Tropical',            emoji: '🍹', color: '#fff3e0', type: 'Jus & Smoothie', unit: 'cup',  hpp: 11000 },
+                        { id: 46, name: 'Smoothie Green Detox',         emoji: '🥬', color: '#e8f5e9', type: 'Jus & Smoothie', unit: 'cup',  hpp: 10000 },
+                        { id: 47, name: 'Smoothie Dragon Fruit',        emoji: '🐉', color: '#fce4ec', type: 'Jus & Smoothie', unit: 'cup',  hpp: 12000 },
+                        { id: 48, name: 'Es Buah Campur',               emoji: '🧊', color: '#e1f5fe', type: 'Jus & Smoothie', unit: 'cup',  hpp: 7000  },
+                        { id: 49, name: 'Es Teler',                     emoji: '🧊', color: '#e8f5e9', type: 'Jus & Smoothie', unit: 'cup',  hpp: 8500  },
+                        { id: 50, name: 'Es Kelapa Muda Mangga',        emoji: '🥥', color: '#e8f5e9', type: 'Jus & Smoothie', unit: 'cup',  hpp: 9000  },
+                        { id: 51, name: 'Lemonade Stroberi',            emoji: '🍋', color: '#fce4ec', type: 'Jus & Smoothie', unit: 'cup',  hpp: 8000  },
+                        { id: 52, name: 'Lemonade Mint',                emoji: '🍋', color: '#e8f5e9', type: 'Jus & Smoothie', unit: 'cup',  hpp: 7500  },
+                        { id: 53, name: 'Cold Press Immunity',          emoji: '🧃', color: '#fff8e1', type: 'Jus & Smoothie', unit: 'btl',  hpp: 18000 },
+                        { id: 54, name: 'Cold Press Detox Green',       emoji: '🧃', color: '#e8f5e9', type: 'Jus & Smoothie', unit: 'btl',  hpp: 17000 },
+                        { id: 55, name: 'Sop Buah Kecil',               emoji: '🥣', color: '#e1f5fe', type: 'Jus & Smoothie', unit: 'cup',  hpp: 9000  },
+                        { id: 56, name: 'Sop Buah Besar',               emoji: '🥣', color: '#e1f5fe', type: 'Jus & Smoothie', unit: 'cup',  hpp: 15000 },
+                        { id: 57, name: 'Milkshake Stroberi',           emoji: '🍓', color: '#fce4ec', type: 'Jus & Smoothie', unit: 'cup',  hpp: 13000 },
+                        { id: 58, name: 'Milkshake Mangga',             emoji: '🥭', color: '#fff8e1', type: 'Jus & Smoothie', unit: 'cup',  hpp: 13000 },
+                        { id: 59, name: 'Milkshake Alpukat',            emoji: '🥑', color: '#e8f5e9', type: 'Jus & Smoothie', unit: 'cup',  hpp: 14000 },
+                        { id: 60, name: 'Infused Water Lemon Mint',     emoji: '💧', color: '#e1f5fe', type: 'Jus & Smoothie', unit: 'btl',  hpp: 5000  },
+                        // Olahan Buah
+                        { id: 61, name: 'Keripik Mangga',               emoji: '🥭', color: '#fff8e1', type: 'Olahan Buah',   unit: 'pack', hpp: 15000 },
+                        { id: 62, name: 'Keripik Nangka',               emoji: '🍈', color: '#f1f8e9', type: 'Olahan Buah',   unit: 'pack', hpp: 14000 },
+                        { id: 63, name: 'Keripik Pisang',               emoji: '🍌', color: '#fffde7', type: 'Olahan Buah',   unit: 'pack', hpp: 9000  },
+                        { id: 64, name: 'Keripik Apel',                 emoji: '🍎', color: '#ffebee', type: 'Olahan Buah',   unit: 'pack', hpp: 18000 },
+                        { id: 65, name: 'Keripik Buah Mix',             emoji: '🍬', color: '#fff3e0', type: 'Olahan Buah',   unit: 'pack', hpp: 20000 },
+                        { id: 66, name: 'Manisan Mangga Kering',        emoji: '🥭', color: '#fffde7', type: 'Olahan Buah',   unit: 'pack', hpp: 12000 },
+                        { id: 67, name: 'Manisan Pepaya Kering',        emoji: '🍈', color: '#fff3e0', type: 'Olahan Buah',   unit: 'pack', hpp: 8000  },
+                        { id: 68, name: 'Selai Stroberi',               emoji: '🍓', color: '#fce4ec', type: 'Olahan Buah',   unit: 'btl',  hpp: 16000 },
+                        { id: 69, name: 'Selai Nanas',                  emoji: '🍍', color: '#fffde7', type: 'Olahan Buah',   unit: 'btl',  hpp: 14000 },
+                        { id: 70, name: 'Selai Mangga',                 emoji: '🥭', color: '#fff8e1', type: 'Olahan Buah',   unit: 'btl',  hpp: 15000 },
+                        { id: 71, name: 'Puding Mangga Cup',            emoji: '🍮', color: '#fffde7', type: 'Olahan Buah',   unit: 'cup',  hpp: 6000  },
+                        { id: 72, name: 'Puding Stroberi Cup',          emoji: '🍮', color: '#fce4ec', type: 'Olahan Buah',   unit: 'cup',  hpp: 6500  },
+                        { id: 73, name: 'Puding Mix Fruit Cup',         emoji: '🍮', color: '#e8f5e9', type: 'Olahan Buah',   unit: 'cup',  hpp: 7000  },
+                        { id: 74, name: 'Mochi Mangga',                 emoji: '🍡', color: '#fffde7', type: 'Olahan Buah',   unit: 'pcs',  hpp: 4000  },
+                        { id: 75, name: 'Mochi Stroberi',               emoji: '🍡', color: '#fce4ec', type: 'Olahan Buah',   unit: 'pcs',  hpp: 4500  },
+                        { id: 76, name: 'Dodol Nangka',                 emoji: '🍈', color: '#fff8e1', type: 'Olahan Buah',   unit: 'pack', hpp: 18000 },
+                        { id: 77, name: 'Dodol Durian',                 emoji: '🍈', color: '#fffde7', type: 'Olahan Buah',   unit: 'pack', hpp: 22000 },
+                        { id: 78, name: 'Fruit Leather Mangga',         emoji: '🥭', color: '#fff3e0', type: 'Olahan Buah',   unit: 'pack', hpp: 12000 },
+                        { id: 79, name: 'Fruit Leather Stroberi',       emoji: '🍓', color: '#fce4ec', type: 'Olahan Buah',   unit: 'pack', hpp: 13000 },
+                        { id: 80, name: 'Yogurt Stroberi Cup',          emoji: '🍓', color: '#fce4ec', type: 'Olahan Buah',   unit: 'cup',  hpp: 10000 },
+                        { id: 81, name: 'Yogurt Mangga Cup',            emoji: '🥭', color: '#fff8e1', type: 'Olahan Buah',   unit: 'cup',  hpp: 10000 },
+                        { id: 82, name: 'Yogurt Mix Berry Cup',         emoji: '🫐', color: '#ede7f6', type: 'Olahan Buah',   unit: 'cup',  hpp: 11000 },
+                        { id: 83, name: 'Sirup Markisa',                emoji: '🫙', color: '#f3e5f5', type: 'Olahan Buah',   unit: 'btl',  hpp: 14000 },
+                        { id: 84, name: 'Sirup Mangga',                 emoji: '🫙', color: '#fff8e1', type: 'Olahan Buah',   unit: 'btl',  hpp: 13000 },
+                        { id: 85, name: 'Jelly Mangga Cup',             emoji: '🍮', color: '#fffde7', type: 'Olahan Buah',   unit: 'cup',  hpp: 5000  },
+                        { id: 86, name: 'Jelly Leci Cup',               emoji: '🍮', color: '#fff3e0', type: 'Olahan Buah',   unit: 'cup',  hpp: 5500  },
+                        { id: 87, name: 'Granola Fruit Mix',            emoji: '🥣', color: '#fff3e0', type: 'Olahan Buah',   unit: 'pack', hpp: 22000 },
+                        { id: 88, name: 'Asinan Buah',                  emoji: '🥗', color: '#f1f8e9', type: 'Olahan Buah',   unit: 'cup',  hpp: 7000  },
+                        { id: 89, name: 'Rujak Manis',                  emoji: '🌶️', color: '#ffebee', type: 'Olahan Buah',   unit: 'cup',  hpp: 6500  },
+                        { id: 90, name: 'Nata de Coco Mix Cup',         emoji: '🍮', color: '#e1f5fe', type: 'Olahan Buah',   unit: 'cup',  hpp: 6000  },
+                    ];
+
+                    const defaultBranch = 'Gresik / Driyorejo / Petiken - 001';
+
+                    return recipes.map(r => ({
+                        ...r,
+                        price: 0,
+                        description: '',
+                        variants: [],
+                        branch: r.id <= 10 ? defaultBranch : pick(branches)
+                    }));                })(),
+
+                // Pagination
+                visibleCount: 50,
+                PAGE_SIZE: 50,
+
+                get filteredProducts() {
+                    return this.products.filter(p => {
+                        if (this.selectedType.length > 0 && !this.selectedType.includes('Semua') && !this.selectedType.includes(p.type)) return false;
+                        if (this.selectedBranch !== p.branch) return false;
+                        if (this.searchQuery) {
+                            const q = this.searchQuery.toLowerCase();
+                            const matchName = p.name.toLowerCase().includes(q);
+                            const matchType = p.type.toLowerCase().includes(q);
+                            const matchVariant = p.variants && p.variants.some(v => v.name.toLowerCase().includes(q));
+                            if (!matchName && !matchType && !matchVariant) return false;
+                        }
+                        return true;
+                    });
+                },
+
+                get visibleProducts() {
+                    return this.filteredProducts.slice(0, this.visibleCount);
+                },
+
+                get hasMore() {
+                    return this.visibleCount < this.filteredProducts.length;
+                },
+
+                loadMore() {
+                    this.visibleCount += this.PAGE_SIZE;
+                },
+
+                resetPagination() {
+                    this.visibleCount = this.PAGE_SIZE;
+                },
+
+                // Scroll Auto-Hide Pill Counter State
+                isScrolling: false,
+                scrollTimer: null,
+                handleScroll() {
+                    this.isScrolling = true;
+                    if (this.scrollTimer) clearTimeout(this.scrollTimer);
+                    this.scrollTimer = setTimeout(() => {
+                        this.isScrolling = false;
+                    }, 1400);
+                },
+
+                toggleMenu(menu) {
+                    if (this.sidebarCollapsed) this.sidebarCollapsed = false;
+                },
+
+                toggleMobileSidebar() {
+                    this.closeDrawer();
+                    this.mobileSearchOpen = false;
+                    this.filterOpen = false;
+                    if (window.self !== window.top) {
+                        window.parent.postMessage('toggleSidebar', '*');
+                    } else {
+                        this.sidebarOpen = !this.sidebarOpen;
+                    }
+                },
+
+                // Price Helpers
+                priceRangeDisplay(product) {
+                    if (!product.variants || product.variants.length === 0) return '';
+                    const prices = product.variants.map(v => v.price).filter(p => p > 0);
+                    if (prices.length === 0) return 'Rp -';
+                    const min = Math.min(...prices);
+                    const max = Math.max(...prices);
+                    if (min === max) return 'Rp ' + min.toLocaleString('id-ID');
+                    return 'Rp ' + min.toLocaleString('id-ID') + ' – ' + max.toLocaleString('id-ID');
+                },
+
+                // Variant accordion
+                toggleVariantExpand(productId) {
+                    const idx = this.expandedVariantIds.indexOf(productId);
+                    if (idx === -1) this.expandedVariantIds.push(productId);
+                    else this.expandedVariantIds.splice(idx, 1);
+                },
+                isVariantExpanded(productId) {
+                    return this.expandedVariantIds.includes(productId);
+                },
+                startEditVariantPrice(product, variant) {
+                    this.editingVariantPrice = { productId: product.id, variantId: variant.id, value: variant.price };
+                    this.$nextTick(() => {
+                        const input = document.getElementById('inlineVariantPriceInput_' + variant.id);
+                        if (input) { input.focus(); input.select(); }
+                    });
+                },
+                saveVariantPrice(product, variant) {
+                    if (this.editingVariantPrice.value > 0) {
+                        variant.price = this.editingVariantPrice.value;
+                    }
+                    this.editingVariantPrice = { productId: null, variantId: null, value: 0 };
+                },
+                cancelVariantPrice() {
+                    this.editingVariantPrice = { productId: null, variantId: null, value: 0 };
+                },
+                addVariantToProduct(product) {
+                    if (!product.variants) product.variants = [];
+                    product.variants.push({ id: Date.now(), name: 'Varian Baru', price: 0 });
+                    // auto-expand
+                    if (!this.isVariantExpanded(product.id)) this.expandedVariantIds.push(product.id);
+                },
+                removeVariantFromProduct(product, variantId) {
+                    product.variants = product.variants.filter(v => v.id !== variantId);
+                },
+
+                // Inline HPP Edit
+                startEditPrice(product) {
+                    this.editingPriceId = product.id;
+                    this.editingPriceValue = product.hpp;
+                    this.$nextTick(() => {
+                        const input = document.getElementById('inlinePriceInput_' + product.id);
+                        if (input) { input.focus(); input.select(); }
+                    });
+                },
+                savePrice(product) {
+                    if (this.editingPriceValue > 0) {
+                        product.hpp = this.editingPriceValue;
+                    }
+                    this.editingPriceId = null;
+                },
+                cancelEditPrice() {
+                    this.editingPriceId = null;
+                },
+
+                // Drawer
+                openDrawer(product = null) {
+                    this.mobileSearchOpen = false;
+                    this.filterOpen = false;
+                    this.editingProduct = product;
+                    if (product) {
+                        this.form = {
+                            id: product.id,
+                            productId: product.productId || product.id,
+                            productName: product.name,
+                            emoji: product.emoji || '🧃',
+                            color: product.color || '#fff3e0',
+                            unit: product.unit || 'cup',
+                            hpp: product.hpp || 0,
+                            description: product.description || '',
+                            ingredients: product.ingredients && product.ingredients.length > 0
+                                ? product.ingredients.map(i => ({ ...i }))
+                                : [{ id: Date.now(), materialId: '', materialName: '', amount: '', unit: 'gr' }]
+                        };
+                    } else {
+                        this.form = {
+                            id: null,
+                            productId: '',
+                            productName: '',
+                            emoji: '🧃',
+                            color: '#fff3e0',
+                            unit: 'cup',
+                            hpp: 0,
+                            description: '',
+                            ingredients: [
+                                { id: Date.now(), materialId: '', materialName: '', amount: '', unit: 'gr' }
+                            ]
+                        };
+                    }
+                    this.drawerOpen = true;
+                    if (window.self !== window.top) {
+                        window.parent.postMessage({ type: 'drawerOverlay', active: true }, '*');
+                    }
+                },
+                closeDrawer() {
+                    this.drawerOpen = false;
+                    if (window.self !== window.top) {
+                        window.parent.postMessage({ type: 'drawerOverlay', active: false }, '*');
+                    }
+                    setTimeout(() => { this.editingProduct = null; }, 300);
+                },
+                
+                // Branch Picker Methods
+                openBranchPicker(rule, allRules = null) {
+                    this.activeBranchRule = rule;
+                    this.activeBranchRulesContext = allRules;
+                    // clone current selection
+                    this.tempSelectedBranches = [...rule.branches];
+                    this.branchPickerOpen = true;
+                },
+                isBranchDisabled(branchName) {
+                    if (!this.activeBranchRulesContext || !this.activeBranchRule) return false;
+                    return this.activeBranchRulesContext.some(r => 
+                        r.id !== this.activeBranchRule.id && 
+                        r.branches.includes(branchName)
+                    );
+                },
+                saveBranchPicker() {
+                    if (this.activeBranchRule) {
+                        // if empty, default to 'all'
+                        if (this.tempSelectedBranches.length === 0) {
+                            this.activeBranchRule.branches = ['all'];
+                        } else {
+                            // if 'all' is selected alongside others, remove others (or keep just 'all')
+                            if (this.tempSelectedBranches.includes('all')) {
+                                this.activeBranchRule.branches = ['all'];
+                            } else {
+                                this.activeBranchRule.branches = [...this.tempSelectedBranches];
+                            }
+                        }
+                    }
+                    this.branchPickerOpen = false;
+                    this.activeBranchRule = null;
+                },
+                toggleBranchSelection(branchName) {
+                    if (branchName === 'all') {
+                        this.tempSelectedBranches = ['all'];
+                        return;
+                    }
+                    // remove 'all' if selecting specific
+                    this.tempSelectedBranches = this.tempSelectedBranches.filter(b => b !== 'all');
+                    
+                    if (this.tempSelectedBranches.includes(branchName)) {
+                        this.tempSelectedBranches = this.tempSelectedBranches.filter(b => b !== branchName);
+                    } else {
+                        this.tempSelectedBranches.push(branchName);
+                    }
+                },
+                saveProduct() {
+                    if (!this.form.productName || !this.form.productName.trim()) {
+                        alert('Pilih produk yang akan dibuatkan resep.');
+                        return;
+                    }
+
+                    const validIngredients = (this.form.ingredients || []).filter(i => 
+                        i.materialName && i.materialName.trim() !== '' && i.amount && parseFloat(i.amount) > 0
+                    );
+
+                    if (validIngredients.length === 0) {
+                        alert('Harap masukkan minimal satu bahan baku dan takarannya.');
+                        return;
+                    }
+
+                    const finalHpp = this.calculatedTotalHpp > 0 ? this.calculatedTotalHpp : (parseInt(this.form.hpp) || 0);
+
+                    if (this.editingProduct) {
+                        Object.assign(this.editingProduct, {
+                            name: this.form.productName,
+                            productId: this.form.productId,
+                            emoji: this.form.emoji,
+                            color: this.form.color,
+                            unit: this.form.unit,
+                            hpp: finalHpp,
+                            description: this.form.description || '',
+                            ingredients: validIngredients.map(i => ({ ...i })),
+                            updatedAt: new Date().toISOString()
+                        });
+                    } else {
+                        this.products.unshift({
+                            id: Date.now(),
+                            name: this.form.productName,
+                            productId: this.form.productId,
+                            emoji: this.form.emoji || '🧃',
+                            color: this.form.color || '#fff3e0',
+                            type: 'Resep Produk',
+                            unit: this.form.unit || 'cup',
+                            hpp: finalHpp,
+                            price: 0,
+                            description: this.form.description || '',
+                            variants: [],
+                            ingredients: validIngredients.map(i => ({ ...i })),
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            branch: this.selectedBranch || 'Gresik / Driyorejo / Petiken - 001',
+                            status: 'Aktif'
+                        });
+                    }
+                    this.closeDrawer();
+                },
+
+                // Detail Modal
+                openDetailModal(product) {
+                    this.selectedDetailProduct = product;
+                    this.detailModalOpen = true;
+                },
+
+                formatDate(isoString) {
+                    if (!isoString) {
+                        const now = new Date();
+                        const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+                        return `${now.getDate().toString().padStart(2,'0')} ${months[now.getMonth()]} ${now.getFullYear()}, ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+                    }
+                    const d = new Date(isoString);
+                    const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+                    return `${d.getDate().toString().padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}, ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+                },
+
+                // Delete
+                confirmDelete(product) {
+                    this.deletingProduct = product;
+                    this.deleteModalOpen = true;
+                },
+                deleteProduct() {
+                    if (this.deletingProduct) {
+                        this.products = this.products.filter(p => p.id !== this.deletingProduct.id);
+                    }
+                    this.deleteModalOpen = false;
+                    this.deletingProduct = null;
+                },
+
+                init() {}
+            };
+        }
+    </script>
+
+</body>
+
+</html>

@@ -12,11 +12,16 @@ class FcmService
 {
     protected $client;
     protected $projectId;
+    protected $credentialsAvailable = false;
 
     public function __construct()
     {
         $this->client = new GoogleClient();
-        $this->client->setAuthConfig(base_path(env('GOOGLE_APPLICATION_CREDENTIALS')));
+        $credentials = env('GOOGLE_APPLICATION_CREDENTIALS');
+        if ($credentials && is_file(base_path($credentials))) {
+            $this->client->setAuthConfig(base_path($credentials));
+            $this->credentialsAvailable = true;
+        }
         $this->client->addScope('https://www.googleapis.com/auth/firebase.messaging');
 
         $this->projectId = env('FCM_PROJECT_ID');
@@ -24,6 +29,11 @@ class FcmService
 
     public function sendNotification(array $tokens, string $title, string $body, array $data = []): bool
     {
+        if (! $this->credentialsAvailable) {
+            Log::error('FCM credentials are not configured.');
+            return false;
+        }
+
         if (empty($tokens)) {
             Log::warning('⚠️ Tidak ada token FCM yang dikirim.');
             return false;

@@ -1,373 +1,48 @@
-@extends('template.root')
+@extends('layouts.erp-tailwind')
+
+@section('title', (isset($data) ? 'Edit' : 'Tambah') . ' Karyawan - Master')
+@section('page-title', 'Karyawan')
+@section('page-breadcrumb')
+    <span>Master</span><i class="ph ph-caret-right text-[0.55rem]"></i><span>Karyawan</span>
+@endsection
+@section('dashboard-fullscreen', '1')
 
 @section('content')
-    <form id="add_product_form" class="form d-flex flex-column flex-lg-row"
-        action="{{ isset($data) ? url(Request::segment(1) . '/' . $data->id) : url(Request::segment(1)) }}" method="POST"
-        enctype="multipart/form-data" data-kt-redirect="">
-        @if (isset($data))
-            @method('PUT')
-        @endif
-        @csrf
-        <!--begin::Aside column-->
-        <div class="d-flex flex-column gap-7 gap-lg-10 w-100 w-lg-300px mb-7 me-lg-10">
-            <!--begin::Thumbnail settings-->
-            <div class="card card-flush py-4">
-                <!--begin::Card header-->
-                <div class="card-header">
-                    <!--begin::Card title-->
-                    <div class="card-title">
-                        <h2>Foto Profil</h2>
-                    </div>
-                    <!--end::Card title-->
-                </div>
-                <!--end::Card header-->
-                <!--begin::Card body-->
-                <div class="card-body text-center pt-0">
-                    <!--begin::Image input-->
-                    <!--begin::Image input placeholder-->
-                    <style>
-                        .image-input-placeholder {
-                            background-image: url({{ isset($data) && isset($data->image) ? asset('storage/' . $data->image) : asset('assets/media/svg/files/blank-image.svg') }});
-                        }
+@php
+    $editing = isset($data);
+    $selectedDepartment = old('department', $data->department_id ?? '');
+    $selectedPosition = old('position', $data->position_id ?? '');
+    $selectedDepartmentName = $selectedDepartment ? (\Modules\Master\Entities\Department::find($selectedDepartment)->name ?? '') : '';
+    $selectedPositionName = $selectedPosition ? (\Modules\Master\Entities\Position::find($selectedPosition)->name ?? '') : '';
+@endphp
+<div class="flex-1 min-h-0 flex flex-col bg-white lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm overflow-hidden">
+    <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-3"><a href="{{ route('staff.index') }}" aria-label="Kembali ke karyawan" class="w-9 h-9 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center"><i class="ph-bold ph-arrow-left"></i></a><div><h2 class="text-[15px] font-bold text-gray-900">{{ $editing ? 'Edit Karyawan' : 'Tambah Karyawan' }}</h2><p class="text-[12px] text-gray-400 mt-0.5">{{ $editing ? 'Perbarui data karyawan' : 'Isi data karyawan baru' }}</p></div></div>
+    </div>
 
-                        [data-bs-theme="dark"] .image-input-placeholder {
-                            background-image: url({{ isset($data) && isset($data->image) ? asset('storage/' . $data->image) : asset('assets/media/svg/files/blank-image-dark.svg') }});
-                        }
-                    </style>
-                    <!--end::Image input placeholder-->
-                    <div class="image-input image-input-empty image-input-outline image-input-placeholder mb-3"
-                        data-kt-image-input="true">
-                        <!--begin::Preview existing avatar-->
-                        <div class="image-input-wrapper w-150px h-150px"></div>
-                        <!--end::Preview existing avatar-->
-                        <!--begin::Label-->
-                        <label class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                            data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Ganti foto">
-                            <i class="ki-outline ki-pencil fs-7"></i>
-                            <!--begin::Inputs-->
-                            <input type="file" name="avatar" accept=".png, .jpg, .jpeg" />
-                            <input type="hidden" name="avatar_remove" />
-                            <!--end::Inputs-->
-                        </label>
-                        <!--end::Label-->
-                        <!--begin::Cancel-->
-                        <span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                            data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Batal">
-                            <i class="ki-outline ki-cross fs-2"></i>
-                        </span>
-                        <!--end::Cancel-->
-                        <!--begin::Remove-->
-                        <span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                            data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Hapus foto">
-                            <i class="ki-outline ki-cross fs-2"></i>
-                        </span>
-                        <!--end::Remove-->
-                    </div>
-                    <!--end::Image input-->
-                    <!--begin::Description-->
-                    <div class="text-muted fs-7">Tentukan foto profil staff. Hanya berkas gambar dengan ekstensi *.png,
-                        *.jpg, dan *.jpeg yang diterima.</div>
-                    @error('avatar')
-                        <div class="text-danger fs-7">{{ $message }}</div>
-                    @enderror
-                    <!--end::Description-->
-                </div>
-                <!--end::Card body-->
-            </div>
-            <!--end::Thumbnail settings-->
-            <!--begin::Order details-->
-            <div class="card card-flush py-4 mb-7">
-                <!--begin::Card header-->
-                <div class="card-header">
-                    <div class="card-title">
-                        <h2>Detail Staff</h2>
-                    </div>
-                </div>
-                <!--end::Card header-->
-                <!--begin::Card body-->
-                <div class="card-body pt-0">
-                    <div class="d-flex flex-column gap-10">
-                        <!--begin::Input group-->
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="form-label">ID Staff</label>
-                            <!--end::Label-->
-                            <!--begin::Auto-generated ID-->
-                            <div class="fw-bold fs-3">#{{ isset($data) ? $data->nik : '' }}</div>
-                            <!--end::Input-->
-                        </div>
-                        <!--end::Input group-->
-                        <!--begin::Input group-->
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Jenis Kelamin</label>
-                            <!--end::Label-->
-                            <!--begin::Select2-->
-                            <select class="form-select mb-2 @error('gender') is-invalid @enderror" data-control="select2"
-                                data-hide-search="true" data-placeholder="Pilih opsi" name="gender"
-                                id="kt_ecommerce_edit_order_shipping">
-                                <option></option>
-                                <option value="male" {{ old('gender', $data->gender ?? '') == 'male' ? 'selected' : '' }}>
-                                    Pria
-                                </option>
-                                <option value="female"
-                                    {{ old('gender', $data->gender ?? '') == 'female' ? 'selected' : '' }}>
-                                    Wanita</option>
-                            </select>
-                            @error('gender')
-                                <div class="text-danger fs-7">{{ $message }}</div>
-                            @enderror
-                            <!--end::Select2-->
-                            <!--begin::Description-->
-                            <div class="text-muted fs-7">Atur jenis kelamin staff.</div>
-                            <!--end::Description-->
-                        </div>
-                        <!--end::Input group-->
-                        <!--begin::Input group-->
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Tanggal Bergabung</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            @php
-                                $tanggal = date('Y-m-d');
-                                if (isset($data->date_in)) {
-                                    $tanggal = date('Y-m-d', strtotime($data->date_in));
-                                }
-                                if (old('date_in')) {
-                                    $tanggal = old('date_in');
-                                }
-                            @endphp
-                            <input id="kt_ecommerce_edit_order_date" name="date_in" placeholder="Pilih tanggal"
-                                class="form-control mb-2 @error('date_in') is-invalid @enderror"
-                                value="{{ $tanggal }}" />
-                            @error('date_in')
-                                <div class="text-danger fs-7">{{ $message }}</div>
-                            @enderror
-                            <!--end::Editor-->
-                            <!--begin::Description-->
-                            <div class="text-muted fs-7">Atur tanggal bergabung staff.</div>
-                            <!--end::Description-->
-                        </div>
-                        <!--end::Input group-->
-                    </div>
-                </div>
-                <!--end::Card header-->
-            </div>
-            <!--end::Order details-->
-            <!--begin::Status-->
-            <div class="card card-flush py-4">
-                <!--begin::Card header-->
-                <div class="card-header">
-                    <!--begin::Card title-->
-                    <div class="card-title">
-                        <h2>Status</h2>
-                    </div>
-                    <!--end::Card title-->
-                    <!--begin::Card toolbar-->
-                    <div class="card-toolbar">
-                        <div class="rounded-circle bg-success w-15px h-15px" id="kt_ecommerce_add_product_status"></div>
-                    </div>
-                    <!--begin::Card toolbar-->
-                </div>
-                <!--end::Card header-->
-                <!--begin::Card body-->
-                <div class="card-body pt-0">
-                    <!--begin::Select2-->
-                    <select class="form-select mb-2 @error('status') is-invalid @enderror" data-control="select2"
-                        data-hide-search="true" data-placeholder="Pilih opsi" id="kt_ecommerce_add_product_status_select"
-                        name="status">
-                        <option value="aktif" {{ old('status', $data->status ?? '') == 'aktif' ? 'selected' : '' }}>
-                            Aktif</option>
-                        <option value="nonaktif" {{ old('status', $data->status ?? '') == 'nonaktif' ? 'selected' : '' }}>
-                            Nonaktif</option>
-                    </select>
-                    @error('status')
-                        <div class="text-danger fs-7">{{ $message }}</div>
-                    @enderror
-                    <!--end::Select2-->
-                    <!--begin::Description-->
-                    <div class="text-muted fs-7">Atur status staff.</div>
-                    <!--end::Description-->
-                    <!--begin::Datepicker-->
-                    <div class="d-none mt-10">
-                        <label for="kt_ecommerce_add_product_status_datepicker" class="form-label">Pilih tanggal dan waktu
-                            publikasi</label>
-                        <input class="form-control" id="kt_ecommerce_add_product_status_datepicker"
-                            placeholder="Pilih tanggal & waktu" />
-                    </div>
-                    <!--end::Datepicker-->
-                </div>
-                <!--end::Card body-->
-            </div>
-            <!--end::Status-->
+    <form id="staff-form" action="{{ $editing ? route('staff.update', $data->id) : route('staff.store') }}" method="POST" enctype="multipart/form-data" class="flex-1 min-h-0 flex flex-col">
+        @csrf
+        @if($editing) @method('PUT') @endif
+        <div class="flex-1 min-h-0 overflow-y-auto bg-gray-50/60 px-5 py-5 pb-8 space-y-5">
+            @if($errors->any())<div role="alert" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">Periksa kembali data yang ditandai di bawah.</div>@endif
+            @if(session('error'))<div role="alert" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">{{ session('error') }}</div>@endif
+            <div class="flex items-center gap-4"><div class="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 overflow-hidden flex items-center justify-center text-emerald-700 shrink-0"><img id="staff-avatar-preview" src="{{ $editing && $data->image ? asset('storage/' . $data->image) : '' }}" alt="Pratinjau foto karyawan" class="w-full h-full object-cover {{ $editing && $data->image ? '' : 'hidden' }}"><i id="staff-avatar-placeholder" class="ph ph-user text-2xl {{ $editing && $data->image ? 'hidden' : '' }}"></i></div><div class="flex-1 min-w-0"><label for="avatar" class="text-xs font-semibold text-gray-600 mb-1.5 block">Foto Profil</label><input id="avatar" name="avatar" type="file" accept="image/png,image/jpeg" class="block w-full text-xs text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-emerald-700">@error('avatar')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror@if($editing && $data->image)<label class="mt-2 inline-flex items-center gap-2 text-xs text-gray-500"><input type="checkbox" name="avatar_remove" value="1" class="accent-[#0b595b]"> Hapus foto saat ini</label>@endif</div></div>
+            <div><label for="staff_name" class="text-xs font-semibold text-gray-600 mb-1.5 block">Nama Karyawan <span class="text-red-400">*</span></label><input id="staff_name" name="staff_name" value="{{ old('staff_name', $data->name ?? '') }}" type="text" required maxlength="255" placeholder="Masukkan nama karyawan" class="w-full h-11 bg-white border {{ $errors->has('staff_name') ? 'border-red-400' : 'border-gray-200' }} rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">@error('staff_name')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            <div><label for="nickname" class="text-xs font-semibold text-gray-600 mb-1.5 block">Nama Panggilan <span class="text-red-400">*</span></label><input id="nickname" name="nickname" value="{{ old('nickname', $data->nickname ?? '') }}" type="text" required maxlength="255" placeholder="Masukkan nama panggilan" class="w-full h-11 bg-white border {{ $errors->has('nickname') ? 'border-red-400' : 'border-gray-200' }} rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">@error('nickname')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            <div><label for="nik" class="text-xs font-semibold text-gray-600 mb-1.5 block">NIK</label><input id="nik" name="nik" value="{{ old('nik', $data->nik ?? '') }}" type="text" inputmode="numeric" placeholder="Masukkan NIK" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">@error('nik')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            <div><label for="contact" class="text-xs font-semibold text-gray-600 mb-1.5 block">No Kontak</label><input id="contact" name="contact" value="{{ old('contact', $data->contact ?? '') }}" type="tel" inputmode="tel" placeholder="Contoh: 081234567890" class="w-full h-11 bg-white border {{ $errors->has('contact') ? 'border-red-400' : 'border-gray-200' }} rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">@error('contact')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            <div><label for="email" class="text-xs font-semibold text-gray-600 mb-1.5 block">E-mail</label><input id="email" name="email" value="{{ old('email', $data->email ?? '') }}" type="email" placeholder="contoh@email.com" class="w-full h-11 bg-white border {{ $errors->has('email') ? 'border-red-400' : 'border-gray-200' }} rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">@error('email')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            <div><label for="gender" class="text-xs font-semibold text-gray-600 mb-1.5 block">Jenis Kelamin</label><select id="gender" name="gender" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"><option value="">Pilih jenis kelamin</option><option value="male" @selected(old('gender', $data->gender ?? '') === 'male')>Pria</option><option value="female" @selected(old('gender', $data->gender ?? '') === 'female')>Wanita</option></select>@error('gender')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            <div><label for="date_in" class="text-xs font-semibold text-gray-600 mb-1.5 block">Tanggal Masuk</label><input id="date_in" name="date_in" value="{{ old('date_in', $data->date_in ?? '') }}" type="date" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">@error('date_in')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            <div class="border-t border-gray-200 pt-5"><h3 class="text-sm font-bold text-gray-800">Penempatan</h3><p class="text-xs text-gray-400 mt-0.5">Pilih departemen dan jabatan karyawan</p></div>
+            <div class="relative" data-staff-picker="department"><label for="department-search" class="text-xs font-semibold text-gray-600 mb-1.5 block">Departemen</label><div class="relative"><input id="department-search" type="text" role="combobox" aria-expanded="false" aria-controls="department-options" autocomplete="off" value="{{ $selectedDepartmentName }}" placeholder="Cari departemen..." class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 pr-10 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"><i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i></div><input type="hidden" name="department" value="{{ $selectedDepartment }}"><div id="department-options" role="listbox" hidden class="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg"></div>@error('department')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            <div class="relative" data-staff-picker="position"><label for="position-search" class="text-xs font-semibold text-gray-600 mb-1.5 block">Jabatan</label><div class="relative"><input id="position-search" type="text" role="combobox" aria-expanded="false" aria-controls="position-options" autocomplete="off" value="{{ $selectedPositionName }}" placeholder="Cari jabatan..." class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 pr-10 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"><i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i></div><input type="hidden" name="position" value="{{ $selectedPosition }}"><div id="position-options" role="listbox" hidden class="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg"></div>@error('position')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            <div><label for="status" class="text-xs font-semibold text-gray-600 mb-1.5 block">Status</label><select id="status" name="status" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"><option value="aktif" @selected(old('status', $data->status ?? 'aktif') === 'aktif')>Aktif</option><option value="nonaktif" @selected(old('status', $data->status ?? 'aktif') === 'nonaktif')>Nonaktif</option></select></div>
+            <div><label for="description" class="text-xs font-semibold text-gray-600 mb-1.5 block">Deskripsi</label><textarea id="description" name="description" rows="3" maxlength="1000" placeholder="Deskripsi singkat karyawan" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-none">{{ old('description', $data->description ?? '') }}</textarea>@error('description')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
         </div>
-        <!--end::Aside column-->
-        <!--begin::Main column-->
-        <div class="d-flex flex-column flex-lg-row-fluid gap-7 gap-lg-10">
-            <!--begin::Order details-->
-            <div class="card card-flush py-4">
-                <!--begin::Card header-->
-                <div class="card-header">
-                    <div class="card-title">
-                        <h2>Detail Staff</h2>
-                    </div>
-                </div>
-                <!--end::Card header-->
-                <!--begin::Card body-->
-                <div class="card-body pt-0">
-                    <!--begin::Billing address-->
-                    <div class="d-flex flex-column gap-5 gap-md-7">
-                        <!--begin::Input group-->
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Nama Lengkap Staff</label>
-                            <!--end::Label-->
-                            <!--begin::Input-->
-                            <input type="text" name="staff_name"
-                                class="form-control mb-2 @error('staff_name') is-invalid @enderror"
-                                placeholder="Nama Staff" value="{{ old('staff_name', $data->name ?? '') }}" />
-                            @error('staff_name')
-                                <div class="text-danger fs-7">{{ $message }}</div>
-                            @enderror
-                            <!--end::Input-->
-                            <!--begin::Description-->
-                            <div class="text-muted fs-7">Nama Staff.
-                            </div>
-                            <!--end::Description-->
-                        </div>
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Nama Panggilan</label>
-                            <!--end::Label-->
-                            <!--begin::Input-->
-                            <input type="text" name="nickname"
-                                class="form-control mb-2 @error('nickname') is-invalid @enderror"
-                                placeholder="Nama Panggilan" value="{{ old('nickname', $data->nickname ?? '') }}" />
-                            @error('nickname')
-                                <div class="text-danger fs-7">{{ $message }}</div>
-                            @enderror
-                            <!--end::Input-->
-                            <!--begin::Description-->
-                            <div class="text-muted fs-7">Nama Panggilan Staff.
-                            </div>
-                            <!--end::Description-->
-                        </div>
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="form-label">NIK</label>
-                            <!--end::Label-->
-                            <!--begin::Input-->
-                            <input type="text" name="nik"
-                                class="form-control mb-2 @error('nik') is-invalid @enderror" placeholder="357505xxx"
-                                value="{{ old('nik', $data->nik ?? '') }}" />
-                            @error('nik')
-                                <div class="text-danger fs-7">{{ $message }}</div>
-                            @enderror
-                            <!--end::Input-->
-                            <!--begin::Description-->
-                            <div class="text-muted fs-7">NIK Staff.
-                            </div>
-                            <!--end::Description-->
-                        </div>
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="form-label">No. Telepon</label>
-                            <!--end::Label-->
-                            <!--begin::Input-->
-                            <input type="text" name="contact"
-                                class="form-control mb-2 @error('contact') is-invalid @enderror" placeholder="085xxxx"
-                                value="{{ old('contact', $data->contact ?? '') }}" />
-                            @error('contact')
-                                <div class="text-danger fs-7">{{ $message }}</div>
-                            @enderror
-                            <!--end::Input-->
-                            <!--begin::Description-->
-                            <div class="text-muted fs-7">No. Telepon Staff.
-                            </div>
-                            <!--end::Description-->
-                        </div>
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="form-label">Departemen</label>
-                            <!--end::Label-->
-                            <!--begin::Input-->
-                            <select class="form-select mb-2 @error('department') is-invalid @enderror" name="department"
-                                id="department" data-placeholder="Pilih Departemen">
-                                @if (isset($department))
-                                    <option value="{{ $department->id }}" selected>{{ $department->name }}</option>
-                                @endif
-                            </select>
-                            <!--end::Input-->
-                        </div>
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="form-label">Posisi</label>
-                            <!--end::Label-->
-                            <!--begin::Input-->
-                            <select class="form-select mb-2 @error('position') is-invalid @enderror" name="position"
-                                id="position" data-placeholder="Pilih Posisi">
-                                @if (isset($position))
-                                    <option value="{{ $position->id }}" selected>{{ $position->name }}</option>
-                                @endif
-                            </select>
-                            <!--end::Input-->
-                        </div>
-                        <div>
-                            <!--begin::Label-->
-                            <label class="form-label">Email</label>
-                            <!--end::Label-->
-                            <!--begin::Input group-->
-                            <div class="input-group mb-3">
-                                <span class="input-group-text" id="basic-addon1">@</span>
-                                <input type="text" class="form-control @error('email') is-invalid @enderror"
-                                    placeholder="noorman@example.com" name="email" aria-label="Email"
-                                    aria-describedby="basic-addon1" value="{{ old('email', $data->email ?? '') }}" />
-                            </div>
-                            @error('email')
-                                <div class="text-danger fs-7">{{ $message }}</div>
-                            @enderror
-                            <!--end::Input group-->
-                        </div>
-                        <div>
-                            <!--begin::Label-->
-                            <label class="form-label">Deskripsi</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <div id="kt_ecommerce_add_product_description" name="kt_ecommerce_add_product_description"
-                                class="min-h-200px mb-2 @error('description') is-invalid @enderror"></div>
-                            <input type="hidden" name="description" id="description_input"
-                                value="{{ old('description', $data->description ?? '') }}">
-                            @error('description')
-                                <div class="text-danger fs-7">{{ $message }}</div>
-                            @enderror
-                            <!--end::Editor-->
-                            <!--begin::Description-->
-                            <div class="text-muted fs-7">Deskripsi singkat tentang staff.
-                            </div>
-                            <!--end::Description-->
-                        </div>
-                    </div>
-                    <!--end::Billing address-->
-                </div>
-                <!--end::Card body-->
-            </div>
-            <!--end::Order details-->
-            <div class="d-flex justify-content-end">
-                <!--begin::Button-->
-                <a href="{{ url(Request::segment(1)) }}" id="kt_ecommerce_edit_order_cancel"
-                    class="btn btn-light me-5">Batal</a>
-                <!--end::Button-->
-                <!--begin::Button-->
-                <button type="submit" id="kt_ecommerce_edit_order_submit" class="btn btn-primary">
-                    <span class="indicator-label">Simpan</span>
-                    <span class="indicator-progress">Tunggu...
-                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                </button>
-                <!--end::Button-->
-            </div>
-        </div>
-        <!--end::Main column-->
+        <div class="shrink-0 bg-white border-t border-gray-100 px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center gap-3"><a href="{{ route('staff.index') }}" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 flex items-center justify-center">Batal</a><button type="submit" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold" data-submit>{{ $editing ? 'Simpan Perubahan' : 'Tambah Karyawan' }}</button></div>
     </form>
-    @include('master::staff.js-create')
+</div>
 @endsection
+
+@include('master::staff.js-create')

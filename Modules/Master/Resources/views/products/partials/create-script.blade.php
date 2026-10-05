@@ -104,7 +104,7 @@
 
             bindFormatNumber();
         }
-        $('#variant_table').on('click', '.remove_variant', function() {
+        $(document).on('click', '#variant_table .remove_variant', function() {
             $(this).closest('tr').remove();
         });
 

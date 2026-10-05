@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesanan - Penjualan | ERP Portal</title>
+    <meta name="description" content="Modul Penjualan Pesanan - Sistem ERP Infruity.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,700&display=swap"
+        rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F5C45',
+                        'primary-light': '#1a7d5e',
+                        'primary-dark': '#0a3d2e',
+                        accent: '#F2B400',
+                        'accent-light': '#f5c733',
+                        cream: '#F7F7F7',
+                        'cream-dark': '#EBEBEB',
+                        strawberry: '#D6455D',
+                        'strawberry-light': '#e06a7e',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Poppins"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'input': '0 2px 10px rgba(0,0,0,0.02)',
+                        'card': '0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.04)',
+                        'sidebar': '4px 0 24px rgba(0,0,0,0.06)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Custom Thin Scrollbar for Sidebar */
+        .sidebar-scroll::-webkit-scrollbar { width: 2px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+        .sidebar-scroll { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }
+
+        /* Minimalist Dropdown Scrollbar */
+        .minimal-scrollbar::-webkit-scrollbar { width: 3px; }
+        .minimal-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .minimal-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 3px; }
+        .minimal-scrollbar::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
+
+        /* General Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c4c4c4; border-radius: 100px; }
+        ::-webkit-scrollbar-thumb:hover { background: #999; }
+
+        /* Dark Sidebar */
+        .dark-sidebar { background-color: #0b595b; }
+        .dark-sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); }
+        .dark-sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+        .glass-header { background: rgba(247, 247, 247, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+
+        /* Sidebar Navigation */
+        .sidebar-link {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        a.sidebar-link[href="#"] {
+            cursor: default !important;
+        }
+        
+        .sidebar-link.active { background-color: #d1f36e; color: #102f31 !important; font-weight: 600; box-shadow: 0 2px 6px rgba(209, 243, 110, 0.2); }
+        .sidebar-link.active i { color: #102f31 !important; }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+        /* Notification Dropdown */
+        .notif-item { transition: background 0.15s ease; }
+        .notif-item:hover { background: rgba(15, 92, 69, 0.04); }
+        .badge { font-size: 0.65rem; padding: 2px 8px; border-radius: 100px; font-weight: 600; letter-spacing: 0.02em; }
+
+        .submenu-link { transition: all 0.2s ease; }
+        .submenu-link i.sidebar-icon { display: none !important; }
+
+        /* Bullet (Inactive) */
+        .submenu-link::before {
+            content: ''; position: absolute; left: 28px; top: 50%; transform: translateY(-50%);
+            width: 6px; height: 6px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.25);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .submenu-link:hover::before { background-color: rgba(255, 255, 255, 0.6); transform: translateY(-50%) scale(1.2); }
+        .submenu-link:hover { color: rgba(255, 255, 255, 0.9); }
+
+        /* Bullet (Active) */
+        .submenu-link.active { color: #ffffff; font-weight: 600; }
+        .submenu-link.active::before { background-color: #F2B400; transform: translateY(-50%) scale(1.2); box-shadow: 0 0 10px rgba(242, 180, 0, 0.5); }
+
+        .submenu-link.level-3::before { left: 44px; }
+        .chevron-rotate { transition: transform 0.25s ease; }
+        .chevron-rotate.open { transform: rotate(180deg); }
+
+        /* Smooth Collapse Transitions */
+        .sidebar-link, .submenu-link { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; overflow: hidden; white-space: nowrap; }
+        .sidebar-link span, .submenu-link span, .chevron-rotate { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 200px; opacity: 1; }
+        .toggle-container { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 100px; opacity: 1; overflow: hidden; }
+
+        /* Collapsed State */
+        .sidebar-collapsed span, .sidebar-collapsed .chevron-rotate { max-width: 0 !important; opacity: 0 !important; margin-left: 0 !important; }
+        .sidebar-collapsed .logo-full { display: none !important; }
+        .sidebar-collapsed .logo-mini { display: block !important; }
+        .sidebar-collapsed .toggle-container { max-width: 0 !important; opacity: 0 !important; padding: 0 !important; margin: 0 !important; pointer-events: none; }
+        .sidebar-collapsed .sidebar-link { justify-content: flex-start !important; padding-left: 1.5rem !important; padding-right: 0 !important; gap: 0 !important;  }
+        
+        
+        .sidebar-collapsed .toggle-container { max-width: 0 !important; opacity: 0 !important; padding: 0 !important; margin: 0 !important; pointer-events: none; }
+        .sidebar-collapsed .sidebar-link { justify-content: flex-start !important; padding-left: 1.5rem !important; padding-right: 0 !important; gap: 0 !important; }
+        .resize-animation-stopper * { animation: none !important; transition: none !important; }
+        
+        /* Light Sidebar Overrides */
+        .light-sidebar { background-color: #ffffff; border-right: 1px solid #f3f4f6; }
+        .light-sidebar .text-white, 
+        .light-sidebar .text-white\/50, 
+        .light-sidebar .text-white\/45,
+        .light-sidebar .text-white\/40,
+        .light-sidebar .text-white\/35,
+        .light-sidebar .text-white\/30 { color: #4b5563 !important; }
+        .light-sidebar .font-medium { color: #374151 !important; }
+        
+        .light-sidebar .sidebar-link.active { background-color: #d1f36e !important; color: #102f31 !important; }
+        .light-sidebar .submenu-link:hover { color: #111827 !important; }
+        .light-sidebar .submenu-link::before { background-color: #d1d5db; }
+        .light-sidebar .submenu-link:hover::before { background-color: #9ca3af; }
+        .light-sidebar .submenu-link.active { color: #0F5C45 !important; font-weight: 600; }
+        .light-sidebar .submenu-link.active::before { background-color: #0F5C45; }
+        .light-sidebar .border-white\/10 { border-color: #f3f4f6 !important; }
+        .light-sidebar .border-white\/20 { border-color: #e5e7eb !important; }
+        .light-sidebar .bg-white\/10 { background-color: #f9fafb !important; }
+
+    
+        /* Smooth CSS Grid Collapse for Submenus */
+        .submenu-wrapper {
+            display: grid;
+            grid-template-rows: 1fr;
+            transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+        }
+        .submenu-wrapper > div {
+            overflow: hidden;
+        }
+        .sidebar-collapsed .submenu-wrapper {
+            grid-template-rows: 0fr !important;
+            opacity: 0 !important;
+            display: none !important;
+        }
+    
+        /* === iframe Mode: Hide sidebar when loaded inside shell === */
+        body.in-iframe { background: transparent !important; }
+        body.in-iframe aside { display: none !important; }
+        body.in-iframe > div > div[x-show="sidebarOpen"] { display: none !important; }
+        body.in-iframe [data-hamburger] { display: none !important; }
+        header { display: none !important; }
+    
+        /* ======================== */
+        /* iOS Safari Anti-Zoom Fix */
+        /* ======================== */
+        input, input[type="text"], input[type="email"], input[type="password"],
+        input[type="number"], input[type="search"], input[type="tel"],
+        input[type="url"], input[type="date"], input[type="datetime-local"],
+        input[type="time"], select, textarea {
+            font-size: 16px !important;
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+
+<body class="font-sans bg-[#e5e9f3] text-gray-800 antialiased h-screen overflow-hidden">
+    <script>if(window.self!==window.top){document.body.classList.add("in-iframe");}</script>
+
+    <div x-data="erpApp()" class="flex h-screen w-full">
+
+        <!-- MOBILE SIDEBAR OVERLAY -->
+        <div x-show="sidebarOpen" x-transition:enter="transition-opacity duration-300"
+            x-transition:leave="transition-opacity duration-200" @click="sidebarOpen = false"
+            class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden">
+        </div>
+
+        <!-- ================================ -->
+        <!-- SIDEBAR                          -->
+        <!-- ================================ -->
+                <aside
+            :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', sidebarCollapsed ? 'sidebar-collapsed w-24' : 'w-64', theme === 'light' ? 'light-sidebar' : 'dark-sidebar']"
+            class="fixed lg:static inset-y-0 left-0 z-50 shadow-none flex flex-col transition-all duration-300 lg:translate-x-0 lg:rounded-3xl lg:my-5 lg:ml-5 lg:h-[calc(100vh-2.5rem)] overflow-hidden shrink-0">
+
+            <!-- Logo & Toggle -->
+            <div class="flex items-center pt-5 pb-14"
+                :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-6'">
+                <a href="#" @click.prevent="if(sidebarCollapsed) { sidebarCollapsed = false; }"
+                    class="flex items-center logo-link transition-transform duration-200 h-9"
+                    :title="sidebarCollapsed ? 'Perbesar Sidebar' : 'Infruity ERP'"
+                    :class="sidebarCollapsed ? 'hover:scale-110' : ''">
+                    <img :src="theme === 'light' ? '../../assets/logo/Infruity Logo - 6.png' : '../../assets/logo/Logo Putih 1.png'" alt="Infruity Logo" class="h-9 logo-full ">
+                    <img :src="theme === 'light' ? '../../assets/logo/Infruity Logo - 7.png' : '../../assets/logo/Logo IN Putih.png'" alt="Infruity Icon" class="h-8 logo-mini hidden ">
+                </a>
+                <div class="flex items-center gap-2 toggle-container">
+                    <button @click="sidebarCollapsed = !sidebarCollapsed"
+                        class="hidden lg:block text-white transition hover:opacity-80 shrink-0" title="Toggle Sidebar">
+                        <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-[1.65rem] transition-transform duration-300"
+                            :class="sidebarCollapsed ? 'rotate-180' : ''">
+                            <rect x="3" y="3" width="18" height="18" rx="4" ry="4"></rect>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                        </svg>
+                    </button>
+                    <button @click="sidebarOpen = false"
+                        class="lg:hidden p-2 rounded-xl hover:bg-white/10 text-white/50 hover:text-white/80 transition">
+                        <i class="ph ph-x text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav id="sidebar-nav" class="flex-1 overflow-y-auto overscroll-none sidebar-scroll px-3 pb-4 space-y-3">
+                <!-- === Dashboard === -->
+                <div>
+                    <a href="../../001. Dashboard/index.html"
+                        
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'dashboard' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-squares-four sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'dashboard' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Dashboard</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- === Master === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('master')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'master' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-database sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'master' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Master</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../002. Master/001. Produk/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-shopping-cart sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Produk</span>
+                            </a>
+                            <a href="../../002. Master/012. Kategori/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-tag sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Kategori</span>
+                            </a>
+                            <a href="../../002. Master/003. Satuan Produk/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-list-dashes sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Satuan Produk</span>
+                            </a>
+                            <a href="../../002. Master/004. Pemasok/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-storefront sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pemasok</span>
+                            </a>
+                            <a href="../../002. Master/005. Pelanggan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-users sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pelanggan</span>
+                            </a>
+                            <a href="../../002. Master/006. Cabang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-map-pin sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Cabang</span>
+                            </a>
+                            <a href="../../002. Master/007. Akun Pengguna/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Akun Pengguna</span>
+                            </a>
+                            <a href="../../002. Master/008. Jabatan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-identification-badge sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Jabatan</span>
+                            </a>
+                            <a href="../../002. Master/009. Karyawan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-user sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Karyawan</span>
+                            </a>
+                            <a href="../../002. Master/010. Kurir/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-user-focus sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Kurir</span>
+                            </a>
+                            <a href="../../002. Master/011. Metode Pembayaran/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-credit-card sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Metode Pembayaran</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Pembelian === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('pembelian')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'pembelian' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-bag sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'pembelian' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Pembelian</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../003. Pembelian/001. Pengadaan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pengadaan</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Inventaris === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('inventaris')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'inventaris' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-package sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'inventaris' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Inventaris</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../004. Inventaris/001. Stok Barang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Stok Barang</span>
+                            </a>
+                            <a href="../../004. Inventaris/002. Sortir Barang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Sortir Barang</span>
+                            </a>
+                            <!-- Sub-sub modul: Pindah Stok -->
+                            <div x-data="{ openTransfer: false }"
+                                x-effect="if(activeMenu !== 'inventaris') openTransfer = false">
+                                <a href="#" @click.prevent="openTransfer = !openTransfer"
+                                    class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45">
+                                    <span>Pindah Stok</span>
+                                    <i class="ph ph-caret-down ml-auto text-white/30 chevron-rotate"
+                                        :class="openTransfer ? 'open' : ''" style="display: block !important;"></i>
+                                </a>
+                                <div x-show="openTransfer" x-collapse.duration.300ms>
+                                    <div class="py-1 space-y-0.5">
+                                        <a href="../../004. Inventaris/003. Pindah Stok - Mengirim/index.html"
+                                            class="submenu-link level-3 relative flex items-center gap-3 pl-16 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                            <span>Mengirim</span>
+                                        </a>
+                                        <a href="../../004. Inventaris/004. Pindah Stok - Menerima/index.html"
+                                            class="submenu-link level-3 relative flex items-center gap-3 pl-16 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                            <span>Menerima</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="../../004. Inventaris/005. Stok Opname/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Stok Opname</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Produksi === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('produksi')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'produksi' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-factory sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'produksi' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Produksi</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../005. Produksi/001. Produksi Barang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Produksi Barang</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Penjualan === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('penjualan')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'penjualan' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-shopping-cart sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'penjualan' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Penjualan</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../006. Penjualan/001. Kasir - POS/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Kasir / POS</span>
+                            </a>
+                            <a href="../../006. Penjualan/002. Pesanan/index.html"
+                                class="submenu-link active relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pesanan</span>
+                            </a>
+                            <a href="../../006. Penjualan/003. Pengiriman/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pengiriman</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Keuangan === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('keuangan')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'keuangan' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-currency-circle-dollar sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'keuangan' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Keuangan</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../007. Keuangan/001. Pemasukan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pemasukan</span>
+                            </a>
+                            <a href="../../007. Keuangan/002. Pengeluaran/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pengeluaran</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Laporan === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('laporan')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'laporan' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-chart-line-up sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'laporan' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Laporan</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+
+                            <a href="../../008. Laporan/003. Total Aset/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-briefcase sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Total Aset</span>
+                            </a>                            <a href="../../008. Laporan/001. Pendapatan Penjualan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-calendar-blank sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pendapatan Penjualan</span>
+                            </a>
+                            <a href="../../008. Laporan/005. Keuntungan Penjualan/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-money sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Keuntungan Penjualan</span>
+                            </a>
+                            <a href="../../008. Laporan/006. Keuntungan Setelah Penyesuaian/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-chart-line-up sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span class="whitespace-normal leading-tight">Keuntungan Setelah Penyesuaian</span>
+                            </a>
+                            <a href="../../008. Laporan/002. Ongkos Kirim/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-truck sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Ongkos Kirim</span>
+                            </a>
+                            <a href="../../008. Laporan/004. Kerugian Barang Buang/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-trash sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Kerugian Barang Buang</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Pengaturan === -->
+                <div>
+                    <a href="#" @click.prevent="toggleMenu('pengaturan')"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                        :class="activeMenu === 'pengaturan' ? 'active shadow-lg shadow-black/10' : ''">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-gear sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'pengaturan' ? '!text-[#102f31]' : ''"></i>
+                            <span class="font-medium">Pengaturan</span>
+                        </div>
+                        
+                        
+                    </a>
+                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
+                        <div class="py-1 space-y-0.5">
+                            <a href="../../009. Pengaturan/001. Nota dan Cetak/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Nota & Cetak</span>
+                            </a>
+                            <a href="../../009. Pengaturan/003. Target/index.html"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Target</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <script>
+                (function(){
+                    const nav = document.getElementById('sidebar-nav');
+                    if (!nav) return;
+                    
+                    const savedScroll = sessionStorage.getItem('sidebarScroll');
+                    if (savedScroll !== null) {
+                        nav.scrollTop = parseInt(savedScroll, 10);
+                    } else {
+                        const active = nav.querySelector('.active');
+                        if (active) {
+                            nav.scrollTop = active.offsetTop - (nav.clientHeight / 2);
+                        }
+                    }
+
+                    nav.addEventListener('scroll', () => {
+                        sessionStorage.setItem('sidebarScroll', nav.scrollTop);
+                    }, { passive: true });
+                })();
+            </script>
+
+            <!-- User Profile Section -->
+            <div class="px-4 pb-6 pt-4 border-t border-white/10 shrink-0 transition-all duration-300 flex items-center relative"
+                 :class="sidebarCollapsed ? 'justify-center' : 'justify-between'" x-data="{ settingsOpen: false }">
+                 
+                <!-- Settings Dropdown Menu (Escaped from overflow-hidden) -->
+                <div x-show="settingsOpen" @click.outside="settingsOpen = false"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                    class="absolute right-4 bottom-[calc(100%-1rem)] mb-2 w-52 bg-white rounded-2xl shadow-xl shadow-black/5 border border-gray-100 overflow-hidden z-50 py-2">
+                    <div class="px-4 py-3 border-b border-gray-50">
+                        <p class="text-sm font-semibold text-gray-800">Pengaturan</p>
+                        <p class="text-[0.65rem] text-gray-400">Atur preferensi akun</p>
+                    </div>
+                    <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
+                        <i class="ph ph-user-circle text-lg"></i> Profil Saya
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
+                        <i class="ph ph-lock text-lg"></i> Ubah Password
+                    </a>
+                    <a href="#" @click.prevent="theme = theme === 'light' ? 'dark' : 'light'; settingsOpen = false" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition">
+                        <i class="ph text-lg" :class="theme === 'light' ? 'ph-moon' : 'ph-sun'"></i> 
+                        <span x-text="theme === 'light' ? 'Mode Gelap' : 'Mode Terang'"></span>
+                    </a>
+                    <div class="border-t border-gray-50 mt-1 pt-1">
+                        <a href="../../../002. Login ERP/index.html"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-strawberry hover:bg-strawberry/5 transition">
+                            <i class="ph ph-sign-out text-lg"></i> Keluar
+                        </a>
+                    </div>
+                </div>
+
+                <div class="flex items-center w-full transition-all duration-300" :class="sidebarCollapsed ? 'justify-center gap-0' : 'gap-3'">
+                    <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 border border-white/20 overflow-hidden relative group cursor-pointer">
+                        <i class="ph ph-user text-xl text-white"></i>
+                    </div>
+                    <div class="flex flex-col flex-1 toggle-container overflow-hidden">
+                        <span class="text-sm font-semibold text-white whitespace-nowrap">Dimas Pratama</span>
+                        <span class="text-xs text-white/50 whitespace-nowrap">Admin</span>
+                    </div>
+                    <!-- Settings Button -->
+                    <div class="toggle-container shrink-0 ml-auto flex items-center">
+                        <button @click="settingsOpen = !settingsOpen" class="text-white/40 hover:text-white transition flex items-center justify-center" title="Pengaturan">
+                            <i class="ph ph-gear text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+
+        <!-- ================================ -->
+        <!-- MAIN CONTENT AREA                -->
+        <!-- ================================ -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+
+            <!-- Floating Header -->
+            <header
+                class="bg-white rounded-full shadow-sm border border-gray-100 mx-4 sm:mx-6 lg:mx-8 mt-4 sm:mt-6 lg:mt-5 px-5 lg:px-6 py-3 lg:py-4 flex items-center justify-between gap-4 z-30 sticky top-4 sm:top-6 lg:top-5">
+
+                <!-- Left: Hamburger + Title -->
+                <div class="flex items-center gap-4 pl-2">
+                    <button data-hamburger @click="sidebarOpen = !sidebarOpen"
+                        class="lg:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-500 transition shrink-0">
+                        <i class="ph ph-list text-2xl"></i>
+                    </button>
+                    <div class="hidden sm:block">
+                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5">Pesanan</h1>
+                        <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
+                            <span>Penjualan</span>
+                            <i class="ph ph-caret-right text-[0.55rem]"></i>
+                            <span>Pesanan</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Notif + Profile -->
+                <div class="flex items-center gap-3">
+
+                    <!-- Notification Bell -->
+                    <div class="relative" x-data="{ notifOpen: false, hasUnread: true }">
+                        <button @click="notifOpen = !notifOpen; hasUnread = false"
+                            class="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-600 transition shrink-0">
+                            <div class="relative flex items-center justify-center">
+                                <i class="ph ph-bell text-lg"></i>
+                                <span x-show="hasUnread" class="absolute top-[3px] right-[1.5px] w-2 h-2 bg-strawberry rounded-full border border-white"></span>
+                            </div>
+                        </button>
+
+                        <!-- Dropdown -->
+                        <div x-show="notifOpen" @click.outside="notifOpen = false"
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden z-50">
+                            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                                <h4 class="font-serif font-semibold text-gray-800">Notifikasi</h4>
+                                <span class="badge bg-strawberry text-white">3 Baru</span>
+                            </div>
+                            <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                                <a href="#" class="notif-item flex gap-3 px-5 py-3.5">
+                                    <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                        <i class="ph-fill ph-package text-primary text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-700 font-medium">Stok Buah Naga Merah menipis</p>
+                                        <p class="text-xs text-gray-400 mt-0.5">5 menit yang lalu</p>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="px-5 py-3 border-t border-gray-100 text-center">
+                                <a href="#" class="text-sm font-medium text-primary hover:underline">Lihat Semua Notifikasi</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    </div>
+            </header>
+
+            <!-- ================================ -->
+            <!-- SCROLLABLE CONTENT AREA          -->
+            <!-- ================================ -->
+            <main class="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
+
+                <!-- CONTENT: Pesanan -->
+                <div class="animate-fade-in-up flex flex-col items-center justify-center py-16 my-auto text-center w-full">
+                    <div class="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center mb-6">
+                        <i class="ph-fill ph-chart-pie-slice text-primary text-5xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-serif font-bold text-gray-800 mb-2">Pesanan</h2>
+                    <p class="text-gray-400 text-sm max-w-sm mb-6">
+                        Halaman ini sedang dalam tahap pengembangan. Navigasi sidebar sudah aktif — silakan klik menu
+                        untuk berpindah halaman.
+                    </p>
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-200 text-sm text-gray-500 shadow-card">
+                            <i class="ph ph-folder-open text-primary text-lg"></i>
+                            Modul: <strong>Penjualan</strong>
+                        </span>
+                        <span
+                            class="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-200 text-sm text-gray-500 shadow-card">
+                            <i class="ph ph-shield-check text-primary text-lg"></i>
+                            Status: <span class="text-green-600 font-semibold">Active</span>
+                        </span>
+                    </div>
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- ALPINE.JS APPLICATION LOGIC -->
+    <script>
+        function erpApp() {
+            return {
+                sidebarOpen: false,
+                sidebarCollapsed: false,
+                theme: 'dark',
+                activeMenu: 'penjualan',
+
+                toggleMenu(menu) {
+                    if (this.sidebarCollapsed) {
+                        this.sidebarCollapsed = false;
+                    }
+                },
+
+                init() {
+                    // Active group submenus start expanded
+                }
+            };
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login ERP | Infruity</title>
+    <link rel="icon" type="image/png" href="../001. Landing Page/000. Logo/Infruity Logo - 5.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,700&display=swap"
+        rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F5C45',      // Green
+                        accent: '#F2B400',       // Golden Accent
+                        cream: '#FAF8F2',        // Background
+                        strawberry: '#D6455D',   // Highlight
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Poppins"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'input': '0 2px 10px rgba(0,0,0,0.02)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .image-overlay {
+            background: linear-gradient(135deg, rgba(15, 92, 69, 0.85) 0%, rgba(0, 0, 0, 0.6) 100%);
+        }
+    </style>
+</head>
+
+<body class="font-sans bg-cream text-gray-800 antialiased h-screen flex overflow-hidden">
+
+    <!-- Left Side: Image and Branding -->
+    <div class="hidden lg:flex lg:w-3/5 relative bg-primary items-center justify-start overflow-hidden">
+        <!-- Background Image -->
+        <img src="./001. Aset/Login 3.png" alt="Farm Background"
+            class="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-overlay">
+
+        <!-- Gradient Overlay -->
+        <div class="absolute inset-0 image-overlay"></div>
+
+        <!-- Decorative Elements -->
+        <div class="absolute top-12 left-12">
+            <a href="../001. Landing Page/index.html"
+                class="flex items-center gap-3 text-white hover:text-accent transition-colors">
+                <i class="ph ph-arrow-left text-2xl"></i>
+                <span class="font-medium">Kembali ke Website</span>
+            </a>
+        </div>
+
+        <div
+            class="absolute bottom-0 right-0 w-96 h-96 bg-accent rounded-full blur-[120px] opacity-20 transform translate-x-1/2 translate-y-1/2 pointer-events-none">
+        </div>
+        <div
+            class="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-[120px] opacity-10 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+        </div>
+
+        <!-- Content -->
+        <div class="relative z-10 p-12 lg:px-20 xl:px-24 max-w-3xl text-white w-full">
+            <img src="../001. Landing Page/000. Logo/Logo Putih 1.png" alt="Infruity Logo" class="h-16 mb-12">
+
+            <h1 class="text-5xl md:text-6xl font-serif font-bold leading-tight mb-6">
+                Portal <br>
+                <span class="text-accent italic font-light">Internal</span>
+            </h1>
+            <p class="text-lg text-white/80 leading-relaxed max-w-xl font-light">
+                Sistem manajemen terpusat untuk operasional.<br>
+                Akses terbatas hanya untuk pihak internal Infruity.
+            </p>
+
+            <div class="mt-12 flex items-center gap-4 text-sm text-white/80">
+                <div class="flex -space-x-3">
+                    <div
+                        class="w-10 h-10 rounded-full border-2 border-white/30 bg-white/20 backdrop-blur-md flex items-center justify-center">
+                        <i class="ph-fill ph-plant text-accent"></i>
+                    </div>
+                    <div
+                        class="w-10 h-10 rounded-full border-2 border-white/30 bg-white/20 backdrop-blur-md flex items-center justify-center">
+                        <i class="ph-fill ph-truck text-accent"></i>
+                    </div>
+                    <div
+                        class="w-10 h-10 rounded-full border-2 border-white/30 bg-white/20 backdrop-blur-md flex items-center justify-center">
+                        <i class="ph-fill ph-chart-line-up text-accent"></i>
+                    </div>
+                </div>
+                <span>Infruity Internal Management System</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side: Login Form -->
+    <div
+        class="w-full lg:w-2/5 flex flex-col justify-center items-center p-8 sm:p-12 md:p-16 relative bg-white lg:bg-cream">
+
+        <!-- Mobile Logo (Visible only on small screens) -->
+        <div class="lg:hidden absolute top-8 left-1/2 transform -translate-x-1/2">
+            <img src="../001. Landing Page/000. Logo/INFRUITY emas hijau.png" alt="Infruity Logo" class="h-10">
+        </div>
+
+        <div class="w-full max-w-md">
+
+            <!-- Header -->
+            <div class="mb-10 text-center lg:text-left">
+                <h2 class="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-3">Selamat Datang</h2>
+                <p class="text-gray-600 text-sm sm:text-base">Gunakan kredensial internal Anda untuk mengakses sistem.
+                </p>
+            </div>
+
+            <!-- Form -->
+            <form action="#" method="POST" class="space-y-6">
+
+                <!-- Email/Username -->
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-2">ID Karyawan /
+                        Email</label>
+                    <div class="relative group">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                            <i class="ph ph-user text-xl"></i>
+                        </div>
+                        <input type="text" id="username" name="username" placeholder="Masukkan ID atau Email"
+                            class="block w-full pl-14 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-2xl text-gray-900 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all duration-300 shadow-input outline-none"
+                            required>
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Kata Sandi</label>
+                    <div class="relative group">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                            <i class="ph ph-lock-key text-xl"></i>
+                        </div>
+                        <input type="password" id="password" name="password" placeholder="Masukkan Kata Sandi"
+                            class="block w-full pl-14 pr-12 py-3.5 bg-gray-50/50 border border-gray-200 rounded-2xl text-gray-900 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all duration-300 shadow-input outline-none"
+                            required>
+                        <!-- Show/Hide Password Toggle -->
+                        <button type="button"
+                            class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                            onclick="togglePassword()">
+                            <i id="eye-icon" class="ph ph-eye text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="flex items-center justify-between mt-4">
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember-me" type="checkbox"
+                            class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer accent-primary">
+                        <label for="remember-me" class="ml-2 block text-sm text-gray-600 cursor-pointer select-none">
+                            Ingat saya
+                        </label>
+                    </div>
+
+                    <div class="text-sm">
+                        <a href="#" class="font-medium text-primary hover:text-primary/80 transition-colors">Lupa
+                            sandi?</a>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex gap-4">
+                    <!-- Submit Button -->
+                    <button type="submit"
+                        class="flex-1 flex justify-center py-4 px-4 border border-transparent rounded-2xl shadow-lg shadow-primary/20 text-sm font-bold tracking-wide text-white bg-primary hover:bg-[#0c4a37] hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        Masuk ke Sistem
+                    </button>
+    
+                    <!-- Guest Button -->
+                    <button type="button" onclick="window.location.href='../003. ERP/app.html'"
+                        class="flex-none flex items-center justify-center py-4 px-6 border-2 border-primary rounded-2xl text-sm font-bold tracking-wide text-primary bg-transparent hover:bg-primary/5 transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                        title="Masuk sebagai Guest">
+                        Guest
+                    </button>
+                </div>
+            </form>
+
+            <!-- Footer Text -->
+            <div class="mt-8 text-center text-sm text-gray-500">
+                <p>Mengalami kendala akses? <a href="#" class="font-medium text-primary hover:underline">Hubungi Tim IT
+                        Internal</a></p>
+            </div>
+
+        </div>
+
+
+
+    </div>
+
+    <script>
+        // Simple password toggle functionality
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eye-icon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('ph-eye');
+                eyeIcon.classList.add('ph-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('ph-eye-slash');
+                eyeIcon.classList.add('ph-eye');
+            }
+        }
+    </script>
+</body>
+
+</html>
