@@ -1194,7 +1194,7 @@ class ProductController extends Controller
                     'type' => $categoryName,
                     'price' => $hasChildren ? $mobilePriceLabel : $mobilePriceLabel . ' / ' . $unit,
                     'updatedBy' => $product->updater?->nm_user ?? $product->creator?->nm_user ?? 'Administrator',
-                    'updatedAt' => optional($product->updated_at ?? $product->created_at)->locale('id')->translatedFormat('d M Y, H:i'),
+                    'updatedAt' => ($product->updated_at ?? $product->created_at)?->locale('id')->translatedFormat('d M Y, H:i') ?? '-',
                     'editUrl' => route('products.edit', $product->id),
                 ], JSON_UNESCAPED_UNICODE | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_HEX_TAG));
 
