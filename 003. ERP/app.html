@@ -497,11 +497,6 @@
                     </a>
                     <div class="submenu-wrapper">
                         <div class="py-1 space-y-0.5">
-                            <a href="#" @click.prevent="navigateTo('008. Laporan/index.html', 'laporan')"
-                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
-                                :class="activePage === '008. Laporan/index.html' ? 'active' : ''">
-                                <span>Ringkasan Laporan</span>
-                            </a>
                             <a href="#" @click.prevent="navigateTo('008. Laporan/003. Total Aset/index.html', 'laporan')"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
                                 :class="activePage === '008. Laporan/003. Total Aset/index.html' ? 'active' : ''">
@@ -713,7 +708,10 @@
                     return getMenuFromPage(page);
                 },
 
-                navigateTo(page, menu, updateHash = true) {
+                _isClosingModalProgrammatically: false,
+                _hasPushedModalHistory: false,
+
+                navigateTo(page, menu, updateHash = true, pushHistory = true) {
                     if (!menu) {
                         menu = this.detectMenuFromPage(page);
                     }
@@ -724,7 +722,11 @@
                         this.activePage = page;
                         if (updateHash) {
                             try {
-                                window.history.replaceState(null, '', '#' + page);
+                                if (pushHistory) {
+                                    window.history.pushState({ page: page, menu: menu }, '', '#' + page);
+                                } else {
+                                    window.history.replaceState({ page: page, menu: menu }, '', '#' + page);
+                                }
                             } catch(e) {
                                 window.location.hash = page;
                             }
@@ -744,9 +746,9 @@
                             }
                         }, 1500);
                     } else {
-                        if (updateHash && window.location.hash.slice(1) !== page) {
+                        if (updateHash && decodeURIComponent(window.location.hash.slice(1)) !== page) {
                             try {
-                                window.history.replaceState(null, '', '#' + page);
+                                window.history.replaceState({ page: page, menu: menu }, '', '#' + page);
                             } catch(e) {
                                 window.location.hash = page;
                             }
@@ -775,20 +777,54 @@
                         frame.src = this.activePage;
                     }
 
-                    if (!window.location.hash) {
-                        try {
-                            window.history.replaceState(null, '', '#' + this.activePage);
-                        } catch(e) {}
-                    }
+                    // Set initial state in browser history
+                    try {
+                        window.history.replaceState({ page: this.activePage, menu: this.activeMenu }, '', '#' + this.activePage);
+                    } catch(e) {}
 
-                    // Listen to hashchange for browser back/forward navigation
+                    // Listen to popstate for browser back/forward and mobile native swipe / Android back button
+                    window.addEventListener('popstate', (e) => {
+                        // 1. If programmatic modal close triggered this popstate, ignore it
+                        if (this._isClosingModalProgrammatically) {
+                            this._isClosingModalProgrammatically = false;
+                            return;
+                        }
+
+                        // 2. Prioritas 1: If drawer or modal is open in the iframe, close it first!
+                        if (this.drawerOverlay || this._hasPushedModalHistory) {
+                            this._hasPushedModalHistory = false;
+                            this.closeIframeDrawer();
+                            return;
+                        }
+
+                        // 3. Prioritas 2: Page-level navigation back/forward
+                        let targetPage = '';
+                        let targetMenu = '';
+
+                        if (e.state && e.state.page) {
+                            targetPage = e.state.page;
+                            targetMenu = e.state.menu || this.detectMenuFromPage(targetPage);
+                        } else if (window.location.hash && window.location.hash.slice(1)) {
+                            targetPage = decodeURIComponent(window.location.hash.slice(1));
+                            targetMenu = this.detectMenuFromPage(targetPage);
+                        } else {
+                            targetPage = '001. Dashboard/index.html';
+                            targetMenu = 'dashboard';
+                        }
+
+                        if (this.activePage !== targetPage) {
+                            this.navigateTo(targetPage, targetMenu, false, false);
+                        }
+                    });
+
+                    // Listen to hashchange as fallback
                     window.addEventListener('hashchange', () => {
                         const newHash = window.location.hash.slice(1);
                         if (newHash) {
                             const targetPage = decodeURIComponent(newHash);
                             if (this.activePage !== targetPage) {
                                 const targetMenu = this.detectMenuFromPage(targetPage);
-                                this.navigateTo(targetPage, targetMenu, false);
+                                this.navigateTo(targetPage, targetMenu, false, false);
                             }
                         }
                     });
@@ -797,8 +833,25 @@
                     window.addEventListener('message', (e) => {
                         if (e.data === 'toggleSidebar') {
                             this.sidebarOpen = true;
-                        } else if (e.data && e.data.type === 'drawerOverlay') {
-                            this.drawerOverlay = !!e.data.active;
+                        } else if (e.data && (e.data.type === 'drawerOverlay' || e.data.type === 'modalState')) {
+                            const isActive = !!(e.data.active ?? (e.data.open ?? false));
+                            this.drawerOverlay = isActive;
+
+                            if (isActive) {
+                                if (!this._hasPushedModalHistory) {
+                                    try {
+                                        window.history.pushState({ page: this.activePage, menu: this.activeMenu, isModal: true }, '', window.location.hash);
+                                        this._hasPushedModalHistory = true;
+                                    } catch(err) {}
+                                }
+                            } else {
+                                if (this._hasPushedModalHistory) {
+                                    this._hasPushedModalHistory = false;
+                                    this._isClosingModalProgrammatically = true;
+                                    window.history.back();
+                                    setTimeout(() => { this._isClosingModalProgrammatically = false; }, 300);
+                                }
+                            }
                         } else if (e.data && e.data.type === 'navigate') {
                             this.navigateTo(e.data.page, e.data.menu);
                         }

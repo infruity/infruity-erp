@@ -232,7 +232,11 @@
 <body class="font-sans bg-[#e5e9f3] text-gray-800 antialiased h-screen overflow-hidden overscroll-none">
     <script>if(window.self!==window.top){document.body.classList.add("in-iframe");}</script>
 
-    <div x-data="erpApp()" x-init="setHariIni()" @resize.window.debounce.100ms="handleResize()" class="flex h-screen w-full">
+    <div x-data="erpApp()" x-init="setHariIni()" @resize.window.debounce.100ms="handleResize()" 
+         @scroll.capture.passive="if (infoPopupOpen) infoPopupOpen = false"
+         @message.window="if($event.data && $event.data.type === 'closeDrawer') { filterOpen = false; if(typeof closeHistoryDrawer === 'function') closeHistoryDrawer(); }"
+         @popstate.window="if(filterOpen) { filterOpen = false; } else if(typeof historyDrawerOpen !== 'undefined' && historyDrawerOpen && typeof closeHistoryDrawer === 'function') { closeHistoryDrawer(); }"
+         class="flex h-screen w-full">
 
         <!-- MOBILE SIDEBAR OVERLAY -->
         <div x-show="sidebarOpen" x-transition:enter="transition-opacity duration-300"
@@ -694,9 +698,11 @@
                     <div>
                         <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5">Kerugian Barang Buang</h1>
                         <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
-                            <span>Laporan</span>
+                            <a href="../index.html" 
+                               @click.prevent="window.self !== window.top ? (window.parent.history.length > 1 ? window.parent.history.back() : window.parent.postMessage({ type: 'navigate', page: '008. Laporan/index.html', menu: 'laporan' }, '*')) : (window.history.length > 1 ? window.history.back() : window.location.href = '../index.html')"
+                               class="hover:text-[#0b595b] hover:underline cursor-pointer transition-colors font-medium">Laporan</a>
                             <i class="ph ph-caret-right text-[0.55rem]"></i>
-                            <span>Kerugian Barang Buang</span>
+                            <span class="text-gray-600 font-medium">Kerugian Barang Buang</span>
                         </div>
                     </div>
                 </div>
@@ -753,7 +759,7 @@
             <!-- ================================ -->
             <!-- SCROLLABLE CONTENT AREA          -->
             <!-- ================================ -->
-            <main class="flex-1 overflow-y-auto overscroll-none px-0 lg:px-8 py-0 lg:py-6 flex flex-col">
+            <main @scroll.passive="if (infoPopupOpen) infoPopupOpen = false" class="flex-1 overflow-y-auto overscroll-none px-0 lg:px-8 py-0 lg:py-6 flex flex-col">
 
                 <!-- CONTENT: Target -->
                 <div class="animate-fade-in-up w-full flex-1 flex flex-col min-h-0">
@@ -765,7 +771,7 @@
                         <div class="sm:hidden px-4 py-3 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]">
                             <!-- Tombol Kiri: Hamburger Menu -->
                             <button @click="window.self !== window.top ? window.parent.postMessage('toggleSidebar', '*') : sidebarOpen = !sidebarOpen"
-                                class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 hover:text-emerald-700 hover:bg-emerald-50/70 active:scale-95 transition-all"
+                                class="w-9 h-9 -ml-1 rounded-xl flex items-center justify-center text-gray-700 hover:text-[#0b595b] hover:bg-emerald-50/70 active:scale-95 transition-all"
                                 title="Menu Navigasi">
                                 <i class="ph-bold ph-list text-[21px]"></i>
                             </button>
@@ -835,7 +841,7 @@
                                 <div class="h-4 w-px bg-gray-200 shrink-0 mx-1"></div>
 
                                 <!-- Filter Trigger inside Container -->
-                                <div class="relative shrink-0" x-data="{ calOpen: false }" x-effect="document.body.style.overflow = filterOpen ? 'hidden' : ''">
+                                <div class="relative shrink-0" x-data="{ calOpen: false }" x-effect="document.body.style.overflow = filterOpen ? 'hidden' : ''; if(window.self !== window.top) { window.parent.postMessage({ type: 'drawerOverlay', active: filterOpen }, '*'); } else if(filterOpen) { window.history.pushState({ modal: true }, ''); }">
                                     <!-- Filter Button inside Search Bar at Right Corner -->
                                     <button @click="filterOpen = !filterOpen"
                                         style="-webkit-tap-highlight-color: transparent; outline: none;"
@@ -1197,8 +1203,8 @@
                             </div>
                         </div>
 
-            <!-- Notice HPP Info Banner -->
-            <div class="px-6 sm:px-8 py-2.5 bg-amber-50/70 border-b border-amber-100/80 flex items-center justify-between gap-2 text-xs text-amber-900 shrink-0">
+            <!-- Notice HPP Info Banner (Desktop Only) -->
+            <div class="hidden sm:flex px-6 sm:px-8 py-2.5 bg-amber-50/70 border-b border-amber-100/80 items-center justify-between gap-2 text-xs text-amber-900 shrink-0">
                 <div class="flex items-center gap-2">
                     <i class="ph-fill ph-info text-amber-500 text-sm shrink-0"></i>
                     <span>Nilai rupiah pada barang buang dihitung berdasarkan <strong>Nilai HPP</strong>, bukan harga jual.</span>
@@ -1206,7 +1212,7 @@
             </div>
 
             <!-- Laporan List (Clean 2-Column Minimalist) -->
-            <div class="flex-1 overflow-auto overscroll-none bg-white">
+            <div @scroll.passive="if (infoPopupOpen) infoPopupOpen = false" class="flex-1 overflow-auto overscroll-none bg-white">
                 <div class="divide-y divide-gray-100 w-full">
                     
                     <template x-for="(item, index) in filteredSales" :key="index">
@@ -1236,9 +1242,40 @@
             </div>
 
             <!-- Footer Summary -->
-            <div class="bg-gray-50 px-6 sm:px-8 py-4 sm:py-6 border-t border-gray-200 mt-auto">
+            <div class="bg-gray-50 px-6 sm:px-8 py-4 sm:py-6 border-t border-gray-200 mt-auto relative">
+                <!-- Mobile Popup Keterangan HPP (Melayang di atas bar TOTAL) -->
+                <div x-show="infoPopupOpen" 
+                     @click.outside="infoPopupOpen = false" 
+                     x-cloak
+                     x-transition:enter="transition cubic-bezier(0.16, 1, 0.3, 1) duration-250"
+                     x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition cubic-bezier(0.4, 0, 1, 1) duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                     class="sm:hidden absolute bottom-full left-4 right-4 mb-3 p-3.5 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-gray-200/90 text-xs text-gray-700 flex items-start gap-2.5 z-30">
+                    <div class="w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center shrink-0 mt-0.5">
+                        <i class="ph-bold ph-warning-circle text-sm"></i>
+                    </div>
+                    <div class="flex-1 text-[12px] leading-relaxed text-gray-600">
+                        Nilai rupiah pada barang buang dihitung berdasarkan <strong class="font-semibold text-gray-900">Nilai HPP</strong>, bukan harga jual.
+                    </div>
+                    <button @click="infoPopupOpen = false" class="text-gray-400 hover:text-gray-600 p-1 -mr-1 -mt-1 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="ph-bold ph-x text-xs"></i>
+                    </button>
+                </div>
+
                 <div class="flex items-center justify-between w-full">
-                    <span class="font-bold text-gray-900 text-[15px]">TOTAL</span> 
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-gray-900 text-[15px]">TOTAL</span> 
+                        <!-- Mobile Icon Lingkaran Tanda Seru -->
+                        <button @click="infoPopupOpen = !infoPopupOpen" 
+                                type="button"
+                                class="sm:hidden inline-flex items-center justify-center w-6 h-6 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200/50 active:scale-95 transition-all"
+                                title="Informasi Nilai HPP">
+                            <i class="ph-bold ph-warning-circle text-[17px]"></i>
+                        </button>
+                    </div>
                     <span class="font-bold text-gray-900 text-[15px]" x-text="'Rp ' + subTotal.toLocaleString('id-ID', { maximumFractionDigits: 0 })"></span>
                 </div>
             </div>
@@ -1609,9 +1646,13 @@
 
         function erpApp() {
             return {
+                infoPopupOpen: false,
                 isScrollActive: false,
                 scrollDebounceTimer: null,
                 handleScrollActivity() {
+                    if (this.infoPopupOpen) {
+                        this.infoPopupOpen = false;
+                    }
                     if (this.mobileSearchOpen) {
                         this.mobileSearchOpen = false;
                         document.getElementById('mobileSearchInputBottom')?.blur();

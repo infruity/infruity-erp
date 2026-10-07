@@ -60,6 +60,10 @@
             display: none !important;
         }
 
+        /* Scrollbar Hide Utility */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
         .blend-seamless {
             mix-blend-mode: multiply;
         }
@@ -120,7 +124,7 @@
             background: linear-gradient(135deg, #06281e 0%, #0F5C45 50%, #041a13 100%);
             color: #fff;
             border-radius: 22px;
-            padding: 20px 18px 18px;
+            padding: 22px 20px 20px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 10px 28px -6px rgba(15, 92, 69, 0.35), 0 3px 10px rgba(0, 0, 0, 0.12);
             position: relative;
@@ -129,6 +133,8 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            min-height: 422px;
+            transition: background 0.4s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.4s ease, box-shadow 0.4s ease;
         }
 
         .infruity-saldo-hero .pass-ambient-shine {
@@ -141,6 +147,7 @@
             border-radius: 50%;
             pointer-events: none;
             z-index: 1;
+            transition: background 0.45s ease;
         }
 
         .infruity-watermark-wrap {
@@ -1135,7 +1142,7 @@
                             <div>
                                 <div class="flex items-center justify-between mb-1.5">
                                     <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-0">Mingguan</label>
-                                    <button @click="localYear = globalCurrentYear; currentWeekIndex = weeks.length - 1; $dispatch('week-changed'); weekDropdown = false; expanded = false" class="text-[10px] text-emerald-600 hover:text-emerald-700 font-semibold flex items-center gap-1 transition-colors" title="Kembali ke Minggu Ini">
+                                    <button @click="localYear = globalCurrentYear; currentWeekIndex = 39; $dispatch('week-changed'); weekDropdown = false; expanded = false" class="text-[10px] text-emerald-600 hover:text-emerald-700 font-semibold flex items-center gap-1 transition-colors" title="Kembali ke Minggu Ini">
                                         <i class="ph-bold ph-arrows-counter-clockwise"></i> Reset
                                     </button>
                                 </div>
@@ -1246,6 +1253,421 @@
                     class="flex-1 flex flex-col lg:min-h-0">
 
                     <!-- ============================================= -->
+                    <!-- SIKLUS MINGGUAN 2026 (SABTU s/d JUMAT)        -->
+                    <!-- ============================================= -->
+                    <script>
+                        const fullMonthNamesGlobal = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                        const monthNamesGlobal = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Juli', 'Agu', 'Sep', 'Oktober', 'Nov', 'Des'];
+
+                        function formatDateRange(startDate, endDate) {
+                            if (!startDate || !endDate) return '';
+                            const d1 = new Date(startDate);
+                            const d2 = new Date(endDate);
+                            const day1 = d1.getDate().toString().padStart(2, '0');
+                            const day2 = d2.getDate().toString().padStart(2, '0');
+                            const m1 = d1.getMonth();
+                            const m2 = d2.getMonth();
+                            const y1 = d1.getFullYear();
+                            const y2 = d2.getFullYear();
+                            if (m1 === m2 && y1 === y2) {
+                                return `${day1} - ${day2} ${monthNamesGlobal[m1]} ${y1}`;
+                            }
+                            if (y1 === y2) {
+                                return `${day1} ${monthNamesGlobal[m1]} - ${day2} ${monthNamesGlobal[m2]} ${y1}`;
+                            }
+                            return `${day1} ${monthNamesGlobal[m1]} ${y1} - ${day2} ${monthNamesGlobal[m2]} ${y2}`;
+                        }
+
+                        function generate2026Weeks() {
+                            let weeksList = [];
+                            let cur = new Date(2026, 0, 3); // Sabtu, 3 Jan 2026
+                            for (let i = 0; i < 52; i++) {
+                                let wStart = new Date(cur);
+                                let wEnd = new Date(cur);
+                                wEnd.setDate(wEnd.getDate() + 6);
+                                let label = formatDateRange(wStart, wEnd);
+                                let mIdx = wStart.getMonth();
+                                let note = `Minggu ke-${i + 1} · ${fullMonthNamesGlobal[mIdx]} 2026`;
+                                if (i === 39) {
+                                    note = `Minggu ke-40 · Oktober 2026 (Periode Berjalan)`;
+                                }
+                                weeksList.push({
+                                    id: 'w' + (i + 1),
+                                    name: label,
+                                    note: note,
+                                    weekNumber: i + 1,
+                                    startDate: wStart,
+                                    endDate: wEnd
+                                });
+                                cur.setDate(cur.getDate() + 7);
+                            }
+                            return weeksList;
+                        }
+
+                        const global2026WeeksList = generate2026Weeks();
+
+                        function getMetricsForWeek(weekObj) {
+                            if (!weekObj || !weekObj.startDate) return [];
+                            const dayNames = ['Sab', 'Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum'];
+                            const fullDayNames = ['Sabtu', 'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+                            const seed = (weekObj.weekNumber || 27) * 0.05;
+                            const mult = 1 + Math.sin(seed) * 0.12;
+
+                            // 1. Pendapatan (Omset 7 Hari)
+                            const revBase = [14500000, 13200000, 9850000, 10400000, 11200000, 10100000, 12800000].map(v => Math.round(v * mult));
+                            const revTotal = revBase.reduce((a, b) => a + b, 0);
+                            const revPrev = Math.round(revTotal / 1.148);
+
+                            // 2. Pengeluaran (Beban Operasional 7 Hari ~55-58%)
+                            const expBase = [8100000, 7400000, 5600000, 5900000, 6300000, 5800000, 7100000].map(v => Math.round(v * mult));
+                            const expTotal = expBase.reduce((a, b) => a + b, 0);
+                            const expPrev = Math.round(expTotal / 1.052);
+
+                            // 3. Keuntungan (Laba Bersih 7 Hari = Pendapatan - Pengeluaran)
+                            const profitBase = revBase.map((r, i) => r - expBase[i]);
+                            const profitTotal = revTotal - expTotal;
+                            const profitPrev = revPrev - expPrev;
+
+                            // 4. Kerugian (Barang Buang / Sortir 7 Hari ~4-5%)
+                            const lossBase = [680000, 620000, 480000, 510000, 550000, 490000, 630000].map(v => Math.round(v * mult));
+                            const lossTotal = lossBase.reduce((a, b) => a + b, 0);
+                            const lossPrev = Math.round(lossTotal / 0.879);
+
+                            const configs = [
+                                {
+                                    key: 'revenue',
+                                    title: 'Total Pendapatan (Omset 7 Hari)',
+                                    chartTitle: 'Distribusi Omset Harian',
+                                    subtitle: 'Ketuk bar untuk melihat detail omset',
+                                    total: revTotal,
+                                    prev: revPrev,
+                                    trendPct: '+14,8%',
+                                    isPositive: true,
+                                    values: revBase,
+                                    gradient: 'linear-gradient(135deg, #06281e 0%, #0F5C45 50%, #041a13 100%)',
+                                    ambientShine: 'radial-gradient(circle, rgba(209, 243, 110, 0.22) 0%, rgba(242, 180, 0, 0.1) 45%, transparent 70%)',
+                                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                                    boxShadow: '0 10px 28px -6px rgba(15, 92, 69, 0.35), 0 3px 10px rgba(0, 0, 0, 0.12)',
+                                    accentColor: '#D1F36E',
+                                    subtextColor: '#A7F3D0',
+                                    barNormal: 'rgba(16, 185, 129, 0.35)',
+                                    barPeak: 'rgba(110, 231, 183, 0.90)',
+                                    trendColor: '#D1F36E'
+                                },
+                                {
+                                    key: 'expense',
+                                    title: 'Total Pengeluaran (Beban 7 Hari)',
+                                    chartTitle: 'Distribusi Beban Harian',
+                                    subtitle: 'Ketuk bar untuk melihat detail beban',
+                                    total: expTotal,
+                                    prev: expPrev,
+                                    trendPct: '+5,2%',
+                                    isPositive: false,
+                                    values: expBase,
+                                    gradient: 'linear-gradient(135deg, #2C0B10 0%, #741D27 50%, #1C0609 100%)',
+                                    ambientShine: 'radial-gradient(circle, rgba(251, 113, 133, 0.22) 0%, rgba(116, 29, 39, 0.12) 45%, transparent 70%)',
+                                    border: '1px solid rgba(253, 164, 175, 0.25)',
+                                    boxShadow: '0 10px 28px -6px rgba(116, 29, 39, 0.35), 0 3px 10px rgba(0, 0, 0, 0.12)',
+                                    accentColor: '#FDA4AF',
+                                    subtextColor: '#FECDD3',
+                                    barNormal: 'rgba(244, 63, 94, 0.35)',
+                                    barPeak: 'rgba(253, 164, 175, 0.90)',
+                                    trendColor: '#FDA4AF'
+                                },
+                                {
+                                    key: 'profit',
+                                    title: 'Total Keuntungan (Laba Bersih 7 Hari)',
+                                    chartTitle: 'Distribusi Laba Harian',
+                                    subtitle: 'Ketuk bar untuk melihat detail laba',
+                                    total: profitTotal,
+                                    prev: profitPrev,
+                                    trendPct: '+18,4%',
+                                    isPositive: true,
+                                    values: profitBase,
+                                    gradient: 'linear-gradient(135deg, #02241D 0%, #0A5C47 50%, #011A15 100%)',
+                                    ambientShine: 'radial-gradient(circle, rgba(52, 211, 153, 0.22) 0%, rgba(10, 92, 71, 0.12) 45%, transparent 70%)',
+                                    border: '1px solid rgba(167, 243, 208, 0.25)',
+                                    boxShadow: '0 10px 28px -6px rgba(10, 92, 71, 0.35), 0 3px 10px rgba(0, 0, 0, 0.12)',
+                                    accentColor: '#34D399',
+                                    subtextColor: '#A7F3D0',
+                                    barNormal: 'rgba(16, 185, 129, 0.35)',
+                                    barPeak: 'rgba(110, 231, 183, 0.90)',
+                                    trendColor: '#34D399'
+                                },
+                                {
+                                    key: 'loss',
+                                    title: 'Total Kerugian (Barang Buang 7 Hari)',
+                                    chartTitle: 'Distribusi Barang Buang',
+                                    subtitle: 'Ketuk bar untuk melihat detail barang buang',
+                                    total: lossTotal,
+                                    prev: lossPrev,
+                                    trendPct: '-12,1%',
+                                    isPositive: true,
+                                    values: lossBase,
+                                    gradient: 'linear-gradient(135deg, #30050C 0%, #881337 50%, #1E0307 100%)',
+                                    ambientShine: 'radial-gradient(circle, rgba(244, 63, 94, 0.24) 0%, rgba(136, 19, 55, 0.12) 45%, transparent 70%)',
+                                    border: '1px solid rgba(251, 113, 133, 0.28)',
+                                    boxShadow: '0 10px 28px -6px rgba(136, 19, 55, 0.40), 0 3px 10px rgba(0, 0, 0, 0.12)',
+                                    accentColor: '#F43F5E',
+                                    subtextColor: '#FFE4E6',
+                                    barNormal: 'rgba(225, 29, 72, 0.35)',
+                                    barPeak: 'rgba(251, 113, 133, 0.90)',
+                                    trendColor: '#34D399'
+                                }
+                            ];
+
+                            const isRunningWeek = weekObj.weekNumber === 40 || (weekObj.note && weekObj.note.includes('Periode Berjalan'));
+                            let todayIdx = -1;
+                            if (isRunningWeek) {
+                                const now = new Date();
+                                const start = new Date(weekObj.startDate);
+                                const diffDays = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+                                todayIdx = (diffDays >= 0 && diffDays < 7) ? diffDays : 4;
+                            }
+
+                            return configs.map(cfg => {
+                                let cur = new Date(weekObj.startDate);
+                                const maxVal = Math.max(...cfg.values);
+                                let days = [];
+                                for (let i = 0; i < 7; i++) {
+                                    let d = cur.getDate().toString().padStart(2, '0');
+                                    let m = monthNamesGlobal[cur.getMonth()];
+                                    let y = cur.getFullYear().toString().slice(-2);
+                                    let amount = cfg.values[i];
+                                    let height = Math.max(12, Math.round((amount / maxVal) * 100));
+                                    days.push({
+                                        name: dayNames[i],
+                                        fullDate: `${fullDayNames[i]}, ${d} ${m} ${y}`,
+                                        date: `${d} ${m}`,
+                                        amount: amount,
+                                        height: height,
+                                        isPeak: amount === maxVal,
+                                        isToday: (i === todayIdx)
+                                    });
+                                    cur.setDate(cur.getDate() + 1);
+                                }
+                                return {
+                                    ...cfg,
+                                    days: days,
+                                    selectedDay: todayIdx !== -1 ? todayIdx : 4
+                                };
+                            });
+                        }
+
+                        function getDaysForWeek(weekObj) {
+                            const metrics = getMetricsForWeek(weekObj);
+                            return metrics[0] ? metrics[0].days : [];
+                        }
+
+                        function cardCarouselController() {
+                            const initialMetrics = getMetricsForWeek(global2026WeeksList[39]);
+                            const initTodayIdx = initialMetrics[0] && initialMetrics[0].days ? initialMetrics[0].days.findIndex(d => d.isToday) : -1;
+                            const defaultSelected = initTodayIdx !== -1 ? initTodayIdx : 4;
+                            return {
+                                activeSlide: 0,
+                                touchStartX: 0,
+                                touchStartY: 0,
+                                isMouseDown: false,
+                                selectedDay: defaultSelected,
+                                metrics: initialMetrics,
+                                selectDay(idx) {
+                                    this.selectedDay = idx;
+                                    this.metrics.forEach(m => m.selectedDay = idx);
+                                },
+                                getTodayIndex() {
+                                    if (this.metrics && this.metrics[0] && this.metrics[0].days) {
+                                        const idx = this.metrics[0].days.findIndex(d => d.isToday);
+                                        if (idx !== -1) return idx;
+                                    }
+                                    return 4;
+                                },
+                                resetToToday() {
+                                    const todayIdx = this.getTodayIndex();
+                                    this.selectDay(todayIdx);
+                                },
+                                get currentCardStyle() {
+                                    const m = this.metrics[this.activeSlide] || this.metrics[0];
+                                    return `background: ${m.gradient}; border: ${m.border}; box-shadow: ${m.boxShadow};`;
+                                },
+                                get currentAmbientStyle() {
+                                    const m = this.metrics[this.activeSlide] || this.metrics[0];
+                                    return `background: ${m.ambientShine};`;
+                                },
+                                get currentAccentColor() {
+                                    const m = this.metrics[this.activeSlide] || this.metrics[0];
+                                    return m.accentColor;
+                                },
+                                get currentSubtextColor() {
+                                    const m = this.metrics[this.activeSlide] || this.metrics[0];
+                                    return m.subtextColor;
+                                },
+                                emitSlideChange() {
+                                    window.dispatchEvent(new CustomEvent('card1-slide-change', { detail: this.activeSlide }));
+                                },
+                                scrollToSlide(idx) {
+                                    this.activeSlide = Math.max(0, Math.min(this.metrics.length - 1, idx));
+                                    this.emitSlideChange();
+                                },
+                                touchStart(e) {
+                                    if (e.touches && e.touches[0]) {
+                                        this.touchStartX = e.touches[0].clientX;
+                                        this.touchStartY = e.touches[0].clientY;
+                                    }
+                                },
+                                touchEnd(e) {
+                                    if (!e.changedTouches || !e.changedTouches[0]) return;
+                                    const diffX = e.changedTouches[0].clientX - this.touchStartX;
+                                    const diffY = e.changedTouches[0].clientY - this.touchStartY;
+                                    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 35) {
+                                        if (diffX < 0 && this.activeSlide < this.metrics.length - 1) {
+                                            this.activeSlide++;
+                                        } else if (diffX > 0 && this.activeSlide > 0) {
+                                            this.activeSlide--;
+                                        }
+                                        this.emitSlideChange();
+                                    }
+                                },
+                                mouseDown(e) {
+                                    this.touchStartX = e.clientX;
+                                    this.touchStartY = e.clientY;
+                                    this.isMouseDown = true;
+                                },
+                                mouseUp(e) {
+                                    if (!this.isMouseDown) return;
+                                    this.isMouseDown = false;
+                                    const diffX = e.clientX - this.touchStartX;
+                                    const diffY = e.clientY - this.touchStartY;
+                                    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 35) {
+                                        if (diffX < 0 && this.activeSlide < this.metrics.length - 1) {
+                                            this.activeSlide++;
+                                        } else if (diffX > 0 && this.activeSlide > 0) {
+                                            this.activeSlide--;
+                                        }
+                                        this.emitSlideChange();
+                                    }
+                                },
+                                init() {
+                                    this.selectDay(this.selectedDay);
+                                    this.$watch('activeSlide', val => {
+                                        this.resetToToday();
+                                        window.dispatchEvent(new CustomEvent('card1-slide-change', { detail: val }));
+                                    });
+                                    this.$watch('activePeriod', val => {
+                                        const found = global2026WeeksList.find(p => p.name === val);
+                                        if (found) {
+                                            this.metrics = getMetricsForWeek(found);
+                                            const todayDay = this.metrics[0].days.findIndex(d => d.isToday);
+                                            const autoIdx = todayDay !== -1 ? todayDay : 4;
+                                            this.selectDay(autoIdx);
+                                        }
+                                    });
+                                }
+                            };
+                        }
+
+                        function card2BreakdownController() {
+                            return {
+                                activeMetricIndex: 0,
+                                sortMode: 'highest',
+                                categories: [
+                                    // 0: Pendapatan
+                                    {
+                                        key: 'revenue',
+                                        titleBase: 'Produk Pendapatan',
+                                        subHighest: '3 Kontributor omset terbesar minggu ini',
+                                        subLowest: '3 Kontributor omset terendah minggu ini',
+                                        highest: [
+                                            { name: 'Apel Fuji Super', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?w=100&h=100&fit=crop', price: 'Rp 10.500.000', pct: '41%' },
+                                            { name: 'Pisang Cavendish', img: 'https://images.unsplash.com/photo-1603833665858-e61d17a86224?w=100&h=100&fit=crop', price: 'Rp 8.200.000', pct: '32%' },
+                                            { name: 'Jeruk Pontianak', img: 'https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=100&h=100&fit=crop', price: 'Rp 5.100.000', pct: '20%' }
+                                        ],
+                                        lowest: [
+                                            { name: 'Jus Sirsak Madu', img: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=100&h=100&fit=crop', price: 'Rp 1.150.000', pct: '4,5%' },
+                                            { name: 'Lemon Tea Infused', img: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=100&h=100&fit=crop', price: 'Rp 1.820.000', pct: '7,1%' },
+                                            { name: 'Jambu Kristal Cup', img: 'https://images.unsplash.com/photo-1536511135898-752b0d49281c?w=100&h=100&fit=crop', price: 'Rp 2.450.000', pct: '9,6%' }
+                                        ]
+                                    },
+                                    // 1: Pengeluaran
+                                    {
+                                        key: 'expense',
+                                        titleBase: 'Pos Pengeluaran',
+                                        subHighest: '3 Kontributor beban terbesar minggu ini',
+                                        subLowest: '3 Kontributor beban terkecil minggu ini',
+                                        highest: [
+                                            { name: 'Belanja Stok Buah Impor', img: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=100&h=100&fit=crop', price: 'Rp 24.800.000', pct: '55%' },
+                                            { name: 'Biaya Logistik & Armada', img: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=100&h=100&fit=crop', price: 'Rp 11.200.000', pct: '25%' },
+                                            { name: 'Listrik & Cold Storage', img: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=100&h=100&fit=crop', price: 'Rp 5.400.000', pct: '12%' }
+                                        ],
+                                        lowest: [
+                                            { name: 'Plastik & Eco-Bag Toko', img: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=100&h=100&fit=crop', price: 'Rp 850.000', pct: '1,9%' },
+                                            { name: 'Pembersih & Sanitasi', img: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=100&h=100&fit=crop', price: 'Rp 1.200.000', pct: '2,6%' },
+                                            { name: 'Pantry & Konsumsi Staf', img: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=100&h=100&fit=crop', price: 'Rp 1.760.000', pct: '3,9%' }
+                                        ]
+                                    },
+                                    // 2: Keuntungan
+                                    {
+                                        key: 'profit',
+                                        titleBase: 'Produk Margin Keuntungan',
+                                        subHighest: '3 Kontributor laba bersih terbesar minggu ini',
+                                        subLowest: '3 Kontributor laba bersih terendah minggu ini',
+                                        highest: [
+                                            { name: 'Apel Fuji Super', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?w=100&h=100&fit=crop', price: 'Rp 4.725.000', pct: '45%' },
+                                            { name: 'Jeruk Pontianak', img: 'https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=100&h=100&fit=crop', price: 'Rp 2.040.000', pct: '40%' },
+                                            { name: 'Pisang Cavendish', img: 'https://images.unsplash.com/photo-1603833665858-e61d17a86224?w=100&h=100&fit=crop', price: 'Rp 2.870.000', pct: '35%' }
+                                        ],
+                                        lowest: [
+                                            { name: 'Semangka Merah', img: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=100&h=100&fit=crop', price: 'Rp 624.000', pct: '8%' },
+                                            { name: 'Melon Sky Rocket', img: 'https://images.unsplash.com/photo-1571575173700-afb9492e6a50?w=100&h=100&fit=crop', price: 'Rp 980.000', pct: '12%' },
+                                            { name: 'Pir Century Manis', img: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=100&h=100&fit=crop', price: 'Rp 1.100.000', pct: '15%' }
+                                        ]
+                                    },
+                                    // 3: Kerugian
+                                    {
+                                        key: 'loss',
+                                        titleBase: 'Produk Susut & Rusak',
+                                        subHighest: '3 Kontributor barang buang terbesar minggu ini',
+                                        subLowest: '3 Kontributor barang buang terkecil minggu ini',
+                                        highest: [
+                                            { name: 'Stroberi Ciwidey Segar', img: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=100&h=100&fit=crop', price: 'Rp 1.528.000', pct: '40%' },
+                                            { name: 'Pepaya California', img: 'https://images.unsplash.com/photo-1517282009859-f000ec3b26fe?w=100&h=100&fit=crop', price: 'Rp 1.146.000', pct: '30%' },
+                                            { name: 'Pisang Cavendish Display', img: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=100&h=100&fit=crop', price: 'Rp 764.000', pct: '20%' }
+                                        ],
+                                        lowest: [
+                                            { name: 'Semangka Non-Biji', img: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=100&h=100&fit=crop', price: 'Rp 114.000', pct: '3%' },
+                                            { name: 'Jeruk Baby Java', img: 'https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=100&h=100&fit=crop', price: 'Rp 152.000', pct: '4%' },
+                                            { name: 'Apel Fuji Super', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?w=100&h=100&fit=crop', price: 'Rp 191.000', pct: '5%' }
+                                        ]
+                                    }
+                                ],
+
+                                get currentCategory() {
+                                    return this.categories[this.activeMetricIndex] || this.categories[0];
+                                },
+                                get currentList() {
+                                    return this.sortMode === 'highest' ? this.currentCategory.highest : this.currentCategory.lowest;
+                                },
+                                get currentTitleSuffix() {
+                                    if (this.currentCategory.key === 'expense' || this.currentCategory.key === 'loss') {
+                                        return this.sortMode === 'highest' ? 'Terbesar' : 'Terkecil';
+                                    }
+                                    return this.sortMode === 'highest' ? 'Tertinggi' : 'Terendah';
+                                },
+                                get currentSubtitle() {
+                                    return this.sortMode === 'highest' ? this.currentCategory.subHighest : this.currentCategory.subLowest;
+                                },
+
+                                init() {
+                                    window.addEventListener('card1-slide-change', e => {
+                                        if (typeof e.detail === 'number') {
+                                            this.activeMetricIndex = e.detail;
+                                        }
+                                    });
+                                }
+                            };
+                        }
+                    </script>
+
+                    <!-- ============================================= -->
                     <!-- MOBILE DASHBOARD (md:hidden — mobile only)     -->
                     <!-- ============================================= -->
                     <div id="mobile-dashboard-wrap"
@@ -1254,24 +1676,23 @@
                             profileOpen: false,
                             mobileSearchOpen: false,
                             searchQuery: '',
-                            branchModalOpen: false,
-                            periodModalOpen: false,
-                            activeBranch: 'Gresik - Driyorejo (Cabang 01)',
-                            activePeriod: 'Bulan Ini (Okt 2026)',
-                            activePeriodMonth: 'Okt',
-                            activePeriodYear: '2026',
+                            filterModalOpen: false,
+                            activeBranch: 'Gresik – Driyorejo',
+                            activePeriod: '03 - 09 Oktober 2026',
+                            tempSelectedBranch: 'Gresik – Driyorejo',
+                            tempSelectedPeriod: '03 - 09 Oktober 2026',
+                            branchSearchQuery: '',
+                            periodSearchQuery: '',
                             branches: [
-                                { id: 'all', name: 'Semua Cabang', note: 'Konsolidasi 3 Cabang' },
-                                { id: 'c1', name: 'Gresik - Driyorejo (Cabang 01)', note: 'Cabang Utama' },
-                                { id: 'c2', name: 'Surabaya - Rungkut (Cabang 02)', note: 'Cabang Satelit' },
-                                { id: 'c3', name: 'Malang - Ijen (Cabang 03)', note: 'Cabang Baru' }
+                                { id: 'all', name: 'Semua Cabang', note: 'Konsolidasi Seluruh Cabang' },
+                                { id: 'c1', name: 'Gresik – Driyorejo', note: 'Cabang Utama' },
+                                { id: 'c2', name: 'Surabaya – Rungkut', note: 'Cabang Satelit' },
+                                { id: 'c3', name: 'Malang – Ijen', note: 'Cabang Baru' },
+                                { id: 'c4', name: 'Sidoarjo – Taman', note: 'Cabang Satelit' },
+                                { id: 'c5', name: 'Gresik – Manyar', note: 'Cabang Operasional' }
                             ],
-                            periods: [
-                                { id: 'today', name: 'Hari Ini (03 Okt 2026)', month: '03 Okt', year: '2026' },
-                                { id: 'w1', name: '7 Hari Terakhir', month: 'Minggu Ini', year: '2026' },
-                                { id: 'm1', name: 'Bulan Ini (Okt 2026)', month: 'Okt', year: '2026' },
-                                { id: 'y1', name: 'Tahun 2026', month: 'Tahun', year: '2026' }
-                            ]
+                            periods: global2026WeeksList,
+                            formatDateRange: formatDateRange
                          }">
 
                         <!-- Mobile Header: Frosted Glass Effect with Hamburger, Logo & Profile -->
@@ -1352,108 +1773,425 @@
                             </div>
                         </div>
 
-                        <!-- SCROLLABLE CONTENT BODY (pt-[68px] clears fixed header, pb-[96px] clears bottom dock) -->
-                        <div class="flex-1 overflow-y-auto px-4 pt-[68px] pb-[96px] space-y-3.5 relative scrollbar-hide">
+                        <!-- SCROLLABLE CONTENT BODY (pt-[84px] & pb-[104px]: Batas atas Card Utama dan batas bawah Card Kedua seragam simetris 24px) -->
+                        <div class="flex-1 overflow-y-auto px-4 pt-[84px] pb-[104px] sm:pb-[104px] space-y-3.5 relative scrollbar-hide">
 
                             <!-- KARTU UTAMA: SALDO EXECUTIVE CARD (DUPLIKASI ALA SUKOMULYO DENGAN BRAND INFRUITY) -->
-                            <div class="infruity-saldo-hero">
+                            <div class="infruity-saldo-hero"
+                                 x-data="cardCarouselController()"
+                                 @click.outside="resetToToday()"
+                                 :style="currentCardStyle">
                                 <!-- Ambient Shine Effect -->
-                                <div class="pass-ambient-shine"></div>
-
-                                <!-- Watermark Buah/Daun Engraving -->
-                                <div class="infruity-watermark-wrap">
-                                    <svg width="150" height="150" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-200">
-                                        <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
-                                        <path d="M12 6a6 6 0 0 0-6 6"/>
-                                        <circle cx="12" cy="12" r="2"/>
-                                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-                                    </svg>
-                                </div>
+                                <div class="pass-ambient-shine" :style="currentAmbientStyle"></div>
 
                                 <!-- Konten Informasi Card (Layer Depan) -->
-                                <div class="relative z-10 w-full flex flex-col justify-between h-full">
-                                    <!-- Baris Atas: Identitas Infruity & Cabang -->
-                                    <div class="flex justify-between items-start">
-                                        <div class="flex flex-col text-left cursor-pointer active:opacity-80" @click="branchModalOpen = true" title="Ganti Cabang">
-                                            <span class="text-[13.5px] font-bold text-white tracking-wide flex items-center gap-1">
-                                                <span>Infruity Fresh Juice</span>
-                                                <i class="ph-bold ph-caret-down text-[10px] text-emerald-300"></i>
-                                            </span>
-                                            <span class="text-[11px] font-medium text-emerald-200/80" x-text="activeBranch"></span>
+                                <div class="relative z-10 w-full flex-1 flex flex-col justify-between h-full">
+                                    <!-- Baris Atas: Identitas Cabang (Baris 1) & Periode (Baris 2) + Tombol Filter -->
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex flex-col text-left select-none">
+                                            <!-- Baris 1: Cabang -->
+                                            <span class="text-[13.5px] font-bold text-white tracking-wide truncate max-w-[240px]" x-text="activeBranch">Gresik – Driyorejo</span>
+                                            <!-- Baris 2: Periode (Rentang Tanggal) -->
+                                            <span class="text-[11px] font-medium mt-0.5 transition-colors duration-300" 
+                                                  :style="'color: ' + currentSubtextColor"
+                                                  x-text="'Periode : ' + activePeriod">Periode : 03 - 09 Oktober 2026</span>
                                         </div>
+                                        <!-- Tombol Filter Dashboard (Cabang & Periode) -->
+                                        <button type="button" 
+                                                @click="filterModalOpen = true; tempSelectedBranch = activeBranch; tempSelectedPeriod = activePeriod; branchSearchQuery = ''; periodSearchQuery = ''; profileOpen = false"
+                                                class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 border border-white/15 text-white/90 hover:text-white flex items-center justify-center transition-all shadow-xs cursor-pointer"
+                                                title="Filter Dashboard" aria-label="Filter Dashboard">
+                                            <span class="icon-rounded" style="font-size: 16px;">tune</span>
+                                        </button>
                                     </div>
 
-                                    <!-- Baris Utama: Total Pendapatan (Omset) -->
-                                    <div class="mt-4 mb-1 text-left">
-                                        <span class="text-[11.5px] font-medium text-emerald-200/90 block mb-1">Total Pendapatan (Omset)</span>
-                                        <div class="flex items-baseline gap-1.5">
-                                            <span class="text-[16px] font-medium text-white/90">Rp</span>
-                                            <span class="font-['Poppins'] text-[29px] font-bold text-white tracking-tight leading-none">79.456.880</span>
+                                    <!-- SWIPEABLE 4-METRIC CAROUSEL (PENDAPATAN, PENGELUARAN, KEUNTUNGAN, KERUGIAN) -->
+                                    <div class="flex-1 flex flex-col justify-between mt-3 w-full overflow-hidden">
+                                        
+                                        <!-- HORIZONTAL TRANSFORM TRACK (ABSOLUTE PAGING LOCK: 1 SWIPE = 1 HALAMAN) -->
+                                        <div x-ref="carouselTrack" 
+                                             @touchstart.passive="touchStart($event)"
+                                             @touchend.passive="touchEnd($event)"
+                                             @mousedown="mouseDown($event)"
+                                             @mouseup="mouseUp($event)"
+                                             @mouseleave="if(isMouseDown) mouseUp($event)"
+                                             class="flex w-full flex-1 touch-pan-y select-none will-change-transform cursor-grab active:cursor-grabbing"
+                                             :style="'transform: translateX(-' + (activeSlide * 100) + '%); transition: transform 0.32s cubic-bezier(0.25, 1, 0.5, 1);'">
+                                             
+                                            <template x-for="(metric, mIdx) in metrics" :key="metric.key">
+                                                <div class="w-full shrink-0 flex flex-col justify-between select-none px-0.5">
+                                                    
+                                                    <!-- Baris Utama: Headline Metrik Aktif -->
+                                                    <div class="mb-1 text-left">
+                                                        <span class="text-[11.5px] font-medium block mb-1.5 transition-colors duration-300" 
+                                                              :style="'color: ' + metric.subtextColor" 
+                                                              x-text="metric.title"></span>
+                                                        <div class="flex items-baseline gap-2">
+                                                            <span class="text-[16px] font-medium text-white/90">Rp</span>
+                                                            <span class="font-['Poppins'] text-[30px] font-bold text-white tracking-tight leading-none" 
+                                                                  x-text="metric.total.toLocaleString('id-ID')"></span>
+                                                        </div>
+                                                        <!-- Perbandingan vs Minggu Sebelumnya -->
+                                                        <div class="flex items-center gap-1.5 text-[11px] text-white/75 mt-1">
+                                                            <span class="inline-flex items-center gap-0.5 font-bold" 
+                                                                  :style="'color: ' + metric.trendColor">
+                                                                <i :class="metric.trendPct.startsWith('+') ? 'ph-fill ph-caret-up' : 'ph-fill ph-caret-down'" class="text-[11px]"></i>
+                                                                <span x-text="metric.trendPct"></span>
+                                                            </span>
+                                                            <span>vs minggu sebelumnya (<strong x-text="'Rp ' + metric.prev.toLocaleString('id-ID')"></strong>)</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- WIDGET 7 BAR CHART HARIAN (SABTU s/d JUMAT) -->
+                                                    <div class="mt-3.5 pt-3.5 border-t border-white/15 flex-1 flex flex-col justify-between">
+                                                        
+                                                        <!-- Header Grafik -->
+                                                        <div class="flex justify-between items-center mb-2">
+                                                            <div class="flex flex-col text-left">
+                                                                <span class="text-[12px] font-bold text-white tracking-wide block" x-text="metric.chartTitle"></span>
+                                                                <span class="text-[10px] transition-colors duration-300" 
+                                                                      :style="'color: ' + metric.subtextColor" 
+                                                                      x-text="metric.subtitle"></span>
+                                                            </div>
+                                                            <!-- Highlight Hari Terpilih -->
+                                                            <div class="text-right">
+                                                                <span class="text-[13px] font-bold font-['Poppins'] block leading-tight transition-colors duration-300" 
+                                                                      :style="'color: ' + metric.accentColor"
+                                                                      x-text="'Rp ' + metric.days[metric.selectedDay].amount.toLocaleString('id-ID')"></span>
+                                                                <span class="text-[9.5px] text-emerald-100/70 block mt-0.5" 
+                                                                      x-text="metric.days[metric.selectedDay].fullDate"></span>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Track 7 Bar Chart (140px Outer, 118px Tiang Bar, Zero Baseline Line) -->
+                                                        <div class="w-full flex flex-col justify-end mt-auto">
+                                                            <div class="h-[143px] w-full flex flex-col justify-end">
+                                                                <div class="h-[121px] w-full flex items-end justify-between gap-2 pb-1">
+                                                                    <template x-for="(d, dIdx) in metric.days" :key="dIdx">
+                                                                        <div class="flex-1 flex flex-col items-center h-full justify-end cursor-pointer group"
+                                                                             @click="selectDay(dIdx)">
+                                                                            <!-- Tiang Bar Kolom (2 Status: Ter-highlight Menyala vs Redup Seragam) -->
+                                                                            <div class="w-full max-w-[26px] rounded-t-md transition-all duration-300"
+                                                                                 :style="'height: ' + d.height + '%; ' + (metric.selectedDay === dIdx 
+                                                                                    ? ('background-color: ' + metric.accentColor + '; box-shadow: 0 0 12px ' + metric.accentColor + '88;') 
+                                                                                    : ('background-color: ' + metric.barNormal + ';'))"
+                                                                                 :class="metric.selectedDay === dIdx ? '' : 'hover:brightness-125'">
+                                                                            </div>
+                                                                        </div>
+                                                                    </template>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Label Sumbu X: Nama Hari & Tanggal (Today Berkedip Halus Tanpa Titik) -->
+                                                            <div class="flex justify-between items-center gap-2 mt-2 px-0.5">
+                                                                <template x-for="(d, dIdx) in metric.days" :key="dIdx">
+                                                                    <div class="flex-1 text-center cursor-pointer flex flex-col items-center" 
+                                                                         :class="d.isToday ? 'animate-pulse' : ''"
+                                                                         @click="selectDay(dIdx)">
+                                                                        <span class="text-[10.5px] font-bold block transition-colors leading-none"
+                                                                              :style="metric.selectedDay === dIdx ? ('color: ' + metric.accentColor) : 'color: rgba(255, 255, 255, 0.75)'"
+                                                                              x-text="d.name"></span>
+                                                                        <span class="text-[8.5px] block mt-0.5 transition-colors"
+                                                                              :style="metric.selectedDay === dIdx ? 'color: #ffffff; font-weight: 600;' : ('color: ' + metric.subtextColor)"
+                                                                              x-text="d.date.split(' ')[0]"></span>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+                                            </template>
+
                                         </div>
+
+                                        <!-- INDIKATOR SCROLL / 4 TITIK NAVIGASI CAROUSEL -->
+                                        <div class="flex items-center justify-center gap-1.5 mt-3.5 pt-0.5">
+                                            <template x-for="(dot, dotIdx) in metrics" :key="dotIdx">
+                                                <button type="button" 
+                                                        @click="scrollToSlide(dotIdx)" 
+                                                        class="transition-all duration-300 focus:outline-none cursor-pointer"
+                                                        :style="activeSlide === dotIdx 
+                                                            ? ('background-color: ' + currentAccentColor + '; box-shadow: 0 0 8px ' + currentAccentColor + '99;') 
+                                                            : 'background-color: rgba(255, 255, 255, 0.25);'"
+                                                        :class="activeSlide === dotIdx 
+                                                            ? 'w-5 h-1.5 rounded-full' 
+                                                            : 'w-1.5 h-1.5 rounded-full hover:bg-white/45'"
+                                                        :title="'Slide ' + (dotIdx + 1) + ': ' + dot.title" 
+                                                        :aria-label="'Slide ' + (dotIdx + 1)"></button>
+                                            </template>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- ================================ -->
-                        <!-- BOTTOM SHEET DRAWER: CABANG      -->
-                        <!-- ================================ -->
-                        <div x-show="branchModalOpen" x-cloak class="fixed inset-0 z-50 flex items-end justify-center pointer-events-auto">
-                            <div class="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity" @click="branchModalOpen = false"></div>
-                            <div class="relative bg-white rounded-t-3xl w-full max-w-md p-5 pb-8 shadow-2xl z-10 space-y-4 max-h-[80vh] overflow-y-auto"
-                                 x-transition:enter="transition ease-out duration-200"
-                                 x-transition:enter-start="translate-y-full"
-                                 x-transition:enter-end="translate-y-0"
-                                 x-transition:leave="transition ease-in duration-150"
-                                 x-transition:leave-start="translate-y-0"
-                                 x-transition:leave-end="translate-y-full">
-                                <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-2"></div>
-                                <div class="flex items-center justify-between">
-                                    <h3 class="text-base font-bold text-gray-900">Pilih Cabang</h3>
-                                    <button @click="branchModalOpen = false" class="text-gray-400 hover:text-gray-600"><i class="ph-bold ph-x text-lg"></i></button>
+                            <!-- KARTU KEDUA: BREAKDOWN REAKTIF (MENYESUAIKAN METRIK CARD 1) -->
+                            <div class="!mt-[24px] bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100"
+                                 x-data="card2BreakdownController()"
+                                 @card1-slide-change.window="activeMetricIndex = $event.detail">
+                                <div class="flex justify-between items-center mb-3">
+                                    <div class="flex flex-col text-left">
+                                        <h4 class="text-[13.5px] font-bold text-gray-900 tracking-tight flex items-center gap-1">
+                                            <span x-text="currentCategory.titleBase">Produk Pendapatan</span>
+                                            <span x-text="currentTitleSuffix" 
+                                                  :class="(currentCategory.key === 'loss' || currentCategory.key === 'expense') 
+                                                    ? (sortMode === 'highest' ? 'text-rose-700' : 'text-[#0F5C45]') 
+                                                    : (sortMode === 'highest' ? 'text-[#0F5C45]' : 'text-rose-700')"></span>
+                                        </h4>
+                                        <span class="text-[10.5px] text-gray-400" x-text="currentSubtitle"></span>
+                                    </div>
+                                    <!-- TOMBOL ICON OPSI 6: MARKET DIAGONAL ARROW (TERTINGGI ↔ TERENDAH) -->
+                                    <button type="button" 
+                                            @click="sortMode = sortMode === 'highest' ? 'lowest' : 'highest'"
+                                            class="w-7 h-7 rounded-full border transition-all duration-200 flex items-center justify-center shrink-0 active:scale-90 focus:outline-none shadow-xs cursor-pointer"
+                                            :class="(currentCategory.key === 'expense' || currentCategory.key === 'loss')
+                                                ? (sortMode === 'highest' 
+                                                    ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100' 
+                                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100')
+                                                : (sortMode === 'highest' 
+                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
+                                                    : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100')"
+                                            :title="(currentCategory.key === 'expense' || currentCategory.key === 'loss')
+                                                ? (sortMode === 'highest' ? 'Klik untuk urutkan Terkecil' : 'Klik untuk urutkan Terbesar')
+                                                : (sortMode === 'highest' ? 'Klik untuk urutkan Terendah' : 'Klik untuk urutkan Tertinggi')"
+                                            aria-label="Toggle Urutan">
+                                        <i x-show="sortMode === 'highest'" class="ph-bold ph-arrow-up-right text-sm"></i>
+                                        <i x-show="sortMode === 'lowest'" x-cloak class="ph-bold ph-arrow-down-right text-sm"></i>
+                                    </button>
                                 </div>
-                                <div class="space-y-2">
-                                    <template x-for="b in branches" :key="b.id">
-                                        <button type="button" @click="activeBranch = b.name; branchModalOpen = false"
-                                             class="w-full p-3 rounded-2xl border text-left transition flex items-center justify-between"
-                                             :class="activeBranch === b.name ? 'border-[#0F5C45] bg-emerald-50/70 text-[#0F5C45]' : 'border-gray-200 hover:bg-gray-50 text-gray-700'">
-                                            <div>
-                                                <p class="text-xs font-bold" x-text="b.name"></p>
-                                                <p class="text-[10px] text-gray-500 mt-0.5" x-text="b.note"></p>
+                                <div class="divide-y divide-gray-100">
+                                    <template x-for="(item, index) in currentList" :key="currentCategory.key + '-' + sortMode + '-' + index">
+                                        <div class="py-2.5 first:pt-1 last:pb-1 flex items-center justify-between">
+                                            <div class="flex items-center gap-3 min-w-0">
+                                                <img :src="item.img" :alt="item.name" class="w-9 h-9 rounded-xl object-cover shadow-xs border border-gray-100 shrink-0">
+                                                <div class="flex flex-col text-left min-w-0">
+                                                    <span class="text-[13px] font-semibold text-gray-800 leading-tight truncate" x-text="item.name"></span>
+                                                    <span class="text-[11.5px] font-bold mt-0.5" 
+                                                          :class="(currentCategory.key === 'loss' || currentCategory.key === 'expense')
+                                                            ? (sortMode === 'highest' ? 'text-rose-700' : 'text-gray-700')
+                                                            : (sortMode === 'highest' ? 'text-[#0F5C45]' : 'text-gray-700')" 
+                                                          x-text="item.price"></span>
+                                                </div>
                                             </div>
-                                            <i x-show="activeBranch === b.name" class="ph-bold ph-check text-base"></i>
-                                        </button>
+                                            <span class="text-[13px] font-bold shrink-0 ml-2 font-['Poppins']" 
+                                                  :class="(currentCategory.key === 'loss' || currentCategory.key === 'expense')
+                                                    ? (sortMode === 'highest' ? 'text-rose-600' : 'text-emerald-600')
+                                                    : (sortMode === 'highest' ? 'text-emerald-600' : 'text-rose-700')"
+                                                  x-text="item.pct"></span>
+                                        </div>
                                     </template>
                                 </div>
                             </div>
                         </div>
 
                         <!-- ================================ -->
-                        <!-- BOTTOM SHEET DRAWER: PERIODE     -->
+                        <!-- MOBILE FILTER BOTTOM SHEET (SERAGAM MODUL PRODUK) -->
                         <!-- ================================ -->
-                        <div x-show="periodModalOpen" x-cloak class="fixed inset-0 z-50 flex items-end justify-center pointer-events-auto">
-                            <div class="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity" @click="periodModalOpen = false"></div>
-                            <div class="relative bg-white rounded-t-3xl w-full max-w-md p-5 pb-8 shadow-2xl z-10 space-y-4 max-h-[80vh] overflow-y-auto"
-                                 x-transition:enter="transition ease-out duration-200"
+                        <div x-show="filterModalOpen" class="fixed top-0 left-0 right-0 bottom-0 z-[100] overflow-hidden flex flex-col justify-end" x-cloak>
+                            <!-- Backdrop -->
+                            <div class="absolute inset-0 bg-black/70" @click="filterModalOpen = false"
+                                 x-show="filterModalOpen"
+                                 x-transition:enter="transition-opacity ease-out duration-300"
+                                 x-transition:enter-start="opacity-0"
+                                 x-transition:enter-end="opacity-100"
+                                 x-transition:leave="transition-opacity ease-in duration-300"
+                                 x-transition:leave-start="opacity-100"
+                                 x-transition:leave-end="opacity-0"></div>
+                            
+                            <!-- Drawer Panel -->
+                            <div x-show="filterModalOpen"
+                                 x-transition:enter="transition ease-out duration-300 transform"
                                  x-transition:enter-start="translate-y-full"
                                  x-transition:enter-end="translate-y-0"
-                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave="transition ease-in duration-300 transform"
                                  x-transition:leave-start="translate-y-0"
-                                 x-transition:leave-end="translate-y-full">
-                                <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-2"></div>
-                                <div class="flex items-center justify-between">
-                                    <h3 class="text-base font-bold text-gray-900">Pilih Periode Laporan</h3>
-                                    <button @click="periodModalOpen = false" class="text-gray-400 hover:text-gray-600"><i class="ph-bold ph-x text-lg"></i></button>
+                                 x-transition:leave-end="translate-y-full"
+                                 class="w-full bg-white shadow-2xl flex flex-col max-h-[85vh] overflow-hidden rounded-t-3xl relative z-10 pb-[env(safe-area-inset-bottom)]">
+                                 
+                                <!-- Drag Handle -->
+                                <div class="w-full flex justify-center pt-3 pb-1 shrink-0" @click="filterModalOpen = false" style="cursor: pointer;">
+                                    <div class="w-16 h-1.5 bg-gray-300 rounded-full"></div>
                                 </div>
-                                <div class="space-y-2">
-                                    <template x-for="p in periods" :key="p.id">
-                                        <button type="button" @click="activePeriod = p.name; activePeriodMonth = p.month; activePeriodYear = p.year; periodModalOpen = false"
-                                             class="w-full p-3 rounded-2xl border text-left transition flex items-center justify-between"
-                                             :class="activePeriod === p.name ? 'border-[#0F5C45] bg-emerald-50/70 text-[#0F5C45]' : 'border-gray-200 hover:bg-gray-50 text-gray-700'">
-                                            <p class="text-xs font-bold" x-text="p.name"></p>
-                                            <i x-show="activePeriod === p.name" class="ph-bold ph-check text-base"></i>
-                                        </button>
-                                    </template>
+
+                                <!-- Header -->
+                                <div class="bg-white shrink-0 px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                                    <div>
+                                        <h3 class="font-bold text-gray-800 text-lg">Filter Dashboard</h3>
+                                        <p class="text-[11px] text-gray-400 mt-0.5">Pilih cabang & rentang periode laporan</p>
+                                    </div>
+                                    <button @click="filterModalOpen = false" class="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full transition-colors active:scale-95">
+                                        <i class="ph-bold ph-x"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Content -->
+                                <div class="flex-1 overflow-y-auto overscroll-none p-4 scrollbar-hide space-y-5">
+                                    <!-- 1. Cabang Toko (Seragam Produk: Card + Search Box + Custom Radio Dot) -->
+                                    <div class="px-1">
+                                        <div class="mb-2">
+                                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Cabang Toko</label>
+                                        </div>
+                                        <div class="bg-white border border-gray-200 rounded-xl flex flex-col overflow-hidden shadow-xs">
+                                            <!-- Search Box Cabang -->
+                                            <div class="relative border-b border-gray-100 shrink-0">
+                                                <i class="ph-bold ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                                                <input type="text" x-model="branchSearchQuery" placeholder="Cari cabang..." 
+                                                       class="w-full bg-transparent pl-9 pr-8 py-2.5 text-xs outline-none focus:bg-gray-50/70 transition-colors">
+                                                <button x-show="branchSearchQuery" @click="branchSearchQuery = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                                    <i class="ph-bold ph-x text-xs"></i>
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- List Cabang dengan Radio Dot Hijau (Seragam Produk + Minimalist Auto-Hide Scrollbar) -->
+                                            <div class="relative w-full"
+                                                 x-data="{ 
+                                                     isScrolling: false, 
+                                                     scrollTimeout: null, 
+                                                     scrollPos: 0, 
+                                                     thumbHeight: 24,
+                                                     updateScroll() {
+                                                         const el = $refs.scrollAreaBranch;
+                                                         if(!el) return;
+                                                         if(el.scrollHeight <= el.clientHeight) {
+                                                             this.isScrolling = false;
+                                                             return;
+                                                         }
+                                                         const trackPadding = 8;
+                                                         const availableHeight = el.clientHeight - trackPadding;
+                                                         const ratio = el.clientHeight / el.scrollHeight;
+                                                         this.thumbHeight = Math.max(Math.round(ratio * availableHeight), 22);
+                                                         
+                                                         const maxScroll = el.scrollHeight - el.clientHeight;
+                                                         const availableTrack = Math.max(0, availableHeight - this.thumbHeight);
+                                                         const progress = maxScroll > 0 ? Math.min(1, Math.max(0, el.scrollTop / maxScroll)) : 0;
+                                                         this.scrollPos = progress * availableTrack;
+                                                         
+                                                         this.isScrolling = true;
+                                                         clearTimeout(this.scrollTimeout);
+                                                         this.scrollTimeout = setTimeout(() => { this.isScrolling = false; }, 750);
+                                                     }
+                                                 }"
+                                                 x-init="$watch('branchSearchQuery', () => { $nextTick(() => updateScroll()) })">
+                                                 
+                                                <div x-ref="scrollAreaBranch" @scroll="updateScroll()" class="relative w-full max-h-[190px] overflow-y-auto overscroll-none bg-gray-50/30 divide-y divide-gray-100 scrollbar-hide">
+                                                    <template x-for="b in branches.filter(item => item.name.toLowerCase().includes(branchSearchQuery.toLowerCase()) || (item.note && item.note.toLowerCase().includes(branchSearchQuery.toLowerCase())))" :key="b.id">
+                                                        <label class="flex items-center justify-between px-3.5 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors">
+                                                            <div class="flex flex-col text-left pr-2">
+                                                                <span class="text-xs text-gray-700" :class="tempSelectedBranch === b.name ? 'font-bold text-gray-900' : 'font-medium'" x-text="b.name"></span>
+                                                                <span class="text-[10px] text-gray-400 font-normal" x-text="b.note"></span>
+                                                            </div>
+                                                            <div class="relative flex items-center justify-center w-4 h-4 shrink-0">
+                                                                <input type="radio" name="dashboardCabangFilter" :value="b.name" x-model="tempSelectedBranch" class="peer appearance-none w-4 h-4 border-2 border-gray-300 rounded-full checked:border-emerald-500 transition-colors cursor-pointer">
+                                                                <div class="absolute w-2 h-2 bg-emerald-500 rounded-full scale-0 peer-checked:scale-100 transition-transform duration-200"></div>
+                                                            </div>
+                                                        </label>
+                                                    </template>
+                                                    <div x-show="branches.filter(item => item.name.toLowerCase().includes(branchSearchQuery.toLowerCase()) || (item.note && item.note.toLowerCase().includes(branchSearchQuery.toLowerCase()))).length === 0" class="text-center py-4 text-xs text-gray-400">
+                                                        Cabang tidak ditemukan
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Custom Minimalist Auto-Hide Scrollbar Thumb (Edge Notch iOS Grey Style) -->
+                                                <div class="absolute top-0 right-0 w-[2.5px] h-full pointer-events-none py-1">
+                                                    <div class="w-full bg-gray-400/80 rounded-l-full transition-opacity duration-300 ease-in-out"
+                                                         :style="'height: ' + thumbHeight + 'px; transform: translateY(' + scrollPos + 'px);'"
+                                                         :class="isScrolling ? 'opacity-100' : 'opacity-0'">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2. Rentang Periode (Seragam Produk: Card + Search Box + Custom Radio Dot 52 Minggu) -->
+                                    <div class="px-1">
+                                        <div class="mb-2">
+                                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Rentang Periode</label>
+                                        </div>
+                                        <div class="bg-white border border-gray-200 rounded-xl flex flex-col overflow-hidden shadow-xs">
+                                            <!-- Search Box Periode -->
+                                            <div class="relative border-b border-gray-100 shrink-0">
+                                                <i class="ph-bold ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                                                <input type="text" x-model="periodSearchQuery" placeholder="Cari periode atau bulan..." 
+                                                       class="w-full bg-transparent pl-9 pr-8 py-2.5 text-xs outline-none focus:bg-gray-50/70 transition-colors">
+                                                <button x-show="periodSearchQuery" @click="periodSearchQuery = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                                    <i class="ph-bold ph-x text-xs"></i>
+                                                </button>
+                                            </div>
+
+                                            <!-- List 52 Minggu (Sabtu s/d Jumat) dengan Radio Dot Hijau (Seragam Produk + Minimalist Auto-Hide Scrollbar) -->
+                                            <div class="relative w-full"
+                                                 x-data="{ 
+                                                     isScrolling: false, 
+                                                     scrollTimeout: null, 
+                                                     scrollPos: 0, 
+                                                     thumbHeight: 24,
+                                                     updateScroll() {
+                                                         const el = $refs.scrollAreaPeriod;
+                                                         if(!el) return;
+                                                         if(el.scrollHeight <= el.clientHeight) {
+                                                             this.isScrolling = false;
+                                                             return;
+                                                         }
+                                                         const trackPadding = 8;
+                                                         const availableHeight = el.clientHeight - trackPadding;
+                                                         const ratio = el.clientHeight / el.scrollHeight;
+                                                         this.thumbHeight = Math.max(Math.round(ratio * availableHeight), 22);
+                                                         
+                                                         const maxScroll = el.scrollHeight - el.clientHeight;
+                                                         const availableTrack = Math.max(0, availableHeight - this.thumbHeight);
+                                                         const progress = maxScroll > 0 ? Math.min(1, Math.max(0, el.scrollTop / maxScroll)) : 0;
+                                                         this.scrollPos = progress * availableTrack;
+                                                         
+                                                         this.isScrolling = true;
+                                                         clearTimeout(this.scrollTimeout);
+                                                         this.scrollTimeout = setTimeout(() => { this.isScrolling = false; }, 750);
+                                                     }
+                                                 }"
+                                                 x-init="$watch('periodSearchQuery', () => { $nextTick(() => updateScroll()) })">
+                                                 
+                                                <div x-ref="scrollAreaPeriod" @scroll="updateScroll()" class="relative w-full max-h-[190px] overflow-y-auto overscroll-none bg-gray-50/30 divide-y divide-gray-100 scrollbar-hide">
+                                                    <template x-for="p in periods.filter(item => item.name.toLowerCase().includes(periodSearchQuery.toLowerCase()) || (item.note && item.note.toLowerCase().includes(periodSearchQuery.toLowerCase())))" :key="p.id">
+                                                        <label class="flex items-center justify-between px-3.5 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors">
+                                                            <div class="flex flex-col text-left pr-2">
+                                                                <span class="text-xs text-gray-700" :class="tempSelectedPeriod === p.name ? 'font-bold text-gray-900' : 'font-medium'" x-text="p.name"></span>
+                                                                <span class="text-[10px] text-gray-400 font-normal" x-text="p.note"></span>
+                                                            </div>
+                                                            <div class="relative flex items-center justify-center w-4 h-4 shrink-0">
+                                                                <input type="radio" name="dashboardPeriodeFilter" :value="p.name" x-model="tempSelectedPeriod" class="peer appearance-none w-4 h-4 border-2 border-gray-300 rounded-full checked:border-emerald-500 transition-colors cursor-pointer">
+                                                                <div class="absolute w-2 h-2 bg-emerald-500 rounded-full scale-0 peer-checked:scale-100 transition-transform duration-200"></div>
+                                                            </div>
+                                                        </label>
+                                                    </template>
+                                                    <div x-show="periods.filter(item => item.name.toLowerCase().includes(periodSearchQuery.toLowerCase()) || (item.note && item.note.toLowerCase().includes(periodSearchQuery.toLowerCase()))).length === 0" class="text-center py-4 text-xs text-gray-400">
+                                                        Periode tidak ditemukan
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Custom Minimalist Auto-Hide Scrollbar Thumb (Edge Notch iOS Grey Style) -->
+                                                <div class="absolute top-0 right-0 w-[2.5px] h-full pointer-events-none py-1">
+                                                    <div class="w-full bg-gray-400/80 rounded-l-full transition-opacity duration-300 ease-in-out"
+                                                         :style="'height: ' + thumbHeight + 'px; transform: translateY(' + scrollPos + 'px);'"
+                                                         :class="isScrolling ? 'opacity-100' : 'opacity-0'">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Footer Aksi Berpasangan: Batal & Terapkan (Seragam Produk) -->
+                                <div class="shrink-0 px-4 pt-3.5 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 bg-white flex items-center gap-2.5">
+                                    <button type="button" @click="filterModalOpen = false"
+                                            class="flex-1 h-11 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors active:scale-95 text-center cursor-pointer">
+                                        Batal
+                                    </button>
+                                    <button type="button" 
+                                            @click="activeBranch = tempSelectedBranch; activePeriod = tempSelectedPeriod; filterModalOpen = false"
+                                            class="flex-1 h-11 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold transition-all shadow-sm active:scale-95 text-center cursor-pointer">
+                                        Terapkan Filter
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1479,9 +2217,10 @@
                                 <!-- Divider -->
                                 <div class="h-4 w-px bg-gray-200 shrink-0"></div>
                                 <!-- Filter Button inside Search Bar at Right Corner -->
-                                <button @click="periodModalOpen = true; profileOpen = false"
-                                        class="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-[#0b595b] hover:bg-emerald-50 active:scale-95 transition-all shrink-0"
-                                        title="Filter Periode">
+                                <button @click="filterModalOpen = true; tempSelectedBranch = activeBranch; tempSelectedPeriod = activePeriod; branchSearchQuery = ''; periodSearchQuery = ''; profileOpen = false"
+                                        class="w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 active:scale-95"
+                                        :class="(activeBranch !== 'Gresik – Driyorejo' || activePeriod !== '03 - 09 Oktober 2026') ? 'text-[#0b595b] bg-emerald-50 ring-1 ring-emerald-200' : 'text-gray-500 hover:text-[#0b595b] hover:bg-emerald-50'"
+                                        title="Filter Dashboard">
                                     <span class="icon-rounded" style="font-size: 20px;">tune</span>
                                 </button>
                             </div>
@@ -1503,8 +2242,8 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" class="w-[24px] h-[24px]" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><rect width="8" height="10" x="13" y="11" fill="currentColor" rx="1" ry="1"/><rect width="8" height="6" x="3" y="15" fill="currentColor" rx="1" ry="1"/><rect width="8" height="6" x="13" y="3" fill="currentColor" rx="1" ry="1"/><rect width="8" height="10" x="3" y="3" fill="currentColor" rx="1" ry="1"/></svg>
                                     </a>
                                     <!-- Laporan -->
-                                    <a href="../008. Laporan/index.html"
-                                       @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '008. Laporan/index.html', menu: 'laporan' }, '*'); }"
+                                    <a href="../008. Laporan/001. Pendapatan Penjualan/index.html"
+                                       @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '008. Laporan/001. Pendapatan Penjualan/index.html', menu: 'laporan' }, '*'); }"
                                        class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
                                        title="Laporan">
                                         <span class="icon-rounded">bar_chart</span>
@@ -1526,14 +2265,12 @@
                                     <!-- 4. Profil -->
                                     <a href="../009. Pengaturan/002. Pengaturan/index.html"
                                        @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '009. Pengaturan/002. Pengaturan/index.html', menu: 'pengaturan' }, '*'); }"
-                                       class="h-full w-12 bg-transparent flex items-center justify-center rounded-full active:scale-95 transition-all group"
+                                       class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
                                        title="Profil">
-                                        <div class="w-7 h-7 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 ring-2 ring-gray-200/70 group-hover:ring-[#0b595b]/50">
-                                            <img src="https://api.dicebear.com/9.x/glass/svg?seed=Citrus"
-                                                 alt="Profil"
-                                                 class="w-full h-full rounded-full object-cover"
-                                                 onerror="this.onerror=null; this.src='https://api.dicebear.com/9.x/glass/svg?seed=Citrus';" />
-                                        </div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" class="text-[24px]" viewBox="0 0 24 24">
+                                            <path d="M0 0h24v24H0z" fill="none" />
+                                            <path fill="currentColor" fill-rule="evenodd" d="M8 7a4 4 0 1 1 8 0a4 4 0 0 1-8 0m0 6a5 5 0 0 0-5 5a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3a5 5 0 0 0-5-5z" clip-rule="evenodd" />
+                                        </svg>
                                     </a>
                                 </div>
                             </div>
@@ -2785,32 +3522,41 @@
     <!-- ================================ -->
 
     <script>
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
-                function generateRealisticDummyData() {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Juli', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+        function formatDateRange(startDate, endDate) {
+            if (!startDate || !endDate) return '';
+            const d1 = new Date(startDate);
+            const d2 = new Date(endDate);
+            const day1 = d1.getDate().toString().padStart(2, '0');
+            const day2 = d2.getDate().toString().padStart(2, '0');
+            const m1 = d1.getMonth();
+            const m2 = d2.getMonth();
+            const y1 = d1.getFullYear();
+            const y2 = d2.getFullYear();
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Juli', 'Agu', 'Sep', 'Oktober', 'Nov', 'Des'];
+            if (m1 === m2 && y1 === y2) {
+                return `${day1} - ${day2} ${monthNames[m1]} ${y1}`;
+            }
+            if (y1 === y2) {
+                return `${day1} ${monthNames[m1]} - ${day2} ${monthNames[m2]} ${y1}`;
+            }
+            return `${day1} ${monthNames[m1]} ${y1} - ${day2} ${monthNames[m2]} ${y2}`;
+        }
+
+        function generateRealisticDummyData() {
             let weeks = [];
             let weeklyData = [];
             
-            let currentDate = new Date(2022, 11, 31); // Dec 31, 2022 (Sabtu)
             let currentRevenue = 150000000;
             let currentExpenses = 75000000;
             let currentTransactions = 1200;
             
-            let today = new Date();
-            
-            while (currentDate <= today) {
-                let year = currentDate.getFullYear();
-                let weekStart = new Date(currentDate);
-                let weekEnd = new Date(currentDate);
-                weekEnd.setDate(weekEnd.getDate() + 6);
-                
-                let startStr = `${weekStart.getDate().toString().padStart(2, '0')} ${months[weekStart.getMonth()]}`;
-                let endStr = `${weekEnd.getDate().toString().padStart(2, '0')} ${months[weekEnd.getMonth()]} ${year}`;
-                let weekLabel = `${startStr} - ${endStr}`;
-                
-                if (today >= weekStart && today <= weekEnd) {
+            global2026WeeksList.forEach((wInfo, idx) => {
+                let weekLabel = wInfo.name;
+                if (idx === 39) {
                     weekLabel += ' (Minggu Ini)';
                 }
-                
                 weeks.push(weekLabel);
                 
                 // Random walk
@@ -2820,27 +3566,18 @@
                 let avgRevenue = Math.round(currentRevenue / currentTransactions);
                 let kerugianSortir = Math.max(0, currentExpenses - currentRevenue * 0.4 + (Math.random() * 5000000));
                 
-                // Generate daily data history for charts
+                // Generate daily data history for charts (Sabtu s/d Jumat)
                 let revHistory = [], expHistory = [], lossHistory = [], weekDates = [];
-                let tempDate = new Date(weekStart);
-                let todayTime = new Date().setHours(0,0,0,0);
+                let tempDate = new Date(wInfo.startDate);
                 for(let i=0; i<7; i++) {
-                    if (tempDate.getTime() > todayTime) {
-                        revHistory.push(0);
-                        expHistory.push(0);
-                        lossHistory.push(0);
-                    } else {
-                        revHistory.push(Math.round(currentRevenue / 7 * (0.8 + Math.random()*0.4)));
-                        expHistory.push(Math.round(currentExpenses / 7 * (0.8 + Math.random()*0.4)));
-                        lossHistory.push(Math.round(kerugianSortir / 7 * (0.8 + Math.random()*0.4)));
-                    }
+                    revHistory.push(Math.round(currentRevenue / 7 * (0.8 + Math.random()*0.4)));
+                    expHistory.push(Math.round(currentExpenses / 7 * (0.8 + Math.random()*0.4)));
+                    lossHistory.push(Math.round(kerugianSortir / 7 * (0.8 + Math.random()*0.4)));
                     weekDates.push(`${tempDate.getDate()} ${months[tempDate.getMonth()]}`);
                     tempDate.setDate(tempDate.getDate() + 1);
                 }
                 
                 let lastValidIdx = 6;
-                while(lastValidIdx > 0 && revHistory[lastValidIdx] === 0) lastValidIdx--;
-                
                 let trendRevenueIsUp = revHistory[lastValidIdx] >= revHistory[0];
                 let trendTransactionsIsUp = true;
                 let trendAvgRevIsUp = revHistory[lastValidIdx] >= revHistory[0];
@@ -2879,9 +3616,8 @@
                     kerugianHistory: lossHistory,
                     weekDates: weekDates
                 });
-                
-                currentDate.setDate(currentDate.getDate() + 7);
-            }
+            });
+
             return {
                 masterExpanded: false,
                 pembelianExpanded: false,
@@ -2890,17 +3626,20 @@
                 penjualanExpanded: false,
                 keuanganExpanded: false,
                 laporanExpanded: false,
-                pengaturanExpanded: false, weeks, weeklyData };
+                pengaturanExpanded: false,
+                weeks,
+                weeklyData
+            };
         }
 
-                const realisticData = generateRealisticDummyData();
+        const realisticData = generateRealisticDummyData();
         const globalWeeks = realisticData.weeks;
         const globalWeeklyData = realisticData.weeklyData;
         const globalAvailableYears = Array.from(new Set(globalWeeks.map(w => {
             let m = w.match(/\d{4}/);
             return m ? m[0] : null;
         }).filter(Boolean)));
-        const globalCurrentYear = globalAvailableYears[globalAvailableYears.length - 1];
+        const globalCurrentYear = '2026';
 
         function erpApp() {
             return {
@@ -3093,7 +3832,7 @@ sidebarCollapsed: false,
                 get trendPengeluaranIsUp() { return this.weeklyData && this.weeklyData[this.currentWeekIndex] ? this.weeklyData[this.currentWeekIndex].trendExpensesIsUp : false; },
                 get trendKerugianIsUp() { return this.weeklyData && this.weeklyData[this.currentWeekIndex] ? this.weeklyData[this.currentWeekIndex].trendKerugianSortirIsUp : false; },
                 weeks: globalWeeks,
-                currentWeekIndex: globalWeeks.length - 1,
+                currentWeekIndex: 39,
                 expandedMenus: [],
                 weeklyData: globalWeeklyData,
                 

@@ -233,7 +233,8 @@
     <script>if(window.self!==window.top){document.body.classList.add("in-iframe");}</script>
 
     <div x-data="erpApp()" x-init="setHariIni()" @resize.window.debounce.100ms="handleResize()" 
-         @message.window="if($event.data && $event.data.type === 'closeDrawer') closeHistoryDrawer();"
+         @message.window="if($event.data && $event.data.type === 'closeDrawer') { filterOpen = false; if(typeof closeHistoryDrawer === 'function') closeHistoryDrawer(); }"
+         @popstate.window="if(filterOpen) { filterOpen = false; } else if(typeof historyDrawerOpen !== 'undefined' && historyDrawerOpen && typeof closeHistoryDrawer === 'function') { closeHistoryDrawer(); }"
          class="flex h-screen w-full">
 
         <!-- MOBILE SIDEBAR OVERLAY -->
@@ -696,9 +697,11 @@
                     <div>
                         <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5">Pendapatan Penjualan</h1>
                         <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
-                            <span>Laporan</span>
+                            <a href="../index.html" 
+                               @click.prevent="window.self !== window.top ? (window.parent.history.length > 1 ? window.parent.history.back() : window.parent.postMessage({ type: 'navigate', page: '008. Laporan/index.html', menu: 'laporan' }, '*')) : (window.history.length > 1 ? window.history.back() : window.location.href = '../index.html')"
+                               class="hover:text-[#0b595b] hover:underline cursor-pointer transition-colors font-medium">Laporan</a>
                             <i class="ph ph-caret-right text-[0.55rem]"></i>
-                            <span>Pendapatan Penjualan</span>
+                            <span class="text-gray-600 font-medium">Pendapatan Penjualan</span>
                         </div>
                     </div>
                 </div>
@@ -767,7 +770,7 @@
                         <div class="sm:hidden px-4 py-3 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]">
                             <!-- Tombol Kiri: Hamburger Menu -->
                             <button @click="window.self !== window.top ? window.parent.postMessage('toggleSidebar', '*') : sidebarOpen = !sidebarOpen"
-                                class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 hover:text-emerald-700 hover:bg-emerald-50/70 active:scale-95 transition-all"
+                                class="w-9 h-9 -ml-1 rounded-xl flex items-center justify-center text-gray-700 hover:text-[#0b595b] hover:bg-emerald-50/70 active:scale-95 transition-all"
                                 title="Menu Navigasi">
                                 <i class="ph-bold ph-list text-[21px]"></i>
                             </button>
@@ -838,7 +841,7 @@
                                 <div class="h-4 w-px bg-gray-200 shrink-0 mx-1"></div>
 
                                 <!-- Filter Trigger inside Container -->
-                                <div class="relative shrink-0" x-data="{ calOpen: false }" x-effect="document.body.style.overflow = filterOpen ? 'hidden' : ''">
+                                <div class="relative shrink-0" x-data="{ calOpen: false }" x-effect="document.body.style.overflow = filterOpen ? 'hidden' : ''; if(window.self !== window.top) { window.parent.postMessage({ type: 'drawerOverlay', active: filterOpen }, '*'); } else if(filterOpen) { window.history.pushState({ modal: true }, ''); }">
                                     <!-- Filter Button inside Search Bar at Right Corner -->
                                     <button @click="filterOpen = !filterOpen"
                                         style="-webkit-tap-highlight-color: transparent; outline: none;"
