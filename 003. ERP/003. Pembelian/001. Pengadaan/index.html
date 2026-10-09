@@ -1979,6 +1979,137 @@
     <!-- ALPINE.JS APPLICATION LOGIC      -->
     <!-- ================================ -->
     <script>
+        // Generator Dummy Data Transaksi Pengadaan (> 50 items)
+        function generateInitialPengadaanOrders() {
+            const branches = [
+                'Gresik / Driyorejo - 001',
+                'Surabaya / Rungkut - 001',
+                'Surabaya / Rungkut - 002',
+                'Surabaya / Barat - 001',
+                'Sidoarjo / Waru - 001',
+                'Malang / Klojen - 001'
+            ];
+            const suppliers = [
+                { name: 'PT Buah Segar Nusantara', phone: '0812-3456-7890', city: 'Surabaya', initial: 'BS', theme: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+                { name: 'CV Agrifresh Jawa Timur', phone: '0813-8899-1234', city: 'Malang', initial: 'AF', theme: 'bg-blue-50 text-blue-700 border-blue-200' },
+                { name: 'UD Tani Makmur Subur', phone: '0821-4455-6677', city: 'Probolinggo', initial: 'TM', theme: 'bg-amber-50 text-amber-700 border-amber-200' },
+                { name: 'PT Tropika Segar Abadi', phone: '0811-9988-7766', city: 'Banyuwangi', initial: 'TS', theme: 'bg-emerald-50 text-[#0b595b] border-emerald-200' },
+                { name: 'PT Sentosa Hortikultura', phone: '0819-2233-4455', city: 'Batu', initial: 'SH', theme: 'bg-purple-50 text-purple-700 border-purple-200' },
+                { name: 'CV Sumber Buah Alami', phone: '0857-1122-3344', city: 'Pasuruan', initial: 'SB', theme: 'bg-teal-50 text-teal-700 border-teal-200' }
+            ];
+            const staffList = [
+                { name: 'Achmad Noorman Setiawan', initial: 'AN', theme: 'bg-emerald-50 text-[#0b595b] border-emerald-200' },
+                { name: 'Maharani Purwitasari', initial: 'MP', theme: 'bg-blue-50 text-blue-700 border-blue-200' },
+                { name: 'Salmatul Farida', initial: 'SF', theme: 'bg-purple-50 text-purple-700 border-purple-200' },
+                { name: 'Dwi Febbrianti', initial: 'DF', theme: 'bg-amber-50 text-amber-700 border-amber-200' },
+                { name: 'Muhammad Chamim', initial: 'MC', theme: 'bg-teal-50 text-teal-700 border-teal-200' },
+                { name: 'Al Afghani', initial: 'AA', theme: 'bg-rose-50 text-rose-700 border-rose-200' }
+            ];
+            const materials = [
+                { name: 'Buah Naga Merah', unit: 'Kg', buyPrice: 18000, sellPrice: 24000 },
+                { name: 'Mangga Harum Manis', unit: 'Kg', buyPrice: 22000, sellPrice: 30000 },
+                { name: 'Alpukat Mentega', unit: 'Kg', buyPrice: 26000, sellPrice: 35000 },
+                { name: 'Jeruk Sunkist', unit: 'Kg', buyPrice: 32000, sellPrice: 42000 },
+                { name: 'Apel Fuji', unit: 'Kg', buyPrice: 35000, sellPrice: 48000 },
+                { name: 'Pisang Cavendish', unit: 'Dus', buyPrice: 110000, sellPrice: 145000 },
+                { name: 'Melon Sky Rocket', unit: 'Kg', buyPrice: 14000, sellPrice: 19000 },
+                { name: 'Semangka Merah Non-Biji', unit: 'Kg', buyPrice: 9500, sellPrice: 13000 },
+                { name: 'Lemon California', unit: 'Kg', buyPrice: 28000, sellPrice: 38000 },
+                { name: 'Nanas Madu', unit: 'Kg', buyPrice: 12000, sellPrice: 16000 }
+            ];
+
+            const paymentMethods = ['Transfer Bank (BCA)', 'Transfer Bank (Mandiri)', 'Transfer Bank (BRI)', 'Tunai'];
+            const orders = [];
+            const baseDate = new Date(2026, 9, 9, 14, 30); // 9 Okt 2026
+
+            // Buat 65 order dummy data realistis (> 50 data)
+            for (let i = 0; i < 65; i++) {
+                const orderNum = 65 - i;
+                const poSeq = 1000 + orderNum;
+                const poNumber = 'PO-2026-' + poSeq;
+                const id = 'po-seed-' + String(orderNum).padStart(3, '0');
+
+                // Mundur tanggal: i = 0 adalah hari ini, semakin besar i semakin lampau
+                const d = new Date(baseDate.getTime() - Math.floor(i * 0.42 * 86400000));
+                const hour = 8 + ((i * 7) % 9);
+                const minute = ((i * 13) % 60);
+                const dateStr = d.toISOString().split('T')[0];
+                const timeStr = String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0');
+
+                // Tanggal estimasi tiba (ETA) 1-3 hari setelah tanggal order
+                const etaD = new Date(d.getTime() + (1 + (i % 3)) * 86400000);
+                const etaDateStr = etaD.toISOString().split('T')[0];
+
+                const branch = branches[i % branches.length];
+                const supplier = suppliers[(i * 2 + 1) % suppliers.length];
+                const staff = staffList[(i + 2) % staffList.length];
+
+                // Status: 5 order teratas ada beberapa Pending, sisanya Selesai
+                let status = 'Selesai';
+                let paymentStatus = 'Lunas';
+                if (i < 8 && (i % 3 === 0 || i % 4 === 1)) {
+                    status = 'Pending';
+                    paymentStatus = i % 2 === 0 ? 'Belum Bayar' : 'DP';
+                }
+
+                // Variasi item: 1 sampai 3 item bahan per pengadaan
+                const numItems = 1 + (i % 3);
+                const orderItems = [];
+                let subtotal = 0;
+
+                for (let j = 0; j < numItems; j++) {
+                    const mat = materials[(i + j * 3) % materials.length];
+                    const qty = mat.unit === 'Dus' ? (5 + ((i + j) % 15)) : (25 + (((i * 5) + j * 10) % 120));
+                    const itemSubtotal = qty * mat.buyPrice;
+                    subtotal += itemSubtotal;
+
+                    orderItems.push({
+                        name: mat.name,
+                        unit: mat.unit,
+                        buyPrice: mat.buyPrice,
+                        unitPrice: mat.buyPrice,
+                        price: mat.buyPrice,
+                        sellPrice: mat.sellPrice,
+                        qty: qty,
+                        subtotal: itemSubtotal
+                    });
+                }
+
+                const shippingFee = (i % 2 === 0) ? (25000 + (i % 4) * 25000) : 0;
+                const grandTotal = subtotal + shippingFee;
+                const paymentMethod = paymentMethods[i % paymentMethods.length];
+
+                orders.push({
+                    id: id,
+                    poNumber: poNumber,
+                    staffName: staff.name,
+                    staffInitial: staff.initial,
+                    staffTheme: staff.theme,
+                    supplierName: supplier.name,
+                    supplierPhone: supplier.phone,
+                    supplierCity: supplier.city,
+                    supplierInitial: supplier.initial,
+                    supplierTheme: supplier.theme,
+                    targetBranch: branch,
+                    orderDate: dateStr,
+                    date: dateStr,
+                    orderTime: timeStr,
+                    time: timeStr,
+                    etaDate: etaDateStr,
+                    eta: etaDateStr,
+                    items: orderItems,
+                    subtotal: subtotal,
+                    shippingFee: shippingFee,
+                    grandTotal: grandTotal,
+                    status: status,
+                    paymentStatus: paymentStatus,
+                    paymentMethod: paymentMethod
+                });
+            }
+
+            return orders;
+        }
+
         function erpApp() {
             return {
                 // Scroll State
@@ -2130,23 +2261,29 @@
                     targetBranch: '',
                     items: []
                 },
-                // Data Transaksi Pengadaan (Tersinkronisasi dengan LocalStorage, default kosong)
+                // Data Transaksi Pengadaan (Tersinkronisasi dengan LocalStorage, default 65 data)
                 orders: (() => {
                     try {
                         const stored = localStorage.getItem('infruity_pengadaan_orders');
                         if (stored) {
                             const parsed = JSON.parse(stored);
+                            if (Array.isArray(parsed) && parsed.length >= 50) {
+                                return parsed;
+                            }
                             if (Array.isArray(parsed)) {
-                                // Bersihkan data dummy lama (po-001 s/d po-100) jika sebelumnya tersimpan
-                                const cleaned = parsed.filter(o => !o.id || !/^po-\d{3}$/.test(String(o.id)));
-                                if (cleaned.length !== parsed.length) {
-                                    localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(cleaned));
-                                }
-                                return cleaned;
+                                const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('po-seed-'));
+                                const seeds = generateInitialPengadaanOrders();
+                                const merged = [...userCreated, ...seeds];
+                                localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(merged));
+                                return merged;
                             }
                         }
                     } catch (e) {}
-                    return [];
+                    const seeds = generateInitialPengadaanOrders();
+                    try {
+                        localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(seeds));
+                    } catch (e) {}
+                    return seeds;
                 })(),
 
                 // Filter & Pagination Logic
@@ -2817,17 +2954,25 @@
                         const stored = localStorage.getItem('infruity_pengadaan_orders');
                         if (stored) {
                             const parsed = JSON.parse(stored);
+                            if (Array.isArray(parsed) && parsed.length >= 50) {
+                                this.orders = parsed;
+                                return;
+                            }
                             if (Array.isArray(parsed)) {
-                                const cleaned = parsed.filter(o => !o.id || !/^po-\d{3}$/.test(String(o.id)));
-                                if (cleaned.length !== parsed.length) {
-                                    localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(cleaned));
-                                }
-                                this.orders = cleaned;
+                                const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('po-seed-'));
+                                const seeds = generateInitialPengadaanOrders();
+                                const merged = [...userCreated, ...seeds];
+                                localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(merged));
+                                this.orders = merged;
                                 return;
                             }
                         }
                     } catch(e) {}
-                    this.orders = [];
+                    const seeds = generateInitialPengadaanOrders();
+                    try {
+                        localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(seeds));
+                    } catch (e) {}
+                    this.orders = seeds;
                 }
             };
         }
