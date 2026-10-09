@@ -216,3 +216,5 @@ Kontribusi sangat terbuka. Silakan ikuti langkah berikut:
 ## Lisensi
 
 Proyek ini bersifat privat/proprietary. Hubungi pemilik proyek untuk informasi lebih lanjut terkait lisensi dan penggunaan.
+
+> Tes integrasi bot Telegram @InfruityyyBot
