@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Pengadaan Baru - Pembelian | ERP Portal</title>
+    <meta name="description" content="Halaman Tambah Pengadaan Bahan Baku - Sistem ERP Infruity.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F5C45',
+                        'primary-light': '#1a7d5e',
+                        'primary-dark': '#0a3d2e',
+                        brand: {
+                            DEFAULT: '#0b595b',
+                            dark: '#08484a',
+                            light: '#e6f3f3',
+                            accent: '#10b981'
+                        },
+                        accent: '#F2B400',
+                        'accent-light': '#f5c733',
+                        cream: '#F7F7F7',
+                        'cream-dark': '#EBEBEB',
+                        strawberry: '#D6455D',
+                        'strawberry-light': '#e06a7e',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Poppins"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                        'card': '0 2px 8px -2px rgba(0, 0, 0, 0.05), 0 1px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'sidebar': '4px 0 24px rgba(0,0,0,0.06)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .icon-rounded {
+            font-family: 'Material Symbols Rounded';
+            font-size: 28px;
+            font-weight: 300;
+        }
+        .icon-rounded.is-bold { font-variation-settings: 'wght' 600; }
+        .icon-inactive { font-variation-settings: 'FILL' 0, 'wght' 300; }
+        .icon-active { font-variation-settings: 'FILL' 1, 'wght' 400; }
+        [x-cloak] { display: none !important; }
+
+        /* Custom Scrollbars */
+        .sidebar-scroll::-webkit-scrollbar { width: 2px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        .sidebar-scroll { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; background: transparent !important; }
+        .scrollbar-hide { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+
+        .custom-card-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-card-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-card-scroll::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 10px; }
+        .custom-card-scroll::-webkit-scrollbar-thumb:hover { background: rgba(11, 89, 91, 0.35); }
+        .custom-card-scroll { scrollbar-width: thin; scrollbar-color: rgba(0, 0, 0, 0.12) transparent; }
+
+        /* Minimalist Dropdown Scrollbar (Dashboard Style) */
+        .minimal-scrollbar::-webkit-scrollbar { width: 3px; }
+        .minimal-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .minimal-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 3px; }
+        .minimal-scrollbar::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
+
+        .dark-sidebar { background-color: #0b595b; }
+        .dark-sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); }
+
+        .sidebar-link { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar-link.active { background-color: #d1f36e; color: #102f31 !important; font-weight: 600; box-shadow: 0 2px 6px rgba(209, 243, 110, 0.2); }
+        .sidebar-link.active i { color: #102f31 !important; }
+
+        .submenu-link { transition: all 0.2s ease; }
+        .submenu-link::before {
+            content: ''; position: absolute; left: 28px; top: 50%; transform: translateY(-50%);
+            width: 6px; height: 6px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.25);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .submenu-link:hover::before { background-color: rgba(255, 255, 255, 0.6); transform: translateY(-50%) scale(1.2); }
+        .submenu-link:hover { color: rgba(255, 255, 255, 0.9); }
+        .submenu-link.active { color: #ffffff; font-weight: 600; }
+        .submenu-link.active::before { background-color: #F2B400; transform: translateY(-50%) scale(1.2); box-shadow: 0 0 10px rgba(242, 180, 0, 0.5); }
+        .submenu-link.level-3::before { left: 44px; }
+        .chevron-rotate { transition: transform 0.25s ease; }
+        .chevron-rotate.open { transform: rotate(180deg); }
+
+        .sidebar-link, .submenu-link { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; overflow: hidden; white-space: nowrap; }
+        .sidebar-link span, .submenu-link span, .chevron-rotate { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 200px; opacity: 1; }
+        .toggle-container { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 100px; opacity: 1; overflow: hidden; }
+
+        .sidebar-collapsed { width: 5.5rem !important; }
+        .sidebar-collapsed .logo-full { display: none !important; }
+        .sidebar-collapsed .logo-mini { display: block !important; }
+        .sidebar-collapsed .sidebar-link span, .sidebar-collapsed .submenu-link span, .sidebar-collapsed .chevron-rotate, .sidebar-collapsed .toggle-container {
+            max-width: 0 !important; opacity: 0 !important; margin: 0 !important; pointer-events: none;
+        }
+        .sidebar-collapsed [x-show="openMenus.includes('master')"],
+        .sidebar-collapsed [x-show="openMenus.includes('pembelian')"],
+        .sidebar-collapsed [x-show="openMenus.includes('inventaris')"],
+        .sidebar-collapsed [x-show="openMenus.includes('penjualan')"],
+        .sidebar-collapsed [x-show="openMenus.includes('keuangan')"],
+        .sidebar-collapsed [x-show="openMenus.includes('laporan')"],
+        .sidebar-collapsed [x-show="openMenus.includes('pengaturan')"] {
+            display: none !important;
+        }
+
+        body.in-iframe aside, body.in-iframe header.standalone-header, body.in-iframe .mobile-bottom-nav-container {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-gray-800 font-sans antialiased h-screen flex flex-col justify-between overflow-x-hidden selection:bg-emerald-500 selection:text-white"
+      x-data="tambahPengadaanApp()" x-init="initApp()">
+    <script>if(window.self!==window.top){document.body.classList.add("in-iframe");}</script>
+
+    <!-- App Container -->
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- Mobile Sidebar Backdrop -->
+        <div x-show="sidebarOpen" @click="sidebarOpen = false"
+            x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-black/50 z-40 lg:hidden" x-cloak>
+        </div>
+
+        <!-- ================================ -->
+        <!-- SIDEBAR (STANDALONE ONLY)        -->
+        <!-- ================================ -->
+        <aside
+            :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', sidebarCollapsed ? 'sidebar-collapsed w-24' : 'w-64', 'dark-sidebar']"
+            class="fixed lg:static inset-y-0 left-0 z-50 shadow-none flex flex-col transition-all duration-300 lg:translate-x-0 lg:rounded-3xl lg:my-5 lg:ml-5 lg:h-[calc(100vh-2.5rem)] overflow-hidden shrink-0">
+
+            <!-- Logo & Toggle -->
+            <div class="flex items-center pt-5 pb-14"
+                :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-6'">
+                <a href="#" @click.prevent="if(sidebarCollapsed) { sidebarCollapsed = false; }"
+                    class="flex items-center logo-link transition-transform duration-200 h-9"
+                    :title="sidebarCollapsed ? 'Perbesar Sidebar' : 'Infruity ERP'">
+                    <img src="../../assets/logo/Logo Putih 1.png" alt="Infruity Logo" class="h-9 logo-full">
+                    <img src="../../assets/logo/Logo IN Putih.png" alt="Infruity Icon" class="h-8 logo-mini hidden">
+                </a>
+                <div class="flex items-center gap-2 toggle-container">
+                    <button @click="sidebarCollapsed = !sidebarCollapsed"
+                        class="hidden lg:block text-white transition hover:opacity-80 shrink-0" title="Toggle Sidebar">
+                        <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-[1.65rem] transition-transform duration-300"
+                            :class="sidebarCollapsed ? 'rotate-180' : ''">
+                            <rect x="3" y="3" width="18" height="18" rx="4" ry="4"></rect>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                        </svg>
+                    </button>
+                    <button @click="sidebarOpen = false"
+                        class="lg:hidden p-2 rounded-xl hover:bg-white/10 text-white/50 hover:text-white/80 transition">
+                        <i class="ph ph-x text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav id="sidebar-nav" class="flex-1 overflow-y-auto overscroll-none sidebar-scroll px-3 pb-4 space-y-3">
+                <!-- Dashboard -->
+                <div>
+                    <a href="../../001. Dashboard/index.html" class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-squares-four sidebar-icon text-xl w-6 text-center text-white"></i>
+                            <span class="font-medium">Dashboard</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Master -->
+                <div>
+                    <a href="../../002. Master/001. Produk/index.html" class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-database sidebar-icon text-xl w-6 text-center text-white"></i>
+                            <span class="font-medium">Master</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Pembelian (Active) -->
+                <div>
+                    <a href="index.html" class="sidebar-link active flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-shopping-cart sidebar-icon text-xl w-6 text-center !text-[#102f31]"></i>
+                            <span class="font-medium">Pembelian</span>
+                        </div>
+                    </a>
+                    <div class="mt-2 space-y-1">
+                        <a href="index.html" class="submenu-link active relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white">
+                            <span>Pengadaan</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Inventaris -->
+                <div>
+                    <a href="../../004. Inventaris/001. Stok Barang/index.html" class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-warehouse sidebar-icon text-xl w-6 text-center text-white"></i>
+                            <span class="font-medium">Inventaris</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Penjualan -->
+                <div>
+                    <a href="../../006. Penjualan/001. Kasir - POS/index.html" class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-tag sidebar-icon text-xl w-6 text-center text-white"></i>
+                            <span class="font-medium">Penjualan</span>
+                        </div>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- ================================ -->
+        <!-- MAIN CONTENT AREA                -->
+        <!-- ================================ -->
+        <div class="flex-1 flex flex-col overflow-hidden h-full relative bg-slate-100">
+
+            <!-- ================================ -->
+            <!-- TOP HEADER (SESUAI GAMBAR ACUAN) -->
+            <!-- ================================ -->
+            <div class="shrink-0 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]">
+                <!-- Tombol Kiri: Kembali (Caret Left) -->
+                <a href="index.html"
+                   @click="navigateBack($event)"
+                   class="w-9 h-9 rounded-xl flex items-center justify-center text-[#0b595b] hover:bg-emerald-50 active:scale-95 transition-all shrink-0 cursor-pointer"
+                   title="Kembali ke Daftar Pengadaan">
+                    <i class="ph-bold ph-caret-left text-[24px] text-[#0b595b]"></i>
+                </a>
+
+                <!-- Logo Infruity Center -->
+                <div class="flex items-center justify-center flex-1">
+                    <img src="../../assets/logo/Infruity Logo - 6.png" 
+                         alt="Infruity Logo" 
+                         style="height: 30px; width: auto; max-width: 150px;" 
+                         class="object-contain" 
+                         onerror="this.onerror=null; this.src='../../../001. Landing Page/000. Logo/Infruity Logo - 6.png';" />
+                </div>
+
+                <!-- Tombol Kanan: Notifikasi -->
+                <div class="relative shrink-0" x-data="{ notifOpen: false }">
+                    <button @click="notifOpen = !notifOpen"
+                            class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 hover:text-[#0b595b] hover:bg-emerald-50/70 active:scale-95 transition-all shrink-0 relative"
+                            title="Notifikasi">
+                        <i class="ph-bold ph-bell text-[21px]"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white"></span>
+                    </button>
+
+                    <!-- Backdrop for Top Notification Popup -->
+                    <div x-show="notifOpen" x-cloak @click="notifOpen = false" class="fixed inset-0 z-40 bg-transparent cursor-default pointer-events-auto"></div>
+
+                    <!-- TOP NOTIFICATION POPUP -->
+                    <div x-show="notifOpen" x-cloak @click.outside="notifOpen = false"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 -translate-y-2 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave-end="opacity-0 -translate-y-2 scale-95"
+                         class="absolute right-0 top-12 w-80 max-w-[calc(100vw-32px)] bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] border border-gray-200 overflow-hidden pointer-events-auto origin-top-right z-50">
+                        <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-[14px] text-gray-800">Notifikasi</span>
+                                <span class="bg-[#0b595b]/10 text-[#0b595b] text-[10px] font-bold px-2 py-0.5 rounded-full">2 Baru</span>
+                            </div>
+                            <button @click="notifOpen = false" class="text-xs text-gray-400 hover:text-gray-600">Tutup</button>
+                        </div>
+                        <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                            <div class="p-3.5 flex gap-3 hover:bg-black/[0.02] transition-colors">
+                                <div class="w-8 h-8 rounded-full bg-emerald-50 text-[#0b595b] flex items-center justify-center shrink-0">
+                                    <i class="ph-bold ph-package text-base"></i>
+                                </div>
+                                <div class="flex-1 min-w-0 text-left">
+                                    <p class="text-[12px] font-semibold text-gray-800 truncate">Stok Buah Naga Menipis</p>
+                                    <p class="text-[11px] text-gray-500 mt-0.5">Tersisa 5 kg di Cabang Gresik</p>
+                                    <span class="text-[10px] text-gray-400 mt-1 block">5 menit yang lalu</span>
+                                </div>
+                            </div>
+                            <div class="p-3.5 flex gap-3 hover:bg-black/[0.02] transition-colors">
+                                <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+                                    <i class="ph-bold ph-shopping-cart text-base"></i>
+                                </div>
+                                <div class="flex-1 min-w-0 text-left">
+                                    <p class="text-[12px] font-semibold text-gray-800 truncate">Pengadaan Baru Dibuat</p>
+                                    <p class="text-[11px] text-gray-500 mt-0.5">Cabang Gresik · Total Rp 2.450.000</p>
+                                    <span class="text-[10px] text-gray-400 mt-1 block">15 menit yang lalu</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- SCROLLABLE FORM KANVAS LAYAR PENGADAAN (2 CARD TERPISAH) -->
+            <!-- ======================================================== -->
+            <main class="flex-1 overflow-y-auto overscroll-none px-4 sm:px-6 pt-6 pb-6 max-w-4xl w-full mx-auto flex flex-col space-y-6 scrollbar-hide min-h-0">
+
+                <!-- CARD 1: CABANG PENERIMA (DROPDOWN MINIMALIS GAYA DASHBOARD) -->
+                <div class="bg-white rounded-2xl border border-gray-200/90 shadow-card p-4 sm:p-5 transition-all relative z-30 shrink-0"
+                     x-data="{ branchOpen: false }">
+                    <label class="text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                        <span>Cabang</span>
+                        <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <!-- Trigger Button Kustom -->
+                        <button type="button" @click="branchOpen = !branchOpen"
+                                class="w-full h-11 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl px-4 flex items-center justify-between text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition cursor-pointer shadow-2xs text-left group">
+                            <span class="truncate pr-2" :class="form.targetBranch ? 'text-gray-800 font-semibold' : 'text-gray-400 font-normal'" x-text="form.targetBranch || 'Pilih Cabang'"></span>
+                            <i class="ph-bold ph-caret-down text-gray-400 group-hover:text-gray-600 text-sm shrink-0 transition-transform duration-200"
+                               :class="branchOpen ? 'rotate-180 text-[#0b595b]' : ''"></i>
+                        </button>
+
+                        <!-- Dropdown Menu Mengambang (Gaya Bersih Sesuai Dashboard) -->
+                        <div x-show="branchOpen" @click.outside="branchOpen = false" x-cloak
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-50 max-h-56 overflow-y-auto overscroll-none minimal-scrollbar">
+                             <template x-for="branch in branches" :key="branch">
+                                 <div @click="form.targetBranch = branch; branchOpen = false"
+                                      class="px-3.5 py-2.5 text-xs sm:text-[13px] cursor-pointer transition-colors flex justify-between items-center group"
+                                      :class="form.targetBranch === branch ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-700 font-medium hover:bg-gray-50'">
+                                     <span x-text="branch"></span>
+                                     <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="form.targetBranch === branch"></i>
+                                 </div>
+                             </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2: DAFTAR BELANJA (OPSI B - PURE MINIMALIST CARD - TINGGI MENYESUAIKAN SIMETRIS) -->
+                <div class="bg-white rounded-2xl border border-gray-200/90 shadow-card overflow-hidden flex-1 min-h-[220px] flex flex-col transition-all">
+
+                    <!-- HEADER CARD 2 -->
+                    <div class="bg-white border-b border-gray-100 px-5 sm:px-6 py-4 flex items-center justify-between shrink-0">
+                        <div>
+                            <span class="text-sm font-extrabold text-gray-900 tracking-tight">Daftar Belanja</span>
+                        </div>
+                        <button type="button" @click="openAddItemModal()"
+                                class="text-xs font-bold text-[#0b595b] hover:text-[#08484a] flex items-center gap-1 bg-emerald-50/80 hover:bg-emerald-100/80 px-3.5 py-1.5 rounded-lg border border-emerald-200/80 transition shadow-2xs active:scale-95">
+                            <span>+ Tambah Item</span>
+                        </button>
+                    </div>
+
+                    <!-- BODY CARD 2: KONTEN LIST ATAU EMPTY STATE -->
+                    <div class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-card-scroll">
+
+                        <!-- STATE 1: EMPTY STATE (KETIKA DAFTAR KOSONG - PERSIS SEPERTI GAMBAR ACUAN) -->
+                        <div x-show="form.items.length === 0" class="h-full flex flex-col items-center justify-center text-center p-6 my-auto min-h-[180px]">
+                            <h3 class="text-sm sm:text-base font-bold text-gray-800">
+                                Belum ada produk didaftar belanja
+                            </h3>
+                            <p class="text-xs sm:text-sm text-gray-500 mt-1.5">
+                                Klik tombol <button type="button" @click="openAddItemModal()" class="font-semibold text-[#0b595b] hover:underline inline-flex items-center gap-0.5">+ Tambah</button> untuk melakukan input
+                            </p>
+                        </div>
+
+                        <!-- STATE 2: LIST PRODUK TERISI (2 BARIS SESUAI INSTRUKSI) -->
+                        <div x-show="form.items.length > 0">
+                            <template x-for="(item, idx) in form.items" :key="idx">
+                                <div @click="openEditItemModal(idx)"
+                                     :class="idx === 0 ? 'pt-1 pb-3' : 'border-t border-gray-100 py-3'"
+                                     class="flex flex-col justify-center gap-1 cursor-pointer hover:bg-gray-50/80 -mx-2 px-2.5 rounded-lg transition-colors group">
+                                    <!-- BARIS 1: Nama Produk (Kiri) & Total Belanja (Kanan) -->
+                                    <div class="flex items-center justify-between gap-2">
+                                        <h4 class="text-sm font-bold text-gray-900 truncate group-hover:text-[#0b595b] transition-colors" x-text="item.name"></h4>
+                                        <span class="text-xs sm:text-sm font-extrabold text-[#0b595b] shrink-0" 
+                                              x-text="'Rp ' + ((item.qty || 0) * (item.buyPrice || 0)).toLocaleString('id-ID')"></span>
+                                    </div>
+                                    
+                                    <!-- BARIS 2: Harga Satuan (Kiri) & Kuantitas (Kanan) -->
+                                    <div class="flex items-center justify-between gap-2 mt-0.5">
+                                        <span class="text-xs font-medium text-gray-500" 
+                                              x-text="'Rp ' + (item.buyPrice || 0).toLocaleString('id-ID') + ' / ' + (item.unit || 'Kg')"></span>
+                                        <span class="text-xs font-semibold text-gray-600 shrink-0 text-right" 
+                                              x-text="((item.qty || 0).toLocaleString('id-ID')) + ' ' + (item.unit || 'Kg')"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </main>
+
+            <!-- ======================================================== -->
+            <!-- BOTTOM HEADER (DOCKING RAPAT KE BAWAH - SESUAI SCREENSHOT) -->
+            <!-- ======================================================== -->
+            <div class="shrink-0 bg-white border-t border-gray-100 px-4 sm:px-6 pt-3.5 pb-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+                <div class="max-w-4xl w-full mx-auto">
+                    <!-- Baris Total Belanja -->
+                    <div class="flex items-center justify-between pb-3.5 border-b border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base sm:text-lg font-extrabold text-gray-900 leading-tight">Total Belanja</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#d1fae5] text-[#065f46] leading-tight"
+                                  x-text="form.items.length"></span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-base sm:text-lg font-extrabold text-[#0b595b] leading-tight"
+                                  x-text="'Rp ' + calculateGrandTotal().toLocaleString('id-ID')"></span>
+                        </div>
+                    </div>
+
+                    <!-- 2 Tombol Aksi Berdampingan (Opsi 3: Simpan Perubahan & Selesaikan Transaksi) -->
+                    <div class="flex items-center gap-3 pt-3.5">
+                        <button type="button" @click="saveDraft()"
+                                class="flex-1 h-11 px-3 sm:px-6 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-800 text-xs sm:text-sm font-bold shadow-2xs transition active:scale-95 flex items-center justify-center">
+                            <span x-text="isEditMode ? 'Simpan Perubahan' : 'Simpan sebagai Draf'"></span>
+                        </button>
+                        <button type="button" @click="submitPengadaan()"
+                                class="flex-1 h-11 px-3 sm:px-7 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0b595b]/15 transition active:scale-95 flex items-center justify-center">
+                            <span>Selesaikan Transaksi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL TAMBAH / EDIT ITEM PRODUK                          -->
+    <!-- ======================================================== -->
+    <div x-show="itemModalOpen" x-cloak
+         @click.self="itemModalOpen = false"
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+        
+        <div @click.outside="itemModalOpen = false"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-gray-200 overflow-hidden">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/70">
+                <h3 class="text-sm font-bold text-gray-900" x-text="modalMode === 'add' ? 'Tambah Item Belanja' : 'Edit Item Belanja'"></h3>
+                <button type="button" @click="itemModalOpen = false" class="text-gray-400 hover:text-gray-700 text-sm font-bold p-1">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Modal Body Form -->
+            <div class="p-6 space-y-4">
+                <!-- Pilih Bahan (Gaya Dashboard Dropdown Kustom) -->
+                <div class="relative z-30" x-data="{ prodOpen: false }">
+                    <label class="text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                        <span>Nama Produk / Bahan</span>
+                        <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <!-- Trigger Button Kustom -->
+                        <button type="button" @click="prodOpen = !prodOpen"
+                                class="w-full h-10 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl px-3.5 flex items-center justify-between text-xs outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition cursor-pointer shadow-2xs text-left group">
+                            <span class="truncate pr-2" :class="modalItem.name ? 'text-gray-800 font-semibold' : 'text-gray-400 font-normal'"
+                                  x-text="modalItem.name ? modalItem.name + (modalItem.unit ? ' (' + modalItem.unit + ')' : '') : 'Pilih Produk / Bahan'"></span>
+                            <i class="ph-bold ph-caret-down text-gray-400 group-hover:text-gray-600 text-xs shrink-0 transition-transform duration-200"
+                               :class="prodOpen ? 'rotate-180 text-[#0b595b]' : ''"></i>
+                        </button>
+
+                        <!-- Dropdown Menu Mengambang (Gaya Bersih Sesuai Dashboard) -->
+                        <div x-show="prodOpen" @click.outside="prodOpen = false" x-cloak
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-xl py-1 z-50 max-h-52 overflow-y-auto overscroll-none minimal-scrollbar">
+                             <template x-for="item in masterItems" :key="item.name">
+                                 <div @click="selectModalProduct(item); prodOpen = false"
+                                      class="px-3.5 py-2.5 text-xs cursor-pointer transition-colors flex justify-between items-center group"
+                                      :class="modalItem.name === item.name ? 'bg-emerald-50/70 text-emerald-700 font-semibold' : 'text-gray-700 font-medium hover:bg-gray-50'">
+                                     <span x-text="item.name + (item.unit ? ' (' + item.unit + ')' : '')"></span>
+                                     <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="modalItem.name === item.name"></i>
+                                 </div>
+                             </template>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Kuantitas (Auto Format Titik Ribuan) -->
+                    <div>
+                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">
+                            Kuantitas <span class="text-gray-400 font-normal" x-show="modalItem.unit" x-text="'(' + modalItem.unit + ')'"></span>
+                        </label>
+                        <input type="text" inputmode="numeric"
+                               :value="formatRupiahInput(modalItem.qty)"
+                               @input="handlePriceInput('qty', $event)"
+                               placeholder="0"
+                               class="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-emerald-500 placeholder:text-gray-300 placeholder:font-normal">
+                    </div>
+
+                    <!-- Harga Beli Satuan (Auto Format Titik Ribuan) -->
+                    <div>
+                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">Harga Beli / Satuan</label>
+                        <input type="text" inputmode="numeric"
+                               :value="formatRupiahInput(modalItem.buyPrice)"
+                               @input="handlePriceInput('buyPrice', $event)"
+                               placeholder="0"
+                               class="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-emerald-500 placeholder:text-gray-300 placeholder:font-normal">
+                    </div>
+                </div>
+
+                <!-- Baris Harga Jual & Margin (%) Berdampingan -->
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Harga Jual (Auto Format Titik Ribuan) -->
+                    <div>
+                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">Harga Jual</label>
+                        <input type="text" inputmode="numeric"
+                               :value="formatRupiahInput(modalItem.sellPrice)"
+                               @input="handlePriceInput('sellPrice', $event)"
+                               placeholder="0"
+                               class="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-emerald-500 placeholder:text-gray-300 placeholder:font-normal">
+                    </div>
+
+                    <!-- Margin (%) Disamping Harga Jual (Otomatis & Readonly) -->
+                    <div>
+                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">Margin (%)</label>
+                        <input type="text" readonly
+                               :value="modalItem.marginPercent !== null && modalItem.marginPercent !== undefined ? modalItem.marginPercent + '%' : '0%'"
+                               class="w-full h-10 px-3 bg-gray-100/80 border border-gray-200 rounded-xl text-xs font-bold text-emerald-700 outline-none cursor-default shadow-2xs select-none">
+                    </div>
+                </div>
+
+                <!-- Total Estimasi -->
+                <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 flex items-center justify-between text-xs">
+                    <span class="font-semibold text-emerald-800">Total Harga Item</span>
+                    <span class="font-extrabold text-[#0b595b] text-sm"
+                          x-text="'Rp ' + ((modalItem.qty || 0) * (modalItem.buyPrice || 0)).toLocaleString('id-ID')"></span>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-3.5 bg-gray-50/70 border-t border-gray-100 flex items-center justify-between gap-2">
+                <button type="button" x-show="modalMode === 'edit'" @click="deleteEditingItem()"
+                        class="text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-xl transition">
+                    Hapus Item
+                </button>
+                <div class="flex items-center gap-2 ml-auto">
+                    <button type="button" @click="itemModalOpen = false"
+                            class="px-4 py-2 rounded-xl border border-gray-300 text-xs font-bold text-gray-700 hover:bg-gray-100 transition">
+                        Batal
+                    </button>
+                    <button type="button" @click="saveModalItem()"
+                            class="px-5 py-2 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-sm transition">
+                        Simpan Item
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL KONFIRMASI: SELESAIKAN TRANSAKSI                   -->
+    <!-- ======================================================== -->
+    <div x-show="confirmModalOpen" class="fixed inset-0 z-[130] flex items-center justify-center p-4" x-cloak>
+        <!-- Backdrop -->
+        <div x-show="confirmModalOpen"
+             x-transition:enter="transition-opacity ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="confirmModalOpen = false"
+             class="absolute inset-0 bg-black/50 backdrop-blur-xs"></div>
+
+        <!-- Modal Card -->
+        <div x-show="confirmModalOpen"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-90 translate-y-3"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-90 translate-y-3"
+             @click.outside="confirmModalOpen = false"
+             class="relative z-10 bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-sm overflow-hidden p-6 text-center">
+            
+            <!-- Judul & Pesan Sesuai Instruksi User -->
+            <h4 class="text-base font-bold text-gray-900 mb-1.5">Selesaikan Transaksi?</h4>
+            <p class="text-xs text-gray-500 leading-relaxed mb-4">
+                Apakah transaksi sudah sesuai dan<br>tidak ada tambahan lagi?
+            </p>
+
+            <!-- Ringkasan Singkat Transaksi -->
+            <div class="bg-gray-50 rounded-2xl p-3.5 border border-gray-100 mb-5 text-left text-xs space-y-1.5">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-500 font-medium">Cabang Tujuan</span>
+                    <span class="font-bold text-gray-800 truncate max-w-[170px]" x-text="form.targetBranch"></span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-500 font-medium">Jumlah Item</span>
+                    <span class="font-bold text-gray-800" x-text="(form.items.length).toFixed(2).replace('.', ',')"></span>
+                </div>
+                <div class="flex items-center justify-between pt-1.5 border-t border-gray-200/60">
+                    <span class="font-semibold text-gray-700">Total Belanja</span>
+                    <span class="font-extrabold text-[#0b595b] text-sm" x-text="'Rp ' + calculateGrandTotal().toLocaleString('id-ID')"></span>
+                </div>
+            </div>
+
+            <!-- 2 Tombol Aksi: Batal & Selesaikan Sesuai Instruksi User -->
+            <div class="flex items-center gap-2.5">
+                <button type="button" @click="confirmModalOpen = false"
+                        class="flex-1 h-10 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition">
+                    Batal
+                </button>
+                <button type="button" @click="executeSubmitPengadaan()"
+                        class="flex-1 h-10 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-md shadow-[#0b595b]/20 active:scale-95 transition flex items-center justify-center">
+                    Selesaikan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT APPLICATION -->
+    <script>
+        function tambahPengadaanApp() {
+            return {
+                sidebarOpen: false,
+                sidebarCollapsed: false,
+                openMenus: ['pembelian'],
+
+                // Profil Pengguna & Cabang Hak Akses
+                currentUser: {
+                    name: 'Dimas Pratama',
+                    role: 'Admin Cabang',
+                    // Cabang yang dimiliki / ditugaskan ke user (contoh user memiliki 3 cabang)
+                    branches: [
+                        'Surabaya / Rungkut - 001',
+                        'Gresik / Driyorejo - 001',
+                        'Sidoarjo / Waru - 001'
+                    ]
+                },
+
+                form: {
+                    targetBranch: '', // Diisi otomatis saat init() sesuai cabang user
+                    items: [] // Kondisi awal kosong
+                },
+
+                // Mode Edit Transaksi Pengadaan
+                isEditMode: false,
+                editingOrder: null,
+
+                // List cabang yang dapat dipilih user (diurutkan sesuai abjad A-Z)
+                branches: [],
+
+                init() {
+                    this.initBranchDefault();
+                    this.initEditMode();
+                },
+
+                // Inisialisasi Mode Edit jika membuka form dari tombol Edit Pengadaan
+                initEditMode() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const queryId = urlParams.get('id');
+                    let editOrder = null;
+
+                    // 1. Coba ambil dari sessionStorage / localStorage 'infruity_edit_order'
+                    try {
+                        const storedEdit = sessionStorage.getItem('infruity_edit_order') || localStorage.getItem('infruity_edit_order');
+                        if (storedEdit) {
+                            const parsed = JSON.parse(storedEdit);
+                            if (parsed && (!queryId || String(parsed.id) === String(queryId) || String(parsed.poNumber) === String(queryId))) {
+                                editOrder = parsed;
+                            }
+                        }
+                    } catch(e) {}
+
+                    // 2. Jika belum ditemukan tapi ada queryId, cari dari orders tersimpan di infruity_pengadaan_orders
+                    if (!editOrder && queryId) {
+                        try {
+                            const storedOrders = localStorage.getItem('infruity_pengadaan_orders');
+                            if (storedOrders) {
+                                const orders = JSON.parse(storedOrders);
+                                if (Array.isArray(orders)) {
+                                    editOrder = orders.find(o => String(o.id) === String(queryId) || String(o.poNumber) === String(queryId));
+                                }
+                            }
+                        } catch(e) {}
+                    }
+
+                    // 3. Jika editOrder ada, muat datanya ke dalam form!
+                    if (editOrder) {
+                        this.isEditMode = true;
+                        this.editingOrder = editOrder;
+
+                        // Set cabang target
+                        if (editOrder.targetBranch) {
+                            if (!this.branches.includes(editOrder.targetBranch)) {
+                                this.branches.push(editOrder.targetBranch);
+                                this.branches.sort((a, b) => a.localeCompare('id', { sensitivity: 'base' }));
+                            }
+                            this.form.targetBranch = editOrder.targetBranch;
+                        }
+
+                        // Set items
+                        if (Array.isArray(editOrder.items) && editOrder.items.length > 0) {
+                            this.form.items = editOrder.items.map(it => {
+                                const buyPrice = Number(it.buyPrice || it.unitPrice || it.price || 0);
+                                const qty = Number(it.qty || 1);
+                                let sellPrice = Number(it.sellPrice || 0);
+
+                                if (!sellPrice) {
+                                    const foundMaster = this.masterItems.find(m => m.name.toLowerCase() === (it.name || '').toLowerCase());
+                                    sellPrice = foundMaster ? foundMaster.sellPrice : Math.round(buyPrice * 1.3);
+                                }
+
+                                let marginPercent = it.marginPercent;
+                                if (marginPercent === undefined || marginPercent === null) {
+                                    marginPercent = sellPrice > 0 ? Number((((sellPrice - buyPrice) / sellPrice) * 100).toFixed(1)) : 0;
+                                }
+
+                                return {
+                                    productId: it.productId || (this.masterItems.find(m => m.name.toLowerCase() === (it.name || '').toLowerCase())?.id) || null,
+                                    name: it.name || 'Produk',
+                                    unit: it.unit || 'Kg',
+                                    buyPrice: buyPrice,
+                                    sellPrice: sellPrice,
+                                    marginPercent: marginPercent,
+                                    qty: qty
+                                };
+                            });
+                        }
+                    }
+                },
+
+                // Inisialisasi default cabang user:
+                // - Jika user punya 1 cabang -> default cabang tersebut
+                // - Jika user punya 2 cabang atau lebih -> default sesuai abjad teratas (A-Z)
+                initBranchDefault() {
+                    let userBranches = [...(this.currentUser.branches || [])];
+                    try {
+                        const storedUser = localStorage.getItem('infruity_current_user');
+                        if (storedUser) {
+                            const parsed = JSON.parse(storedUser);
+                            if (parsed.branches && Array.isArray(parsed.branches) && parsed.branches.length > 0) {
+                                userBranches = [...parsed.branches];
+                            }
+                        }
+                    } catch (e) {}
+
+                    // Fallback jika belum ada cabang
+                    if (!userBranches || userBranches.length === 0) {
+                        userBranches = [
+                            'Gresik / Driyorejo - 001',
+                            'Surabaya / Rungkut - 001',
+                            'Surabaya / Rungkut - 002',
+                            'Surabaya / Barat - 001',
+                            'Sidoarjo / Waru - 001',
+                            'Malang / Klojen - 001'
+                        ];
+                    }
+
+                    // Urutkan daftar cabang sesuai abjad (A-Z)
+                    this.branches = userBranches.sort((a, b) => a.localeCompare('id', { sensitivity: 'base' }));
+
+                    // Set default cabang: jika ada parameter URL 'branch', prioritaskan; jika tidak, ambil cabang pertama sesuai abjad
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const queryBranch = urlParams.get('branch');
+                    if (queryBranch && this.branches.includes(queryBranch)) {
+                        this.form.targetBranch = queryBranch;
+                    } else if (this.branches.length > 0) {
+                        this.form.targetBranch = this.branches[0];
+                    }
+                },
+
+                // Master Bahan Baku (dengan Harga Jual default dari Sub Modul Produk)
+                masterItems: [
+                    { id: 1, name: 'Buah Naga Merah', unit: 'Kg', buyPrice: 18000, sellPrice: 24000 },
+                    { id: 2, name: 'Alpukat Mentega Super', unit: 'Kg', buyPrice: 26000, sellPrice: 35000 },
+                    { id: 3, name: 'Jeruk Sunkist Impor', unit: 'Kg', buyPrice: 32000, sellPrice: 42000 },
+                    { id: 4, name: 'Melon Sky Rocket', unit: 'Kg', buyPrice: 14000, sellPrice: 20000 },
+                    { id: 5, name: 'Semangka Non Biji', unit: 'Kg', buyPrice: 8500, sellPrice: 12000 },
+                    { id: 6, name: 'Gula Pasir Kristal', unit: 'Kg', buyPrice: 17500, sellPrice: 22000 },
+                    { id: 7, name: 'Susu Kental Manis Carnation', unit: 'Kaleng', buyPrice: 12500, sellPrice: 15500 },
+                    { id: 8, name: 'Cup Plastik 16oz', unit: 'Pcs', buyPrice: 450, sellPrice: 700 }
+                ],
+
+                // Modal State
+                itemModalOpen: false,
+                modalMode: 'add',
+                editingIndex: null,
+                confirmModalOpen: false, // State modal konfirmasi selesaikan transaksi
+                modalItem: {
+                    productId: null,
+                    name: '',
+                    unit: '',
+                    buyPrice: null,
+                    sellPrice: null,
+                    marginPercent: null,
+                    qty: null
+                },
+
+                initApp() {
+                    if (window.self !== window.top) {
+                        document.body.classList.add("in-iframe");
+                    }
+                },
+
+                calculateGrandTotal() {
+                    return this.form.items.reduce((acc, item) => acc + ((item.qty || 0) * (item.buyPrice || 0)), 0);
+                },
+
+                openAddItemModal() {
+                    this.modalMode = 'add';
+                    this.editingIndex = null;
+                    this.modalItem = {
+                        productId: null,
+                        name: '',
+                        unit: '',
+                        buyPrice: null,
+                        sellPrice: null,
+                        marginPercent: null,
+                        qty: null
+                    };
+                    this.itemModalOpen = true;
+                },
+
+                openEditItemModal(idx) {
+                    this.modalMode = 'edit';
+                    this.editingIndex = idx;
+                    this.modalItem = { ...this.form.items[idx] };
+                    this.updateModalMargin();
+                    this.itemModalOpen = true;
+                },
+
+                selectModalProduct(item) {
+                    this.modalItem.productId = item.id;
+                    this.modalItem.name = item.name;
+                    this.modalItem.unit = item.unit;
+                    this.modalItem.buyPrice = item.buyPrice;
+                    this.modalItem.sellPrice = item.sellPrice; // Default dari Sub Modul Produk
+                    if (!this.modalItem.qty || this.modalItem.qty <= 0) {
+                        this.modalItem.qty = 1;
+                    }
+                    this.updateModalMargin();
+                },
+
+                // Format angka rupiah ribuan (misal: 1000000 -> 1.000.000)
+                formatRupiahInput(val) {
+                    if (val === null || val === undefined || val === '') return '';
+                    const num = typeof val === 'number' ? val : parseInt(String(val).replace(/\D/g, ''), 10);
+                    return isNaN(num) || num === 0 ? '' : num.toLocaleString('id-ID');
+                },
+
+                // Handle input harga dengan format titik ribuan otomatis saat mengetik
+                handlePriceInput(field, event) {
+                    const raw = event.target.value.replace(/\D/g, '');
+                    const num = raw ? parseInt(raw, 10) : 0;
+                    this.modalItem[field] = num;
+                    event.target.value = num > 0 ? num.toLocaleString('id-ID') : '';
+                    this.updateModalMargin();
+                },
+
+                // Hitung otomatis Margin (%) dari (Harga Jual - Harga Beli) / Harga Jual * 100
+                updateModalMargin() {
+                    const buy = this.modalItem.buyPrice || 0;
+                    const sell = this.modalItem.sellPrice || 0;
+                    if (sell > 0) {
+                        this.modalItem.marginPercent = Number((((sell - buy) / sell) * 100).toFixed(1));
+                    } else {
+                        this.modalItem.marginPercent = 0;
+                    }
+                },
+
+                saveModalItem() {
+                    if (!this.modalItem.name) {
+                        alert('Silakan pilih produk / bahan terlebih dahulu');
+                        return;
+                    }
+                    if (!this.modalItem.qty || this.modalItem.qty <= 0) {
+                        alert('Silakan masukkan kuantitas');
+                        return;
+                    }
+                    if (this.modalItem.buyPrice === null || this.modalItem.buyPrice === undefined || this.modalItem.buyPrice === '') {
+                        alert('Silakan masukkan harga beli / satuan');
+                        return;
+                    }
+
+                    // Sinkronisasi perubahan harga ke Sub Modul Produk
+                    if (this.modalItem.productId) {
+                        const targetProd = this.masterItems.find(p => p.id === this.modalItem.productId);
+                        if (targetProd) {
+                            targetProd.sellPrice = this.modalItem.sellPrice;
+                            if (this.modalItem.buyPrice) targetProd.buyPrice = this.modalItem.buyPrice;
+                        }
+                    }
+
+                    // Simpan ke daftar belanja
+                    if (this.modalMode === 'add') {
+                        this.form.items.push({ ...this.modalItem });
+
+                        // Reset input modal polosan agar siap input produk selanjutnya (modal tetap stay/terbuka)
+                        this.modalItem = {
+                            productId: null,
+                            name: '',
+                            unit: '',
+                            qty: null,
+                            buyPrice: null,
+                            sellPrice: null,
+                            marginPercent: null
+                        };
+                        // Note: itemModalOpen tetap true (tidak ditutup)
+                    } else if (this.editingIndex !== null) {
+                        this.form.items[this.editingIndex] = { ...this.modalItem };
+                        this.itemModalOpen = false;
+                    }
+                },
+
+                deleteEditingItem() {
+                    if (this.editingIndex !== null) {
+                        this.form.items.splice(this.editingIndex, 1);
+                    }
+                    this.itemModalOpen = false;
+                },
+
+                navigateBack(e) {
+                    if (e && e.preventDefault) e.preventDefault();
+                    try {
+                        localStorage.removeItem('infruity_edit_order');
+                        sessionStorage.removeItem('infruity_edit_order');
+                    } catch(e) {}
+                    if (window.self !== window.top) {
+                        window.parent.postMessage({
+                            type: 'navigate',
+                            page: '003. Pembelian/001. Pengadaan/index.html',
+                            menu: 'pembelian'
+                        }, '*');
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                },
+
+                // Simpan draf: tanpa notifikasi alert, langsung kembali ke halaman utama pengadaan
+                saveDraft() {
+                    // Simpan data draf ke storage jika terdapat item belanja
+                    if (this.form.items && this.form.items.length > 0) {
+                        try {
+                            const stored = localStorage.getItem('infruity_pengadaan_orders');
+                            let orders = stored ? JSON.parse(stored) : [];
+                            if (!Array.isArray(orders)) orders = [];
+
+                            const grandTotal = this.calculateGrandTotal();
+                            const today = new Date();
+                            const dateStr = today.toISOString().split('T')[0];
+                            const timeStr = String(today.getHours()).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0');
+
+                            if (this.isEditMode && this.editingOrder) {
+                                const idx = orders.findIndex(o => String(o.id) === String(this.editingOrder.id) || String(o.poNumber) === String(this.editingOrder.poNumber));
+                                const updatedDraft = {
+                                    ...this.editingOrder,
+                                    targetBranch: this.form.targetBranch,
+                                    items: [...this.form.items],
+                                    subtotal: grandTotal,
+                                    grandTotal: grandTotal,
+                                    status: this.editingOrder.status || 'Draft'
+                                };
+                                if (idx !== -1) {
+                                    orders[idx] = updatedDraft;
+                                } else {
+                                    orders.unshift(updatedDraft);
+                                }
+                            } else {
+                                const newDraft = {
+                                    id: 'draft-' + Date.now(),
+                                    poNumber: 'PO-DRAFT-' + String(Math.floor(1000 + Math.random() * 9000)),
+                                    staffName: this.currentUser?.name || 'Dimas Pratama',
+                                    staffInitial: 'DP',
+                                    staffTheme: 'bg-emerald-50 text-[#0b595b] border-emerald-200',
+                                    supplierName: 'PT Buah Segar Nusantara',
+                                    supplierPhone: '0812-3456-7890',
+                                    supplierCity: 'Surabaya',
+                                    supplierInitial: 'BS',
+                                    supplierTheme: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                    targetBranch: this.form.targetBranch,
+                                    orderDate: dateStr,
+                                    date: dateStr,
+                                    orderTime: timeStr,
+                                    time: timeStr,
+                                    etaDate: dateStr,
+                                    eta: dateStr,
+                                    items: [...this.form.items],
+                                    subtotal: grandTotal,
+                                    shippingFee: 0,
+                                    grandTotal: grandTotal,
+                                    status: 'Draft',
+                                    paymentStatus: 'Belum Bayar',
+                                    paymentMethod: 'Transfer Bank (BCA)'
+                                };
+                                orders.unshift(newDraft);
+                            }
+                            localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(orders));
+                        } catch (err) {
+                            console.error('Gagal menyimpan draf:', err);
+                        }
+                    }
+
+                    // Bersihkan cache edit
+                    try {
+                        localStorage.removeItem('infruity_edit_order');
+                        sessionStorage.removeItem('infruity_edit_order');
+                    } catch(e) {}
+
+                    // Langsung kembali ke halaman utama pengadaan tanpa popup notifikasi
+                    this.navigateBack();
+                },
+
+                openConfirmModal() {
+                    if (this.form.items.length === 0) {
+                        alert('Silakan tambahkan minimal 1 item belanja terlebih dahulu.');
+                        return;
+                    }
+                    this.confirmModalOpen = true;
+                },
+
+                submitPengadaan() {
+                    this.openConfirmModal();
+                },
+
+                // Eksekusi ketika user klik tombol 'Selesaikan' pada modal konfirmasi
+                executeSubmitPengadaan() {
+                    // Simpan data transaksi ke localStorage
+                    try {
+                        const stored = localStorage.getItem('infruity_pengadaan_orders');
+                        let orders = stored ? JSON.parse(stored) : [];
+                        if (!Array.isArray(orders)) orders = [];
+
+                        const grandTotal = this.calculateGrandTotal();
+                        const today = new Date();
+                        const dateStr = today.toISOString().split('T')[0];
+                        const timeStr = String(today.getHours()).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0');
+
+                        if (this.isEditMode && this.editingOrder) {
+                            const idx = orders.findIndex(o => String(o.id) === String(this.editingOrder.id) || String(o.poNumber) === String(this.editingOrder.poNumber));
+                            let poNumber = this.editingOrder.poNumber;
+                            if (poNumber && poNumber.startsWith('PO-DRAFT-')) {
+                                poNumber = 'PO-' + today.getFullYear() + '-' + poNumber.replace('PO-DRAFT-', '');
+                            }
+                            const updatedOrder = {
+                                ...this.editingOrder,
+                                poNumber: poNumber,
+                                targetBranch: this.form.targetBranch,
+                                items: [...this.form.items],
+                                subtotal: grandTotal,
+                                grandTotal: grandTotal,
+                                status: 'Selesai',
+                                paymentStatus: (this.editingOrder.paymentStatus && this.editingOrder.paymentStatus !== 'Belum Bayar') ? this.editingOrder.paymentStatus : 'Lunas'
+                            };
+                            if (idx !== -1) {
+                                orders[idx] = updatedOrder;
+                            } else {
+                                orders.unshift(updatedOrder);
+                            }
+                        } else {
+                            const newOrder = {
+                                id: 'po-' + Date.now(),
+                                poNumber: 'PO-' + today.getFullYear() + '-' + String(Math.floor(1000 + Math.random() * 9000)),
+                                staffName: this.currentUser?.name || 'Dimas Pratama',
+                                staffInitial: 'DP',
+                                staffTheme: 'bg-emerald-50 text-[#0b595b] border-emerald-200',
+                                supplierName: 'PT Buah Segar Nusantara',
+                                supplierPhone: '0812-3456-7890',
+                                supplierCity: 'Surabaya',
+                                supplierInitial: 'BS',
+                                supplierTheme: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                targetBranch: this.form.targetBranch,
+                                orderDate: dateStr,
+                                date: dateStr,
+                                orderTime: timeStr,
+                                time: timeStr,
+                                etaDate: dateStr,
+                                eta: dateStr,
+                                items: [...this.form.items],
+                                subtotal: grandTotal,
+                                shippingFee: 0,
+                                grandTotal: grandTotal,
+                                status: 'Selesai',
+                                paymentStatus: 'Lunas',
+                                paymentMethod: 'Transfer Bank (BCA)'
+                            };
+                            orders.unshift(newOrder);
+                        }
+                        localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(orders));
+                    } catch (err) {
+                        console.error('Gagal menyimpan transaksi:', err);
+                    }
+
+                    // Bersihkan cache edit
+                    try {
+                        localStorage.removeItem('infruity_edit_order');
+                        sessionStorage.removeItem('infruity_edit_order');
+                    } catch(e) {}
+
+                    this.confirmModalOpen = false;
+                    this.navigateBack();
+                }
+            };
+        }
+    </script>
+</body>
+</html>

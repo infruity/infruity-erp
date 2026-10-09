@@ -530,15 +530,14 @@
 
                 <!-- === Laporan === -->
                 <div>
-                    <a href="#" @click.prevent="toggleMenu('laporan')"
-                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
+                    <a href="../index.html"
+                        @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '008. Laporan/index.html', menu: 'laporan' }, '*'); }"
+                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white cursor-pointer"
                         :class="activeMenu === 'laporan' ? 'active shadow-lg shadow-black/10' : ''">
                         <div class="flex items-center gap-3">
                             <i class="ph ph-chart-line-up sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'laporan' ? '!text-[#102f31]' : ''"></i>
                             <span class="font-medium">Laporan</span>
                         </div>
-                        
-                        
                     </a>
                     <div class="submenu-wrapper" x-show="!sidebarCollapsed">
                         <div class="py-1 space-y-0.5">

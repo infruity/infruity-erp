@@ -62,6 +62,9 @@
             font-size: 28px;
             font-weight: 300;
         }
+        .icon-rounded.is-bold {
+            font-variation-settings: 'wght' 600;
+        }
         .icon-inactive {
             font-variation-settings: 'FILL' 0, 'wght' 300;
         }
@@ -99,8 +102,11 @@
         /* Dark Sidebar */
         .dark-sidebar { background-color: #0b595b; }
         .dark-sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); }
-        .dark-sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
         .glass-header { background: rgba(247, 247, 247, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+
+        /* Hide Scrollbar Utility */
+        .scrollbar-hide::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; background: transparent !important; }
+        .scrollbar-hide { -ms-overflow-style: none !important; scrollbar-width: none !important; }
 
         /* Sidebar Navigation */
         .sidebar-link {
@@ -215,6 +221,29 @@
         input[type="time"], select, textarea {
             font-size: 16px !important;
             touch-action: manipulation;
+        }
+
+        /* ======================== */
+        /* Print Styles for PO      */
+        /* ======================== */
+        @media print {
+            body * { visibility: hidden !important; }
+            #printable-po, #printable-po * { visibility: visible !important; }
+            #printable-po {
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: auto !important;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: white !important;
+                z-index: 99999 !important;
+            }
+            #printable-po button { display: none !important; }
         }
     </style>
 </head>
@@ -692,6 +721,40 @@
                             <span>Pengadaan</span>
                         </div>
                     </div>
+
+                    <!-- Cabang Dropdown (Top Header) -->
+                    <div class="relative ml-0 sm:ml-4" x-data="{ branchOpen: false }">
+                        <button @click="branchOpen = !branchOpen" class="flex items-center gap-2 h-9 px-3 sm:px-4 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-700 transition shadow-sm">
+                            <i class="ph-bold ph-storefront text-[#0b595b] text-base"></i>
+                            <span class="text-xs font-semibold truncate max-w-[140px] sm:max-w-[180px]" 
+                                  x-text="selectedBranch"></span>
+                            <i class="ph-bold ph-caret-down text-[10px] text-gray-400"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div x-show="branchOpen" @click.outside="branchOpen = false" x-cloak
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute left-0 top-12 w-[280px] bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden z-50">
+                             <div class="px-4 py-3 border-b border-gray-50 flex items-center justify-between">
+                                 <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Pilih Cabang</p>
+                                 <button @click="branchOpen = false" class="text-gray-400 hover:text-gray-600"><i class="ph-bold ph-x"></i></button>
+                             </div>
+                             <div class="max-h-64 overflow-y-auto overscroll-none p-2">
+                                 <template x-for="branch in allBranches" :key="branch">
+                                     <button @click="selectedBranch = branch; branchOpen = false; resetPagination()"
+                                             class="w-full text-left px-3 py-2.5 text-sm rounded-xl hover:bg-gray-50 transition flex items-center justify-between mb-1"
+                                             :class="selectedBranch === branch ? 'text-[#0b595b] font-bold bg-emerald-50/50' : 'text-gray-600 font-medium'">
+                                         <span class="truncate pr-2 text-[13px]" x-text="branch"></span>
+                                         <i x-show="selectedBranch === branch" class="ph-fill ph-circle text-[#0b595b] text-[8px] shrink-0"></i>
+                                     </button>
+                                 </template>
+                             </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Right: Notif + Profile -->
@@ -750,7 +813,7 @@
                     <div class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
 
                         <!-- Mobile Header: Frosted Glass Effect with Hamburger, Logo & Notif -->
-                        <div class="sm:hidden absolute top-0 left-0 right-0 px-4 py-3 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]">
+                        <div class="sm:hidden px-4 py-3 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]">
                             <!-- Tombol Kiri: Hamburger Menu -->
                             <button @click="window.self !== window.top ? window.parent.postMessage('toggleSidebar', '*') : sidebarOpen = !sidebarOpen"
                                 class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 hover:text-emerald-700 hover:bg-emerald-50/70 active:scale-95 transition-all"
@@ -827,78 +890,236 @@
                             </div>
                         </div>
 
-                        <!-- Maintenance State Content Area (Opsi 1 Terpilih) -->
-                        <div class="flex-1 overflow-y-auto px-5 py-6 pb-20 flex flex-col items-center justify-center text-center relative scrollbar-hide my-auto">
-                            <!-- 1. Judul Sub-Modul (Taruh Atas) -->
-                            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
-                                Pengadaan
-                            </h2>
-
-                            <!-- 2. Status Proses (Warna Brand Utama Infruity #0F5C45) -->
-                            <div class="mt-1 text-xs text-[#0F5C45] font-semibold tracking-wide">
-                                Masih Dalam Proses Pengerjaan
-                            </div>
-
-                            <!-- 3. ILUSTRASI AREA DINAMIS (Opsi 1: Peti Buah & Smartphone 3D) -->
-                            <div class="w-56 h-56 sm:w-60 sm:h-60 -mt-4 sm:-mt-5 relative flex items-center justify-center">
-                                <img src="../../assets/illustrations/infruity_wip_system.png" 
-                                     alt="Peti Buah & Smartphone" 
-                                     class="w-full h-full object-contain blend-seamless select-none pointer-events-none" />
-                            </div>
-                        </div>
-
-                                                <!-- ================================ -->
-                        <!-- UNIFIED BOTTOM NAVIGATION BAR    -->
                         <!-- ================================ -->
-                        <div class="w-full absolute bottom-0 left-0 right-0 z-30 sm:hidden pb-[calc(1rem+env(safe-area-inset-bottom))] pt-2 px-5 flex justify-center pointer-events-none" x-data="{ profileOpen: false }">
-                            <div class="relative w-full transition-all duration-300 ease-out"
-                     :class="isScrollActive ? 'max-w-[340px]' : 'max-w-full'">
-                                <!-- BOTTOM NAVIGATION PILL (4 Icons) -->
-                                <div class="pointer-events-auto bg-white/45 border border-white/60 shadow-[0_16px_40px_-8px_rgba(15,92,69,0.12),0_4px_16px_rgba(0,0,0,0.04),inset_0_1px_1.5px_rgba(255,255,255,0.85)] rounded-full h-[64px] p-2 flex items-center justify-around w-full relative transition-all duration-300 ease-out"
-                         style="backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);">
-                                    <!-- 1. Menu / Dashboard -->
-                                    <!-- 1. Dashboard -->
-                        <a href="../../001. Dashboard/index.html"
-                           @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '001. Dashboard/index.html', menu: 'dashboard' }, '*'); }"
-                           class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
-                           title="Dashboard">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" class="w-[24px] h-[24px]" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><rect width="8" height="10" x="13" y="11" fill="currentColor" rx="1" ry="1"/><rect width="8" height="6" x="3" y="15" fill="currentColor" rx="1" ry="1"/><rect width="8" height="6" x="13" y="3" fill="currentColor" rx="1" ry="1"/><rect width="8" height="10" x="3" y="3" fill="currentColor" rx="1" ry="1"/></svg>
-                        </a>
-
-                                    <!-- Laporan -->
-                                    <button class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
-                                            title="Laporan">
-                                        <span class="icon-rounded icon-inactive">bar_chart</span>
-                                    </button>
-
-                                    <!-- 2. Tambah -->
-                                    <button @click="toggleMobileSidebar(); profileOpen = false"
-                                        class="w-[44px] h-[44px] bg-[#0b595b] hover:bg-[#08484a] text-white flex items-center justify-center rounded-[13px] shadow-[0_4px_12px_rgba(11,89,91,0.3)] active:scale-95 transition-all shrink-0"
-                                        title="Tambah">
-                                    <span class="icon-rounded" style="font-size: 24px; color: white; font-variation-settings: 'FILL' 1, 'wght' 500;">add</span>
+                        <!-- TOOLBAR: SEARCH + FILTER + ADD   -->
+                        <!-- ================================ -->
+                        <div class="p-4 border-b border-gray-100 flex flex-row gap-3 items-center bg-white relative z-10 transition-all duration-300">
+                            <!-- Integrated Single Unified Pill Container -->
+                            <div x-data="{ isSearchFocused: false }"
+                                 class="flex-1 relative flex items-center rounded-full h-11 pl-4 pr-1.5 transition-all"
+                                 :class="isSearchFocused ? 'bg-white border border-emerald-500 ring-1 ring-emerald-500' : 'bg-gray-50/50 border border-gray-200/80'">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px] text-[#0b595b]/80 shrink-0 mr-2.5">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input x-model="searchQuery" 
+                                       @focus="isSearchFocused = true" 
+                                       @blur="isSearchFocused = false"
+                                       id="pengadaanSearchInput"
+                                       type="text" placeholder="Cari cabang, nomor PO, atau bahan..."
+                                       class="flex-1 bg-transparent text-[13.5px] font-medium text-gray-800 placeholder-gray-400 outline-none h-full">
+                                
+                                <!-- Clear button -->
+                                <button x-show="searchQuery" @click="searchQuery = ''; resetPagination()" x-cloak
+                                    class="w-6 h-6 rounded-full hover:bg-black/5 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors shrink-0 mr-1"
+                                    title="Hapus pencarian">
+                                    <i class="ph-bold ph-x text-xs"></i>
                                 </button>
 
-                                    <!-- 3. Cari -->
-                                    <button @click="toggleMobileSidebar(); profileOpen = false"
-                                            class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
-                                            title="Cari">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" class="w-[24px] h-[24px]" viewBox="0 0 16 16"><path d="M0 0h16v16H0z" fill="none"/><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="m11.25 11.25 3 3"/><circle cx="7.5" cy="7.5" r="4.75"/></g></svg>
+                                <!-- Divider -->
+                                <div class="h-4 w-px bg-gray-200 shrink-0 mx-1"></div>
+
+                                <!-- Filter Trigger inside Container (Tune Icon) -->
+                                <div class="relative shrink-0">
+                                    <button @click="openFilterModal()"
+                                        style="-webkit-tap-highlight-color: transparent; outline: none;"
+                                        class="w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 relative focus:outline-none select-none active:scale-95"
+                                        :class="(filterOpen || hasActiveFilter) ? 'text-[#0b595b] bg-emerald-50' : 'text-gray-400 hover:text-[#0b595b]'"
+                                        title="Filter Pengadaan">
+                                        <span class="icon-rounded" 
+                                              :class="(filterOpen || hasActiveFilter) ? 'is-bold' : ''" 
+                                              style="font-size: 20px;">tune</span>
+                                        
+                                        <!-- Active Dot Badge -->
+                                        <span x-show="hasActiveFilter"
+                                              class="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#0b595b] ring-2 ring-white"
+                                              x-cloak></span>
                                     </button>
 
-                                    <!-- 4. Profil -->
-                        <a href="../../009. Pengaturan/002. Pengaturan/index.html"
-                           @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '009. Pengaturan/002. Pengaturan/index.html', menu: 'pengaturan' }, '*'); }"
-                           class="h-full w-12 bg-transparent flex items-center justify-center rounded-full active:scale-95 transition-all group"
-                           title="Profil">
-                            <div class="w-7 h-7 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 ring-2 ring-gray-200/70 group-hover:ring-[#0b595b]/50">
-                                            <img src="https://api.dicebear.com/9.x/glass/svg?seed=Citrus"
-                                                 alt="Profil"
-                                                 class="w-full h-full rounded-full object-cover"
-                                                 onerror="this.onerror=null; this.src='https://api.dicebear.com/9.x/glass/svg?seed=Citrus';" />
+                                    <!-- Backdrop for Desktop Filter Popover -->
+                                    <div x-show="filterOpen" x-cloak @click.stop.prevent="filterOpen = false" class="hidden sm:block fixed inset-0 z-40 bg-transparent cursor-default pointer-events-auto"></div>
+
+                                    <!-- DESKTOP FILTER POPOVER (Seragam Desain Modul Produk) -->
+                                    <div x-show="filterOpen" x-cloak @click.outside="filterOpen = false"
+                                        x-transition:enter="transition ease-out duration-150"
+                                        x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                                        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                        x-transition:leave="transition ease-in duration-100"
+                                        x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                        x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                                        class="hidden sm:block absolute right-0 top-10 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 p-4">
+                                        
+                                        <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-gray-100">
+                                            <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Status Pengadaan</p>
+                                            <button x-show="hasActiveFilter"
+                                                    @click="resetFilters(); filterOpen = false"
+                                                    class="text-[11px] text-[#0b595b] font-semibold hover:underline">
+                                                Reset
+                                            </button>
                                         </div>
-                        </a>
+
+                                        <!-- Status Pengadaan (Chips Seragam Produk) -->
+                                        <div>
+                                            <div class="flex flex-wrap gap-1.5">
+                                                <template x-for="st in ['Semua', 'Pending', 'Selesai']" :key="st">
+                                                    <button type="button" @click="filterStatus = st; resetPagination()"
+                                                            class="px-3 py-1.5 rounded-full border text-xs font-medium transition-colors cursor-pointer"
+                                                            :class="filterStatus === st ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-semibold shadow-2xs' : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-200'">
+                                                        <span x-text="st === 'Semua' ? 'Semua Status' : st"></span>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Add Button (Desktop Only) -->
+                            <a href="tambah.html"
+                                @click.prevent="navigateToAdd()"
+                                class="hidden sm:flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold transition-colors shadow-sm shrink-0 active:scale-95">
+                                <i class="ph-bold ph-plus text-sm"></i>
+                                <span>Tambah Pengadaan</span>
+                            </a>
+                        </div>
+
+                        <!-- ================================ -->
+                        <!-- DATA LIST AREA (DESKTOP & MOBILE)-->
+                        <!-- ================================ -->
+                        <div class="flex-1 overflow-y-auto overscroll-none min-h-0 relative scrollbar-hide flex flex-col"
+                             :class="hasMore ? 'pb-20 sm:pb-0' : 'pb-24 sm:pb-0'"
+                             @scroll.passive="isScrolled = $event.target.scrollTop > 15; handleScroll($event); handleScrollActivity()">
+
+                            <!-- DESKTOP TABLE VIEW -->
+                            <div class="hidden lg:block divide-y divide-gray-50" x-show="filteredOrders.length > 0">
+                                <!-- Table Header -->
+                                <div class="flex items-center gap-4 px-5 py-3 bg-gray-50/40 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 select-none">
+                                    <div class="flex-1 min-w-0">Cabang Tujuan</div>
+                                    <div class="w-40">No. PO</div>
+                                    <div class="w-44">Petugas Pengadaan</div>
+                                    <div class="w-36">Item & Volume</div>
+                                    <div class="w-40 text-right">Status & Nominal</div>
+                                    <div class="w-20 text-center">Aksi</div>
+                                </div>
+
+                                <!-- Table Rows -->
+                                <template x-for="(order, index) in visibleOrders" :key="order.id">
+                                    <div class="border-b border-gray-100 last:border-none">
+                                        <div @click="openDetailModal(order)"
+                                             class="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50/60 transition-colors group cursor-pointer"
+                                             :style="'animation-delay:' + (index * 30) + 'ms'" 
+                                             style="animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;">
+                                            
+                                            <!-- Column 1: Cabang Tujuan (Avatar Cabang + Nama Cabang + Tanggal & Waktu) -->
+                                            <div class="flex-1 min-w-0 flex items-center gap-3">
+                                                <div class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center font-bold text-xs border"
+                                                     :class="getBranchTheme(order.targetBranch)"
+                                                     x-text="getBranchInitial(order.targetBranch)"></div>
+                                                <div class="min-w-0">
+                                                    <div class="text-sm font-semibold text-gray-900 group-hover:text-[#0b595b] transition-colors truncate" x-text="order.targetBranch"></div>
+                                                    <div class="text-xs text-gray-400 mt-0.5 truncate" x-text="formatDateTime(order.orderDate, order.orderTime)"></div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Column 2: No. PO -->
+                                            <div class="w-40 flex items-center min-w-0">
+                                                <span class="text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded" x-text="order.poNumber"></span>
+                                            </div>
+
+                                            <!-- Column 3: Petugas Pengadaan -->
+                                            <div class="w-44 text-xs text-gray-600 truncate flex items-center gap-1.5">
+                                                <i class="ph-bold ph-user text-gray-400 shrink-0"></i>
+                                                <span class="truncate font-medium text-gray-800" x-text="order.staffName"></span>
+                                            </div>
+
+                                            <!-- Column 4: Item & Kuantitas -->
+                                            <div class="w-36 flex flex-col">
+                                                <span class="text-xs font-semibold text-gray-800" x-text="order.items.length + ' Jenis Bahan'"></span>
+                                                <span class="text-[11px] text-gray-400 truncate" x-text="getItemSummary(order.items)"></span>
+                                            </div>
+
+                                            <!-- Column 5: Status & Nominal (Nominal di bawah Status) -->
+                                            <div class="w-40 flex flex-col items-end justify-center">
+                                                <span class="text-xs"
+                                                      :class="getStatusBadgeClass(order.status)"
+                                                      x-text="order.status"></span>
+                                                <span class="text-sm font-bold text-gray-900 mt-0.5"
+                                                      x-text="'Rp ' + order.grandTotal.toLocaleString('id-ID')"></span>
+                                            </div>
+
+                                            <!-- Column 6: Aksi -->
+                                            <div class="w-20 flex items-center justify-center" @click.stop>
+                                                <button @click.stop="openDetailModal(order)"
+                                                        class="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-[#0b595b] flex items-center justify-center transition-colors"
+                                                        title="Lihat Rincian Faktur">
+                                                    <i class="ph-bold ph-eye text-base"></i>
+                                                </button>
+                                                <button @click.stop="navigateToEdit(order)"
+                                                        class="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-emerald-700 flex items-center justify-center transition-colors ml-0.5"
+                                                        title="Edit Pengadaan">
+                                                    <i class="ph-bold ph-pencil-simple text-base"></i>
+                                                </button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- MOBILE CARD LIST VIEW -->
+                            <div class="lg:hidden divide-y divide-gray-100" x-show="filteredOrders.length > 0">
+                                <template x-for="(order, index) in visibleOrders" :key="'m-' + order.id">
+                                    <div @click="openDetailModal(order)"
+                                         class="group px-4 py-3 flex items-center justify-between gap-3 hover:bg-gray-50/50 transition-colors cursor-pointer">
+                                        <!-- Kiri: Avatar Cabang + Nama Cabang + Tanggal/Waktu -->
+                                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                                            <div class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center font-bold text-xs border"
+                                                 :class="getBranchTheme(order.targetBranch)"
+                                                 x-text="getBranchInitial(order.targetBranch)"></div>
+                                            <div class="min-w-0 flex-1">
+                                                <p class="text-xs font-bold text-gray-900 truncate" x-text="order.targetBranch"></p>
+                                                <p class="text-[11px] text-gray-400 mt-0.5" x-text="formatDateTime(order.orderDate, order.orderTime)"></p>
+                                            </div>
+                                        </div>
+                                        <!-- Kanan: Status + Nominal -->
+                                        <div class="text-right shrink-0">
+                                            <div class="text-xs"
+                                                 :class="getStatusBadgeClass(order.status)"
+                                                 x-text="order.status"></div>
+                                            <div class="text-xs font-bold text-gray-900 mt-0.5"
+                                                 x-text="'Rp ' + order.grandTotal.toLocaleString('id-ID')"></div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- EMPTY STATE (SESUAI INSTRUKSI USER: BELUM ADA PENGADAAN) -->
+                            <div x-show="filteredOrders.length === 0" class="flex-1 flex flex-col items-center justify-center py-16 px-4 text-center my-auto min-h-[50vh]">
+                                <div class="w-16 h-16 rounded-3xl bg-emerald-50/80 border border-emerald-100/80 flex items-center justify-center mx-auto mb-4 text-[#0b595b] shadow-2xs">
+                                    <i class="ph-duotone ph-receipt text-3xl"></i>
+                                </div>
+                                <h3 class="text-sm sm:text-base font-bold text-gray-800">Belum ada pengadaan</h3>
+                                <p class="text-xs sm:text-[13px] text-gray-500 mt-2 max-w-xs mx-auto leading-relaxed">
+                                    Klik tombol <button type="button" @click="navigateToAdd()" class="w-6 h-6 rounded-lg bg-emerald-50 hover:bg-[#0b595b] text-[#0b595b] hover:text-white border border-emerald-200/80 inline-flex items-center justify-center align-middle mx-1 shadow-2xs transition-all active:scale-90 cursor-pointer" title="Tambah Pengadaan"><i class="ph-bold ph-plus text-xs"></i></button> untuk menambahkan<br>pengadaan baru
+                                </p>
+                                <div x-show="hasActiveFilter || (searchQuery && searchQuery.trim() !== '')" class="mt-4">
+                                    <button @click="resetFilters()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors cursor-pointer">
+                                        <i class="ph-bold ph-arrow-counter-clockwise text-xs"></i>
+                                        <span>Reset Pencarian & Filter</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- LOAD MORE -->
+                            <div x-show="hasMore" class="px-5 py-4 flex justify-center border-t border-gray-50">
+                                <button @click="loadMore()"
+                                    class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-full border border-gray-200 text-xs font-semibold text-gray-600 hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">
+                                    <i class="ph ph-arrow-circle-down text-base"></i>
+                                    <span>Muat Lebih Banyak</span>
+                                    <span class="text-xs text-gray-400 font-normal" x-text="'(' + (filteredOrders.length - visibleCount) + ' tersisa)'"></span>
+                                </button>
+                            </div>
+
                         </div>
 
                     </div>
@@ -906,20 +1127,462 @@
 
             </main>
 
-        </div>
+            <!-- ================================ -->
+            <!-- UNIFIED BOTTOM NAVIGATION BAR    -->
+            <!-- ================================ -->
+            <div class="w-full absolute bottom-0 left-0 right-0 z-30 sm:hidden pb-[calc(1rem+env(safe-area-inset-bottom))] pt-2 px-5 flex justify-center pointer-events-none" x-data="{ profileOpen: false }">
+                <div class="relative w-full transition-all duration-300 ease-out"
+                     :class="isScrollActive ? 'max-w-[340px]' : 'max-w-full'">
+                    <!-- BOTTOM NAVIGATION PILL (5 Icons) -->
+                    <div class="pointer-events-auto bg-white/45 border border-white/60 shadow-[0_16px_40px_-8px_rgba(15,92,69,0.12),0_4px_16px_rgba(0,0,0,0.04),inset_0_1px_1.5px_rgba(255,255,255,0.85)] rounded-full h-[64px] p-2 flex items-center justify-around w-full relative transition-all duration-300 ease-out"
+                         style="backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);">
+                        <!-- 1. Dashboard -->
+                        <a href="../../001. Dashboard/index.html"
+                           @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '001. Dashboard/index.html', menu: 'dashboard' }, '*'); }"
+                           class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
+                           title="Dashboard">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" class="w-[24px] h-[24px]" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><rect width="8" height="10" x="13" y="11" fill="currentColor" rx="1" ry="1"/><rect width="8" height="6" x="3" y="15" fill="currentColor" rx="1" ry="1"/><rect width="8" height="6" x="13" y="3" fill="currentColor" rx="1" ry="1"/><rect width="8" height="10" x="3" y="3" fill="currentColor" rx="1" ry="1"/></svg>
+                        </a>
 
+                        <!-- 2. Laporan -->
+                        <a href="../../008. Laporan/index.html"
+                           @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '008. Laporan/index.html', menu: 'laporan' }, '*'); }"
+                           class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
+                           title="Laporan">
+                            <span class="icon-rounded">bar_chart</span>
+                        </a>
+
+                        <!-- 3. Tambah (Membuka Halaman Baru Pengadaan) -->
+                        <a href="tambah.html"
+                            @click.prevent="navigateToAdd()"
+                            class="w-[44px] h-[44px] bg-[#0b595b] hover:bg-[#08484a] text-white flex items-center justify-center rounded-[13px] shadow-[0_4px_12px_rgba(11,89,91,0.3)] active:scale-95 transition-all shrink-0"
+                            title="Tambah Pengadaan">
+                            <span class="icon-rounded" style="font-size: 24px; color: white; font-variation-settings: 'FILL' 1, 'wght' 500;">add</span>
+                        </a>
+
+                        <!-- 4. Kasir / POS -->
+                        <a href="../../006. Penjualan/001. Kasir - POS/index.html"
+                           @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '006. Penjualan/001. Kasir - POS/index.html', menu: 'penjualan' }, '*'); }"
+                           class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
+                           title="Kasir / POS">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" class="text-[25px]" viewBox="0 0 640 640">
+                                <path d="M0 0h640v640H0z" fill="none" />
+                                <path fill="currentColor" d="M94.7 136.3c6.9-23.9 28.8-40.3 53.7-40.3h344c24.9 0 46.8 16.4 53.8 40.3l23.4 80.2c12.8 43.7-20.1 87.5-65.6 87.5c-26.3 0-49.4-14.9-60.8-37.1c-11.6 21.9-34.6 37.1-61.4 37.1c-26.6 0-49.7-15-61.3-37c-11.6 22-34.7 37-61.3 37c-26.8 0-49.8-15.1-61.4-37.1C186.4 289 163.3 304 137 304c-45.6 0-78.4-43.7-65.6-87.5zM160.4 416h320v-66.4c7.6 1.6 15.5 2.4 23.5 2.4c14.3 0 28-2.6 40.5-7.2V496c0 26.5-21.5 48-48 48h-352c-26.5 0-48-21.5-48-48V344.8c12.5 4.6 26.1 7.2 40.5 7.2c8.1 0 15.9-.8 23.5-2.4z" />
+                            </svg>
+                        </a>
+
+                        <!-- 5. Profil -->
+                        <a href="../../009. Pengaturan/002. Pengaturan/index.html"
+                           @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '009. Pengaturan/002. Pengaturan/index.html', menu: 'pengaturan' }, '*'); }"
+                           class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
+                           title="Profil">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" class="text-[24px]" viewBox="0 0 24 24">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path fill="currentColor" fill-rule="evenodd" d="M8 7a4 4 0 1 1 8 0a4 4 0 0 1-8 0m0 6a5 5 0 0 0-5 5a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3a5 5 0 0 0-5-5z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+    <!-- Form Tambah dan Edit Pengadaan dialihkan ke halaman tambah.html -->
+
+    <!-- ================================ -->
+    <!-- MOBILE FILTER BOTTOM SHEET (SERAGAM SUB MODUL PRODUK) -->
+    <!-- ================================ -->
+    <div x-show="filterOpen" class="sm:hidden fixed top-0 left-0 right-0 bottom-0 z-[100] overflow-hidden flex flex-col justify-end" x-cloak>
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/70" @click="filterOpen = false"
+             x-show="filterOpen"
+             x-transition:enter="transition-opacity ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"></div>
+        
+        <!-- Drawer Panel -->
+        <div x-show="filterOpen"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="translate-y-full"
+             x-transition:enter-end="translate-y-0"
+             x-transition:leave="transition ease-in duration-300 transform"
+             x-transition:leave-start="translate-y-0"
+             x-transition:leave-end="translate-y-full"
+             class="w-full bg-white shadow-2xl flex flex-col max-h-[85vh] overflow-hidden rounded-t-3xl relative z-10 pb-[env(safe-area-inset-bottom)]">
+             
+            <!-- Drag Handle -->
+            <div class="w-full flex justify-center pt-3 pb-1 shrink-0" @click="filterOpen = false" style="cursor: pointer;">
+                <div class="w-16 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+
+            <!-- Header -->
+            <div class="bg-white shrink-0 px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-gray-800 text-lg">Filter Pengadaan</h3>
+                    <p class="text-[11px] text-gray-400 mt-0.5">Saring cabang dan status pengadaan</p>
+                </div>
+                <button @click="filterOpen = false" class="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full transition-colors active:scale-95">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto overscroll-none p-4 scrollbar-hide space-y-5">
+                <!-- 1. Cabang Tujuan (Seragam Produk: Card + Search Box + Custom Radio Dot) -->
+                <div class="px-1">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Cabang Tujuan</label>
+                    </div>
+                    <div class="bg-white border border-gray-200 rounded-lg flex flex-col overflow-hidden shadow-2xs">
+                        <!-- Search Box Cabang -->
+                        <div class="relative border-b border-gray-100 shrink-0">
+                            <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                            <input type="text" x-model="branchSearchQuery" placeholder="Cari cabang..." 
+                                   class="w-full bg-transparent pl-8 pr-3 py-2.5 text-xs outline-none focus:bg-gray-50 transition-colors">
+                        </div>
+                        
+                        <!-- List Cabang -->
+                        <div class="max-h-36 overflow-y-auto overscroll-none bg-gray-50/30 scrollbar-hide divide-y divide-gray-100/60">
+                            <template x-for="branch in allBranches.filter(b => b.toLowerCase().includes(branchSearchQuery.toLowerCase()))" :key="branch">
+                                <label class="flex items-center gap-3 px-3.5 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <div class="relative flex items-center justify-center w-4 h-4 shrink-0">
+                                        <input type="radio" name="mobilePengadaanCabangFilter" :value="branch" x-model="tempSelectedBranch" class="peer appearance-none w-4 h-4 border-2 border-gray-300 rounded-full checked:border-emerald-500 transition-colors cursor-pointer">
+                                        <div class="absolute w-2 h-2 bg-emerald-500 rounded-full scale-0 peer-checked:scale-100 transition-transform duration-200"></div>
+                                    </div>
+                                    <span class="text-xs text-gray-700" :class="tempSelectedBranch === branch ? 'font-bold text-gray-900' : 'font-medium'" x-text="branch"></span>
+                                </label>
+                            </template>
+                            <div x-show="allBranches.filter(b => b.toLowerCase().includes(branchSearchQuery.toLowerCase())).length === 0" class="text-center py-4 text-xs text-gray-400">
+                                Cabang tidak ditemukan
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Status Pengadaan (Pill Chips seragam Produk) -->
+                <div class="px-1">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Status Pengadaan</label>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        <template x-for="st in ['Semua', 'Pending', 'Selesai']" :key="st">
+                            <button type="button" @click="tempFilterStatus = st"
+                                class="px-3 py-1.5 rounded-full border text-xs font-medium transition-colors cursor-pointer"
+                                :class="tempFilterStatus === st ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-semibold shadow-2xs' : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'">
+                                <span x-text="st === 'Semua' ? 'Semua Status' : st"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer (Seragam Produk: Batal & Terapkan) -->
+            <div class="shrink-0 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 bg-white flex items-center gap-2">
+                <button type="button" @click="resetMobileFilters()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors active:scale-95 cursor-pointer">
+                    Reset
+                </button>
+                <button type="button" @click="applyMobileFilters()" class="flex-1 h-11 rounded-xl bg-[#0b595b] hover:bg-[#0a4e50] text-white text-sm font-semibold transition-colors shadow-sm active:scale-95 cursor-pointer">
+                    Terapkan
+                </button>
+            </div>
+        </div>
     </div>
 
-        <!-- ALPINE.JS APPLICATION LOGIC -->
+
+    <!-- ================================ -->
+    <!-- MODAL: DETAIL PENGADAAN (KOMPAK) -->
+    <!-- ================================ -->
+    <div x-show="detailModalOpen" class="fixed inset-0 z-[120] flex items-center justify-center px-4" x-cloak>
+        <!-- Backdrop -->
+        <div x-show="detailModalOpen"
+             x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             @click="closeDetailModal()" class="absolute inset-0 bg-black/60"></div>
+
+        <!-- Modal Content -->
+        <div x-show="detailModalOpen"
+             x-transition:enter="transition-all duration-300 cubic-bezier(0.16, 1, 0.3, 1)"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition-all duration-200 ease-in"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+             class="relative bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden flex flex-col z-10">
+
+            <div class="p-6 flex-1 flex flex-col">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold text-gray-800">Detail Pengadaan</h3>
+                    <button @click="closeDetailModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
+                        <i class="ph-bold ph-x"></i>
+                    </button>
+                </div>
+
+                <template x-if="selectedOrder">
+                    <div class="flex flex-col gap-5 text-sm">
+
+                        <!-- 1. Nomor PO & Cabang Tujuan -->
+                        <div class="flex gap-3 items-center">
+                            <i class="ph-duotone ph-receipt text-2xl text-emerald-500 shrink-0"></i>
+                            <div class="min-w-0 flex-1">
+                                <div class="font-bold text-gray-800 leading-snug truncate" x-text="selectedOrder.poNumber"></div>
+                                <div class="text-[11px] text-gray-400 font-medium mt-0.5 truncate" x-text="selectedOrder.targetBranch"></div>
+                            </div>
+                        </div>
+
+
+                        <!-- 2. Grand Total & Jumlah Bahan -->
+                        <div class="flex gap-3 items-center">
+                            <i class="ph-duotone ph-coins text-2xl text-emerald-500 shrink-0"></i>
+                            <div>
+                                <div class="font-bold text-gray-800" x-text="'Rp ' + (selectedOrder.grandTotal || 0).toLocaleString('id-ID')"></div>
+                                <div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Grand Total (' + (selectedOrder.items ? selectedOrder.items.length : 0) + ' Bahan Baku)'"></div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Petugas & Waktu Pembuatan -->
+                        <div class="flex gap-3 items-start">
+                            <i class="ph-duotone ph-clock text-2xl text-emerald-500 shrink-0 mt-0.5"></i>
+                            <div class="min-w-0">
+                                <div class="text-xs font-bold text-gray-800 leading-snug truncate" x-text="selectedOrder.staffName || 'Petugas'"></div>
+                                <div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Dibuat pada ' + formatDate(selectedOrder.orderDate) + (selectedOrder.orderTime ? ', ' + selectedOrder.orderTime + ' WIB' : '')"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </template>
+            </div>
+
+            <!-- Action Buttons (Split 50:50) -->
+            <template x-if="selectedOrder">
+                <div class="flex w-full border-t border-gray-100">
+                    <button @click="closeDetailModal(); navigateToEdit(selectedOrder)"
+                            class="flex items-center justify-center gap-2 flex-1 py-4 text-sm font-semibold text-[#0b595b] hover:bg-emerald-50 transition-colors">
+                        <i class="ph-bold ph-pencil-simple"></i>
+                        Edit
+                    </button>
+                    <div class="w-px bg-gray-100"></div>
+                    <button @click="deleteOrder(selectedOrder)"
+                            class="flex items-center justify-center gap-2 flex-1 py-4 text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors">
+                        <i class="ph-bold ph-trash"></i>
+                        Hapus
+                    </button>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- ================================ -->
+    <!-- MODAL: DETAIL FAKTUR LENGKAP & CETAK -->
+    <!-- ================================ -->
+    <div x-show="invoiceModalOpen" class="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6" x-cloak>
+        <!-- Backdrop -->
+        <div x-show="invoiceModalOpen"
+             x-transition:enter="transition-opacity ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="invoiceModalOpen = false" class="absolute inset-0 bg-black/60 backdrop-blur-xs"></div>
+
+        <!-- Modal Content Container -->
+        <div x-show="invoiceModalOpen"
+             x-transition:enter="transition ease-out duration-200 transform"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150 transform"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+             id="printable-po"
+             class="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] z-10 border border-gray-100">
+
+            <template x-if="selectedOrder">
+                <div class="flex flex-col h-full">
+                    
+                    <!-- Modal Header -->
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between shrink-0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] flex items-center justify-center font-bold text-sm">
+                                <i class="ph-bold ph-receipt text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-base font-bold text-gray-900" x-text="selectedOrder.poNumber"></h3>
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full border"
+                                          :class="getStatusBadgeClass(selectedOrder.status)"
+                                          x-text="selectedOrder.status"></span>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5">
+                                    <span class="font-semibold text-gray-800" x-text="'Oleh: ' + (selectedOrder.staffName || 'Petugas')"></span>
+                                    <span>·</span>
+                                    <span x-text="formatDateTime(selectedOrder.orderDate, selectedOrder.orderTime)"></span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button @click="printOrder()" class="h-9 px-3 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-100 flex items-center gap-1.5 transition">
+                                <i class="ph-bold ph-printer"></i> Cetak PO
+                            </button>
+                            <button @click="invoiceModalOpen = false" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition">
+                                <i class="ph-bold ph-x text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+                        
+                        <!-- Timeline / Stepper Status Tracking -->
+                        <div class="p-4 bg-gray-50/70 rounded-2xl border border-gray-100">
+                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Alur Status PO</p>
+                            <div class="grid grid-cols-2 gap-4 text-center text-xs">
+                                <!-- Step 1: Pending -->
+                                <div class="flex flex-col items-center">
+                                    <div class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs mb-1"
+                                         :class="getStepIndex(selectedOrder.status) >= 1 ? 'bg-gray-700 text-white shadow-xs' : 'bg-gray-200 text-gray-500'">
+                                        1
+                                    </div>
+                                    <span class="text-[11px] font-semibold text-gray-700">Pending</span>
+                                </div>
+                                <!-- Step 2: Selesai -->
+                                <div class="flex flex-col items-center">
+                                    <div class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs mb-1"
+                                         :class="getStepIndex(selectedOrder.status) >= 2 ? 'bg-emerald-600 text-white shadow-xs' : 'bg-gray-200 text-gray-500'">
+                                        2
+                                    </div>
+                                    <span class="text-[11px] font-semibold text-gray-700">Selesai</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Info Petugas, Supplier & Cabang Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="p-3.5 rounded-2xl border border-gray-100 bg-white">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Yang Melakukan Pengadaan</span>
+                                <h4 class="text-sm font-bold text-gray-900 truncate" x-text="selectedOrder.staffName"></h4>
+                                <p class="text-xs text-gray-500 mt-0.5" x-text="'Waktu: ' + (selectedOrder.orderTime ? selectedOrder.orderTime + ' WIB' : '-')"></p>
+                                <p class="text-xs text-gray-400" x-text="'Tanggal: ' + formatDate(selectedOrder.orderDate)"></p>
+                            </div>
+                            <div class="p-3.5 rounded-2xl border border-gray-100 bg-white">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Informasi Pemasok</span>
+                                <h4 class="text-sm font-bold text-gray-900 truncate" x-text="selectedOrder.supplierName"></h4>
+                                <p class="text-xs text-gray-500 mt-0.5" x-text="'Telp: ' + selectedOrder.supplierPhone"></p>
+                                <p class="text-xs text-gray-400" x-text="'Lokasi: ' + selectedOrder.supplierCity"></p>
+                            </div>
+                            <div class="p-3.5 rounded-2xl border border-gray-100 bg-white">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Tujuan & Pembayaran</span>
+                                <h4 class="text-sm font-bold text-gray-900 truncate" x-text="selectedOrder.targetBranch"></h4>
+                                <p class="text-xs text-gray-500 mt-0.5" x-text="'Estimasi: ' + formatDate(selectedOrder.etaDate)"></p>
+                                <p class="text-xs font-semibold" :class="selectedOrder.paymentStatus === 'Lunas' ? 'text-emerald-700' : 'text-amber-700'" x-text="'Status Bayar: ' + selectedOrder.paymentStatus"></p>
+                            </div>
+                        </div>
+
+                        <!-- Tabel Rincian Bahan yang Dipesan -->
+                        <div>
+                            <span class="text-xs font-bold text-gray-900 uppercase tracking-wider block mb-2">Rincian Bahan Baku</span>
+                            <div class="border border-gray-100 rounded-2xl overflow-hidden">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-gray-50/80 text-gray-500 font-bold uppercase text-[10px] border-b border-gray-100">
+                                        <tr>
+                                            <th class="px-4 py-2.5">No</th>
+                                            <th class="px-4 py-2.5">Bahan Buah</th>
+                                            <th class="px-4 py-2.5 text-center">Satuan</th>
+                                            <th class="px-4 py-2.5 text-right">Kuantitas</th>
+                                            <th class="px-4 py-2.5 text-right">Harga Satuan</th>
+                                            <th class="px-4 py-2.5 text-right">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <template x-for="(it, i) in selectedOrder.items" :key="i">
+                                            <tr class="hover:bg-gray-50/40">
+                                                <td class="px-4 py-2.5 text-gray-400 font-medium" x-text="i + 1"></td>
+                                                <td class="px-4 py-2.5 font-bold text-gray-900" x-text="it.name"></td>
+                                                <td class="px-4 py-2.5 text-center text-gray-600 font-medium" x-text="it.unit"></td>
+                                                <td class="px-4 py-2.5 text-right font-bold text-gray-900" x-text="it.qty.toLocaleString('id-ID')"></td>
+                                                <td class="px-4 py-2.5 text-right text-gray-600" x-text="'Rp ' + it.unitPrice.toLocaleString('id-ID')"></td>
+                                                <td class="px-4 py-2.5 text-right font-bold text-gray-900" x-text="'Rp ' + (it.qty * it.unitPrice).toLocaleString('id-ID')"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                    <tfoot class="bg-gray-50/40 border-t border-gray-100 font-semibold">
+                                        <tr>
+                                            <td colspan="5" class="px-4 py-2 text-right text-gray-500">Subtotal Bahan:</td>
+                                            <td class="px-4 py-2 text-right text-gray-900" x-text="'Rp ' + selectedOrder.subtotal.toLocaleString('id-ID')"></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="5" class="px-4 py-2 text-right text-gray-500">Ongkos Kirim:</td>
+                                            <td class="px-4 py-2 text-right text-gray-900" x-text="'Rp ' + (selectedOrder.shippingFee || 0).toLocaleString('id-ID')"></td>
+                                        </tr>
+                                        <tr class="text-sm font-bold border-t border-gray-200">
+                                            <td colspan="5" class="px-4 py-3 text-right text-gray-900">Total Pembelian:</td>
+                                            <td class="px-4 py-3 text-right text-[#0b595b]" x-text="'Rp ' + selectedOrder.grandTotal.toLocaleString('id-ID')"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Catatan -->
+                        <div x-show="selectedOrder.notes" class="p-3 bg-amber-50/60 rounded-xl border border-amber-200/60 text-xs">
+                            <span class="font-bold text-amber-800 block mb-0.5">Catatan PO:</span>
+                            <p class="text-amber-900" x-text="selectedOrder.notes"></p>
+                        </div>
+
+                    </div>
+
+                    <!-- Modal Actions Footer -->
+                    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-2 shrink-0">
+                        <div class="flex items-center gap-2">
+                            <button @click="deleteOrder(selectedOrder)" class="px-3.5 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 border border-red-200 transition">
+                                Hapus PO
+                            </button>
+                            <button @click="invoiceModalOpen = false; navigateToEdit(selectedOrder)" class="px-3.5 py-2 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-100 border border-gray-200 transition">
+                                Edit PO
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <!-- Quick Status Transition Buttons -->
+                            <template x-if="selectedOrder.status === 'Pending' || selectedOrder.status === 'Menunggu Approval' || selectedOrder.status === 'Dalam Pengiriman' || selectedOrder.status === 'Draft'">
+                                <button @click="updateOrderStatus(selectedOrder.id, 'Selesai')" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition flex items-center gap-1.5">
+                                    <i class="ph-bold ph-check"></i> Tandai Selesai
+                                </button>
+                            </template>
+                            <template x-if="selectedOrder.status === 'Selesai'">
+                                <button @click="updateOrderStatus(selectedOrder.id, 'Pending')" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-amber-50 text-amber-800 border border-gray-200 transition">
+                                    Kembalikan ke Pending
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                </div>
+            </template>
+
+        </div>
+    </div>
+
+    </div><!-- /flex-1 flex flex-col -->
+</div><!-- /x-data erpApp() -->
+
+    <!-- ================================ -->
+    <!-- ALPINE.JS APPLICATION LOGIC      -->
+    <!-- ================================ -->
     <script>
         function erpApp() {
             return {
+                // Scroll State
+                isScrolled: false,
+                isScrolling: false,
+                scrollTimer: null,
                 isScrollActive: false,
                 scrollDebounceTimer: null,
+                mobileSearchOpen: false,
                 handleScrollActivity() {
                     if (this.mobileSearchOpen) {
                         this.mobileSearchOpen = false;
-                        document.getElementById('mobileSearchInputBottom')?.blur();
+                        document.getElementById('pengadaanSearchInput')?.blur();
                     }
                     this.isScrollActive = true;
                     if (this.scrollDebounceTimer) clearTimeout(this.scrollDebounceTimer);
@@ -927,12 +1590,536 @@
                         this.isScrollActive = false;
                     }, 600);
                 },
-                isScrolled: false,
+                handleScroll(e) {
+                    if (e && e.target) {
+                        this.isScrolled = e.target.scrollTop > 15;
+                    }
+                    this.isScrolling = true;
+                    if (this.scrollTimer) clearTimeout(this.scrollTimer);
+                    this.scrollTimer = setTimeout(() => {
+                        this.isScrolling = false;
+                    }, 1400);
+                },
+
                 sidebarOpen: false,
                 sidebarCollapsed: false,
                 theme: 'dark',
                 activeMenu: 'pembelian',
-                selectedBranch: 'Gresik / Driyorejo / Petiken - 001',
+                selectedBranch: 'Semua Cabang',
+
+                // Master Branches
+                allBranches: [
+                    'Semua Cabang',
+                    'Gresik / Driyorejo - 001',
+                    'Surabaya / Rungkut - 001',
+                    'Surabaya / Rungkut - 002',
+                    'Surabaya / Barat - 001',
+                    'Sidoarjo / Waru - 001',
+                    'Malang / Klojen - 001'
+                ],
+
+                // Master Materials / Buah
+                masterMaterials: [
+                    { name: 'Buah Naga Merah', unit: 'Kg', buyPrice: 18000, sellPrice: 24000, price: 18000 },
+                    { name: 'Mangga Harum Manis', unit: 'Kg', buyPrice: 22000, sellPrice: 30000, price: 22000 },
+                    { name: 'Alpukat Mentega', unit: 'Kg', buyPrice: 26000, sellPrice: 35000, price: 26000 },
+                    { name: 'Jeruk Sunkist', unit: 'Kg', buyPrice: 32000, sellPrice: 42000, price: 32000 },
+                    { name: 'Apel Fuji', unit: 'Kg', buyPrice: 35000, sellPrice: 48000, price: 35000 },
+                    { name: 'Pisang Cavendish', unit: 'Dus', buyPrice: 110000, sellPrice: 145000, price: 110000 },
+                    { name: 'Melon Sky Rocket', unit: 'Kg', buyPrice: 14000, sellPrice: 19000, price: 14000 },
+                    { name: 'Semangka Merah Non-Biji', unit: 'Kg', buyPrice: 9500, sellPrice: 13000, price: 9500 },
+                    { name: 'Lemon California', unit: 'Kg', buyPrice: 28000, sellPrice: 38000, price: 28000 },
+                    { name: 'Nanas Madu', unit: 'Kg', buyPrice: 12000, sellPrice: 16000, price: 12000 }
+                ],
+
+                // Master Suppliers
+                masterSuppliers: [
+                    { name: 'PT Buah Segar Nusantara', phone: '0812-3456-7890', city: 'Surabaya', initial: 'BS', theme: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+                    { name: 'CV Agrifresh Jawa Timur', phone: '0813-8899-1234', city: 'Malang', initial: 'AF', theme: 'bg-blue-50 text-blue-700 border-blue-200' },
+                    { name: 'UD Tani Makmur Subur', phone: '0821-4455-6677', city: 'Probolinggo', initial: 'TM', theme: 'bg-amber-50 text-amber-700 border-amber-200' },
+                    { name: 'PT Tropika Segar Abadi', phone: '0811-9988-7766', city: 'Banyuwangi', initial: 'TS', theme: 'bg-emerald-50 text-[#0b595b] border-emerald-200' },
+                    { name: 'PT Sentosa Hortikultura', phone: '0819-2233-4455', city: 'Batu', initial: 'SH', theme: 'bg-purple-50 text-purple-700 border-purple-200' },
+                    { name: 'CV Sumber Buah Alami', phone: '0857-1122-3344', city: 'Pasuruan', initial: 'SB', theme: 'bg-teal-50 text-teal-700 border-teal-200' }
+                ],
+
+                // Yang Melakukan Pengadaan (Petugas)
+                staffList: [
+                    { name: 'Achmad Noorman Setiawan', initial: 'AN', theme: 'bg-emerald-50 text-[#0b595b] border-emerald-200' },
+                    { name: 'Maharani Purwitasari', initial: 'MP', theme: 'bg-blue-50 text-blue-700 border-blue-200' },
+                    { name: 'Salmatul Farida', initial: 'SF', theme: 'bg-purple-50 text-purple-700 border-purple-200' },
+                    { name: 'Dwi Febbrianti', initial: 'DF', theme: 'bg-amber-50 text-amber-700 border-amber-200' },
+                    { name: 'Muhammad Chamim', initial: 'MC', theme: 'bg-teal-50 text-teal-700 border-teal-200' },
+                    { name: 'Al Afghani', initial: 'AA', theme: 'bg-rose-50 text-rose-700 border-rose-200' }
+                ],
+
+                // Filter & Search states
+                searchQuery: '',
+                filterOpen: false,
+                filterStatus: 'Semua',
+                tempFilterStatus: 'Semua',
+                tempSelectedBranch: 'Semua Cabang',
+                branchSearchQuery: '',
+                visibleCount: 50,
+                PAGE_SIZE: 50,
+
+                // Drawer & Modal States
+                drawerOpen: false,
+                editingOrder: null,
+                detailModalOpen: false,
+                selectedOrder: null,
+                deleteModalOpen: false,
+                deletingOrder: null,
+                invoiceModalOpen: false,
+
+                // Form Object
+                form: {
+                    id: '',
+                    poNumber: '',
+                    staffName: 'Achmad Noorman Setiawan',
+                    staffInitial: 'AN',
+                    staffTheme: 'bg-emerald-50 text-[#0b595b] border-emerald-200',
+                    orderDate: '',
+                    orderTime: '09:00',
+                    etaDate: '',
+                    supplierName: '',
+                    supplierPhone: '',
+                    supplierCity: '',
+                    supplierInitial: '',
+                    supplierTheme: '',
+                    targetBranch: 'Gresik / Driyorejo - 001',
+                    items: [],
+                    subtotal: 0,
+                    shippingFee: 0,
+                    grandTotal: 0,
+                    paymentStatus: 'Belum Lunas',
+                    status: 'Pending',
+                    notes: ''
+                },
+                // Data Transaksi Pengadaan (Tersinkronisasi dengan LocalStorage, default kosong)
+                orders: (() => {
+                    try {
+                        const stored = localStorage.getItem('infruity_pengadaan_orders');
+                        if (stored) {
+                            const parsed = JSON.parse(stored);
+                            if (Array.isArray(parsed)) {
+                                // Bersihkan data dummy lama (po-001 s/d po-100) jika sebelumnya tersimpan
+                                const cleaned = parsed.filter(o => !o.id || !/^po-\d{3}$/.test(String(o.id)));
+                                if (cleaned.length !== parsed.length) {
+                                    localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(cleaned));
+                                }
+                                return cleaned;
+                            }
+                        }
+                    } catch (e) {}
+                    return [];
+                })(),
+
+                // Filter & Pagination Logic
+                get filteredOrders() {
+                    return this.orders.filter(order => {
+                        // 1. Cabang Filter
+                        if (this.selectedBranch && this.selectedBranch !== 'Semua Cabang' && order.targetBranch !== this.selectedBranch) {
+                            return false;
+                        }
+
+                        // 2. Status Dropdown Filter
+                        if (this.filterStatus !== 'Semua' && order.status !== this.filterStatus) {
+                            return false;
+                        }
+
+                        // 6. Search Query
+                        if (this.searchQuery && this.searchQuery.trim() !== '') {
+                            const q = this.searchQuery.toLowerCase().trim();
+                            const matchStaff = order.staffName ? order.staffName.toLowerCase().includes(q) : false;
+                            const matchPO = order.poNumber ? order.poNumber.toLowerCase().includes(q) : false;
+                            const matchSupplier = order.supplierName ? order.supplierName.toLowerCase().includes(q) : false;
+                            const matchBranch = order.targetBranch ? order.targetBranch.toLowerCase().includes(q) : false;
+                            const matchItem = order.items && order.items.some(it => it.name.toLowerCase().includes(q));
+                            if (!matchStaff && !matchPO && !matchSupplier && !matchBranch && !matchItem) return false;
+                        }
+
+                        return true;
+                    });
+                },
+
+                get visibleOrders() {
+                    return this.filteredOrders.slice(0, this.visibleCount);
+                },
+
+                get hasMore() {
+                    return this.visibleCount < this.filteredOrders.length;
+                },
+
+                loadMore() {
+                    this.visibleCount += this.PAGE_SIZE;
+                },
+
+                resetPagination() {
+                    this.visibleCount = this.PAGE_SIZE;
+                },
+
+                get hasActiveFilter() {
+                    return (this.filterStatus !== 'Semua') || 
+                           (this.selectedBranch && this.selectedBranch !== 'Semua Cabang');
+                },
+
+                openFilterModal() {
+                    this.tempFilterStatus = this.filterStatus;
+                    this.tempSelectedBranch = this.selectedBranch || 'Semua Cabang';
+                    this.branchSearchQuery = '';
+                    this.filterOpen = true;
+                },
+
+                applyMobileFilters() {
+                    this.filterStatus = this.tempFilterStatus;
+                    this.selectedBranch = this.tempSelectedBranch;
+                    this.filterOpen = false;
+                    this.resetPagination();
+                },
+
+                resetMobileFilters() {
+                    this.tempFilterStatus = 'Semua';
+                    this.tempSelectedBranch = 'Semua Cabang';
+                    this.resetFilters();
+                    this.filterOpen = false;
+                },
+
+                resetFilters() {
+                    this.searchQuery = '';
+                    this.filterStatus = 'Semua';
+                    this.tempFilterStatus = 'Semua';
+                    this.tempSelectedBranch = 'Semua Cabang';
+                    this.selectedBranch = 'Semua Cabang';
+                    this.resetPagination();
+                },
+
+                onStaffChange() {
+                    const st = this.staffList.find(s => s.name === this.form.staffName);
+                    if (st) {
+                        this.form.staffInitial = st.initial;
+                        this.form.staffTheme = st.theme;
+                    }
+                },
+
+                // Navigasi ke Halaman Form Pengadaan (Mode Edit)
+                navigateToEdit(order) {
+                    if (!order) return;
+                    try {
+                        localStorage.setItem('infruity_edit_order', JSON.stringify(order));
+                        sessionStorage.setItem('infruity_edit_order', JSON.stringify(order));
+
+                        // Pastikan order tersimpan di infruity_pengadaan_orders agar tambah.html bisa membaca & memperbarui
+                        let stored = localStorage.getItem('infruity_pengadaan_orders');
+                        let orders = stored ? JSON.parse(stored) : [];
+                        if (!Array.isArray(orders)) orders = [];
+                        const exists = orders.some(o => String(o.id) === String(order.id) || String(o.poNumber) === String(order.poNumber));
+                        if (!exists) {
+                            orders.unshift(order);
+                            localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(orders));
+                        }
+                    } catch(e) {}
+
+                    const targetUrl = '003. Pembelian/001. Pengadaan/tambah.html?id=' + encodeURIComponent(order.id || order.poNumber);
+                    if (window.self !== window.top) {
+                        window.parent.postMessage({
+                            type: 'navigate',
+                            page: targetUrl,
+                            menu: 'pembelian'
+                        }, '*');
+                    } else {
+                        window.location.href = 'tambah.html?id=' + encodeURIComponent(order.id || order.poNumber);
+                    }
+                },
+
+                // Navigasi ke Halaman Form Pengadaan (Mode Tambah Baru)
+                navigateToAdd() {
+                    try {
+                        localStorage.removeItem('infruity_edit_order');
+                        sessionStorage.removeItem('infruity_edit_order');
+                    } catch(e) {}
+                    const targetUrl = '003. Pembelian/001. Pengadaan/tambah.html';
+                    if (window.self !== window.top) {
+                        window.parent.postMessage({
+                            type: 'navigate',
+                            page: targetUrl,
+                            menu: 'pembelian'
+                        }, '*');
+                    } else {
+                        window.location.href = 'tambah.html';
+                    }
+                },
+
+                openDrawer(order = null) {
+                    if (order) {
+                        this.navigateToEdit(order);
+                    } else {
+                        this.navigateToAdd();
+                    }
+                },
+
+                closeDrawer() {
+                    this.drawerOpen = false;
+                    this.editingOrder = null;
+                },
+
+                onSupplierChange() {
+                    const sup = this.masterSuppliers.find(s => s.name === this.form.supplierName);
+                    if (sup) {
+                        this.form.supplierPhone = sup.phone;
+                        this.form.supplierCity = sup.city;
+                        this.form.supplierInitial = sup.initial;
+                        this.form.supplierTheme = sup.theme;
+                    }
+                },
+
+                onItemNameChange(item) {
+                    const mat = this.masterMaterials.find(m => m.name === item.name);
+                    if (mat) {
+                        item.unit = mat.unit;
+                        item.buyPrice = mat.buyPrice || mat.price || 0;
+                        item.sellPrice = mat.sellPrice || Math.round(item.buyPrice * 1.35);
+                        item.unitPrice = item.buyPrice;
+                        if (item.sellPrice > 0) {
+                            item.margin = Math.round(((item.sellPrice - item.buyPrice) / item.sellPrice) * 100);
+                        } else {
+                            item.margin = 0;
+                        }
+                    }
+                    this.calculateFormTotal();
+                },
+
+                onItemPriceChange(item) {
+                    item.buyPrice = Math.max(0, Number(item.buyPrice) || 0);
+                    item.sellPrice = Math.max(0, Number(item.sellPrice) || 0);
+                    item.unitPrice = item.buyPrice;
+                    if (item.sellPrice > 0) {
+                        item.margin = Math.round(((item.sellPrice - item.buyPrice) / item.sellPrice) * 100);
+                    } else {
+                        item.margin = 0;
+                    }
+                    this.calculateFormTotal();
+                },
+
+                onItemMarginChange(item) {
+                    item.margin = Number(item.margin) || 0;
+                    if (item.buyPrice > 0 && item.margin < 100) {
+                        item.sellPrice = Math.round(item.buyPrice / (1 - (item.margin / 100)));
+                    }
+                    this.calculateFormTotal();
+                },
+
+                addItemRow() {
+                    const defaultMat = this.masterMaterials[0] || { name: 'Buah Naga Merah', unit: 'Kg', buyPrice: 18000, sellPrice: 24000 };
+                    const defaultBuy = defaultMat.buyPrice || defaultMat.price || 18000;
+                    const defaultSell = defaultMat.sellPrice || Math.round(defaultBuy * 1.35);
+                    const defaultMargin = defaultSell > 0 ? Math.round(((defaultSell - defaultBuy) / defaultSell) * 100) : 25;
+                    this.form.items.push({
+                        name: defaultMat.name,
+                        unit: defaultMat.unit,
+                        buyPrice: defaultBuy,
+                        sellPrice: defaultSell,
+                        qty: 50,
+                        margin: defaultMargin,
+                        unitPrice: defaultBuy,
+                        subtotal: 50 * defaultBuy
+                    });
+                    this.calculateFormTotal();
+                },
+
+                removeItemRow(index) {
+                    if (this.form.items.length > 1) {
+                        this.form.items.splice(index, 1);
+                        this.calculateFormTotal();
+                    }
+                },
+
+                calculateFormTotal() {
+                    let sub = 0;
+                    if (this.form.items) {
+                        this.form.items.forEach(it => {
+                            it.qty = Math.max(1, Number(it.qty) || 0);
+                            it.buyPrice = Math.max(0, Number(it.buyPrice ?? it.unitPrice) || 0);
+                            it.unitPrice = it.buyPrice;
+                            it.subtotal = it.qty * it.buyPrice;
+                            sub += it.subtotal;
+                        });
+                    }
+                    this.form.subtotal = sub;
+                    this.form.shippingFee = Math.max(0, Number(this.form.shippingFee) || 0);
+                    this.form.grandTotal = this.form.subtotal + this.form.shippingFee;
+                },
+
+                saveOrder() {
+                    if (!this.form.supplierName) {
+                        this.form.supplierName = this.masterSuppliers[0]?.name || 'PT Buah Segar Nusantara';
+                        this.form.supplierPhone = this.masterSuppliers[0]?.phone || '';
+                        this.form.supplierCity = this.masterSuppliers[0]?.city || '';
+                        this.form.supplierInitial = this.masterSuppliers[0]?.initial || 'BS';
+                        this.form.supplierTheme = this.masterSuppliers[0]?.theme || 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    }
+                    if (!this.form.items || this.form.items.length === 0) {
+                        alert('Minimal harus ada 1 item bahan yang dipesan!');
+                        return;
+                    }
+
+                    this.calculateFormTotal();
+
+                    if (this.editingOrder) {
+                        // Update existing
+                        const idx = this.orders.findIndex(o => o.id === this.editingOrder.id);
+                        if (idx !== -1) {
+                            this.orders[idx] = JSON.parse(JSON.stringify(this.form));
+                        }
+                    } else {
+                        // Add new to top
+                        this.orders.unshift(JSON.parse(JSON.stringify(this.form)));
+                    }
+
+                    this.closeDrawer();
+                },
+
+                // Detail Modal & Tracking
+                openDetailModal(order) {
+                    this.selectedOrder = order;
+                    this.detailModalOpen = true;
+                },
+
+                closeDetailModal() {
+                    this.detailModalOpen = false;
+                },
+
+                updateOrderStatus(orderId, newStatus) {
+                    const ord = this.orders.find(o => o.id === orderId);
+                    if (ord) {
+                        ord.status = newStatus;
+                        if (newStatus === 'Selesai') {
+                            ord.paymentStatus = 'Lunas';
+                        }
+                    }
+                },
+
+                // Hapus Transaksi Langsung (Tanpa Pop Up Konfirmasi)
+                deleteOrder(order) {
+                    if (!order) return;
+                    const orderId = typeof order === 'object' ? order.id : order;
+                    const poNumber = typeof order === 'object' ? order.poNumber : null;
+
+                    this.orders = this.orders.filter(o => o.id !== orderId && (!poNumber || o.poNumber !== poNumber));
+                    try {
+                        localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(this.orders));
+                    } catch(e) {}
+
+                    this.closeDetailModal();
+                    this.invoiceModalOpen = false;
+                    this.deleteModalOpen = false;
+                    this.deletingOrder = null;
+                },
+
+                confirmDeleteOrder(order) {
+                    this.deleteOrder(order);
+                },
+
+                executeDeleteOrder() {
+                    if (this.deletingOrder) {
+                        this.deleteOrder(this.deletingOrder);
+                    }
+                },
+
+                printOrder() {
+                    window.print();
+                },
+
+                // Helper Formatters
+                formatDate(dateStr) {
+                    if (!dateStr) return '-';
+                    const parts = dateStr.split('-');
+                    if (parts.length === 3) {
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                        const monthName = months[parseInt(parts[1], 10) - 1] || parts[1];
+                        return `${parts[2]} ${monthName} ${parts[0]}`;
+                    }
+                    return dateStr;
+                },
+
+                formatDateTime(dateStr, timeStr) {
+                    if (!dateStr) return '-';
+                    const d = this.formatDate(dateStr);
+                    return timeStr ? `${d}, ${timeStr} WIB` : d;
+                },
+
+                getItemSummary(items) {
+                    if (!items || items.length === 0) return '-';
+                    const names = items.map(it => it.name).join(', ');
+                    return names.length > 30 ? names.substring(0, 30) + '...' : names;
+                },
+
+                getStatusBadgeClass(status) {
+                    switch (status) {
+                        case 'Pending':
+                        case 'Draft':
+                        case 'Menunggu Approval':
+                        case 'Dalam Pengiriman': return 'text-gray-400 font-semibold';
+                        case 'Selesai': return 'text-[#0b595b] font-bold';
+                        case 'Dibatalkan': return 'text-red-500 font-semibold';
+                        default: return 'text-gray-400 font-semibold';
+                    }
+                },
+
+                getStatusDotClass(status) {
+                    switch (status) {
+                        case 'Pending':
+                        case 'Draft':
+                        case 'Menunggu Approval':
+                        case 'Dalam Pengiriman': return 'bg-amber-500 animate-pulse';
+                        case 'Selesai': return 'bg-emerald-600';
+                        case 'Dibatalkan': return 'bg-red-500';
+                        default: return 'bg-gray-400';
+                    }
+                },
+
+                getPaymentBadgeClass(payStatus) {
+                    switch (payStatus) {
+                        case 'Lunas': return 'bg-emerald-100 text-emerald-800';
+                        case 'Belum Lunas':
+                        case 'Belum Bayar': return 'bg-amber-100 text-amber-800';
+                        case 'DP': return 'bg-blue-100 text-blue-800';
+                        default: return 'bg-gray-100 text-gray-700';
+                    }
+                },
+
+                getStepIndex(status) {
+                    switch (status) {
+                        case 'Pending':
+                        case 'Draft':
+                        case 'Menunggu Approval':
+                        case 'Dalam Pengiriman': return 1;
+                        case 'Selesai': return 2;
+                        default: return 0;
+                    }
+                },
+
+                getBranchInitial(branch) {
+                    if (!branch) return 'CB';
+                    const b = branch.toUpperCase();
+                    if (b.includes('GRESIK')) return 'GR';
+                    if (b.includes('RUNGKUT')) return 'SR';
+                    if (b.includes('BARAT')) return 'SB';
+                    if (b.includes('SURABAYA')) return 'SB';
+                    if (b.includes('SIDOARJO') || b.includes('WARU')) return 'SD';
+                    if (b.includes('MALANG') || b.includes('KLOJEN')) return 'ML';
+                    return branch.substring(0, 2).toUpperCase();
+                },
+
+                getBranchTheme(branch) {
+                    if (!branch) return 'bg-emerald-50 text-[#0b595b] border-emerald-200';
+                    const b = branch.toUpperCase();
+                    if (b.includes('GRESIK')) return 'bg-emerald-50 text-[#0b595b] border-emerald-200';
+                    if (b.includes('RUNGKUT')) return 'bg-blue-50 text-blue-700 border-blue-200';
+                    if (b.includes('BARAT')) return 'bg-purple-50 text-purple-700 border-purple-200';
+                    if (b.includes('SIDOARJO') || b.includes('WARU')) return 'bg-amber-50 text-amber-700 border-amber-200';
+                    if (b.includes('MALANG') || b.includes('KLOJEN')) return 'bg-teal-50 text-teal-700 border-teal-200';
+                    return 'bg-emerald-50 text-[#0b595b] border-emerald-200';
+                },
 
                 toggleMenu(menu) {
                     if (this.sidebarCollapsed) {
@@ -949,7 +2136,28 @@
                 },
 
                 init() {
-                    // Active group submenus start expanded
+                    this.reloadOrders();
+                    window.addEventListener('pageshow', () => {
+                        this.reloadOrders();
+                    });
+                },
+
+                reloadOrders() {
+                    try {
+                        const stored = localStorage.getItem('infruity_pengadaan_orders');
+                        if (stored) {
+                            const parsed = JSON.parse(stored);
+                            if (Array.isArray(parsed)) {
+                                const cleaned = parsed.filter(o => !o.id || !/^po-\d{3}$/.test(String(o.id)));
+                                if (cleaned.length !== parsed.length) {
+                                    localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(cleaned));
+                                }
+                                this.orders = cleaned;
+                                return;
+                            }
+                        }
+                    } catch(e) {}
+                    this.orders = [];
                 }
             };
         }
