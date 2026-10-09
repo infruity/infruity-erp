@@ -93,6 +93,12 @@
         .minimal-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 3px; }
         .minimal-scrollbar::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
 
+        .custom-card-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-card-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-card-scroll::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 10px; }
+        .custom-card-scroll::-webkit-scrollbar-thumb:hover { background: rgba(11, 89, 91, 0.35); }
+        .custom-card-scroll { scrollbar-width: thin; scrollbar-color: rgba(0, 0, 0, 0.12) transparent; }
+
         /* General Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -714,16 +720,28 @@
                         <i class="ph ph-list text-2xl"></i>
                     </button>
                     <div class="hidden sm:block">
-                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5">Pengadaan</h1>
+                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5" x-text="currentView === 'form' ? (isEditMode ? 'Edit Pengadaan' : 'Tambah Pengadaan') : 'Pengadaan'">Pengadaan</h1>
                         <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
                             <span>Pembelian</span>
                             <i class="ph ph-caret-right text-[0.55rem]"></i>
-                            <span>Pengadaan</span>
+                            <span :class="currentView === 'form' ? 'cursor-pointer hover:underline hover:text-emerald-700' : ''" @click="currentView === 'form' && closeFormView()">Pengadaan</span>
+                            <template x-if="currentView === 'form'">
+                                <div class="inline-flex items-center gap-1">
+                                    <i class="ph ph-caret-right text-[0.55rem]"></i>
+                                    <span class="text-gray-600 font-semibold" x-text="isEditMode ? 'Edit' : 'Tambah'"></span>
+                                </div>
+                            </template>
                         </div>
                     </div>
 
-                    <!-- Cabang Dropdown (Top Header) -->
-                    <div class="relative ml-0 sm:ml-4" x-data="{ branchOpen: false }">
+                    <!-- Tombol Kembali Desktop (Saat di Form View) -->
+                    <button x-show="currentView === 'form'" x-cloak @click="closeFormView()" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 ml-3 rounded-xl border border-gray-200 bg-white hover:bg-emerald-50 text-xs font-semibold text-gray-700 hover:text-[#0b595b] transition shadow-2xs cursor-pointer">
+                        <i class="ph-bold ph-arrow-left"></i>
+                        <span>Kembali</span>
+                    </button>
+
+                    <!-- Cabang Dropdown (Top Header - Hanya tampil di List View) -->
+                    <div x-show="currentView === 'list'" class="relative ml-0 sm:ml-4" x-data="{ branchOpen: false }">
                         <button @click="branchOpen = !branchOpen" class="flex items-center gap-2 h-9 px-3 sm:px-4 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-700 transition shadow-sm">
                             <i class="ph-bold ph-storefront text-[#0b595b] text-base"></i>
                             <span class="text-xs font-semibold truncate max-w-[140px] sm:max-w-[180px]" 
@@ -809,8 +827,8 @@
 
                 <div class="animate-fade-in-up w-full flex-1 flex flex-col min-h-0">
 
-                    <!-- Main Content Card -->
-                    <div class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
+                    <!-- Main Content Card (VIEW 1: LIST) -->
+                    <div x-show="currentView === 'list'" class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
 
                         <!-- Mobile Header: Frosted Glass Effect with Hamburger, Logo & Notif -->
                         <div class="sm:hidden px-4 py-3 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]">
@@ -975,12 +993,12 @@
                             </div>
 
                             <!-- Add Button (Desktop Only) -->
-                            <a href="tambah.html"
-                                @click.prevent="navigateToAdd()"
-                                class="hidden sm:flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold transition-colors shadow-sm shrink-0 active:scale-95">
+                            <button type="button"
+                                @click="openCreateForm()"
+                                class="hidden sm:flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold transition-colors shadow-sm shrink-0 active:scale-95 cursor-pointer">
                                 <i class="ph-bold ph-plus text-sm"></i>
                                 <span>Tambah Pengadaan</span>
-                            </a>
+                            </button>
                         </div>
 
                         <!-- ================================ -->
@@ -1123,14 +1141,208 @@
                         </div>
 
                     </div>
+
+                    <!-- ======================================================== -->
+                    <!-- VIEW 2: FORM PENGADAAN (2 CARD TERPISAH)                 -->
+                    <!-- ======================================================== -->
+                    <div x-show="currentView === 'form'" x-cloak class="flex-1 flex flex-col min-h-0">
+
+                        <!-- Mobile Header: Frosted Glass Effect with Back Caret, Logo & Notif -->
+                        <div class="sm:hidden px-4 py-3 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] shrink-0">
+                            <!-- Tombol Kiri: Kembali -->
+                            <button type="button" @click="closeFormView()"
+                                    class="w-9 h-9 rounded-xl flex items-center justify-center text-[#0b595b] hover:bg-emerald-50 active:scale-95 transition-all shrink-0 cursor-pointer"
+                                    title="Kembali ke Daftar Pengadaan">
+                                <i class="ph-bold ph-caret-left text-[24px] text-[#0b595b]"></i>
+                            </button>
+
+                            <!-- Logo Infruity Center -->
+                            <div class="flex items-center justify-center flex-1">
+                                <img src="../../assets/logo/Infruity Logo - 6.png" 
+                                     alt="Infruity Logo" 
+                                     style="height: 30px; width: auto; max-width: 150px;" 
+                                     class="object-contain" 
+                                     onerror="this.onerror=null; this.src='../../../001. Landing Page/000. Logo/Infruity Logo - 6.png';" />
+                            </div>
+
+                            <!-- Tombol Kanan: Notifikasi -->
+                            <div class="relative shrink-0" x-data="{ formNotifOpen: false }">
+                                <button @click="formNotifOpen = !formNotifOpen"
+                                        class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 hover:text-[#0b595b] hover:bg-emerald-50/70 active:scale-95 transition-all shrink-0 relative"
+                                        title="Notifikasi">
+                                    <i class="ph-bold ph-bell text-[21px]"></i>
+                                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white"></span>
+                                </button>
+
+                                <!-- Backdrop for Top Notification Popup -->
+                                <div x-show="formNotifOpen" x-cloak @click="formNotifOpen = false" class="fixed inset-0 z-40 bg-transparent cursor-default pointer-events-auto"></div>
+
+                                <!-- TOP NOTIFICATION POPUP -->
+                                <div x-show="formNotifOpen" x-cloak @click.outside="formNotifOpen = false"
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 -translate-y-2 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     class="absolute right-0 top-12 w-80 max-w-[calc(100vw-32px)] bg-white/95 backdrop-blur-xl rounded-3xl border border-gray-200 overflow-hidden pointer-events-auto origin-top-right z-50">
+                                    <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-[14px] text-gray-800">Notifikasi</span>
+                                            <span class="bg-[#0b595b]/10 text-[#0b595b] text-[10px] font-bold px-2 py-0.5 rounded-full">2 Baru</span>
+                                        </div>
+                                        <button @click="formNotifOpen = false" class="text-xs text-gray-400 hover:text-gray-600">Tutup</button>
+                                    </div>
+                                    <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                                        <div class="p-3.5 flex gap-3 hover:bg-black/[0.02] transition-colors">
+                                            <div class="w-8 h-8 rounded-full bg-emerald-50 text-[#0b595b] flex items-center justify-center shrink-0">
+                                                <i class="ph-bold ph-package text-base"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0 text-left">
+                                                <p class="text-[12px] font-semibold text-gray-800 truncate">Stok Buah Naga Menipis</p>
+                                                <p class="text-[11px] text-gray-500 mt-0.5">Tersisa 5 kg di Cabang Gresik</p>
+                                                <span class="text-[10px] text-gray-400 mt-1 block">5 menit yang lalu</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2 CARD FORM KANVAS KONTEN -->
+                        <div class="flex-1 flex flex-col space-y-6 max-w-4xl w-full mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-6 min-h-0">
+
+                            <!-- CARD 1: CABANG PENERIMA (DROPDOWN MINIMALIS GAYA DASHBOARD) -->
+                            <div class="bg-white rounded-2xl border border-gray-200/90 shadow-card p-4 sm:p-5 transition-all relative z-30 shrink-0"
+                                 x-data="{ branchDropdownOpen: false }">
+                                <label class="text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                                    <span>Cabang</span>
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <!-- Trigger Button Kustom -->
+                                    <button type="button" @click="branchDropdownOpen = !branchDropdownOpen"
+                                            class="w-full h-11 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl px-4 flex items-center justify-between text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition cursor-pointer shadow-2xs text-left group">
+                                        <span class="truncate pr-2" :class="form.targetBranch ? 'text-gray-800 font-semibold' : 'text-gray-400 font-normal'" x-text="form.targetBranch || 'Pilih Cabang'"></span>
+                                        <i class="ph-bold ph-caret-down text-gray-400 group-hover:text-gray-600 text-sm shrink-0 transition-transform duration-200"
+                                           :class="branchDropdownOpen ? 'rotate-180 text-[#0b595b]' : ''"></i>
+                                    </button>
+
+                                    <!-- Dropdown Menu Mengambang (Gaya Bersih Sesuai Dashboard) -->
+                                    <div x-show="branchDropdownOpen" @click.outside="branchDropdownOpen = false" x-cloak
+                                         x-transition:enter="transition ease-out duration-100"
+                                         x-transition:enter-start="opacity-0 scale-95"
+                                         x-transition:enter-end="opacity-100 scale-100"
+                                         x-transition:leave="transition ease-in duration-75"
+                                         x-transition:leave-start="opacity-100 scale-100"
+                                         x-transition:leave-end="opacity-0 scale-95"
+                                         class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-50 max-h-56 overflow-y-auto overscroll-none minimal-scrollbar">
+                                         <template x-for="branch in branches" :key="branch">
+                                             <div @click="form.targetBranch = branch; branchDropdownOpen = false"
+                                                  class="px-3.5 py-2.5 text-xs sm:text-[13px] cursor-pointer transition-colors flex justify-between items-center group"
+                                                  :class="form.targetBranch === branch ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-700 font-medium hover:bg-gray-50'">
+                                                 <span x-text="branch"></span>
+                                                 <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="form.targetBranch === branch"></i>
+                                             </div>
+                                         </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CARD 2: DAFTAR BELANJA (OPSI B - PURE MINIMALIST CARD) -->
+                            <div class="bg-white rounded-2xl border border-gray-200/90 shadow-card overflow-hidden flex-1 min-h-[220px] flex flex-col transition-all">
+
+                                <!-- HEADER CARD 2 -->
+                                <div class="bg-white border-b border-gray-100 px-5 sm:px-6 py-4 flex items-center justify-between shrink-0">
+                                    <div>
+                                        <span class="text-sm font-extrabold text-gray-900 tracking-tight">Daftar Belanja</span>
+                                    </div>
+                                    <button type="button" @click="openAddItemModal()"
+                                            class="text-xs font-bold text-[#0b595b] hover:text-[#08484a] flex items-center gap-1 bg-emerald-50/80 hover:bg-emerald-100/80 px-3.5 py-1.5 rounded-lg border border-emerald-200/80 transition shadow-2xs active:scale-95 cursor-pointer">
+                                        <span>+ Tambah Item</span>
+                                    </button>
+                                </div>
+
+                                <!-- BODY CARD 2: KONTEN LIST ATAU EMPTY STATE -->
+                                <div class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-card-scroll">
+
+                                    <!-- STATE 1: EMPTY STATE -->
+                                    <div x-show="form.items.length === 0" class="h-full flex flex-col items-center justify-center text-center p-6 my-auto min-h-[180px]">
+                                        <h3 class="text-sm sm:text-base font-bold text-gray-800">
+                                            Belum ada produk didaftar belanja
+                                        </h3>
+                                        <p class="text-xs sm:text-sm text-gray-500 mt-1.5">
+                                            Klik tombol <button type="button" @click="openAddItemModal()" class="font-semibold text-[#0b595b] hover:underline inline-flex items-center gap-0.5 cursor-pointer">+ Tambah</button> untuk melakukan input
+                                        </p>
+                                    </div>
+
+                                    <!-- STATE 2: LIST PRODUK TERISI (2 BARIS SESUAI INSTRUKSI) -->
+                                    <div x-show="form.items.length > 0">
+                                        <template x-for="(item, idx) in form.items" :key="idx">
+                                            <div @click="openEditItemModal(idx)"
+                                                 :class="idx === 0 ? 'pt-1 pb-3' : 'border-t border-gray-100 py-3'"
+                                                 class="flex flex-col justify-center gap-1 cursor-pointer hover:bg-gray-50/80 -mx-2 px-2.5 rounded-lg transition-colors group">
+                                                <!-- BARIS 1: Nama Produk (Kiri) & Total Belanja (Kanan) -->
+                                                <div class="flex items-center justify-between gap-2">
+                                                    <h4 class="text-sm font-bold text-gray-900 truncate group-hover:text-[#0b595b] transition-colors" x-text="item.name"></h4>
+                                                    <span class="text-xs sm:text-sm font-extrabold text-[#0b595b] shrink-0" 
+                                                          x-text="'Rp ' + ((item.qty || 0) * (item.buyPrice || 0)).toLocaleString('id-ID')"></span>
+                                                </div>
+                                                
+                                                <!-- BARIS 2: Harga Satuan (Kiri) & Kuantitas (Kanan) -->
+                                                <div class="flex items-center justify-between gap-2 mt-0.5">
+                                                    <span class="text-xs font-medium text-gray-500" 
+                                                          x-text="'Rp ' + (item.buyPrice || 0).toLocaleString('id-ID') + ' / ' + (item.unit || 'Kg')"></span>
+                                                    <span class="text-xs font-semibold text-gray-600 shrink-0 text-right" 
+                                                          x-text="((item.qty || 0).toLocaleString('id-ID')) + ' ' + (item.unit || 'Kg')"></span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
                 </div>
 
             </main>
 
+            <!-- ======================================================== -->
+            <!-- BOTTOM HEADER (DOCKING RAPAT KE BAWAH - MODE FORM)       -->
+            <!-- ======================================================== -->
+            <div x-show="currentView === 'form'" x-cloak class="shrink-0 bg-white border-t border-gray-100 px-4 sm:px-6 pt-3.5 pb-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+                <div class="max-w-4xl w-full mx-auto">
+                    <!-- Baris Total Belanja -->
+                    <div class="flex items-center justify-between pb-3.5 border-b border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base sm:text-lg font-extrabold text-gray-900 leading-tight">Total Belanja</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#d1fae5] text-[#065f46] leading-tight"
+                                  x-text="form.items.length"></span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-base sm:text-lg font-extrabold text-[#0b595b] leading-tight"
+                                  x-text="'Rp ' + calculateGrandTotal().toLocaleString('id-ID')"></span>
+                        </div>
+                    </div>
+
+                    <!-- 2 Tombol Aksi Berdampingan (Simpan Perubahan & Selesaikan Transaksi) -->
+                    <div class="flex items-center gap-3 pt-3.5">
+                        <button type="button" @click="saveDraft()"
+                                class="flex-1 h-11 px-3 sm:px-6 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-800 text-xs sm:text-sm font-bold shadow-2xs transition active:scale-95 flex items-center justify-center cursor-pointer">
+                            <span x-text="isEditMode ? 'Simpan Perubahan' : 'Simpan sebagai Draf'"></span>
+                        </button>
+                        <button type="button" @click="submitPengadaan()"
+                                class="flex-1 h-11 px-3 sm:px-7 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0b595b]/15 transition active:scale-95 flex items-center justify-center cursor-pointer">
+                            <span>Selesaikan Transaksi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- ================================ -->
             <!-- UNIFIED BOTTOM NAVIGATION BAR    -->
             <!-- ================================ -->
-            <div class="w-full absolute bottom-0 left-0 right-0 z-30 sm:hidden pb-[calc(1rem+env(safe-area-inset-bottom))] pt-2 px-5 flex justify-center pointer-events-none" x-data="{ profileOpen: false }">
+            <div x-show="currentView === 'list'" class="w-full absolute bottom-0 left-0 right-0 z-30 sm:hidden pb-[calc(1rem+env(safe-area-inset-bottom))] pt-2 px-5 flex justify-center pointer-events-none" x-data="{ profileOpen: false }">
                 <div class="relative w-full transition-all duration-300 ease-out"
                      :class="isScrollActive ? 'max-w-[340px]' : 'max-w-full'">
                     <!-- BOTTOM NAVIGATION PILL (5 Icons) -->
@@ -1152,13 +1364,13 @@
                             <span class="icon-rounded">bar_chart</span>
                         </a>
 
-                        <!-- 3. Tambah (Membuka Halaman Baru Pengadaan) -->
-                        <a href="tambah.html"
-                            @click.prevent="navigateToAdd()"
-                            class="w-[44px] h-[44px] bg-[#0b595b] hover:bg-[#08484a] text-white flex items-center justify-center rounded-[13px] shadow-[0_4px_12px_rgba(11,89,91,0.3)] active:scale-95 transition-all shrink-0"
+                        <!-- 3. Tambah (Buka Form Pengadaan) -->
+                        <button type="button"
+                            @click="openCreateForm()"
+                            class="w-[44px] h-[44px] bg-[#0b595b] hover:bg-[#08484a] text-white flex items-center justify-center rounded-[13px] shadow-[0_4px_12px_rgba(11,89,91,0.3)] active:scale-95 transition-all shrink-0 cursor-pointer"
                             title="Tambah Pengadaan">
                             <span class="icon-rounded" style="font-size: 24px; color: white; font-variation-settings: 'FILL' 1, 'wght' 500;">add</span>
-                        </a>
+                        </button>
 
                         <!-- 4. Kasir / POS -->
                         <a href="../../006. Penjualan/001. Kasir - POS/index.html"
@@ -1184,7 +1396,7 @@
                     </div>
                 </div>
             </div>
-    <!-- Form Tambah dan Edit Pengadaan dialihkan ke halaman tambah.html -->
+    <!-- Form Tambah dan Edit Pengadaan terintegrasi langsung di View 2 (SPA) -->
 
     <!-- ================================ -->
     <!-- MOBILE FILTER BOTTOM SHEET (SERAGAM SUB MODUL PRODUK) -->
@@ -1563,6 +1775,203 @@
         </div>
     </div>
 
+    <!-- ======================================================== -->
+    <!-- MODAL TAMBAH / EDIT ITEM PRODUK                          -->
+    <!-- ======================================================== -->
+    <div x-show="itemModalOpen" x-cloak
+         @click.self="itemModalOpen = false"
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+        
+        <div @click.outside="itemModalOpen = false"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-gray-200 overflow-hidden">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/70">
+                <h3 class="text-sm font-bold text-gray-900" x-text="modalMode === 'add' ? 'Tambah Item Belanja' : 'Edit Item Belanja'"></h3>
+                <button type="button" @click="itemModalOpen = false" class="text-gray-400 hover:text-gray-700 text-sm font-bold p-1 cursor-pointer">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Modal Body Form -->
+            <div class="p-6 space-y-4">
+                <!-- Pilih Bahan (Gaya Dashboard Dropdown Kustom) -->
+                <div class="relative z-30" x-data="{ prodOpen: false }">
+                    <label class="text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                        <span>Nama Produk / Bahan</span>
+                        <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <!-- Trigger Button Kustom -->
+                        <button type="button" @click="prodOpen = !prodOpen"
+                                class="w-full h-10 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl px-3.5 flex items-center justify-between text-xs outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition cursor-pointer shadow-2xs text-left group">
+                            <span class="truncate pr-2" :class="modalItem.name ? 'text-gray-800 font-semibold' : 'text-gray-400 font-normal'"
+                                  x-text="modalItem.name ? modalItem.name + (modalItem.unit ? ' (' + modalItem.unit + ')' : '') : 'Pilih Produk / Bahan'"></span>
+                            <i class="ph-bold ph-caret-down text-gray-400 group-hover:text-gray-600 text-xs shrink-0 transition-transform duration-200"
+                               :class="prodOpen ? 'rotate-180 text-[#0b595b]' : ''"></i>
+                        </button>
+
+                        <!-- Dropdown Menu Mengambang (Gaya Bersih Sesuai Dashboard) -->
+                        <div x-show="prodOpen" @click.outside="prodOpen = false" x-cloak
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-xl py-1 z-50 max-h-52 overflow-y-auto overscroll-none minimal-scrollbar">
+                             <template x-for="item in masterItems" :key="item.name">
+                                 <div @click="selectModalProduct(item); prodOpen = false"
+                                      class="px-3.5 py-2.5 text-xs cursor-pointer transition-colors flex justify-between items-center group"
+                                      :class="modalItem.name === item.name ? 'bg-emerald-50/70 text-emerald-700 font-semibold' : 'text-gray-700 font-medium hover:bg-gray-50'">
+                                     <span x-text="item.name + (item.unit ? ' (' + item.unit + ')' : '')"></span>
+                                     <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="modalItem.name === item.name"></i>
+                                 </div>
+                             </template>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Kuantitas (Auto Format Titik Ribuan) -->
+                    <div>
+                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">
+                            Kuantitas <span class="text-gray-400 font-normal" x-show="modalItem.unit" x-text="'(' + modalItem.unit + ')'"></span>
+                        </label>
+                        <input type="text" inputmode="numeric"
+                               :value="formatRupiahInput(modalItem.qty)"
+                               @input="handlePriceInput('qty', $event)"
+                               placeholder="0"
+                               class="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-emerald-500 placeholder:text-gray-300 placeholder:font-normal">
+                    </div>
+
+                    <!-- Harga Beli Satuan (Auto Format Titik Ribuan) -->
+                    <div>
+                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">Harga Beli / Satuan</label>
+                        <input type="text" inputmode="numeric"
+                               :value="formatRupiahInput(modalItem.buyPrice)"
+                               @input="handlePriceInput('buyPrice', $event)"
+                               placeholder="0"
+                               class="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-emerald-500 placeholder:text-gray-300 placeholder:font-normal">
+                    </div>
+                </div>
+
+                <!-- Baris Harga Jual & Margin (%) Berdampingan -->
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Harga Jual (Auto Format Titik Ribuan) -->
+                    <div>
+                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">Harga Jual</label>
+                        <input type="text" inputmode="numeric"
+                               :value="formatRupiahInput(modalItem.sellPrice)"
+                               @input="handlePriceInput('sellPrice', $event)"
+                               placeholder="0"
+                               class="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-emerald-500 placeholder:text-gray-300 placeholder:font-normal">
+                    </div>
+
+                    <!-- Margin (%) Disamping Harga Jual (Otomatis & Readonly) -->
+                    <div>
+                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">Margin (%)</label>
+                        <input type="text" readonly
+                               :value="modalItem.marginPercent !== null && modalItem.marginPercent !== undefined ? modalItem.marginPercent + '%' : '0%'"
+                               class="w-full h-10 px-3 bg-gray-100/80 border border-gray-200 rounded-xl text-xs font-bold text-emerald-700 outline-none cursor-default shadow-2xs select-none">
+                    </div>
+                </div>
+
+                <!-- Total Estimasi -->
+                <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 flex items-center justify-between text-xs">
+                    <span class="font-semibold text-emerald-800">Total Harga Item</span>
+                    <span class="font-extrabold text-[#0b595b] text-sm"
+                          x-text="'Rp ' + ((modalItem.qty || 0) * (modalItem.buyPrice || 0)).toLocaleString('id-ID')"></span>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-3.5 bg-gray-50/70 border-t border-gray-100 flex items-center justify-between gap-2">
+                <button type="button" x-show="modalMode === 'edit'" @click="deleteEditingItem()"
+                        class="text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-xl transition cursor-pointer">
+                    Hapus Item
+                </button>
+                <div class="flex items-center gap-2 ml-auto">
+                    <button type="button" @click="itemModalOpen = false"
+                            class="px-4 py-2 rounded-xl border border-gray-300 text-xs font-bold text-gray-700 hover:bg-gray-100 transition cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="button" @click="saveModalItem()"
+                            class="px-5 py-2 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-sm transition cursor-pointer">
+                        Simpan Item
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL KONFIRMASI: SELESAIKAN TRANSAKSI                   -->
+    <!-- ======================================================== -->
+    <div x-show="confirmModalOpen" class="fixed inset-0 z-[130] flex items-center justify-center p-4" x-cloak>
+        <!-- Backdrop -->
+        <div x-show="confirmModalOpen"
+             x-transition:enter="transition-opacity ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="confirmModalOpen = false"
+             class="absolute inset-0 bg-black/50 backdrop-blur-xs"></div>
+
+        <!-- Modal Card -->
+        <div x-show="confirmModalOpen"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-90 translate-y-3"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-90 translate-y-3"
+             @click.outside="confirmModalOpen = false"
+             class="relative z-10 bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-sm overflow-hidden p-6 text-center">
+            
+            <!-- Judul & Pesan Sesuai Instruksi User -->
+            <h4 class="text-base font-bold text-gray-900 mb-1.5">Selesaikan Transaksi?</h4>
+            <p class="text-xs text-gray-500 leading-relaxed mb-4">
+                Apakah transaksi sudah sesuai dan<br>tidak ada tambahan lagi?
+            </p>
+
+            <!-- Ringkasan Singkat Transaksi -->
+            <div class="bg-gray-50 rounded-2xl p-3.5 border border-gray-100 mb-5 text-left text-xs space-y-1.5">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-500 font-medium">Cabang Tujuan</span>
+                    <span class="font-bold text-gray-800 truncate max-w-[170px]" x-text="form.targetBranch"></span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-500 font-medium">Jumlah Item</span>
+                    <span class="font-bold text-gray-800" x-text="form.items.length"></span>
+                </div>
+                <div class="flex items-center justify-between pt-1.5 border-t border-gray-200/60">
+                    <span class="font-semibold text-gray-700">Total Belanja</span>
+                    <span class="font-extrabold text-[#0b595b] text-sm" x-text="'Rp ' + calculateGrandTotal().toLocaleString('id-ID')"></span>
+                </div>
+            </div>
+
+            <!-- 2 Tombol Aksi: Batal & Selesaikan -->
+            <div class="flex items-center gap-2.5">
+                <button type="button" @click="confirmModalOpen = false"
+                        class="flex-1 h-10 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition cursor-pointer">
+                    Batal
+                </button>
+                <button type="button" @click="executeSubmitPengadaan()"
+                        class="flex-1 h-10 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-md shadow-[#0b595b]/20 active:scale-95 transition flex items-center justify-center cursor-pointer">
+                    Selesaikan
+                </button>
+            </div>
+        </div>
+    </div>
+
     </div><!-- /flex-1 flex flex-col -->
 </div><!-- /x-data erpApp() -->
 
@@ -1606,6 +2015,52 @@
                 theme: 'dark',
                 activeMenu: 'pembelian',
                 selectedBranch: 'Semua Cabang',
+
+                // Tampilan SPA: 'list' | 'form'
+                currentView: 'list',
+                isEditMode: false,
+                editingOrder: null,
+
+                // Profil Pengguna & Cabang Hak Akses
+                currentUser: {
+                    name: 'Dimas Pratama',
+                    role: 'Admin Cabang',
+                    branches: [
+                        'Surabaya / Rungkut - 001',
+                        'Gresik / Driyorejo - 001',
+                        'Sidoarjo / Waru - 001'
+                    ]
+                },
+
+                // List cabang yang dapat dipilih user di form (diurutkan sesuai abjad A-Z)
+                branches: [],
+
+                // Master Bahan Baku untuk Form Belanja (dengan Harga Jual default dari Sub Modul Produk)
+                masterItems: [
+                    { id: 1, name: 'Buah Naga Merah', unit: 'Kg', buyPrice: 18000, sellPrice: 24000 },
+                    { id: 2, name: 'Alpukat Mentega Super', unit: 'Kg', buyPrice: 26000, sellPrice: 35000 },
+                    { id: 3, name: 'Jeruk Sunkist Impor', unit: 'Kg', buyPrice: 32000, sellPrice: 42000 },
+                    { id: 4, name: 'Melon Sky Rocket', unit: 'Kg', buyPrice: 14000, sellPrice: 20000 },
+                    { id: 5, name: 'Semangka Non Biji', unit: 'Kg', buyPrice: 8500, sellPrice: 12000 },
+                    { id: 6, name: 'Gula Pasir Kristal', unit: 'Kg', buyPrice: 17500, sellPrice: 22000 },
+                    { id: 7, name: 'Susu Kental Manis Carnation', unit: 'Kaleng', buyPrice: 12500, sellPrice: 15500 },
+                    { id: 8, name: 'Cup Plastik 16oz', unit: 'Pcs', buyPrice: 450, sellPrice: 700 }
+                ],
+
+                // Modal State Tambah / Edit Item
+                itemModalOpen: false,
+                modalMode: 'add',
+                editingIndex: null,
+                confirmModalOpen: false,
+                modalItem: {
+                    productId: null,
+                    name: '',
+                    unit: '',
+                    buyPrice: null,
+                    sellPrice: null,
+                    marginPercent: null,
+                    qty: null
+                },
 
                 // Master Branches
                 allBranches: [
@@ -1664,36 +2119,16 @@
 
                 // Drawer & Modal States
                 drawerOpen: false,
-                editingOrder: null,
                 detailModalOpen: false,
                 selectedOrder: null,
                 deleteModalOpen: false,
                 deletingOrder: null,
                 invoiceModalOpen: false,
 
-                // Form Object
+                // Form Object Pengadaan (2 Card)
                 form: {
-                    id: '',
-                    poNumber: '',
-                    staffName: 'Achmad Noorman Setiawan',
-                    staffInitial: 'AN',
-                    staffTheme: 'bg-emerald-50 text-[#0b595b] border-emerald-200',
-                    orderDate: '',
-                    orderTime: '09:00',
-                    etaDate: '',
-                    supplierName: '',
-                    supplierPhone: '',
-                    supplierCity: '',
-                    supplierInitial: '',
-                    supplierTheme: '',
-                    targetBranch: 'Gresik / Driyorejo - 001',
-                    items: [],
-                    subtotal: 0,
-                    shippingFee: 0,
-                    grandTotal: 0,
-                    paymentStatus: 'Belum Lunas',
-                    status: 'Pending',
-                    notes: ''
+                    targetBranch: '',
+                    items: []
                 },
                 // Data Transaksi Pengadaan (Tersinkronisasi dengan LocalStorage, default kosong)
                 orders: (() => {
@@ -1801,181 +2236,394 @@
                     }
                 },
 
-                // Navigasi ke Halaman Form Pengadaan (Mode Edit)
-                navigateToEdit(order) {
-                    if (!order) return;
+                // Inisialisasi default cabang form user
+                initBranchDefault() {
+                    let userBranches = [...(this.currentUser?.branches || [])];
                     try {
-                        localStorage.setItem('infruity_edit_order', JSON.stringify(order));
-                        sessionStorage.setItem('infruity_edit_order', JSON.stringify(order));
-
-                        // Pastikan order tersimpan di infruity_pengadaan_orders agar tambah.html bisa membaca & memperbarui
-                        let stored = localStorage.getItem('infruity_pengadaan_orders');
-                        let orders = stored ? JSON.parse(stored) : [];
-                        if (!Array.isArray(orders)) orders = [];
-                        const exists = orders.some(o => String(o.id) === String(order.id) || String(o.poNumber) === String(order.poNumber));
-                        if (!exists) {
-                            orders.unshift(order);
-                            localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(orders));
+                        const storedUser = localStorage.getItem('infruity_current_user');
+                        if (storedUser) {
+                            const parsed = JSON.parse(storedUser);
+                            if (parsed.branches && Array.isArray(parsed.branches) && parsed.branches.length > 0) {
+                                userBranches = [...parsed.branches];
+                            }
                         }
-                    } catch(e) {}
+                    } catch (e) {}
 
-                    const targetUrl = '003. Pembelian/001. Pengadaan/tambah.html?id=' + encodeURIComponent(order.id || order.poNumber);
-                    if (window.self !== window.top) {
-                        window.parent.postMessage({
-                            type: 'navigate',
-                            page: targetUrl,
-                            menu: 'pembelian'
-                        }, '*');
-                    } else {
-                        window.location.href = 'tambah.html?id=' + encodeURIComponent(order.id || order.poNumber);
+                    if (!userBranches || userBranches.length === 0) {
+                        userBranches = [
+                            'Gresik / Driyorejo - 001',
+                            'Surabaya / Rungkut - 001',
+                            'Surabaya / Rungkut - 002',
+                            'Surabaya / Barat - 001',
+                            'Sidoarjo / Waru - 001',
+                            'Malang / Klojen - 001'
+                        ];
+                    }
+
+                    this.branches = userBranches.sort((a, b) => a.localeCompare('id', { sensitivity: 'base' }));
+
+                    if (!this.form.targetBranch && this.branches.length > 0) {
+                        this.form.targetBranch = this.branches[0];
                     }
                 },
 
-                // Navigasi ke Halaman Form Pengadaan (Mode Tambah Baru)
-                navigateToAdd() {
+                // Buka Form Tambah Baru
+                openCreateForm() {
+                    this.isEditMode = false;
+                    this.editingOrder = null;
+                    this.form = {
+                        targetBranch: '',
+                        items: []
+                    };
+                    this.initBranchDefault();
+                    this.currentView = 'form';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                // Buka Form Edit Pengadaan
+                openEditForm(order) {
+                    if (!order) return;
+                    this.isEditMode = true;
+                    this.editingOrder = order;
+
+                    this.initBranchDefault();
+
+                    if (order.targetBranch) {
+                        if (!this.branches.includes(order.targetBranch)) {
+                            this.branches.push(order.targetBranch);
+                            this.branches.sort((a, b) => a.localeCompare('id', { sensitivity: 'base' }));
+                        }
+                        this.form.targetBranch = order.targetBranch;
+                    }
+
+                    if (Array.isArray(order.items) && order.items.length > 0) {
+                        this.form.items = order.items.map(it => {
+                            const buyPrice = Number(it.buyPrice || it.unitPrice || it.price || 0);
+                            const qty = Number(it.qty || 1);
+                            let sellPrice = Number(it.sellPrice || 0);
+
+                            if (!sellPrice) {
+                                const foundMaster = this.masterItems.find(m => m.name.toLowerCase() === (it.name || '').toLowerCase());
+                                sellPrice = foundMaster ? foundMaster.sellPrice : Math.round(buyPrice * 1.3);
+                            }
+
+                            let marginPercent = it.marginPercent;
+                            if (marginPercent === undefined || marginPercent === null) {
+                                marginPercent = sellPrice > 0 ? Number((((sellPrice - buyPrice) / sellPrice) * 100).toFixed(1)) : 0;
+                            }
+
+                            return {
+                                productId: it.productId || (this.masterItems.find(m => m.name.toLowerCase() === (it.name || '').toLowerCase())?.id) || null,
+                                name: it.name || 'Produk',
+                                unit: it.unit || 'Kg',
+                                buyPrice: buyPrice,
+                                sellPrice: sellPrice,
+                                marginPercent: marginPercent,
+                                qty: qty
+                            };
+                        });
+                    } else {
+                        this.form.items = [];
+                    }
+
+                    this.currentView = 'form';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                openEditFormById(queryId) {
+                    if (!queryId) return;
+                    const order = this.orders.find(o => String(o.id) === String(queryId) || String(o.poNumber) === String(queryId));
+                    if (order) {
+                        this.openEditForm(order);
+                    } else {
+                        try {
+                            const storedEdit = sessionStorage.getItem('infruity_edit_order') || localStorage.getItem('infruity_edit_order');
+                            if (storedEdit) {
+                                const parsed = JSON.parse(storedEdit);
+                                if (parsed) this.openEditForm(parsed);
+                            }
+                        } catch(e) {}
+                    }
+                },
+
+                closeFormView() {
+                    this.currentView = 'list';
+                    this.isEditMode = false;
+                    this.editingOrder = null;
+                    this.itemModalOpen = false;
+                    this.confirmModalOpen = false;
+                    this.reloadOrders();
                     try {
                         localStorage.removeItem('infruity_edit_order');
                         sessionStorage.removeItem('infruity_edit_order');
                     } catch(e) {}
-                    const targetUrl = '003. Pembelian/001. Pengadaan/tambah.html';
-                    if (window.self !== window.top) {
-                        window.parent.postMessage({
-                            type: 'navigate',
-                            page: targetUrl,
-                            menu: 'pembelian'
-                        }, '*');
+                    if (window.location.search) {
+                        try {
+                            window.history.replaceState({}, '', window.location.pathname);
+                        } catch(e) {}
+                    }
+                },
+
+                navigateToAdd() {
+                    this.openCreateForm();
+                },
+
+                navigateToEdit(order) {
+                    this.openEditForm(order);
+                },
+
+                calculateGrandTotal() {
+                    return this.form.items.reduce((acc, item) => acc + ((item.qty || 0) * (item.buyPrice || 0)), 0);
+                },
+
+                openAddItemModal() {
+                    this.modalMode = 'add';
+                    this.editingIndex = null;
+                    this.modalItem = {
+                        productId: null,
+                        name: '',
+                        unit: '',
+                        buyPrice: null,
+                        sellPrice: null,
+                        marginPercent: null,
+                        qty: null
+                    };
+                    this.itemModalOpen = true;
+                },
+
+                openEditItemModal(idx) {
+                    this.modalMode = 'edit';
+                    this.editingIndex = idx;
+                    this.modalItem = { ...this.form.items[idx] };
+                    this.updateModalMargin();
+                    this.itemModalOpen = true;
+                },
+
+                selectModalProduct(item) {
+                    this.modalItem.productId = item.id;
+                    this.modalItem.name = item.name;
+                    this.modalItem.unit = item.unit;
+                    this.modalItem.buyPrice = item.buyPrice;
+                    this.modalItem.sellPrice = item.sellPrice;
+                    if (!this.modalItem.qty || this.modalItem.qty <= 0) {
+                        this.modalItem.qty = 1;
+                    }
+                    this.updateModalMargin();
+                },
+
+                formatRupiahInput(val) {
+                    if (val === null || val === undefined || val === '') return '';
+                    const num = typeof val === 'number' ? val : parseInt(String(val).replace(/\D/g, ''), 10);
+                    return isNaN(num) || num === 0 ? '' : num.toLocaleString('id-ID');
+                },
+
+                handlePriceInput(field, event) {
+                    const raw = event.target.value.replace(/\D/g, '');
+                    const num = raw ? parseInt(raw, 10) : 0;
+                    this.modalItem[field] = num;
+                    event.target.value = num > 0 ? num.toLocaleString('id-ID') : '';
+                    this.updateModalMargin();
+                },
+
+                updateModalMargin() {
+                    const buy = this.modalItem.buyPrice || 0;
+                    const sell = this.modalItem.sellPrice || 0;
+                    if (sell > 0) {
+                        this.modalItem.marginPercent = Number((((sell - buy) / sell) * 100).toFixed(1));
                     } else {
-                        window.location.href = 'tambah.html';
+                        this.modalItem.marginPercent = 0;
                     }
                 },
 
-                openDrawer(order = null) {
-                    if (order) {
-                        this.navigateToEdit(order);
-                    } else {
-                        this.navigateToAdd();
+                saveModalItem() {
+                    if (!this.modalItem.name) {
+                        alert('Silakan pilih produk / bahan terlebih dahulu');
+                        return;
                     }
-                },
-
-                closeDrawer() {
-                    this.drawerOpen = false;
-                    this.editingOrder = null;
-                },
-
-                onSupplierChange() {
-                    const sup = this.masterSuppliers.find(s => s.name === this.form.supplierName);
-                    if (sup) {
-                        this.form.supplierPhone = sup.phone;
-                        this.form.supplierCity = sup.city;
-                        this.form.supplierInitial = sup.initial;
-                        this.form.supplierTheme = sup.theme;
+                    if (!this.modalItem.qty || this.modalItem.qty <= 0) {
+                        alert('Silakan masukkan kuantitas');
+                        return;
                     }
-                },
-
-                onItemNameChange(item) {
-                    const mat = this.masterMaterials.find(m => m.name === item.name);
-                    if (mat) {
-                        item.unit = mat.unit;
-                        item.buyPrice = mat.buyPrice || mat.price || 0;
-                        item.sellPrice = mat.sellPrice || Math.round(item.buyPrice * 1.35);
-                        item.unitPrice = item.buyPrice;
-                        if (item.sellPrice > 0) {
-                            item.margin = Math.round(((item.sellPrice - item.buyPrice) / item.sellPrice) * 100);
-                        } else {
-                            item.margin = 0;
-                        }
-                    }
-                    this.calculateFormTotal();
-                },
-
-                onItemPriceChange(item) {
-                    item.buyPrice = Math.max(0, Number(item.buyPrice) || 0);
-                    item.sellPrice = Math.max(0, Number(item.sellPrice) || 0);
-                    item.unitPrice = item.buyPrice;
-                    if (item.sellPrice > 0) {
-                        item.margin = Math.round(((item.sellPrice - item.buyPrice) / item.sellPrice) * 100);
-                    } else {
-                        item.margin = 0;
-                    }
-                    this.calculateFormTotal();
-                },
-
-                onItemMarginChange(item) {
-                    item.margin = Number(item.margin) || 0;
-                    if (item.buyPrice > 0 && item.margin < 100) {
-                        item.sellPrice = Math.round(item.buyPrice / (1 - (item.margin / 100)));
-                    }
-                    this.calculateFormTotal();
-                },
-
-                addItemRow() {
-                    const defaultMat = this.masterMaterials[0] || { name: 'Buah Naga Merah', unit: 'Kg', buyPrice: 18000, sellPrice: 24000 };
-                    const defaultBuy = defaultMat.buyPrice || defaultMat.price || 18000;
-                    const defaultSell = defaultMat.sellPrice || Math.round(defaultBuy * 1.35);
-                    const defaultMargin = defaultSell > 0 ? Math.round(((defaultSell - defaultBuy) / defaultSell) * 100) : 25;
-                    this.form.items.push({
-                        name: defaultMat.name,
-                        unit: defaultMat.unit,
-                        buyPrice: defaultBuy,
-                        sellPrice: defaultSell,
-                        qty: 50,
-                        margin: defaultMargin,
-                        unitPrice: defaultBuy,
-                        subtotal: 50 * defaultBuy
-                    });
-                    this.calculateFormTotal();
-                },
-
-                removeItemRow(index) {
-                    if (this.form.items.length > 1) {
-                        this.form.items.splice(index, 1);
-                        this.calculateFormTotal();
-                    }
-                },
-
-                calculateFormTotal() {
-                    let sub = 0;
-                    if (this.form.items) {
-                        this.form.items.forEach(it => {
-                            it.qty = Math.max(1, Number(it.qty) || 0);
-                            it.buyPrice = Math.max(0, Number(it.buyPrice ?? it.unitPrice) || 0);
-                            it.unitPrice = it.buyPrice;
-                            it.subtotal = it.qty * it.buyPrice;
-                            sub += it.subtotal;
-                        });
-                    }
-                    this.form.subtotal = sub;
-                    this.form.shippingFee = Math.max(0, Number(this.form.shippingFee) || 0);
-                    this.form.grandTotal = this.form.subtotal + this.form.shippingFee;
-                },
-
-                saveOrder() {
-                    if (!this.form.supplierName) {
-                        this.form.supplierName = this.masterSuppliers[0]?.name || 'PT Buah Segar Nusantara';
-                        this.form.supplierPhone = this.masterSuppliers[0]?.phone || '';
-                        this.form.supplierCity = this.masterSuppliers[0]?.city || '';
-                        this.form.supplierInitial = this.masterSuppliers[0]?.initial || 'BS';
-                        this.form.supplierTheme = this.masterSuppliers[0]?.theme || 'bg-emerald-50 text-emerald-700 border-emerald-200';
-                    }
-                    if (!this.form.items || this.form.items.length === 0) {
-                        alert('Minimal harus ada 1 item bahan yang dipesan!');
+                    if (this.modalItem.buyPrice === null || this.modalItem.buyPrice === undefined || this.modalItem.buyPrice === '') {
+                        alert('Silakan masukkan harga beli / satuan');
                         return;
                     }
 
-                    this.calculateFormTotal();
-
-                    if (this.editingOrder) {
-                        // Update existing
-                        const idx = this.orders.findIndex(o => o.id === this.editingOrder.id);
-                        if (idx !== -1) {
-                            this.orders[idx] = JSON.parse(JSON.stringify(this.form));
+                    if (this.modalItem.productId) {
+                        const targetProd = this.masterItems.find(p => p.id === this.modalItem.productId);
+                        if (targetProd) {
+                            targetProd.sellPrice = this.modalItem.sellPrice;
+                            if (this.modalItem.buyPrice) targetProd.buyPrice = this.modalItem.buyPrice;
                         }
-                    } else {
-                        // Add new to top
-                        this.orders.unshift(JSON.parse(JSON.stringify(this.form)));
                     }
 
-                    this.closeDrawer();
+                    if (this.modalMode === 'add') {
+                        this.form.items.push({ ...this.modalItem });
+                        this.modalItem = {
+                            productId: null,
+                            name: '',
+                            unit: '',
+                            qty: null,
+                            buyPrice: null,
+                            sellPrice: null,
+                            marginPercent: null
+                        };
+                    } else if (this.editingIndex !== null) {
+                        this.form.items[this.editingIndex] = { ...this.modalItem };
+                        this.itemModalOpen = false;
+                    }
+                },
+
+                deleteEditingItem() {
+                    if (this.editingIndex !== null) {
+                        this.form.items.splice(this.editingIndex, 1);
+                    }
+                    this.itemModalOpen = false;
+                },
+
+                saveDraft() {
+                    if (this.form.items && this.form.items.length > 0) {
+                        try {
+                            const stored = localStorage.getItem('infruity_pengadaan_orders');
+                            let orders = stored ? JSON.parse(stored) : [];
+                            if (!Array.isArray(orders)) orders = [];
+
+                            const grandTotal = this.calculateGrandTotal();
+                            const today = new Date();
+                            const dateStr = today.toISOString().split('T')[0];
+                            const timeStr = String(today.getHours()).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0');
+
+                            if (this.isEditMode && this.editingOrder) {
+                                const idx = orders.findIndex(o => String(o.id) === String(this.editingOrder.id) || String(o.poNumber) === String(this.editingOrder.poNumber));
+                                const updatedDraft = {
+                                    ...this.editingOrder,
+                                    targetBranch: this.form.targetBranch,
+                                    items: [...this.form.items],
+                                    subtotal: grandTotal,
+                                    grandTotal: grandTotal,
+                                    status: this.editingOrder.status || 'Draft'
+                                };
+                                if (idx !== -1) {
+                                    orders[idx] = updatedDraft;
+                                } else {
+                                    orders.unshift(updatedDraft);
+                                }
+                            } else {
+                                const newDraft = {
+                                    id: 'draft-' + Date.now(),
+                                    poNumber: 'PO-DRAFT-' + String(Math.floor(1000 + Math.random() * 9000)),
+                                    staffName: this.currentUser?.name || 'Dimas Pratama',
+                                    staffInitial: 'DP',
+                                    staffTheme: 'bg-emerald-50 text-[#0b595b] border-emerald-200',
+                                    supplierName: 'PT Buah Segar Nusantara',
+                                    supplierPhone: '0812-3456-7890',
+                                    supplierCity: 'Surabaya',
+                                    supplierInitial: 'BS',
+                                    supplierTheme: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                    targetBranch: this.form.targetBranch,
+                                    orderDate: dateStr,
+                                    date: dateStr,
+                                    orderTime: timeStr,
+                                    time: timeStr,
+                                    etaDate: dateStr,
+                                    eta: dateStr,
+                                    items: [...this.form.items],
+                                    subtotal: grandTotal,
+                                    shippingFee: 0,
+                                    grandTotal: grandTotal,
+                                    status: 'Draft',
+                                    paymentStatus: 'Belum Bayar',
+                                    paymentMethod: 'Transfer Bank (BCA)'
+                                };
+                                orders.unshift(newDraft);
+                            }
+                            localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(orders));
+                            this.orders = orders;
+                        } catch (err) {
+                            console.error('Gagal menyimpan draf:', err);
+                        }
+                    }
+
+                    this.closeFormView();
+                },
+
+                submitPengadaan() {
+                    if (this.form.items.length === 0) {
+                        alert('Silakan tambahkan minimal 1 item belanja terlebih dahulu.');
+                        return;
+                    }
+                    this.confirmModalOpen = true;
+                },
+
+                executeSubmitPengadaan() {
+                    try {
+                        const stored = localStorage.getItem('infruity_pengadaan_orders');
+                        let orders = stored ? JSON.parse(stored) : [];
+                        if (!Array.isArray(orders)) orders = [];
+
+                        const grandTotal = this.calculateGrandTotal();
+                        const today = new Date();
+                        const dateStr = today.toISOString().split('T')[0];
+                        const timeStr = String(today.getHours()).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0');
+
+                        if (this.isEditMode && this.editingOrder) {
+                            const idx = orders.findIndex(o => String(o.id) === String(this.editingOrder.id) || String(o.poNumber) === String(this.editingOrder.poNumber));
+                            let poNumber = this.editingOrder.poNumber;
+                            if (poNumber && poNumber.startsWith('PO-DRAFT-')) {
+                                poNumber = 'PO-' + today.getFullYear() + '-' + poNumber.replace('PO-DRAFT-', '');
+                            }
+                            const updatedOrder = {
+                                ...this.editingOrder,
+                                poNumber: poNumber,
+                                targetBranch: this.form.targetBranch,
+                                items: [...this.form.items],
+                                subtotal: grandTotal,
+                                grandTotal: grandTotal,
+                                status: 'Selesai',
+                                paymentStatus: (this.editingOrder.paymentStatus && this.editingOrder.paymentStatus !== 'Belum Bayar') ? this.editingOrder.paymentStatus : 'Lunas'
+                            };
+                            if (idx !== -1) {
+                                orders[idx] = updatedOrder;
+                            } else {
+                                orders.unshift(updatedOrder);
+                            }
+                        } else {
+                            const newOrder = {
+                                id: 'po-' + Date.now(),
+                                poNumber: 'PO-' + today.getFullYear() + '-' + String(Math.floor(1000 + Math.random() * 9000)),
+                                staffName: this.currentUser?.name || 'Dimas Pratama',
+                                staffInitial: 'DP',
+                                staffTheme: 'bg-emerald-50 text-[#0b595b] border-emerald-200',
+                                supplierName: 'PT Buah Segar Nusantara',
+                                supplierPhone: '0812-3456-7890',
+                                supplierCity: 'Surabaya',
+                                supplierInitial: 'BS',
+                                supplierTheme: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                targetBranch: this.form.targetBranch,
+                                orderDate: dateStr,
+                                date: dateStr,
+                                orderTime: timeStr,
+                                time: timeStr,
+                                etaDate: dateStr,
+                                eta: dateStr,
+                                items: [...this.form.items],
+                                subtotal: grandTotal,
+                                shippingFee: 0,
+                                grandTotal: grandTotal,
+                                status: 'Selesai',
+                                paymentStatus: 'Lunas',
+                                paymentMethod: 'Transfer Bank (BCA)'
+                            };
+                            orders.unshift(newOrder);
+                        }
+                        localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(orders));
+                        this.orders = orders;
+                    } catch (err) {
+                        console.error('Gagal menyimpan transaksi:', err);
+                    }
+
+                    this.confirmModalOpen = false;
+                    this.closeFormView();
                 },
 
                 // Detail Modal & Tracking
@@ -2136,7 +2784,29 @@
                 },
 
                 init() {
+                    this.initBranchDefault();
                     this.reloadOrders();
+
+                    // Cek parameter query URL (misal: ?action=add atau ?id=...) atau storage edit order
+                    try {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const queryAction = urlParams.get('action');
+                        const queryId = urlParams.get('id');
+                        if (queryAction === 'add') {
+                            this.openCreateForm();
+                        } else if (queryId) {
+                            this.openEditFormById(queryId);
+                        } else {
+                            const storedEdit = sessionStorage.getItem('infruity_edit_order') || localStorage.getItem('infruity_edit_order');
+                            if (storedEdit) {
+                                const parsed = JSON.parse(storedEdit);
+                                if (parsed) {
+                                    this.openEditForm(parsed);
+                                }
+                            }
+                        }
+                    } catch(e) {}
+
                     window.addEventListener('pageshow', () => {
                         this.reloadOrders();
                     });
