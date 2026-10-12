@@ -78,11 +78,15 @@ class WholesaleController extends Controller
         }
 
         $data['alpinejs'] = true;
+        $userBranches = UserBranch::getUserBranch();
 
         // Cek apakah ada temp transaksi untuk user ini
-        $draft = Wholesale::with(['products', 'products.product', 'products.product.unit'])
+        $draft = Wholesale::with(['branch', 'products', 'products.product', 'products.product.unit'])
             ->where('created_by', Auth::user()->id_user)
             ->where('status', 'temp')
+            ->where(function ($query) use ($userBranches) {
+                $query->whereNull('branch_id')->orWhereIn('branch_id', $userBranches);
+            })
             ->orderBy('id', 'desc')
             ->first();
 
@@ -284,7 +288,9 @@ class WholesaleController extends Controller
         // return view('transaction::wholesale.show', $data);
 
         $data['alpinejs']       = true;
-        $data['data']           = Wholesale::with('branch')->findOrFail($id);
+        $data['data']           = Wholesale::with('branch')
+            ->whereIn('branch_id', UserBranch::getUserBranch())
+            ->findOrFail($id);
         $data['detail']         = $this->hydrateWholesaleDetailPricing(
             WholesaleProduct::with('product', 'product.unit')->where('wholesale_id', $id)->get(),
             $data['data']->branch_id
@@ -312,7 +318,10 @@ class WholesaleController extends Controller
         }
 
         $data['alpinejs']       = true;
-        $data['data']           = Wholesale::with('branch')->findOrFail($id);
+        $data['data']           = Wholesale::with('branch')
+            ->whereIn('branch_id', UserBranch::getUserBranch())
+            ->findOrFail($id);
+        abort_if($data['data']->status === 'complete', 403, 'Pengadaan yang sudah selesai tidak dapat diedit.');
         $data['detail']         = $this->hydrateWholesaleDetailPricing(
             WholesaleProduct::with('product', 'product.unit')->where('wholesale_id', $id)->get(),
             $data['data']->branch_id
@@ -377,7 +386,12 @@ class WholesaleController extends Controller
 
         try {
             DB::beginTransaction();
-            $wholesale = Wholesale::find($id);
+            $wholesale = Wholesale::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
+            if ($wholesale->status === 'complete') {
+                DB::rollBack();
+                return redirect()->back()->with('error', 'Pengadaan yang sudah selesai tidak dapat diubah.');
+            }
+
             if ($wholesale->order_number == null) {
                 // Generate order number if not already set
                 $wholesale->order_number = Wholesale::getOrderNumber();
@@ -444,7 +458,7 @@ class WholesaleController extends Controller
 
         try {
             DB::beginTransaction();
-            $wholesale = Wholesale::findOrFail($id);
+            $wholesale = Wholesale::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
             $wholesale->delete();
             WholesaleProduct::where('wholesale_id', $id)->delete();
             DB::commit();
@@ -878,11 +892,39 @@ class WholesaleController extends Controller
             'status'         => 'nullable|in:temp,draft,posting',
         ]);
 
+        $userBranchIds = collect(UserBranch::getUserBranch())->map(fn ($branchId) => (int) $branchId)->all();
+        if (! in_array((int) $data['branch_id'], $userBranchIds, true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses ke cabang yang dipilih.',
+            ], 403);
+        }
+
+        $userId = Auth::user()->id_user;
+        if (! empty($data['invoice_number'])) {
+            $existingOrder = Wholesale::where('order_number', $data['invoice_number'])->first();
+            $isAccessibleOrder = $existingOrder && (
+                ($existingOrder->branch_id !== null && in_array((int) $existingOrder->branch_id, $userBranchIds, true))
+                || ($existingOrder->branch_id === null && (int) $existingOrder->created_by === (int) $userId)
+            );
+
+            if ($existingOrder && ! $isAccessibleOrder) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki akses ke transaksi ini.',
+                ], 403);
+            }
+
+            if ($existingOrder && $existingOrder->status === 'complete') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengadaan yang sudah selesai tidak dapat diubah.',
+                ], 409);
+            }
+        }
+
         try {
             DB::beginTransaction();
-
-            // Use consistent user ID (id_user)
-            $userId = Auth::user()->id_user;
 
             // =========================
             // HEADER (UPDATE / CREATE)
@@ -893,6 +935,9 @@ class WholesaleController extends Controller
             if (($data['status'] ?? 'draft') === 'temp') {
                 $existingTempDraft = Wholesale::where('created_by', $userId)
                     ->where('status', 'temp')
+                    ->where(function ($query) use ($userBranchIds) {
+                        $query->whereNull('branch_id')->orWhereIn('branch_id', $userBranchIds);
+                    })
                     ->when(!empty($data['invoice_number']), function($query) use ($data) {
                         return $query->where('order_number', '!=', $data['invoice_number']);
                     })
@@ -925,6 +970,9 @@ class WholesaleController extends Controller
                 // Cek jika ada draft existing untuk diupdate
                 $draft = Wholesale::where('created_by', $userId)
                     ->where('status', 'temp')
+                    ->where(function ($query) use ($userBranchIds) {
+                        $query->whereNull('branch_id')->orWhereIn('branch_id', $userBranchIds);
+                    })
                     ->first();
 
                 if ($draft) {
@@ -1055,117 +1103,140 @@ class WholesaleController extends Controller
     {
         // dd($request->all());
         $data = Wholesale::getData($request);
+        $canViewWholesale = function_exists('check_access') && check_access('wholesale.show');
+        $canEditWholesale = function_exists('check_access') && check_access('wholesale.edit');
+        $canDeleteWholesale = function_exists('check_access') && check_access('wholesale.destroy');
         return DataTables::of($data)
             ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                $colors = ['warning', 'success', 'info', 'primary'];
-                $color  = $colors[$item->id % count($colors)];
-                return '<div class="d-flex align-items-center">
-                            <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                                <a href="' . url('wholesale') . '/' . $item->id . '/show' . '">
-                                    <div class="symbol-label fs-3 bg-light-' . $color . ' text-' . $color . '">' . strtoupper(substr($item->order_number, 0, 1)) . '</div>
-                                </a>
-                            </div>
-                            <div class="ms-5">
-                                <a href="' . url('wholesale') . '/' . $item->id . '/show' . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">#' . $item->order_number . '</a>
-                                <br>
-                                <span class="text-muted d-block"> Jml Prod : ' . $item->total_product . '</span>
-                                <span class="badge badge-light-danger">' . ucwords(strtolower($item->created_by)) . '</span>
-                            </div>
+            ->addColumn('branch', function ($item) use ($canViewWholesale) {
+                $detailUrl = route('wholesale.show', $item->id);
+                $branchName = (string) ($item->branch_name ?? 'Tanpa cabang');
+                $normalizedBranch = mb_strtolower(trim($branchName));
+                $branchInitial = match (true) {
+                    str_contains($normalizedBranch, 'gresik') => 'GR',
+                    str_contains($normalizedBranch, 'surabaya') && str_contains($normalizedBranch, 'rungkut') => 'SR',
+                    str_contains($normalizedBranch, 'surabaya') && str_contains($normalizedBranch, 'barat') => 'SB',
+                    str_contains($normalizedBranch, 'sidoarjo') => 'SD',
+                    str_contains($normalizedBranch, 'malang') => 'ML',
+                    default => mb_strtoupper(mb_substr(preg_replace('/[^\pL\pN]/u', '', $branchName) ?: '—', 0, 2)),
+                };
+                $avatarClass = match ($branchInitial) {
+                    'GR' => 'is-branch-gr',
+                    'SR' => 'is-branch-sr',
+                    'SB' => 'is-branch-sb',
+                    'SD' => 'is-branch-sd',
+                    'ML' => 'is-branch-ml',
+                    default => 'is-branch-default',
+                };
+                $dateTime = \Carbon\Carbon::parse($item->order_date ?? $item->created_at);
+                if (! empty($item->created_at)) {
+                    $dateTime->setTimeFrom(\Carbon\Carbon::parse($item->created_at));
+                }
+                $mobileDate = $dateTime
+                    ->locale('id')
+                    ->translatedFormat('d M Y, H:i') . ' WIB';
+                $detailLabel = '<span class="wholesale-order-number">' . e($branchName) . '</span>'
+                    . '<span class="wholesale-order-subtitle">' . e($mobileDate) . '</span>';
+                $detailLink = $canViewWholesale
+                    ? '<a href="' . $detailUrl . '" class="wholesale-order-copy wholesale-open-detail" aria-label="Lihat pengadaan ' . e($item->order_number) . '">' . $detailLabel . '</a>'
+                    : '<span class="wholesale-order-copy">' . $detailLabel . '</span>';
+
+                return '<div class="wholesale-order-cell">
+                            <span class="wholesale-order-avatar ' . $avatarClass . '" aria-hidden="true">' . e($branchInitial ?: '—') . '</span>
+                            ' . $detailLink . '
                         </div>';
             })
-            ->addColumn('order_date', function ($item) {
-                return date('d F Y H:i', strtotime($item->created_at));
-            })
-            ->addColumn('status', function ($item) {
-                $branchBadgeClass = match ((int) ($item->branch_id ?? 0)) {
-                    1 => 'badge-light-primary',
-                    2 => 'badge-light-success',
-                    3 => 'badge-light-warning',
-                    4 => 'badge-light-info',
-                    default => 'badge-light-dark',
-                };
-
-                $branchLabel = '<span class="badge ' . $branchBadgeClass . ' mb-1">'
-                    . e($item->branch_name ?? 'Tanpa Cabang')
-                    . '</span>';
-
-                if ($item->status == 'draft') {
-                    $statusLabel = '<span class="badge badge-light-primary">Draft</span>';
-                } elseif ($item->status == 'posting') {
-                    $statusLabel = '<span class="badge badge-light-success">Posting</span>';
-                } else {
-                    $statusLabel = '<span class="badge badge-light-danger">Autosave</span>';
+            ->addColumn('po', function ($item) use ($canViewWholesale) {
+                $poNumber = '#' . e($item->order_number);
+                if (! $canViewWholesale) {
+                    return '<span class="wholesale-po-link">' . $poNumber . '</span>';
                 }
 
-                return '<div class="d-flex flex-column align-items-center">'
-                    . $branchLabel
-                    . $statusLabel
+                return '<a href="' . route('wholesale.show', $item->id) . '" class="wholesale-po-link wholesale-open-detail">' . $poNumber . '</a>';
+            })
+            ->addColumn('staff', function ($item) {
+                return '<span class="wholesale-staff-cell"><i class="ph ph-user" aria-hidden="true"></i>'
+                    . e(ucwords(strtolower((string) ($item->created_by ?? '—'))))
+                    . '</span>';
+            })
+            ->addColumn('items', function ($item) {
+                $itemNames = trim((string) ($item->item_names ?? ''));
+                $itemSummary = $itemNames !== '' ? e($itemNames) : 'Belum ada rincian bahan';
+
+                return '<span class="wholesale-items-cell"><span class="wholesale-items-count">'
+                    . e($item->total_product ?? 0) . ' jenis bahan</span><span class="wholesale-items-volume" title="' . $itemSummary . '">'
+                    . $itemSummary . '</span></span>';
+            })
+            ->addColumn('order_date', function ($item) {
+                $dateTime = \Carbon\Carbon::parse($item->order_date ?? $item->created_at);
+                if (! empty($item->created_at)) {
+                    $dateTime->setTimeFrom(\Carbon\Carbon::parse($item->created_at));
+                }
+
+                return $dateTime
+                    ->locale('id')
+                    ->translatedFormat('d F Y H:i');
+            })
+            ->addColumn('status', function ($item) {
+                $status = (string) ($item->status ?? '');
+                [$label, $class] = match ($status) {
+                    'temp' => ['Draft', 'is-muted'],
+                    'draft' => ['Pending', 'is-draft'],
+                    'posting' => ['Dalam Pengiriman', 'is-posting'],
+                    'complete' => ['Selesai', 'is-complete'],
+                    default => [ucfirst($status ?: 'Tidak diketahui'), 'is-muted'],
+                };
+
+                return '<div class="wholesale-status-cell">'
+                    . '<span class="wholesale-status-badge ' . $class . '">' . e($label) . '</span>'
+                    . '<span class="wholesale-status-total">Rp ' . number_format((float) ($item->total_amount ?? 0), 0, ',', '.') . '</span>'
                     . '</div>';
             })
             ->addColumn('status_raw', function ($item) {
                 return $item->status;
             })
-            ->addColumn('action', function ($item) {
-                $html = '';
-                if ($item->status != 'complete') {
-                    $html .= '
-                    <div class="dropstart">
-                        <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                            <li>
-                                <a class="dropdown-item" href="' . route('wholesale.show', $item->id) . '">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </li>
-';
-                $isRecent = false;
-                $timeRef = isset($item->updated_at) ? $item->updated_at : (isset($item->created_at) ? $item->created_at : null);
-                if ($timeRef && \Carbon\Carbon::parse($timeRef)->diffInMinutes(now()) <= 30) {
-                    $isRecent = true;
+            ->addColumn('action', function ($item) use ($canViewWholesale, $canEditWholesale, $canDeleteWholesale) {
+                $html = '<div class="wholesale-row-actions">';
+                if ($canViewWholesale) {
+                    $html .= '<button class="wholesale-action-button wholesale-open-detail" type="button" aria-label="Lihat pengadaan ' . e($item->order_number) . '"><i class="ph ph-eye" aria-hidden="true"></i></button>';
                 }
-
-                if (in_array($item->status, ['temp', 'draft']) || $isRecent) {
-                    $html .= '
-                            <li>
-                                <a class="dropdown-item" href="' . route('wholesale.edit', $item->id) . '">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                            </li>';
+                if ($item->status !== 'complete' && $canEditWholesale) {
+                    $html .= '<a class="wholesale-action-button" href="' . route('wholesale.edit', $item->id) . '" aria-label="Edit pengadaan ' . e($item->order_number) . '"><i class="ph ph-pencil-simple" aria-hidden="true"></i></a>';
                 }
-                $html .= '
-                            <li>
-                                <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $item->id . ')">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    ';
-                } else {
-                    $html .= '
-                    <div class="dropstart">
-                        <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                            <li>
-                                <a class="dropdown-item" href="' . route('wholesale.show', $item->id) . '">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    ';
+                if ($item->status !== 'complete' && $canDeleteWholesale) {
+                    $html .= '<button class="wholesale-action-button is-danger" type="button" onclick="deleteProduct(' . (int) $item->id . ')" aria-label="Hapus pengadaan ' . e($item->order_number) . '"><i class="ph ph-trash" aria-hidden="true"></i></button>';
                 }
-                return $html;
+                return $html . '</div>';
             })
             ->addColumn('wholesale_id', function ($item) {
                 return $item->id;
             })
-            ->rawColumns(['name', 'action', 'status', 'address'])
+            ->addColumn('supplier_search', function ($item) {
+                return (string) ($item->supplier_names ?? '');
+            })
+            ->addColumn('detail_payload', function ($item) use ($canViewWholesale, $canEditWholesale, $canDeleteWholesale) {
+                if (! $canViewWholesale) {
+                    return null;
+                }
+
+                $canEdit = $item->status !== 'complete' && $canEditWholesale;
+
+                return [
+                    'id' => (int) $item->id,
+                    'order_number' => (string) ($item->order_number ?? '—'),
+                    'branch_name' => ucwords((string) ($item->branch_name ?? 'Tanpa cabang')),
+                    'total_label' => 'Rp ' . number_format((float) ($item->total_amount ?? 0), 0, ',', '.'),
+                    'item_count_label' => (int) ($item->total_product ?? 0) . ' Bahan Baku',
+                    'creator_name' => ucwords(strtolower((string) ($item->created_by ?? '—'))),
+                    'created_at_label' => \Carbon\Carbon::parse($item->created_at ?? $item->order_date)
+                        ->locale('id')
+                        ->translatedFormat('d M Y, H:i') . ' WIB',
+                    'edit_url' => $canEdit ? route('wholesale.edit', $item->id) : null,
+                    'can_edit' => (bool) $canEdit,
+                    'can_delete' => $item->status !== 'complete' && $canDeleteWholesale,
+                ];
+            })
+            ->rawColumns(['branch', 'po', 'staff', 'items', 'action', 'status', 'address'])
             ->make(true);
     }
 

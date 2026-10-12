@@ -1,19 +1,17 @@
-<div class="mt-4 border-top pt-3">
-    <div class="d-flex justify-content-between">
-        <div>
-            <span>Total</span> <span x-text="totalProduk"></span><span> Item</span>
+<div class="wholesale-summary mt-4 border-top pt-3">
+    <div class="wholesale-summary-total">
+        <div class="d-flex align-items-center gap-2">
+            <span>Total Belanja</span>
+            <span class="rounded-pill px-2 py-1" style="background:#d1fae5;color:#065f46;font-size:11px;" x-text="totalProduk"></span>
         </div>
-        <div class="fw-bold">
-            <span>Rp</span>
-            <span x-text="formatRupiah(totalHargaKeseluruhan)"></span>
-        </div>
+        <strong>@if (request()->routeIs('wholesale.edit')) Rp @endif<span x-text="formatRupiah(totalHargaKeseluruhan)"></span></strong>
     </div>
     <div class="row mt-5 gap-2">
         <div class="col" x-data="{ loadingDraft: false }">
             <button class="btn btn-primary w-100" @click="loadingDraft = true; saveTransaction(() => loadingDraft = false)"
                 :disabled="loadingDraft">
                 <template x-if="!loadingDraft">
-                    <span><i class="bi bi-save me-2"></i> Draft</span>
+                    <span>@unless (request()->routeIs('wholesale.edit'))<i class="ph ph-floppy-disk me-2"></i>@endunless{{ request()->routeIs('wholesale.edit') ? 'Simpan Perubahan' : 'Simpan sebagai Draf' }}</span>
                 </template>
                 <template x-if="loadingDraft">
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -24,7 +22,7 @@
             <button class="btn btn-success w-100" @click="loadingFinal = true; saveToOrderBook(() => loadingFinal = false)"
                 :disabled="loadingFinal">
                 <template x-if="!loadingFinal">
-                    <span><i class="bi bi-cash-stack me-2"></i> Submit</span>
+                    <span>@unless (request()->routeIs('wholesale.edit'))<i class="ph-bold ph-check me-2"></i>@endunless Selesaikan Transaksi</span>
                 </template>
                 <template x-if="loadingFinal">
                     <span>

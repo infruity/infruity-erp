@@ -947,8 +947,11 @@ set formattedEditSell(val) {
                 }
 
                 if (data.branch) {
-                    let option = new Option(data.branch.name, data.branch.id, true, true);
-                    $('#branch_id').append(option).val(data.branch.id).trigger('change');
+                    const branchSelect = $('#branch_id');
+                    if (!branchSelect.find('option[value="' + data.branch.id + '"]').length) {
+                        branchSelect.append(new Option(data.branch.name, data.branch.id, true, true));
+                    }
+                    branchSelect.val(data.branch.id).trigger('change');
                 }
 
                 if (data.payment_method) {
