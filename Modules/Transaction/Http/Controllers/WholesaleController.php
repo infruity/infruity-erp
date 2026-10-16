@@ -921,6 +921,15 @@ class WholesaleController extends Controller
                     'message' => 'Pengadaan yang sudah selesai tidak dapat diubah.',
                 ], 409);
             }
+
+            // Auto-save (status temp) hanya boleh menimpa draft sementara; jangan turunkan
+            // status Pending/Posting menjadi temp karena stok & HPP hanya membaca status posting.
+            if ($existingOrder && ($data['status'] ?? 'draft') === 'temp' && $existingOrder->status !== 'temp') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Auto-save dilewati: pengadaan ini sudah disimpan, gunakan tombol simpan.',
+                ], 409);
+            }
         }
 
         try {

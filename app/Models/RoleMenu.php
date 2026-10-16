@@ -22,6 +22,13 @@ class RoleMenu extends Model
         return $this->belongsTo(Permission::class, 'permission', 'name');
     }
 
+    public static function currentRoleId(): ?int
+    {
+        $roleId = data_get(Session("role"), "id_role");
+
+        return $roleId === null ? null : (int) $roleId;
+    }
+
     public static function checkAccess($permission)
     {
         if (Session("role")["id_role"] == 1) {
