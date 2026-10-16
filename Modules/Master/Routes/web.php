@@ -77,6 +77,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::delete('products/variants/{id}', [ProductController::class, 'destroyVariant'])->name('products.destroy-variant');
     Route::get('products/get-product-receipt', [ProductController::class, 'getProductReceipt'])->name('products.get-product-receipt');
     Route::post('products/generate-branch-price', [ProductController::class, 'generateBranchPrice'])->name('products.generate-branch-price');
+    Route::post('products/recalculate-hpp', [ProductController::class, 'recalculateHpp'])->name('products.recalculate-hpp');
     Route::get('staff/get-staff', [StaffController::class, 'getStaff'])->name('staff.get-staff');
     Route::get('customer/get-customer', [CustomerController::class, 'getCustomer'])->name('customer.get-customer');
     Route::get('customer/get-address', [CustomerController::class, 'getAddress'])->name('customer.get-address');

@@ -958,6 +958,59 @@ class ProductController extends Controller
         return response()->json($query);
     }
 
+    /**
+     * Sinkronkan snapshot products.hpp dengan HPP berjalan terakhir dari view product_hpp.
+     * Pengganti reset transaksi: tidak menghapus data apa pun dan aman dijalankan ulang.
+     */
+    public function recalculateHpp()
+    {
+        if ($denied = $this->requireAccess('products.recalculate-hpp')) {
+            return $denied;
+        }
+
+        try {
+            $latestHpp = DB::table('product_hpp')
+                ->select('product_id', 'hpp_berjalan', 'created_at')
+                ->orderByDesc('created_at')
+                ->get()
+                ->unique('product_id')
+                ->filter(fn ($row) => $row->hpp_berjalan !== null);
+
+            $childrenByParent = ProductChild::whereIn('parent_id', $latestHpp->pluck('product_id'))
+                ->get(['parent_id', 'product_id'])
+                ->groupBy('parent_id');
+
+            DB::beginTransaction();
+            $updatedRows = 0;
+            foreach ($latestHpp as $row) {
+                $productIds = $childrenByParent->get($row->product_id, collect())
+                    ->pluck('product_id')
+                    ->push($row->product_id)
+                    ->all();
+
+                $updatedRows += DB::table('products')
+                    ->whereIn('id', $productIds)
+                    ->update(['hpp' => $row->hpp_berjalan]);
+            }
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "HPP berhasil dihitung ulang untuk {$latestHpp->count()} produk.",
+                'products' => $latestHpp->count(),
+                'updated_rows' => $updatedRows,
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghitung ulang HPP.',
+            ], 500);
+        }
+    }
+
     public function generateBranchPrice(Request $request)
     {
         if ($denied = $this->requireAccess('products.generate-branch-price')) {

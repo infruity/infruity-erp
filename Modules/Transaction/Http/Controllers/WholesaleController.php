@@ -786,6 +786,15 @@ class WholesaleController extends Controller
             return $denied;
         }
 
+        // TRUNCATE seluruh transaksi tidak bisa di-undo; hanya untuk development.
+        // Untuk HPP yang kacau di lapangan gunakan products/recalculate-hpp.
+        if (! app()->environment('local')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Reset transaksi hanya tersedia di environment local. Gunakan Hitung Ulang HPP.',
+            ], 403);
+        }
+
         $tables = [
             'wholesale',
             'wholesale_product',
@@ -901,6 +910,7 @@ class WholesaleController extends Controller
         }
 
         $userId = Auth::user()->id_user;
+        $existingOrder = null;
         if (! empty($data['invoice_number'])) {
             $existingOrder = Wholesale::where('order_number', $data['invoice_number'])->first();
             $isAccessibleOrder = $existingOrder && (
@@ -973,8 +983,12 @@ class WholesaleController extends Controller
                     ['order_number' => $data['invoice_number']],
                     $wholesaleData
                 );
-                $wholesale->created_at = now();
-                $wholesale->save();
+                // Waktu transaksi dikunci saat pertama kali keluar dari draft sementara;
+                // edit berikutnya tidak boleh menggeser urutan riwayat stok & HPP.
+                if (! $existingOrder || $existingOrder->status === 'temp') {
+                    $wholesale->created_at = now();
+                    $wholesale->save();
+                }
             } else {
                 // Cek jika ada draft existing untuk diupdate
                 $draft = Wholesale::where('created_by', $userId)

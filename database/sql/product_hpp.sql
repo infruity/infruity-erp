@@ -19,7 +19,7 @@ WITH RECURSIVE ordered_trx AS (
         -- ================= PENGADAAN =================
         SELECT
             COALESCE(pc.parent_id, p.product_id) AS product_id,
-            p.created_at,
+            w.created_at,
             p.quantity AS qty,
             p.price AS harga_satuan,
             CASE
@@ -33,7 +33,10 @@ WITH RECURSIVE ordered_trx AS (
             p.wholesale_id AS trx_id,
             'pengadaan' AS trx_type
         FROM wholesale_product p
+        JOIN wholesale w ON w.id = p.wholesale_id
         LEFT JOIN product_child pc ON pc.product_id = p.product_id
+        WHERE w.status IN ('posting', 'complete')
+          AND p.product_id != 0
 
         UNION ALL
 
@@ -50,7 +53,9 @@ WITH RECURSIVE ordered_trx AS (
             b.sortir_id AS trx_id,
             'barang_buang' AS trx_type
         FROM sortir_transaction_detail b
+        JOIN sortir_transaction s ON s.id = b.sortir_id
         LEFT JOIN product_child pc ON pc.product_id = b.product_id
+        WHERE s.status IN ('paid', 'debt')
 
         UNION ALL
 
@@ -70,7 +75,8 @@ WITH RECURSIVE ordered_trx AS (
         JOIN pos_transaction pos ON d.pos_id = pos.id
         LEFT JOIN product_child pc ON pc.product_id = d.product_id
         WHERE pos.deleted_at IS NULL
-        AND pos.status != 'draft'
+        AND d.deleted_at IS NULL
+        AND pos.status IN ('paid', 'debt')
 
         UNION ALL
 
@@ -87,7 +93,9 @@ WITH RECURSIVE ordered_trx AS (
             d.production_id AS trx_id,
             'bahan_produksi' AS trx_type
         FROM production_detail d
+        JOIN production pr ON pr.id = d.production_id
         LEFT JOIN product_child pc ON pc.product_id = d.product_id
+        WHERE pr.status IN ('posting', 'complete')
 
         UNION ALL
 
@@ -106,6 +114,7 @@ WITH RECURSIVE ordered_trx AS (
         FROM production d
         LEFT JOIN products as p ON d.product_id = p.id
         LEFT JOIN product_child pc ON pc.product_id = d.product_id
+        WHERE d.status IN ('posting', 'complete')
 
         UNION ALL
 
@@ -123,6 +132,7 @@ WITH RECURSIVE ordered_trx AS (
             'opname' AS trx_type
         FROM stock_opname o
         LEFT JOIN product_child pc ON pc.product_id = o.product_id
+        WHERE o.status = 'selesai'
     ) x
 ),
 

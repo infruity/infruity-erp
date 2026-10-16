@@ -61,7 +61,7 @@ WITH base AS (
         ON wholesale_product.wholesale_id = wholesale.id
     LEFT JOIN users u3
         ON u3.id_user = wholesale.created_by
-    WHERE wholesale.status = 'posting'
+    WHERE wholesale.status IN ('posting', 'complete')
         AND wholesale_product.product_id != 0
 
     UNION ALL
