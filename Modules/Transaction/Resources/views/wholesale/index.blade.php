@@ -9,7 +9,7 @@
 @section('content')
     <div x-data="{ filtersOpen: false, branchSearch: '', mobileBranch: 'all', mobileStatus: 'all' }" class="flex min-h-0 flex-1 flex-col -mx-4 md:mx-0">
         <section class="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-none bg-white shadow-none lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm">
-            <header class="shrink-0 border-b border-gray-100 px-4 py-4 md:px-5">
+            <header class="shrink-0 border-b border-gray-100 px-0 py-0 sm:px-4 sm:py-4 md:px-5">
                 <div class="mb-3 hidden items-center justify-between gap-3 md:mb-4 sm:flex">
                     <div class="min-w-0">
                         <h1 class="truncate text-base font-bold text-gray-900 md:text-lg">Pengadaan</h1>
@@ -19,18 +19,11 @@
 
                 <div class="relative flex items-center gap-3">
                     <div class="relative min-w-0 flex-1">
-                    <div class="wholesale-search-pill relative flex h-11 min-w-0 flex-1 items-center rounded-full border border-gray-200/80 bg-gray-50/60 pl-4 pr-1.5 transition focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-1 focus-within:ring-emerald-500">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2.5 h-[18px] w-[18px] shrink-0 text-[#0b595b]/80" aria-hidden="true">
-                            <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                        <input id="wholesale-search" type="search" placeholder="Cari cabang, nomor PO, atau bahan..." class="h-full min-w-0 flex-1 bg-transparent text-[13.5px] font-medium text-gray-800 outline-none placeholder:text-gray-400" autocomplete="off">
-                        <button id="wholesale-search-clear" type="button" class="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-400 transition hover:bg-black/5 hover:text-gray-700" aria-label="Hapus pencarian"><i class="ph-bold ph-x text-xs"></i></button>
-                        <span class="mx-1 h-4 w-px shrink-0 bg-gray-200" aria-hidden="true"></span>
-                        <button type="button" @click="filtersOpen = !filtersOpen; if (filtersOpen) { mobileStatus = getWholesaleFilter('status') || 'all'; mobileBranch = getWholesaleFilter('branch') || 'all'; branchSearch = ''; filterWholesaleBranches(''); }" :aria-expanded="filtersOpen" aria-label="Buka filter pengadaan" class="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#526b6b] transition hover:bg-emerald-50 hover:text-[#0b595b] active:scale-95" :class="filtersOpen ? 'bg-emerald-50 text-[#0b595b]' : ''">
-                            <span class="icon-rounded text-xl leading-none" aria-hidden="true">tune</span>
-                            <span id="wholesale-filter-dot" class="hidden absolute right-1 top-1 h-2 w-2 rounded-full bg-[#0b595b] ring-2 ring-white"></span>
-                        </button>
-                    </div>
+                    <x-erp.mobile-search class="erp-mobile-search-shell--always-visible erp-mobile-search-shell--fill erp-mobile-search-shell--flush">
+                        <x-slot:input><input id="wholesale-search" type="search" placeholder="Cari cabang, nomor PO, atau bahan..." autocomplete="off" aria-label="Cari cabang, nomor PO, atau bahan" class="erp-mobile-search__input"></x-slot:input>
+                        <x-slot:clear><button id="wholesale-search-clear" type="button" class="erp-mobile-search__clear hidden" aria-label="Hapus pencarian"><i class="ph-bold ph-x text-xs"></i></button></x-slot:clear>
+                        <x-slot:filter><button type="button" @click="filtersOpen = !filtersOpen; if (filtersOpen) { mobileStatus = getWholesaleFilter('status') || 'all'; mobileBranch = getWholesaleFilter('branch') || 'all'; branchSearch = ''; filterWholesaleBranches(''); }" :aria-expanded="filtersOpen" aria-label="Buka filter pengadaan" class="erp-mobile-search__filter" :class="filtersOpen ? 'is-active' : ''"><span class="icon-rounded text-xl leading-none" aria-hidden="true">tune</span><span id="wholesale-filter-dot" class="hidden absolute right-1 top-1 h-2 w-2 rounded-full bg-[#0b595b] ring-2 ring-white"></span></button></x-slot:filter>
+                    </x-erp.mobile-search>
 
                     <div x-show="filtersOpen && window.matchMedia('(min-width: 768px)').matches" x-cloak @click.outside="filtersOpen = false" @keydown.escape.window="filtersOpen = false" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="translate-y-1 opacity-0 scale-95" x-transition:enter-end="translate-y-0 opacity-100 scale-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="translate-y-0 opacity-100 scale-100" x-transition:leave-end="translate-y-1 opacity-0 scale-95" class="absolute right-0 top-12 z-50 hidden w-72 rounded-2xl border border-gray-100 bg-white p-4 shadow-xl md:block">
                             <div class="mb-3 flex items-center justify-between border-b border-gray-100 pb-2.5">
@@ -214,7 +207,6 @@
         #wholesale-table_wrapper .paginate_button { border-radius:9px !important; padding:6px 10px !important; color:#4b5563 !important; font-size:12px; }
         #wholesale-table_wrapper .paginate_button.current { border:0 !important; background:#ecfdf5 !important; color:#0b595b !important; }
         #wholesale-table td.dataTables_empty { padding:36px 16px !important; color:#6b7280; text-align:center; }
-        .wholesale-search-pill input[type="search"]::-webkit-search-cancel-button { display:none; }
         .wholesale-empty-state { display:flex; min-height:300px; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center; }
         .wholesale-empty-icon { display:flex; width:56px; height:56px; align-items:center; justify-content:center; margin-bottom:4px; border:1px solid #d1fae5; border-radius:20px; background:#ecfdf5; color:#0b595b; font-size:26px; }
         .wholesale-empty-title { color:#1f2937; font-size:14px; font-weight:700; }

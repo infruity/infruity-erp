@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Crm\Http\Controllers\CampaignController;
 use Modules\Report\Http\Controllers\ReportController;
+use Modules\Report\Http\Controllers\MobileReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,6 +17,9 @@ use Modules\Report\Http\Controllers\ReportController;
 */
 
 Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
+    Route::get('reports/mobile/{type}/dates', [MobileReportController::class, 'dates'])->name('reports.mobile.dates');
+    Route::get('reports/mobile/{type}/history', [MobileReportController::class, 'dateHistory'])->name('reports.mobile.history');
+    Route::get('reports', [ReportController::class, 'hub'])->name('reports.hub');
     Route::get('report-transaction', [ReportController::class, 'index'])->name('report-transaction');
     Route::get('report-customer-transaction', [ReportController::class, 'customer_transaction'])->name('report-customer-transaction');
     Route::get('report-branch-transaction', [ReportController::class, 'branch_transaction'])->name('report-branch-transaction');

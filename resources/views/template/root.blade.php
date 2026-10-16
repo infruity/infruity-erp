@@ -19,10 +19,15 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="{{ asset('images/logo-infruity.png') }}" />
-    
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!--begin::Fonts(mandatory for all pages)-->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
     <!--end::Fonts-->
     <!--begin::Vendor Stylesheets(used for this page only)-->
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}">
@@ -30,16 +35,26 @@
     <!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/global/plugins.bundle.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.bundle.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/erp-mobile-search.css') }}?v={{ filemtime(public_path('assets/css/erp-mobile-search.css')) }}">
+    <script>
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = { corePlugins: { preflight: false }, theme: { extend: {
+            colors: { primary: '#0F5C45', strawberry: '#D6455D' },
+            fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], serif: ['"Poppins"', 'sans-serif'] },
+            boxShadow: { soft: '0 10px 40px -10px rgba(0,0,0,0.08)' }
+        } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     @isset($livewire)
         @livewireStyles
     @endisset
-    @isset($alpinejs)
-        <script>
-            console.log('load alpinejs');
-        </script>
-        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    @endisset
+    <script>
+        function erpMobileChrome() {
+            return { sidebarOpen: false, sidebarCollapsed: false, theme: 'dark' };
+        }
+    </script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!--end::Global Stylesheets Bundle-->
     <script>
         // Frame-busting to prevent site from being loaded within a frame without permission (click-jacking) if (window.top != window.self) { window.top.location.replace(window.self.location.href); }
@@ -73,33 +88,23 @@
     <!--end::Theme mode setup on page load-->
     <!--begin::Main-->
     <!--begin::Root-->
-    <div class="d-flex flex-column flex-root">
-        <!--begin::Page-->
-        <div class="page d-flex flex-row flex-column-fluid">
-            @include('template.aside')
-            <!--begin::Wrapper-->
-            <div class="wrapper d-flex flex-column flex-row-fluid" id="kt_wrapper" {{-- style="padding-bottom: 50px;" --}}>
-                @include('template.header')
-                <!--begin::Content-->
-                <div class="content d-flex flex-column flex-column-fluid main-content pb-5 pb-md-0" id="kt_content">
-                    <!--begin::Post-->
-                    <div class="post d-flex flex-column-fluid" id="kt_post">
-                        <!--begin::Container-->
-                        <div id="kt_content_container" class="container-xxl">
-                            @include('template.notif')
-                            {{-- <button id="btn-notif">Aktifkan Notifikasi</button> --}}
-                            @yield('content')
-                        </div>
-                        <!--end::Container-->
+    <div class="flex h-[100dvh] min-h-[100dvh] w-full overflow-hidden bg-[#e5e9f3] font-sans text-gray-800 antialiased"
+        x-data="erpMobileChrome()" @erp-mobile-sidebar-toggle.window="sidebarOpen = true">
+        <x-erp.sidebar />
+        <div class="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+            <x-erp.topbar />
+            <main id="kt_content" class="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-none px-0 py-0 md:px-6 md:py-6 lg:px-8 scrollbar-hide">
+                <div id="kt_post" class="flex min-h-0 flex-1 flex-col">
+                    <div id="kt_content_container" class="container-xxl w-full flex-1 px-0 md:px-2">
+                        @include('template.notif')
+                        @yield('content')
                     </div>
-                    <!--end::Post-->
                 </div>
-                <!--end::Content-->
-                @include('template.footer')
-            </div>
-            <!--end::Wrapper-->
+            </main>
         </div>
-        <!--end::Page-->
+        @unless (request()->routeIs('reports.hub', 'report-*'))
+            <x-erp.mobile-navbar />
+        @endunless
     </div>
     <!--end::Root-->
     {{-- @include('template.drawer') --}}

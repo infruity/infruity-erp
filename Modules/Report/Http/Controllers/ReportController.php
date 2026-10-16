@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Modules\Master\Entities\Branch;
+use Modules\Master\Entities\Kurir;
+use Modules\Master\Entities\UserBranch;
 use Modules\Pos\Entities\PosDetailModel;
 use Modules\Report\Entities\BranchProduct;
 use Modules\Report\Entities\BranchTransaction;
@@ -17,6 +19,84 @@ use Yajra\DataTables\Facades\DataTables;
 class ReportController extends Controller
 {
     use \App\Traits\HasAccessControl;
+
+    private function scopeReportBranch($query, Request $request, string $column, string $parameter = 'branch_id'): void
+    {
+        $requested = (string) $request->input($parameter, 'all');
+        $allowed = array_map('intval', UserBranch::getUserBranch());
+        $isAdmin = \App\Models\RoleMenu::currentRoleId() === 1;
+
+        if ($requested === 'null') {
+            abort_unless($isAdmin, 403);
+            $query->whereNull($column);
+        } elseif ($requested !== 'all' && $requested !== '') {
+            abort_unless(ctype_digit($requested) && in_array((int) $requested, $allowed, true), 403);
+            $query->where($column, (int) $requested);
+        } elseif (! $isAdmin) {
+            $query->whereIn($column, $allowed);
+        }
+    }
+
+    private function authorizeLegacyAggregate(string $permission): void
+    {
+        $this->authorizeAccess($permission);
+        // Stored procedures aggregate all branches before PHP can filter them.
+        abort_unless(\App\Models\RoleMenu::currentRoleId() === 1, 403);
+    }
+
+    private function applyReportSearch($query, Request $request, array $nameColumns, ?string $dateColumn = null): void
+    {
+        $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
+        if ($searchValue === '') return;
+
+        $like = '%' . $searchValue . '%';
+        $dateLabelSql = $dateColumn ? $this->indonesianDateLabelSql($dateColumn) : null;
+
+        $query->where(function ($searchQuery) use ($nameColumns, $like, $dateLabelSql) {
+            foreach ($nameColumns as $index => $column) {
+                $method = $index === 0 ? 'where' : 'orWhere';
+                $searchQuery->{$method}($column, 'like', $like);
+            }
+
+            if ($dateLabelSql) $searchQuery->orWhereRaw($dateLabelSql . ' LIKE ?', [$like]);
+        });
+    }
+
+    private function applyDateBounds($query, string $column, Request $request): void
+    {
+        if ($request->filled('start_date')) $query->whereDate($column, '>=', $request->input('start_date'));
+        if ($request->filled('end_date')) $query->whereDate($column, '<=', $request->input('end_date'));
+    }
+
+    private function indonesianDateLabelSql(string $column): string
+    {
+        return "LOWER(CONCAT(
+            CASE DAYOFWEEK({$column})
+                WHEN 1 THEN 'minggu' WHEN 2 THEN 'senin' WHEN 3 THEN 'selasa'
+                WHEN 4 THEN 'rabu' WHEN 5 THEN 'kamis' WHEN 6 THEN 'jumat' WHEN 7 THEN 'sabtu'
+            END,
+            ', ', DATE_FORMAT({$column}, '%d '),
+            CASE MONTH({$column})
+                WHEN 1 THEN 'januari' WHEN 2 THEN 'februari' WHEN 3 THEN 'maret'
+                WHEN 4 THEN 'april' WHEN 5 THEN 'mei' WHEN 6 THEN 'juni'
+                WHEN 7 THEN 'juli' WHEN 8 THEN 'agustus' WHEN 9 THEN 'september'
+                WHEN 10 THEN 'oktober' WHEN 11 THEN 'november' WHEN 12 THEN 'desember'
+            END,
+            ' ', DATE_FORMAT({$column}, '%Y')
+        ))";
+    }
+
+    public function hub()
+    {
+        $reportPermissions = [
+            'report.total.aset', 'report.product.sales', 'report.profit.revenue',
+            'report.profit.adjusted', 'report.shipping.cost', 'report.product.buang',
+        ];
+
+        abort_unless(collect($reportPermissions)->contains(fn ($permission) => $this->hasAccess($permission)), 403);
+
+        return view('report::hub');
+    }
 
     /**
      * Display a listing of the resource.
@@ -33,35 +113,27 @@ class ReportController extends Controller
 
     public function customer_transaction(Request $request)
     {
-        if ($denied = $this->requireAccess('report.customer.transaction')) {
-            return $denied;
-        }
+        $this->authorizeLegacyAggregate('report.customer.transaction');
 
         return view('report::customer-transaction-rep');
     }
 
     public function branch_transaction(Request $request)
     {
-        if ($denied = $this->requireAccess('report.branch.transaction')) {
-            return $denied;
-        }
+        $this->authorizeLegacyAggregate('report.branch.transaction');
 
         return view('report::branch-transaction-rep');
     }
 
     public function branch_product(Request $request)
     {
-        if ($denied = $this->requireAccess('report.branch.product')) {
-            return $denied;
-        }
+        $this->authorizeLegacyAggregate('report.branch.product');
 
         return view('report::branch-product-rep');
     }
     public function customer_product(Request $request)
     {
-        if ($denied = $this->requireAccess('report.customer.product')) {
-            return $denied;
-        }
+        $this->authorizeLegacyAggregate('report.customer.product');
 
         return view('report::product-customer-transaction-rep');
     }
@@ -111,6 +183,7 @@ class ReportController extends Controller
         }
 
         $data['branches']    = Branch::all();
+        $data['couriers']    = Kurir::query()->orderBy('name')->get();
         $data['defaultDate'] = date('Y-m-d');
         return view('report::shipping-cost', $data);
     }
@@ -126,7 +199,9 @@ class ReportController extends Controller
 
     public function get_data_transaction(Request $request)
     {
+        $this->authorizeAccess('report.transaction');
         $data = CustomerTransaction::query();
+        $this->scopeReportBranch($data, $request, 'branch_id');
 
         return DataTables::of($data)
             ->addIndexColumn()
@@ -190,6 +265,7 @@ class ReportController extends Controller
 
     public function get_data_customer_transaction(Request $request)
     {
+        $this->authorizeLegacyAggregate('report.customer.transaction');
         $dr_tgl = date('Y-01-01');
         $sp_tgl = date('Y-12-31');
         $data   = CustomerTransaction::getAllCustomerTransaction($dr_tgl, $sp_tgl);
@@ -229,6 +305,7 @@ class ReportController extends Controller
 
     public function get_data_branch_transaction(Request $request)
     {
+        $this->authorizeLegacyAggregate('report.branch.transaction');
         $dr_tgl = $request->dr_tgl ?? date('Y-01-01');
         $sp_tgl = $request->sp_tgl ?? date('Y-12-31');
         $data   = BranchTransaction::getAllBranchTransaction($dr_tgl, $sp_tgl);
@@ -267,6 +344,7 @@ class ReportController extends Controller
 
     public function get_data_branch_product(Request $request)
     {
+        $this->authorizeLegacyAggregate('report.branch.product');
         $dr_tgl = $request->dr_tgl ?? date('Y-01-01');
         $sp_tgl = $request->sp_tgl ?? date('Y-12-31');
         $data   = BranchProduct::getAllBranchProduct($dr_tgl, $sp_tgl);
@@ -311,6 +389,7 @@ class ReportController extends Controller
 
     public function get_data_customer_product(Request $request)
     {
+        $this->authorizeLegacyAggregate('report.customer.product');
         $dr_tgl = $request->dr_tgl ?? date('Y-01-01');
         $sp_tgl = $request->sp_tgl ?? date('Y-12-31');
         $data   = CustomerProduct::getAllCustomerProduct($dr_tgl, $sp_tgl);
@@ -366,6 +445,8 @@ class ReportController extends Controller
 
     public function get_data_barang_buang(Request $request)
     {
+        $this->authorizeAccess('report.product.buang');
+
         $startDate = $request->start_date ?? date('Y-01-01');
         $endDate   = $request->end_date ?? date('Y-12-31');
 
@@ -375,29 +456,27 @@ class ReportController extends Controller
             ->join('product_units as D', 'C.product_unit', '=', 'D.id')
             ->select(
                 'sortir_transaction_detail.product_id',
-                'B.branch_id',
                 DB::raw('SUM(sortir_transaction_detail.quantity) as quantity'),
                 'C.name',
                 'D.id as unit_id',
                 'D.abbreviation as satuan',
                 'D.name as product_unit',
-                DB::raw('AVG(sortir_transaction_detail.price) as hpp'),
+                DB::raw('sortir_transaction_detail.price as hpp'),
                 DB::raw('SUM(sortir_transaction_detail.subtotal) as total_hpp')
             )->whereBetween('B.date', [$startDate, $endDate]);
 
         if ($request->has('branch_id') && $request->branch_id !== 'all') {
-            $query->where('B.branch_id', $request->branch_id);
+            if ($request->branch_id === 'null') $query->whereNull('B.branch_id');
+            else $query->where('B.branch_id', $request->branch_id);
         }
+        $this->scopeReportBranch($query, $request, 'B.branch_id');
 
-        $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
-        if ($searchValue !== '') {
-            $query->where('C.name', 'like', '%' . $searchValue . '%');
-        }
+        $this->applyReportSearch($query, $request, ['C.name'], 'B.date');
 
         $grandTotalQuery = clone $query;
         $grandTotal      = $grandTotalQuery->sum('sortir_transaction_detail.subtotal');
 
-        $query = $query->groupBy('sortir_transaction_detail.product_id')->orderByDesc('total_hpp');
+        $query = $query->groupBy('sortir_transaction_detail.product_id', 'sortir_transaction_detail.price', 'C.name', 'D.id', 'D.abbreviation', 'D.name')->orderByDesc('total_hpp');
 
         return DataTables::of($query)
             ->filter(function ($queryInstance) {
@@ -428,7 +507,7 @@ class ReportController extends Controller
                 return number_format($row->hpp, 0, ',', '.');
             })
             ->editColumn('total_hpp', function ($row) {
-                return number_format($row->quantity * $row->hpp, 0, ',', '.');
+                return number_format($row->total_hpp, 0, ',', '.');
             })
             ->rawColumns(['satuan'])
             ->with([
@@ -439,12 +518,16 @@ class ReportController extends Controller
 
     public function get_data_product_sales(Request $request)
     {
+        $this->authorizeAccess('report.product.sales');
+
         $startDate = $request->filled('start_date') ? $request->start_date : date('Y-m-d');
         $endDate   = $request->filled('end_date') ? $request->end_date : date('Y-m-d');
 
         // Query utama
         $data = PosDetailModel::select(
             'pos_transaction_detail.product_id',
+            'pos_transaction_detail.price',
+            DB::raw('pos_transaction_detail.price as price_value'),
             'products.name',
             'product_units.abbreviation as unit',
             DB::raw('COUNT(pos_transaction_detail.product_id) AS total_beli'),
@@ -463,16 +546,19 @@ class ReportController extends Controller
             ->join('pos_transaction', 'pos_transaction_detail.pos_id', '=', 'pos_transaction.id')
             ->whereBetween('pos_transaction.date', [$startDate, $endDate])
             ->whereNull('pos_transaction_detail.deleted_at')  // hanya yang belum dihapus
-            ->where('pos_transaction.status', '!=', 'draft'); // status bukan draft
+            ->whereNull('pos_transaction.deleted_at')
+            ->whereIn('pos_transaction.status', ['paid', 'debt']); // status bukan draft
 
         if ($request->has('branch_id') && $request->branch_id != 'all') {
-            $data = $data->where('pos_transaction.branch_id', $request->branch_id);
+            if ($request->branch_id === 'null') $data->whereNull('pos_transaction.branch_id');
+            else $data->where('pos_transaction.branch_id', $request->branch_id);
         }
+        $this->scopeReportBranch($data, $request, 'pos_transaction.branch_id');
 
         $this->applyProductSalesSearch($data, $request);
 
         // Grouping dan urutan data
-        $data = $data->groupBy('pos_transaction_detail.product_id', 'products.name', 'product_units.abbreviation')
+        $data = $data->groupBy('pos_transaction_detail.product_id', 'pos_transaction_detail.price', 'products.name', 'product_units.abbreviation')
             ->orderByDesc('total');
 
         // Clone query untuk menghitung grand total dari data yang sudah di-group dan di-filter
@@ -492,10 +578,8 @@ class ReportController extends Controller
             ]);
         }
 
-        return $response->addColumn('price', function ($row) {
-                $qty = (float)$row->quantity;
-                $price = $qty > 0 ? $row->total / $qty : 0;
-                return 'Rp ' . number_format($price, 0, ',', '.');
+        return $response->editColumn('price', function ($row) {
+                return 'Rp ' . number_format((float) $row->price, 0, ',', '.');
             })
             ->editColumn('qty_formatted', function ($row) {
                 return (int) $row->quantity == $row->quantity ? number_format($row->quantity, 0, ',', '.') : number_format($row->quantity, 2, ',', '.');
@@ -514,11 +598,14 @@ class ReportController extends Controller
 
     public function get_data_profit_revenue(Request $request)
     {
+        $this->authorizeAccess('report.profit.revenue');
+
         $startDate = $request->filled('start_date') ? $request->start_date : date('Y-m-d');
         $endDate   = $request->filled('end_date') ? $request->end_date : date('Y-m-d');
 
         $data = \Modules\Pos\Entities\PosDetailModel::select(
             'pos_transaction_detail.product_id',
+            'pos_transaction_detail.price',
             'products.name',
             'product_units.abbreviation as unit',
             DB::raw('SUM(pos_transaction_detail.quantity) AS quantity'),
@@ -532,18 +619,17 @@ class ReportController extends Controller
             ->whereBetween('pos_transaction.date', [$startDate, $endDate])
             ->whereNull('pos_transaction_detail.deleted_at')
             ->whereNull('pos_transaction.deleted_at')
-            ->where('pos_transaction.status', '!=', 'draft');
+            ->whereIn('pos_transaction.status', ['paid', 'debt']);
 
         if ($request->has('branch_id') && $request->branch_id != 'all') {
-            $data = $data->where('pos_transaction.branch_id', $request->branch_id);
+            if ($request->branch_id === 'null') $data->whereNull('pos_transaction.branch_id');
+            else $data->where('pos_transaction.branch_id', $request->branch_id);
         }
+        $this->scopeReportBranch($data, $request, 'pos_transaction.branch_id');
 
-        $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
-        if ($searchValue !== '') {
-            $data->where('products.name', 'like', '%' . $searchValue . '%');
-        }
+        $this->applyReportSearch($data, $request, ['products.name'], 'pos_transaction.date');
 
-        $data = $data->groupBy('pos_transaction_detail.product_id', 'products.name', 'product_units.abbreviation')
+        $data = $data->groupBy('pos_transaction_detail.product_id', 'pos_transaction_detail.price', 'products.name', 'product_units.abbreviation')
             ->orderByDesc('laba_kotor');
 
         $response = DataTables::of($data);
@@ -586,33 +672,51 @@ class ReportController extends Controller
 
     public function get_data_shipping_cost(Request $request)
     {
+        $this->authorizeAccess('report.shipping.cost');
+
         $startDate = $request->filled('start_date') ? $request->start_date : date('Y-m-d');
         $endDate   = $request->filled('end_date') ? $request->end_date : date('Y-m-d');
+        $shippingDiscount = 'CASE WHEN COALESCE(pos_transaction.ongkir_discount, 0) BETWEEN 1 AND 100 THEN COALESCE(pos_transaction.ongkir, 0) * pos_transaction.ongkir_discount / 100 ELSE COALESCE(pos_transaction.ongkir_discount, 0) END';
 
         // Query
         $data = \Modules\Pos\Entities\PosModel::select(
             'pos_transaction.courier_id',
             'kurir.name as courier_name',
+            'pos_transaction.branch_id',
+            'branch.name as branch_name',
             DB::raw('COUNT(pos_transaction.id) AS total_transaksi'),
-            DB::raw('SUM(pos_transaction.ongkir) AS total_ongkir')
+            DB::raw("SUM(COALESCE(pos_transaction.ongkir, 0) - ({$shippingDiscount})) AS total_ongkir")
         )
             ->leftJoin('kurir', 'pos_transaction.courier_id', '=', 'kurir.id')
+            ->leftJoin('branch', 'pos_transaction.branch_id', '=', 'branch.id')
             ->whereBetween('pos_transaction.date', [$startDate, $endDate])
             ->whereNull('pos_transaction.deleted_at')
-            ->where('pos_transaction.status', '!=', 'draft');
+            ->where('pos_transaction.ongkir', '>', 0)
+            ->whereIn('pos_transaction.status', ['paid', 'debt']);
 
         if ($request->has('branch_id') && $request->branch_id != 'all') {
-            $data = $data->where('pos_transaction.branch_id', $request->branch_id);
+            if ($request->branch_id === 'null') $data->whereNull('pos_transaction.branch_id');
+            else $data->where('pos_transaction.branch_id', $request->branch_id);
+        }
+        $this->scopeReportBranch($data, $request, 'pos_transaction.branch_id');
+
+        if ($request->filled('courier_id') && $request->courier_id !== 'all') {
+            if ($request->courier_id === 'null') $data->whereNull('pos_transaction.courier_id');
+            else $data->where('pos_transaction.courier_id', $request->courier_id);
         }
 
         $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
         if ($searchValue !== '') {
-            $data->where('kurir.name', 'like', '%' . $searchValue . '%');
+            $data->where(function ($query) use ($searchValue) {
+                $query->where('kurir.name', 'like', '%' . $searchValue . '%')
+                    ->orWhere('branch.name', 'like', '%' . $searchValue . '%');
+            });
         }
 
         // Grouping
-        $data = $data->groupBy('pos_transaction.courier_id', 'kurir.name')
-            ->orderByDesc('total_ongkir');
+        $data = $data->groupBy('pos_transaction.courier_id', 'kurir.name', 'pos_transaction.branch_id', 'branch.name')
+            ->orderBy('kurir.name')
+            ->orderBy('branch.name');
 
         $response = DataTables::of($data);
 
@@ -642,6 +746,8 @@ class ReportController extends Controller
 
     public function get_shipping_cost_history(Request $request)
     {
+        $this->authorizeAccess('report.shipping.cost');
+
         $startDate = $request->start_date;
         $endDate   = $request->end_date;
         $branch    = $request->branch ?: 'all';
@@ -661,23 +767,23 @@ class ReportController extends Controller
             ->leftJoin('kurir', 'pos_transaction.courier_id', '=', 'kurir.id')
             ->leftJoin('customer', 'pos_transaction.customer_id', '=', 'customer.id')
             ->whereNull('pos_transaction.deleted_at')
-            ->where('pos_transaction.status', '!=', 'draft');
+            ->where('pos_transaction.ongkir', '>', 0)
+            ->whereIn('pos_transaction.status', ['paid', 'debt']);
             
-        if ($courierId == "null" || empty($courierId)) {
-            $query->whereNull('pos_transaction.courier_id');
-        } else {
-            $query->where('pos_transaction.courier_id', $courierId);
+        if ($request->filled('courier_id') && $courierId !== 'all') {
+            if ($courierId === 'null') $query->whereNull('pos_transaction.courier_id');
+            else $query->where('pos_transaction.courier_id', $courierId);
         }
             
         $query->with(['paymentDetails.paymentMethod']);
 
-        if ($startDate && $endDate) {
-            $query->whereBetween('pos_transaction.date', [$startDate, $endDate]);
-        }
+        $this->applyDateBounds($query, 'pos_transaction.date', $request);
 
         if ($branch !== 'all') {
-            $query->where('pos_transaction.branch_id', $branch);
+            if ($branch === 'null') $query->whereNull('pos_transaction.branch_id');
+            else $query->where('pos_transaction.branch_id', $branch);
         }
+        $this->scopeReportBranch($query, $request, 'pos_transaction.branch_id', 'branch');
 
         $history = $query->orderBy('pos_transaction.created_at', 'desc')->get();
 
@@ -716,6 +822,10 @@ class ReportController extends Controller
 
             $txDate = \Carbon\Carbon::parse($detail->tx_date);
             $ongkir = $detail->ongkir ?? 0;
+            $rawShippingDiscount = (float) ($detail->ongkir_discount ?? 0);
+            $ongkirDiscount = $rawShippingDiscount > 0 && $rawShippingDiscount <= 100
+                ? $ongkir * $rawShippingDiscount / 100
+                : $rawShippingDiscount;
             $customerName = $detail->customer_name ?? 'Pelanggan Umum';
             $address = $detail->ongkir_address ?? '-';
             
@@ -725,9 +835,12 @@ class ReportController extends Controller
                 'time_formatted' => 'Jam ' . $txDate->format('H:i') . ' WIB',
                 'branch_name' => $detail->branch_name,
                 'payment' => $paymentStr,
+                'payment_methods' => $this->historyPaymentMethods($detail->paymentDetails),
                 'customer_name' => $customerName,
                 'address' => $address,
                 'ongkir' => 'Rp ' . number_format($ongkir, 0, ',', '.'),
+                'ongkir_discount' => $ongkirDiscount > 0 ? '- Rp ' . number_format($ongkirDiscount, 0, ',', '.') : null,
+                'total_bersih' => 'Rp ' . number_format($ongkir - $ongkirDiscount, 0, ',', '.'),
                 'total' => 'Rp ' . number_format($detail->total, 0, ',', '.'),
                 'pos_id' => $detail->pos_id,
                 'pos_date' => $detail->pos_date,
@@ -744,118 +857,101 @@ class ReportController extends Controller
 
     private function applyProductSalesSearch($query, Request $request): void
     {
-        $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
-
-        if ($searchValue !== '') {
-            $query->where('products.name', 'like', '%' . $searchValue . '%');
-        }
+        $this->applyReportSearch($query, $request, ['products.name'], 'pos_transaction.date');
     }
 
     public function get_data_total_aset(Request $request)
     {
-        $startDate = $request->start_date ?? date('Y-01-01');
-        $endDate   = $request->end_date ?? date('Y-12-31');
+        $this->authorizeAccess('report.total.aset');
 
-        $lastHpp = DB::table('product_hpp as ph')
-            ->select('ph.*')
-            ->join(
-                DB::raw('(
-                    SELECT product_id, MAX(created_at) AS last_created
-                    FROM product_hpp
-                    GROUP BY product_id
-                ) as last'),
-                function ($join) {
-                    $join->on('ph.product_id', '=', 'last.product_id')
-                        ->on('ph.created_at', '=', 'last.last_created');
-                }
-            );
-        // Query utama
-        $query = DB::table('transaction_stock as A')
-            ->select([
-                DB::raw('COALESCE(pc.parent_id, A.product_id) as product_id'),
-                'PARENT.name as name',
-                'C.abbreviation',
-                'PARENT.hpp',
-                DB::raw('SUM(A.quantity) as total_stock'),
-                // DB::raw('(SUM(A.quantity) * PARENT.hpp) as total_hpp'),
+        $branchId = (string) $request->input('branch_id', 'all');
+        $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
 
-                DB::raw('COALESCE(hpp_last.total_aset_berjalan, 0) as total_hpp'),
-            ])
+        // Evaluate the moving-HPP view once per request instead of embedding it
+        // multiple times in the grouped stock query and DataTables count query.
+        $latestHppByProduct = DB::table('product_hpp')
+            ->select('product_id', 'total_aset_berjalan', 'hpp_berjalan', 'created_at')
+            ->orderByDesc('created_at')
+            ->get()
+            ->unique('product_id')
+            ->keyBy('product_id');
+
+        $stockQuery = DB::table('transaction_stock as A')
             ->join('products as CHILD', 'A.product_id', '=', 'CHILD.id')
             ->leftJoin('product_child as pc', 'CHILD.id', '=', 'pc.product_id')
-            ->join(
-                DB::raw('products as PARENT'),
-                DB::raw('PARENT.id'),
-                '=',
-                DB::raw('COALESCE(pc.parent_id, CHILD.id)')
-            )
+            ->join('products as PARENT', 'PARENT.id', '=', DB::raw('COALESCE(pc.parent_id, CHILD.id)'))
             ->join('product_units as C', 'PARENT.product_unit', '=', 'C.id')
+            ->where('PARENT.tipe', '!=', 'parcel')
+            ->selectRaw('COALESCE(pc.parent_id, A.product_id) as product_id')
+            ->selectRaw('PARENT.name as name, C.abbreviation, PARENT.hpp')
+            ->selectRaw('SUM(A.quantity) as total_stock')
+            ->groupByRaw('COALESCE(pc.parent_id, A.product_id), PARENT.name, C.abbreviation, PARENT.hpp');
 
-            ->leftJoinSub($lastHpp, 'hpp_last', function ($join) {
-                $join->on(
-                    DB::raw('hpp_last.product_id'),
-                    '=',
-                    DB::raw('COALESCE(pc.parent_id, A.product_id)')
-                );
-            })
-            ->where('PARENT.tipe', '!=', 'parcel');
-
-        if ($request->has('branch_id') && $request->branch_id != 'all') {
-            $query->where('A.branch_id', $request->branch_id);
+        if ($branchId !== 'all') {
+            if ($branchId === 'null') $stockQuery->whereNull('A.branch_id');
+            else $stockQuery->where('A.branch_id', $branchId);
         }
+        $this->scopeReportBranch($stockQuery, $request, 'A.branch_id');
 
-        $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
-        if ($searchValue !== '') {
-            $query->where('PARENT.name', 'like', '%' . $searchValue . '%');
-        }
+        $stockRows = $stockQuery->get()->map(function ($row) use ($latestHppByProduct, $branchId) {
+            $hppRow = $latestHppByProduct->get($row->product_id);
+            $stock = (float) $row->total_stock;
+            $unitHpp = (float) ($hppRow->hpp_berjalan ?? $row->hpp ?? 0);
+            $assetValue = max(0, $stock * $unitHpp);
 
-        $query->groupBy(
-            DB::raw('COALESCE(pc.parent_id, A.product_id)'),
-            'PARENT.name',
-            'C.abbreviation',
-            'PARENT.hpp'
-        );
-            // ->having('total_stock', '>', 0);
+            return [
+                'product_id' => (int) $row->product_id,
+                'name' => $row->name,
+                'abbreviation' => $row->abbreviation,
+                'total_stock_raw' => $stock,
+                'hpp_raw' => (float) $row->hpp,
+                'total_hpp_raw' => $assetValue,
+            ];
+        });
 
-        $grandTotal = 0;
-        if ($request->input('start') == 0) {
-            $grandTotal = DB::table(DB::raw("({$query->toSql()}) as sub"))
-                ->mergeBindings($query)
-                ->sum('total_hpp');
-        }
+        $recordsTotal = $stockRows->count();
+        $filteredRows = $searchValue === ''
+            ? $stockRows
+            : $stockRows->filter(fn ($row) => mb_stripos($row['name'], $searchValue) !== false)->values();
+        $recordsFiltered = $filteredRows->count();
+        $grandTotal = $filteredRows->sum('total_hpp_raw');
 
-        $response = DataTables::of($query)
-            ->filter(function ($queryInstance) {
-                // Search is already applied before groupBy
-            })
-            ->editColumn('total_hpp', function ($row) {
-                return 'Rp' . number_format($row->total_hpp, 0, ',', '.');
-            })
-            ->editColumn('hpp', function ($row) {
-                return 'Rp' . number_format($row->hpp, 0, ',', '.');
-            })
-            ->editColumn('total_stock', function ($row) {
-                return number_format($row->total_stock, 0, ',', '.');
-            })
-            ->addColumn('action', function ($item) {
-                return '
-                    <a href="' . url('product-stock') . '/' . $item->product_id . '/show' . '" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="View">
-                        <i class="fa fa-eye"></i>
-                    </a>
-                ';
-            });
+        $orderColumns = ['name', 'abbreviation', 'total_stock_raw', 'hpp_raw', 'total_hpp_raw'];
+        $orderIndex = (int) $request->input('order.0.column', 2);
+        $orderDirection = strtolower((string) $request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $orderColumn = $orderColumns[$orderIndex] ?? 'total_stock_raw';
+        $filteredRows = $orderDirection === 'asc'
+            ? $filteredRows->sortBy($orderColumn)->values()
+            : $filteredRows->sortByDesc($orderColumn)->values();
 
-        if ($request->input('start') == 0) {
-            $response->with([
-                'grand_total' => 'Rp. ' . number_format($grandTotal, 0, ',', '.'),
-            ]);
-        }
+        $start = max(0, (int) $request->input('start', 0));
+        $length = (int) $request->input('length', 50);
+        $pageRows = $length < 0 ? $filteredRows->slice($start) : $filteredRows->slice($start, min($length, 500));
+        $data = $pageRows->map(function ($row) {
+            return [
+                'product_id' => $row['product_id'],
+                'name' => $row['name'],
+                'abbreviation' => $row['abbreviation'],
+                'total_stock' => number_format($row['total_stock_raw'], 2, ',', '.'),
+                'hpp' => 'Rp' . number_format($row['hpp_raw'], 0, ',', '.'),
+                'total_hpp' => 'Rp' . number_format($row['total_hpp_raw'], 0, ',', '.'),
+                'action' => '<a href="' . url('product-stock') . '/' . $row['product_id'] . '/show" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="View"><i class="fa fa-eye"></i></a>',
+            ];
+        })->values();
 
-        return $response->make(true);
+        return response()->json([
+            'draw' => (int) $request->input('draw', 0),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'grand_total' => 'Rp. ' . number_format($grandTotal, 0, ',', '.'),
+            'data' => $data,
+        ]);
     }
 
     public function get_product_sales_history(Request $request)
     {
+        $this->authorizeAccess('report.product.sales');
+
         $startDate = $request->start_date;
         $endDate   = $request->end_date;
         $branch    = $request->branch ?: 'all';
@@ -872,21 +968,24 @@ class ReportController extends Controller
             'product_units.abbreviation as unit'
         )
             ->join('pos_transaction', 'pos_transaction_detail.pos_id', '=', 'pos_transaction.id')
-            ->join('branch', 'pos_transaction.branch_id', '=', 'branch.id')
+            ->leftJoin('branch', 'pos_transaction.branch_id', '=', 'branch.id')
             ->join('products', 'pos_transaction_detail.product_id', '=', 'products.id')
             ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
             ->where('pos_transaction_detail.product_id', $productId)
             ->whereNull('pos_transaction_detail.deleted_at')
             ->whereNull('pos_transaction.deleted_at')
+            ->whereIn('pos_transaction.status', ['paid', 'debt'])
             ->with(['pos.paymentDetails.paymentMethod']); // to get payment methods
 
-        if ($startDate && $endDate) {
-            $query->whereBetween('pos_transaction.date', [$startDate, $endDate]);
-        }
+        $this->applyDateBounds($query, 'pos_transaction.date', $request);
+
+        if ($request->filled('price')) $query->where('pos_transaction_detail.price', $request->input('price'));
 
         if ($branch !== 'all') {
-            $query->where('pos_transaction.branch_id', $branch);
+            if ($branch === 'null') $query->whereNull('pos_transaction.branch_id');
+            else $query->where('pos_transaction.branch_id', $branch);
         }
+        $this->scopeReportBranch($query, $request, 'pos_transaction.branch_id', 'branch');
 
         $history = $query->orderBy('pos_transaction.created_at', 'desc')->get();
 
@@ -940,6 +1039,7 @@ class ReportController extends Controller
                 'time_formatted' => 'Jam ' . $txDate->format('H:i') . ' WIB',
                 'branch_name' => $detail->branch_name,
                 'payment' => $paymentStr,
+                'payment_methods' => $this->historyPaymentMethods($detail->pos?->paymentDetails),
                 'qty' => $qty_formatted,
                 'subtotal' => 'Rp ' . number_format($subtotal, 0, ',', '.'),
                 'product_discount' => $discount > 0 ? '- Rp ' . number_format($discount, 0, ',', '.') : null,
@@ -960,25 +1060,34 @@ class ReportController extends Controller
 
     public function get_data_profit_adjusted(Request $request)
     {
+        $this->authorizeAccess('report.profit.adjusted');
+
         $startDate = $request->filled('start_date') ? $request->start_date : date('Y-m-d');
         $endDate   = $request->filled('end_date') ? $request->end_date : date('Y-m-d');
         $branchId  = $request->input('branch_id', 'all');
+        $mobileReport = $request->boolean('mobile_report');
 
         $posQuery = DB::table('pos_transaction_detail')
             ->select(
                 DB::raw('COALESCE(product_child.parent_id, pos_transaction_detail.product_id) as product_id'),
+                DB::raw('NULL as price'),
+                DB::raw('SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) AS total_pendapatan'),
                 DB::raw('SUM(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) - SUM(COALESCE(pos_transaction_detail.subtotal_hpp, 0)) AS laba_kotor')
             )
             ->join('pos_transaction', 'pos_transaction_detail.pos_id', '=', 'pos_transaction.id')
             ->leftJoin('product_child', 'pos_transaction_detail.product_id', '=', 'product_child.product_id')
+            ->join('products as report_root', 'report_root.id', '=', DB::raw('COALESCE(product_child.parent_id, pos_transaction_detail.product_id)'))
             ->whereBetween('pos_transaction.date', [$startDate, $endDate])
             ->whereNull('pos_transaction_detail.deleted_at')
             ->whereNull('pos_transaction.deleted_at')
-            ->where('pos_transaction.status', '!=', 'draft');
+            ->whereIn('pos_transaction.status', ['paid', 'debt']);
 
-        if ($branchId != 'all') {
-            $posQuery->where('pos_transaction.branch_id', $branchId);
+        if ($branchId !== 'all') {
+            if ($branchId === 'null') $posQuery->whereNull('pos_transaction.branch_id');
+            else $posQuery->where('pos_transaction.branch_id', $branchId);
         }
+        $this->scopeReportBranch($posQuery, $request, 'pos_transaction.branch_id');
+        $this->applyReportSearch($posQuery, $request, ['report_root.name'], 'pos_transaction.date');
         $posQuery->groupBy(DB::raw('COALESCE(product_child.parent_id, pos_transaction_detail.product_id)'));
 
         $sortirQuery = DB::table('sortir_transaction_detail')
@@ -990,9 +1099,11 @@ class ReportController extends Controller
             ->leftJoin('product_child', 'sortir_transaction_detail.product_id', '=', 'product_child.product_id')
             ->whereBetween('sortir_transaction.date', [$startDate, $endDate]);
 
-        if ($branchId != 'all') {
-            $sortirQuery->where('sortir_transaction.branch_id', $branchId);
+        if ($branchId !== 'all') {
+            if ($branchId === 'null') $sortirQuery->whereNull('sortir_transaction.branch_id');
+            else $sortirQuery->where('sortir_transaction.branch_id', $branchId);
         }
+        $this->scopeReportBranch($sortirQuery, $request, 'sortir_transaction.branch_id');
         $sortirQuery->groupBy(DB::raw('COALESCE(product_child.parent_id, sortir_transaction_detail.product_id)'));
 
         $opnameQuery = \Modules\Transaction\Entities\StockOpname::select(
@@ -1000,11 +1111,14 @@ class ReportController extends Controller
                 DB::raw('SUM(stock_opname.difference * COALESCE(stock_opname.hpp, stock_opname.avg_price, 0)) AS opname_value')
             )
             ->leftJoin('product_child', 'stock_opname.product_id', '=', 'product_child.product_id')
-            ->whereBetween('stock_opname.date', [$startDate, $endDate]);
+            ->whereBetween('stock_opname.date', [$startDate, $endDate])
+            ->where('stock_opname.status', 'selesai');
         
-        if ($branchId != 'all') {
-            $opnameQuery->where('stock_opname.branch_id', $branchId);
+        if ($branchId !== 'all') {
+            if ($branchId === 'null') $opnameQuery->whereNull('stock_opname.branch_id');
+            else $opnameQuery->where('stock_opname.branch_id', $branchId);
         }
+        $this->scopeReportBranch($opnameQuery, $request, 'stock_opname.branch_id');
         $opnameQuery->groupBy(DB::raw('COALESCE(product_child.parent_id, stock_opname.product_id)'));
 
         $data = DB::table('products')
@@ -1012,6 +1126,8 @@ class ReportController extends Controller
                 'products.id as product_id',
                 'products.name',
                 'product_units.abbreviation as unit',
+                'pos.price',
+                DB::raw('COALESCE(pos.total_pendapatan, 0) AS total_pendapatan'),
                 DB::raw('COALESCE(pos.laba_kotor, 0) AS laba_kotor'),
                 DB::raw('COALESCE(srt.koreksi_stock, 0) - COALESCE(opn.opname_value, 0) AS koreksi_stock'),
                 DB::raw('COALESCE(pos.laba_kotor, 0) - (COALESCE(srt.koreksi_stock, 0) - COALESCE(opn.opname_value, 0)) AS laba_disesuaikan')
@@ -1028,14 +1144,7 @@ class ReportController extends Controller
                 $join->on('products.id', '=', 'opn.product_id');
             })
             ->whereNull('product_child.product_id') // Exclude products that are children
-            ->where(function ($q) {
-                $q->whereNotNull('pos.product_id')->orWhereNotNull('srt.product_id')->orWhereNotNull('opn.product_id');
-            });
-
-        $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
-        if ($searchValue !== '') {
-            $data->where('products.name', 'like', '%' . $searchValue . '%');
-        }
+            ->whereNotNull('pos.product_id');
 
         $data->orderByDesc('laba_disesuaikan');
 
@@ -1048,10 +1157,12 @@ class ReportController extends Controller
                 ->mergeBindings($grandTotalQuery);
                 
             $grandTotalLabaKotor = $subQuery->sum('laba_kotor');
+            $grandTotalPendapatan = $subQuery->sum('total_pendapatan');
             $grandTotalKoreksiStock = $subQuery->sum('koreksi_stock');
             $grandTotalLabaDisesuaikan = $subQuery->sum('laba_disesuaikan');
 
             $response->with([
+                'grand_total_pendapatan' => 'Rp ' . number_format($grandTotalPendapatan, 0, ',', '.'),
                 'grand_total_laba_kotor' => 'Rp ' . number_format($grandTotalLabaKotor, 0, ',', '.'),
                 'grand_total_koreksi_stock' => ($grandTotalKoreksiStock > 0 ? '- Rp ' : ($grandTotalKoreksiStock < 0 ? '+ Rp ' : 'Rp ')) . number_format(abs($grandTotalKoreksiStock), 0, ',', '.'),
                 'grand_total_laba_disesuaikan' => 'Rp ' . number_format($grandTotalLabaDisesuaikan, 0, ',', '.'),
@@ -1079,6 +1190,8 @@ class ReportController extends Controller
 
     public function get_profit_adjusted_history(Request $request)
     {
+        $this->authorizeAccess('report.profit.adjusted');
+
         $startDate = $request->start_date;
         $endDate   = $request->end_date;
         $branch    = $request->branch ?: 'all';
@@ -1089,8 +1202,13 @@ class ReportController extends Controller
         $parentProductName = \DB::table('products')->where('id', $productId)->value('name');
 
         $posQuery = \Modules\Pos\Entities\PosDetailModel::select(
+            'pos_transaction_detail.pos_id as pos_id',
             'pos_transaction.created_at as tx_date',
+            'pos_transaction.date as date',
+            'pos_transaction.branch_id as branch_id',
             'pos_transaction.invoice_number as invoice',
+            \DB::raw('(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) AS pendapatan'),
+            \DB::raw('COALESCE(pos_transaction_detail.subtotal_hpp, 0) AS total_hpp'),
             \DB::raw('(pos_transaction_detail.subtotal - COALESCE(pos_transaction_detail.diskon_global, 0)) - COALESCE(pos_transaction_detail.subtotal_hpp, 0) AS laba_kotor'),
             \DB::raw('0 AS koreksi_stock'),
             \DB::raw('"Penjualan" as type')
@@ -1099,18 +1217,22 @@ class ReportController extends Controller
             ->whereIn('pos_transaction_detail.product_id', $productIds)
             ->whereNull('pos_transaction_detail.deleted_at')
             ->whereNull('pos_transaction.deleted_at')
-            ->where('pos_transaction.status', '!=', 'draft');
+            ->whereIn('pos_transaction.status', ['paid', 'debt'])
+            ->with(['pos.paymentDetails']);
 
-        if ($startDate && $endDate) {
-            $posQuery->whereBetween('pos_transaction.date', [$startDate, $endDate]);
-        }
+        $this->applyDateBounds($posQuery, 'pos_transaction.date', $request);
+        if ($request->filled('price')) $posQuery->where('pos_transaction_detail.price', $request->input('price'));
         if ($branch !== 'all') {
-            $posQuery->where('pos_transaction.branch_id', $branch);
+            if ($branch === 'null') $posQuery->whereNull('pos_transaction.branch_id');
+            else $posQuery->where('pos_transaction.branch_id', $branch);
         }
+        $this->scopeReportBranch($posQuery, $request, 'pos_transaction.branch_id', 'branch');
         $posHistory = $posQuery->get();
 
         $sortirQuery = \Modules\Transaction\Entities\SortirDetail::select(
             'sortir_transaction.created_at as tx_date',
+            'sortir_transaction.date as date',
+            'sortir_transaction.branch_id as branch_id',
             'sortir_transaction.invoice_number as invoice',
             \DB::raw('0 AS laba_kotor'),
             \DB::raw('sortir_transaction_detail.subtotal AS koreksi_stock'),
@@ -1119,29 +1241,32 @@ class ReportController extends Controller
             ->join('sortir_transaction', 'sortir_transaction_detail.sortir_id', '=', 'sortir_transaction.id')
             ->whereIn('sortir_transaction_detail.product_id', $productIds);
 
-        if ($startDate && $endDate) {
-            $sortirQuery->whereBetween('sortir_transaction.date', [$startDate, $endDate]);
-        }
+        $this->applyDateBounds($sortirQuery, 'sortir_transaction.date', $request);
         if ($branch !== 'all') {
-            $sortirQuery->where('sortir_transaction.branch_id', $branch);
+            if ($branch === 'null') $sortirQuery->whereNull('sortir_transaction.branch_id');
+            else $sortirQuery->where('sortir_transaction.branch_id', $branch);
         }
+        $this->scopeReportBranch($sortirQuery, $request, 'sortir_transaction.branch_id', 'branch');
         $sortirHistory = $sortirQuery->get();
 
         $opnameQuery = \Modules\Transaction\Entities\StockOpname::select(
             'stock_opname.created_at as tx_date',
+            'stock_opname.date as date',
+            'stock_opname.branch_id as branch_id',
             'stock_opname.code as invoice',
             \DB::raw('0 AS laba_kotor'),
             \DB::raw('-(stock_opname.difference * COALESCE(stock_opname.hpp, stock_opname.avg_price, 0)) AS koreksi_stock'),
             \DB::raw('"Stock Opname" as type')
         )
-            ->whereIn('stock_opname.product_id', $productIds);
+            ->whereIn('stock_opname.product_id', $productIds)
+            ->where('stock_opname.status', 'selesai');
 
-        if ($startDate && $endDate) {
-            $opnameQuery->whereBetween('stock_opname.date', [$startDate, $endDate]);
-        }
+        $this->applyDateBounds($opnameQuery, 'stock_opname.date', $request);
         if ($branch !== 'all') {
-            $opnameQuery->where('stock_opname.branch_id', $branch);
+            if ($branch === 'null') $opnameQuery->whereNull('stock_opname.branch_id');
+            else $opnameQuery->where('stock_opname.branch_id', $branch);
         }
+        $this->scopeReportBranch($opnameQuery, $request, 'stock_opname.branch_id', 'branch');
         $opnameHistory = $opnameQuery->get();
 
         // Combine all histories
@@ -1163,6 +1288,7 @@ class ReportController extends Controller
 
             return [
                 'tx_date_raw' => $item->tx_date,
+                'date_raw' => $item->date,
                 'date_formatted' => $txDate->locale('id')->isoFormat('dddd, D MMMM Y HH:mm'),
                 'type' => $item->type,
                 'invoice' => $item->invoice,
@@ -1170,6 +1296,11 @@ class ReportController extends Controller
                 'koreksi_stock' => $koreksi_stock_formatted,
                 'koreksi_stock_raw' => $koreksi_stock,
                 'laba_disesuaikan' => 'Rp ' . number_format($laba_disesuaikan, 0, ',', '.'),
+                'amount_raw' => (float) $laba_disesuaikan,
+                'revenue_raw' => (float) ($item->pendapatan ?? 0),
+                'hpp_raw' => (float) ($item->total_hpp ?? 0),
+                'correction_raw' => (float) $koreksi_stock,
+                'payment_methods' => $item->type === 'Penjualan' ? $this->historyPaymentMethods($item->pos?->paymentDetails) : [],
                 'product_name' => $parentProductName
             ];
         });
@@ -1183,6 +1314,8 @@ class ReportController extends Controller
 
     public function get_profit_revenue_history(Request $request)
     {
+        $this->authorizeAccess('report.profit.revenue');
+
         $startDate = $request->start_date;
         $endDate   = $request->end_date;
         $branch    = $request->branch ?: 'all';
@@ -1199,21 +1332,23 @@ class ReportController extends Controller
             'product_units.abbreviation as unit'
         )
             ->join('pos_transaction', 'pos_transaction_detail.pos_id', '=', 'pos_transaction.id')
-            ->join('branch', 'pos_transaction.branch_id', '=', 'branch.id')
+            ->leftJoin('branch', 'pos_transaction.branch_id', '=', 'branch.id')
             ->join('products', 'pos_transaction_detail.product_id', '=', 'products.id')
             ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
             ->where('pos_transaction_detail.product_id', $productId)
             ->whereNull('pos_transaction_detail.deleted_at')
             ->whereNull('pos_transaction.deleted_at')
+            ->whereIn('pos_transaction.status', ['paid', 'debt'])
             ->with(['pos.paymentDetails.paymentMethod']);
 
-        if ($startDate && $endDate) {
-            $query->whereBetween('pos_transaction.date', [$startDate, $endDate]);
-        }
+        $this->applyDateBounds($query, 'pos_transaction.date', $request);
+        if ($request->filled('price')) $query->where('pos_transaction_detail.price', $request->input('price'));
 
         if ($branch !== 'all') {
-            $query->where('pos_transaction.branch_id', $branch);
+            if ($branch === 'null') $query->whereNull('pos_transaction.branch_id');
+            else $query->where('pos_transaction.branch_id', $branch);
         }
+        $this->scopeReportBranch($query, $request, 'pos_transaction.branch_id', 'branch');
 
         $history = $query->orderBy('pos_transaction.created_at', 'desc')->get();
 
@@ -1283,6 +1418,7 @@ class ReportController extends Controller
                 'pos_date' => $detail->pos_date,
                 'tx_date' => $detail->tx_date,
                 'payment' => $paymentStr,
+                'payment_methods' => $this->historyPaymentMethods($detail->pos?->paymentDetails),
             ];
         });
 
@@ -1295,6 +1431,8 @@ class ReportController extends Controller
 
     public function get_product_buang_history(Request $request)
     {
+        $this->authorizeAccess('report.product.buang');
+
         $startDate = $request->start_date;
         $endDate   = $request->end_date;
         $branch    = $request->branch ?: 'all';
@@ -1316,13 +1454,13 @@ class ReportController extends Controller
             ->leftJoin('product_units', 'products.product_unit', '=', 'product_units.id')
             ->where('sortir_transaction_detail.product_id', $productId);
 
-        if ($startDate && $endDate) {
-            $query->whereBetween('sortir_transaction.date', [$startDate, $endDate]);
-        }
+        $this->applyDateBounds($query, 'sortir_transaction.date', $request);
 
         if ($branch !== 'all') {
-            $query->where('sortir_transaction.branch_id', $branch);
+            if ($branch === 'null') $query->whereNull('sortir_transaction.branch_id');
+            else $query->where('sortir_transaction.branch_id', $branch);
         }
+        $this->scopeReportBranch($query, $request, 'sortir_transaction.branch_id', 'branch');
 
         $history = $query->orderBy('sortir_transaction.created_at', 'desc')->get();
 
@@ -1342,6 +1480,7 @@ class ReportController extends Controller
                 'branch_name' => $detail->branch_name ?? 'Pusat',
                 'qty' => $qty_formatted,
                 'subtotal' => 'Rp ' . number_format($subtotal, 0, ',', '.'),
+                'product_discount' => (float) $detail->discount > 0 ? '- Rp ' . number_format((float) $detail->discount, 0, ',', '.') : null,
                 'total' => 'Rp ' . number_format($total, 0, ',', '.'),
                 'sortir_id' => $detail->sortir_id,
                 'sortir_date' => $detail->sortir_date,
@@ -1355,5 +1494,35 @@ class ReportController extends Controller
             'data' => $formattedData
         ]);
     }
-}
 
+    private function historyPaymentMethods($payments): array
+    {
+        $methods = [];
+
+        foreach ($payments ?? [] as $payment) {
+            $decodedMethods = is_string($payment->payment_method) ? json_decode($payment->payment_method, true) : null;
+            $decodedAmounts = is_string($payment->payment_amount) ? json_decode($payment->payment_amount, true) : null;
+            $paymentMethods = is_array($decodedMethods)
+                ? $decodedMethods
+                : (is_string($decodedMethods) ? [$decodedMethods] : [$payment->payment_method]);
+            $paymentAmounts = is_array($decodedAmounts)
+                ? $decodedAmounts
+                : (is_numeric($decodedAmounts) ? [$decodedAmounts] : [$payment->payment_amount]);
+
+            foreach ($paymentMethods as $index => $method) {
+                $amount = $paymentAmounts[$index] ?? null;
+                if (is_numeric($amount) && (float) $amount <= 0) continue;
+
+                $method = trim((string) $method);
+                if ($method === '') $method = 'Tunai';
+                $nestedMethods = json_decode($method, true);
+                foreach (is_array($nestedMethods) ? $nestedMethods : [$method] as $nestedMethod) {
+                    $nestedMethod = trim((string) $nestedMethod);
+                    if ($nestedMethod !== '') $methods[] = $nestedMethod;
+                }
+            }
+        }
+
+        return $methods ?: ['Tunai'];
+    }
+}
