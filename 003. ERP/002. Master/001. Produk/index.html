@@ -904,7 +904,7 @@
 
                                 <!-- Filter Trigger inside Container (Active tune icon) -->
                                 <div class="relative shrink-0">
-                                    <button @click="filterOpen = !filterOpen"
+                                    <button @click="openFilterModal()"
                                         style="-webkit-tap-highlight-color: transparent; outline: none;"
                                         class="w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 relative focus:outline-none select-none active:scale-95"
                                         :class="(filterOpen || (selectedType.length > 0 && !selectedType.includes('Semua'))) ? 'text-[#0b595b]' : 'text-gray-400 hover:text-[#0b595b]'"
@@ -922,7 +922,7 @@
                                     <!-- Backdrop for Filter -->
                                     <div x-show="filterOpen" x-cloak
                                          @click.stop.prevent="filterOpen = false"
-                                         class="fixed inset-0 z-40 bg-transparent cursor-default pointer-events-auto">
+                                         class="hidden sm:block fixed inset-0 z-40 bg-transparent cursor-default pointer-events-auto">
                                     </div>
 
                                     <!-- Filter Dropdown -->
@@ -933,7 +933,7 @@
                                         x-transition:leave="transition ease-in duration-100"
                                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                                         x-transition:leave-end="opacity-0 translate-y-1 scale-95"
-                                        class="absolute right-0 top-10 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 py-2">
+                                        class="hidden sm:block absolute right-0 top-10 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 py-2">
                                         <div class="px-4 py-2 border-b border-gray-50 flex items-center justify-between">
                                             <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tipe Produk</p>
                                             <button x-show="selectedType.length > 0 && !selectedType.includes('Semua')"
@@ -1345,6 +1345,11 @@
                         <div class="mb-0 px-2">
                             <div class="flex justify-between items-center mb-1.5">
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Tipe Produk</label>
+                                <button x-show="tempSelectedType.length > 0 && !tempSelectedType.includes('Semua')"
+                                        @click="tempSelectedType = []"
+                                        class="text-[11px] text-[#0b595b] font-semibold hover:underline">
+                                    Reset
+                                </button>
                             </div>
                             <div class="flex flex-wrap gap-2 mt-2">
                                 <template x-for="t in allTypes" :key="t">
@@ -1364,7 +1369,7 @@
                         <button @click="filterOpen = false" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
                             Batal
                         </button>
-                        <button @click="selectedType = [...tempSelectedType]; selectedBranch = tempSelectedBranch; filterOpen = false" class="flex-1 h-11 rounded-xl bg-[#0b595b] hover:bg-[#0a4e50] text-white text-sm font-semibold transition-colors shadow-sm">
+                        <button @click="selectedType = [...tempSelectedType]; selectedBranch = tempSelectedBranch; filterOpen = false; resetPagination()" class="flex-1 h-11 rounded-xl bg-[#0b595b] hover:bg-[#0a4e50] text-white text-sm font-semibold transition-colors shadow-sm">
                             Terapkan
                         </button>
                     </div>
@@ -2013,6 +2018,12 @@
                 selectedBranch: 'Gresik / Driyorejo / Petiken - 001',
                 tempSelectedBranch: 'Gresik / Driyorejo / Petiken - 001',
                 branchSearchQuery: '',
+                openFilterModal() {
+                    this.tempSelectedType = [...this.selectedType];
+                    this.tempSelectedBranch = this.selectedBranch;
+                    this.branchSearchQuery = '';
+                    this.filterOpen = !this.filterOpen;
+                },
 
                 // Mobile Filter Dropdown State
                 openDropdown: null,

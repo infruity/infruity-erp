@@ -689,11 +689,13 @@
             <header
                 class="bg-white/65 backdrop-blur-2xl backdrop-saturate-180 border border-white/80 rounded-full mt-4 sm:mt-6 lg:mt-5 hidden sm:flex items-center justify-between gap-4 z-30 sticky top-4 sm:top-6 lg:top-5 mx-4 sm:mx-5 lg:mx-8 px-5 lg:px-6 py-3.5 lg:py-4 shadow-[0_10px_30px_-4px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.95)]">
                 <!-- Left: Title & Breadcrumb -->
-                <div class="flex items-center gap-4 pl-2">
-                    <button data-hamburger @click="window.self !== window.top ? window.parent.postMessage('toggleSidebar', '*') : sidebarOpen = !sidebarOpen"
-                        class="lg:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-500 transition shrink-0">
-                        <i class="ph ph-list text-2xl"></i>
-                    </button>
+                <div class="flex items-center gap-3 pl-1">
+                    <a href="../index.html"
+                       @click.prevent="if (window.self !== window.top) { window.parent.postMessage({ type: 'navigate', page: '008. Laporan/index.html', menu: 'laporan' }, '*'); } else { window.location.href = '../index.html'; }"
+                       class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 hover:text-[#0b595b] transition shrink-0"
+                       title="Kembali ke Ringkasan Laporan">
+                        <i class="ph-bold ph-caret-left text-xl"></i>
+                    </a>
                     <div>
                         <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5">Kerugian Barang Buang</h1>
                         <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
@@ -766,14 +768,15 @@
                     <!-- Main Content Card -->
                     <div class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
 
-                        <!-- Mobile Header: Frosted Glass Effect with Hamburger, Logo & Notif -->
+                        <!-- Mobile Header: Frosted Glass Effect with Back Button, Logo & Notif -->
                         <div class="sm:hidden px-4 py-3 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]">
-                            <!-- Tombol Kiri: Hamburger Menu -->
-                            <button @click="window.self !== window.top ? window.parent.postMessage('toggleSidebar', '*') : sidebarOpen = !sidebarOpen"
-                                class="w-9 h-9 -ml-1 rounded-xl flex items-center justify-center text-gray-700 hover:text-[#0b595b] hover:bg-emerald-50/70 active:scale-95 transition-all"
-                                title="Menu Navigasi">
-                                <i class="ph-bold ph-list text-[21px]"></i>
-                            </button>
+                            <!-- Tombol Kiri: Kembali ke Ringkasan Laporan -->
+                            <a href="../index.html"
+                               @click.prevent="if (window.self !== window.top) { window.parent.postMessage({ type: 'navigate', page: '008. Laporan/index.html', menu: 'laporan' }, '*'); } else { window.location.href = '../index.html'; }"
+                               class="w-9 h-9 -ml-1 rounded-xl flex items-center justify-center text-gray-700 hover:text-[#0b595b] hover:bg-emerald-50/70 active:scale-95 transition-all"
+                               title="Kembali ke Ringkasan Laporan">
+                                <i class="ph-bold ph-caret-left text-[22px]"></i>
+                            </a>
 
                             <!-- Logo Infruity Center -->
                             <div class="flex items-center justify-center">
