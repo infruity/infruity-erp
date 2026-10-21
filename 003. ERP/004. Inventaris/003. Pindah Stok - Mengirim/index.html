@@ -978,7 +978,7 @@
                                         <!-- Status Pengadaan (Chips Seragam Produk) -->
                                         <div>
                                             <div class="flex flex-wrap gap-1.5">
-                                                <template x-for="st in ['Semua', 'Pending', 'Perjalanan', 'Diterima']" :key="st">
+                                                <template x-for="st in ['Semua', 'Pending', 'Dalam Pengiriman', 'Diterima']" :key="st">
                                                     <button type="button" @click="filterStatus = st; resetPagination()"
                                                             class="px-3 py-1.5 rounded-full border text-xs font-medium transition-colors cursor-pointer"
                                                             :class="filterStatus === st ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-semibold shadow-2xs' : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-200'">
@@ -1482,7 +1482,7 @@
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Status Pengadaan</label>
                     </div>
                     <div class="flex flex-wrap gap-2 mt-2">
-                        <template x-for="st in ['Semua', 'Pending', 'Perjalanan', 'Diterima']" :key="st">
+                        <template x-for="st in ['Semua', 'Pending', 'Dalam Pengiriman', 'Diterima']" :key="st">
                             <button type="button" @click="tempFilterStatus = st"
                                 class="px-3 py-1.5 rounded-full border text-xs font-medium transition-colors cursor-pointer"
                                 :class="tempFilterStatus === st ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-semibold shadow-2xs' : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'">
@@ -1821,7 +1821,7 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <!-- Quick Status Transition Buttons -->
-                            <template x-if="selectedOrder.status === 'Pending' || selectedOrder.status === 'Perjalanan'">
+                            <template x-if="selectedOrder.status === 'Pending' || selectedOrder.status === 'Dalam Pengiriman' || selectedOrder.status === 'Perjalanan' || selectedOrder.status === 'Pengiriman'">
                                 <button @click="updateOrderStatus(selectedOrder.id, 'Diterima')" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition flex items-center gap-1.5 cursor-pointer">
                                     <i class="ph-bold ph-check"></i> Tandai Diterima
                                 </button>
@@ -2098,7 +2098,7 @@
                 let receivedDate = etaDateStr + ', ' + String(10 + (i % 6)).padStart(2, '0') + ':' + String((i * 17) % 60).padStart(2, '0') + ' WIB';
 
                 if (i === 0 || i === 1 || i === 4) {
-                    status = 'Perjalanan';
+                    status = 'Dalam Pengiriman';
                     receiverName = null;
                     receivedDate = null;
                 } else if (i === 2 || i === 6) {
@@ -2335,6 +2335,10 @@
                                         o.status = 'Diterima';
                                         changed = true;
                                     }
+                                    if (o.status === 'Perjalanan' || o.status === 'Pengiriman' || o.status === 'Dalam Perjalanan') {
+                                        o.status = 'Dalam Pengiriman';
+                                        changed = true;
+                                    }
                                     return o;
                                 });
                                 if (changed) {
@@ -2345,6 +2349,7 @@
                             if (Array.isArray(parsed)) {
                                 const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('po-seed-') && !String(o.id).startsWith('sj-seed-')).map(o => {
                                     if (o.status === 'Selesai') o.status = 'Diterima';
+                                    if (o.status === 'Perjalanan' || o.status === 'Pengiriman' || o.status === 'Dalam Perjalanan') o.status = 'Dalam Pengiriman';
                                     return o;
                                 });
                                 const seeds = generateInitialPengadaanOrders();
@@ -2370,8 +2375,11 @@
                         }
 
                         // 2. Status Dropdown Filter
-                        if (this.filterStatus !== 'Semua' && order.status !== this.filterStatus) {
-                            return false;
+                        if (this.filterStatus !== 'Semua') {
+                            const currentStatus = this.getStatusLabel(order.status);
+                            if (currentStatus !== this.filterStatus && order.status !== this.filterStatus) {
+                                return false;
+                            }
                         }
 
                         // 6. Search Query
@@ -2857,7 +2865,7 @@
                 updateOrderStatus(orderId, newStatus) {
                     const ord = this.orders.find(o => o.id === orderId);
                     if (ord) {
-                        ord.status = newStatus === 'Selesai' ? 'Diterima' : newStatus;
+                        ord.status = newStatus === 'Selesai' ? 'Diterima' : (newStatus === 'Perjalanan' || newStatus === 'Pengiriman' ? 'Dalam Pengiriman' : newStatus);
                         if (ord.status === 'Diterima') {
                             ord.paymentStatus = 'Lunas';
                             if (!ord.receivedDate) {
@@ -2940,6 +2948,7 @@
                 getStatusLabel(status) {
                     if (!status) return '-';
                     if (status === 'Selesai') return 'Diterima';
+                    if (status === 'Perjalanan' || status === 'Pengiriman' || status === 'Dalam Perjalanan') return 'Dalam Pengiriman';
                     return status;
                 },
 
@@ -2947,9 +2956,10 @@
                     switch (status) {
                         case 'Pending':
                         case 'Draft': return 'text-gray-500 font-semibold';
+                        case 'Dalam Pengiriman':
                         case 'Perjalanan':
                         case 'Dalam Perjalanan':
-                        case 'Dalam Pengiriman': return 'text-orange-500 font-semibold';
+                        case 'Pengiriman': return 'text-orange-500 font-semibold';
                         case 'Diterima':
                         case 'Selesai': return 'text-emerald-600 font-bold';
                         case 'Dibatalkan': return 'text-red-500 font-semibold';
@@ -2961,9 +2971,10 @@
                     switch (status) {
                         case 'Pending':
                         case 'Draft': return 'bg-gray-400';
+                        case 'Dalam Pengiriman':
                         case 'Perjalanan':
                         case 'Dalam Perjalanan':
-                        case 'Dalam Pengiriman': return 'bg-orange-500 animate-pulse';
+                        case 'Pengiriman': return 'bg-orange-500 animate-pulse';
                         case 'Diterima':
                         case 'Selesai': return 'bg-emerald-600';
                         case 'Dibatalkan': return 'bg-red-500';
@@ -3071,6 +3082,10 @@
                                         o.status = 'Diterima';
                                         changed = true;
                                     }
+                                    if (o.status === 'Perjalanan' || o.status === 'Pengiriman' || o.status === 'Dalam Perjalanan') {
+                                        o.status = 'Dalam Pengiriman';
+                                        changed = true;
+                                    }
                                     return o;
                                 });
                                 if (changed) {
@@ -3082,6 +3097,7 @@
                             if (Array.isArray(parsed)) {
                                 const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('po-seed-') && !String(o.id).startsWith('sj-seed-')).map(o => {
                                     if (o.status === 'Selesai') o.status = 'Diterima';
+                                    if (o.status === 'Perjalanan' || o.status === 'Pengiriman' || o.status === 'Dalam Perjalanan') o.status = 'Dalam Pengiriman';
                                     return o;
                                 });
                                 const seeds = generateInitialPengadaanOrders();
