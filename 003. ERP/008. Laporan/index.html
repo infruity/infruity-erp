@@ -399,8 +399,16 @@
                                         <h2 class="text-[16px] sm:text-[17px] font-bold text-gray-900 leading-tight">Pusat Laporan</h2>
                                         <p class="text-xs text-gray-400 mt-1">Pilih modul analitik & ringkasan bisnis</p>
                                     </div>
+
+                                    <!-- 1. Stok Barang -->
+                                    <a href="007. Stok Barang/index.html"
+                                       @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '008. Laporan/007. Stok Barang/index.html', menu: 'laporan' }, '*'); }"
+                                       class="w-full px-4 sm:px-5 py-3.5 sm:py-4 flex items-center justify-between hover:bg-gray-50/75 transition-colors group text-left">
+                                        <span class="text-[14px] font-semibold text-gray-800 group-hover:text-[#0b595b] transition-colors">Stok Barang</span>
+                                        <i class="ph-bold ph-caret-right text-xs text-gray-400 group-hover:text-gray-600 transition-colors"></i>
+                                    </a>
                                     
-                                    <!-- 1. Pendapatan Penjualan -->
+                                    <!-- 2. Pendapatan Penjualan -->
                                     <a href="001. Pendapatan Penjualan/index.html"
                                        @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '008. Laporan/001. Pendapatan Penjualan/index.html', menu: 'laporan' }, '*'); }"
                                        class="w-full px-4 sm:px-5 py-3.5 sm:py-4 flex items-center justify-between hover:bg-gray-50/75 transition-colors group text-left">
@@ -447,7 +455,6 @@
                                         <span class="text-[14px] font-semibold text-gray-800 group-hover:text-[#0b595b] transition-colors">Kerugian Barang Buang</span>
                                         <i class="ph-bold ph-caret-right text-xs text-gray-400 group-hover:text-gray-600 transition-colors"></i>
                                     </a>
-
                                 </div>
 
                             </div>

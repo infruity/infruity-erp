@@ -361,11 +361,6 @@
                     </a>
                     <div class="submenu-wrapper">
                         <div class="py-1 space-y-0.5">
-                            <a href="#" @click.prevent="navigateTo('004. Inventaris/001. Stok Barang/index.html', 'inventaris')"
-                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
-                                :class="activePage === '004. Inventaris/001. Stok Barang/index.html' ? 'active' : ''">
-                                <span>Stok Barang</span>
-                            </a>
                             <a href="#" @click.prevent="navigateTo('004. Inventaris/002. Sortir Barang/index.html', 'inventaris')"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
                                 :class="activePage === '004. Inventaris/002. Sortir Barang/index.html' ? 'active' : ''">
@@ -496,6 +491,11 @@
                     </a>
                     <div class="submenu-wrapper">
                         <div class="py-1 space-y-0.5">
+                            <a href="#" @click.prevent="navigateTo('008. Laporan/007. Stok Barang/index.html', 'laporan')"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
+                                :class="activePage === '008. Laporan/007. Stok Barang/index.html' ? 'active' : ''">
+                                <span>Stok Barang</span>
+                            </a>
                             <a href="#" @click.prevent="navigateTo('008. Laporan/003. Total Aset/index.html', 'laporan')"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
                                 :class="activePage === '008. Laporan/003. Total Aset/index.html' ? 'active' : ''">
