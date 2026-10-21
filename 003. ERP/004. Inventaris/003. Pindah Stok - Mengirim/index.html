@@ -1065,7 +1065,7 @@
                                             <div class="w-40 flex flex-col items-end justify-center">
                                                 <span class="text-xs"
                                                       :class="getStatusBadgeClass(order.status)"
-                                                      x-text="order.status"></span>
+                                                      x-text="getStatusLabel(order.status)"></span>
                                                 <span class="text-sm font-bold text-gray-900 mt-0.5"
                                                       x-text="'Rp ' + order.grandTotal.toLocaleString('id-ID')"></span>
                                             </div>
@@ -1108,7 +1108,7 @@
                                         <div class="text-right shrink-0">
                                             <div class="text-xs"
                                                  :class="getStatusBadgeClass(order.status)"
-                                                 x-text="order.status"></div>
+                                                 x-text="getStatusLabel(order.status)"></div>
                                             <div class="text-xs font-bold text-gray-900 mt-0.5"
                                                  x-text="'Rp ' + order.grandTotal.toLocaleString('id-ID')"></div>
                                         </div>
@@ -1535,7 +1535,7 @@
                             <span class="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200" x-text="selectedOrder?.docNo || selectedOrder?.poNumber"></span>
                             <span class="text-xs font-bold"
                                   :class="getStatusBadgeClass(selectedOrder?.status)"
-                                  x-text="selectedOrder?.status"></span>
+                                  x-text="getStatusLabel(selectedOrder?.status)"></span>
                         </div>
                         <h3 class="text-base font-bold text-gray-800 mt-1">Detail Pindah Stok</h3>
                     </div>
@@ -1723,13 +1723,13 @@
                                     </div>
                                     <span class="text-[11px] font-semibold text-gray-700">Pending</span>
                                 </div>
-                                <!-- Step 2: Selesai -->
+                                <!-- Step 2: Diterima -->
                                 <div class="flex flex-col items-center">
                                     <div class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs mb-1"
                                          :class="getStepIndex(selectedOrder.status) >= 2 ? 'bg-emerald-600 text-white shadow-xs' : 'bg-gray-200 text-gray-500'">
                                         2
                                     </div>
-                                    <span class="text-[11px] font-semibold text-gray-700">Selesai</span>
+                                    <span class="text-[11px] font-semibold text-gray-700">Diterima</span>
                                 </div>
                             </div>
                         </div>
@@ -1821,13 +1821,13 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <!-- Quick Status Transition Buttons -->
-                            <template x-if="selectedOrder.status === 'Pending' || selectedOrder.status === 'Menunggu Approval' || selectedOrder.status === 'Dalam Pengiriman' || selectedOrder.status === 'Draft'">
-                                <button @click="updateOrderStatus(selectedOrder.id, 'Selesai')" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition flex items-center gap-1.5">
-                                    <i class="ph-bold ph-check"></i> Tandai Selesai
+                            <template x-if="selectedOrder.status === 'Pending' || selectedOrder.status === 'Perjalanan'">
+                                <button @click="updateOrderStatus(selectedOrder.id, 'Diterima')" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition flex items-center gap-1.5 cursor-pointer">
+                                    <i class="ph-bold ph-check"></i> Tandai Diterima
                                 </button>
                             </template>
-                            <template x-if="selectedOrder.status === 'Selesai'">
-                                <button @click="updateOrderStatus(selectedOrder.id, 'Pending')" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-amber-50 text-amber-800 border border-gray-200 transition">
+                            <template x-if="selectedOrder.status === 'Diterima' || selectedOrder.status === 'Selesai'">
+                                <button @click="updateOrderStatus(selectedOrder.id, 'Pending')" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-amber-50 text-amber-800 border border-gray-200 transition cursor-pointer">
                                     Kembalikan ke Pending
                                 </button>
                             </template>
@@ -2327,12 +2327,26 @@
                     try {
                         const stored = localStorage.getItem('infruity_pengadaan_orders');
                         if (stored) {
-                            const parsed = JSON.parse(stored);
+                            let parsed = JSON.parse(stored);
                             if (Array.isArray(parsed) && parsed.length >= 50) {
+                                let changed = false;
+                                parsed = parsed.map(o => {
+                                    if (o.status === 'Selesai') {
+                                        o.status = 'Diterima';
+                                        changed = true;
+                                    }
+                                    return o;
+                                });
+                                if (changed) {
+                                    localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(parsed));
+                                }
                                 return parsed;
                             }
                             if (Array.isArray(parsed)) {
-                                const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('po-seed-'));
+                                const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('po-seed-') && !String(o.id).startsWith('sj-seed-')).map(o => {
+                                    if (o.status === 'Selesai') o.status = 'Diterima';
+                                    return o;
+                                });
                                 const seeds = generateInitialPengadaanOrders();
                                 const merged = [...userCreated, ...seeds];
                                 localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(merged));
@@ -2777,7 +2791,7 @@
                                 items: [...this.form.items],
                                 subtotal: grandTotal,
                                 grandTotal: grandTotal,
-                                status: 'Selesai',
+                                status: this.editingOrder.status === 'Selesai' ? 'Diterima' : (this.editingOrder.status || 'Pending'),
                                 paymentStatus: (this.editingOrder.paymentStatus && this.editingOrder.paymentStatus !== 'Belum Bayar') ? this.editingOrder.paymentStatus : 'Lunas'
                             };
                             if (idx !== -1) {
@@ -2787,8 +2801,9 @@
                             }
                         } else {
                             const newOrder = {
-                                id: 'po-' + Date.now(),
-                                poNumber: 'PO-' + today.getFullYear() + '-' + String(Math.floor(1000 + Math.random() * 9000)),
+                                id: 'sj-' + Date.now(),
+                                docNo: 'SJ-' + today.getFullYear() + '-' + String(Math.floor(1000 + Math.random() * 9000)),
+                                poNumber: 'SJ-' + today.getFullYear() + '-' + String(Math.floor(1000 + Math.random() * 9000)),
                                 staffName: this.currentUser?.name || 'Dimas Pratama',
                                 staffInitial: 'DP',
                                 staffTheme: 'bg-emerald-50 text-[#0b595b] border-emerald-200',
@@ -2797,7 +2812,12 @@
                                 supplierCity: 'Surabaya',
                                 supplierInitial: 'BS',
                                 supplierTheme: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                originBranch: 'Gresik / Driyorejo - 001',
                                 targetBranch: this.form.targetBranch,
+                                senderName: this.currentUser?.name || 'Dimas Pratama',
+                                courierName: 'Budi',
+                                receiverName: null,
+                                receivedDate: null,
                                 orderDate: dateStr,
                                 date: dateStr,
                                 orderTime: timeStr,
@@ -2808,7 +2828,7 @@
                                 subtotal: grandTotal,
                                 shippingFee: 0,
                                 grandTotal: grandTotal,
-                                status: 'Selesai',
+                                status: 'Pending',
                                 paymentStatus: 'Lunas',
                                 paymentMethod: 'Transfer Bank (BCA)'
                             };
@@ -2837,10 +2857,19 @@
                 updateOrderStatus(orderId, newStatus) {
                     const ord = this.orders.find(o => o.id === orderId);
                     if (ord) {
-                        ord.status = newStatus;
-                        if (newStatus === 'Selesai') {
+                        ord.status = newStatus === 'Selesai' ? 'Diterima' : newStatus;
+                        if (ord.status === 'Diterima') {
                             ord.paymentStatus = 'Lunas';
+                            if (!ord.receivedDate) {
+                                const today = new Date();
+                                const dStr = today.toISOString().split('T')[0];
+                                const tStr = String(today.getHours()).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0');
+                                ord.receivedDate = this.formatDate(dStr) + ', ' + tStr + ' WIB';
+                            }
                         }
+                        try {
+                            localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(this.orders));
+                        } catch(e) {}
                     }
                 },
 
@@ -2908,15 +2937,21 @@
                     }
                 },
 
+                getStatusLabel(status) {
+                    if (!status) return '-';
+                    if (status === 'Selesai') return 'Diterima';
+                    return status;
+                },
+
                 getStatusBadgeClass(status) {
                     switch (status) {
                         case 'Pending':
-                        case 'Draft': return 'text-amber-600 font-semibold';
+                        case 'Draft': return 'text-gray-500 font-semibold';
                         case 'Perjalanan':
                         case 'Dalam Perjalanan':
-                        case 'Dalam Pengiriman': return 'text-sky-600 font-semibold';
+                        case 'Dalam Pengiriman': return 'text-orange-500 font-semibold';
                         case 'Diterima':
-                        case 'Selesai': return 'text-[#0b595b] font-bold';
+                        case 'Selesai': return 'text-emerald-600 font-bold';
                         case 'Dibatalkan': return 'text-red-500 font-semibold';
                         default: return 'text-gray-400 font-semibold';
                     }
@@ -2925,9 +2960,11 @@
                 getStatusDotClass(status) {
                     switch (status) {
                         case 'Pending':
-                        case 'Draft':
-                        case 'Menunggu Approval':
-                        case 'Dalam Pengiriman': return 'bg-amber-500 animate-pulse';
+                        case 'Draft': return 'bg-gray-400';
+                        case 'Perjalanan':
+                        case 'Dalam Perjalanan':
+                        case 'Dalam Pengiriman': return 'bg-orange-500 animate-pulse';
+                        case 'Diterima':
                         case 'Selesai': return 'bg-emerald-600';
                         case 'Dibatalkan': return 'bg-red-500';
                         default: return 'bg-gray-400';
@@ -2946,10 +2983,11 @@
 
                 getStepIndex(status) {
                     switch (status) {
-                        case 'Pending':
-                        case 'Draft':
-                        case 'Menunggu Approval':
+                        case 'Pending': return 0;
+                        case 'Perjalanan':
+                        case 'Dalam Perjalanan':
                         case 'Dalam Pengiriman': return 1;
+                        case 'Diterima':
                         case 'Selesai': return 2;
                         default: return 0;
                     }
@@ -3025,13 +3063,27 @@
                     try {
                         const stored = localStorage.getItem('infruity_pengadaan_orders');
                         if (stored) {
-                            const parsed = JSON.parse(stored);
+                            let parsed = JSON.parse(stored);
                             if (Array.isArray(parsed) && parsed.length >= 50) {
+                                let changed = false;
+                                parsed = parsed.map(o => {
+                                    if (o.status === 'Selesai') {
+                                        o.status = 'Diterima';
+                                        changed = true;
+                                    }
+                                    return o;
+                                });
+                                if (changed) {
+                                    localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(parsed));
+                                }
                                 this.orders = parsed;
                                 return;
                             }
                             if (Array.isArray(parsed)) {
-                                const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('po-seed-'));
+                                const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('po-seed-') && !String(o.id).startsWith('sj-seed-')).map(o => {
+                                    if (o.status === 'Selesai') o.status = 'Diterima';
+                                    return o;
+                                });
                                 const seeds = generateInitialPengadaanOrders();
                                 const merged = [...userCreated, ...seeds];
                                 localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(merged));
