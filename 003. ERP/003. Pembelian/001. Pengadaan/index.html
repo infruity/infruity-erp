@@ -1056,7 +1056,7 @@
                                                 <span class="text-[11px] text-gray-400 truncate" x-text="getItemSummary(order.items)"></span>
                                             </div>
 
-                                            <!-- Column 5: Status & Nominal (Nominal di bawah Status) -->
+                                            <!-- Column 5: Status & Nominal (Status di atas Nilai Nominal) -->
                                             <div class="w-40 flex flex-col items-end justify-center">
                                                 <span class="text-xs"
                                                       :class="getStatusBadgeClass(order.status)"
@@ -1099,9 +1099,9 @@
                                                 <p class="text-[11px] text-gray-400 mt-0.5" x-text="formatDateTime(order.orderDate, order.orderTime)"></p>
                                             </div>
                                         </div>
-                                        <!-- Kanan: Status + Nominal -->
+                                        <!-- Kanan: Status (Atas) + Nominal (Bawah) -->
                                         <div class="text-right shrink-0">
-                                            <div class="text-xs"
+                                            <div class="text-xs font-semibold"
                                                  :class="getStatusBadgeClass(order.status)"
                                                  x-text="order.status"></div>
                                             <div class="text-xs font-bold text-gray-900 mt-0.5"
@@ -1786,51 +1786,56 @@
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100"
-             class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-gray-200 overflow-hidden">
+             class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-auto max-h-[92vh]">
             
             <!-- Modal Header -->
-            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/70">
-                <h3 class="text-sm font-bold text-gray-900" x-text="modalMode === 'add' ? 'Tambah Item Belanja' : 'Edit Item Belanja'"></h3>
-                <button type="button" @click="itemModalOpen = false" class="text-gray-400 hover:text-gray-700 text-sm font-bold p-1 cursor-pointer">
-                    ✕
+            <div class="px-5 sm:px-6 pt-4 sm:pt-5 pb-3.5 border-b border-gray-100 flex items-center justify-between shrink-0 bg-gray-50/50">
+                <div>
+                    <h4 class="text-base font-bold text-gray-900 leading-tight" x-text="modalMode === 'add' ? 'Tambah Item Belanja' : 'Edit Item Belanja'"></h4>
+                    <p class="text-xs text-gray-500 mt-0.5" x-text="modalMode === 'add' ? 'Pilih produk dan tentukan detail belanja' : 'Perbarui detail item belanja'"></p>
+                </div>
+                <button type="button" @click="itemModalOpen = false" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                    <i class="ph-bold ph-x text-sm"></i>
                 </button>
             </div>
 
             <!-- Modal Body Form -->
-            <div class="p-6 space-y-4">
-                <!-- Pilih Bahan (Gaya Dashboard Dropdown Kustom) -->
-                <div class="relative z-30" x-data="{ prodOpen: false }">
-                    <label class="text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                        <span>Nama Produk / Bahan</span>
-                        <span class="text-red-500">*</span>
+            <div class="p-4 sm:p-5 space-y-3.5 overflow-y-auto">
+                <!-- Pilih Produk / Bahan (Gaya Radio Box Sesuai Sub Modul Mengirim) -->
+                <div class="space-y-1.5">
+                    <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                        Pilih Produk / Bahan <span class="text-red-500">*</span>
                     </label>
-                    <div class="relative">
-                        <!-- Trigger Button Kustom -->
-                        <button type="button" @click="prodOpen = !prodOpen"
-                                class="w-full h-10 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl px-3.5 flex items-center justify-between text-xs outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition cursor-pointer shadow-2xs text-left group">
-                            <span class="truncate pr-2" :class="modalItem.name ? 'text-gray-800 font-semibold' : 'text-gray-400 font-normal'"
-                                  x-text="modalItem.name ? modalItem.name + (modalItem.unit ? ' (' + modalItem.unit + ')' : '') : 'Pilih Produk / Bahan'"></span>
-                            <i class="ph-bold ph-caret-down text-gray-400 group-hover:text-gray-600 text-xs shrink-0 transition-transform duration-200"
-                               :class="prodOpen ? 'rotate-180 text-[#0b595b]' : ''"></i>
-                        </button>
-
-                        <!-- Dropdown Menu Mengambang (Gaya Bersih Sesuai Dashboard) -->
-                        <div x-show="prodOpen" @click.outside="prodOpen = false" x-cloak
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="opacity-0 scale-95"
-                             x-transition:enter-end="opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="opacity-100 scale-100"
-                             x-transition:leave-end="opacity-0 scale-95"
-                             class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-xl py-1 z-50 max-h-52 overflow-y-auto overscroll-none minimal-scrollbar">
-                             <template x-for="item in masterItems" :key="item.name">
-                                 <div @click="selectModalProduct(item); prodOpen = false"
-                                      class="px-3.5 py-2.5 text-xs cursor-pointer transition-colors flex justify-between items-center group"
-                                      :class="modalItem.name === item.name ? 'bg-emerald-50/70 text-emerald-700 font-semibold' : 'text-gray-700 font-medium hover:bg-gray-50'">
-                                     <span x-text="item.name + (item.unit ? ' (' + item.unit + ')' : '')"></span>
-                                     <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="modalItem.name === item.name"></i>
-                                 </div>
-                             </template>
+                    
+                    <!-- Box Filter Sesuai Sub Modul Mengirim -->
+                    <div class="bg-white border border-gray-200 rounded-xl flex flex-col overflow-hidden shadow-2xs">
+                        <!-- Search Box -->
+                        <div class="relative border-b border-gray-100 shrink-0">
+                            <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                            <input type="text" x-model="productSearchQuery" placeholder="Cari produk / bahan..." 
+                                   class="w-full bg-transparent pl-8 pr-3 py-2.5 text-xs outline-none focus:bg-gray-50/50 transition-colors">
+                        </div>
+                        
+                        <!-- Radio List (Tinggi 3 Baris Data) -->
+                        <div class="h-[118px] overflow-y-auto overscroll-none bg-white scrollbar-hide">
+                            <template x-for="item in getFilteredMasterProducts()" :key="item.name">
+                                <label @click="selectModalProduct(item)"
+                                       class="flex items-center gap-3 px-3.5 py-2.5 border-b border-gray-100 transition-colors last:border-b-0 cursor-pointer hover:bg-gray-50/80">
+                                    <div class="relative flex items-center justify-center w-4 h-4 shrink-0">
+                                        <input type="radio" name="modalProductRadio" :value="item.name" 
+                                               :checked="modalItem.name === item.name"
+                                               @change="selectModalProduct(item)"
+                                               class="peer appearance-none w-4 h-4 border-2 border-gray-300 rounded-full checked:border-emerald-500 transition-colors cursor-pointer">
+                                        <div class="absolute w-2 h-2 bg-emerald-500 rounded-full scale-0 peer-checked:scale-100 transition-transform duration-200"></div>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <span class="text-xs text-gray-800 truncate block" :class="modalItem.name === item.name ? 'font-bold text-gray-900' : 'font-medium'" x-text="item.name + (item.unit ? ' (' + item.unit + ')' : '')"></span>
+                                    </div>
+                                </label>
+                            </template>
+                            <div x-show="getFilteredMasterProducts().length === 0" class="text-center py-6 text-xs text-gray-400">
+                                Produk tidak ditemukan
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1838,24 +1843,24 @@
                 <div class="grid grid-cols-2 gap-3">
                     <!-- Kuantitas (Auto Format Titik Ribuan) -->
                     <div>
-                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">
                             Kuantitas <span class="text-gray-400 font-normal" x-show="modalItem.unit" x-text="'(' + modalItem.unit + ')'"></span>
                         </label>
-                        <input type="text" inputmode="numeric"
-                               :value="formatRupiahInput(modalItem.qty)"
-                               @input="handlePriceInput('qty', $event)"
+                        <input type="text" inputmode="decimal"
+                               :value="modalQtyString"
+                               @input="handleQtyInput($event)"
                                placeholder="0"
-                               class="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-emerald-500 placeholder:text-gray-300 placeholder:font-normal">
+                               class="w-full h-10 px-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:bg-white focus:border-emerald-500 transition shadow-2xs placeholder:text-gray-300 placeholder:font-normal">
                     </div>
 
                     <!-- Harga Beli Satuan (Auto Format Titik Ribuan) -->
                     <div>
-                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">Harga Beli / Satuan</label>
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Harga Beli / Satuan</label>
                         <input type="text" inputmode="numeric"
                                :value="formatRupiahInput(modalItem.buyPrice)"
                                @input="handlePriceInput('buyPrice', $event)"
                                placeholder="0"
-                               class="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-emerald-500 placeholder:text-gray-300 placeholder:font-normal">
+                               class="w-full h-10 px-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:bg-white focus:border-emerald-500 transition shadow-2xs placeholder:text-gray-300 placeholder:font-normal">
                     </div>
                 </div>
 
@@ -1863,20 +1868,20 @@
                 <div class="grid grid-cols-2 gap-3">
                     <!-- Harga Jual (Auto Format Titik Ribuan) -->
                     <div>
-                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">Harga Jual</label>
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Harga Jual</label>
                         <input type="text" inputmode="numeric"
                                :value="formatRupiahInput(modalItem.sellPrice)"
                                @input="handlePriceInput('sellPrice', $event)"
                                placeholder="0"
-                               class="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-emerald-500 placeholder:text-gray-300 placeholder:font-normal">
+                               class="w-full h-10 px-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:bg-white focus:border-emerald-500 transition shadow-2xs placeholder:text-gray-300 placeholder:font-normal">
                     </div>
 
                     <!-- Margin (%) Disamping Harga Jual (Otomatis & Readonly) -->
                     <div>
-                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">Margin (%)</label>
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Margin (%)</label>
                         <input type="text" readonly
                                :value="modalItem.marginPercent !== null && modalItem.marginPercent !== undefined ? modalItem.marginPercent + '%' : '0%'"
-                               class="w-full h-10 px-3 bg-gray-100/80 border border-gray-200 rounded-xl text-xs font-bold text-emerald-700 outline-none cursor-default shadow-2xs select-none">
+                               class="w-full h-10 px-3.5 bg-gray-100/80 border border-gray-200 rounded-xl text-xs font-bold text-emerald-700 outline-none cursor-default shadow-2xs select-none">
                     </div>
                 </div>
 
@@ -1884,24 +1889,26 @@
                 <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 flex items-center justify-between text-xs">
                     <span class="font-semibold text-emerald-800">Total Harga Item</span>
                     <span class="font-extrabold text-[#0b595b] text-sm"
-                          x-text="'Rp ' + ((modalItem.qty || 0) * (modalItem.buyPrice || 0)).toLocaleString('id-ID')"></span>
+                          x-text="'Rp ' + Math.round((modalItem.qty || 0) * (modalItem.buyPrice || 0)).toLocaleString('id-ID')"></span>
                 </div>
             </div>
 
             <!-- Modal Footer -->
-            <div class="px-6 py-3.5 bg-gray-50/70 border-t border-gray-100 flex items-center justify-between gap-2">
-                <button type="button" x-show="modalMode === 'edit'" @click="deleteEditingItem()"
-                        class="text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-xl transition cursor-pointer">
-                    Hapus Item
-                </button>
-                <div class="flex items-center gap-2 ml-auto">
-                    <button type="button" @click="itemModalOpen = false"
-                            class="px-4 py-2 rounded-xl border border-gray-300 text-xs font-bold text-gray-700 hover:bg-gray-100 transition cursor-pointer">
-                        Batal
+            <div class="p-4 sm:p-5 border-t border-gray-100 bg-gray-50/50 flex items-center shrink-0">
+                <div x-show="modalMode === 'add'" class="w-full">
+                    <button type="button" @click="saveModalItem()"
+                            class="w-full h-11 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-md shadow-[#0b595b]/20 active:scale-95 transition flex items-center justify-center cursor-pointer">
+                        Tambah Item
+                    </button>
+                </div>
+                <div x-show="modalMode === 'edit'" class="flex items-center justify-between gap-3 w-full">
+                    <button type="button" @click="deleteEditingItem()"
+                            class="h-11 px-4 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
+                        <i class="ph-bold ph-trash"></i> Hapus Item
                     </button>
                     <button type="button" @click="saveModalItem()"
-                            class="px-5 py-2 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-sm transition cursor-pointer">
-                        Simpan Item
+                            class="flex-1 h-11 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-md shadow-[#0b595b]/20 active:scale-95 transition flex items-center justify-center cursor-pointer">
+                        Simpan Perubahan
                     </button>
                 </div>
             </div>
@@ -2183,6 +2190,8 @@
                 modalMode: 'add',
                 editingIndex: null,
                 confirmModalOpen: false,
+                productSearchQuery: '',
+                modalQtyString: '',
                 modalItem: {
                     productId: null,
                     name: '',
@@ -2267,10 +2276,38 @@
                         const stored = localStorage.getItem('infruity_pengadaan_orders');
                         if (stored) {
                             const parsed = JSON.parse(stored);
-                            if (Array.isArray(parsed) && parsed.length >= 50) {
-                                return parsed;
-                            }
                             if (Array.isArray(parsed)) {
+                                const isContaminated = parsed.some(o => 
+                                    (o.poNumber && o.poNumber.startsWith('SJ-')) || 
+                                    (o.docNo && o.docNo.startsWith('SJ-')) ||
+                                    o.status === 'Sedang Disiapkan' || 
+                                    o.status === 'Dalam Perjalanan' || 
+                                    o.status === 'Sudah Diterima'
+                                );
+
+                                if (isContaminated) {
+                                    // Self-healing: bersihkan kontaminasi data Pindah Stok
+                                    const userCreated = parsed.filter(o => 
+                                        o.id && 
+                                        !String(o.id).startsWith('po-seed-') && 
+                                        !String(o.id).startsWith('sj-seed-') && 
+                                        (!o.poNumber || !o.poNumber.startsWith('SJ-'))
+                                    ).map(o => {
+                                        if (o.status === 'Sedang Disiapkan') o.status = 'Pending';
+                                        if (o.status === 'Sudah Diterima') o.status = 'Selesai';
+                                        if (o.status === 'Dalam Perjalanan') o.status = 'Pending';
+                                        return o;
+                                    });
+                                    const seeds = generateInitialPengadaanOrders();
+                                    const merged = [...userCreated, ...seeds];
+                                    localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(merged));
+                                    return merged;
+                                }
+
+                                if (parsed.length >= 50) {
+                                    return parsed;
+                                }
+
                                 const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('po-seed-'));
                                 const seeds = generateInitialPengadaanOrders();
                                 const merged = [...userCreated, ...seeds];
@@ -2513,9 +2550,20 @@
                     return this.form.items.reduce((acc, item) => acc + ((item.qty || 0) * (item.buyPrice || 0)), 0);
                 },
 
+                getFilteredMasterProducts() {
+                    const q = (this.productSearchQuery || '').toLowerCase().trim();
+                    if (!q) return this.masterItems;
+                    return this.masterItems.filter(item => 
+                        item.name.toLowerCase().includes(q) ||
+                        (item.unit && item.unit.toLowerCase().includes(q))
+                    );
+                },
+
                 openAddItemModal() {
                     this.modalMode = 'add';
                     this.editingIndex = null;
+                    this.productSearchQuery = '';
+                    this.modalQtyString = '';
                     this.modalItem = {
                         productId: null,
                         name: '',
@@ -2531,7 +2579,15 @@
                 openEditItemModal(idx) {
                     this.modalMode = 'edit';
                     this.editingIndex = idx;
+                    this.productSearchQuery = '';
                     this.modalItem = { ...this.form.items[idx] };
+                    if (this.modalItem.qty !== null && this.modalItem.qty !== undefined) {
+                        const parts = String(this.modalItem.qty).split('.');
+                        const intFormatted = parseInt(parts[0], 10).toLocaleString('id-ID');
+                        this.modalQtyString = parts.length > 1 ? intFormatted + ',' + parts[1] : intFormatted;
+                    } else {
+                        this.modalQtyString = '';
+                    }
                     this.updateModalMargin();
                     this.itemModalOpen = true;
                 },
@@ -2542,23 +2598,81 @@
                     this.modalItem.unit = item.unit;
                     this.modalItem.buyPrice = item.buyPrice;
                     this.modalItem.sellPrice = item.sellPrice;
-                    if (!this.modalItem.qty || this.modalItem.qty <= 0) {
-                        this.modalItem.qty = 1;
-                    }
                     this.updateModalMargin();
                 },
 
+                handleQtyInput(event) {
+                    const rawVal = event.target.value;
+                    const prev = this.modalQtyString || '';
+                    const eventData = event.data;
+                    const inputType = event.inputType || '';
+
+                    let str = String(rawVal || '').trim();
+                    if (!str) {
+                        this.modalQtyString = '';
+                        this.modalItem.qty = null;
+                        event.target.value = '';
+                        return;
+                    }
+
+                    // If user explicitly typed a dot '.' on keyboard/numpad, convert to comma ',' for decimal
+                    if (eventData === '.' || (inputType === 'insertText' && str.endsWith('.'))) {
+                        if (!prev.includes(',')) {
+                            const clean = str.endsWith('.') ? str.slice(0, -1) : str;
+                            const intDigits = clean.replace(/\D/g, '');
+                            const intNum = intDigits ? parseInt(intDigits, 10) : 0;
+                            const formattedInt = intDigits ? intNum.toLocaleString('id-ID') : '0';
+                            this.modalQtyString = formattedInt + ',';
+                            this.modalItem.qty = intNum;
+                            event.target.value = this.modalQtyString;
+                            return;
+                        }
+                    }
+
+                    // Decimal mode (active if string contains a comma ',')
+                    if (str.includes(',')) {
+                        const parts = str.split(',');
+                        const intRaw = parts[0].replace(/\D/g, '');
+                        const decRaw = parts.slice(1).join('').replace(/\D/g, '').slice(0, 3);
+                        
+                        const intNum = intRaw ? parseInt(intRaw, 10) : 0;
+                        const formattedInt = intRaw ? intNum.toLocaleString('id-ID') : '0';
+                        
+                        const display = formattedInt + ',' + decRaw;
+                        const num = parseFloat((intRaw || '0') + '.' + (decRaw || '0'));
+                        this.modalQtyString = display;
+                        this.modalItem.qty = isNaN(num) ? null : Math.round(num * 1000) / 1000;
+                        event.target.value = display;
+                        return;
+                    }
+
+                    // Pure integer mode: all dots are strictly thousand separators
+                    const digits = str.replace(/\D/g, '');
+                    if (!digits) {
+                        this.modalQtyString = '';
+                        this.modalItem.qty = null;
+                        event.target.value = '';
+                        return;
+                    }
+                    
+                    const intNum = parseInt(digits, 10);
+                    const display = intNum.toLocaleString('id-ID');
+                    this.modalQtyString = display;
+                    this.modalItem.qty = intNum;
+                    event.target.value = display;
+                },
+
                 formatRupiahInput(val) {
-                    if (val === null || val === undefined || val === '') return '';
+                    if (val === null || val === undefined || val === '' || val === 0) return '';
                     const num = typeof val === 'number' ? val : parseInt(String(val).replace(/\D/g, ''), 10);
                     return isNaN(num) || num === 0 ? '' : num.toLocaleString('id-ID');
                 },
 
                 handlePriceInput(field, event) {
                     const raw = event.target.value.replace(/\D/g, '');
-                    const num = raw ? parseInt(raw, 10) : 0;
+                    const num = raw ? parseInt(raw, 10) : null;
                     this.modalItem[field] = num;
-                    event.target.value = num > 0 ? num.toLocaleString('id-ID') : '';
+                    event.target.value = num && num > 0 ? num.toLocaleString('id-ID') : '';
                     this.updateModalMargin();
                 },
 
@@ -2576,6 +2690,11 @@
                     if (!this.modalItem.name) {
                         alert('Silakan pilih produk / bahan terlebih dahulu');
                         return;
+                    }
+                    const normalized = String(this.modalQtyString || '').replace(/\./g, '').replace(',', '.');
+                    const parsed = parseFloat(normalized);
+                    if (!isNaN(parsed) && parsed > 0) {
+                        this.modalItem.qty = Math.round(parsed * 1000) / 1000;
                     }
                     if (!this.modalItem.qty || this.modalItem.qty <= 0) {
                         alert('Silakan masukkan kuantitas');
@@ -2605,6 +2724,8 @@
                             sellPrice: null,
                             marginPercent: null
                         };
+                        this.modalQtyString = '';
+                        this.productSearchQuery = '';
                     } else if (this.editingIndex !== null) {
                         this.form.items[this.editingIndex] = { ...this.modalItem };
                         this.itemModalOpen = false;
@@ -2844,7 +2965,9 @@
                         case 'Draft':
                         case 'Menunggu Approval':
                         case 'Dalam Pengiriman': return 'text-gray-400 font-semibold';
-                        case 'Selesai': return 'text-[#0b595b] font-bold';
+                        case 'Selesai':
+                        case 'Sudah Diterima':
+                        case 'Diterima': return 'text-emerald-600 font-bold';
                         case 'Dibatalkan': return 'text-red-500 font-semibold';
                         default: return 'text-gray-400 font-semibold';
                     }
@@ -2856,7 +2979,9 @@
                         case 'Draft':
                         case 'Menunggu Approval':
                         case 'Dalam Pengiriman': return 'bg-amber-500 animate-pulse';
-                        case 'Selesai': return 'bg-emerald-600';
+                        case 'Selesai':
+                        case 'Sudah Diterima':
+                        case 'Diterima': return 'bg-emerald-600';
                         case 'Dibatalkan': return 'bg-red-500';
                         default: return 'bg-gray-400';
                     }
@@ -2954,11 +3079,39 @@
                         const stored = localStorage.getItem('infruity_pengadaan_orders');
                         if (stored) {
                             const parsed = JSON.parse(stored);
-                            if (Array.isArray(parsed) && parsed.length >= 50) {
-                                this.orders = parsed;
-                                return;
-                            }
                             if (Array.isArray(parsed)) {
+                                const isContaminated = parsed.some(o => 
+                                    (o.poNumber && o.poNumber.startsWith('SJ-')) || 
+                                    (o.docNo && o.docNo.startsWith('SJ-')) ||
+                                    o.status === 'Sedang Disiapkan' || 
+                                    o.status === 'Dalam Perjalanan' || 
+                                    o.status === 'Sudah Diterima'
+                                );
+
+                                if (isContaminated) {
+                                    const userCreated = parsed.filter(o => 
+                                        o.id && 
+                                        !String(o.id).startsWith('po-seed-') && 
+                                        !String(o.id).startsWith('sj-seed-') && 
+                                        (!o.poNumber || !o.poNumber.startsWith('SJ-'))
+                                    ).map(o => {
+                                        if (o.status === 'Sedang Disiapkan') o.status = 'Pending';
+                                        if (o.status === 'Sudah Diterima') o.status = 'Selesai';
+                                        if (o.status === 'Dalam Perjalanan') o.status = 'Pending';
+                                        return o;
+                                    });
+                                    const seeds = generateInitialPengadaanOrders();
+                                    const merged = [...userCreated, ...seeds];
+                                    localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(merged));
+                                    this.orders = merged;
+                                    return;
+                                }
+
+                                if (parsed.length >= 50) {
+                                    this.orders = parsed;
+                                    return;
+                                }
+
                                 const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('po-seed-'));
                                 const seeds = generateInitialPengadaanOrders();
                                 const merged = [...userCreated, ...seeds];

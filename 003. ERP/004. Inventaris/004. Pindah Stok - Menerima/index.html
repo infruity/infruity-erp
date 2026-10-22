@@ -719,22 +719,22 @@
                         <i class="ph ph-list text-2xl"></i>
                     </button>
                     <div class="hidden sm:block">
-                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5" x-text="currentView === 'form' ? (isEditMode ? 'Edit Pengadaan' : 'Tambah Pengadaan') : 'Pengadaan'">Pengadaan</h1>
+                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5" x-text="currentView === 'form' ? (isViewMode ? 'Detail Penerimaan' : 'Terima Barang') : 'Pindah Stok - Menerima'">Pindah Stok - Menerima</h1>
                         <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
-                            <span>Pembelian</span>
+                            <span>Inventaris</span>
                             <i class="ph ph-caret-right text-[0.55rem]"></i>
-                            <span :class="currentView === 'form' ? 'cursor-pointer hover:underline hover:text-emerald-700' : ''" @click="currentView === 'form' && closeFormView()">Pengadaan</span>
+                            <span :class="currentView === 'form' ? 'cursor-pointer hover:underline hover:text-emerald-700' : ''" @click="currentView === 'form' && closeReceiveForm()">Pindah Stok - Menerima</span>
                             <template x-if="currentView === 'form'">
                                 <div class="inline-flex items-center gap-1">
                                     <i class="ph ph-caret-right text-[0.55rem]"></i>
-                                    <span class="text-gray-600 font-semibold" x-text="isEditMode ? 'Edit' : 'Tambah'"></span>
+                                    <span class="text-gray-600 font-semibold" x-text="isViewMode ? 'Detail Penerimaan' : 'Terima Barang'">Terima Barang</span>
                                 </div>
                             </template>
                         </div>
                     </div>
 
                     <!-- Tombol Kembali Desktop (Saat di Form View) -->
-                    <button x-show="currentView === 'form'" x-cloak @click="closeFormView()" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 ml-3 rounded-xl border border-gray-200 bg-white hover:bg-emerald-50 text-xs font-semibold text-gray-700 hover:text-[#0b595b] transition shadow-2xs cursor-pointer">
+                    <button x-show="currentView === 'form'" x-cloak @click="closeReceiveForm()" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 ml-3 rounded-xl border border-gray-200 bg-white hover:bg-emerald-50 text-xs font-semibold text-gray-700 hover:text-[#0b595b] transition shadow-2xs cursor-pointer">
                         <i class="ph-bold ph-arrow-left"></i>
                         <span>Kembali</span>
                     </button>
@@ -967,7 +967,7 @@
                                         class="hidden sm:block absolute right-0 top-10 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 p-4">
                                         
                                         <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-gray-100">
-                                            <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Status Pengadaan</p>
+                                            <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Status Penerimaan</p>
                                             <button x-show="hasActiveFilter"
                                                     @click="resetFilters(); filterOpen = false"
                                                     class="text-[11px] text-[#0b595b] font-semibold hover:underline">
@@ -978,7 +978,7 @@
                                         <!-- Status Pengadaan (Chips Seragam Produk) -->
                                         <div>
                                             <div class="flex flex-wrap gap-1.5">
-                                                <template x-for="st in ['Semua', 'Pending', 'Dalam Pengiriman', 'Diterima']" :key="st">
+                                                <template x-for="st in ['Semua', 'Dalam Perjalanan', 'Sudah Diterima']" :key="st">
                                                     <button type="button" @click="filterStatus = st; resetPagination()"
                                                             class="px-3 py-1.5 rounded-full border text-xs font-medium transition-colors cursor-pointer"
                                                             :class="filterStatus === st ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-semibold shadow-2xs' : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-200'">
@@ -991,12 +991,13 @@
                                 </div>
                             </div>
 
-                            <!-- Add Button (Desktop Only) -->
+                            <!-- Tombol Kirim Stok (Desktop Only - Shortcut ke Pengiriman) -->
                             <button type="button"
-                                @click="openCreateForm()"
-                                class="hidden sm:flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold transition-colors shadow-sm shrink-0 active:scale-95 cursor-pointer">
-                                <i class="ph-bold ph-plus text-sm"></i>
-                                <span>Tambah Pengadaan</span>
+                                @click="createOutboundShipment()"
+                                class="hidden sm:flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold transition-colors shadow-sm shrink-0 active:scale-95 cursor-pointer"
+                                title="Kirim Stok ke Cabang Lain">
+                                <i class="ph-bold ph-paper-plane-tilt text-sm"></i>
+                                <span>Kirim Stok</span>
                             </button>
                         </div>
 
@@ -1011,11 +1012,11 @@
                             <div class="hidden lg:block divide-y divide-gray-50" x-show="filteredOrders.length > 0">                                <!-- Table Header -->
                                 <div class="flex items-center gap-4 px-5 py-3 bg-gray-50/40 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 select-none">
                                     <div class="flex-1 min-w-0">Cabang Pengirim</div>
-                                    <div class="w-36">No. Surat Jalan</div>
+                                    <div class="w-36">No. Pengiriman</div>
                                     <div class="w-36">Pengirim</div>
                                     <div class="w-32">Kurir</div>
                                     <div class="w-32">Muatan</div>
-                                    <div class="w-40 text-right">Status & Nominal</div>
+                                    <div class="w-32 text-center">Status</div>
                                     <div class="w-20 text-center">Aksi</div>
                                 </div>
 
@@ -1038,9 +1039,9 @@
                                                  </div>
                                              </div>
 
-                                             <!-- Column 2: No. Surat Jalan -->
+                                             <!-- Column 2: No. Pengiriman (Bersih Tanpa Shape) -->
                                              <div class="w-36 flex items-center min-w-0">
-                                                 <span class="text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded" x-text="order.docNo || order.poNumber"></span>
+                                                 <span class="text-xs font-bold text-gray-900" x-text="order.docNo || (order.poNumber ? order.poNumber.replace(/^PO-/, 'SJ-') : '-')"></span>
                                              </div>
 
                                              <!-- Column 3: Staf Pengirim -->
@@ -1057,39 +1058,38 @@
 
                                              <!-- Column 5: Item & Muatan -->
                                              <div class="w-32 flex flex-col">
-                                                 <span class="text-xs font-semibold text-gray-800" x-text="order.items.length + ' Bahan Baku'"></span>
+                                                 <span class="text-xs font-semibold text-gray-800" x-text="order.items.length + ' Produk'"></span>
                                                  <span class="text-[11px] text-gray-400 truncate" x-text="getItemSummary(order.items)"></span>
                                              </div>
 
-                                             <!-- Column 6: Status & Nominal (Status Tanpa Shape, Nominal di bawahnya) -->
-                                             <div class="w-40 flex flex-col items-end justify-center">
-                                                 <span class="text-xs"
+                                             <!-- Column 6: Status (Tanpa Nominal Rupiah) -->
+                                             <div class="w-32 flex items-center justify-center">
+                                                 <span class="text-xs font-semibold"
                                                        :class="getStatusBadgeClass(order.status)"
                                                        x-text="getStatusLabel(order.status)"></span>
-                                                 <span class="text-sm font-bold text-gray-900 mt-0.5"
-                                                       x-text="'Rp ' + order.grandTotal.toLocaleString('id-ID')"></span>
                                              </div>
 
                                              <!-- Column 7: Aksi -->
                                              <div class="w-20 flex items-center justify-center" @click.stop>
-                                                 <button @click.stop="openDetailModal(order)"
+                                                 <button @click.stop="(order.status === 'Sudah Diterima' || order.status === 'Diterima' || order.status === 'Selesai') ? openViewPage(order) : openDetailModal(order)"
                                                          class="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-[#0b595b] flex items-center justify-center transition-colors"
-                                                         title="Lihat Detail Pindah Stok">
+                                                         :title="(order.status === 'Sudah Diterima' || order.status === 'Diterima' || order.status === 'Selesai') ? 'Lihat Penerimaan' : 'Lihat Detail Pindah Stok'">
                                                      <i class="ph-bold ph-eye text-base"></i>
                                                  </button>
-                                                 <button @click.stop="navigateToEdit(order)"
-                                                         class="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-emerald-700 flex items-center justify-center transition-colors ml-0.5"
-                                                         title="Edit Data">
-                                                     <i class="ph-bold ph-pencil-simple text-base"></i>
-                                                 </button>
+                                                  <template x-if="order.status === 'Dalam Perjalanan' || order.status === 'Perjalanan' || order.status === 'Pengiriman'">
+                                                      <button @click.stop="openReceiveForm(order)"
+                                                              class="w-8 h-8 rounded-full bg-emerald-50 hover:bg-emerald-100 text-[#0b595b] flex items-center justify-center transition-colors ml-0.5"
+                                                              title="Terima Barang">
+                                                          <i class="ph-bold ph-package text-base"></i>
+                                                      </button>
+                                                  </template>
                                              </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
 
-                                         </div>
-                                     </div>
-                                 </template>
-                             </div>
-
-                             <!-- MOBILE CARD LIST VIEW -->
+                            <!-- MOBILE CARD LIST VIEW -->
                              <div class="lg:hidden divide-y divide-gray-100" x-show="filteredOrders.length > 0">
                                  <template x-for="(order, index) in visibleOrders" :key="'m-' + order.id">
                                      <div @click="openDetailModal(order)"
@@ -1104,13 +1104,13 @@
                                                  <p class="text-[11px] text-gray-400 mt-0.5" x-text="getTimeDisplay(order)"></p>
                                              </div>
                                          </div>
-                                         <!-- Kanan: Status (Tanpa Shape) + Nominal (Hanya Rp) -->
+                                         <!-- Kanan: Status (Atas) + No. Pengiriman (Bawah) -->
                                          <div class="text-right shrink-0">
-                                             <div class="text-xs"
+                                             <div class="text-xs font-semibold"
                                                   :class="getStatusBadgeClass(order.status)"
                                                   x-text="getStatusLabel(order.status)"></div>
                                              <div class="text-xs font-bold text-gray-900 mt-0.5"
-                                                  x-text="'Rp ' + order.grandTotal.toLocaleString('id-ID')"></div>
+                                                  x-text="order.docNo || (order.poNumber ? order.poNumber.replace(/^PO-/, 'SJ-') : '-')"></div>
                                          </div>
                                      </div>
                                  </template>
@@ -1148,16 +1148,16 @@
                     </div>
 
                     <!-- ======================================================== -->
-                    <!-- VIEW 2: FORM PENGADAAN (2 CARD TERPISAH)                 -->
+                    <!-- VIEW 2: HALAMAN TERIMA BARANG (2 CARD MINIMALIST INFRUITY) -->
                     <!-- ======================================================== -->
                     <div x-show="currentView === 'form'" x-cloak class="flex-1 flex flex-col min-h-0">
 
-                        <!-- Mobile Header: Frosted Glass Effect with Back Caret, Logo & Notif -->
+                        <!-- Mobile Header: Frosted Glass Effect with Back Caret, Logo & Bell (Identik Mengirim & Sortir) -->
                         <div class="sm:hidden px-4 py-3 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] shrink-0">
                             <!-- Tombol Kiri: Kembali -->
-                            <button type="button" @click="closeFormView()"
+                            <button type="button" @click="closeReceiveForm()"
                                     class="w-9 h-9 rounded-xl flex items-center justify-center text-[#0b595b] hover:bg-emerald-50 active:scale-95 transition-all shrink-0 cursor-pointer"
-                                    title="Kembali ke Daftar Pengadaan">
+                                    title="Kembali ke Daftar Menerima">
                                 <i class="ph-bold ph-caret-left text-[24px] text-[#0b595b]"></i>
                             </button>
 
@@ -1170,137 +1170,64 @@
                                      onerror="this.onerror=null; this.src='../../../001. Landing Page/000. Logo/Infruity Logo - 6.png';" />
                             </div>
 
-                            <!-- Tombol Kanan: Notifikasi -->
-                            <div class="relative shrink-0" x-data="{ formNotifOpen: false }">
-                                <button @click="formNotifOpen = !formNotifOpen"
-                                        class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 hover:text-[#0b595b] hover:bg-emerald-50/70 active:scale-95 transition-all shrink-0 relative"
-                                        title="Notifikasi">
-                                    <i class="ph-bold ph-bell text-[21px]"></i>
-                                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white"></span>
-                                </button>
-
-                                <!-- Backdrop for Top Notification Popup -->
-                                <div x-show="formNotifOpen" x-cloak @click="formNotifOpen = false" class="fixed inset-0 z-40 bg-transparent cursor-default pointer-events-auto"></div>
-
-                                <!-- TOP NOTIFICATION POPUP -->
-                                <div x-show="formNotifOpen" x-cloak @click.outside="formNotifOpen = false"
-                                     x-transition:enter="transition ease-out duration-200"
-                                     x-transition:enter-start="opacity-0 -translate-y-2 scale-95"
-                                     x-transition:enter-end="opacity-100 scale-100"
-                                     class="absolute right-0 top-12 w-80 max-w-[calc(100vw-32px)] bg-white/95 backdrop-blur-xl rounded-3xl border border-gray-200 overflow-hidden pointer-events-auto origin-top-right z-50">
-                                    <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <span class="font-bold text-[14px] text-gray-800">Notifikasi</span>
-                                            <span class="bg-[#0b595b]/10 text-[#0b595b] text-[10px] font-bold px-2 py-0.5 rounded-full">2 Baru</span>
-                                        </div>
-                                        <button @click="formNotifOpen = false" class="text-xs text-gray-400 hover:text-gray-600">Tutup</button>
-                                    </div>
-                                    <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
-                                        <div class="p-3.5 flex gap-3 hover:bg-black/[0.02] transition-colors">
-                                            <div class="w-8 h-8 rounded-full bg-emerald-50 text-[#0b595b] flex items-center justify-center shrink-0">
-                                                <i class="ph-bold ph-package text-base"></i>
-                                            </div>
-                                            <div class="flex-1 min-w-0 text-left">
-                                                <p class="text-[12px] font-semibold text-gray-800 truncate">Stok Buah Naga Menipis</p>
-                                                <p class="text-[11px] text-gray-500 mt-0.5">Tersisa 5 kg di Cabang Gresik</p>
-                                                <span class="text-[10px] text-gray-400 mt-1 block">5 menit yang lalu</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <!-- Tombol Kanan: Notifikasi (Spacer Seimbang) -->
+                            <div class="w-9 h-9 flex items-center justify-center text-gray-700">
+                                <i class="ph-bold ph-bell text-[21px] text-gray-400"></i>
                             </div>
                         </div>
 
-                        <!-- 2 CARD FORM KANVAS KONTEN -->
-                        <div class="flex-1 flex flex-col space-y-6 max-w-4xl w-full mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-6 min-h-0">
+                        <!-- 2 CARD FORM KANVAS KONTEN (FIT 1 HALAMAN) -->
+                        <div class="flex-1 flex flex-col space-y-5 max-w-4xl w-full mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-6 min-h-0">
 
-                            <!-- CARD 1: CABANG PENERIMA (DROPDOWN MINIMALIS GAYA DASHBOARD) -->
-                            <div class="bg-white rounded-2xl border border-gray-200/90 shadow-card p-4 sm:p-5 transition-all relative z-30 shrink-0"
-                                 x-data="{ branchDropdownOpen: false }">
-                                <label class="text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                                    <span>Cabang</span>
-                                    <span class="text-red-500">*</span>
+                            <!-- CARD 1: ASAL PENGIRIMAN (1 KOTAK BERSIH PERSIS TUJUAN PENGIRIMAN DI MENGIRIM) -->
+                            <div class="bg-white rounded-2xl border border-gray-200/90 shadow-card p-4 sm:p-5 transition-all relative z-10 shrink-0">
+                                <label class="text-xs font-bold text-gray-700 mb-1.5 flex items-center justify-between">
+                                    <span>Asal Pengiriman</span>
+                                    <span class="text-xs font-bold text-gray-900" x-text="receiveForm.docNo || (receiveForm.poNumber ? receiveForm.poNumber.replace(/^PO-/, 'SJ-') : '-')"></span>
                                 </label>
-                                <div class="relative">
-                                    <!-- Trigger Button Kustom -->
-                                    <button type="button" @click="branchDropdownOpen = !branchDropdownOpen"
-                                            class="w-full h-11 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl px-4 flex items-center justify-between text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition cursor-pointer shadow-2xs text-left group">
-                                        <span class="truncate pr-2" :class="form.targetBranch ? 'text-gray-800 font-semibold' : 'text-gray-400 font-normal'" x-text="form.targetBranch || 'Pilih Cabang'"></span>
-                                        <i class="ph-bold ph-caret-down text-gray-400 group-hover:text-gray-600 text-sm shrink-0 transition-transform duration-200"
-                                           :class="branchDropdownOpen ? 'rotate-180 text-[#0b595b]' : ''"></i>
-                                    </button>
-
-                                    <!-- Dropdown Menu Mengambang (Gaya Bersih Sesuai Dashboard) -->
-                                    <div x-show="branchDropdownOpen" @click.outside="branchDropdownOpen = false" x-cloak
-                                         x-transition:enter="transition ease-out duration-100"
-                                         x-transition:enter-start="opacity-0 scale-95"
-                                         x-transition:enter-end="opacity-100 scale-100"
-                                         x-transition:leave="transition ease-in duration-75"
-                                         x-transition:leave-start="opacity-100 scale-100"
-                                         x-transition:leave-end="opacity-0 scale-95"
-                                         class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-50 max-h-56 overflow-y-auto overscroll-none minimal-scrollbar">
-                                         <template x-for="branch in branches" :key="branch">
-                                             <div @click="form.targetBranch = branch; branchDropdownOpen = false"
-                                                  class="px-3.5 py-2.5 text-xs sm:text-[13px] cursor-pointer transition-colors flex justify-between items-center group"
-                                                  :class="form.targetBranch === branch ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-700 font-medium hover:bg-gray-50'">
-                                                 <span x-text="branch"></span>
-                                                 <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="form.targetBranch === branch"></i>
-                                             </div>
-                                         </template>
+                                <div class="w-full h-11 bg-gray-50/70 border border-gray-200 rounded-xl px-4 flex items-center justify-between text-sm shadow-2xs">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <i class="ph-bold ph-storefront text-[#0b595b] text-base shrink-0"></i>
+                                        <span class="text-gray-800 font-semibold truncate" x-text="receiveForm.originBranch || 'Cabang Pengirim'"></span>
                                     </div>
+                                    <template x-if="isViewMode">
+                                        <span class="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded shrink-0">Sudah Diterima</span>
+                                    </template>
                                 </div>
                             </div>
 
-                            <!-- CARD 2: DAFTAR BELANJA (OPSI B - PURE MINIMALIST CARD) -->
-                            <div class="bg-white rounded-2xl border border-gray-200/90 shadow-card overflow-hidden flex-1 min-h-[220px] flex flex-col transition-all">
+                            <!-- CARD 2: DAFTAR PRODUK (MINIMALIST CARD SESUAI MENGIRIM & SORTIR) -->
+                            <div class="bg-white rounded-2xl border border-gray-200/90 shadow-card overflow-hidden flex-1 min-h-[180px] flex flex-col transition-all">
 
                                 <!-- HEADER CARD 2 -->
                                 <div class="bg-white border-b border-gray-100 px-5 sm:px-6 py-4 flex items-center justify-between shrink-0">
-                                    <div>
-                                        <span class="text-sm font-extrabold text-gray-900 tracking-tight">Daftar Item Sortir</span>
-                                    </div>
-                                    <button type="button" @click="openAddItemModal()"
-                                            class="text-xs font-bold text-[#0b595b] hover:text-[#08484a] flex items-center gap-1 bg-emerald-50/80 hover:bg-emerald-100/80 px-3.5 py-1.5 rounded-lg border border-emerald-200/80 transition shadow-2xs active:scale-95 cursor-pointer">
-                                        <span>+ Tambah Item</span>
-                                    </button>
+                                    <span class="text-sm font-extrabold text-gray-900 tracking-tight">Daftar Produk</span>
                                 </div>
 
-                                <!-- BODY CARD 2: KONTEN LIST ATAU EMPTY STATE -->
+                                <!-- BODY CARD 2: LIST PRODUK (GAYA IDENTIK DENGAN MENGIRIM) -->
                                 <div class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-card-scroll">
-
-                                    <!-- STATE 1: EMPTY STATE -->
-                                    <div x-show="form.items.length === 0" class="h-full flex flex-col items-center justify-center text-center p-6 my-auto min-h-[180px]">
-                                        <h3 class="text-sm sm:text-base font-bold text-gray-800">
-                                            Belum ada produk di daftar sortir
-                                        </h3>
-                                        <p class="text-xs sm:text-sm text-gray-500 mt-1.5">
-                                            Klik tombol <button type="button" @click="openAddItemModal()" class="font-semibold text-[#0b595b] hover:underline inline-flex items-center gap-0.5 cursor-pointer">+ Tambah</button> untuk melakukan input
-                                        </p>
-                                    </div>
-
-                                    <!-- STATE 2: LIST PRODUK TERISI (2 BARIS SESUAI INSTRUKSI) -->
-                                    <div x-show="form.items.length > 0">
-                                        <template x-for="(item, idx) in form.items" :key="idx">
-                                            <div @click="openEditItemModal(idx)"
-                                                 :class="idx === 0 ? 'pt-1 pb-3' : 'border-t border-gray-100 py-3'"
-                                                 class="flex flex-col justify-center gap-1 cursor-pointer hover:bg-gray-50/80 -mx-2 px-2.5 rounded-lg transition-colors group">
-                                                <!-- BARIS 1: Nama Produk (Kiri) & Total Belanja (Kanan) -->
-                                                <div class="flex items-center justify-between gap-2">
-                                                    <h4 class="text-sm font-bold text-gray-900 truncate group-hover:text-[#0b595b] transition-colors" x-text="item.name"></h4>
-                                                    <span class="text-xs sm:text-sm font-extrabold text-[#0b595b] shrink-0" 
-                                                          x-text="'Rp ' + ((item.qty || 0) * (item.buyPrice || 0)).toLocaleString('id-ID')"></span>
-                                                </div>
-                                                
-                                                <!-- BARIS 2: Harga Satuan (Kiri) & Kuantitas (Kanan) -->
-                                                <div class="flex items-center justify-between gap-2 mt-0.5">
-                                                    <span class="text-xs font-medium text-gray-500" 
-                                                          x-text="'Rp ' + (item.buyPrice || 0).toLocaleString('id-ID') + ' / ' + (item.unit || 'Kg')"></span>
-                                                    <span class="text-xs font-semibold text-gray-600 shrink-0 text-right" 
-                                                          x-text="((item.qty || 0).toLocaleString('id-ID')) + ' ' + (item.unit || 'Kg')"></span>
-                                                </div>
+                                    <template x-for="(item, idx) in receiveForm.items" :key="idx">
+                                        <div @click="!isViewMode && openReceiveItemModal(idx)"
+                                             :class="[idx === 0 ? 'pt-1 pb-3' : 'border-t border-gray-100 py-3', isViewMode ? 'cursor-default' : 'cursor-pointer hover:bg-gray-50/80']"
+                                             class="flex flex-col justify-center gap-1 -mx-2 px-2.5 rounded-lg transition-colors group">
+                                            <!-- BARIS 1: Nama Produk (Kiri) & Kuantitas Fisik Diterima (Kanan) -->
+                                            <div class="flex items-center justify-between gap-2">
+                                                <h4 class="text-sm font-bold text-gray-900 truncate group-hover:text-[#0b595b] transition-colors" x-text="item.name"></h4>
+                                                <span class="text-xs sm:text-sm font-extrabold text-[#0b595b] shrink-0" 
+                                                      x-text="formatQty(item.receivedQty) + ' ' + (item.unit || 'Kg')"></span>
                                             </div>
-                                        </template>
-                                    </div>
+                                            <!-- BARIS 2: Kuantitas Dikirim dari Surat Jalan & Selisih jika ada -->
+                                            <div class="flex items-center justify-between text-xs text-gray-400">
+                                                <span>Dikirim : <span x-text="formatQty(item.sentQty) + ' ' + (item.unit || 'Kg')"></span></span>
+                                                <template x-if="Math.abs(Number(item.receivedQty) - Number(item.sentQty)) > 0.001">
+                                                    <span :class="Number(item.receivedQty) < Number(item.sentQty) ? 'text-amber-600 font-semibold' : 'text-red-500 font-semibold'"
+                                                          x-text="Number(item.receivedQty) < Number(item.sentQty) 
+                                                              ? ('Kurang ' + formatQty(Math.round((Number(item.sentQty) - Number(item.receivedQty)) * 1000) / 1000) + ' ' + (item.unit || 'Kg')) 
+                                                              : ('Lebih ' + formatQty(Math.round((Number(item.receivedQty) - Number(item.sentQty)) * 1000) / 1000) + ' ' + (item.unit || 'Kg'))"></span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
                                 </div>
 
                             </div>
@@ -1313,34 +1240,34 @@
             </main>
 
             <!-- ======================================================== -->
-            <!-- BOTTOM HEADER (DOCKING RAPAT KE BAWAH - MODE FORM)       -->
+            <!-- BOTTOM DOCKED ACTION BAR (MODE FORM TERIMA BARANG)       -->
             <!-- ======================================================== -->
-            <div x-show="currentView === 'form'" x-cloak class="shrink-0 bg-white border-t border-gray-100 px-4 sm:px-6 pt-3.5 pb-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+            <div x-show="currentView === 'form'" x-cloak class="shrink-0 bg-white border-t border-gray-100 px-4 sm:px-6 py-3.5 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
                 <div class="max-w-4xl w-full mx-auto">
-                    <!-- Baris Total HPP / Modal -->
-                    <div class="flex items-center justify-between pb-3.5 border-b border-gray-100">
-                        <div class="flex items-center gap-2">
-                            <span class="text-base sm:text-lg font-extrabold text-gray-900 leading-tight">Total HPP / Modal</span>
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#d1fae5] text-[#065f46] leading-tight"
-                                  x-text="form.items.length"></span>
+                    <!-- 2 Tombol Aksi Berdampingan: Batal & Diterima (Hanya saat Input Penerimaan) -->
+                    <template x-if="!isViewMode">
+                        <div class="flex items-center gap-3">
+                            <button type="button" @click="closeReceiveForm()"
+                                    class="flex-1 h-11 px-3 sm:px-6 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-800 text-xs sm:text-sm font-bold shadow-2xs transition active:scale-95 flex items-center justify-center cursor-pointer">
+                                Batal
+                            </button>
+                            <button type="button"
+                                    @click="confirmReceiveGoods()"
+                                    class="flex-1 h-11 px-3 sm:px-7 rounded-xl text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0b595b]/15 transition active:scale-95 flex items-center justify-center cursor-pointer bg-[#0b595b] hover:bg-[#08484a]">
+                                <span x-text="((receiveForm.items && receiveForm.items.length > 0) ? 'Diterima (' + receiveForm.items.length + ')' : 'Diterima')"></span>
+                            </button>
                         </div>
-                        <div class="text-right">
-                            <span class="text-base sm:text-lg font-extrabold text-[#0b595b] leading-tight"
-                                  x-text="'Rp ' + calculateGrandTotal().toLocaleString('id-ID')"></span>
-                        </div>
-                    </div>
+                    </template>
 
-                    <!-- 2 Tombol Aksi Berdampingan (Simpan Perubahan & Selesaikan Transaksi) -->
-                    <div class="flex items-center gap-3 pt-3.5">
-                        <button type="button" @click="saveDraft()"
-                                class="flex-1 h-11 px-3 sm:px-6 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-800 text-xs sm:text-sm font-bold shadow-2xs transition active:scale-95 flex items-center justify-center cursor-pointer">
-                            <span x-text="isEditMode ? 'Simpan Perubahan' : 'Simpan sebagai Draf'"></span>
-                        </button>
-                        <button type="button" @click="submitPengadaan()"
-                                class="flex-1 h-11 px-3 sm:px-7 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0b595b]/15 transition active:scale-95 flex items-center justify-center cursor-pointer">
-                            <span>Selesaikan Transaksi</span>
-                        </button>
-                    </div>
+                    <!-- Tombol Kembali Tunggal (Saat View Mode) -->
+                    <template x-if="isViewMode">
+                        <div>
+                            <button type="button" @click="closeReceiveForm()"
+                                    class="w-full h-11 px-6 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0b595b]/15 transition active:scale-95 flex items-center justify-center cursor-pointer">
+                                Kembali
+                            </button>
+                        </div>
+                    </template>
                 </div>
             </div>
 
@@ -1369,11 +1296,11 @@
                             <span class="icon-rounded">bar_chart</span>
                         </a>
 
-                        <!-- 3. Tambah (Buka Form Pengadaan) -->
+                        <!-- 3. Tambah (Kirim Stok Baru ke Cabang Lain) -->
                         <button type="button"
-                            @click="openCreateForm()"
+                            @click="createOutboundShipment()"
                             class="w-[44px] h-[44px] bg-[#0b595b] hover:bg-[#08484a] text-white flex items-center justify-center rounded-[13px] shadow-[0_4px_12px_rgba(11,89,91,0.3)] active:scale-95 transition-all shrink-0 cursor-pointer"
-                            title="Tambah Pengadaan">
+                            title="Kirim Stok Baru">
                             <span class="icon-rounded" style="font-size: 24px; color: white; font-variation-settings: 'FILL' 1, 'wght' 500;">add</span>
                         </button>
 
@@ -1476,13 +1403,13 @@
                     </div>
                 </div>
 
-                <!-- 2. Status Pengadaan (Pill Chips seragam Produk) -->
+                <!-- 2. Status Penerimaan (Pill Chips seragam Produk) -->
                 <div class="px-1">
                     <div class="flex justify-between items-center mb-1.5">
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Status Pengadaan</label>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Status Penerimaan</label>
                     </div>
                     <div class="flex flex-wrap gap-2 mt-2">
-                        <template x-for="st in ['Semua', 'Pending', 'Dalam Pengiriman', 'Diterima']" :key="st">
+                        <template x-for="st in ['Semua', 'Dalam Perjalanan', 'Sudah Diterima']" :key="st">
                             <button type="button" @click="tempFilterStatus = st"
                                 class="px-3 py-1.5 rounded-full border text-xs font-medium transition-colors cursor-pointer"
                                 :class="tempFilterStatus === st ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-semibold shadow-2xs' : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'">
@@ -1525,99 +1452,111 @@
              x-transition:leave="transition-all duration-200 ease-in"
              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
              x-transition:leave-end="opacity-0 scale-95 translate-y-2"
-             class="relative bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden flex flex-col z-10">
+             class="relative bg-white w-full max-w-sm sm:max-w-md rounded-2xl shadow-xl overflow-hidden flex flex-col z-10">
 
-            <div class="p-6 flex-1 flex flex-col">
+            <div class="p-5 sm:p-6 flex-1 flex flex-col">
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200" x-text="selectedOrder?.docNo || selectedOrder?.poNumber"></span>
-                            <span class="text-xs font-bold"
-                                  :class="getStatusBadgeClass(selectedOrder?.status)"
-                                  x-text="getStatusLabel(selectedOrder?.status)"></span>
-                        </div>
-                        <h3 class="text-base font-bold text-gray-800 mt-1">Detail Penerimaan Stok</h3>
-                    </div>
+                    <h3 class="text-lg font-bold text-gray-800">Detail Pengiriman</h3>
                     <button @click="closeDetailModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors cursor-pointer">
                         <i class="ph-bold ph-x"></i>
                     </button>
                 </div>
 
                 <template x-if="selectedOrder">
-                    <div class="flex flex-col gap-3.5 text-xs">
+                    <div class="space-y-3.5 text-xs">
 
-                        <!-- Rute Transfer -->
-                        <div class="p-2.5 bg-gray-50 rounded-xl flex items-center justify-between">
-                            <span class="text-gray-500 font-medium">Rute Pengiriman:</span>
-                            <span class="font-bold text-gray-900" x-text="(selectedOrder.originBranch || 'Gresik / Driyorejo - 001') + ' ➔ ' + selectedOrder.targetBranch"></span>
-                        </div>
-
-                        <!-- 3 Aktor Logistik Sesuai PRD -->
-                        <div class="p-3 bg-emerald-50/40 border border-emerald-100 rounded-2xl space-y-2">
-                            <span class="text-[10px] font-extrabold uppercase text-[#0b595b] tracking-wider block">3 Aktor Logistik</span>
-                            
-                            <div class="grid grid-cols-3 gap-1.5 text-left">
-                                <!-- 1. Pengirim -->
-                                <div class="bg-white p-2 rounded-xl border border-emerald-100 shadow-2xs flex flex-col justify-between">
-                                    <div>
-                                        <div class="flex items-center gap-1 text-[9px] text-gray-400 font-bold mb-0.5">
-                                            <i class="ph-bold ph-paper-plane-tilt text-emerald-600"></i>
-                                            <span>PENGIRIM</span>
-                                        </div>
-                                        <span class="text-[11px] font-bold text-gray-900 block truncate" x-text="selectedOrder.senderName || selectedOrder.staffName || 'Petugas'"></span>
-                                    </div>
-                                    <div class="mt-1 pt-1 border-t border-gray-50">
-                                        <span class="text-[8.5px] text-emerald-700 font-semibold block leading-tight" x-text="formatDate(selectedOrder.orderDate) + (selectedOrder.orderTime ? ', ' + selectedOrder.orderTime : '')"></span>
-                                    </div>
-                                </div>
-
-                                <!-- 2. Kurir (Hanya Nama Kurir) -->
-                                <div class="bg-white p-2 rounded-xl border border-emerald-100 shadow-2xs flex flex-col justify-between">
-                                    <div>
-                                        <div class="flex items-center gap-1 text-[9px] text-gray-400 font-bold mb-0.5">
-                                            <i class="ph-bold ph-person-simple-walk text-amber-600"></i>
-                                            <span>KURIR</span>
-                                        </div>
-                                        <span class="text-[11px] font-bold text-gray-900 block truncate" x-text="selectedOrder.courierName || 'Budi'"></span>
-                                    </div>
-                                    <div class="mt-1 pt-1 border-t border-gray-50">
-                                        <span class="text-[8.5px] text-amber-700 font-semibold block leading-tight">Pengantar</span>
-                                    </div>
-                                </div>
-
-                                <!-- 3. Penerima -->
-                                <div class="bg-white p-2 rounded-xl border border-emerald-100 shadow-2xs flex flex-col justify-between">
-                                    <div>
-                                        <div class="flex items-center gap-1 text-[9px] text-gray-400 font-bold mb-0.5">
-                                            <i class="ph-bold ph-package text-blue-600"></i>
-                                            <span>PENERIMA</span>
-                                        </div>
-                                        <span class="text-[11px] font-bold block truncate"
-                                              :class="selectedOrder.status === 'Diterima' || selectedOrder.status === 'Selesai' ? 'text-gray-900' : 'text-gray-400 italic text-[10px]'"
-                                              x-text="selectedOrder.status === 'Diterima' || selectedOrder.status === 'Selesai' ? (selectedOrder.receiverName || 'Petugas Tujuan') : 'Belum Diterima'"></span>
-                                    </div>
-                                    <div class="mt-1 pt-1 border-t border-gray-50">
-                                        <template x-if="selectedOrder.status === 'Diterima' || selectedOrder.status === 'Selesai'">
-                                            <span class="text-[8.5px] text-blue-700 font-semibold block leading-tight" x-text="selectedOrder.receivedDate || formatDate(selectedOrder.orderDate)"></span>
-                                        </template>
-                                        <template x-if="selectedOrder.status !== 'Diterima' && selectedOrder.status !== 'Selesai'">
-                                            <span class="text-[8px] text-amber-600 font-medium block">Menunggu Konfirmasi</span>
-                                        </template>
-                                    </div>
-                                </div>
+                        <!-- Data Pengiriman Fields List -->
+                        <div class="bg-gray-50/70 border border-gray-100 rounded-xl p-3.5 divide-y divide-gray-100">
+                            <!-- 1. No. Pengiriman -->
+                            <div class="flex items-center justify-between py-2 first:pt-0">
+                                <span class="text-gray-500 font-medium flex items-center gap-2">
+                                    <i class="ph-duotone ph-receipt text-base text-emerald-600 shrink-0"></i>
+                                    No. Pengiriman
+                                </span>
+                                <span class="font-semibold text-gray-800 text-right leading-tight" x-text="selectedOrder.docNo || (selectedOrder.poNumber ? selectedOrder.poNumber.replace(/^PO-/, 'SJ-') : '-')"></span>
                             </div>
-                        </div>
 
-                        <!-- Grand Total & Bahan -->
-                        <div class="p-2.5 bg-gray-50 rounded-xl flex items-center justify-between">
-                            <div>
-                                <span class="text-gray-400 text-[10px] font-bold block">TOTAL MUATAN</span>
-                                <span class="font-bold text-gray-800 text-xs" x-text="(selectedOrder.items ? selectedOrder.items.length : 0) + ' Jenis Bahan Baku'"></span>
+                            <!-- 2. Status Pengiriman -->
+                            <div class="flex items-center justify-between py-2">
+                                <span class="text-gray-500 font-medium flex items-center gap-2">
+                                    <i class="ph-duotone ph-info text-base text-emerald-600 shrink-0"></i>
+                                    Status Pengiriman
+                                </span>
+                                <span class="font-semibold text-right leading-tight"
+                                      :class="{
+                                          'text-amber-600': selectedOrder.status === 'Dalam Perjalanan' || selectedOrder.status === 'Perjalanan' || selectedOrder.status === 'Pengiriman',
+                                          'text-emerald-600': selectedOrder.status === 'Sudah Diterima' || selectedOrder.status === 'Diterima' || selectedOrder.status === 'Selesai',
+                                          'text-gray-800': !selectedOrder.status || selectedOrder.status === 'Sedang Disiapkan' || selectedOrder.status === 'Pending'
+                                      }"
+                                      x-text="getStatusLabel(selectedOrder.status)"></span>
                             </div>
-                            <div class="text-right">
-                                <span class="text-gray-400 text-[10px] font-bold block">ESTIMASI NILAI (HPP)</span>
-                                <span class="font-extrabold text-[#0b595b] text-xs" x-text="'Rp ' + (selectedOrder.grandTotal || 0).toLocaleString('id-ID')"></span>
+
+                            <!-- 3. Cabang Pengirim -->
+                            <div class="flex items-center justify-between py-2">
+                                <span class="text-gray-500 font-medium flex items-center gap-2">
+                                    <i class="ph-duotone ph-storefront text-base text-emerald-600 shrink-0"></i>
+                                    Cabang Pengirim
+                                </span>
+                                <span class="font-semibold text-gray-800 text-right leading-tight max-w-[200px]" x-text="selectedOrder.originBranch || 'Gresik / Driyorejo - 001'"></span>
+                            </div>
+
+                            <!-- 4. Pengirim -->
+                            <div class="flex items-center justify-between py-2">
+                                <span class="text-gray-500 font-medium flex items-center gap-2">
+                                    <i class="ph-duotone ph-paper-plane-tilt text-base text-emerald-600 shrink-0"></i>
+                                    Pengirim
+                                </span>
+                                <span class="font-semibold text-gray-800 text-right leading-tight max-w-[200px]" x-text="selectedOrder.senderName || selectedOrder.staffName || 'Petugas Pengirim'"></span>
+                            </div>
+
+                            <!-- 5. Waktu Mengirim -->
+                            <div class="flex items-center justify-between py-2">
+                                <span class="text-gray-500 font-medium flex items-center gap-2">
+                                    <i class="ph-duotone ph-clock text-base text-emerald-600 shrink-0"></i>
+                                    Waktu Mengirim
+                                </span>
+                                <span class="font-semibold text-gray-700 text-right leading-tight" x-text="formatDateTime(selectedOrder.orderDate, selectedOrder.orderTime)"></span>
+                            </div>
+
+                            <!-- 6. Kurir -->
+                            <div class="flex items-center justify-between py-2">
+                                <span class="text-gray-500 font-medium flex items-center gap-2">
+                                    <i class="ph-duotone ph-moped text-base text-emerald-600 shrink-0"></i>
+                                    Kurir
+                                </span>
+                                <span class="font-semibold text-gray-800 text-right leading-tight max-w-[200px]" x-text="selectedOrder.courierName || 'Kurir Logistik'"></span>
+                            </div>
+
+                            <!-- 7. Cabang Penerima -->
+                            <div class="flex items-center justify-between py-2">
+                                <span class="text-gray-500 font-medium flex items-center gap-2">
+                                    <i class="ph-duotone ph-buildings text-base text-emerald-600 shrink-0"></i>
+                                    Cabang Penerima
+                                </span>
+                                <span class="font-semibold text-gray-800 text-right leading-tight max-w-[200px]" x-text="selectedOrder.targetBranch || '-'"></span>
+                            </div>
+
+                            <!-- 8. Penerima -->
+                            <div class="flex items-center justify-between py-2">
+                                <span class="text-gray-500 font-medium flex items-center gap-2">
+                                    <i class="ph-duotone ph-user-check text-base text-emerald-600 shrink-0"></i>
+                                    Penerima
+                                </span>
+                                <span class="font-semibold text-right leading-tight max-w-[200px]"
+                                      :class="(selectedOrder.status === 'Sudah Diterima' || selectedOrder.status === 'Diterima' || selectedOrder.status === 'Selesai') ? 'text-gray-800' : 'text-gray-400 font-normal'"
+                                      x-text="(selectedOrder.status === 'Sudah Diterima' || selectedOrder.status === 'Diterima' || selectedOrder.status === 'Selesai') ? ((selectedOrder.receiverName && selectedOrder.receiverName !== selectedOrder.senderName) ? selectedOrder.receiverName : (selectedOrder.senderName === 'Salmatul Farida' ? 'Dimas Anggara' : 'Salmatul Farida')) : '-'"></span>
+                            </div>
+
+                            <!-- 9. Waktu Menerima -->
+                            <div class="flex items-center justify-between py-2 last:pb-0">
+                                <span class="text-gray-500 font-medium flex items-center gap-2">
+                                    <i class="ph-duotone ph-calendar-check text-base text-emerald-600 shrink-0"></i>
+                                    Waktu Menerima
+                                </span>
+                                <span class="font-semibold text-right leading-tight"
+                                      :class="(selectedOrder.status === 'Sudah Diterima' || selectedOrder.status === 'Diterima' || selectedOrder.status === 'Selesai') ? 'text-gray-700' : 'text-gray-400 font-medium italic'"
+                                      x-text="formatReceivedDateTime(selectedOrder)"></span>
                             </div>
                         </div>
 
@@ -1625,25 +1564,21 @@
                 </template>
             </div>
 
-            <!-- Action Buttons -->
-            <template x-if="selectedOrder">
-                <div class="flex w-full border-t border-gray-100 bg-gray-50/50">
-                    <button @click="openInvoiceModal(selectedOrder)"
-                            class="flex items-center justify-center gap-1.5 flex-1 py-3.5 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer">
-                        <i class="ph-bold ph-printer"></i>
-                        Cetak Surat Jalan
+            <!-- Action Buttons: 'Terima Barang' jika Dalam Perjalanan, atau 'View' jika sudah Diterima -->
+            <template x-if="selectedOrder && (selectedOrder.status === 'Dalam Perjalanan' || selectedOrder.status === 'Perjalanan' || selectedOrder.status === 'Pengiriman')">
+                <div class="p-4 sm:p-5 border-t border-gray-100 bg-white">
+                    <button type="button" @click="openReceiveForm(selectedOrder)"
+                            class="w-full h-12 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-sm font-bold shadow-md shadow-[#0b595b]/20 active:scale-98 transition flex items-center justify-center cursor-pointer">
+                        Terima Barang
                     </button>
-                    <div class="w-px bg-gray-200"></div>
-                    <button @click="closeDetailModal(); navigateToEdit(selectedOrder)"
-                            class="flex items-center justify-center gap-1.5 flex-1 py-3.5 text-xs font-semibold text-[#0b595b] hover:bg-emerald-50 transition-colors cursor-pointer">
-                        <i class="ph-bold ph-pencil-simple"></i>
-                        Edit
-                    </button>
-                    <div class="w-px bg-gray-200"></div>
-                    <button @click="deleteOrder(selectedOrder)"
-                            class="flex items-center justify-center gap-1.5 flex-1 py-3.5 text-xs font-semibold text-red-500 hover:bg-red-50 transition-colors cursor-pointer">
-                        <i class="ph-bold ph-trash"></i>
-                        Hapus
+                </div>
+            </template>
+
+            <template x-if="selectedOrder && (selectedOrder.status === 'Sudah Diterima' || selectedOrder.status === 'Diterima' || selectedOrder.status === 'Selesai')">
+                <div class="p-4 sm:p-5 border-t border-gray-100 bg-white">
+                    <button type="button" @click="openViewPage(selectedOrder)"
+                            class="w-full h-12 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-sm font-bold shadow-md shadow-[#0b595b]/20 active:scale-98 transition flex items-center justify-center cursor-pointer">
+                        View
                     </button>
                 </div>
             </template>
@@ -1699,10 +1634,10 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button @click="printOrder()" class="h-9 px-3 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-100 flex items-center gap-1.5 transition">
-                                <i class="ph-bold ph-printer"></i> Cetak PO
+                            <button @click="printOrder()" class="h-9 px-3.5 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-xs font-bold text-white flex items-center gap-1.5 transition cursor-pointer">
+                                <i class="ph-bold ph-printer"></i> Cetak Surat Jalan
                             </button>
-                            <button @click="invoiceModalOpen = false" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition">
+                            <button @click="invoiceModalOpen = false" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition cursor-pointer">
                                 <i class="ph-bold ph-x text-sm"></i>
                             </button>
                         </div>
@@ -1713,58 +1648,60 @@
                         
                         <!-- Timeline / Stepper Status Tracking -->
                         <div class="p-4 bg-gray-50/70 rounded-2xl border border-gray-100">
-                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Alur Status PO</p>
+                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Alur Status Surat Jalan</p>
                             <div class="grid grid-cols-2 gap-4 text-center text-xs">
-                                <!-- Step 1: Pending -->
+                                <!-- Step 1: Dalam Perjalanan -->
                                 <div class="flex flex-col items-center">
-                                    <div class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs mb-1"
-                                         :class="getStepIndex(selectedOrder.status) >= 1 ? 'bg-gray-700 text-white shadow-xs' : 'bg-gray-200 text-gray-500'">
+                                    <div class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs mb-1 bg-amber-500 text-white shadow-xs">
                                         1
                                     </div>
-                                    <span class="text-[11px] font-semibold text-gray-700">Pending</span>
+                                    <span class="text-[11px] font-semibold text-gray-700">Dalam Perjalanan</span>
                                 </div>
-                                <!-- Step 2: Diterima -->
+                                <!-- Step 2: Sudah Diterima -->
                                 <div class="flex flex-col items-center">
                                     <div class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs mb-1"
-                                         :class="getStepIndex(selectedOrder.status) >= 2 ? 'bg-emerald-600 text-white shadow-xs' : 'bg-gray-200 text-gray-500'">
+                                         :class="(selectedOrder.status === 'Sudah Diterima' || selectedOrder.status === 'Diterima' || selectedOrder.status === 'Selesai') ? 'bg-emerald-600 text-white shadow-xs' : 'bg-gray-200 text-gray-500'">
                                         2
                                     </div>
-                                    <span class="text-[11px] font-semibold text-gray-700">Diterima</span>
+                                    <span class="text-[11px] font-semibold text-gray-700">Sudah Diterima</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Info Petugas, Supplier & Cabang Cards -->
+                        <!-- Info Petugas, Kurir & Cabang Cards -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div class="p-3.5 rounded-2xl border border-gray-100 bg-white">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Yang Melakukan Pengadaan</span>
-                                <h4 class="text-sm font-bold text-gray-900 truncate" x-text="selectedOrder.staffName"></h4>
-                                <p class="text-xs text-gray-500 mt-0.5" x-text="'Waktu: ' + (selectedOrder.orderTime ? selectedOrder.orderTime + ' WIB' : '-')"></p>
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Pengirim</span>
+                                <h4 class="text-sm font-bold text-gray-900 truncate" x-text="selectedOrder.senderName || selectedOrder.staffName || 'Petugas Pengirim'"></h4>
+                                <p class="text-xs text-gray-500 mt-0.5" x-text="'Waktu Kirim: ' + (selectedOrder.orderTime ? selectedOrder.orderTime : '-')"></p>
                                 <p class="text-xs text-gray-400" x-text="'Tanggal: ' + formatDate(selectedOrder.orderDate)"></p>
                             </div>
                             <div class="p-3.5 rounded-2xl border border-gray-100 bg-white">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Informasi Pemasok</span>
-                                <h4 class="text-sm font-bold text-gray-900 truncate" x-text="selectedOrder.supplierName"></h4>
-                                <p class="text-xs text-gray-500 mt-0.5" x-text="'Telp: ' + selectedOrder.supplierPhone"></p>
-                                <p class="text-xs text-gray-400" x-text="'Lokasi: ' + selectedOrder.supplierCity"></p>
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Kurir Pengiriman</span>
+                                <h4 class="text-sm font-bold text-gray-900 truncate" x-text="selectedOrder.courierName || 'Kurir Internal'"></h4>
+                                <p class="text-xs text-gray-500 mt-0.5" x-text="'Asal: ' + (selectedOrder.originBranch || 'Gresik / Driyorejo - 001')"></p>
+                                <p class="text-xs text-gray-400" x-text="'Tujuan: ' + selectedOrder.targetBranch"></p>
                             </div>
                             <div class="p-3.5 rounded-2xl border border-gray-100 bg-white">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Tujuan & Pembayaran</span>
-                                <h4 class="text-sm font-bold text-gray-900 truncate" x-text="selectedOrder.targetBranch"></h4>
-                                <p class="text-xs text-gray-500 mt-0.5" x-text="'Estimasi: ' + formatDate(selectedOrder.etaDate)"></p>
-                                <p class="text-xs font-semibold" :class="selectedOrder.paymentStatus === 'Lunas' ? 'text-emerald-700' : 'text-amber-700'" x-text="'Status Bayar: ' + selectedOrder.paymentStatus"></p>
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Penerima & Waktu Terima</span>
+                                <h4 class="text-sm font-bold text-gray-900 truncate" x-text="(selectedOrder.status === 'Sudah Diterima' || selectedOrder.status === 'Diterima' || selectedOrder.status === 'Selesai') ? (selectedOrder.receiverName || 'Petugas Cabang') : 'Menunggu Konfirmasi'"></h4>
+                                <p class="text-xs text-gray-500 mt-0.5" x-text="'Waktu: ' + formatReceivedDateTime(selectedOrder)"></p>
+                                <p class="text-xs font-semibold" :class="(selectedOrder.status === 'Sudah Diterima' || selectedOrder.status === 'Diterima' || selectedOrder.status === 'Selesai') ? 'text-emerald-700' : 'text-amber-700'" x-text="'Status: ' + getStatusLabel(selectedOrder.status)"></p>
                             </div>
                         </div>
 
-                        <!-- Tabel Rincian Bahan yang Dipesan -->
+                        <!-- Tabel Rincian Produk yang Dikirim -->
                         <div>
-                            <span class="text-xs font-bold text-gray-900 uppercase tracking-wider block mb-2">Rincian Bahan Baku</span>
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-xs font-bold text-gray-900 uppercase tracking-wider block">Daftar Produk</span>
+                                <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-[#0b595b] border border-emerald-200/80" x-text="(selectedOrder.items || []).length"></span>
+                            </div>
                             <div class="border border-gray-100 rounded-2xl overflow-hidden">
                                 <table class="w-full text-left text-xs">
                                     <thead class="bg-gray-50/80 text-gray-500 font-bold uppercase text-[10px] border-b border-gray-100">
                                         <tr>
                                             <th class="px-4 py-2.5">No</th>
-                                            <th class="px-4 py-2.5">Bahan Buah</th>
+                                            <th class="px-4 py-2.5">Produk</th>
                                             <th class="px-4 py-2.5 text-center">Satuan</th>
                                             <th class="px-4 py-2.5 text-right">Kuantitas</th>
                                             <th class="px-4 py-2.5 text-right">Harga Satuan</th>
@@ -1785,7 +1722,7 @@
                                     </tbody>
                                     <tfoot class="bg-gray-50/40 border-t border-gray-100 font-semibold">
                                         <tr>
-                                            <td colspan="5" class="px-4 py-2 text-right text-gray-500">Subtotal Bahan:</td>
+                                            <td colspan="5" class="px-4 py-2 text-right text-gray-500">Subtotal Produk:</td>
                                             <td class="px-4 py-2 text-right text-gray-900" x-text="'Rp ' + selectedOrder.subtotal.toLocaleString('id-ID')"></td>
                                         </tr>
                                         <tr>
@@ -1793,7 +1730,7 @@
                                             <td class="px-4 py-2 text-right text-gray-900" x-text="'Rp ' + (selectedOrder.shippingFee || 0).toLocaleString('id-ID')"></td>
                                         </tr>
                                         <tr class="text-sm font-bold border-t border-gray-200">
-                                            <td colspan="5" class="px-4 py-3 text-right text-gray-900">Total Pembelian:</td>
+                                            <td colspan="5" class="px-4 py-3 text-right text-gray-900">Total Nilai Barang:</td>
                                             <td class="px-4 py-3 text-right text-[#0b595b]" x-text="'Rp ' + selectedOrder.grandTotal.toLocaleString('id-ID')"></td>
                                         </tr>
                                     </tfoot>
@@ -1803,34 +1740,26 @@
 
                         <!-- Catatan -->
                         <div x-show="selectedOrder.notes" class="p-3 bg-amber-50/60 rounded-xl border border-amber-200/60 text-xs">
-                            <span class="font-bold text-amber-800 block mb-0.5">Catatan PO:</span>
+                            <span class="font-bold text-amber-800 block mb-0.5">Catatan Pengiriman:</span>
                             <p class="text-amber-900" x-text="selectedOrder.notes"></p>
                         </div>
 
                     </div>
 
-                    <!-- Modal Actions Footer -->
-                    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-2 shrink-0">
-                        <div class="flex items-center gap-2">
-                            <button @click="deleteOrder(selectedOrder)" class="px-3.5 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 border border-red-200 transition">
-                                Hapus PO
-                            </button>
-                            <button @click="invoiceModalOpen = false; navigateToEdit(selectedOrder)" class="px-3.5 py-2 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-100 border border-gray-200 transition">
-                                Edit PO
-                            </button>
+                    <!-- Modal Actions Footer (Tanpa Tombol Hapus / Edit) -->
+                    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                        <div class="text-xs text-gray-500 flex items-center gap-1.5">
+                            <i class="ph-duotone ph-shield-check text-base text-emerald-600"></i>
+                            <span>Surat Jalan ini sah dan tercatat secara otomatis oleh sistem penerimaan.</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <!-- Quick Status Transition Buttons -->
-                            <template x-if="selectedOrder.status === 'Pending' || selectedOrder.status === 'Dalam Pengiriman' || selectedOrder.status === 'Perjalanan' || selectedOrder.status === 'Pengiriman'">
-                                <button @click="updateOrderStatus(selectedOrder.id, 'Diterima')" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition flex items-center gap-1.5 cursor-pointer">
-                                    <i class="ph-bold ph-check"></i> Tandai Diterima
-                                </button>
-                            </template>
-                            <template x-if="selectedOrder.status === 'Diterima' || selectedOrder.status === 'Selesai'">
-                                <button @click="updateOrderStatus(selectedOrder.id, 'Pending')" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-amber-50 text-amber-800 border border-gray-200 transition cursor-pointer">
-                                    Kembalikan ke Pending
-                                </button>
-                            </template>
+                            <button @click="printOrder()" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-[#0b595b] hover:bg-[#08484a] text-white shadow-xs transition flex items-center gap-1.5 cursor-pointer">
+                                <i class="ph-bold ph-printer text-sm"></i>
+                                <span>Cetak Surat Jalan</span>
+                            </button>
+                            <button @click="invoiceModalOpen = false" class="px-4 py-2.5 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-100 border border-gray-200 transition cursor-pointer">
+                                Tutup
+                            </button>
                         </div>
                     </div>
 
@@ -1841,113 +1770,92 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- MODAL TAMBAH / EDIT ITEM PRODUK                          -->
+    <!-- MODAL PEMERIKSAAN / TERIMA ITEM PRODUK                   -->
     <!-- ======================================================== -->
-    <div x-show="itemModalOpen" x-cloak
-         @click.self="itemModalOpen = false"
-         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-        
-        <div @click.outside="itemModalOpen = false"
+    <div x-show="receiveItemModalOpen" class="fixed inset-0 z-[130] flex items-center justify-center p-4 sm:p-6" x-cloak>
+        <!-- Backdrop (Persis Mengirim & Pilih Kurir) -->
+        <div x-show="receiveItemModalOpen"
+             x-transition:enter="transition-opacity ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="receiveItemModalOpen = false"
+             class="absolute inset-0 bg-black/60 backdrop-blur-xs"></div>
+
+        <!-- Modal Card: Lebar (max-w-lg) & Rounded-3xl Persis Mengirim -->
+        <div x-show="receiveItemModalOpen"
              x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 scale-95"
-             x-transition:enter-end="opacity-100 scale-100"
-             class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-gray-200 overflow-hidden">
+             x-transition:enter-start="opacity-0 scale-95 translate-y-3"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95 translate-y-3"
+             @click.outside="receiveItemModalOpen = false"
+             class="relative z-10 bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-sm sm:max-w-md overflow-hidden flex flex-col">
             
             <!-- Modal Header -->
-            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/70">
-                <h3 class="text-sm font-bold text-gray-900" x-text="modalMode === 'add' ? 'Tambah Item Sortir' : 'Edit Item Sortir'"></h3>
-                <button type="button" @click="itemModalOpen = false" class="text-gray-400 hover:text-gray-700 text-sm font-bold p-1 cursor-pointer">
-                    ✕
+            <div class="px-5 pt-4 pb-3.5 border-b border-gray-100 flex items-center justify-between shrink-0 bg-gray-50/50">
+                <div>
+                    <h4 class="text-base font-bold text-gray-900 leading-tight">Terima Produk</h4>
+                    <p class="text-xs font-semibold text-gray-500 mt-0.5 truncate max-w-[280px] sm:max-w-md" x-text="receiveModalItem.name"></p>
+                </div>
+                <button type="button" @click="receiveItemModalOpen = false" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 border border-gray-200/60 shadow-2xs flex items-center justify-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                    <i class="ph-bold ph-x text-sm"></i>
                 </button>
             </div>
 
-            <!-- Modal Body Form -->
-            <div class="p-6 space-y-4">
-                <!-- Pilih Bahan (Gaya Dashboard Dropdown Kustom) -->
-                <div class="relative z-30" x-data="{ prodOpen: false }">
-                    <label class="text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                        <span>Nama Produk / Bahan</span>
-                        <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <!-- Trigger Button Kustom -->
-                        <button type="button" @click="prodOpen = !prodOpen"
-                                class="w-full h-10 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl px-3.5 flex items-center justify-between text-xs outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition cursor-pointer shadow-2xs text-left group">
-                            <span class="truncate pr-2" :class="modalItem.name ? 'text-gray-800 font-semibold' : 'text-gray-400 font-normal'"
-                                  x-text="modalItem.name ? modalItem.name + (modalItem.unit ? ' (' + modalItem.unit + ')' : '') : 'Pilih Produk / Bahan'"></span>
-                            <i class="ph-bold ph-caret-down text-gray-400 group-hover:text-gray-600 text-xs shrink-0 transition-transform duration-200"
-                               :class="prodOpen ? 'rotate-180 text-[#0b595b]' : ''"></i>
-                        </button>
+            <!-- Modal Body Form: Grid 2 Kolom (Dikirim vs Diterima) + Catatan -->
+            <div class="p-5 space-y-5 text-xs">
+                <!-- Grid 2 Kolom Berdampingan: Dikirim vs Diterima -->
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Kolom 1: Dikirim (Read-only) -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                            Dikirim
+                        </label>
+                        <div class="relative">
+                            <input type="text" readonly :value="formatQty(receiveModalItem.sentQty)"
+                                   class="w-full h-10 pl-3.5 pr-10 bg-gray-100 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none cursor-not-allowed select-none">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 select-none pointer-events-none" x-text="receiveModalItem.unit || 'Kg'"></span>
+                        </div>
+                    </div>
 
-                        <!-- Dropdown Menu Mengambang (Gaya Bersih Sesuai Dashboard) -->
-                        <div x-show="prodOpen" @click.outside="prodOpen = false" x-cloak
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="opacity-0 scale-95"
-                             x-transition:enter-end="opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="opacity-100 scale-100"
-                             x-transition:leave-end="opacity-0 scale-95"
-                             class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-xl py-1 z-50 max-h-52 overflow-y-auto overscroll-none minimal-scrollbar">
-                             <template x-for="item in masterItems" :key="item.name">
-                                 <div @click="selectModalProduct(item); prodOpen = false"
-                                      class="px-3.5 py-2.5 text-xs cursor-pointer transition-colors flex justify-between items-center group"
-                                      :class="modalItem.name === item.name ? 'bg-emerald-50/70 text-emerald-700 font-semibold' : 'text-gray-700 font-medium hover:bg-gray-50'">
-                                     <span x-text="item.name + (item.unit ? ' (' + item.unit + ')' : '')"></span>
-                                     <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="modalItem.name === item.name"></i>
-                                 </div>
-                             </template>
+                    <!-- Kolom 2: Diterima (Editable) -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-[#0b595b] uppercase tracking-wider mb-1.5">
+                            Diterima <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="text" inputmode="decimal"
+                                   :value="receiveModalQtyString"
+                                   @input="handleReceiveQtyInput($event)"
+                                   placeholder="0"
+                                   class="w-full h-10 pl-3.5 pr-10 bg-gray-50 border border-emerald-300 rounded-xl text-xs font-extrabold text-gray-900 outline-none focus:bg-white focus:border-[#0b595b] transition shadow-2xs">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 select-none pointer-events-none" x-text="receiveModalItem.unit || 'Kg'"></span>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <!-- Kuantitas (Auto Format Titik Ribuan) -->
-                    <div>
-                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">
-                            Kuantitas <span class="text-gray-400 font-normal" x-show="modalItem.unit" x-text="'(' + modalItem.unit + ')'"></span>
-                        </label>
-                        <input type="text" inputmode="numeric"
-                               :value="formatRupiahInput(modalItem.qty)"
-                               @input="handlePriceInput('qty', $event)"
-                               placeholder="0"
-                               class="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-emerald-500 placeholder:text-gray-300 placeholder:font-normal">
-                    </div>
-
-                    <!-- HPP / Satuan (Auto Format Titik Ribuan) -->
-                    <div>
-                        <label class="text-xs font-bold text-gray-700 mb-1.5 block">HPP / Satuan</label>
-                        <input type="text" inputmode="numeric"
-                               :value="formatRupiahInput(modalItem.buyPrice)"
-                               @input="handlePriceInput('buyPrice', $event)"
-                               placeholder="0"
-                               class="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-emerald-500 placeholder:text-gray-300 placeholder:font-normal">
-                    </div>
-                </div>
-
-                <!-- Total HPP / Modal -->
-                <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 flex items-center justify-between text-xs">
-                    <span class="font-semibold text-emerald-800">Total HPP / Modal</span>
-                    <span class="font-extrabold text-[#0b595b] text-sm"
-                          x-text="'Rp ' + ((modalItem.qty || 0) * (modalItem.buyPrice || 0)).toLocaleString('id-ID')"></span>
+                <!-- Catatan -->
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                        Catatan
+                    </label>
+                    <input type="text" 
+                           x-model="receiveModalItem.notes" 
+                           placeholder="Tuliskan catatan jika ada..." 
+                           class="w-full h-10 px-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 outline-none focus:bg-white focus:border-emerald-500 transition shadow-2xs placeholder:text-gray-300">
                 </div>
             </div>
 
-            <!-- Modal Footer -->
-            <div class="px-6 py-3.5 bg-gray-50/70 border-t border-gray-100 flex items-center justify-between gap-2">
-                <button type="button" x-show="modalMode === 'edit'" @click="deleteEditingItem()"
-                        class="text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-xl transition cursor-pointer">
-                    Hapus Item
+            <!-- Modal Footer: 1 Action Button Tunggal Diterima -->
+            <div class="px-5 py-3.5 border-t border-gray-100 bg-gray-50/50 flex items-center shrink-0">
+                <button type="button" @click="saveReceiveModalItem()"
+                        class="w-full h-11 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0b595b]/20 active:scale-95 transition flex items-center justify-center cursor-pointer">
+                    Diterima
                 </button>
-                <div class="flex items-center gap-2 ml-auto">
-                    <button type="button" @click="itemModalOpen = false"
-                            class="px-4 py-2 rounded-xl border border-gray-300 text-xs font-bold text-gray-700 hover:bg-gray-100 transition cursor-pointer">
-                        Batal
-                    </button>
-                    <button type="button" @click="saveModalItem()"
-                            class="px-5 py-2 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-sm transition cursor-pointer">
-                        Simpan Item
-                    </button>
-                </div>
             </div>
 
         </div>
@@ -1955,65 +1863,73 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- MODAL KONFIRMASI: SELESAIKAN TRANSAKSI                   -->
+    <!-- MODAL KONFIRMASI: SELESAIKAN PENERIMAAN BARANG            -->
     <!-- ======================================================== -->
-    <div x-show="confirmModalOpen" class="fixed inset-0 z-[130] flex items-center justify-center p-4" x-cloak>
+    <div x-show="confirmReceiveModalOpen" class="fixed inset-0 z-[130] flex items-center justify-center p-4" x-cloak>
         <!-- Backdrop -->
-        <div x-show="confirmModalOpen"
+        <div x-show="confirmReceiveModalOpen"
              x-transition:enter="transition-opacity ease-out duration-200"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
              x-transition:leave="transition-opacity ease-in duration-150"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             @click="confirmModalOpen = false"
+             @click="confirmReceiveModalOpen = false"
              class="absolute inset-0 bg-black/50 backdrop-blur-xs"></div>
 
         <!-- Modal Card -->
-        <div x-show="confirmModalOpen"
+        <div x-show="confirmReceiveModalOpen"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 scale-90 translate-y-3"
              x-transition:enter-end="opacity-100 scale-100 translate-y-0"
              x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100 scale-100"
              x-transition:leave-end="opacity-0 scale-90 translate-y-3"
-             @click.outside="confirmModalOpen = false"
+             @click.outside="confirmReceiveModalOpen = false"
              class="relative z-10 bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-sm overflow-hidden p-6 text-center">
             
-            <!-- Judul & Pesan Sesuai Instruksi User -->
-            <h4 class="text-base font-bold text-gray-900 mb-1.5">Selesaikan Transaksi?</h4>
-            <p class="text-xs text-gray-500 leading-relaxed mb-4">
-                Apakah transaksi sudah sesuai dan<br>tidak ada tambahan lagi?
-            </p>
-
-            <!-- Ringkasan Singkat Transaksi -->
-            <div class="bg-gray-50 rounded-2xl p-3.5 border border-gray-100 mb-5 text-left text-xs space-y-1.5">
-                <div class="flex items-center justify-between">
-                    <span class="text-gray-500 font-medium">Cabang Tujuan</span>
-                    <span class="font-bold text-gray-800 truncate max-w-[170px]" x-text="form.targetBranch"></span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-gray-500 font-medium">Jumlah Item</span>
-                    <span class="font-bold text-gray-800" x-text="form.items.length"></span>
-                </div>
-                <div class="flex items-center justify-between pt-1.5 border-t border-gray-200/60">
-                    <span class="font-semibold text-gray-700">Total HPP / Modal</span>
-                    <span class="font-extrabold text-[#0b595b] text-sm" x-text="'Rp ' + calculateGrandTotal().toLocaleString('id-ID')"></span>
-                </div>
+            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl mx-auto mb-3">
+                <i class="ph-bold ph-warning-circle"></i>
             </div>
 
-            <!-- 2 Tombol Aksi: Batal & Selesaikan -->
+            <!-- Judul & Pesan (Just Info Bersih) -->
+            <h4 class="text-base font-bold text-gray-900 mb-2">Terdapat Selisih Kurang</h4>
+            <p class="text-xs text-gray-500 leading-relaxed mb-6 px-1">
+                Kekurangan fisik akan otomatis dicatat<br>sebagai selisih dan dikembalikan ke cabang pengirim.
+            </p>
+
+            <!-- 2 Tombol Aksi: Periksa Lagi & Tetap Terima -->
             <div class="flex items-center gap-2.5">
-                <button type="button" @click="confirmModalOpen = false"
-                        class="flex-1 h-10 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition cursor-pointer">
-                    Batal
+                <button type="button" @click="confirmReceiveModalOpen = false"
+                        class="flex-1 h-11 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition cursor-pointer">
+                    Periksa Lagi
                 </button>
-                <button type="button" @click="executeSubmitPengadaan()"
-                        class="flex-1 h-10 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-md shadow-[#0b595b]/20 active:scale-95 transition flex items-center justify-center cursor-pointer">
-                    Selesaikan
+                <button type="button" @click="submitReceiveGoods()"
+                        class="flex-1 h-11 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-md shadow-[#0b595b]/20 active:scale-95 transition flex items-center justify-center cursor-pointer">
+                    Tetap Terima
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- TOAST NOTIFIKASI SUKSES -->
+    <div x-show="showToastNotification" x-cloak
+         x-transition:enter="transition ease-out duration-300 transform"
+         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:translate-x-4"
+         x-transition:enter-end="opacity-100 translate-y-0 sm:translate-x-0"
+         x-transition:leave="transition ease-in duration-200 transform"
+         x-transition:leave-start="opacity-100 translate-y-0 sm:translate-x-0"
+         x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:translate-x-4"
+         class="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[160] max-w-sm bg-gray-900/95 text-white p-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border border-gray-800 backdrop-blur-md">
+        <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <i class="ph-bold ph-check text-base"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="text-xs font-semibold leading-snug" x-text="toastMessage"></p>
+        </div>
+        <button type="button" @click="showToastNotification = false" class="text-gray-400 hover:text-white shrink-0 cursor-pointer">
+            <i class="ph-bold ph-x text-xs"></i>
+        </button>
     </div>
 
     </div><!-- /flex-1 flex flex-col -->
@@ -2041,13 +1957,18 @@
                 { name: 'PT Sentosa Hortikultura', phone: '0819-2233-4455', city: 'Batu', initial: 'SH', theme: 'bg-purple-50 text-purple-700 border-purple-200' },
                 { name: 'CV Sumber Buah Alami', phone: '0857-1122-3344', city: 'Pasuruan', initial: 'SB', theme: 'bg-teal-50 text-teal-700 border-teal-200' }
             ];
-            const staffList = [
+            const sendersList = [
+                { name: 'Muhammad Chamim', initial: 'MC', theme: 'bg-teal-50 text-teal-700 border-teal-200' },
                 { name: 'Achmad Noorman Setiawan', initial: 'AN', theme: 'bg-emerald-50 text-[#0b595b] border-emerald-200' },
                 { name: 'Maharani Purwitasari', initial: 'MP', theme: 'bg-blue-50 text-blue-700 border-blue-200' },
-                { name: 'Salmatul Farida', initial: 'SF', theme: 'bg-purple-50 text-purple-700 border-purple-200' },
-                { name: 'Dwi Febbrianti', initial: 'DF', theme: 'bg-amber-50 text-amber-700 border-amber-200' },
-                { name: 'Muhammad Chamim', initial: 'MC', theme: 'bg-teal-50 text-teal-700 border-teal-200' },
                 { name: 'Al Afghani', initial: 'AA', theme: 'bg-rose-50 text-rose-700 border-rose-200' }
+            ];
+            const receiversList = [
+                { name: 'Salmatul Farida', initial: 'SF', theme: 'bg-purple-50 text-purple-700 border-purple-200' },
+                { name: 'Dimas Anggara', initial: 'DA', theme: 'bg-amber-50 text-amber-700 border-amber-200' },
+                { name: 'Rina Wulandari', initial: 'RW', theme: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+                { name: 'Bambang Soepeno', initial: 'BS', theme: 'bg-teal-50 text-teal-700 border-teal-200' },
+                { name: 'Dwi Febbrianti', initial: 'DF', theme: 'bg-orange-50 text-orange-700 border-orange-200' }
             ];
             const materials = [
                 { name: 'Buah Naga Merah', unit: 'Kg', buyPrice: 18000, sellPrice: 24000 },
@@ -2095,22 +2016,22 @@
 
                 const originBranch = originBranches[i % originBranches.length];
                 const supplier = suppliers[(i * 2 + 1) % suppliers.length];
-                const staff = staffList[(i + 2) % staffList.length];
+                const staff = sendersList[i % sendersList.length];
                 const courierName = couriers[i % couriers.length];
 
-                // 3 Status Transaksi Sesuai PRD: Pending, Perjalanan, Diterima
-                let status = 'Diterima';
-                let receiverName = staffList[(i + 1) % staffList.length].name;
-                let receivedDate = etaDateStr + ', ' + String(10 + (i % 6)).padStart(2, '0') + ':' + String((i * 17) % 60).padStart(2, '0') + ' WIB';
+                // 3 Status Transaksi Sesuai PRD: Sedang Disiapkan, Perjalanan, Sudah Diterima
+                let status = 'Sudah Diterima';
+                let receiverName = receiversList[i % receiversList.length].name;
+                let receivedDate = etaDateStr + ', ' + String(10 + (i % 6)).padStart(2, '0') + ':' + String((i * 17) % 60).padStart(2, '0');
 
                 if (i === 0 || i === 1 || i === 4) {
-                    status = 'Dalam Pengiriman';
-                    receiverName = null;
+                    status = 'Dalam Perjalanan';
                     receivedDate = null;
+                    receiverName = null;
                 } else if (i === 2 || i === 6) {
-                    status = 'Pending';
-                    receiverName = null;
+                    status = 'Sedang Disiapkan';
                     receivedDate = null;
+                    receiverName = null;
                 }
 
                 // Variasi item: 1 sampai 3 item bahan per pengadaan
@@ -2217,6 +2138,7 @@
                 // Tampilan SPA: 'list' | 'form'
                 currentView: 'list',
                 isEditMode: false,
+                isViewMode: false,
                 editingOrder: null,
 
                 // Profil Pengguna & Cabang Hak Akses
@@ -2249,6 +2171,7 @@
                 itemModalOpen: false,
                 modalMode: 'add',
                 editingIndex: null,
+                productSearchQuery: '',
                 confirmModalOpen: false,
                 modalItem: {
                     productId: null,
@@ -2328,46 +2251,55 @@
                     targetBranch: '',
                     items: []
                 },
-                // Data Transaksi Pengadaan (Tersinkronisasi dengan LocalStorage, default 65 data)
+
+                // Form Object Terima Barang (Pemeriksaan Stok Fisik)
+                receiveForm: {
+                    orderId: null,
+                    docNo: '',
+                    poNumber: '',
+                    originBranch: '',
+                    targetBranch: '',
+                    senderName: '',
+                    courierName: '',
+                    orderDate: '',
+                    orderTime: '',
+                    items: []
+                },
+                receivingOrder: null,
+                confirmReceiveModalOpen: false,
+                receiveItemModalOpen: false,
+                editingReceiveIdx: null,
+                receiveModalQtyString: '0',
+                receiveModalItem: {
+                    name: '',
+                    sentQty: 0,
+                    receivedQty: 0,
+                    unit: 'Kg',
+                    notes: ''
+                },
+                showToastNotification: false,
+                toastMessage: '',
+                // Data Transaksi Pindah Stok (Tersinkronisasi dengan LocalStorage infruity_pindah_stok_orders)
                 orders: (() => {
                     try {
-                        const stored = localStorage.getItem('infruity_pengadaan_orders');
+                        const stored = localStorage.getItem('infruity_pindah_stok_orders');
                         if (stored) {
                             let parsed = JSON.parse(stored);
                             if (Array.isArray(parsed) && parsed.length >= 50) {
-                                let changed = false;
-                                parsed = parsed.map(o => {
-                                    if (o.status === 'Selesai') {
-                                        o.status = 'Diterima';
-                                        changed = true;
-                                    }
-                                    if (o.status === 'Perjalanan' || o.status === 'Pengiriman' || o.status === 'Dalam Perjalanan') {
-                                        o.status = 'Dalam Pengiriman';
-                                        changed = true;
-                                    }
-                                    return o;
-                                });
-                                if (changed) {
-                                    localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(parsed));
-                                }
                                 return parsed;
                             }
                             if (Array.isArray(parsed)) {
-                                const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('po-seed-') && !String(o.id).startsWith('sj-seed-')).map(o => {
-                                    if (o.status === 'Selesai') o.status = 'Diterima';
-                                    if (o.status === 'Perjalanan' || o.status === 'Pengiriman' || o.status === 'Dalam Perjalanan') o.status = 'Dalam Pengiriman';
-                                    return o;
-                                });
+                                const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('sj-seed-'));
                                 const seeds = generateInitialPengadaanOrders();
                                 const merged = [...userCreated, ...seeds];
-                                localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(merged));
+                                localStorage.setItem('infruity_pindah_stok_orders', JSON.stringify(merged));
                                 return merged;
                             }
                         }
                     } catch (e) {}
                     const seeds = generateInitialPengadaanOrders();
                     try {
-                        localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(seeds));
+                        localStorage.setItem('infruity_pindah_stok_orders', JSON.stringify(seeds));
                     } catch (e) {}
                     return seeds;
                 })(),
@@ -2375,6 +2307,12 @@
                 // Filter & Pagination Logic
                 get filteredOrders() {
                     return this.orders.filter(order => {
+                        // Di halaman Menerima: Hanya status 'Dalam Perjalanan' dan 'Sudah Diterima' (Sedang Disiapkan / Pending / Draft tidak masuk ke Menerima)
+                        const currentStatus = this.getStatusLabel(order.status);
+                        if (currentStatus !== 'Dalam Perjalanan' && currentStatus !== 'Sudah Diterima' && currentStatus !== 'Diterima') {
+                            return false;
+                        }
+
                         // 1. Cabang Filter
                         if (this.selectedBranch && this.selectedBranch !== 'Semua Cabang' && order.targetBranch !== this.selectedBranch) {
                             return false;
@@ -2382,21 +2320,23 @@
 
                         // 2. Status Dropdown Filter
                         if (this.filterStatus !== 'Semua') {
-                            const currentStatus = this.getStatusLabel(order.status);
                             if (currentStatus !== this.filterStatus && order.status !== this.filterStatus) {
                                 return false;
                             }
                         }
 
-                        // 6. Search Query
+                        // 3. Search Query
                         if (this.searchQuery && this.searchQuery.trim() !== '') {
                             const q = this.searchQuery.toLowerCase().trim();
                             const matchStaff = order.staffName ? order.staffName.toLowerCase().includes(q) : false;
+                            const matchSender = order.senderName ? order.senderName.toLowerCase().includes(q) : false;
                             const matchPO = order.poNumber ? order.poNumber.toLowerCase().includes(q) : false;
+                            const matchDoc = order.docNo ? order.docNo.toLowerCase().includes(q) : false;
                             const matchSupplier = order.supplierName ? order.supplierName.toLowerCase().includes(q) : false;
                             const matchBranch = order.targetBranch ? order.targetBranch.toLowerCase().includes(q) : false;
+                            const matchOrigin = order.originBranch ? order.originBranch.toLowerCase().includes(q) : false;
                             const matchItem = order.items && order.items.some(it => it.name.toLowerCase().includes(q));
-                            if (!matchStaff && !matchPO && !matchSupplier && !matchBranch && !matchItem) return false;
+                            if (!matchStaff && !matchSender && !matchPO && !matchDoc && !matchSupplier && !matchBranch && !matchOrigin && !matchItem) return false;
                         }
 
                         return true;
@@ -2605,6 +2545,7 @@
                 openAddItemModal() {
                     this.modalMode = 'add';
                     this.editingIndex = null;
+                    this.productSearchQuery = '';
                     this.modalItem = {
                         productId: null,
                         name: '',
@@ -2620,12 +2561,14 @@
                 openEditItemModal(idx) {
                     this.modalMode = 'edit';
                     this.editingIndex = idx;
+                    this.productSearchQuery = '';
                     this.modalItem = { ...this.form.items[idx] };
                     this.updateModalMargin();
                     this.itemModalOpen = true;
                 },
 
                 selectModalProduct(item) {
+                    if (this.isItemAlreadyAdded(item.name)) return;
                     this.modalItem.productId = item.id;
                     this.modalItem.name = item.name;
                     this.modalItem.unit = item.unit;
@@ -2635,6 +2578,18 @@
                         this.modalItem.qty = 1;
                     }
                     this.updateModalMargin();
+                },
+
+                isItemAlreadyAdded(itemName) {
+                    if (!itemName) return false;
+                    const targetName = itemName.toLowerCase().trim();
+                    if (this.modalMode === 'edit' && this.editingIndex !== null) {
+                        const currentItem = this.form.items[this.editingIndex];
+                        if (currentItem && (currentItem.name || '').toLowerCase().trim() === targetName) {
+                            return false;
+                        }
+                    }
+                    return (this.form.items || []).some(it => (it.name || '').toLowerCase().trim() === targetName);
                 },
 
                 formatRupiahInput(val) {
@@ -2670,30 +2625,30 @@
                         alert('Silakan masukkan kuantitas');
                         return;
                     }
-                    if (this.modalItem.buyPrice === null || this.modalItem.buyPrice === undefined || this.modalItem.buyPrice === '') {
-                        alert('Silakan masukkan HPP / satuan');
+                    if (this.isItemAlreadyAdded(this.modalItem.name)) {
+                        alert('Produk ini sudah ada di daftar penerimaan');
                         return;
                     }
-
                     if (this.modalItem.productId) {
                         const targetProd = this.masterItems.find(p => p.id === this.modalItem.productId);
                         if (targetProd) {
-                            targetProd.sellPrice = this.modalItem.sellPrice;
                             if (this.modalItem.buyPrice) targetProd.buyPrice = this.modalItem.buyPrice;
                         }
                     }
 
                     if (this.modalMode === 'add') {
                         this.form.items.push({ ...this.modalItem });
+                        // Auto reset form dan jangan keluar dari pop-up
                         this.modalItem = {
                             productId: null,
                             name: '',
                             unit: '',
                             qty: null,
-                            buyPrice: null,
-                            sellPrice: null,
+                            buyPrice: 0,
+                            sellPrice: 0,
                             marginPercent: null
                         };
+                        this.productSearchQuery = '';
                     } else if (this.editingIndex !== null) {
                         this.form.items[this.editingIndex] = { ...this.modalItem };
                         this.itemModalOpen = false;
@@ -2710,7 +2665,7 @@
                 saveDraft() {
                     if (this.form.items && this.form.items.length > 0) {
                         try {
-                            const stored = localStorage.getItem('infruity_pengadaan_orders');
+                            const stored = localStorage.getItem('infruity_pindah_stok_orders');
                             let orders = stored ? JSON.parse(stored) : [];
                             if (!Array.isArray(orders)) orders = [];
 
@@ -2737,7 +2692,7 @@
                             } else {
                                 const newDraft = {
                                     id: 'draft-' + Date.now(),
-                                    poNumber: 'PO-DRAFT-' + String(Math.floor(1000 + Math.random() * 9000)),
+                                    poNumber: 'SJ-DRAFT-' + String(Math.floor(1000 + Math.random() * 9000)),
                                     staffName: this.currentUser?.name || 'Dimas Pratama',
                                     staffInitial: 'DP',
                                     staffTheme: 'bg-emerald-50 text-[#0b595b] border-emerald-200',
@@ -2763,7 +2718,7 @@
                                 };
                                 orders.unshift(newDraft);
                             }
-                            localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(orders));
+                            localStorage.setItem('infruity_pindah_stok_orders', JSON.stringify(orders));
                             this.orders = orders;
                         } catch (err) {
                             console.error('Gagal menyimpan draf:', err);
@@ -2783,7 +2738,7 @@
 
                 executeSubmitPengadaan() {
                     try {
-                        const stored = localStorage.getItem('infruity_pengadaan_orders');
+                        const stored = localStorage.getItem('infruity_pindah_stok_orders');
                         let orders = stored ? JSON.parse(stored) : [];
                         if (!Array.isArray(orders)) orders = [];
 
@@ -2795,8 +2750,8 @@
                         if (this.isEditMode && this.editingOrder) {
                             const idx = orders.findIndex(o => String(o.id) === String(this.editingOrder.id) || String(o.poNumber) === String(this.editingOrder.poNumber));
                             let poNumber = this.editingOrder.poNumber;
-                            if (poNumber && poNumber.startsWith('PO-DRAFT-')) {
-                                poNumber = 'PO-' + today.getFullYear() + '-' + poNumber.replace('PO-DRAFT-', '');
+                            if (poNumber && poNumber.startsWith('SJ-DRAFT-')) {
+                                poNumber = 'SJ-' + today.getFullYear() + '-' + poNumber.replace('SJ-DRAFT-', '');
                             }
                             const updatedOrder = {
                                 ...this.editingOrder,
@@ -2805,7 +2760,9 @@
                                 items: [...this.form.items],
                                 subtotal: grandTotal,
                                 grandTotal: grandTotal,
-                                status: this.editingOrder.status === 'Selesai' ? 'Diterima' : (this.editingOrder.status || 'Pending'),
+                                status: 'Sudah Diterima',
+                                receiverName: this.currentUser?.name || (this.editingOrder.senderName === 'Salmatul Farida' ? 'Dimas Anggara' : 'Salmatul Farida'),
+                                receivedDate: dateStr + ', ' + timeStr,
                                 paymentStatus: (this.editingOrder.paymentStatus && this.editingOrder.paymentStatus !== 'Belum Bayar') ? this.editingOrder.paymentStatus : 'Lunas'
                             };
                             if (idx !== -1) {
@@ -2830,7 +2787,7 @@
                                 targetBranch: this.form.targetBranch,
                                 senderName: 'Achmad Noorman Setiawan',
                                 courierName: 'Budi',
-                                receiverName: this.currentUser?.name || 'Petugas Cabang',
+                                receiverName: null,
                                 receivedDate: null,
                                 orderDate: dateStr,
                                 date: dateStr,
@@ -2848,7 +2805,7 @@
                             };
                             orders.unshift(newOrder);
                         }
-                        localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(orders));
+                        localStorage.setItem('infruity_pindah_stok_orders', JSON.stringify(orders));
                         this.orders = orders;
                     } catch (err) {
                         console.error('Gagal menyimpan transaksi:', err);
@@ -2858,7 +2815,6 @@
                     this.closeFormView();
                 },
 
-                // Detail Modal & Tracking
                 openDetailModal(order) {
                     this.selectedOrder = order;
                     this.detailModalOpen = true;
@@ -2868,21 +2824,358 @@
                     this.detailModalOpen = false;
                 },
 
+                openInvoiceModal(order) {
+                    if (order) this.selectedOrder = order;
+                    this.detailModalOpen = false;
+                    this.invoiceModalOpen = true;
+                },
+
+                closeInvoiceModal() {
+                    this.invoiceModalOpen = false;
+                },
+
+                // ==========================================
+                // FITUR TERIMA BARANG: PEMERIKSAAN STOK FISIK
+                // ==========================================
+                openReceiveForm(order) {
+                    if (!order) return;
+                    this.detailModalOpen = false;
+                    this.isViewMode = false;
+                    this.receivingOrder = order;
+
+                    const today = new Date();
+                    const dStr = today.toISOString().split('T')[0];
+
+                    this.receiveForm = {
+                        orderId: order.id,
+                        docNo: order.docNo || (order.poNumber ? order.poNumber.replace(/^PO-/, 'SJ-') : 'SJ-' + Date.now()),
+                        poNumber: order.poNumber || order.docNo,
+                        originBranch: order.originBranch || 'Gresik / Driyorejo - 001',
+                        targetBranch: order.targetBranch || this.selectedBranch || 'Surabaya / Rungkut - 001',
+                        senderName: order.senderName || order.staffName || 'Petugas Pengirim',
+                        courierName: order.courierName || 'Kurir Internal',
+                        orderDate: order.orderDate || dStr,
+                        orderTime: order.orderTime || '10:00',
+                        items: (order.items || []).map(it => {
+                            const sent = Number(it.qty || it.sentQty || 1);
+                            return {
+                                name: it.name || 'Produk',
+                                unit: it.unit || 'Kg',
+                                unitPrice: Number(it.unitPrice || it.buyPrice || 0),
+                                sentQty: sent,
+                                receivedQty: sent, // Default awal pas sesuai surat jalan
+                                notes: ''
+                            };
+                        })
+                    };
+                    this.currentView = 'form';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                // Buka Tampilan Halaman View Detail Dokumen Penerimaan
+                openViewPage(order) {
+                    this.viewOrder(order);
+                },
+
+                viewOrder(order) {
+                    if (!order) return;
+                    this.detailModalOpen = false;
+                    this.invoiceModalOpen = false;
+                    this.isViewMode = true;
+                    this.receivingOrder = order;
+
+                    const today = new Date();
+                    const dStr = today.toISOString().split('T')[0];
+
+                    this.receiveForm = {
+                        orderId: order.id,
+                        docNo: order.docNo || (order.poNumber ? order.poNumber.replace(/^PO-/, 'SJ-') : 'SJ-' + Date.now()),
+                        poNumber: order.poNumber || order.docNo,
+                        originBranch: order.originBranch || 'Gresik / Driyorejo - 001',
+                        targetBranch: order.targetBranch || this.selectedBranch || 'Surabaya / Rungkut - 001',
+                        senderName: order.senderName || order.staffName || 'Petugas Pengirim',
+                        courierName: order.courierName || 'Kurir Internal',
+                        orderDate: order.orderDate || dStr,
+                        orderTime: order.orderTime || '10:00',
+                        receiverName: order.receiverName || '',
+                        receivedDate: order.receivedDate || '',
+                        status: order.status || 'Sudah Diterima',
+                        items: (order.items || []).map(it => {
+                            const sent = Number(it.sentQty !== undefined ? it.sentQty : (it.qty || 1));
+                            const received = Number(it.receivedQty !== undefined ? it.receivedQty : sent);
+                            return {
+                                name: it.name || 'Produk',
+                                unit: it.unit || 'Kg',
+                                unitPrice: Number(it.unitPrice || it.buyPrice || 0),
+                                sentQty: sent,
+                                receivedQty: received,
+                                notes: it.notes || ''
+                            };
+                        })
+                    };
+                    this.currentView = 'form';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                closeReceiveForm() {
+                    this.currentView = 'list';
+                    this.isViewMode = false;
+                    this.receivingOrder = null;
+                    this.confirmReceiveModalOpen = false;
+                    this.reloadOrders();
+                },
+
+                setAllReceivedExact() {
+                    if (!this.receiveForm || !this.receiveForm.items) return;
+                    this.receiveForm.items.forEach(it => {
+                        it.receivedQty = it.sentQty;
+                    });
+                },
+
+                formatQty(val) {
+                    if (val === null || val === undefined || isNaN(val)) return '0';
+                    const num = Number(val);
+                    return num.toLocaleString('id-ID', { maximumFractionDigits: 3 });
+                },
+
+                openReceiveItemModal(idx) {
+                    if (this.isViewMode) return;
+                    this.editingReceiveIdx = idx;
+                    const item = this.receiveForm.items[idx];
+                    if (!item) return;
+                    const received = Number(item.receivedQty !== undefined ? item.receivedQty : item.sentQty);
+                    this.receiveModalItem = {
+                        name: item.name,
+                        sentQty: Number(item.sentQty || 0),
+                        receivedQty: received,
+                        unit: item.unit || 'Kg',
+                        notes: item.notes || ''
+                    };
+                    this.receiveModalQtyString = String(received).replace('.', ',');
+                    this.receiveItemModalOpen = true;
+                },
+
+                handleReceiveQtyInput(event) {
+                    let val = event.target.value;
+                    // Allow digits and at most one separator (. or ,)
+                    val = val.replace(/[^0-9.,]/g, '');
+                    const firstSepMatch = val.match(/[.,]/);
+                    if (firstSepMatch) {
+                        const sepIndex = val.indexOf(firstSepMatch[0]);
+                        val = val.slice(0, sepIndex + 1) + val.slice(sepIndex + 1).replace(/[.,]/g, '');
+                    }
+                    this.receiveModalQtyString = val;
+
+                    if (val === '' || val === ',' || val === '.') {
+                        this.receiveModalItem.receivedQty = 0;
+                        return;
+                    }
+                    const normalized = val.replace(',', '.');
+                    let parsed = parseFloat(normalized);
+                    if (isNaN(parsed)) parsed = 0;
+                    const max = Number(this.receiveModalItem.sentQty) || 0;
+                    if (parsed > max) {
+                        parsed = max;
+                        this.receiveModalQtyString = String(max).replace('.', ',');
+                    }
+                    this.receiveModalItem.receivedQty = Math.round(parsed * 1000) / 1000;
+                },
+
+                adjustReceiveQty(delta) {
+                    const current = Number(this.receiveModalItem.receivedQty) || 0;
+                    const max = Number(this.receiveModalItem.sentQty) || 0;
+                    const next = Math.min(max, Math.max(0, Math.round((current + delta) * 1000) / 1000));
+                    this.receiveModalItem.receivedQty = next;
+                    this.receiveModalQtyString = String(next).replace('.', ',');
+                },
+
+                setExactReceiveQty() {
+                    const exact = Number(this.receiveModalItem.sentQty || 0);
+                    this.receiveModalItem.receivedQty = exact;
+                    this.receiveModalQtyString = String(exact).replace('.', ',');
+                },
+
+                saveReceiveModalItem() {
+                    if (this.editingReceiveIdx === null || !this.receiveForm.items[this.editingReceiveIdx]) return;
+                    const item = this.receiveForm.items[this.editingReceiveIdx];
+                    const normalized = String(this.receiveModalQtyString || '').replace(',', '.');
+                    let parsed = parseFloat(normalized);
+                    if (isNaN(parsed)) parsed = 0;
+                    const max = Number(item.sentQty) || 0;
+                    item.receivedQty = Math.min(max, Math.max(0, Math.round(parsed * 1000) / 1000));
+                    item.notes = this.receiveModalItem.notes || '';
+                    this.receiveItemModalOpen = false;
+                    this.editingReceiveIdx = null;
+                },
+
+                decreaseQty(item) {
+                    if (item.receivedQty > 0) {
+                        item.receivedQty = Math.max(0, Math.round((Number(item.receivedQty) - 1) * 1000) / 1000);
+                    }
+                },
+
+                increaseQty(item) {
+                    const max = Number(item.sentQty) || 0;
+                    item.receivedQty = Math.min(max, Math.round((Number(item.receivedQty || 0) + 1) * 1000) / 1000);
+                },
+
+                validateItemQty(item) {
+                    const max = Number(item.sentQty) || 0;
+                    if (item.receivedQty < 0 || isNaN(item.receivedQty)) {
+                        item.receivedQty = 0;
+                    } else if (item.receivedQty > max) {
+                        item.receivedQty = max;
+                    }
+                },
+
+                hasExcessItem() {
+                    if (!this.receiveForm || !this.receiveForm.items) return false;
+                    return this.receiveForm.items.some(it => Number(it.receivedQty) > Number(it.sentQty) + 0.001);
+                },
+
+                hasDeficitItem() {
+                    if (!this.receiveForm || !this.receiveForm.items) return false;
+                    return this.receiveForm.items.some(it => Number(it.receivedQty) < Number(it.sentQty) - 0.001);
+                },
+
+                getDeficitItems() {
+                    if (!this.receiveForm || !this.receiveForm.items) return [];
+                    return this.receiveForm.items.filter(it => Number(it.receivedQty) < Number(it.sentQty) - 0.001);
+                },
+
+                getTotalSentQty() {
+                    if (!this.receiveForm || !this.receiveForm.items) return 0;
+                    return Math.round(this.receiveForm.items.reduce((sum, it) => sum + Number(it.sentQty || 0), 0) * 1000) / 1000;
+                },
+
+                getTotalReceivedQty() {
+                    if (!this.receiveForm || !this.receiveForm.items) return 0;
+                    return Math.round(this.receiveForm.items.reduce((sum, it) => sum + Number(it.receivedQty || 0), 0) * 1000) / 1000;
+                },
+
+                getTotalDeficitQty() {
+                    if (!this.receiveForm || !this.receiveForm.items) return 0;
+                    return Math.round(this.receiveForm.items.reduce((sum, it) => {
+                        const diff = Number(it.sentQty) - Number(it.receivedQty);
+                        return sum + (diff > 0.001 ? diff : 0);
+                    }, 0) * 1000) / 1000;
+                },
+
+                getTotalExcessQty() {
+                    if (!this.receiveForm || !this.receiveForm.items) return 0;
+                    return Math.round(this.receiveForm.items.reduce((sum, it) => {
+                        const diff = Number(it.receivedQty) - Number(it.sentQty);
+                        return sum + (diff > 0.001 ? diff : 0);
+                    }, 0) * 1000) / 1000;
+                },
+
+                confirmReceiveGoods() {
+                    if (this.hasDeficitItem()) {
+                        this.confirmReceiveModalOpen = true;
+                    } else {
+                        this.submitReceiveGoods();
+                    }
+                },
+
+                submitReceiveGoods() {
+                    if (this.hasExcessItem()) return;
+
+                    try {
+                        const stored = localStorage.getItem('infruity_pindah_stok_orders');
+                        let orders = stored ? JSON.parse(stored) : this.orders;
+                        const targetId = this.receivingOrder ? this.receivingOrder.id : this.receiveForm.orderId;
+                        const targetPo = this.receivingOrder ? this.receivingOrder.poNumber : this.receiveForm.poNumber;
+                        const ord = orders.find(o => String(o.id) === String(targetId) || String(o.poNumber) === String(targetPo));
+
+                        const today = new Date();
+                        const dStr = today.toISOString().split('T')[0];
+                        const tStr = String(today.getHours()).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0');
+                        const receiver = this.currentUser?.name || 'Dimas Pratama';
+                        const receivedDateTime = this.formatDate(dStr) + ', ' + tStr;
+
+                        const updatedItems = this.receiveForm.items.map(it => {
+                            const sent = Number(it.sentQty);
+                            const received = Number(it.receivedQty);
+                            const returned = Math.max(0, sent - received);
+                            return {
+                                name: it.name,
+                                unit: it.unit,
+                                unitPrice: it.unitPrice,
+                                qty: sent,
+                                sentQty: sent,
+                                receivedQty: received,
+                                returnedQty: returned,
+                                diff: received - sent
+                            };
+                        });
+
+                        const hasDeficit = this.hasDeficitItem();
+                        const totalReceived = this.getTotalReceivedQty();
+                        const totalDeficit = this.getTotalDeficitQty();
+
+                        if (ord) {
+                            ord.status = 'Sudah Diterima';
+                            ord.receiverName = receiver;
+                            ord.receivedDate = receivedDateTime;
+                            ord.paymentStatus = 'Lunas';
+                            ord.items = updatedItems;
+                            ord.hasDeficit = hasDeficit;
+                            ord.totalReceivedQty = totalReceived;
+                            ord.totalDeficitQty = totalDeficit;
+                        }
+
+                        if (this.receivingOrder) {
+                            this.receivingOrder.status = 'Sudah Diterima';
+                            this.receivingOrder.receiverName = receiver;
+                            this.receivingOrder.receivedDate = receivedDateTime;
+                            this.receivingOrder.paymentStatus = 'Lunas';
+                            this.receivingOrder.items = updatedItems;
+                            this.receivingOrder.hasDeficit = hasDeficit;
+                            this.receivingOrder.totalReceivedQty = totalReceived;
+                            this.receivingOrder.totalDeficitQty = totalDeficit;
+                        }
+
+                        localStorage.setItem('infruity_pindah_stok_orders', JSON.stringify(orders));
+                        this.orders = orders;
+                        this.confirmReceiveModalOpen = false;
+                        this.currentView = 'list';
+                        this.showToastNotification = true;
+                        this.toastMessage = hasDeficit 
+                            ? 'Barang diterima! Terdapat selisih ' + totalDeficit + ' item yang otomatis dikembalikan ke cabang pengirim.'
+                            : 'Barang berhasil diterima penuh sesuai fisik!';
+                        setTimeout(() => { this.showToastNotification = false; }, 4000);
+                    } catch(e) {
+                        console.error('Gagal menyelesaikan penerimaan:', e);
+                    }
+                },
+
+                receiveOrder(order) {
+                    this.openReceiveForm(order);
+                },
+
+                createOutboundShipment() {
+                    if (window.self !== window.top) {
+                        window.parent.postMessage({ type: 'navigate', page: '004. Inventaris/003. Pindah Stok - Mengirim/index.html?action=new', menu: 'inventaris' }, '*');
+                    } else {
+                        window.location.href = '../003. Pindah Stok - Mengirim/index.html?action=new';
+                    }
+                },
+
                 updateOrderStatus(orderId, newStatus) {
                     const ord = this.orders.find(o => o.id === orderId);
                     if (ord) {
-                        ord.status = newStatus === 'Selesai' ? 'Diterima' : (newStatus === 'Perjalanan' || newStatus === 'Pengiriman' ? 'Dalam Pengiriman' : newStatus);
-                        if (ord.status === 'Diterima') {
+                        ord.status = (newStatus === 'Selesai' || newStatus === 'Diterima' || newStatus === 'Sudah Diterima') ? 'Sudah Diterima' : (newStatus === 'Perjalanan' || newStatus === 'Pengiriman' || newStatus === 'Dalam Pengiriman' || newStatus === 'Dalam Perjalanan' ? 'Dalam Perjalanan' : (newStatus === 'Pending' ? 'Sedang Disiapkan' : newStatus));
+                        if (ord.status === 'Sudah Diterima') {
                             ord.paymentStatus = 'Lunas';
                             if (!ord.receivedDate) {
                                 const today = new Date();
                                 const dStr = today.toISOString().split('T')[0];
                                 const tStr = String(today.getHours()).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0');
-                                ord.receivedDate = this.formatDate(dStr) + ', ' + tStr + ' WIB';
+                                ord.receivedDate = this.formatDate(dStr) + ', ' + tStr;
                             }
                         }
                         try {
-                            localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(this.orders));
+                            localStorage.setItem('infruity_pindah_stok_orders', JSON.stringify(this.orders));
                         } catch(e) {}
                     }
                 },
@@ -2895,7 +3188,7 @@
 
                     this.orders = this.orders.filter(o => o.id !== orderId && (!poNumber || o.poNumber !== poNumber));
                     try {
-                        localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(this.orders));
+                        localStorage.setItem('infruity_pindah_stok_orders', JSON.stringify(this.orders));
                     } catch(e) {}
 
                     this.closeDetailModal();
@@ -2933,7 +3226,23 @@
                 formatDateTime(dateStr, timeStr) {
                     if (!dateStr) return '-';
                     const d = this.formatDate(dateStr);
-                    return timeStr ? `${d}, ${timeStr} WIB` : d;
+                    return timeStr ? `${d}, ${timeStr}` : d;
+                },
+
+                formatReceivedDateTime(order) {
+                    if (!order) return '-';
+                    if (order.status !== 'Sudah Diterima' && order.status !== 'Diterima' && order.status !== 'Selesai') {
+                        return 'Menunggu Konfirmasi';
+                    }
+                    if (order.receivedDate) {
+                        const cleanDate = order.receivedDate.replace(/\s*WIB/i, '').trim();
+                        if (/^\d{4}-\d{2}-\d{2}/.test(cleanDate)) {
+                            const [dPart, tPart] = cleanDate.split(/[,\s]+/);
+                            return this.formatDate(dPart) + (tPart ? ', ' + tPart : '');
+                        }
+                        return cleanDate;
+                    }
+                    return this.formatDate(order.etaDate || order.orderDate) + (order.orderTime ? ', ' + order.orderTime : ', 14:15');
                 },
 
                 getItemSummary(items) {
@@ -2943,29 +3252,40 @@
                 },
 
                 getTimeDisplay(order) {
-                    if (order.status === 'Diterima' || order.status === 'Selesai') {
-                        const dateStr = order.receivedDate || this.formatDateTime(order.orderDate, order.orderTime);
-                        return 'Diterima : ' + dateStr;
+                    if (order.status === 'Sudah Diterima' || order.status === 'Diterima' || order.status === 'Selesai') {
+                        return 'Diterima : ' + this.formatReceivedDateTime(order);
                     } else {
                         return 'Dikirim : ' + this.formatDateTime(order.orderDate, order.orderTime);
                     }
                 },
 
+                getFilteredMasterProducts() {
+                    const q = (this.productSearchQuery || '').toLowerCase().trim();
+                    if (!q) return this.masterItems;
+                    return this.masterItems.filter(item => 
+                        item.name.toLowerCase().includes(q) ||
+                        (item.unit && item.unit.toLowerCase().includes(q))
+                    );
+                },
+
                 getStatusLabel(status) {
                     if (!status) return '-';
-                    if (status === 'Selesai') return 'Diterima';
-                    if (status === 'Perjalanan' || status === 'Pengiriman' || status === 'Dalam Perjalanan') return 'Dalam Pengiriman';
+                    if (status === 'Pending' || status === 'Sedang Disiapkan') return 'Sedang Disiapkan';
+                    if (status === 'Selesai' || status === 'Diterima' || status === 'Sudah Diterima') return 'Sudah Diterima';
+                    if (status === 'Perjalanan' || status === 'Pengiriman' || status === 'Dalam Pengiriman' || status === 'Dalam Perjalanan') return 'Dalam Perjalanan';
                     return status;
                 },
 
                 getStatusBadgeClass(status) {
                     switch (status) {
+                        case 'Sedang Disiapkan':
                         case 'Pending':
                         case 'Draft': return 'text-gray-500 font-semibold';
                         case 'Dalam Pengiriman':
                         case 'Perjalanan':
                         case 'Dalam Perjalanan':
                         case 'Pengiriman': return 'text-orange-500 font-semibold';
+                        case 'Sudah Diterima':
                         case 'Diterima':
                         case 'Selesai': return 'text-emerald-600 font-bold';
                         case 'Dibatalkan': return 'text-red-500 font-semibold';
@@ -2975,12 +3295,14 @@
 
                 getStatusDotClass(status) {
                     switch (status) {
+                        case 'Sedang Disiapkan':
                         case 'Pending':
                         case 'Draft': return 'bg-gray-400';
                         case 'Dalam Pengiriman':
                         case 'Perjalanan':
                         case 'Dalam Perjalanan':
                         case 'Pengiriman': return 'bg-orange-500 animate-pulse';
+                        case 'Sudah Diterima':
                         case 'Diterima':
                         case 'Selesai': return 'bg-emerald-600';
                         case 'Dibatalkan': return 'bg-red-500';
@@ -3000,10 +3322,12 @@
 
                 getStepIndex(status) {
                     switch (status) {
+                        case 'Sedang Disiapkan':
                         case 'Pending': return 0;
                         case 'Perjalanan':
                         case 'Dalam Perjalanan':
                         case 'Dalam Pengiriman': return 1;
+                        case 'Sudah Diterima':
                         case 'Diterima':
                         case 'Selesai': return 2;
                         default: return 0;
@@ -3078,37 +3402,18 @@
 
                 reloadOrders() {
                     try {
-                        const stored = localStorage.getItem('infruity_pengadaan_orders');
+                        const stored = localStorage.getItem('infruity_pindah_stok_orders');
                         if (stored) {
                             let parsed = JSON.parse(stored);
                             if (Array.isArray(parsed) && parsed.length >= 50) {
-                                let changed = false;
-                                parsed = parsed.map(o => {
-                                    if (o.status === 'Selesai') {
-                                        o.status = 'Diterima';
-                                        changed = true;
-                                    }
-                                    if (o.status === 'Perjalanan' || o.status === 'Pengiriman' || o.status === 'Dalam Perjalanan') {
-                                        o.status = 'Dalam Pengiriman';
-                                        changed = true;
-                                    }
-                                    return o;
-                                });
-                                if (changed) {
-                                    localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(parsed));
-                                }
                                 this.orders = parsed;
                                 return;
                             }
                             if (Array.isArray(parsed)) {
-                                const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('po-seed-') && !String(o.id).startsWith('sj-seed-')).map(o => {
-                                    if (o.status === 'Selesai') o.status = 'Diterima';
-                                    if (o.status === 'Perjalanan' || o.status === 'Pengiriman' || o.status === 'Dalam Perjalanan') o.status = 'Dalam Pengiriman';
-                                    return o;
-                                });
+                                const userCreated = parsed.filter(o => o.id && !String(o.id).startsWith('sj-seed-'));
                                 const seeds = generateInitialPengadaanOrders();
                                 const merged = [...userCreated, ...seeds];
-                                localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(merged));
+                                localStorage.setItem('infruity_pindah_stok_orders', JSON.stringify(merged));
                                 this.orders = merged;
                                 return;
                             }
@@ -3116,7 +3421,7 @@
                     } catch(e) {}
                     const seeds = generateInitialPengadaanOrders();
                     try {
-                        localStorage.setItem('infruity_pengadaan_orders', JSON.stringify(seeds));
+                        localStorage.setItem('infruity_pindah_stok_orders', JSON.stringify(seeds));
                     } catch (e) {}
                     this.orders = seeds;
                 }

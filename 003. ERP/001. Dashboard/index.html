@@ -1577,9 +1577,9 @@
                                         subHighest: '3 Kontributor omset terbesar minggu ini',
                                         subLowest: '3 Kontributor omset terendah minggu ini',
                                         highest: [
-                                            { name: 'Apel Fuji Super', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?w=100&h=100&fit=crop', price: 'Rp 10.500.000', pct: '41%' },
-                                            { name: 'Pisang Cavendish', img: 'https://images.unsplash.com/photo-1603833665858-e61d17a86224?w=100&h=100&fit=crop', price: 'Rp 8.200.000', pct: '32%' },
-                                            { name: 'Jeruk Pontianak', img: 'https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=100&h=100&fit=crop', price: 'Rp 5.100.000', pct: '20%' }
+                                            { name: 'Semangka Merah', img: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=100&q=80', price: 'Rp 7.800.000', pct: '30%' },
+                                            { name: 'Melon Sky', img: 'https://images.unsplash.com/photo-1571575173700-afb9492e6a50?auto=format&fit=crop&w=100&q=80', price: 'Rp 6.400.000', pct: '25%' },
+                                            { name: 'Anggur Merah', img: 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?auto=format&fit=crop&w=100&q=80', price: 'Rp 14.200.000', pct: '55%' }
                                         ],
                                         lowest: [
                                             { name: 'Jus Sirsak Madu', img: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=100&h=100&fit=crop', price: 'Rp 1.150.000', pct: '4,5%' },
@@ -1773,8 +1773,8 @@
                             </div>
                         </div>
 
-                        <!-- SCROLLABLE CONTENT BODY (pt-[84px] & pb-[104px]: Batas atas Card Utama dan batas bawah Card Kedua seragam simetris 24px) -->
-                        <div class="flex-1 overflow-y-auto px-4 pt-[84px] pb-[104px] sm:pb-[104px] space-y-3.5 relative scrollbar-hide">
+                        <!-- SCROLLABLE CONTENT BODY (pt-[80px] & pb-[96px]: Jarak bersih dari Top Header 60px ke Card 1 persis 20px) -->
+                        <div class="flex-1 overflow-y-auto px-4 pt-[80px] pb-[96px] sm:pb-[96px] space-y-3.5 relative scrollbar-hide">
 
                             <!-- KARTU UTAMA: SALDO EXECUTIVE CARD (DUPLIKASI ALA SUKOMULYO DENGAN BRAND INFRUITY) -->
                             <div class="infruity-saldo-hero"
@@ -1927,11 +1927,11 @@
                                 </div>
                             </div>
 
-                            <!-- KARTU KEDUA: BREAKDOWN REAKTIF (MENYESUAIKAN METRIK CARD 1) -->
-                            <div class="!mt-[24px] bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100"
+                            <!-- KARTU KEDUA: BREAKDOWN REAKTIF (Tinggi 248px agar jarak ke Navbar persis 20px) -->
+                            <div class="!mt-[18px] bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 min-h-[248px] flex flex-col justify-between"
                                  x-data="card2BreakdownController()"
                                  @card1-slide-change.window="activeMetricIndex = $event.detail">
-                                <div class="flex justify-between items-center mb-3">
+                                <div class="flex justify-between items-center mb-2">
                                     <div class="flex flex-col text-left">
                                         <h4 class="text-[13.5px] font-bold text-gray-900 tracking-tight flex items-center gap-1">
                                             <span x-text="currentCategory.titleBase">Produk Pendapatan</span>
@@ -1961,9 +1961,9 @@
                                         <i x-show="sortMode === 'lowest'" x-cloak class="ph-bold ph-arrow-down-right text-sm"></i>
                                     </button>
                                 </div>
-                                <div class="divide-y divide-gray-100">
+                                <div class="divide-y divide-gray-100 flex-1 flex flex-col justify-around">
                                     <template x-for="(item, index) in currentList" :key="currentCategory.key + '-' + sortMode + '-' + index">
-                                        <div class="py-2.5 first:pt-1 last:pb-1 flex items-center justify-between">
+                                        <div class="py-3 first:pt-1 last:pb-1 flex items-center justify-between">
                                             <div class="flex items-center gap-3 min-w-0">
                                                 <img :src="item.img" :alt="item.name" class="w-9 h-9 rounded-xl object-cover shadow-xs border border-gray-100 shrink-0">
                                                 <div class="flex flex-col text-left min-w-0">
@@ -2241,11 +2241,11 @@
                                        title="Dashboard">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" class="w-[24px] h-[24px]" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><rect width="8" height="10" x="13" y="11" fill="currentColor" rx="1" ry="1"/><rect width="8" height="6" x="3" y="15" fill="currentColor" rx="1" ry="1"/><rect width="8" height="6" x="13" y="3" fill="currentColor" rx="1" ry="1"/><rect width="8" height="10" x="3" y="3" fill="currentColor" rx="1" ry="1"/></svg>
                                     </a>
-                                    <!-- Laporan -->
-                                    <a href="../008. Laporan/001. Pendapatan Penjualan/index.html"
-                                       @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '008. Laporan/001. Pendapatan Penjualan/index.html', menu: 'laporan' }, '*'); }"
+                                    <!-- Laporan (Selalu Mengarah ke Ringkasan Laporan) -->
+                                    <a href="../008. Laporan/index.html"
+                                       @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '008. Laporan/index.html', menu: 'laporan' }, '*'); }"
                                        class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
-                                       title="Laporan">
+                                       title="Ringkasan Laporan">
                                         <span class="icon-rounded">bar_chart</span>
                                     </a>
 

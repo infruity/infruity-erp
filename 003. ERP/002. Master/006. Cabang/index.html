@@ -1123,11 +1123,13 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" class="w-[24px] h-[24px]" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><rect width="8" height="10" x="13" y="11" fill="currentColor" rx="1" ry="1"/><rect width="8" height="6" x="3" y="15" fill="currentColor" rx="1" ry="1"/><rect width="8" height="6" x="13" y="3" fill="currentColor" rx="1" ry="1"/><rect width="8" height="10" x="3" y="3" fill="currentColor" rx="1" ry="1"/></svg>
                         </a>
 
-                        <!-- Laporan -->
-                        <button class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
-                                title="Laporan">
+                        <!-- Laporan (Selalu Mengarah ke Ringkasan Laporan) -->
+                        <a href="../../008. Laporan/index.html"
+                           @click="if (window.self !== window.top) { $event.preventDefault(); window.parent.postMessage({ type: 'navigate', page: '008. Laporan/index.html', menu: 'laporan' }, '*'); }"
+                           class="h-full w-12 bg-transparent flex items-center justify-center rounded-full text-gray-500 hover:text-[#0b595b] active:scale-95 transition-colors"
+                           title="Ringkasan Laporan">
                             <span class="icon-rounded icon-inactive">bar_chart</span>
-                        </button>
+                        </a>
 
                         <!-- 4. Tambah Cabang -->
                         <button @click="openDrawer(); profileOpen = false"
