@@ -9,7 +9,7 @@
             dataType: 'json',
             success: function(data) {
 
-                if (data.length > 0) {
+                if (data.length > 0 && !$('#branch_id').val()) {
                     let first = data[0];
                     $('#branch_id')
                         .append(new Option(first.name, first.id, true, true))
@@ -18,6 +18,8 @@
 
                 $('#branch_id').select2({
                     placeholder: 'Pilih Cabang',
+                    dropdownCssClass: 'wholesale-branch-dropdown',
+                    minimumResultsForSearch: Infinity,
                     ajax: {
                         url: '/ajax/getBranch',
                         dataType: 'json',
@@ -30,6 +32,8 @@
                         })
                     }
                 });
+                $('#branch_id').next('.select2-container')
+                    .toggleClass('has-branch-choices', data.length > 1);
 
             }
         });
@@ -38,6 +42,8 @@
         // Jika bukan halaman create → Select2 biasa saja
         $('#branch_id').select2({
             placeholder: 'Pilih Cabang',
+            dropdownCssClass: 'wholesale-branch-dropdown',
+            minimumResultsForSearch: Infinity,
             ajax: {
                 url: '/ajax/getBranch',
                 dataType: 'json',

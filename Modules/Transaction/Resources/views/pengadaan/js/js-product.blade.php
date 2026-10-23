@@ -31,6 +31,12 @@
 
             // Add Product
             showAddModal: false,
+            addProducts: [],
+            addProductSearch: '',
+            addProductsLoading: false,
+            addProductsError: false,
+            addProductsRequest: 0,
+            addValidationError: '',
             showGiftModal: false,
             showParcelModal: false,
             showJusModal: false,
@@ -58,6 +64,8 @@
             badgeAnimation: false,
             priceAnimation: false,
             autoSaveTimeout: null,
+            autoSaveRequest: null,
+            autoSaveEnabled: @json(request()->routeIs('wholesale.create')),
             currentInvoiceNumber: '',
             isSubmitting: false,
 
@@ -270,7 +278,7 @@ set formattedEditSell(val) {
             },
 
             updateTotalFromEditQty() {
-                if (this.editProduct && this.editProduct.price > 0) {
+                if (this.editProduct) {
                     this.editTotal = parseFloat((this.editQty * this.editProduct.price).toFixed(2));
                     this.editTotalFormatted = this.formatRupiah(this.editTotal);
                 }
@@ -299,6 +307,7 @@ set formattedEditSell(val) {
             updateEditTotalFromQty() {
                 if (this.editProduct) {
                     this.editTotal = parseFloat((this.editQty * this.editProduct.price).toFixed(2));
+                    this.editTotalFormatted = this.formatRupiah(this.editTotal);
                 }
             },
 
@@ -323,6 +332,10 @@ set formattedEditSell(val) {
             },
 
             saveEditToCart() {
+                if (!this.editItem || !Number.isFinite(Number(this.editQty)) || Number(this.editQty) <= 0) {
+                    Swal.fire({ icon: 'warning', title: 'Kuantitas tidak valid', text: 'Isi kuantitas lebih dari 0.' });
+                    return;
+                }
                 const idx = this.cart.findIndex(i => (i.cart_id || i.id) === (this.editItem.cart_id || this.editItem.id));
                 if (idx !== -1) {
                     const disc = this.calculateEditDiscountAmount();
@@ -356,8 +369,52 @@ set formattedEditSell(val) {
             },
 
             // Add Product Section
+            loadAddProducts() {
+                const requestId = ++this.addProductsRequest;
+                this.addProductsLoading = true;
+                this.addProductsError = false;
+                $.ajax({
+                    url: '/ajax/listProduct',
+                    dataType: 'json',
+                    data: { term: this.addProductSearch, status: 'aktif', variant: '0', limit: 10 },
+                    success: (products) => {
+                        if (requestId !== this.addProductsRequest) return;
+                        this.addProducts = products;
+                        this.addProductsLoading = false;
+                    },
+                    error: () => {
+                        if (requestId !== this.addProductsRequest) return;
+                        this.addProducts = [];
+                        this.addProductsLoading = false;
+                        this.addProductsError = true;
+                    },
+                });
+            },
+            selectAddProduct(product) {
+                this.addProduct.id = product.id;
+                this.addProduct.name = product.name;
+                this.addProduct.unit = product.unit?.abbreviation || '';
+                this.addProduct.price = product.last_price ?? product.price ?? 0;
+                this.addProduct.sell = product.last_sell_price ?? product.last_price ?? product.price ?? 0;
+                this.addProduct.hpp = product.hpp ?? 0;
+                this.addValidationError = '';
+                this.updateAddTotalFromQty();
+            },
             openAddModal() {
                 this.showAddModal = true;
+                if (document.getElementById('wholesale-product-search')) {
+                    this.resetAddForm();
+                    this.addProductSearch = '';
+                    this.addValidationError = '';
+                    const modalEl = document.getElementById('addModal');
+                    if (!modalEl.dataset.wholesaleBound) {
+                        modalEl.addEventListener('hidden.bs.modal', () => { this.showAddModal = false; });
+                        modalEl.dataset.wholesaleBound = 'true';
+                    }
+                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                    this.loadAddProducts();
+                    return;
+                }
                 setTimeout(() => {
                     const modal = new bootstrap.Modal(document.getElementById('addModal'));
                     modal.show();
@@ -496,6 +553,18 @@ set formattedEditSell(val) {
                 return this.formatRupiah(this.addProduct.qty * this.addProduct.price);
             },
             saveAddToCart() {
+                const isWholesalePicker = !!document.getElementById('wholesale-product-search');
+                if (isWholesalePicker) {
+                    if (!this.addProduct.id) {
+                        this.addValidationError = 'Pilih produk atau bahan terlebih dahulu.';
+                        return;
+                    }
+                    if (!Number.isFinite(Number(this.addProduct.qty)) || Number(this.addProduct.qty) <= 0) {
+                        this.addValidationError = 'Isi kuantitas lebih dari 0.';
+                        return;
+                    }
+                    this.updateAddTotalFromQty();
+                }
                 if (!this.addProduct.id) {
                     Swal.fire({
                         icon: 'warning',
@@ -533,6 +602,7 @@ set formattedEditSell(val) {
 
                 console.log('cart', this.cart);
                 this.resetAddForm();
+                if (isWholesalePicker) this.closeAddModal();
             },
 
             resetAddForm() {
@@ -543,7 +613,9 @@ set formattedEditSell(val) {
                     price: 0,
                     hpp: 0,
                     discount: 0,
-                    qty: 1
+                    sell: 0,
+                    total: 0,
+                    qty: document.getElementById('wholesale-product-search') ? 0 : 1
                 };
                 // Reset Select2 input juga
                 $('#select_product').val(null).trigger('change');
@@ -704,182 +776,64 @@ set formattedEditSell(val) {
                 return number.toLocaleString("id-ID");
             },
 
-            // Action save Transaction
+            // Both actions share validation and a single submission lock.
             saveTransaction(doneCallback) {
-                if (this.cart.length === 0) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Keranjang kosong',
-                        text: 'Silakan tambahkan produk terlebih dahulu!',
-                    });
-                    if (typeof doneCallback === 'function') doneCallback();
-                    return;
-                }
-                
-                // Cancel any pending auto-save
-                if (this.autoSaveTimeout) {
-                    clearTimeout(this.autoSaveTimeout);
-                    this.autoSaveTimeout = null;
-                }
-                
-                this.isSubmitting = true;
-                console.log('saveTransaction started, isSubmitting:', this.isSubmitting, 'status:', 'draft');
-                
-                const transactionDate = document.querySelector('input[name="date"]').value;
-                const invoiceNumber = document.querySelector('input[name="invoice_number"]').value;
-                const branchId = document.querySelector('select[name="branch_id"]').value;
-
-                const data = {
-                    date: transactionDate,
-                    invoice_number: invoiceNumber,
-                    branch_id: branchId,
-                    items: this.cart,
-                    subtotal: this.subtotal,
-                    total: this.totalHargaKeseluruhan,
-                    status: 'draft',
-                };
-                // Simulasi kirim ke server
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                fetch('/wholesale/save-transaction', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(data),
-                    })
-                    .then(async res => {
-                        const json = await res.json().catch(() => ({}));
-
-                        // ❌ Jika error status (422 / 500)
-                        if (!res.ok) {
-                            if (json.errors) {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Validasi gagal',
-                                    html: Object.values(json.errors)
-                                        .map(msg => `<div>${msg}</div>`)
-                                        .join('')
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Gagal',
-                                    text: json.message || 'Terjadi kesalahan.',
-                                });
-                            }
-
-                            throw new Error("Request Failed");
-                        }
-
-                        // ✅ SUCCESS → panggil redirectToHome()
-                        redirectToHome();
-                        if (typeof doneCallback === 'function') doneCallback();
-
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal',
-                            text: 'Gagal menyimpan transaksi.',
-                        });
-                        if (typeof doneCallback === 'function') doneCallback();
-                    })
-                    .finally(() => {
-                        this.isSubmitting = false;
-                    });
-
+                return this.saveWholesale('draft', doneCallback);
             },
-            // Save Order Book
             saveToOrderBook(doneCallback) {
-                if (this.cart.length === 0) {
+                return this.saveWholesale('posting', doneCallback);
+            },
+            async saveWholesale(status, doneCallback) {
+                if (this.isSubmitting) {
+                    if (typeof doneCallback === 'function') doneCallback();
+                    return;
+                }
+                const branchId = document.querySelector('select[name="branch_id"]')?.value;
+                if (!this.cart.length || !branchId) {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Keranjang kosong',
-                        text: 'Silakan tambahkan produk terlebih dahulu!',
+                        title: !this.cart.length ? 'Keranjang kosong' : 'Cabang belum dipilih',
+                        text: !this.cart.length ? 'Silakan tambahkan produk terlebih dahulu!' : 'Silakan pilih cabang terlebih dahulu.',
                     });
                     if (typeof doneCallback === 'function') doneCallback();
                     return;
                 }
-                
-                // Cancel any pending auto-save
-                if (this.autoSaveTimeout) {
-                    clearTimeout(this.autoSaveTimeout);
-                    this.autoSaveTimeout = null;
-                }
-                
+                clearTimeout(this.autoSaveTimeout);
+                this.autoSaveTimeout = null;
                 this.isSubmitting = true;
-                console.log('saveToOrderBook started, isSubmitting:', this.isSubmitting, 'status:', 'posting');
-                
-                const transactionDate = document.querySelector('input[name="date"]').value;
-                const invoiceNumber = document.querySelector('input[name="invoice_number"]').value;
-                const branchId = document.querySelector('select[name="branch_id"]').value;
-
-                const data = {
-                    date: transactionDate,
-                    invoice_number: invoiceNumber,
-                    items: this.cart,
-                    branch_id: branchId,
-                    subtotal: this.subtotal,
-                    total: this.totalHargaKeseluruhan,
-                    status: 'posting',
-                };
-
-                // Simulasi kirim ke server
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                fetch('/wholesale/save-transaction', {
+                try {
+                    // Finish an earlier temporary save before changing transaction status.
+                    await this.autoSaveRequest;
+                    const data = {
+                        date: document.querySelector('input[name="date"]').value,
+                        invoice_number: this.currentInvoiceNumber || document.querySelector('input[name="invoice_number"]').value,
+                        branch_id: branchId,
+                        items: this.cart,
+                        subtotal: this.subtotal,
+                        total: this.totalHargaKeseluruhan,
+                        status,
+                    };
+                    const response = await fetch('/wholesale/save-transaction', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Accept': 'application/json'
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json',
                         },
                         body: JSON.stringify(data),
-                    })
-                    .then(async res => {
-                        const json = await res.json().catch(() => ({}));
-
-                        // ❌ Jika error status (422 / 500)
-                        if (!res.ok) {
-                            if (json.errors) {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Validasi gagal',
-                                    html: Object.values(json.errors)
-                                        .map(msg => `<div>${msg}</div>`)
-                                        .join('')
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Gagal',
-                                    text: json.message || 'Terjadi kesalahan.',
-                                });
-                            }
-
-                            throw new Error("Request Failed");
-                        }
-
-                        // ✅ SUCCESS → panggil redirectToHome()
-                        redirectToHome();
-                        if (typeof doneCallback === 'function') doneCallback();
-
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal',
-                            text: 'Gagal menyimpan transaksi.',
-                        });
-                        if (typeof doneCallback === 'function') doneCallback();
-                    })
-                    .finally(() => {
-                        this.isSubmitting = false;
                     });
-
+                    const json = await response.json().catch(() => ({}));
+                    if (!response.ok || !json.success) {
+                        const messages = json.errors ? Object.values(json.errors).flat().join('\n') : json.message;
+                        throw new Error(messages || 'Gagal menyimpan transaksi. Silakan coba lagi.');
+                    }
+                    redirectToHome();
+                } catch (error) {
+                    Swal.fire({ icon: 'error', title: 'Gagal menyimpan transaksi', text: error.message || 'Periksa koneksi dan coba lagi.' });
+                } finally {
+                    this.isSubmitting = false;
+                    if (typeof doneCallback === 'function') doneCallback();
+                }
             },
 
             resetPOS() {
@@ -965,7 +919,7 @@ set formattedEditSell(val) {
             // Auto-save function for temp draft (debounced like PosController)
             autoSaveTemp() {
                 // Skip if cart is empty or currently submitting
-                if (this.cart.length === 0 || this.isSubmitting) {
+                if (!this.autoSaveEnabled || this.isSubmitting) {
                     console.log('Auto-save skipped: cart empty or submitting, isSubmitting:', this.isSubmitting);
                     return;
                 }
@@ -976,7 +930,8 @@ set formattedEditSell(val) {
                 }
 
                 // Debounce auto-save (5 seconds)
-                this.autoSaveTimeout = setTimeout(() => {
+                this.autoSaveTimeout = setTimeout(async () => {
+                    await this.autoSaveRequest;
                     // Check again before executing
                     if (this.isSubmitting) {
                         console.log('Auto-save skipped: isSubmitting became true');
@@ -1008,7 +963,7 @@ set formattedEditSell(val) {
                         return;
                     }
 
-                    fetch('{{ route("wholesale.save-transaction") }}', {
+                    this.autoSaveRequest = fetch('{{ route("wholesale.save-transaction") }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

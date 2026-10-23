@@ -3,6 +3,7 @@
 @php
     $isWholesaleReadOnly = request()->routeIs('wholesale.show', 'wholesale-show');
     $isWholesaleEdit = request()->routeIs('wholesale.edit');
+    $isWholesaleCreate = request()->routeIs('wholesale.create');
 @endphp
 
 @push('styles')
@@ -160,13 +161,90 @@
             .wholesale-procurement.is-edit-mode .wholesale-edit-item-quantity { white-space:nowrap; }
             .wholesale-procurement.is-edit-mode .select2-container--default .select2-selection--single .select2-selection__rendered { font-size:14px; }
         }
+        /* Select2 appends its menu to body; style it independently of the form wrapper. */
+        .select2-dropdown.wholesale-branch-dropdown { overflow:hidden; margin-top:6px; border:1px solid #f3f4f6; border-radius:12px; background:#fff; color:#374151; box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1); }
+        .select2-dropdown.wholesale-branch-dropdown.select2-dropdown--above { margin-top:-6px; }
+        .select2-dropdown.wholesale-branch-dropdown .select2-search--dropdown { display:none; }
+        .select2-dropdown.wholesale-branch-dropdown .select2-results { display:block; background:#fff; }
+        .select2-dropdown.wholesale-branch-dropdown .select2-results__options { max-height:224px; overflow-y:auto; margin:0; padding:4px 0; overscroll-behavior:contain; }
+        .select2-dropdown.wholesale-branch-dropdown .select2-results__option { position:relative; display:flex; min-height:40px; align-items:center; border-radius:0; padding:10px 36px 10px 14px; background:#fff; color:#374151; font-size:13px; line-height:20px; font-weight:500; }
+        .select2-dropdown.wholesale-branch-dropdown .select2-results__option--highlighted { background:#f9fafb; color:#374151; }
+        .select2-dropdown.wholesale-branch-dropdown .select2-results__option[aria-selected="true"],
+        .select2-dropdown.wholesale-branch-dropdown .select2-results__option--selected { background:#f9fafb; color:#059669; font-weight:600; }
+        .select2-dropdown.wholesale-branch-dropdown .select2-results__option[aria-selected="true"]::after,
+        .select2-dropdown.wholesale-branch-dropdown .select2-results__option--selected::after { content:""; position:absolute; right:14px; top:50%; width:6px; height:6px; border-radius:50%; background:#10b981; -webkit-mask:none; mask:none; transform:translateY(-50%); }
+        .wholesale-procurement #branch_id + .select2-container--open .select2-selection--single { border-color:#10b981; box-shadow:0 0 0 1px #10b981; }
+        .wholesale-procurement.is-create-mode #branch_id + .select2-container .select2-selection--single { position:relative; background-image:none; }
+        .wholesale-procurement.is-create-mode #branch_id + .select2-container .select2-selection__arrow { display:none; }
+        .wholesale-procurement.is-create-mode #branch_id + .select2-container.has-branch-choices .select2-selection__rendered { padding-right:36px; }
+        .wholesale-procurement.is-create-mode #branch_id + .select2-container.has-branch-choices .select2-selection--single::after { content:""; position:absolute; top:50%; right:18px; width:8px; height:8px; margin-top:-6px; border-right:2px solid #9ca3af; border-bottom:2px solid #9ca3af; transform:rotate(45deg); pointer-events:none; }
+        .wholesale-procurement.is-create-mode #branch_id + .select2-container.has-branch-choices.select2-container--open .select2-selection--single::after { margin-top:-2px; transform:rotate(225deg); }
+        /* Match the HTML procurement form while retaining the existing transaction inputs. */
+        .wholesale-procurement.is-create-mode .wholesale-form-heading { display:none; }
+        .wholesale-procurement.is-create-mode .wholesale-edit-meta-field { display:none; }
+        .wholesale-procurement.is-create-mode .wholesale-products-heading p { display:none; }
+        .wholesale-procurement.is-create-mode .wholesale-products-card { padding:0; }
+        .wholesale-procurement.is-create-mode .wholesale-products-heading { margin:0; border-bottom:1px solid #f3f4f6; padding:16px 20px; }
+        .wholesale-procurement.is-create-mode .wholesale-products-heading h2 { color:#111827; font-size:14px; }
+        .wholesale-procurement.is-create-mode .wholesale-add-item { min-height:30px; padding:6px 14px !important; font-size:12px !important; border-radius:8px !important; }
+        .wholesale-procurement.is-create-mode .wholesale-cart-list { padding:16px; }
+        .wholesale-procurement.is-create-mode .wholesale-cart-empty { min-height:260px; gap:8px; }
+        .wholesale-procurement.is-create-mode .wholesale-cart-empty strong { color:#1f2937; font-size:14px; font-weight:700; }
+        .wholesale-procurement.is-create-mode .wholesale-cart-empty > span:last-child { color:#6b7280; font-size:12px; }
+        .wholesale-empty-add { border:0; padding:0; background:transparent; color:#0b595b; font:inherit; font-weight:600; cursor:pointer; }
+        .wholesale-empty-add:hover { text-decoration:underline; }
+        .wholesale-procurement.is-create-mode .wholesale-summary .btn i { display:none; }
+        .wholesale-procurement.is-create-mode :is(button, a):focus-visible { outline:2px solid #0b595b; outline-offset:3px; }
+        .wholesale-procurement.is-create-mode .btn:disabled { cursor:wait; opacity:.65; }
+        .wholesale-procurement.is-create-mode .wholesale-cart-item { align-items:flex-start; padding:12px 0; }
+        .wholesale-procurement.is-create-mode .wholesale-cart-item-total { flex-direction:column; align-items:flex-end; gap:5px; }
+        .wholesale-procurement.is-create-mode .wholesale-cart-item-name { font-size:14px; }
+        .wholesale-procurement.is-create-mode .wholesale-cart-item-meta { font-size:12px; }
+        .wholesale-procurement.is-create-mode .wholesale-cart-item-total { font-size:13px; }
+        @media (min-width:768px) {
+            .wholesale-procurement.is-create-mode { display:flex; min-height:560px; flex:1; flex-direction:column; padding-top:20px; padding-bottom:0; }
+            .wholesale-procurement.is-create-mode > .card { flex:none; }
+            .wholesale-procurement.is-create-mode .wholesale-edit-content { display:flex; min-height:0; flex:1; flex-direction:column; }
+            .wholesale-procurement.is-create-mode .wholesale-products-card { display:flex; min-height:240px; flex:1; flex-direction:column; }
+            .wholesale-procurement.is-create-mode .wholesale-cart-list { max-height:none; min-height:0; flex:1; }
+            .wholesale-procurement.is-create-mode .wholesale-cart-empty { height:100%; min-height:140px; }
+            .wholesale-procurement.is-create-mode .wholesale-summary-card { flex:none; padding:0; border-radius:0 0 16px 16px; }
+            .wholesale-procurement.is-create-mode .wholesale-summary { position:static; margin:0; border:0; padding:16px 18px; background:#fff; box-shadow:none; backdrop-filter:none; }
+        }
+        @media (max-width:767.98px) {
+            body:has(.wholesale-procurement.is-create-mode) main { overflow:hidden; padding:0 !important; }
+            body:has(.wholesale-procurement.is-create-mode) main > .animate-fade-in-up { min-height:0; padding:0 !important; animation:none; }
+            .wholesale-procurement.is-create-mode { display:flex; box-sizing:border-box; width:100% !important; max-width:none; min-height:0; flex:1; flex-direction:column; margin:0; padding:17px 16px 0; }
+            .wholesale-procurement.is-create-mode .wholesale-form-heading { display:none; }
+            .wholesale-procurement.is-create-mode > .card { flex:none; margin:0 0 24px !important; padding:16px !important; border-radius:16px; }
+            .wholesale-procurement.is-create-mode > .card .row > [class*="col-"] { margin-bottom:0 !important; }
+            .wholesale-procurement.is-create-mode .form-label { font-size:12px; line-height:16px; }
+            .wholesale-procurement.is-create-mode .form-control { font-size:14px; }
+            .wholesale-procurement.is-create-mode .select2-selection__rendered { font-size:14px !important; font-weight:600; }
+            .wholesale-procurement.is-create-mode .wholesale-edit-content { display:flex; min-height:0; flex:1; flex-direction:column; }
+            .wholesale-procurement.is-create-mode .wholesale-products-card { display:flex; min-height:0; flex:1; flex-direction:column; margin:0 0 24px !important; padding:0 !important; border-radius:16px; }
+            .wholesale-procurement.is-create-mode .wholesale-products-heading { flex:none; padding:16px 20px; }
+            .wholesale-procurement.is-create-mode .wholesale-cart-list { min-height:0; max-height:none; flex:1; overflow-y:auto; }
+            .wholesale-procurement.is-create-mode .wholesale-cart-empty { height:100%; min-height:180px; padding:16px 0; }
+            .wholesale-procurement.is-create-mode .wholesale-summary-card { flex:none; overflow:visible; margin:0 -16px; padding:0 !important; border:0; border-top:1px solid #f3f4f6; border-radius:0; box-shadow:0 -4px 20px rgba(0,0,0,.03); }
+            .wholesale-procurement.is-create-mode .wholesale-summary { position:static; margin:0 !important; padding:16px 16px calc(12px + env(safe-area-inset-bottom)) !important; border:0 !important; background:#fff; box-shadow:none; backdrop-filter:none; }
+            .wholesale-procurement.is-create-mode .wholesale-summary-total { border-bottom:1px solid #f3f4f6; padding-bottom:16px; color:#111827; font-size:16px; }
+            .wholesale-procurement.is-create-mode .wholesale-summary-total strong { font-size:16px; }
+            .wholesale-procurement.is-create-mode .wholesale-summary .row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px !important; margin:14px 0 0 !important; }
+            .wholesale-procurement.is-create-mode .wholesale-summary .row > .col { width:auto; margin:0 !important; padding:0 !important; }
+            .wholesale-procurement.is-create-mode .wholesale-summary .btn { min-height:44px; padding:8px 10px; font-size:12px; }
+        }
+        @media (max-width:767.98px) and (max-height:540px) {
+            body:has(.wholesale-procurement.is-create-mode) main { overflow-y:auto; }
+            .wholesale-procurement.is-create-mode .wholesale-products-card { flex:none; min-height:260px; }
+        }
         @if (request()->routeIs('wholesale.create', 'wholesale.edit', 'wholesale.show', 'wholesale-show'))
             @media (max-width: 767.98px) { .erp-mobile-nav { display:none !important; } }
         @endif
     </style>
 
     <!--begin::Aside column-->
-    <div @if ($isWholesaleReadOnly) id="printable-po" @endif class="wholesale-procurement w-100 flex-lg-row-auto {{ $isWholesaleEdit ? 'is-edit-mode' : '' }}" x-data="posApp()" x-init="init()">
+    <div @if ($isWholesaleReadOnly) id="printable-po" @endif class="wholesale-procurement w-100 flex-lg-row-auto {{ $isWholesaleEdit ? 'is-edit-mode' : ($isWholesaleCreate ? 'is-create-mode' : '') }}" x-data="posApp()" x-init="init()">
         <div class="wholesale-form-heading">
             <div>
                 <h1>{{ request()->routeIs('wholesale.edit') ? 'Edit Pengadaan' : (request()->routeIs('wholesale.show', 'wholesale-show') ? 'Detail Pengadaan' : 'Tambah Pengadaan') }}</h1>
@@ -188,7 +266,7 @@
                     <div class="col-md-12 mb-3">
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="required form-label">Cabang</label>
+                            <label for="branch_id" class="required form-label">Cabang</label>
                             <!--end::Label-->
                             <!--begin::Select-->
                             <select class="form-control" name="branch_id" id="branch_id" {{ $isWholesaleReadOnly ? 'disabled' : '' }}>
@@ -242,7 +320,7 @@
                 <!--end::Input group-->
             </div>
         </div>
-        <div class="{{ $isWholesaleEdit ? 'wholesale-edit-content' : '' }}">
+        <div class="{{ ($isWholesaleEdit || $isWholesaleCreate) ? 'wholesale-edit-content' : '' }}">
             <div class="card card-body wholesale-products-card mb-3">
                 <div class="wholesale-products-heading">
                     <div>

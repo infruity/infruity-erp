@@ -6,6 +6,11 @@
     .erp-topbar-mobile__button:hover, .erp-topbar-mobile__button:focus-visible { background:rgba(236,253,245,.7); color:#0b595b; }
     .erp-topbar-mobile__button:active { transform:scale(.95); }
     .erp-topbar-mobile__button i { font-size:21px; line-height:1; }
+    .erp-topbar-mobile--wholesale-form > .erp-topbar-mobile__button { color:#0b595b; }
+    .erp-topbar-mobile--wholesale-form > .erp-topbar-mobile__button i { font-size:24px; }
+    .erp-topbar-mobile--wholesale-form .erp-topbar-mobile__notify > .erp-topbar-mobile__button { color:#374151; }
+    .erp-topbar-mobile--wholesale-form .erp-topbar-mobile__notify > .erp-topbar-mobile__button:hover { color:#0b595b; }
+    .erp-topbar-mobile--wholesale-form .erp-topbar-mobile__unread { top:6px; right:6px; width:8px; height:8px; border:0; box-shadow:0 0 0 2px #fff; }
     .erp-topbar-mobile__logo { position:absolute; left:50%; display:flex; max-width:calc(100% - 120px); align-items:center; justify-content:center; transform:translateX(-50%); }
     .erp-topbar-mobile__logo img { display:block; width:auto; max-width:150px; height:30px; object-fit:contain; }
     .erp-topbar-mobile__notify { position:relative; }
@@ -19,10 +24,10 @@
     @media (min-width:768px) { .erp-topbar-mobile { display:none; } }
 </style>
 
-<header class="erp-topbar-mobile">
-    @if (request()->routeIs('wholesale.edit'))
+<header class="erp-topbar-mobile {{ request()->routeIs('wholesale.create', 'wholesale.edit') ? 'erp-topbar-mobile--wholesale-form' : '' }}">
+    @if (request()->routeIs('wholesale.create', 'wholesale.edit'))
         <a href="{{ route('wholesale.index') }}" aria-label="Kembali ke Pengadaan" class="erp-topbar-mobile__button">
-            <i class="ph ph-arrow-left" aria-hidden="true"></i>
+            <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
         </a>
     @else
         <button type="button" data-erp-sidebar-toggle aria-label="Buka navigasi" class="erp-topbar-mobile__button">
