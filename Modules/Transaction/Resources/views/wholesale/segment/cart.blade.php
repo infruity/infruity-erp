@@ -1,9 +1,14 @@
 <div class="wholesale-cart-list">
     <template x-if="cart.length === 0">
         <div class="wholesale-cart-empty">
-            <span class="wholesale-cart-empty-icon"><i class="ph ph-basket"></i></span>
-            <strong>Belum ada bahan di daftar belanja</strong>
-            <span>Tambahkan item untuk mulai menghitung total pengadaan.</span>
+            @if ($isWholesaleCreate)
+                <strong>Belum ada produk didaftar belanja</strong>
+                <span>Klik tombol <button type="button" class="wholesale-empty-add" @click="openAddModal()">+ Tambah</button> untuk melakukan input</span>
+            @else
+                <span class="wholesale-cart-empty-icon"><i class="ph ph-basket"></i></span>
+                <strong>Belum ada bahan di daftar belanja</strong>
+                <span>Tambahkan item untuk mulai menghitung total pengadaan.</span>
+            @endif
         </div>
     </template>
 
@@ -19,7 +24,12 @@
                         Rp <span x-text="(item.price || 0).toLocaleString('id-ID')"></span>
                         <span> / </span><span x-text="item.unit || 'satuan'"></span>
                     </span>
-                    @unless ($isWholesaleEdit)
+                    @if ($isWholesaleCreate)
+                        <template x-if="item.discount > 0">
+                            <span class="wholesale-cart-item-quantity wholesale-cart-item-discount">Diskon Rp <span x-text="item.discount.toLocaleString('id-ID')"></span></span>
+                        </template>
+                    @endif
+                    @unless ($isWholesaleEdit || $isWholesaleCreate)
                         <span class="wholesale-cart-item-quantity">
                             <span x-text="(item.qty || 0).toLocaleString('id-ID')"></span>
                             <span x-text="item.unit || 'satuan'"></span>
@@ -31,7 +41,7 @@
                 </span>
                 <span class="wholesale-cart-item-total">
                     <strong>Rp <span x-text="(item.total_input || ((item.price * item.qty) - item.discount)).toLocaleString('id-ID')"></span></strong>
-                    @if ($isWholesaleEdit)
+                    @if ($isWholesaleEdit || $isWholesaleCreate)
                         <span class="wholesale-edit-item-quantity"><span x-text="(item.qty || 0).toLocaleString('id-ID')"></span> <span x-text="item.unit || 'satuan'"></span></span>
                     @else
                         <i class="ph ph-caret-right" aria-hidden="true"></i>
