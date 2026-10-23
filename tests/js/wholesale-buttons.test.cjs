@@ -12,7 +12,8 @@ function setup() {
     let redirectCount = 0, timerId = 0;
     const $ = () => ({val(){return this}, trigger(){return this}});
     $.ajax = request => requests.push(request);
-    const context = {console:{log(){},error(){}}, $, document:{
+    const dirtyEvents = [];
+    const context = {window:{dispatchEvent:event=>dirtyEvents.push(event.detail.dirty)}, CustomEvent:function(type,options){this.detail=options.detail}, console:{log(){},error(){}}, $, document:{
         getElementById:()=>({}),
         querySelector(selector) {
             if (selector.includes('branch_id')) return fields.branch;
@@ -26,7 +27,7 @@ function setup() {
     fetch:async (url, options)=>{requests.push({url,...options});return {ok:true,json:async()=>({success:true,invoice_number:'TEST-PO'})}}};
     vm.createContext(context); vm.runInContext(source, context);
     const app=context.posApp(); app.autoSaveEnabled=true;
-    return {app, context, alerts, requests, fields, timers, redirects:()=>redirectCount};
+    return {app, context, alerts, requests, fields, timers, dirtyEvents, redirects:()=>redirectCount};
 }
 function add(app) {
     app.resetAddForm();
@@ -103,4 +104,25 @@ test('loading branches preserves an existing draft selection; defaults only if e
         success([{id:'1',name:'A'},{id:'2',name:'B'}]);
         assert.equal(value,initial||'1');assert.equal(appended,initial?0:1);
     }
+});
+test('back is unblocked on empty/saved form, warns only on unsaved edits',()=>{
+    const source=fs.readFileSync(path.join(__dirname,'../../Modules/Transaction/Resources/views/pengadaan/js/js-allowed.blade.php'),'utf8').replace(/^<script>/,'').replace(/<\/script>\s*$/,'');
+    const listeners={};const context={window:{addEventListener:(name,fn)=>listeners[name]=fn},document:{addEventListener(){}},console:{log(){}}};
+    vm.createContext(context);vm.runInContext(source,context);
+    let prevented=0;const event={preventDefault(){prevented++}};
+    listeners.beforeunload(event);assert.equal(prevented,0);
+    listeners['wholesale-dirty-state']({detail:{dirty:true}});listeners.beforeunload(event);assert.equal(prevented,1);
+    listeners['wholesale-dirty-state']({detail:{dirty:false}});listeners.beforeunload(event);assert.equal(prevented,1);
+});
+test('dirty tracking clears only after autosave of the current revision',async()=>{
+    const t=setup();t.app.markWholesaleDirty();assert.equal(t.dirtyEvents.length,0);
+    add(t.app);t.app.markWholesaleDirty();assert.equal(t.dirtyEvents.at(-1),true);
+    t.app.autoSaveTemp();await [...t.timers.values()].at(-1)();await t.app.autoSaveRequest;
+    assert.equal(t.dirtyEvents.at(-1),false);
+    t.app.markWholesaleDirty();let finish;
+    t.context.fetch=()=>new Promise(resolve=>finish=resolve);
+    t.app.autoSaveTemp();const pending=[...t.timers.values()].at(-1)();
+    await new Promise(setImmediate);t.app.markWholesaleDirty();
+    finish({ok:true,json:async()=>({success:true,invoice_number:'TEST-PO'})});await pending;await t.app.autoSaveRequest;
+    assert.equal(t.dirtyEvents.at(-1),true);
 });

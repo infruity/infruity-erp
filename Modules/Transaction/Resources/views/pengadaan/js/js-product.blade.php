@@ -68,8 +68,13 @@
             autoSaveEnabled: @json(request()->routeIs('wholesale.create')),
             currentInvoiceNumber: '',
             isSubmitting: false,
+            wholesaleChangeVersion: 0,
+            hadWholesaleItems: false,
+            initialized: false,
 
             init() {
+                if (this.initialized) return;
+                this.initialized = true;
                 const self = this; // simpan konteks Alpine
                 
                 // Check if there's existing data from create() or edit() method
@@ -86,21 +91,33 @@
                     this._loaded = true;
                 }
 
+                this.hadWholesaleItems = this.cart.length > 0;
                 // Auto-save using watchers - similar to PosController
                 this.$watch('cart', () => {
+                    self.markWholesaleDirty();
                     if (!self.isSubmitting) self.autoSaveTemp();
                 });
                 this.$watch('diskonGlobal', () => {
+                    self.markWholesaleDirty();
                     if (!self.isSubmitting) self.autoSaveTemp();
                 });
                 
                 // Listen to form changes
                 $('input[name="date"]').on('change input', () => {
+                    self.markWholesaleDirty();
                     if (!self.isSubmitting) self.autoSaveTemp();
                 });
                 $('#branch_id').on('change', () => {
+                    self.markWholesaleDirty();
                     if (!self.isSubmitting) self.autoSaveTemp();
                 });
+            },
+
+            markWholesaleDirty() {
+                if (this.cart.length) this.hadWholesaleItems = true;
+                if (!this.hadWholesaleItems) return;
+                this.wholesaleChangeVersion++;
+                window.dispatchEvent(new CustomEvent('wholesale-dirty-state', { detail: { dirty: true } }));
             },
 
             // Manual trigger for testing
@@ -963,6 +980,7 @@ set formattedEditSell(val) {
                         return;
                     }
 
+                    const savedVersion = this.wholesaleChangeVersion;
                     this.autoSaveRequest = fetch('{{ route("wholesale.save-transaction") }}', {
                         method: 'POST',
                         headers: {
@@ -976,6 +994,9 @@ set formattedEditSell(val) {
                         const json = await res.json().catch(() => ({}));
                         console.log('Auto-save response:', res.status, json);
                         if (res.ok && json.success && !this.isSubmitting) {
+                            if (savedVersion === this.wholesaleChangeVersion) {
+                                window.dispatchEvent(new CustomEvent('wholesale-dirty-state', { detail: { dirty: false } }));
+                            }
                             this.currentInvoiceNumber = json.invoice_number;
                             const invoiceInput = document.querySelector('input[name="invoice_number"]');
                             if (invoiceInput && json.invoice_number) {
