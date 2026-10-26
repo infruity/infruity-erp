@@ -847,17 +847,23 @@ class ProductController extends Controller
         }
 
         $search = $request->input('search', '');
-        $query = Product::with('unit')
+        $query = Product::with(['unit', 'category'])
             ->where('status', 'receipt')
             ->where('name', 'like', '%' . $search . '%')
-            ->select('id', 'name', 'hpp', 'product_unit')
+            ->select('id', 'name', 'hpp', 'product_unit', 'category_id')
             ->get()
-            ->map(fn ($product) => [
-                'id' => $product->id,
-                'name' => $product->name,
-                'hpp' => (float) ($product->hpp ?? 0),
-                'unit' => $product->unit?->abbreviation ?? $product->unit?->name ?? '',
-            ]);
+            ->map(function ($product) {
+                [$emoji, $iconClass] = ProductIcon::resolve($product);
+
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'hpp' => (float) ($product->hpp ?? 0),
+                    'unit' => $product->unit?->abbreviation ?? $product->unit?->name ?? '',
+                    'material_emoji' => $emoji,
+                    'material_icon_class' => $iconClass,
+                ];
+            });
 
         return response()->json($query);
     }

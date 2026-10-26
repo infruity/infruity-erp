@@ -18,16 +18,24 @@
             @if($errors->any())<div role="alert" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">{{ $errors->first() }}</div>@endif
             @if(session('error'))<div role="alert" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">{{ session('error') }}</div>@endif
 
-            <div class="shrink-0">
+            <div class="relative shrink-0">
                 <label class="mb-1.5 block text-xs font-semibold text-gray-600">Pilih Produk <span class="text-red-400">*</span></label>
-                <button type="button" @click="productOpen = !productOpen" :aria-expanded="productOpen" class="flex min-h-[48px] w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-left transition hover:border-gray-300 focus:border-emerald-500 focus:outline-none">
-                    <span class="flex min-w-0 items-center gap-3"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-rose-50 text-base text-rose-500"><i class="ph ph-package"></i></span><span class="min-w-0"><span class="block truncate text-sm font-semibold text-gray-900" x-text="productSearch || 'Pilih produk...'">Pilih produk...</span><span x-show="productId && selectedProductUnit" x-cloak class="mt-0.5 block text-[11px] text-gray-400" x-text="'Satuan hasil: ' + selectedProductUnit"></span></span></span>
+                <button type="button" @click="toggleProductPicker()" @keydown.escape.stop="closeProductPicker()" :aria-expanded="productOpen" :class="productOpen ? 'border-blue-600 ring-2 ring-blue-600' : ''" class="flex min-h-[48px] w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-left transition hover:border-gray-300 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    <span class="flex min-w-0 items-center gap-3"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-base" :class="productId ? selectedProductIconClass : 'bg-gray-100'"><span x-show="productId" x-text="selectedProductEmoji"></span><i x-show="!productId" class="ph ph-bag text-base text-gray-400"></i></span><span class="min-w-0"><span class="block truncate text-sm" :class="productId ? 'font-semibold text-gray-900' : 'font-normal text-gray-400'" x-text="productSearch || 'Pilih produk...'">Pilih produk...</span><span x-show="productId && selectedProductUnit" x-cloak class="mt-0.5 block text-[11px] text-gray-400" x-text="'Satuan hasil: ' + selectedProductUnit"></span></span></span>
                     <i class="ph-bold ph-caret-down ml-3 shrink-0 text-base text-gray-400 transition-transform" :class="productOpen ? 'rotate-180' : ''"></i>
                 </button>
                 <input type="hidden" name="product_id" :value="productId" required>
-                <div x-show="productOpen" x-cloak @click.outside="productOpen = false" class="relative z-20 mt-2 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
-                    <div class="relative border-b border-gray-100 bg-gray-50/60"><i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"></i><input x-model="productQuery" @input.debounce.250ms="lookupProduct()" @keydown.escape.stop="productOpen = false" autocomplete="off" placeholder="Cari produk..." class="h-11 w-full bg-transparent pl-10 pr-4 text-xs outline-none focus:bg-white"></div>
-                    <div class="max-h-52 overflow-y-auto"><template x-for="item in productResults" :key="item.id"><button type="button" @click="selectProduct(item)" class="flex w-full items-center justify-between px-3.5 py-2.5 text-left text-xs text-gray-700 hover:bg-emerald-50"><span x-text="item.name"></span><i x-show="productId === item.id" class="ph-bold ph-check text-emerald-700"></i></button></template><p x-show="productQuery.length >= 2 && productResults.length === 0" class="px-4 py-3 text-xs text-gray-400">Produk tidak ditemukan</p><p x-show="productQuery.length < 2" class="px-4 py-3 text-xs text-gray-400">Ketik minimal 2 karakter untuk mencari.</p></div>
+                <div x-show="productOpen" x-cloak x-transition.origin.top @click.outside="closeProductPicker()" class="absolute left-0 top-full z-30 mt-1.5 flex w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                    <div class="relative shrink-0 border-b border-gray-100 bg-gray-50/50"><i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i><input x-model="productQuery" @input.debounce.250ms="lookupProduct()" @keydown.escape.stop="closeProductPicker()" autocomplete="off" placeholder="Cari produk..." class="w-full bg-transparent py-2.5 pl-9 pr-4 text-xs outline-none transition-colors focus:bg-white"></div>
+                    <div class="max-h-52 divide-y divide-gray-50 overflow-y-auto overscroll-contain">
+                        <div x-show="productLoading" class="px-4 py-4 text-center text-xs text-gray-400">Memuat produk...</div>
+                        <template x-for="item in productResults" :key="item.id"><button type="button" @click="selectProduct(item)" :class="String(productId) === String(item.id) ? 'bg-emerald-50' : ''" class="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-emerald-50/50">
+                            <span class="flex min-w-0 flex-1 items-center gap-2.5"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-sm shadow-sm" :class="item.material_icon_class || 'bg-gray-100'"><span x-text="item.material_emoji || '📦'"></span></span><span class="truncate text-xs font-bold text-gray-900" x-text="item.name"></span></span>
+                            <span class="flex shrink-0 items-center gap-2"><span class="text-xs font-medium text-gray-400" x-text="item.unit || 'unit'"></span><i x-show="String(productId) === String(item.id)" class="ph-bold ph-check text-sm text-emerald-600"></i></span>
+                        </button></template>
+                        <p x-show="!productLoading && !productLookupError && productResults.length === 0" class="px-4 py-6 text-center text-xs text-gray-400">Produk tidak ditemukan</p>
+                        <p x-show="productLookupError" x-text="productLookupError" role="alert" class="px-4 py-4 text-center text-xs text-red-500"></p>
+                    </div>
                 </div>
             </div>
 
@@ -77,22 +85,50 @@
 <script>
 function recipeCreateForm() {
     let nextKey = 0;
+    let productLookupSequence = 0;
     const makeIngredient = item => {
         const quantity = String(item.quantity ?? '');
         return {key: ++nextKey, id: item.id || '', search: item.name || '', quantity, displayQuantity: quantity.replace('.', ','), hpp: Number(item.hpp || 0), unit: unitOf(item), materialEmoji: item.material_emoji || '📦', materialIconClass: item.material_icon_class || 'bg-gray-100'};
     };
     return {
-        productId: '', productSearch: '', productQuery: '', selectedProductUnit: '', productResults: [], productOpen: false,
+        productId: '', productSearch: '', productQuery: '', selectedProductUnit: '', selectedProductEmoji: '📦', selectedProductIconClass: 'bg-gray-100', productResults: [], productLoading: false, productLookupError: '', productOpen: false,
         ingredients: [], ingredientPickerOpen: false, ingredientQuery: '', ingredientResults: [], ingredientLoading: false, error: '',
         get totalHpp() { return this.ingredients.reduce((total, item) => total + this.ingredientCost(item), 0); },
         formatMoney(value) { return Math.round(Number(value || 0)).toLocaleString('id-ID'); },
         ingredientCost(item) { return Number(item.quantity || 0) * Number(item.hpp || 0); },
-        selectProduct(item) { this.productId = item.id; this.productSearch = item.name; this.selectedProductUnit = item.unit || ''; this.productOpen = false; this.error = ''; },
+        toggleProductPicker() {
+            if (this.productOpen) { this.closeProductPicker(); return; }
+            this.productOpen = true;
+            this.productQuery = '';
+            this.productResults = [];
+            this.productLookupError = '';
+            this.lookupProduct();
+        },
+        closeProductPicker() { this.productOpen = false; productLookupSequence++; this.productLoading = false; },
+        selectProduct(item) {
+            this.productId = item.id;
+            this.productSearch = item.name;
+            this.selectedProductUnit = item.unit || '';
+            this.selectedProductEmoji = item.material_emoji || '📦';
+            this.selectedProductIconClass = item.material_icon_class || 'bg-gray-100';
+            this.closeProductPicker();
+            this.error = '';
+        },
         async lookupProduct() {
-            if (this.productQuery.trim().length < 2) { this.productResults = []; return; }
-            const response = await fetch(`{{ route('products.get-product-receipt') }}?search=${encodeURIComponent(this.productQuery.trim())}`, {headers: {'Accept': 'application/json'}});
-            if (!response.ok) { this.error = 'Gagal mencari produk.'; return; }
-            this.productResults = (await response.json()).slice(0, 30);
+            const query = this.productQuery.trim();
+            const requestId = ++productLookupSequence;
+            this.productLoading = true;
+            this.productLookupError = '';
+            try {
+                const response = await fetch(`{{ route('products.get-product-receipt') }}?search=${encodeURIComponent(query)}`, {headers: {'Accept': 'application/json'}});
+                if (!response.ok) throw new Error('Gagal mencari produk.');
+                const results = await response.json();
+                if (requestId === productLookupSequence && query === this.productQuery.trim()) this.productResults = results.slice(0, 30);
+            } catch (error) {
+                if (requestId === productLookupSequence) this.productLookupError = 'Gagal memuat produk.';
+            } finally {
+                if (requestId === productLookupSequence) this.productLoading = false;
+            }
         },
         openIngredientPicker() { this.ingredientQuery = ''; this.ingredientResults = []; this.ingredientPickerOpen = true; this.lookupIngredient(); },
         async lookupIngredient() {
