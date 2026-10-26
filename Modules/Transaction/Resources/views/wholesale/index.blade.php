@@ -8,7 +8,7 @@
 
 @section('content')
     <div x-data="{ filtersOpen: false, branchSearch: '', mobileBranch: 'all', mobileStatus: 'all' }" class="flex min-h-0 flex-1 flex-col -mx-4 md:mx-0">
-        <section class="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-none bg-white shadow-none lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm">
+        <section class="erp-surface relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-none bg-white shadow-none lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm">
             <header class="shrink-0 border-b border-gray-100 px-0 py-0 sm:px-4 sm:py-4 md:px-5">
                 <div class="mb-3 hidden items-center justify-between gap-3 md:mb-4 sm:flex">
                     <div class="min-w-0">
