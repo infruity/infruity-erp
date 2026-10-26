@@ -211,6 +211,7 @@
     </template>
     </div>
     </template>
+    @includeWhen($showCreateForm ?? false, 'transaction::receipt.create-form')
 </div>
 @endsection
 

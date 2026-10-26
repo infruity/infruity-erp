@@ -1,10 +1,3 @@
-@extends('layouts.erp-tailwind')
-
-@section('title', 'Tambah Resep Produk - Master')
-@section('page-title', 'Resep Produk')
-@section('dashboard-fullscreen', '1')
-
-@section('content')
 <template x-teleport="body">
 <div x-data="recipeCreateForm()" x-init="document.body.classList.add('erp-hide-dock')" class="fixed inset-0 z-[130] flex flex-col justify-end overflow-hidden motion-reduce:transition-none lg:flex-row lg:justify-end">
     <div class="absolute inset-0 bg-black/60" @click="window.location.href = '{{ route('receipt.index') }}'"></div>
@@ -78,7 +71,6 @@
     </section>
 </div>
 </template>
-@endsection
 
 @push('scripts')
 <script>

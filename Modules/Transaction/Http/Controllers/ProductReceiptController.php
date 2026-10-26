@@ -70,13 +70,18 @@ class ProductReceiptController extends Controller
      * Show the form for creating a new resource.
      * @return Renderable
      */
-    public function create()
+    public function create(Request $request)
     {
         if ($denied = $this->requireAccess('product-receipt.create')) {
             return $denied;
         }
 
-        return view('transaction::receipt.create-form');
+        $indexView = $this->index($request);
+        if ($indexView instanceof \Illuminate\View\View) {
+            return $indexView->with('showCreateForm', true);
+        }
+
+        return $indexView;
     }
 
     /**
