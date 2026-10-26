@@ -50,8 +50,7 @@
             <p x-show="error" x-text="error" role="alert" class="shrink-0 text-xs text-red-600"></p>
         </div>
         <div class="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-white px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]"><button type="button" @click="closeRecipeCreate()" class="h-11 flex-1 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">Batal</button><button type="submit" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white shadow-sm transition hover:bg-[#084547]">Tambah Resep</button></div>
-    </form>
-
+    <template x-teleport="body">
     <div x-show="ingredientPickerOpen" x-cloak class="fixed inset-0 z-[150] flex items-end justify-center overflow-hidden lg:items-stretch lg:justify-end"><div class="fixed inset-0 bg-black/50 backdrop-blur-[1px] transition-opacity duration-300" @click="ingredientPickerOpen = false"></div><section role="dialog" aria-modal="true" aria-labelledby="ingredient-picker-title" class="relative z-10 mx-auto flex h-[85vh] max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border-t border-gray-100 bg-white shadow-2xl lg:mx-0 lg:h-full lg:max-w-sm lg:rounded-none lg:border-l lg:border-t-0">
         <div class="flex w-full shrink-0 cursor-pointer justify-center pt-3 pb-1 lg:hidden" @click="ingredientPickerOpen = false"><div class="h-1.5 w-16 rounded-full bg-gray-300"></div></div>
         <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-5 py-4"><div><h3 id="ingredient-picker-title" class="text-[15px] font-bold text-gray-900">Pilih Bahan Baku</h3><p class="mt-0.5 text-xs text-gray-400">Pilih bahan untuk racikan resep</p></div><button type="button" @click="ingredientPickerOpen = false" aria-label="Tutup pilihan bahan" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200 active:scale-95"><i class="ph-bold ph-x text-base"></i></button></header>
@@ -70,6 +69,8 @@
         <div class="shrink-0 border-t border-gray-100 bg-white px-4 pt-3 pb-[calc(0.875rem+env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(0,0,0,0.04)]"><div class="relative flex items-center"><i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i><input x-model="ingredientQuery" @input.debounce.250ms="lookupIngredient()" @keydown.escape.stop="ingredientPickerOpen = false" autocomplete="off" placeholder="Cari bahan (misal: Stroberi, Susu)..." class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50/80 pl-9 pr-9 text-xs outline-none transition-all focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500"><button type="button" x-show="ingredientQuery.length > 0" @click="ingredientQuery = ''; lookupIngredient()" aria-label="Hapus pencarian bahan" class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"><i class="ph-bold ph-x text-xs"></i></button></div></div>
     </section>
 </div>
+    </template>
+    </form>
 </template>
 
 @push('scripts')
