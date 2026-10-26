@@ -23,4 +23,12 @@ class ReceiptRecipeEditUiTest extends TestCase
         self::assertStringContainsString('name="ingredients_quantity[]"', $editForm);
         self::assertStringNotContainsString('x-model="ingredient.search"', $editForm);
     }
+
+    public function test_erp_theme_honors_outline_none_for_focused_form_inputs(): void
+    {
+        $theme = file_get_contents(dirname(__DIR__, 2) . '/public/assets/css/erp-theme.css');
+
+        self::assertStringContainsString('.erp-ui :is(input,textarea,select).outline-none:focus-visible', $theme);
+        self::assertStringContainsString('outline: none;', $theme);
+    }
 }
