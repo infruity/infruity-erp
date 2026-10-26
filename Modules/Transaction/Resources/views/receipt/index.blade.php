@@ -7,11 +7,11 @@
 @endsection
 
 @section('content')
-<div x-data="recipeIndex(@js($receipts->count()), @js($receipts->total()), @js($receipts->hasMorePages()), @js($receipts->nextPageUrl()))"
+<div x-data="recipeIndex(@js($receipts->count()), @js($receipts->total()), @js($receipts->hasMorePages()), @js($receipts->nextPageUrl()), @js($showCreateForm ?? false))"
      x-init="Alpine.store('productFilters', { active: @js($type !== 'all' || $category !== 'all') })"
-     @keydown.escape.window="closeRecipeDetail(); closeRecipeEditor()"
-     x-effect="document.body.classList.toggle('overflow-hidden', detailModalOpen || editOverlayOpen)"
-     @mobile-add-toggle.window="window.location.href = '{{ route('receipt.create') }}'"
+     @keydown.escape.window="closeRecipeDetail(); closeRecipeEditor(); closeRecipeCreate()"
+     x-effect="document.body.classList.toggle('overflow-hidden', detailModalOpen || editOverlayOpen || recipeOverlayActive); document.body.classList.toggle('erp-hide-dock', recipeOverlayActive)"
+     @mobile-add-toggle.window="openRecipeCreate()"
     class="flex-1 flex flex-col min-h-0 -mx-4 md:mx-0">
     <form x-data="{ mobileSearch: @js($search) }" action="{{ route('receipt.index') }}" method="GET" class="md:hidden">
         @if($type !== 'all')<input type="hidden" name="type" value="{{ $type }}">@endif
@@ -36,7 +36,7 @@
                 <x-erp.dropdown-select id="receipt-category-desktop" name="category" :options="$categoryOptions" :value="$category === 'all' ? '' : $category" placeholder="Semua Kategori" auto-submit />
             </form>
             @if(check_access('product-receipt.create'))
-                <a href="{{ route('receipt.create') }}" class="h-11 px-5 rounded-full bg-[#0b595b] text-white text-[13px] font-semibold flex items-center gap-2"><i class="ph-bold ph-plus"></i> Tambah Resep</a>
+                <a href="{{ route('receipt.create') }}" @click.prevent="openRecipeCreate()" class="h-11 px-5 rounded-full bg-[#0b595b] text-white text-[13px] font-semibold flex items-center gap-2"><i class="ph-bold ph-plus"></i> Tambah Resep</a>
             @endif
         </div>
         <div class="hidden md:block px-5 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-500">Menampilkan <span class="font-semibold text-gray-700" x-text="loadedCount"></span> dari <span class="font-semibold text-gray-700" x-text="totalCount"></span> resep</div>
@@ -211,13 +211,13 @@
     </template>
     </div>
     </template>
-    @includeWhen($showCreateForm ?? false, 'transaction::receipt.create-form')
+    @include('transaction::receipt.create-form')
 </div>
 @endsection
 
 @push('scripts')
 <script>
-function recipeIndex(initialCount, total, hasMore, nextPageUrl) {
+function recipeIndex(initialCount, total, hasMore, nextPageUrl, createFormInitiallyOpen = false) {
     return {
         searchOpen: false,
         filterOpen: false,
@@ -228,6 +228,9 @@ function recipeIndex(initialCount, total, hasMore, nextPageUrl) {
         loadingMore: false,
         detailModalOpen: false,
         editOverlayOpen: false,
+        recipeOverlayActive: createFormInitiallyOpen,
+        recipeOverlayVisible: createFormInitiallyOpen,
+        recipeOverlayCloseTimer: null,
         selectedRecipe: null,
         editingRecipe: null,
         openRecipeDetail(recipe) {
@@ -248,6 +251,21 @@ function recipeIndex(initialCount, total, hasMore, nextPageUrl) {
             window.setTimeout(() => {
                 if (!this.editOverlayOpen) this.editingRecipe = null;
             }, 300);
+        },
+        openRecipeCreate() {
+            window.clearTimeout(this.recipeOverlayCloseTimer);
+            this.recipeOverlayVisible = true;
+            this.$nextTick(() => { this.recipeOverlayActive = true; });
+        },
+        closeRecipeCreate() {
+            this.recipeOverlayActive = false;
+            window.clearTimeout(this.recipeOverlayCloseTimer);
+            this.recipeOverlayCloseTimer = window.setTimeout(() => {
+                if (!this.recipeOverlayActive) this.recipeOverlayVisible = false;
+            }, 220);
+            if (window.location.pathname === '{{ parse_url(route('receipt.create'), PHP_URL_PATH) }}') {
+                window.history.replaceState(window.history.state, '', '{{ route('receipt.index') }}');
+            }
         },
         deleteSelectedRecipe() {
             if (!this.selectedRecipe) return;

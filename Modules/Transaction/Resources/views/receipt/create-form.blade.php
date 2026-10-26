@@ -1,17 +1,17 @@
 <template x-teleport="body">
-<div x-data="recipeCreateForm()" x-init="document.body.classList.add('erp-hide-dock')" class="fixed inset-0 z-[130] flex flex-col justify-end overflow-hidden motion-reduce:transition-none lg:flex-row lg:justify-end">
-    <div class="absolute inset-0 bg-black/60" @click="window.location.href = '{{ route('receipt.index') }}'"></div>
-    <section class="relative z-10 mx-auto flex h-[85vh] max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border-t border-gray-100 bg-white shadow-2xl motion-reduce:transition-none lg:mx-0 lg:h-full lg:max-w-sm lg:rounded-none lg:border-l lg:border-t-0">
+<div x-show="recipeOverlayVisible" x-cloak class="fixed inset-0 z-[130] flex flex-col justify-end overflow-hidden lg:flex-row lg:justify-end" role="dialog" aria-modal="true" aria-labelledby="recipe-create-title">
+    <div :class="recipeOverlayActive ? 'opacity-100' : 'opacity-0'" class="absolute inset-0 bg-black/60 transition-opacity duration-200 motion-reduce:transition-none" @click="closeRecipeCreate()"></div>
+    <section :class="recipeOverlayActive ? 'translate-y-0 lg:translate-x-0 duration-300 ease-out' : 'translate-y-full lg:translate-y-0 lg:translate-x-full duration-200 ease-in'" class="relative z-10 mx-auto flex h-[85vh] max-h-[100dvh] w-full transform flex-col overflow-hidden rounded-t-3xl border-t border-gray-100 bg-white shadow-2xl transition-transform motion-reduce:transition-none lg:mx-0 lg:h-full lg:max-w-sm lg:rounded-none lg:border-l lg:border-t-0">
     <div class="flex shrink-0 justify-center pt-3 pb-1 lg:hidden"><div class="h-1.5 w-16 rounded-full bg-gray-300"></div></div>
     <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-5 py-4">
         <div>
-            <h2 class="text-lg font-bold text-gray-900">Tambah Resep</h2>
+            <h2 id="recipe-create-title" class="text-lg font-bold text-gray-900">Tambah Resep</h2>
             <p class="mt-0.5 text-sm text-gray-400">Isi data resep baru</p>
         </div>
-        <a href="{{ route('receipt.index') }}" aria-label="Tutup form resep" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200"><i class="ph-bold ph-x text-xl"></i></a>
+        <button type="button" @click="closeRecipeCreate()" aria-label="Tutup form resep" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200"><i class="ph-bold ph-x text-xl"></i></button>
     </header>
 
-    <form action="{{ route('receipt.store') }}" method="POST" class="flex min-h-0 flex-1 flex-col" @submit="if (!productId || !ingredients.length || ingredients.some(item => !item.id || !item.quantity || Number(item.quantity) <= 0)) { $event.preventDefault(); error = 'Pilih produk dan lengkapi semua bahan serta kuantitasnya.'; }">
+    <form x-data="recipeCreateForm()" action="{{ route('receipt.store') }}" method="POST" class="flex min-h-0 flex-1 flex-col" @submit="if (!productId || !ingredients.length || ingredients.some(item => !item.id || !item.quantity || Number(item.quantity) <= 0)) { $event.preventDefault(); error = 'Pilih produk dan lengkapi semua bahan serta kuantitasnya.'; }">
         @csrf
         <input type="hidden" name="description" value="{{ old('description') }}">
         <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain bg-gray-50/40 px-5 pt-5 pb-3.5">
@@ -26,7 +26,7 @@
                 </button>
                 <input type="hidden" name="product_id" :value="productId" required>
                 <div x-show="productOpen" x-cloak @click.outside="productOpen = false" class="relative z-20 mt-2 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
-                    <div class="relative border-b border-gray-100 bg-gray-50/60"><i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"></i><input x-model="productQuery" @input.debounce.250ms="lookupProduct()" @keydown.escape="productOpen = false" autocomplete="off" placeholder="Cari produk..." class="h-11 w-full bg-transparent pl-10 pr-4 text-xs outline-none focus:bg-white"></div>
+                    <div class="relative border-b border-gray-100 bg-gray-50/60"><i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"></i><input x-model="productQuery" @input.debounce.250ms="lookupProduct()" @keydown.escape.stop="productOpen = false" autocomplete="off" placeholder="Cari produk..." class="h-11 w-full bg-transparent pl-10 pr-4 text-xs outline-none focus:bg-white"></div>
                     <div class="max-h-52 overflow-y-auto"><template x-for="item in productResults" :key="item.id"><button type="button" @click="selectProduct(item)" class="flex w-full items-center justify-between px-3.5 py-2.5 text-left text-xs text-gray-700 hover:bg-emerald-50"><span x-text="item.name"></span><i x-show="productId === item.id" class="ph-bold ph-check text-emerald-700"></i></button></template><p x-show="productQuery.length >= 2 && productResults.length === 0" class="px-4 py-3 text-xs text-gray-400">Produk tidak ditemukan</p><p x-show="productQuery.length < 2" class="px-4 py-3 text-xs text-gray-400">Ketik minimal 2 karakter untuk mencari.</p></div>
                 </div>
             </div>
@@ -49,7 +49,7 @@
             </section>
             <p x-show="error" x-text="error" role="alert" class="shrink-0 text-xs text-red-600"></p>
         </div>
-        <div class="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-white px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]"><a href="{{ route('receipt.index') }}" class="flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">Batal</a><button type="submit" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white shadow-sm transition hover:bg-[#084547]">Tambah Resep</button></div>
+        <div class="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-white px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]"><button type="button" @click="closeRecipeCreate()" class="h-11 flex-1 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">Batal</button><button type="submit" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white shadow-sm transition hover:bg-[#084547]">Tambah Resep</button></div>
     </form>
 
     <div x-show="ingredientPickerOpen" x-cloak class="fixed inset-0 z-[150] flex items-end justify-center overflow-hidden lg:items-stretch lg:justify-end"><div class="fixed inset-0 bg-black/50 backdrop-blur-[1px] transition-opacity duration-300" @click="ingredientPickerOpen = false"></div><section role="dialog" aria-modal="true" aria-labelledby="ingredient-picker-title" class="relative z-10 mx-auto flex h-[85vh] max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border-t border-gray-100 bg-white shadow-2xl lg:mx-0 lg:h-full lg:max-w-sm lg:rounded-none lg:border-l lg:border-t-0">
@@ -67,7 +67,7 @@
             <div x-show="!ingredientLoading && ingredientQuery.trim().length === 0 && ingredientResults.length === 0" class="py-12 text-center text-xs text-gray-400">Belum ada bahan baku.</div>
         </div>
 
-        <div class="shrink-0 border-t border-gray-100 bg-white px-4 pt-3 pb-[calc(0.875rem+env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(0,0,0,0.04)]"><div class="relative flex items-center"><i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i><input x-model="ingredientQuery" @input.debounce.250ms="lookupIngredient()" @keydown.escape="ingredientPickerOpen = false" autocomplete="off" placeholder="Cari bahan (misal: Stroberi, Susu)..." class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50/80 pl-9 pr-9 text-xs outline-none transition-all focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500"><button type="button" x-show="ingredientQuery.length > 0" @click="ingredientQuery = ''; lookupIngredient()" aria-label="Hapus pencarian bahan" class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"><i class="ph-bold ph-x text-xs"></i></button></div></div>
+        <div class="shrink-0 border-t border-gray-100 bg-white px-4 pt-3 pb-[calc(0.875rem+env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(0,0,0,0.04)]"><div class="relative flex items-center"><i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i><input x-model="ingredientQuery" @input.debounce.250ms="lookupIngredient()" @keydown.escape.stop="ingredientPickerOpen = false" autocomplete="off" placeholder="Cari bahan (misal: Stroberi, Susu)..." class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50/80 pl-9 pr-9 text-xs outline-none transition-all focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500"><button type="button" x-show="ingredientQuery.length > 0" @click="ingredientQuery = ''; lookupIngredient()" aria-label="Hapus pencarian bahan" class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"><i class="ph-bold ph-x text-xs"></i></button></div></div>
     </section>
 </div>
 </template>
