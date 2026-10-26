@@ -99,23 +99,42 @@
             <div class="relative bg-white w-full max-w-sm max-h-[calc(100dvh-2rem)] rounded-2xl shadow-xl overflow-hidden flex flex-col">
                 <div class="flex shrink-0 items-center justify-between px-6 pt-6 pb-4"><h3 class="text-lg font-bold text-gray-800">Detail {{ $singular }}</h3><button type="button" @click="detail = null" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div>
                 <template x-if="detail">
-                    <div class="min-h-0 overflow-y-auto px-6 pb-6 space-y-5 text-sm break-words">
-                        <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center shrink-0"><i class="ph ph-storefront text-xl"></i></div><div><div class="font-bold text-gray-800" x-text="label(detail)"></div><div class="text-[11px] text-gray-400" x-text="fields.find(field => field.key === nameKey)?.label || 'Nama'"></div></div></div>
-                        <template x-for="field in fields.filter(field => field.key !== nameKey)" :key="field.key">
-                            <div x-show="fieldValue(detail, field.key)" class="flex gap-3 items-center">
-                                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"><i class="ph text-lg" :class="detailIcon(field.key)"></i></div>
-                                <div class="min-w-0 flex-1">
-                                    <template x-if="fieldHref(field, fieldValue(detail, field.key))"><a :href="fieldHref(field, fieldValue(detail, field.key))" target="_blank" rel="noopener noreferrer" class="block font-semibold text-emerald-700 break-words hover:underline" x-text="displayField(field, fieldValue(detail, field.key))"></a></template>
-                                    <template x-if="!fieldHref(field, fieldValue(detail, field.key))"><div class="font-semibold text-gray-700 break-words" x-text="displayField(field, fieldValue(detail, field.key))"></div></template>
-                                    <div class="text-[11px] text-gray-400" x-text="field.label"></div>
+                    @if ($routeBase === 'supplier')
+                        <div class="min-h-0 overflow-y-auto px-6 pb-6 space-y-5 text-sm break-words">
+                            <div class="flex gap-3 items-center"><i class="ph-duotone ph-storefront text-2xl text-emerald-500 shrink-0"></i><div><div class="font-bold text-gray-800" x-text="label(detail)"></div><div class="text-[11px] text-gray-400" x-text="fields.find(field => field.key === nameKey)?.label || 'Nama'"></div></div></div>
+                            <template x-for="field in fields.filter(field => field.key !== nameKey)" :key="field.key">
+                                <div x-show="fieldValue(detail, field.key)" class="flex gap-3 items-center">
+                                    <i class="ph-duotone text-2xl text-emerald-500 shrink-0" :class="detailIcon(field.key)"></i>
+                                    <div class="min-w-0 flex-1">
+                                        <template x-if="fieldHref(field, fieldValue(detail, field.key))">
+                                            <a :href="fieldHref(field, fieldValue(detail, field.key))" target="_blank" rel="noopener noreferrer" class="inline-flex max-w-full items-center gap-1.5 border-b border-dashed pb-0.5 font-semibold transition-colors hover:underline" :class="field.key === 'address' ? 'text-blue-600 border-blue-400 hover:text-blue-700' : 'text-emerald-700 border-emerald-400 hover:text-emerald-800'"><span class="truncate" x-text="displayField(field, fieldValue(detail, field.key))"></span><i x-show="['pic_whatsapp', 'address'].includes(field.key)" class="ph-bold ph-arrow-up-right shrink-0 text-xs"></i></a>
+                                        </template>
+                                        <template x-if="!fieldHref(field, fieldValue(detail, field.key))"><div class="font-semibold text-gray-700 break-words" x-text="displayField(field, fieldValue(detail, field.key))"></div></template>
+                                        <div class="text-[11px] text-gray-400" x-text="field.label"></div>
+                                    </div>
                                 </div>
-                            </div>
-                        </template>
-                        <div x-show="detail.updated_at" class="flex gap-3 items-center">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"><i class="ph ph-clock text-lg"></i></div>
-                            <div><div class="font-semibold text-gray-700" x-text="detail.updated_by_name || 'Terakhir diperbarui'"></div><div class="text-[11px] text-gray-400" x-text="formatUpdatedAt(detail.updated_at)"></div></div>
+                            </template>
+                            <div x-show="detail.updated_at" class="flex gap-3 items-start"><i class="ph-duotone ph-clock mt-0.5 text-2xl text-emerald-500 shrink-0"></i><div class="min-w-0"><div class="text-xs font-bold text-gray-800 leading-snug" x-text="detail.updated_by_name || 'Terakhir diperbarui'"></div><div class="text-[11px] text-gray-400 mt-0.5" x-text="formatUpdatedAt(detail.updated_at)"></div></div></div>
                         </div>
-                    </div>
+                    @else
+                        <div class="min-h-0 overflow-y-auto px-6 pb-6 space-y-5 text-sm break-words">
+                            <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center shrink-0"><i class="ph ph-storefront text-xl"></i></div><div><div class="font-bold text-gray-800" x-text="label(detail)"></div><div class="text-[11px] text-gray-400" x-text="fields.find(field => field.key === nameKey)?.label || 'Nama'"></div></div></div>
+                            <template x-for="field in fields.filter(field => field.key !== nameKey)" :key="field.key">
+                                <div x-show="fieldValue(detail, field.key)" class="flex gap-3 items-center">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"><i class="ph text-lg" :class="detailIcon(field.key)"></i></div>
+                                    <div class="min-w-0 flex-1">
+                                        <template x-if="fieldHref(field, fieldValue(detail, field.key))"><a :href="fieldHref(field, fieldValue(detail, field.key))" target="_blank" rel="noopener noreferrer" class="block font-semibold text-emerald-700 break-words hover:underline" x-text="displayField(field, fieldValue(detail, field.key))"></a></template>
+                                        <template x-if="!fieldHref(field, fieldValue(detail, field.key))"><div class="font-semibold text-gray-700 break-words" x-text="displayField(field, fieldValue(detail, field.key))"></div></template>
+                                        <div class="text-[11px] text-gray-400" x-text="field.label"></div>
+                                    </div>
+                                </div>
+                            </template>
+                            <div x-show="detail.updated_at" class="flex gap-3 items-center">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"><i class="ph ph-clock text-lg"></i></div>
+                                <div><div class="font-semibold text-gray-700" x-text="detail.updated_by_name || 'Terakhir diperbarui'"></div><div class="text-[11px] text-gray-400" x-text="formatUpdatedAt(detail.updated_at)"></div></div>
+                            </div>
+                        </div>
+                    @endif
                 </template>
                 <div class="flex shrink-0 border-t border-gray-100">
                     @if (check_access($routeBase . '.edit'))
