@@ -136,46 +136,46 @@
                      x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full"
                      class="relative z-10 mx-auto flex h-[85vh] max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border-t border-gray-100 bg-white shadow-2xl motion-reduce:transition-none lg:mx-0 lg:h-full lg:max-w-sm lg:rounded-none lg:border-l lg:border-t-0">
                 <div class="flex shrink-0 justify-center pt-3 pb-1 lg:hidden" @click="closeRecipeEditor()"><div class="h-1.5 w-16 rounded-full bg-gray-300"></div></div>
-                <div class="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-4">
+                <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-5 py-4">
                     <div>
-                        <h2 id="recipe-editor-title" class="text-[15px] font-bold text-gray-900">Edit Resep</h2>
-                        <p class="mt-0.5 text-xs text-gray-400">Perbarui data resep</p>
+                        <h2 id="recipe-editor-title" class="text-lg font-bold text-gray-900">Edit Resep</h2>
+                        <p class="mt-0.5 text-sm text-gray-400">Perbarui data resep</p>
                     </div>
-                    <button type="button" @click="closeRecipeEditor()" aria-label="Tutup editor resep" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"><i class="ph-bold ph-x"></i></button>
-                </div>
+                    <button type="button" @click="closeRecipeEditor()" aria-label="Tutup editor resep" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"><i class="ph-bold ph-x text-xl"></i></button>
+                </header>
                 <form x-data="recipeForm({ id: editingRecipe.product.id, name: editingRecipe.product.name }, editingRecipe.ingredients)"
                       :action="`{{ url('receipt') }}/${editingRecipe.id}`" method="POST"
                       @submit="if (!productId || !ingredients.length || ingredients.some(item => !item.id || !item.quantity || Number(item.quantity) <= 0)) { $event.preventDefault(); error = 'Pilih produk dan lengkapi semua bahan serta kuantitasnya.'; }"
                       class="flex min-h-0 flex-1 flex-col">
                     @csrf @method('PUT')
-                    <div class="min-h-0 flex-1 space-y-5 overflow-y-auto bg-gray-50/60 px-5 py-5 pb-8">
+                    <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain bg-gray-50/40 px-5 pt-5 pb-3.5">
                         <div>
-                            <label class="mb-1.5 block text-xs font-semibold text-gray-600">Produk Hasil <span class="text-red-400">*</span></label>
+                            <label class="mb-1.5 block text-xs font-semibold text-gray-600">Pilih Produk <span class="text-red-400">*</span></label>
                             <div class="relative">
-                                <input x-model="productSearch" @input.debounce.250ms="lookupProduct()" @focus="if (productResults.length) productOpen = true" @keydown.escape="productOpen = false" autocomplete="off" placeholder="Cari produk yang membutuhkan resep..." class="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 pr-10 text-base outline-none focus:border-emerald-500 md:text-sm">
+                                <input x-model="productSearch" @input.debounce.250ms="lookupProduct()" @focus="if (productResults.length) productOpen = true" @keydown.escape="productOpen = false" autocomplete="off" placeholder="Cari produk yang membutuhkan resep..." class="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 pr-10 text-base outline-none focus:border-emerald-500 md:text-sm">
                                 <i class="ph ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                <div x-show="productOpen" x-cloak @click.outside="productOpen = false" class="absolute z-40 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg">
-                                    <template x-for="item in productResults" :key="item.id"><button type="button" @click="productId = item.id; productSearch = item.name; productOpen = false" class="w-full px-4 py-3 text-left text-sm text-emerald-900 hover:bg-emerald-50" x-text="item.name"></button></template>
-                                    <p x-show="productResults.length === 0" class="px-4 py-3 text-xs text-gray-400">Produk tidak ditemukan</p>
+                                <div x-show="productOpen" x-cloak @click.outside="productOpen = false" class="absolute z-40 mt-1.5 max-h-56 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-xl">
+                                    <template x-for="item in productResults" :key="item.id"><button type="button" @click="productId = item.id; productSearch = item.name; productOpen = false" class="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-emerald-50/50"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-sm shadow-sm" :class="item.material_icon_class || 'bg-gray-100'" x-text="item.material_emoji || '📦'"></span><span class="min-w-0 flex-1 truncate text-xs font-bold text-gray-900" x-text="item.name"></span><span class="shrink-0 text-xs font-medium text-gray-400" x-text="item.unit || 'unit'"></span></button></template>
+                                    <p x-show="productResults.length === 0" class="px-4 py-4 text-center text-xs text-gray-400">Produk tidak ditemukan</p>
                                 </div>
                             </div>
                             <input type="hidden" name="product_id" :value="productId" required>
                         </div>
                         <div>
                             <label class="mb-1.5 block text-xs font-semibold text-gray-600">Keterangan</label>
-                            <textarea name="description" x-init="$el.value = editingRecipe.description || ''" rows="3" maxlength="255" placeholder="Catatan resep" class="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500"></textarea>
+                            <textarea name="description" x-init="$el.value = editingRecipe.description || ''" rows="3" maxlength="255" placeholder="Catatan resep" class="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-base outline-none focus:border-emerald-500 md:text-sm"></textarea>
                         </div>
-                        <div class="flex items-center justify-between border-t border-gray-200 pt-5">
-                            <div><h3 class="text-sm font-bold text-gray-800">Bahan Baku Resep</h3><p class="mt-0.5 text-xs text-gray-400">Tambahkan bahan dan jumlah yang digunakan</p></div>
-                            <button type="button" @click="addIngredient()" class="ml-3 flex h-9 shrink-0 items-center gap-1 rounded-lg bg-emerald-50 px-3 text-xs font-semibold text-emerald-700"><i class="ph-bold ph-plus"></i> Tambah Bahan</button>
+                        <div class="flex items-center justify-between gap-3 border-t border-gray-200 pt-4">
+                            <div><h3 class="text-sm font-bold text-gray-800">Daftar Bahan Baku <span class="text-red-400">*</span></h3><p class="mt-1 text-xs text-gray-400">Tambahkan bahan dan jumlah yang digunakan</p></div>
+                            <button type="button" @click="addIngredient()" class="flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-[#0b595b] px-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#084547] active:scale-95"><i class="ph-bold ph-plus"></i> Tambah</button>
                         </div>
                         <template x-for="(ingredient, index) in ingredients" :key="ingredient.key">
-                            <div class="space-y-4 rounded-2xl border border-gray-200 bg-white p-4">
+                            <div class="space-y-4 rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm">
                                 <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-700" x-text="'Bahan Baku #' + (index + 1)"></span><button type="button" @click="ingredients.splice(index, 1)" class="h-8 w-8 rounded-lg text-red-500 hover:bg-red-50" :aria-label="'Hapus bahan ' + (index + 1)"><i class="ph ph-trash"></i></button></div>
                                 <div>
                                     <label class="mb-1.5 block text-xs font-semibold text-gray-600">Pilih Bahan <span class="text-red-400">*</span></label>
                                     <div class="relative">
-                                        <input x-model="ingredient.search" @input.debounce.250ms="lookupIngredient(ingredient)" @focus="if (ingredient.results.length) ingredient.open = true" @keydown.escape="ingredient.open = false" autocomplete="off" placeholder="Cari bahan baku..." class="h-11 w-full rounded-xl border border-gray-200 px-4 pr-10 text-base outline-none focus:border-emerald-500 md:text-sm">
+                                        <input x-model="ingredient.search" @input.debounce.250ms="lookupIngredient(ingredient)" @focus="if (ingredient.results.length) ingredient.open = true" @keydown.escape="ingredient.open = false" autocomplete="off" placeholder="Cari bahan baku..." class="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 pr-10 text-base outline-none focus:border-emerald-500 md:text-sm">
                                         <i class="ph ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                         <div x-show="ingredient.open" x-cloak @click.outside="ingredient.open = false" class="absolute left-0 right-0 top-full z-40 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg">
                                         <template x-for="item in ingredient.results" :key="item.id"><button type="button" @click="ingredient.id = item.id; ingredient.search = item.name; ingredient.open = false" class="w-full px-4 py-3 text-left text-sm text-emerald-900 hover:bg-emerald-50" x-text="item.name"></button></template>
@@ -184,13 +184,13 @@
                                     </div>
                                 </div>
                                 <input type="hidden" name="product_receipt_id[]" :value="ingredient.id" required>
-                                <div><label class="mb-1.5 block text-xs font-semibold text-gray-600">Kuantitas <span class="text-red-400">*</span></label><input name="ingredients_quantity[]" x-model="ingredient.quantity" type="number" step="0.01" min="0.01" required placeholder="Masukkan kuantitas" class="h-11 w-full rounded-xl border border-gray-200 px-4 text-base outline-none focus:border-emerald-500 md:text-sm"></div>
+                                <div><label class="mb-1.5 block text-xs font-semibold text-gray-600">Kuantitas <span class="text-red-400">*</span></label><input name="ingredients_quantity[]" x-model="ingredient.quantity" type="number" step="0.01" min="0.01" required placeholder="Masukkan kuantitas" class="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-base outline-none focus:border-emerald-500 md:text-sm"></div>
                             </div>
                         </template>
                         <p x-show="ingredients.length === 0" class="py-5 text-center text-xs text-gray-400">Belum ada bahan baku</p>
                         <p x-show="error" x-text="error" role="alert" class="text-xs text-red-600"></p>
                     </div>
-                    <div class="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-white px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                    <div class="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-white px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                         <button type="button" @click="closeRecipeEditor()" class="flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button>
                         <button type="submit" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white">Simpan Perubahan</button>
                     </div>
