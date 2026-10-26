@@ -169,26 +169,41 @@
                         </div>
                         <div class="shrink-0">
                             <label class="mb-1.5 block text-xs font-semibold text-gray-600">Harga Pokok Produksi (HPP)</label>
-                            <div class="flex h-11 w-full items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 px-3.5"><span class="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-50 text-sm text-emerald-600"><i class="ph-duotone ph-coins"></i></span><span class="text-sm font-extrabold text-gray-900" x-text="'Rp ' + formatMoney(selectedProductHpp)">Rp 0</span><span class="text-[11px] text-gray-400" x-text="selectedProductUnit ? '/' + selectedProductUnit : '/porsi'"></span></div>
+                            <div class="flex h-11 w-full items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 px-3.5"><span class="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-50 text-sm text-emerald-600"><i class="ph-duotone ph-coins"></i></span><span class="text-sm font-extrabold text-gray-900" x-text="'Rp ' + formatMoney(calculatedTotalHpp)">Rp 0</span><span class="text-[11px] text-gray-400" x-text="selectedProductUnit ? '/' + selectedProductUnit : '/porsi'"></span></div>
                         </div>
                         <section class="flex min-h-[220px] flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm">
-                            <div class="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 pb-3"><div><h3 class="text-sm font-bold text-gray-800">Daftar Bahan Baku <span class="text-red-400">*</span></h3><p class="mt-1 text-xs text-gray-400" x-text="ingredients.length + ' bahan terdaftar'"></p></div><button type="button" @click="addIngredient()" class="flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-[#0b595b] px-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#084547] active:scale-95"><i class="ph-bold ph-plus"></i> Tambah</button></div>
-                            <div x-show="ingredients.length === 0" class="flex flex-1 flex-col items-center justify-center py-8 text-center text-xs text-gray-400"><i class="ph ph-basket text-2xl"></i><p class="mt-2">Belum ada bahan baku.</p><button type="button" @click="addIngredient()" class="mt-1 font-semibold text-emerald-700">+ Tambah bahan</button></div>
+                            <div class="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 pb-3"><div><h3 class="text-sm font-bold text-gray-800">Daftar Bahan Baku <span class="text-red-400">*</span></h3><p class="mt-1 text-xs text-gray-400" x-text="ingredients.length + ' bahan terdaftar'"></p></div><button type="button" @click="openIngredientPicker()" class="flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-[#0b595b] px-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#084547] active:scale-95"><i class="ph-bold ph-plus"></i> Tambah</button></div>
+                            <div x-show="ingredients.length === 0" class="flex flex-1 flex-col items-center justify-center py-8 text-center text-xs text-gray-400"><i class="ph ph-basket text-2xl"></i><p class="mt-2">Belum ada bahan baku.</p><button type="button" @click="openIngredientPicker()" class="mt-1 font-semibold text-emerald-700">+ Tambah bahan</button></div>
                             <div x-show="ingredients.length > 0" class="min-h-0 flex-1 divide-y divide-gray-100 overflow-y-auto">
-                                <template x-for="(ingredient, index) in ingredients" :key="ingredient.key"><div class="space-y-3 py-3">
-                                    <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-700" x-text="'Bahan Baku #' + (index + 1)"></span><button x-show="ingredients.length > 1" type="button" @click="ingredients.splice(index, 1)" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-300 transition hover:bg-red-50 hover:text-red-500" :aria-label="'Hapus bahan ' + (index + 1)"><i class="ph-bold ph-x"></i></button></div>
-                                    <div class="relative"><label class="mb-1.5 block text-xs font-semibold text-gray-600">Pilih Bahan <span class="text-red-400">*</span></label><input x-model="ingredient.search" @input.debounce.250ms="lookupIngredient(ingredient)" @focus="if (ingredient.results.length) ingredient.open = true" @keydown.escape="ingredient.open = false" autocomplete="off" placeholder="Cari bahan baku..." class="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 pr-10 text-base outline-none focus:border-emerald-500 md:text-sm"><i class="ph ph-magnifying-glass absolute right-4 top-[calc(50%+0.55rem)] -translate-y-1/2 text-gray-400"></i><div x-show="ingredient.open" x-cloak @click.outside="ingredient.open = false" class="absolute left-0 right-0 top-full z-40 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg"><template x-for="item in ingredient.results" :key="item.id"><button type="button" @click="selectIngredient(ingredient, item)" class="w-full px-4 py-3 text-left text-sm text-emerald-900 hover:bg-emerald-50" x-text="item.name"></button></template><p x-show="ingredient.results.length === 0" class="px-4 py-3 text-center text-xs text-gray-400">Bahan tidak ditemukan</p></div></div>
-                                    <input type="hidden" name="product_receipt_id[]" :value="ingredient.id" required>
-                                    <label class="flex h-9 items-center rounded-xl border border-gray-200 bg-gray-100 px-2.5 focus-within:border-emerald-500 focus-within:bg-white"><span class="mr-2 text-xs font-semibold text-gray-500">Kuantitas</span><input name="ingredients_quantity[]" x-model="ingredient.quantity" type="number" step="0.01" min="0.01" required placeholder="0" class="min-w-0 flex-1 bg-transparent text-right text-sm font-bold text-gray-900 outline-none"><span class="pl-2 text-xs font-semibold text-gray-500" x-text="ingredient.unit || 'unit'"></span></label>
+                                <template x-for="(ingredient, index) in ingredients" :key="ingredient.key"><div class="flex items-center justify-between gap-3 py-2.5">
+                                    <div class="flex min-w-0 flex-1 items-center gap-2.5"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-100 text-base shadow-sm" :class="ingredient.materialIconClass || 'bg-gray-100'"><span x-text="ingredient.materialEmoji || '📦'"></span></span><span class="min-w-0 flex-1"><span class="block truncate text-sm font-semibold text-gray-900" x-text="ingredient.search"></span><span class="mt-0.5 block text-xs text-gray-400">Total Modal <strong class="ml-1 font-bold text-emerald-700" x-text="'Rp ' + formatMoney(ingredientCost(ingredient))"></strong></span></span></div>
+                                    <div class="flex shrink-0 items-center gap-1.5"><label class="flex h-9 items-center rounded-xl border border-gray-200 bg-gray-100 px-2.5 focus-within:border-emerald-500 focus-within:bg-white"><input type="text" inputmode="decimal" maxlength="9" :value="ingredient.displayQuantity" @input="updateQuantity(ingredient, $event)" aria-label="Kuantitas bahan" class="w-12 bg-transparent text-right text-sm font-bold text-gray-900 outline-none"><span class="pl-1 text-xs font-semibold text-gray-500" x-text="ingredient.unit || 'unit'"></span></label><button x-show="ingredients.length > 1" type="button" @click="removeIngredient(index)" :aria-label="'Hapus ' + ingredient.search" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-300 transition hover:bg-red-50 hover:text-red-500"><i class="ph-bold ph-x"></i></button></div>
+                                    <input type="hidden" name="product_receipt_id[]" :value="ingredient.id" required><input type="hidden" name="ingredients_quantity[]" :value="ingredient.quantity" required>
                                 </div></template>
                             </div>
                         </section>
-                        <p x-show="error" x-text="error" role="alert" class="text-xs text-red-600"></p>
+                        <p x-show="error" x-text="error" role="alert" class="shrink-0 text-xs text-red-600"></p>
                     </div>
                     <div class="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-white px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                         <button type="button" @click="closeRecipeEditor()" class="flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button>
                         <button type="submit" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white">Simpan Perubahan</button>
                     </div>
+                    <template x-teleport="body">
+                        <div x-show="ingredientPickerOpen" x-cloak class="fixed inset-0 z-[150] flex items-end justify-center overflow-hidden lg:items-stretch lg:justify-end">
+                            <div class="fixed inset-0 bg-black/50 backdrop-blur-[1px]" @click="ingredientPickerOpen = false"></div>
+                            <section role="dialog" aria-modal="true" aria-labelledby="edit-ingredient-picker-title" class="relative z-10 mx-auto flex h-[85vh] max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border-t border-gray-100 bg-white shadow-2xl lg:mx-0 lg:h-full lg:max-w-sm lg:rounded-none lg:border-l lg:border-t-0">
+                                <div class="flex w-full shrink-0 justify-center pt-3 pb-1 lg:hidden" @click="ingredientPickerOpen = false"><div class="h-1.5 w-16 rounded-full bg-gray-300"></div></div>
+                                <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-5 py-4"><div><h3 id="edit-ingredient-picker-title" class="text-[15px] font-bold text-gray-900">Pilih Bahan Baku</h3><p class="mt-0.5 text-xs text-gray-400">Pilih bahan untuk racikan resep</p></div><button type="button" @click="ingredientPickerOpen = false" aria-label="Tutup pilihan bahan" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500"><i class="ph-bold ph-x"></i></button></header>
+                                <div class="min-h-0 flex-1 divide-y divide-gray-100/80 overflow-y-auto overscroll-contain bg-gray-50/30 px-4 py-2">
+                                    <template x-for="item in ingredientResults" :key="item.id"><button type="button" @click="selectIngredient(item)" class="group flex w-full items-center justify-between rounded-xl p-2.5 text-left transition-colors hover:bg-emerald-50/60"><span class="flex min-w-0 flex-1 items-center gap-3"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-100 text-base shadow-sm" :class="item.material_icon_class || 'bg-gray-100'" x-text="item.material_emoji || '📦'"></span><span class="flex min-w-0 flex-1 flex-col"><span class="truncate text-xs font-bold text-gray-900" x-text="item.name"></span><span class="mt-0.5 truncate text-[11px] text-gray-400" x-text="'Rp ' + formatMoney(item.hpp || 0) + ' / ' + (unitOf(item) || 'unit')"></span></span></span><span class="ml-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-700"><i class="ph-bold ph-plus text-xs"></i></span></button></template>
+                                    <div x-show="ingredientLoading" class="py-12 text-center text-xs text-gray-400">Memuat bahan baku...</div>
+                                    <div x-show="!ingredientLoading && ingredientQuery.trim().length > 0 && ingredientResults.length === 0" class="py-16 text-center text-xs text-gray-400">Bahan tidak ditemukan</div>
+                                    <div x-show="!ingredientLoading && ingredientQuery.trim().length === 0 && ingredientResults.length === 0" class="py-12 text-center text-xs text-gray-400">Belum ada bahan baku.</div>
+                                </div>
+                                <div class="shrink-0 border-t border-gray-100 bg-white px-4 pt-3 pb-[calc(0.875rem+env(safe-area-inset-bottom))]"><div class="relative flex items-center"><i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i><input x-model="ingredientQuery" @input.debounce.250ms="lookupIngredient()" @keydown.escape.stop="ingredientPickerOpen = false" autocomplete="off" placeholder="Cari bahan baku..." class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50/80 pl-9 pr-9 text-xs outline-none focus:border-emerald-500 focus:bg-white"><button type="button" x-show="ingredientQuery.length > 0" @click="ingredientQuery = ''; lookupIngredient()" aria-label="Hapus pencarian bahan" class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-gray-400"><i class="ph-bold ph-x text-xs"></i></button></div></div>
+                            </section>
+                        </div>
+                    </template>
                 </form>
             </section>
         </div>
@@ -320,13 +335,27 @@ async function deleteReceipt(id) {
 function recipeForm(selectedProduct, initialIngredients, initialDescription = '') {
     let nextKey = 0;
     let productLookupSequence = 0;
+    let ingredientLookupSequence = 0;
     const unitOf = item => typeof item?.unit === 'string' ? item.unit : (item?.unit?.abbreviation || item?.unit?.name || '');
+    const makeIngredient = item => {
+        const quantity = String(item.quantity ?? '');
+        return {
+            key: ++nextKey,
+            id: item.id || '',
+            search: item.name || '',
+            quantity,
+            displayQuantity: quantity.replace('.', ','),
+            unit: unitOf(item),
+            hpp: Number(item.hpp || 0),
+            materialEmoji: item.material_emoji || '📦',
+            materialIconClass: item.material_icon_class || 'bg-gray-100',
+        };
+    };
     return {
         productId: selectedProduct?.id || '',
         productSearch: selectedProduct?.name || '',
         productQuery: '',
         selectedProductUnit: unitOf(selectedProduct),
-        selectedProductHpp: Number(selectedProduct?.hpp || 0),
         selectedProductEmoji: selectedProduct?.material_emoji || '📦',
         selectedProductIconClass: selectedProduct?.material_icon_class || 'bg-gray-100',
         productResults: [],
@@ -334,20 +363,15 @@ function recipeForm(selectedProduct, initialIngredients, initialDescription = ''
         productLookupError: '',
         productOpen: false,
         description: initialDescription || '',
-        ingredients: initialIngredients.map(item => ({
-            key: ++nextKey,
-            id: item.id,
-            search: item.name,
-            quantity: item.quantity,
-            unit: unitOf(item),
-            hpp: Number(item.hpp || 0),
-            materialEmoji: item.material_emoji || '📦',
-            materialIconClass: item.material_icon_class || 'bg-gray-100',
-            results: [],
-            open: false,
-        })),
+        ingredients: initialIngredients.map(makeIngredient),
+        ingredientPickerOpen: false,
+        ingredientQuery: '',
+        ingredientResults: [],
+        ingredientLoading: false,
         error: '',
+        get calculatedTotalHpp() { return this.ingredients.reduce((total, item) => total + this.ingredientCost(item), 0); },
         formatMoney(value) { return Math.round(Number(value || 0)).toLocaleString('id-ID'); },
+        ingredientCost(item) { return Number(item.quantity || 0) * Number(item.hpp || 0); },
         toggleProductPicker() {
             if (this.productOpen) { this.closeProductPicker(); return; }
             this.productOpen = true;
@@ -364,7 +388,6 @@ function recipeForm(selectedProduct, initialIngredients, initialDescription = ''
         selectProduct(item) {
             this.productId = item.id;
             this.productSearch = item.name;
-            this.selectedProductHpp = Number(item.hpp || 0);
             this.selectedProductUnit = unitOf(item);
             this.selectedProductEmoji = item.material_emoji || '📦';
             this.selectedProductIconClass = item.material_icon_class || 'bg-gray-100';
@@ -387,33 +410,55 @@ function recipeForm(selectedProduct, initialIngredients, initialDescription = ''
                 if (requestId === productLookupSequence) this.productLoading = false;
             }
         },
-        addIngredient() {
-            this.ingredients.push({key: ++nextKey, id: '', search: '', quantity: '', unit: '', hpp: 0, materialEmoji: '📦', materialIconClass: 'bg-gray-100', results: [], open: false});
+        openIngredientPicker() {
+            this.ingredientQuery = '';
+            this.ingredientResults = [];
+            this.ingredientPickerOpen = true;
+            this.lookupIngredient();
         },
-        selectIngredient(ingredient, item) {
-            ingredient.id = item.id;
-            ingredient.search = item.name;
-            ingredient.unit = unitOf(item);
-            ingredient.hpp = Number(item.hpp || 0);
-            ingredient.materialEmoji = item.material_emoji || '📦';
-            ingredient.materialIconClass = item.material_icon_class || 'bg-gray-100';
-            ingredient.open = false;
+        async lookupIngredient() {
+            const query = this.ingredientQuery.trim();
+            const requestId = ++ingredientLookupSequence;
+            this.ingredientLoading = true;
+            try {
+                const response = await fetch(`{{ route('ajax.getProduct') }}?search=${encodeURIComponent(query)}&raw_materials=1`, {headers: {'Accept': 'application/json'}});
+                if (!response.ok) throw new Error('Gagal mencari bahan.');
+                const results = await response.json();
+                if (requestId === ingredientLookupSequence && query === this.ingredientQuery.trim()) this.ingredientResults = results.slice(0, 30);
+            } catch (error) {
+                if (requestId === ingredientLookupSequence) this.error = 'Gagal mencari bahan.';
+            } finally {
+                if (requestId === ingredientLookupSequence) this.ingredientLoading = false;
+            }
+        },
+        selectIngredient(item) {
+            if (this.ingredients.some(ingredient => String(ingredient.id) === String(item.id))) {
+                this.error = 'Bahan ini sudah ada di resep.';
+                return;
+            }
+            const unit = unitOf(item);
+            const quantity = ['kg', 'liter', 'l'].includes(unit.toLowerCase()) ? '0.1' : '1';
+            this.ingredients.push(makeIngredient({
+                id: item.id,
+                name: item.name,
+                quantity,
+                hpp: item.hpp,
+                unit,
+                material_emoji: item.material_emoji,
+                material_icon_class: item.material_icon_class,
+            }));
+            this.ingredientPickerOpen = false;
             this.error = '';
         },
-        async lookupIngredient(ingredient) {
-            ingredient.id = '';
-            if (ingredient.search.trim().length < 2) {
-                ingredient.results = [];
-                ingredient.open = false;
-                return;
-            }
-            const response = await fetch(`{{ route('ajax.getProduct') }}?search=${encodeURIComponent(ingredient.search.trim())}`, {headers: {'Accept': 'application/json'}});
-            if (!response.ok) {
-                this.error = 'Gagal mencari bahan.';
-                return;
-            }
-            ingredient.results = (await response.json()).slice(0, 30);
-            ingredient.open = true;
+        updateQuantity(item, event) {
+            const display = event.target.value.replace(',', '.').replace(/[^\d.]/g, '');
+            const pieces = display.split('.');
+            item.displayQuantity = event.target.value.replace(/[^\d,\.]/g, '');
+            item.quantity = pieces.length > 2 ? pieces[0] + '.' + pieces.slice(1).join('') : display;
+        },
+        removeIngredient(index) {
+            this.ingredients.splice(index, 1);
+            this.error = '';
         },
     };
 }

@@ -42,6 +42,7 @@ class ProductReceiptController extends Controller
             'products.category',
             'products.unit',
             'recipeIngredients.ingredients.unit',
+            'recipeIngredients.ingredients.category',
         ])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($matches) use ($search) {

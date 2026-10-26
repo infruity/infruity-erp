@@ -1,5 +1,6 @@
 @foreach($receipts as $receipt)
     @php($product = $receipt->products)
+    @php($productIcon = $product ? \Modules\Master\Support\ProductIcon::resolve($product) : ['📦', 'bg-gray-100'])
     @php($detail = [
         'id' => $receipt->id,
         'code' => $receipt->code,
@@ -10,13 +11,25 @@
             'name' => $product?->name ?? 'Produk tidak ditemukan',
             'hpp' => (float) ($product?->hpp ?? 0),
             'unit' => $product?->unit?->abbreviation ?? '',
+            'material_emoji' => $productIcon[0],
+            'material_icon_class' => $productIcon[1],
         ],
-        'ingredients' => $receipt->recipeIngredients->map(fn ($item) => [
-            'id' => $item->product_receipt_id,
-            'name' => $item->ingredients?->name ?? '',
-            'quantity' => (float) $item->quantity,
-            'unit' => $item->ingredients?->unit?->abbreviation ?? '',
-        ])->values()->all(),
+        'ingredients' => $receipt->recipeIngredients->map(function ($item) {
+            $ingredientProduct = $item->ingredients;
+            $icon = $ingredientProduct
+                ? \Modules\Master\Support\ProductIcon::resolve($ingredientProduct)
+                : ['📦', 'bg-gray-100'];
+
+            return [
+                'id' => $item->product_receipt_id,
+                'name' => $ingredientProduct?->name ?? '',
+                'quantity' => (float) $item->quantity,
+                'unit' => $ingredientProduct?->unit?->abbreviation ?? '',
+                'hpp' => (float) ($ingredientProduct?->hpp ?? 0),
+                'material_emoji' => $icon[0],
+                'material_icon_class' => $icon[1],
+            ];
+        })->values()->all(),
     ])
     <div role="button" tabindex="0"
          @click="openRecipeDetail(@js($detail))"
