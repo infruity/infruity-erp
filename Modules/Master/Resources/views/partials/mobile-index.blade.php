@@ -10,7 +10,7 @@
 @php
     $visibleRecords = $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator ? $records->items() : $records;
 @endphp
-<div x-data="masterList(@js($visibleRecords), @js($formFields), @js($routeBase), @js($nameField), @js($subtitleFields), @js($pageTitle), @js($pageMode ?? 'ajax'), @js(request('q', '')))"
+<div x-data="masterList(@js($visibleRecords), @js($formFields), @js($routeBase), @js($nameField), @js($subtitleFields), @js($pageTitle), @js($pageMode ?? 'ajax'), @js(request('q', '')), @js($routeBase === 'supplier' ? ['province' => route('ajax.province'), 'city' => route('ajax.city'), 'district' => route('ajax.district'), 'village' => route('ajax.village')] : []))"
      x-init="if (new URLSearchParams(location.search).has('create')) openCreate()"
      x-effect="search; visibleCount = 50"
      @mobile-add-toggle.window="openCreate()"
@@ -92,7 +92,7 @@
             @endif
         </div>
     </div>
-    <template x-teleport="body"><div x-show="drawerOpen" x-cloak data-erp-modal class="fixed inset-0 z-[100] flex flex-col justify-end lg:flex-row lg:justify-end" @keydown.escape.window="drawerOpen = false"><div class="absolute inset-0 bg-black/70" @click="drawerOpen = false"></div><div x-show="drawerOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full" x-transition:enter-end="translate-y-0 lg:translate-x-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 lg:translate-x-0" x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full" class="relative w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col max-h-[90dvh] lg:max-h-full lg:h-full rounded-t-3xl lg:rounded-none overflow-hidden"><div class="flex justify-center pt-3 pb-1 lg:hidden"><div class="w-16 h-1.5 bg-gray-300 rounded-full"></div></div><div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between"><div><h3 class="text-[15px] font-bold text-gray-900" x-text="(editing ? 'Edit ' : 'Tambah ') + '{{ $singular }}'"></h3><p class="text-[12px] text-gray-400 mt-0.5" x-text="editing ? 'Perbarui data {{ strtolower($singular) }}' : 'Isi data {{ strtolower($singular) }} baru'"></p></div><button type="button" @click="drawerOpen = false" class="w-9 h-9 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div><form @submit.prevent="save()" class="flex-1 min-h-0 flex flex-col"><div class="flex-1 overflow-y-auto bg-gray-50/60 px-5 py-5 space-y-5"><template x-for="field in fields" :key="field.key"><div x-show="fieldVisible(field)"><label :for="'master-field-' + field.key" class="text-xs font-semibold text-gray-600 mb-1.5 block"><span x-text="field.label"></span><span x-show="fieldRequired(field)" class="text-red-400"> *</span></label><template x-if="field.type === 'select'"><select :id="'master-field-' + field.key" x-model="form[field.key]" :required="fieldRequired(field)" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"><option value="" x-text="'Pilih ' + field.label"></option><template x-for="option in field.options" :key="option.value"><option :value="option.value" x-text="option.label"></option></template></select></template><template x-if="field.type === 'textarea'"><textarea :id="'master-field-' + field.key" x-model="form[field.key]" :required="fieldRequired(field)" rows="3" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500"></textarea></template><template x-if="!['select', 'textarea'].includes(field.type)"><input :id="'master-field-' + field.key" x-model="form[field.key]" :type="field.type || 'text'" :required="fieldRequired(field)" :placeholder="'Masukkan ' + field.label.toLowerCase()" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"></template></div></template><p x-show="error" x-text="error" role="alert" class="text-xs text-red-600"></p></div><div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3"><button type="button" @click="drawerOpen = false" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" :disabled="saving" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold disabled:opacity-50" x-text="saving ? 'Menyimpan...' : (editing ? 'Simpan Perubahan' : 'Tambah {{ $singular }}')"></button></div></form></div></div></template>
+    <template x-teleport="body"><div x-show="drawerOpen" x-cloak data-erp-modal class="fixed inset-0 z-[100] flex flex-col justify-end lg:flex-row lg:justify-end" @keydown.escape.window="drawerOpen = false"><div class="absolute inset-0 bg-black/70" @click="drawerOpen = false"></div><div x-show="drawerOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full" x-transition:enter-end="translate-y-0 lg:translate-x-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 lg:translate-x-0" x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full" class="relative w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col max-h-[90dvh] lg:max-h-full lg:h-full rounded-t-3xl lg:rounded-none overflow-hidden"><div class="flex justify-center pt-3 pb-1 lg:hidden"><div class="w-16 h-1.5 bg-gray-300 rounded-full"></div></div><div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between"><div><h3 class="text-[15px] font-bold text-gray-900" x-text="(editing ? 'Edit ' : 'Tambah ') + '{{ $singular }}'"></h3><p class="text-[12px] text-gray-400 mt-0.5" x-text="editing ? 'Perbarui data {{ strtolower($singular) }}' : 'Isi data {{ strtolower($singular) }} baru'"></p></div><button type="button" @click="drawerOpen = false" class="w-9 h-9 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div><form @submit.prevent="save()" class="flex-1 min-h-0 flex flex-col"><div class="flex-1 overflow-y-auto bg-gray-50/60 px-5 py-5 space-y-5"><template x-for="field in fields" :key="field.key"><div x-show="fieldVisible(field)"><label :for="'master-field-' + field.key" class="text-xs font-semibold text-gray-600 mb-1.5 block"><span x-text="field.label"></span><span x-show="fieldRequired(field)" class="text-red-400"> *</span></label><template x-if="field.type === 'region'"><div class="relative" @click.outside="regionOpen[field.key] = false"><button type="button" :id="'master-field-' + field.key" @click="toggleRegionPicker(field.key, $event.currentTarget)" :disabled="field.key === 'city' ? !form.province : field.key === 'district' ? !form.city : field.key === 'village' ? !form.district : false" :aria-expanded="!!regionOpen[field.key]" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 flex items-center justify-between text-sm transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-50 disabled:text-gray-400" :class="!form[field.key] ? 'text-gray-400' : 'text-gray-900'"><span x-text="regionNames[field.key] || ('Pilih ' + field.label)"></span><i class="ph-bold ph-caret-down text-gray-400 shrink-0 transition-transform" :class="regionOpen[field.key] ? 'rotate-180' : ''"></i></button><div x-show="regionOpen[field.key]" x-cloak x-transition class="absolute z-30 w-full flex flex-col bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden" :class="regionDirection[field.key] === 'up' ? 'bottom-full mb-1' : 'mt-1'"><div class="relative border-b border-gray-100 shrink-0"><i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i><input type="search" :aria-label="'Cari ' + field.label" :placeholder="'Cari ' + field.label.toLowerCase() + '...'" x-model="regionSearch[field.key]" @input="searchRegionOptions(field.key, $event.target.value)" @keydown.escape.stop="regionOpen[field.key] = false" class="w-full bg-transparent pl-9 pr-3 py-3 text-xs outline-none focus:bg-gray-50 transition-colors"></div><div class="max-h-32 overflow-y-auto overscroll-contain"><template x-for="option in regionOptions[field.key]" :key="option.id"><button type="button" @click="selectRegionOption(field.key, option)" class="w-full px-3 py-2.5 border-b border-gray-100 text-left text-xs font-medium text-gray-700 hover:bg-gray-50 last:border-b-0" x-text="option.name"></button></template><div x-show="regionLoaded[field.key] && regionOptions[field.key].length === 0" class="text-center py-4 text-xs text-gray-400">Wilayah tidak ditemukan</div></div></div></div></template><template x-if="field.type === 'select'"><select :id="'master-field-' + field.key" x-model="form[field.key]" :required="fieldRequired(field)" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"><option value="" x-text="'Pilih ' + field.label"></option><template x-for="option in field.options" :key="option.value"><option :value="option.value" x-text="option.label"></option></template></select></template><template x-if="field.type === 'textarea'"><textarea :id="'master-field-' + field.key" x-model="form[field.key]" :required="fieldRequired(field)" rows="3" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500"></textarea></template><template x-if="!['select', 'textarea', 'region'].includes(field.type)"><input :id="'master-field-' + field.key" x-model="form[field.key]" :type="field.type || 'text'" :required="fieldRequired(field)" :placeholder="'Masukkan ' + field.label.toLowerCase()" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"></template></div></template><p x-show="error" x-text="error" role="alert" class="text-xs text-red-600"></p></div><div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3"><button type="button" @click="drawerOpen = false" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" :disabled="saving" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold disabled:opacity-50" x-text="saving ? 'Menyimpan...' : (editing ? 'Simpan Perubahan' : 'Tambah {{ $singular }}')"></button></div></form></div></div></template>
     <template x-teleport="body">
         <div x-show="detail" x-cloak data-erp-modal role="dialog" aria-modal="true" aria-label="Detail {{ $singular }}" class="fixed inset-0 z-[110] flex items-center justify-center px-4" @keydown.escape.window="detail = null">
             <div class="absolute inset-0 bg-black/60" @click="detail = null"></div>
@@ -107,9 +107,9 @@
                                     <i class="ph-duotone text-2xl text-emerald-500 shrink-0" :class="detailIcon(field.key)"></i>
                                     <div class="min-w-0 flex-1">
                                         <template x-if="fieldHref(field, fieldValue(detail, field.key))">
-                                            <a :href="fieldHref(field, fieldValue(detail, field.key))" target="_blank" rel="noopener noreferrer" class="inline-flex max-w-full items-center gap-1.5 border-b border-dashed pb-0.5 font-semibold transition-colors hover:underline" :class="field.key === 'address' ? 'text-blue-600 border-blue-400 hover:text-blue-700' : 'text-emerald-700 border-emerald-400 hover:text-emerald-800'"><span class="truncate" x-text="displayField(field, fieldValue(detail, field.key))"></span><i x-show="['pic_whatsapp', 'address'].includes(field.key)" class="ph-bold ph-arrow-up-right shrink-0 text-xs"></i></a>
+                                            <a :href="fieldHref(field, fieldValue(detail, field.key))" target="_blank" rel="noopener noreferrer" class="inline-flex max-w-full items-center gap-1.5 border-b border-dashed pb-0.5 font-semibold transition-colors hover:underline" :class="field.key === 'address' ? 'text-blue-600 border-blue-400 hover:text-blue-700' : 'text-emerald-700 border-emerald-400 hover:text-emerald-800'"><span class="truncate" x-text="displayField(field, fieldValue(detail, field.key), detail)"></span><i x-show="['pic_whatsapp', 'address'].includes(field.key)" class="ph-bold ph-arrow-up-right shrink-0 text-xs"></i></a>
                                         </template>
-                                        <template x-if="!fieldHref(field, fieldValue(detail, field.key))"><div class="font-semibold text-gray-700 break-words" x-text="displayField(field, fieldValue(detail, field.key))"></div></template>
+                                        <template x-if="!fieldHref(field, fieldValue(detail, field.key))"><div class="font-semibold text-gray-700 break-words" x-text="displayField(field, fieldValue(detail, field.key), detail)"></div></template>
                                         <div class="text-[11px] text-gray-400" x-text="field.label"></div>
                                     </div>
                                 </div>
@@ -123,8 +123,8 @@
                                 <div x-show="fieldValue(detail, field.key)" class="flex gap-3 items-center">
                                     <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"><i class="ph text-lg" :class="detailIcon(field.key)"></i></div>
                                     <div class="min-w-0 flex-1">
-                                        <template x-if="fieldHref(field, fieldValue(detail, field.key))"><a :href="fieldHref(field, fieldValue(detail, field.key))" target="_blank" rel="noopener noreferrer" class="block font-semibold text-emerald-700 break-words hover:underline" x-text="displayField(field, fieldValue(detail, field.key))"></a></template>
-                                        <template x-if="!fieldHref(field, fieldValue(detail, field.key))"><div class="font-semibold text-gray-700 break-words" x-text="displayField(field, fieldValue(detail, field.key))"></div></template>
+                                        <template x-if="fieldHref(field, fieldValue(detail, field.key))"><a :href="fieldHref(field, fieldValue(detail, field.key))" target="_blank" rel="noopener noreferrer" class="block font-semibold text-emerald-700 break-words hover:underline" x-text="displayField(field, fieldValue(detail, field.key), detail)"></a></template>
+                                        <template x-if="!fieldHref(field, fieldValue(detail, field.key))"><div class="font-semibold text-gray-700 break-words" x-text="displayField(field, fieldValue(detail, field.key), detail)"></div></template>
                                         <div class="text-[11px] text-gray-400" x-text="field.label"></div>
                                     </div>
                                 </div>
@@ -155,11 +155,12 @@
 
 @push('scripts')
 <script>
-function masterList(records, fields, routeBase, nameKey, subtitleFields, title, mode, initialSearch = '') {
+function masterList(records, fields, routeBase, nameKey, subtitleFields, title, mode, initialSearch = '', regionEndpoints = {}) {
     return {
-        records, fields, routeBase, nameKey, subtitleFields, title, mode,
+        records, fields, routeBase, nameKey, subtitleFields, title, mode, regionEndpoints,
         search: initialSearch, visibleCount: 50, scrolled: false, scrollTimer: null,
         drawerOpen: false, editing: null, detail: null, saving: false, error: '', form: {},
+        regionNames: {}, regionSearch: {}, regionOptions: {}, regionOpen: {}, regionDirection: {}, regionLoaded: {}, regionRequestId: {},
         get filtered() { if (this.mode === 'server') return this.records; const q = this.search.trim().toLocaleLowerCase('id'); return this.records.filter(record => Object.values(record).some(value => String(value ?? '').toLocaleLowerCase('id').includes(q))); },
         get visible() { return this.filtered.slice(0, this.visibleCount); },
         label(record) { return String(record[this.nameKey] || record.name || ''); },
@@ -171,9 +172,79 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
         fieldVisible(field) { return !field.visibleWhen || String(this.form[field.visibleWhen.key]) === String(field.visibleWhen.value); },
         fieldRequired(field) { return !!field.required || (!!field.requiredWhen && String(this.form[field.requiredWhen.key]) === String(field.requiredWhen.value)); },
         fieldValue(record, key) { return key.split('.').reduce((value, part) => value?.[part], record); },
-        displayField(field, value) {
+        displayField(field, value, record = {}) {
             if (field.type === 'select') return field.options?.find(option => String(option.value) === String(value))?.label || value;
+            if (field.type === 'region') return record[`${field.key}_name`] || value;
             return value;
+        },
+        regionParent(key) { return ({ city: 'province', district: 'city', village: 'district' })[key] || ''; },
+        regionChildren(key) { return ({ province: ['city', 'district', 'village'], city: ['district', 'village'], district: ['village'] })[key] || []; },
+        resetRegionPickerState(record = null) {
+            const keys = ['province', 'city', 'district', 'village'];
+            this.regionNames = Object.fromEntries(keys.map(key => [key, record?.[`${key}_name`] || '']));
+            this.regionSearch = Object.fromEntries(keys.map(key => [key, '']));
+            this.regionOptions = Object.fromEntries(keys.map(key => [key, []]));
+            this.regionOpen = Object.fromEntries(keys.map(key => [key, false]));
+            this.regionDirection = Object.fromEntries(keys.map(key => [key, 'down']));
+            this.regionLoaded = Object.fromEntries(keys.map(key => [key, false]));
+            this.regionRequestId = Object.fromEntries(keys.map(key => [key, (this.regionRequestId[key] || 0) + 1]));
+        },
+        resetRegionDescendants(key) {
+            for (const child of this.regionChildren(key)) {
+                this.form[child] = '';
+                this.regionNames[child] = '';
+                this.regionSearch[child] = '';
+                this.regionOptions[child] = [];
+                this.regionLoaded[child] = false;
+                this.regionOpen[child] = false;
+                this.regionRequestId[child] = (this.regionRequestId[child] || 0) + 1;
+            }
+        },
+        toggleRegionPicker(key, trigger) {
+            const parent = this.regionParent(key);
+            if (parent && !this.form[parent]) return;
+            this.regionOpen[key] = !this.regionOpen[key];
+            if (!this.regionOpen[key]) return;
+            this.regionSearch[key] = '';
+            const rect = trigger.getBoundingClientRect();
+            this.regionDirection[key] = window.innerHeight - rect.bottom < 250 && rect.top > 250 ? 'up' : 'down';
+            this.searchRegionOptions(key, '');
+        },
+        async searchRegionOptions(key, query = '') {
+            const endpoint = this.regionEndpoints[key];
+            const parent = this.regionParent(key);
+            const parentId = parent ? this.form[parent] : '';
+            if (!endpoint || (parent && !parentId)) return;
+            this.regionSearch[key] = query;
+            this.regionOpen[key] = true;
+            const requestId = (this.regionRequestId[key] || 0) + 1;
+            this.regionRequestId[key] = requestId;
+            this.regionLoaded[key] = false;
+            const params = new URLSearchParams({ search: query.trim() });
+            if (key === 'city') params.set('province_id', parentId);
+            if (key === 'district') params.set('city_id', parentId);
+            if (key === 'village') params.set('district_id', parentId);
+            try {
+                const response = await fetch(`${endpoint}?${params}`, { headers: { Accept: 'application/json' } });
+                if (!response.ok) throw new Error('Gagal memuat wilayah.');
+                const rows = await response.json();
+                if (requestId !== this.regionRequestId[key] || query !== this.regionSearch[key] || parentId !== (parent ? this.form[parent] : '')) return;
+                this.regionOptions[key] = rows;
+                this.regionLoaded[key] = true;
+            } catch (error) {
+                if (requestId !== this.regionRequestId[key]) return;
+                this.regionOptions[key] = [];
+                this.regionLoaded[key] = true;
+                this.error = error.message || 'Gagal memuat wilayah.';
+            }
+        },
+        selectRegionOption(key, option) {
+            this.form[key] = option.id;
+            this.regionNames[key] = option.name;
+            this.regionOpen[key] = false;
+            this.regionSearch[key] = '';
+            this.error = '';
+            this.resetRegionDescendants(key);
         },
         detailIcon(key) {
             if (['pic_whatsapp', 'whatsapp', 'contact', 'phone'].includes(key)) return 'ph-phone';
@@ -196,8 +267,8 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
         editDetail() { const record = this.detail; this.detail = null; if (record) this.openEdit(record); },
         deleteDetail() { const record = this.detail; this.detail = null; if (record) this.confirmDelete(record); },
         searchServer() { const query = this.search.trim(); window.location.href = query ? `/${this.routeBase}?q=${encodeURIComponent(query)}` : `/${this.routeBase}`; },
-        openCreate() { if (this.mode !== 'ajax') { window.location.href = `/${this.routeBase}/create`; return; } this.editing = null; this.form = Object.fromEntries(this.fields.map(field => [field.key, ''])); this.error = ''; this.drawerOpen = true; },
-        openEdit(record) { if (this.mode !== 'ajax') { window.location.href = `/${this.routeBase}/${record.id}/edit`; return; } this.editing = record.id; this.form = Object.fromEntries(this.fields.map(field => [field.key, record[field.key] ?? ''])); this.error = ''; this.drawerOpen = true; },
+        openCreate() { if (this.mode !== 'ajax') { window.location.href = `/${this.routeBase}/create`; return; } this.editing = null; this.form = Object.fromEntries(this.fields.map(field => [field.key, ''])); this.resetRegionPickerState(); this.error = ''; this.drawerOpen = true; },
+        openEdit(record) { if (this.mode !== 'ajax') { window.location.href = `/${this.routeBase}/${record.id}/edit`; return; } this.editing = record.id; this.form = Object.fromEntries(this.fields.map(field => [field.key, record[field.key] ?? ''])); this.resetRegionPickerState(record); this.error = ''; this.drawerOpen = true; },
         async save() { if (this.saving) return; this.saving = true; this.error = ''; try { const url = this.editing ? `/${this.routeBase}/${this.editing}` : `/${this.routeBase}`; const response = await fetch(url, { method: this.editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }, body: JSON.stringify(this.form) }); const data = await response.json(); if (!response.ok || data.success === false) throw new Error(Object.values(data.errors || {}).flat().join(' ') || data.message || 'Gagal menyimpan data.'); window.location.reload(); } catch (error) { this.error = error.message; this.saving = false; } },
         async confirmDelete(record) { const result = await Swal.fire({ title: `Hapus ${title}?`, text: `${this.label(record)} akan dihapus.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Hapus', cancelButtonText: 'Batal', confirmButtonColor: '#ef4444' }); if (!result.isConfirmed) return; try { const response = await fetch(`/${this.routeBase}/${record.id}`, { method: 'DELETE', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } }); const data = await response.json(); if (!response.ok || data.success === false) throw new Error(data.message || 'Gagal menghapus data.'); window.location.reload(); } catch (error) { Swal.fire({ icon: 'error', title: 'Gagal', text: error.message }); } },
     };

@@ -10,6 +10,7 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Auth;
 use Exception;
 use Maatwebsite\Excel\Concerns\FromArray;
@@ -35,7 +36,11 @@ class SupplierController extends Controller
         return view('master::supllier.index', [
             'records' => Supplier::query()
                 ->leftJoin('users as updater', 'supplier.updated_by', '=', 'updater.id_user')
-                ->select('supplier.id', 'supplier.name', 'supplier.pic_name', 'supplier.pic_whatsapp', 'supplier.address', 'supplier.email', 'supplier.updated_at', 'updater.nm_user as updated_by_name')
+                ->leftJoin('reg_provinces as provinces', 'supplier.province', '=', 'provinces.id')
+                ->leftJoin('reg_regencies as cities', 'supplier.city', '=', 'cities.id')
+                ->leftJoin('reg_districts as districts', 'supplier.district', '=', 'districts.id')
+                ->leftJoin('reg_villages as villages', 'supplier.village', '=', 'villages.id')
+                ->select('supplier.id', 'supplier.name', 'supplier.pic_name', 'supplier.pic_whatsapp', 'supplier.address', 'supplier.email', 'supplier.province', 'supplier.city', 'supplier.district', 'supplier.village', 'provinces.name as province_name', 'cities.name as city_name', 'districts.name as district_name', 'villages.name as village_name', 'supplier.updated_at', 'updater.nm_user as updated_by_name')
                 ->orderByDesc('supplier.id')
                 ->get(),
         ]);
@@ -76,6 +81,10 @@ class SupplierController extends Controller
             ],
             'address' => 'nullable|string|max:1000',
             'email' => 'nullable|email|unique:supplier,email',
+            'province' => ['nullable', 'string', 'exists:reg_provinces,id'],
+            'city' => ['nullable', 'string', Rule::exists('reg_regencies', 'id')->where(fn ($query) => $query->where('province_id', $request->input('province')))],
+            'district' => ['nullable', 'string', Rule::exists('reg_districts', 'id')->where(fn ($query) => $query->where('regency_id', $request->input('city')))],
+            'village' => ['nullable', 'string', Rule::exists('reg_villages', 'id')->where(fn ($query) => $query->where('district_id', $request->input('district')))],
         ]);
 
         try {
@@ -86,6 +95,10 @@ class SupplierController extends Controller
             $supplier->pic_whatsapp = $validated['pic_whatsapp'];
             $supplier->address = $validated['address'];
             $supplier->email = $validated['email'];
+            $supplier->province = $validated['province'] ?? null;
+            $supplier->city = $validated['city'] ?? null;
+            $supplier->district = $validated['district'] ?? null;
+            $supplier->village = $validated['village'] ?? null;
             $supplier->save();
             DB::commit();
         } catch (Exception $e) {
@@ -151,6 +164,10 @@ class SupplierController extends Controller
             ],
             'address' => 'nullable|string|max:1000',
             'email' => 'nullable|email|unique:supplier,email,' . $id,
+            'province' => ['nullable', 'string', 'exists:reg_provinces,id'],
+            'city' => ['nullable', 'string', Rule::exists('reg_regencies', 'id')->where(fn ($query) => $query->where('province_id', $request->input('province')))],
+            'district' => ['nullable', 'string', Rule::exists('reg_districts', 'id')->where(fn ($query) => $query->where('regency_id', $request->input('city')))],
+            'village' => ['nullable', 'string', Rule::exists('reg_villages', 'id')->where(fn ($query) => $query->where('district_id', $request->input('district')))],
         ]);
 
         try {
@@ -161,6 +178,10 @@ class SupplierController extends Controller
             $supplier->pic_whatsapp = $validated['pic_whatsapp'];
             $supplier->address = $validated['address'];
             $supplier->email = $validated['email'];
+            $supplier->province = $validated['province'] ?? null;
+            $supplier->city = $validated['city'] ?? null;
+            $supplier->district = $validated['district'] ?? null;
+            $supplier->village = $validated['village'] ?? null;
             $supplier->save();
             DB::commit();
         } catch (Exception $e) {
