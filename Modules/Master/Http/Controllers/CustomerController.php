@@ -202,6 +202,12 @@ class CustomerController extends Controller
         $data['page_plugin_js'] = [
             'assets/plugins/custom/formrepeater/formrepeater.bundle.js',
         ];
+
+        if ($request->boolean('overlay')) {
+            $data['birthPlaces'] = DB::table('reg_regencies')->orderBy('name')->pluck('name')->all();
+            return view('master::customer.edit-overlay', $data);
+        }
+
         $indexView = $this->index($request);
 
         if ($indexView instanceof \Illuminate\View\View) {

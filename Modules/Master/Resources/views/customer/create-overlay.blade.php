@@ -15,4 +15,3 @@
         </div>
     </div>
 </template>
-@include('master::customer.js-create')

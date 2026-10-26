@@ -10,11 +10,15 @@
 @php
     $visibleRecords = $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator ? $records->items() : $records;
 @endphp
-<div x-data="masterList(@js($visibleRecords), @js($formFields), @js($routeBase), @js($nameField), @js($subtitleFields), @js($pageTitle), @js($pageMode ?? 'ajax'), @js(request('q', '')), @js($routeBase === 'supplier' ? ['province' => route('ajax.province'), 'city' => route('ajax.city'), 'district' => route('ajax.district'), 'village' => route('ajax.village')] : []), @js($routeBase === 'customers' ? ($customerCreateOpen ?? false) : false), @js($routeBase === 'customers' ? route('customers.index') : ''), @js($routeBase === 'customers' ? route('customers.create') : ''))"
+@if ($routeBase === 'customers')
+    @include('master::customer.js-create')
+@endif
+<div x-data="masterList(@js($visibleRecords), @js($formFields), @js($routeBase), @js($nameField), @js($subtitleFields), @js($pageTitle), @js($pageMode ?? 'ajax'), @js(request('q', '')), @js($routeBase === 'supplier' ? ['province' => route('ajax.province'), 'city' => route('ajax.city'), 'district' => route('ajax.district'), 'village' => route('ajax.village')] : []), @js($routeBase === 'customers' ? ($customerCreateOpen ?? false) : false), @js($routeBase === 'customers' ? route('customers.index') : ''), @js($routeBase === 'customers' ? route('customers.create') : ''), @js($routeBase === 'customers' && isset($editingCustomer)), @js($routeBase === 'customers' && isset($editingCustomer) ? route('customers.edit', $editingCustomer->id) : ''))"
      x-init="if (new URLSearchParams(location.search).has('create')) openCreate()"
      x-effect="search; visibleCount = 50"
      @mobile-add-toggle.window="openCreate()"
      @popstate.window="syncCustomerCreateUrl()"
+     @customer-edit-closed.window="customerEditOpen = false; $nextTick(() => window.initCustomerForms?.(document))"
      class="flex-1 flex flex-col min-h-0 -mx-4 md:mx-0">
     <x-erp.mobile-search class="md:hidden">
         <x-slot:input><input x-ref="mobileSearch" x-model="search" @keydown.enter.prevent="if (mode === 'server') searchServer()" type="search" :placeholder="'Cari ' + title.toLowerCase() + '...'" :aria-label="'Cari ' + title.toLowerCase()" class="erp-mobile-search__input"></x-slot:input>
@@ -151,24 +155,36 @@
             </div>
         </div>
     </template>
-    @if ($routeBase === 'customers' && !isset($editingCustomer) && check_access('customers.create'))
-        @include('master::customer.create-overlay')
+    @if ($routeBase === 'customers' && isset($editingCustomer))
+        @include('master::customer.edit-overlay', ['data' => $editingCustomer])
+    @elseif ($routeBase === 'customers' && check_access('customers.edit'))
+        <div x-html="customerEditOverlayHtml"></div>
+        <div x-show="customerEditLoading && customerEditOpen" x-cloak data-erp-modal role="dialog" aria-modal="true" aria-label="Memuat edit pelanggan" class="fixed inset-0 z-[120] flex flex-col justify-end lg:flex-row lg:justify-end">
+            <div class="absolute inset-0 bg-black/70"></div>
+            <div class="relative z-10 w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex items-center justify-center min-h-40 rounded-t-3xl lg:rounded-none"><span class="text-sm font-medium text-gray-500">Memuat data pelanggan...</span></div>
+        </div>
+    @endif
+    @if ($routeBase === 'customers' && check_access('customers.create'))
+        <template x-if="!customerEditOpen">
+            @include('master::customer.create-overlay')
+        </template>
     @endif
 </div>
-@if ($routeBase === 'customers' && isset($editingCustomer))
-    @include('master::customer.edit-overlay', ['data' => $editingCustomer])
-@endif
 @endsection
 
 @push('scripts')
 <script>
-function masterList(records, fields, routeBase, nameKey, subtitleFields, title, mode, initialSearch = '', regionEndpoints = {}, initialCreateOpen = false, createIndexUrl = '', createPageUrl = '') {
+function masterList(records, fields, routeBase, nameKey, subtitleFields, title, mode, initialSearch = '', regionEndpoints = {}, initialCreateOpen = false, createIndexUrl = '', createPageUrl = '', initialEditOpen = false, initialEditUrl = '') {
     return {
         records, fields, routeBase, nameKey, subtitleFields, title, mode, regionEndpoints, createIndexUrl, createPageUrl,
         search: initialSearch, visibleCount: 50, scrolled: false, scrollTimer: null,
         drawerOpen: false, editing: null, detail: null, saving: false, error: '', form: {},
         customerCreateOpen: initialCreateOpen,
         createReturnUrl: initialCreateOpen ? createIndexUrl : `${window.location.pathname}${window.location.search}`,
+        customerEditOpen: initialEditOpen,
+        customerEditPageUrl: initialEditUrl,
+        customerEditReturnUrl: initialEditOpen ? createIndexUrl : `${window.location.pathname}${window.location.search}`,
+        customerEditOverlayHtml: '', customerEditLoading: false, customerEditRequestId: 0,
         regionNames: {}, regionSearch: {}, regionOptions: {}, regionOpen: {}, regionDirection: {}, regionLoaded: {}, regionRequestId: {},
         get filtered() { if (this.mode === 'server') return this.records; const q = this.search.trim().toLocaleLowerCase('id'); return this.records.filter(record => Object.values(record).some(value => String(value ?? '').toLocaleLowerCase('id').includes(q))); },
         get visible() { return this.filtered.slice(0, this.visibleCount); },
@@ -301,15 +317,58 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
         },
         syncCustomerCreateUrl() {
             if (this.routeBase !== 'customers') return;
+            const currentPath = window.location.pathname;
             const createPath = new URL(this.createPageUrl, window.location.origin).pathname;
-            if (window.location.pathname === createPath) {
-                this.customerCreateOpen = true;
-                return;
+            this.customerCreateOpen = currentPath === createPath;
+            if (!this.customerCreateOpen) this.createReturnUrl = `${currentPath}${window.location.search}`;
+
+            const editPath = this.customerEditPageUrl ? new URL(this.customerEditPageUrl, window.location.origin).pathname : '';
+            this.customerEditOpen = !!editPath && currentPath === editPath;
+            if (!this.customerEditOpen) {
+                if (this.customerEditLoading) {
+                    this.customerEditRequestId++;
+                    this.customerEditLoading = false;
+                }
+                this.$nextTick(() => window.initCustomerForms?.(document));
             }
-            this.customerCreateOpen = false;
-            this.createReturnUrl = `${window.location.pathname}${window.location.search}`;
         },
-        openEdit(record) { if (this.mode !== 'ajax') { window.location.href = `/${this.routeBase}/${record.id}/edit`; return; } this.editing = record.id; this.form = Object.fromEntries(this.fields.map(field => [field.key, record[field.key] ?? ''])); this.resetRegionPickerState(record); this.error = ''; this.drawerOpen = true; },
+        openEdit(record) {
+            if (this.routeBase === 'customers') { this.openCustomerEdit(record); return; }
+            if (this.mode !== 'ajax') { window.location.href = `/${this.routeBase}/${record.id}/edit`; return; }
+            this.editing = record.id;
+            this.form = Object.fromEntries(this.fields.map(field => [field.key, record[field.key] ?? '']));
+            this.resetRegionPickerState(record);
+            this.error = '';
+            this.drawerOpen = true;
+        },
+        async openCustomerEdit(record) {
+            const baseUrl = this.createIndexUrl.replace(/\/$/, '');
+            const editUrl = `${baseUrl}/${encodeURIComponent(record.id)}/edit`;
+            const editPath = new URL(editUrl, window.location.origin).pathname;
+            this.customerEditReturnUrl = `${window.location.pathname}${window.location.search}`;
+            this.customerEditPageUrl = editUrl;
+            this.customerEditOverlayHtml = '';
+            this.customerEditOpen = true;
+            this.customerEditLoading = true;
+            const requestId = ++this.customerEditRequestId;
+            window.history.pushState({ customerEditReturn: this.customerEditReturnUrl }, '', editUrl);
+
+            try {
+                const response = await fetch(`${editUrl}?overlay=1`, { headers: { Accept: 'text/html', 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!response.ok || response.redirected) throw new Error('Form edit pelanggan gagal dimuat.');
+                const html = await response.text();
+                if (requestId !== this.customerEditRequestId || window.location.pathname !== editPath) return;
+                this.customerEditOverlayHtml = html;
+                this.$nextTick(() => window.initCustomerForms?.(document));
+            } catch (error) {
+                if (requestId !== this.customerEditRequestId) return;
+                this.customerEditOpen = false;
+                window.history.replaceState({}, '', this.customerEditReturnUrl || this.createIndexUrl);
+                if (window.Swal?.fire) window.Swal.fire({ icon: 'error', title: 'Gagal', text: error.message });
+            } finally {
+                if (requestId === this.customerEditRequestId) this.customerEditLoading = false;
+            }
+        },
         async save() { if (this.saving) return; this.saving = true; this.error = ''; try { const url = this.editing ? `/${this.routeBase}/${this.editing}` : `/${this.routeBase}`; const response = await fetch(url, { method: this.editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }, body: JSON.stringify(this.form) }); const data = await response.json(); if (!response.ok || data.success === false) throw new Error(Object.values(data.errors || {}).flat().join(' ') || data.message || 'Gagal menyimpan data.'); window.location.reload(); } catch (error) { this.error = error.message; this.saving = false; } },
         async confirmDelete(record) { const result = await Swal.fire({ title: `Hapus ${title}?`, text: `${this.label(record)} akan dihapus.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Hapus', cancelButtonText: 'Batal', confirmButtonColor: '#ef4444' }); if (!result.isConfirmed) return; try { const response = await fetch(`/${this.routeBase}/${record.id}`, { method: 'DELETE', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } }); const data = await response.json(); if (!response.ok || data.success === false) throw new Error(data.message || 'Gagal menghapus data.'); window.location.reload(); } catch (error) { Swal.fire({ icon: 'error', title: 'Gagal', text: error.message }); } },
     };

@@ -22,6 +22,21 @@ final class CustomerEditOverlayTest extends TestCase
         self::assertStringContainsString('@mobile-add-toggle.window="openCreate()"', $sharedView);
     }
 
+    public function test_customer_edit_from_list_uses_an_in_place_record_seeded_drawer(): void
+    {
+        $root = dirname(__DIR__, 2);
+        $controller = file_get_contents($root . '/Modules/Master/Http/Controllers/CustomerController.php');
+        $sharedView = file_get_contents($root . '/Modules/Master/Resources/views/partials/mobile-index.blade.php');
+        $drawer = file_get_contents($root . '/Modules/Master/Resources/views/customer/edit-overlay.blade.php');
+        $formScript = file_get_contents($root . '/Modules/Master/Resources/views/customer/js-create.blade.php');
+
+        self::assertStringContainsString('async openCustomerEdit(record)', $sharedView);
+        self::assertStringContainsString("if (\$request->boolean('overlay'))", $controller);
+        self::assertStringContainsString('customerEditOpen', $drawer);
+        self::assertStringContainsString('window.initCustomerForms', $formScript);
+        self::assertStringContainsString('window.history.pushState', $sharedView);
+    }
+
     public function test_edit_route_renders_the_customer_list_with_a_persisted_edit_drawer(): void
     {
         $root = dirname(__DIR__, 2);
