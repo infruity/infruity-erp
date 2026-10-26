@@ -72,6 +72,7 @@ class CustomerController extends Controller
         ];
         $data['data'] = null;
         $data['customerNumber'] = Customer::getCustomerNumber(); // ['code', 'number']
+        $data['birthPlaces'] = DB::table('reg_regencies')->orderBy('name')->pluck('name')->all();
         return view('master::customer.create', $data);
     }
 
@@ -91,6 +92,7 @@ class CustomerController extends Controller
             'customer_name' => 'required',
             'birth_of_date' => 'nullable|date|date_format:Y-m-d',
             'gender' => 'nullable|in:male,female',
+            'birth_place' => 'nullable|string|max:255',
             'province' => 'nullable|exists:reg_provinces,id',
             'city' => 'nullable|exists:reg_regencies,id',
             'district' => 'nullable|exists:reg_districts,id',
@@ -125,6 +127,7 @@ class CustomerController extends Controller
             $customer->name = $request->customer_name;
             $customer->code = Customer::getCustomerNumber();
             $customer->birth_of_date = $request->birth_of_date;
+            $customer->birth_place = $request->birth_place;
             $customer->gender = $request->gender;
             $customer->province = $request->province;
             $customer->city = $request->city;
@@ -174,12 +177,11 @@ class CustomerController extends Controller
      * @param int $id
      * @return Renderable
      */
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
         if ($denied = $this->requireAccess('customers.edit')) {
             return $denied;
         }
-
 
         $customer = Customer::findOrFail($id);
         $data = [
@@ -192,7 +194,16 @@ class CustomerController extends Controller
         $data['page_plugin_js'] = [
             'assets/plugins/custom/formrepeater/formrepeater.bundle.js',
         ];
-        // dd($data);
+        $birthPlaces = DB::table('reg_regencies')->orderBy('name')->pluck('name')->all();
+        $indexView = $this->index($request);
+
+        if ($indexView instanceof \Illuminate\View\View) {
+            return $indexView
+                ->with('editingCustomer', $customer)
+                ->with('birthPlaces', $birthPlaces);
+        }
+
+        $data['birthPlaces'] = $birthPlaces;
         return view('master::customer.create', $data);
     }
 
@@ -212,6 +223,7 @@ class CustomerController extends Controller
             'customer_name' => 'required',
             'birth_of_date' => 'nullable|date|date_format:Y-m-d',
             'gender' => 'nullable|in:male,female',
+            'birth_place' => 'nullable|string|max:255',
             'province' => 'nullable|exists:reg_provinces,id',
             'city' => 'nullable|exists:reg_regencies,id',
             'district' => 'nullable|exists:reg_districts,id',
@@ -245,6 +257,7 @@ class CustomerController extends Controller
             $customer = Customer::findOrFail($id);
             $customer->name = $request->customer_name;
             $customer->birth_of_date = $request->birth_of_date;
+            $customer->birth_place = $request->birth_place;
             $customer->gender = $request->gender;
             $customer->province = $request->province;
             $customer->city = $request->city;

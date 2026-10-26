@@ -151,6 +151,9 @@
         </div>
     </template>
 </div>
+@if ($routeBase === 'customers' && isset($editingCustomer))
+    @include('master::customer.edit-overlay', ['data' => $editingCustomer])
+@endif
 @endsection
 
 @push('scripts')
