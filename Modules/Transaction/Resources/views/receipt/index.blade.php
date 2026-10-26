@@ -82,58 +82,47 @@
 
     <template x-teleport="body">
     <div>
-    <div x-show="detailModalOpen" x-cloak role="dialog" aria-modal="true" aria-labelledby="recipe-detail-title" class="fixed inset-0 z-[120] flex items-center justify-center px-4">
-        <div x-show="detailModalOpen" x-transition.opacity @click="closeRecipeDetail()" class="absolute inset-0 bg-black/60"></div>
-        <section x-show="detailModalOpen" x-transition class="relative z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
-            <div class="flex flex-1 flex-col p-6">
-                <div class="mb-6 flex items-center justify-between">
-                    <div>
-                        <h2 id="recipe-detail-title" class="text-lg font-bold text-gray-800">Detail Resep</h2>
-                        <p class="mt-0.5 text-xs text-gray-400" x-text="selectedRecipe?.code || ''"></p>
-                    </div>
-                    <button type="button" @click="closeRecipeDetail()" aria-label="Tutup detail resep" class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"><i class="ph-bold ph-x"></i></button>
-                </div>
-                <div class="flex flex-col gap-5 text-sm" x-show="selectedRecipe">
-                    <div class="flex items-center gap-3">
-                        <i class="ph-duotone ph-tag shrink-0 text-2xl text-emerald-600"></i>
-                        <div class="min-w-0">
-                            <div class="font-bold leading-snug text-gray-800" x-text="selectedRecipe?.product?.name || 'Produk tidak ditemukan'"></div>
-                            <div class="mt-0.5 text-[11px] font-medium text-gray-400">Nama Produk</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <i class="ph-duotone ph-coins shrink-0 text-2xl text-emerald-600"></i>
-                        <div>
-                            <div class="font-bold text-gray-800" x-text="'Rp ' + Number(selectedRecipe?.product?.hpp || 0).toLocaleString('id-ID') + (selectedRecipe?.product?.unit ? ' / ' + selectedRecipe.product.unit : '')"></div>
-                            <div class="text-[11px] font-medium text-gray-400">Harga Pokok Produksi</div>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3">
-                        <i class="ph-duotone ph-clock mt-0.5 shrink-0 text-2xl text-emerald-600"></i>
-                        <div class="min-w-0">
-                            <div class="text-xs font-bold leading-snug text-gray-800">Terakhir diperbarui</div>
-                            <div class="mt-0.5 text-[11px] font-medium text-gray-400" x-text="formatRecipeDate(selectedRecipe?.updatedAt)"></div>
-                        </div>
-                    </div>
-                    <template x-if="selectedRecipe?.description">
-                        <div class="rounded-xl bg-gray-50 px-3.5 py-3 text-xs leading-relaxed text-gray-600" x-text="selectedRecipe.description"></div>
-                    </template>
+    <x-erp.detail-dialog open="detailModalOpen" close="closeRecipeDetail()" title="Detail Resep" labelledby="recipe-detail-title" close-label="Tutup detail resep">
+        <x-slot:subtitle><p class="mt-0.5 text-xs text-gray-400" x-text="selectedRecipe?.code || ''"></p></x-slot:subtitle>
+        <div class="flex flex-col gap-5 text-sm" x-show="selectedRecipe">
+            <div class="flex items-center gap-3">
+                <i class="ph-duotone ph-tag shrink-0 text-2xl text-emerald-600"></i>
+                <div class="min-w-0">
+                    <div class="font-bold leading-snug text-gray-800" x-text="selectedRecipe?.product?.name || 'Produk tidak ditemukan'"></div>
+                    <div class="mt-0.5 text-[11px] font-medium text-gray-400">Nama Produk</div>
                 </div>
             </div>
-            <div class="flex w-full border-t border-gray-100">
-                @if(check_access('product-receipt.edit') && check_access('product-receipt.update'))
-                    <button type="button" @click="openRecipeEditor()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-[#0b595b] transition-colors hover:bg-emerald-50"><i class="ph-bold ph-pencil-simple"></i> Edit</button>
-                @endif
-                @if(check_access('product-receipt.destroy'))
-                    <div class="w-px bg-gray-100"></div>
-                    <button type="button" @click="deleteSelectedRecipe()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50"><i class="ph-bold ph-trash"></i> Hapus</button>
-                @endif
-                @if(!(check_access('product-receipt.edit') && check_access('product-receipt.update')) && !check_access('product-receipt.destroy'))
-                    <button type="button" @click="closeRecipeDetail()" class="flex flex-1 items-center justify-center py-4 text-sm font-semibold text-gray-600">Tutup</button>
-                @endif
+            <div class="flex items-center gap-3">
+                <i class="ph-duotone ph-coins shrink-0 text-2xl text-emerald-600"></i>
+                <div>
+                    <div class="font-bold text-gray-800" x-text="'Rp ' + Number(selectedRecipe?.product?.hpp || 0).toLocaleString('id-ID') + (selectedRecipe?.product?.unit ? ' / ' + selectedRecipe.product.unit : '')"></div>
+                    <div class="text-[11px] font-medium text-gray-400">Harga Pokok Produksi</div>
+                </div>
             </div>
-        </section>
-    </div>
+            <div class="flex items-start gap-3">
+                <i class="ph-duotone ph-clock mt-0.5 shrink-0 text-2xl text-emerald-600"></i>
+                <div class="min-w-0">
+                    <div class="text-xs font-bold leading-snug text-gray-800">Terakhir diperbarui</div>
+                    <div class="mt-0.5 text-[11px] font-medium text-gray-400" x-text="formatRecipeDate(selectedRecipe?.updatedAt)"></div>
+                </div>
+            </div>
+            <template x-if="selectedRecipe?.description">
+                <div class="rounded-xl bg-gray-50 px-3.5 py-3 text-xs leading-relaxed text-gray-600" x-text="selectedRecipe.description"></div>
+            </template>
+        </div>
+        <x-slot:actions>
+            @if(check_access('product-receipt.edit') && check_access('product-receipt.update'))
+                <button type="button" @click="openRecipeEditor()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-[#0b595b] transition-colors hover:bg-emerald-50"><i class="ph-bold ph-pencil-simple"></i> Edit</button>
+            @endif
+            @if(check_access('product-receipt.destroy'))
+                <div class="w-px bg-gray-100"></div>
+                <button type="button" @click="deleteSelectedRecipe()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50"><i class="ph-bold ph-trash"></i> Hapus</button>
+            @endif
+            @if(!(check_access('product-receipt.edit') && check_access('product-receipt.update')) && !check_access('product-receipt.destroy'))
+                <button type="button" @click="closeRecipeDetail()" class="flex flex-1 items-center justify-center py-4 text-sm font-semibold text-gray-600">Tutup</button>
+            @endif
+        </x-slot:actions>
+    </x-erp.detail-dialog>
 
     <template x-if="editingRecipe">
         <div x-show="editOverlayOpen" x-transition:enter="transition-opacity ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-[130] flex flex-col justify-end overflow-hidden motion-reduce:transition-none lg:flex-row lg:justify-end" role="dialog" aria-modal="true" aria-labelledby="recipe-editor-title">

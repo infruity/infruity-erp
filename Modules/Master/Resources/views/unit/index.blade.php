@@ -94,24 +94,33 @@
     </template>
 
     <template x-teleport="body">
-        <div x-show="detail" x-cloak data-erp-modal role="dialog" aria-modal="true" aria-label="Detail Satuan" class="fixed inset-0 z-[110] flex items-center justify-center px-4" @keydown.escape.window="detail = null">
-            <div class="absolute inset-0 bg-black/60" @click="detail = null"></div>
-            <div class="relative bg-white w-full max-w-sm max-h-[calc(100dvh-2rem)] rounded-2xl shadow-xl p-6 flex flex-col overflow-hidden">
-                <div class="flex shrink-0 items-center justify-between mb-6"><h3 class="text-lg font-bold text-gray-800">Detail Satuan</h3><button @click="detail = null" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div>
-                <template x-if="detail"><div class="space-y-5 text-sm min-h-0 overflow-y-auto break-words"><div><div class="font-bold text-gray-800" x-text="detail.name"></div><div class="text-[11px] text-gray-400">Nama Satuan</div></div><div><div class="font-bold text-gray-800" x-text="detail.abbreviation"></div><div class="text-[11px] text-gray-400">Simbol</div></div><div x-show="detail.description"><div class="font-medium text-gray-700" x-text="detail.description"></div><div class="text-[11px] text-gray-400">Deskripsi</div></div></div></template>
-                <div class="flex shrink-0 gap-2 mt-7 border-t border-gray-100 pt-4">
-                    @if (check_access('unit.edit'))
-                    <button type="button" @click="editDetail()" class="flex-1 h-10 rounded-xl bg-emerald-50 text-[#0b595b] text-sm font-semibold">Edit</button>
-                    @endif
-                    @if (check_access('unit.destroy'))
-                    <button type="button" @click="deleteDetail()" class="flex-1 h-10 rounded-xl bg-red-50 text-red-600 text-sm font-semibold">Hapus</button>
-                    @endif
-                    @unless (check_access('unit.edit') || check_access('unit.destroy'))
-                    <button type="button" @click="detail = null" class="w-full h-10 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold">Tutup</button>
-                    @endunless
+        <x-erp.detail-dialog open="detail" close="detail = null" title="Detail Satuan" labelledby="unit-detail-title" close-label="Tutup detail satuan" data-erp-modal>
+            <template x-if="detail">
+                <div class="flex flex-col gap-5 text-sm break-words">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-duotone ph-ruler shrink-0 text-2xl text-emerald-600"></i>
+                        <div class="min-w-0"><div class="font-bold leading-snug text-gray-800" x-text="detail.name"></div><div class="mt-0.5 text-[11px] font-medium text-gray-400">Nama Satuan</div></div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i class="ph-duotone ph-tag shrink-0 text-2xl text-emerald-600"></i>
+                        <div><div class="font-bold text-gray-800" x-text="detail.abbreviation"></div><div class="text-[11px] font-medium text-gray-400">Simbol</div></div>
+                    </div>
+                    <div x-show="detail.description" class="rounded-xl bg-gray-50 px-3.5 py-3 text-xs leading-relaxed text-gray-600"><div class="mb-1 text-[11px] font-medium text-gray-400">Deskripsi</div><div x-text="detail.description"></div></div>
                 </div>
-            </div>
-        </div>
+            </template>
+            <x-slot:actions>
+                @if (check_access('unit.edit'))
+                    <button type="button" @click="editDetail()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-[#0b595b] transition-colors hover:bg-emerald-50"><i class="ph-bold ph-pencil-simple"></i> Edit</button>
+                @endif
+                @if (check_access('unit.destroy'))
+                    <div class="w-px bg-gray-100"></div>
+                    <button type="button" @click="deleteDetail()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50"><i class="ph-bold ph-trash"></i> Hapus</button>
+                @endif
+                @unless (check_access('unit.edit') || check_access('unit.destroy'))
+                    <button type="button" @click="detail = null" class="flex flex-1 items-center justify-center py-4 text-sm font-semibold text-gray-600">Tutup</button>
+                @endunless
+            </x-slot:actions>
+        </x-erp.detail-dialog>
     </template>
 </div>
 @endsection
