@@ -10,13 +10,31 @@ Branch: `feature/php-upgrade` (dibuat dari `backend`).
 | Laravel 10 → 11 | Selesai | `b4a0ce24` |
 | Laravel 11 → 12 | Selesai | `5fa5d4dc` |
 | Laravel 12 → 13 + PHP 8.5 + Excel 4 | Selesai | `2520735d` |
-| Audit sisa paket (livewire, dll) | Belum | — |
-| Regression test role/cabang | Belum | — |
+| Audit sisa paket (livewire, guzzle, phpunit, dbal) | Selesai | commit berikutnya |
+| Regression test role/cabang | Tertahan: harness test belum punya database | — |
 
 Hasil verifikasi terakhir (PHP 8.5.10): Laravel 13.38.0, **0 deprecation**, 481 route,
 login 200, dashboard/produk/sortir/stok opname/pindah stok render normal,
 test suite 36 lulus / 4 gagal (gagal karena setup SQLite tidak punya tabel `users`,
 bukan akibat upgrade).
+
+Setelah audit paket: `composer outdated --direct` kosong (semua dependency langsung
+mutakhir), `composer audit` tanpa advisory, 485 route, 12 halaman utama render normal.
+
+### Sisa pekerjaan: harness test
+
+4 test di `tests/Feature/TransferConcurrencyTest.php` gagal karena `phpunit.xml`
+memakai SQLite `:memory:` tanpa menjalankan migration, sementara migration proyek ini
+MySQL-spesifik (gagal di SQLite pada `create_role_menu_table`). Ini kondisi yang sudah
+ada sebelum upgrade.
+
+Langkah penyelesaiannya (butuh keputusan pemilik DB):
+
+1. Siapkan database MySQL khusus test, mis. `infruity_test`.
+2. Arahkan `phpunit.xml` ke koneksi tersebut dan tambahkan `RefreshDatabase`
+   pada test (bukan `DatabaseTransactions` saja).
+3. Jalankan migration di database test; bereskan migration MySQL-spesifik yang masih
+   belum bisa jalan dari nol (lihat juga temuan "migration ledger tidak sesuai schema").
 
 Catatan lingkungan: `php` default masih 8.3, jadi aplikasi **wajib** dijalankan dengan
 `/opt/homebrew/opt/php@8.5/bin/php` sampai symlink Homebrew diarahkan ke 8.5.
