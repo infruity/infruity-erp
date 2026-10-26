@@ -1,0 +1,40 @@
+/* ==========================================================================
+   ERP shell — persistent sidebar + content column + floating mobile dock.
+   Mirrors infruity-frontend/003. ERP/app.html.
+   ========================================================================== */
+
+.erp-shell { flex-direction: row; }
+.erp-shell__content { position: relative; min-width: 0; }
+.erp-shell .erp-main { width: 100%; }
+.erp-shell .erp-mobile-nav { position: fixed; }
+
+/* --- Mobile: the dock floats over the page --------------------------------- */
+@media (max-width: 767px) {
+    /* Plain scrolling pages reserve the dock band at the end of their scroll. */
+    .erp-ui:not(.erp-hide-dock) .erp-shell .erp-main {
+        padding-bottom: var(--erp-dock-space);
+        scroll-padding-bottom: var(--erp-dock-space);
+    }
+
+    /* Full-height surfaces run to the bottom edge of the screen and the dock
+       floats above them. Each surface reserves the dock clearance inside its
+       own list so no row is ever trapped behind the dock. */
+    .erp-ui:not(.erp-hide-dock) .erp-shell .erp-main:has(.erp-surface),
+    .erp-ui:not(.erp-hide-dock) .erp-shell .erp-main:has(.erp-workspace),
+    .erp-ui:not(.erp-hide-dock) .erp-shell .erp-main:has(.erp-dashboard),
+    .erp-ui:not(.erp-hide-dock) .erp-shell .erp-main:has(.sortir-list-page),
+    .erp-ui:not(.erp-hide-dock) .erp-shell .erp-main:has(.transfer-list-page) {
+        padding-bottom: 0;
+    }
+
+    .erp-ui:not(.erp-hide-dock) .erp-shell .erp-main .erp-workspace-content {
+        padding-bottom: calc(88px + env(safe-area-inset-bottom));
+        scroll-padding-bottom: calc(88px + env(safe-area-inset-bottom));
+    }
+}
+
+@media print {
+    .erp-shell .erp-mobile-nav,
+    .erp-shell .erp-sidebar,
+    .erp-shell .erp-topbar-mobile { display: none; }
+}

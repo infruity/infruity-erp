@@ -10,10 +10,14 @@
 <div x-data="unitPage(@js($units))"
      x-init="if (new URLSearchParams(location.search).has('create')) openCreate()"
      x-effect="search; visibleCount = 50"
-     @mobile-search-toggle.window="searchOpen = !searchOpen; if (searchOpen) $nextTick(() => $refs.mobileSearch?.focus())"
      @mobile-add-toggle.window="openCreate()"
      class="flex-1 flex flex-col min-h-0 -mx-4 md:mx-0">
-    <div class="bg-white rounded-none lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden relative">
+    <x-erp.mobile-search class="md:hidden">
+        <x-slot:input><input x-ref="mobileSearch" x-model.debounce.200ms="search" type="search" placeholder="Cari satuan..." aria-label="Cari satuan" class="erp-mobile-search__input"></x-slot:input>
+        <x-slot:clear><button type="button" x-show="search" x-cloak @click="search = ''; $refs.mobileSearch.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
+        <x-slot:filter></x-slot:filter>
+    </x-erp.mobile-search>
+    <div class="erp-surface bg-white rounded-none lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden relative">
         <div class="hidden md:flex gap-3 items-center p-4 border-b border-gray-100">
             <div class="relative flex-1">
                 <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -32,12 +36,12 @@
             <span class="ml-1 text-gray-700 font-semibold" x-text="filtered.length"></span> satuan
         </div>
 
-        <div class="flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0" @scroll.passive="scrolled = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => scrolled = false, 600)">
-            <div x-show="scrolled" x-cloak class="md:hidden sticky top-2 z-20 flex justify-center pointer-events-none">
+        <div x-show="scrolled" x-cloak class="md:hidden absolute top-2 left-0 right-0 z-20 flex justify-center pointer-events-none">
                 <span class="bg-white/95 backdrop-blur-md border border-gray-200 rounded-full px-4 py-1.5 shadow-lg text-[11px] text-gray-700 font-medium">
                     Menampilkan <strong x-text="Math.min(visibleCount, filtered.length)"></strong> dari <strong x-text="filtered.length"></strong> satuan
                 </span>
-            </div>
+        </div>
+        <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0" @scroll.passive="scrolled = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => scrolled = false, 600)">
             <template x-for="unit in visible" :key="unit.id">
                 <div class="border-b border-gray-100">
                     <button type="button" @click="showDetail(unit)" class="w-full flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3.5 md:py-4 hover:bg-gray-50/50 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" :aria-label="'Detail ' + unit.name">
@@ -58,25 +62,17 @@
                 <p class="text-xs text-gray-400 mt-1">Coba ubah pencarian</p>
             </div>
             <div x-show="visibleCount < filtered.length" class="px-5 py-4">
-                <button type="button" @click="visibleCount += 50" class="w-full h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500 hover:border-emerald-400 hover:text-emerald-700 flex items-center justify-center gap-2">
+                <button type="button" @click="visibleCount += 50" class="w-full h-11 rounded-xl border-2 border-dashed border-gray-200 text-sm font-semibold text-gray-500 hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2">
                     <i class="ph ph-arrow-circle-down text-base"></i> Muat <span x-text="Math.min(50, filtered.length - visibleCount)"></span> Satuan Lagi
                 </button>
             </div>
         </div>
     </div>
 
-    <div x-show="searchOpen" x-transition x-cloak class="md:hidden fixed left-0 right-0 z-[80] px-4 flex justify-center" style="bottom: calc(96px + env(safe-area-inset-bottom))">
-        <div class="relative w-full max-w-[360px] h-12 bg-white/80 backdrop-blur-xl border border-white/70 rounded-full shadow-lg flex items-center">
-            <i class="ph ph-magnifying-glass absolute left-4 text-[#0b595b]/70"></i>
-            <input x-ref="mobileSearch" x-model.debounce.200ms="search" type="search" placeholder="Cari satuan..." class="w-full bg-transparent pl-11 pr-10 h-full text-sm font-medium text-gray-800 outline-none rounded-full">
-            <button type="button" @click="search = ''; $refs.mobileSearch.focus()" class="absolute right-3 text-gray-500" aria-label="Bersihkan pencarian"><i class="ph ph-x"></i></button>
-        </div>
-    </div>
-
     <template x-teleport="body">
-        <div x-show="drawerOpen" x-cloak class="fixed inset-0 z-[100] flex flex-col justify-end lg:flex-row lg:justify-end" @keydown.escape.window="drawerOpen = false">
+        <div x-show="drawerOpen" x-cloak data-erp-modal class="fixed inset-0 z-[100] flex flex-col justify-end lg:flex-row lg:justify-end" @keydown.escape.window="drawerOpen = false">
             <div class="absolute inset-0 bg-black/70" @click="drawerOpen = false"></div>
-            <div x-show="drawerOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full" x-transition:enter-end="translate-y-0 lg:translate-x-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 lg:translate-x-0" x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full" class="relative w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col max-h-[90vh] lg:max-h-full lg:h-full rounded-t-3xl lg:rounded-none overflow-hidden">
+            <div x-show="drawerOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full" x-transition:enter-end="translate-y-0 lg:translate-x-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 lg:translate-x-0" x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full" class="relative w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col max-h-[90dvh] lg:max-h-full lg:h-full rounded-t-3xl lg:rounded-none overflow-hidden">
                 <div class="flex justify-center pt-3 pb-1 lg:hidden"><div class="w-16 h-1.5 bg-gray-300 rounded-full"></div></div>
                 <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                     <div><h3 class="text-[15px] font-bold text-gray-900" x-text="editing ? 'Edit Satuan' : 'Tambah Satuan'"></h3><p class="text-[12px] text-gray-400 mt-0.5" x-text="editing ? 'Perbarui data satuan' : 'Isi data satuan baru'"></p></div>
@@ -99,12 +95,12 @@
     </template>
 
     <template x-teleport="body">
-        <div x-show="detail" x-cloak role="dialog" aria-modal="true" aria-label="Detail Satuan" class="fixed inset-0 z-[110] flex items-center justify-center px-4" @keydown.escape.window="detail = null">
+        <div x-show="detail" x-cloak data-erp-modal role="dialog" aria-modal="true" aria-label="Detail Satuan" class="fixed inset-0 z-[110] flex items-center justify-center px-4" @keydown.escape.window="detail = null">
             <div class="absolute inset-0 bg-black/60" @click="detail = null"></div>
-            <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-xl p-6">
-                <div class="flex items-center justify-between mb-6"><h3 class="text-lg font-bold text-gray-800">Detail Satuan</h3><button @click="detail = null" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div>
-                <template x-if="detail"><div class="space-y-5 text-sm"><div><div class="font-bold text-gray-800" x-text="detail.name"></div><div class="text-[11px] text-gray-400">Nama Satuan</div></div><div><div class="font-bold text-gray-800" x-text="detail.abbreviation"></div><div class="text-[11px] text-gray-400">Simbol</div></div><div x-show="detail.description"><div class="font-medium text-gray-700" x-text="detail.description"></div><div class="text-[11px] text-gray-400">Deskripsi</div></div></div></template>
-                <div class="flex gap-2 mt-7 border-t border-gray-100 pt-4">
+            <div class="relative bg-white w-full max-w-sm max-h-[calc(100dvh-2rem)] rounded-2xl shadow-xl p-6 flex flex-col overflow-hidden">
+                <div class="flex shrink-0 items-center justify-between mb-6"><h3 class="text-lg font-bold text-gray-800">Detail Satuan</h3><button @click="detail = null" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div>
+                <template x-if="detail"><div class="space-y-5 text-sm min-h-0 overflow-y-auto break-words"><div><div class="font-bold text-gray-800" x-text="detail.name"></div><div class="text-[11px] text-gray-400">Nama Satuan</div></div><div><div class="font-bold text-gray-800" x-text="detail.abbreviation"></div><div class="text-[11px] text-gray-400">Simbol</div></div><div x-show="detail.description"><div class="font-medium text-gray-700" x-text="detail.description"></div><div class="text-[11px] text-gray-400">Deskripsi</div></div></div></template>
+                <div class="flex shrink-0 gap-2 mt-7 border-t border-gray-100 pt-4">
                     @if (check_access('unit.edit'))
                     <button type="button" @click="editDetail()" class="flex-1 h-10 rounded-xl bg-emerald-50 text-[#0b595b] text-sm font-semibold">Edit</button>
                     @endif

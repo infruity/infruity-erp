@@ -1,7 +1,6 @@
 @extends('layouts.erp-tailwind')
 
 @section('title', 'Produk - Master')
-@section('hide-global-header', '1')
 
 @section('page-title', 'Produk')
 @section('page-breadcrumb')
@@ -57,7 +56,7 @@
     <div x-data="{
             filterOpen: false,
             typeExpanded: false,
-            mobileSearchOpen: false,
+            mobileSearchQuery: '',
             productCreateOpen: @js($errors->any()),
             productEditId: null,
             productDetailOpen: false,
@@ -150,27 +149,31 @@
          x-effect="document.body.classList.toggle('overflow-hidden', productCreateOpen || productDetailOpen)"
          x-init="syncHiddenInputs(); refreshActiveFilters()"
          @product-detail-open.window="productDetail = $event.detail; productDetailOpen = true"
-         @mobile-search-toggle.window="mobileSearchOpen = !mobileSearchOpen; filterOpen = false; if (mobileSearchOpen) $nextTick(() => $refs.mobileSearch.focus())"
-         @mobile-filter-toggle.window="if (!filterOpen) { openMobileFilter() } else { filterOpen = false }; mobileSearchOpen = false"
-         @mobile-add-toggle.window="openProductCreate(); mobileSearchOpen = false; filterOpen = false"
+         @mobile-search-toggle.window="isScrolling = false; $nextTick(() => $refs.mobileSearch.focus())"
+         @mobile-add-toggle.window="openProductCreate(); filterOpen = false"
          @keydown.escape.window="productCreateOpen = false; productDetailOpen = false"
          class="product-list-fullbleed w-[calc(100%+2rem)] flex-1 flex flex-col min-h-0 -mx-4 md:w-full md:mx-0">
         <!-- Main Content Card -->
-        <div class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
+        <div class="erp-surface bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
+            <x-erp.mobile-search class="md:hidden">
+                <x-slot:input>
+                    <input x-ref="mobileSearch" x-model="mobileSearchQuery" type="search" placeholder="Cari produk atau varian..." oninput="$('#search').val(this.value).trigger('keyup')" aria-label="Cari produk atau varian" class="erp-mobile-search__input">
+                </x-slot:input>
+                <x-slot:clear>
+                    <button type="button" x-show="mobileSearchQuery" x-cloak @click="mobileSearchQuery = ''; $('#search').val('').trigger('keyup'); $refs.mobileSearch.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button>
+                </x-slot:clear>
+                <x-slot:filter>
+                    <button type="button" @click="openMobileFilter()" aria-label="Filter produk" class="erp-mobile-search__filter">
+                        <i class="ph ph-sliders-horizontal" aria-hidden="true"></i>
+                        <span x-show="hasActiveFilters" x-cloak class="erp-mobile-search__filter-dot"></span>
+                    </button>
+                </x-slot:filter>
+            </x-erp.mobile-search>
 
             <!-- Mobile floating count pill: shown only while the product list is scrolling -->
-            <div x-show="isScrolling && !mobileSearchOpen" x-transition x-cloak class="md:hidden absolute top-2 left-0 right-0 z-30 pointer-events-none flex justify-center px-4">
+            <div x-show="isScrolling" x-transition x-cloak class="md:hidden absolute top-2 left-0 right-0 z-30 pointer-events-none flex justify-center px-4">
                 <div class="pointer-events-auto bg-white/95 backdrop-blur-md border border-gray-200/90 px-4 py-1.5 rounded-full shadow-lg text-[11px] text-gray-700 font-medium">
                     Menampilkan <strong id="products-count-display-mobile" class="text-gray-900 font-semibold">0</strong> dari <strong id="products-count-total-mobile" class="text-gray-900 font-semibold">0</strong> produk
-                </div>
-            </div>
-
-            <!-- Mobile search overlay -->
-            <div x-show="mobileSearchOpen" x-transition x-cloak class="md:hidden fixed left-0 right-0 z-[80] px-4 flex justify-center" style="bottom: calc(96px + env(safe-area-inset-bottom))">
-                <div class="relative w-full max-w-[360px] h-12 bg-white/80 backdrop-blur-xl border border-white/70 rounded-full shadow-lg flex items-center">
-                    <i class="ph ph-magnifying-glass absolute left-4 text-[#0b595b]/70"></i>
-                    <input x-ref="mobileSearch" type="search" placeholder="Cari produk atau varian..." oninput="$('#search').val(this.value).trigger('keyup')" class="w-full bg-transparent pl-11 pr-10 h-full text-sm font-medium text-gray-800 placeholder-gray-500 outline-none rounded-full">
-                    <button type="button" @click="$refs.mobileSearch.value=''; $('#search').val('').trigger('keyup'); $refs.mobileSearch.focus()" class="absolute right-3 text-gray-500"><i class="ph ph-x"></i></button>
                 </div>
             </div>
 
@@ -334,7 +337,7 @@
                         </div>
                     </button>
 
-                    <div x-show="filterOpen" x-cloak @click.outside="filterOpen = false; typeExpanded = false"
+                    <div x-show="filterOpen" x-cloak data-erp-modal @click.outside="filterOpen = false; typeExpanded = false"
                         x-transition:enter="transition ease-out duration-100"
                         x-transition:enter-start="opacity-0 scale-95"
                         x-transition:enter-end="opacity-100 scale-100"
@@ -382,7 +385,7 @@
             </div>
 
             <!-- Table -->
-            <div class="flex-1 overflow-auto pb-24 md:pb-0" @scroll.passive="isScrolling = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => isScrolling = false, 600)">
+            <div class="mobile-list-edge-fade relative z-0 -mt-[72px] flex-1 overflow-auto pt-[72px] pb-24 md:mt-0 md:pt-0 md:pb-0" style="--mobile-list-fade-top:72px; --mobile-list-fade-bottom:72px" @scroll.passive="isScrolling = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => isScrolling = false, 600)">
                 <table class="w-full text-sm" id="products-table" width="100%">
                     <thead class="hidden md:table-header-group">
                         <tr class="text-left text-gray-400 font-semibold text-[11px] uppercase tracking-wide">
@@ -450,16 +453,16 @@
         </template>
     @endif
     <template x-teleport="body">
-    <div x-show="productDetailOpen" x-cloak
+    <div x-show="productDetailOpen" x-cloak data-erp-modal @keydown.escape.window="productDetailOpen = false"
          class="fixed inset-0 z-[120] flex items-center justify-center px-4"
          role="dialog" aria-modal="true" aria-labelledby="product-detail-title">
         <div class="absolute inset-0 bg-black/60" @click="productDetailOpen = false"
              x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
              x-transition:leave="transition-opacity duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
-        <div class="relative z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
+        <div class="relative z-10 flex w-full max-w-sm max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
              x-transition:enter="transition-all duration-300" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
              x-transition:leave="transition-all duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95 translate-y-2">
-            <div class="flex flex-col gap-5 p-6 text-sm">
+            <div class="min-h-0 overflow-y-auto flex flex-col gap-5 p-6 text-sm break-words">
                 <div class="mb-1 flex items-center justify-between">
                     <h2 id="product-detail-title" class="text-lg font-bold text-gray-800">Detail Produk</h2>
                     <button type="button" @click="productDetailOpen = false" aria-label="Tutup detail produk" class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200">
@@ -488,7 +491,7 @@
                     </div>
                 </div>
             </div>
-            <div class="flex w-full border-t border-gray-100">
+            <div class="flex shrink-0 w-full border-t border-gray-100">
                 @if (check_access('products.edit'))
                     <button type="button" @click="openProductEdit(productDetail)" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-[#0b595b] hover:bg-emerald-50">
                         <i class="ph-bold ph-pencil-simple"></i> Edit

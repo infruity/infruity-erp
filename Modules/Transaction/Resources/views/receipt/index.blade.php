@@ -5,37 +5,42 @@
 @section('page-breadcrumb')
     <span>Master</span><i class="ph ph-caret-right text-[0.55rem]"></i><span>Resep Produk</span>
 @endsection
-@section('hide-mobile-header', '1')
 
 @section('content')
 <div x-data="recipeIndex(@js($receipts->count()), @js($receipts->total()), @js($receipts->hasMorePages()), @js($receipts->nextPageUrl()))"
-     x-init="Alpine.store('productFilters', { active: @js($type !== 'all') })"
+     x-init="Alpine.store('productFilters', { active: @js($type !== 'all' || $category !== 'all') })"
      @keydown.escape.window="closeRecipeDetail(); closeRecipeEditor()"
      x-effect="document.body.classList.toggle('overflow-hidden', detailModalOpen || editOverlayOpen)"
-     @mobile-search-toggle.window="searchOpen = !searchOpen; if (searchOpen) $nextTick(() => $refs.search.focus())"
-     @mobile-filter-toggle.window="filterOpen = !filterOpen; searchOpen = false"
      @mobile-add-toggle.window="window.location.href = '{{ route('receipt.create') }}'"
     class="flex-1 flex flex-col min-h-0 -mx-4 md:mx-0">
-    <div class="relative bg-white rounded-none lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div class="sm:hidden absolute inset-x-0 top-0 z-20 flex items-center justify-center border-b border-gray-200/50 bg-white/75 px-4 py-3.5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] backdrop-blur-md backdrop-saturate-150">
-            <img src="{{ asset('images/infruity-wordmark.png') }}" alt="Infruity" class="h-[30px] max-w-[160px] w-auto object-contain">
-        </div>
+    <form x-data="{ mobileSearch: @js($search) }" action="{{ route('receipt.index') }}" method="GET" class="md:hidden">
+        @if($type !== 'all')<input type="hidden" name="type" value="{{ $type }}">@endif
+        @if($category !== 'all')<input type="hidden" name="category" value="{{ $category }}">@endif
+        <x-erp.mobile-search>
+            <x-slot:input><input x-ref="search" x-model="mobileSearch" name="q" type="search" placeholder="Cari resep produk..." aria-label="Cari resep produk" class="erp-mobile-search__input"></x-slot:input>
+            <x-slot:clear><button type="button" x-show="mobileSearch" x-cloak @click="mobileSearch = ''; $refs.search.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
+            <x-slot:filter><button type="button" @click="filterOpen = true" aria-label="Filter resep" class="erp-mobile-search__filter {{ $category !== 'all' || $type !== 'all' ? 'is-active' : '' }}"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></x-slot:filter>
+        </x-erp.mobile-search>
+    </form>
+    <div class="relative erp-surface bg-white rounded-none lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
         <div class="hidden md:flex gap-3 items-center p-4 border-b border-gray-100">
             <form action="{{ route('receipt.index') }}" method="GET" class="relative flex-1">
                 @if($type !== 'all')<input type="hidden" name="type" value="{{ $type }}">@endif
+                @if($category !== 'all')<input type="hidden" name="category" value="{{ $category }}">@endif
                 <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
                 <input name="q" value="{{ $search }}" type="search" placeholder="Cari resep atau produk..." class="w-full h-11 rounded-full border border-gray-100 bg-gray-50/50 pl-11 pr-4 text-[13px] outline-none focus:border-emerald-500">
             </form>
-            <form action="{{ route('receipt.index') }}" method="GET">
+            <form action="{{ route('receipt.index') }}" method="GET" class="w-48">
                 @if($search !== '')<input type="hidden" name="q" value="{{ $search }}">@endif
-                <select name="type" onchange="this.form.submit()" aria-label="Filter jenis produk" class="h-11 rounded-full border border-gray-100 bg-gray-50/50 px-4 text-[13px] text-gray-600 outline-none"><option value="all" @selected($type === 'all')>Semua Jenis</option><option value="product" @selected($type === 'product')>Produk</option><option value="kemasan" @selected($type === 'kemasan')>Kemasan</option></select>
+                @if($type !== 'all')<input type="hidden" name="type" value="{{ $type }}">@endif
+                <x-erp.dropdown-select id="receipt-category-desktop" name="category" :options="$categoryOptions" :value="$category === 'all' ? '' : $category" placeholder="Semua Kategori" auto-submit />
             </form>
             @if(check_access('product-receipt.create'))
                 <a href="{{ route('receipt.create') }}" class="h-11 px-5 rounded-full bg-[#0b595b] text-white text-[13px] font-semibold flex items-center gap-2"><i class="ph-bold ph-plus"></i> Tambah Resep</a>
             @endif
         </div>
         <div class="hidden md:block px-5 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-500">Menampilkan <span class="font-semibold text-gray-700" x-text="loadedCount"></span> dari <span class="font-semibold text-gray-700" x-text="totalCount"></span> resep</div>
-        <div class="flex-1 overflow-y-auto pt-[59px] pb-28 sm:pt-0 md:pb-0">
+        <div class="mobile-list-edge-fade flex-1 overflow-y-auto pb-28 md:pb-0">
             <div id="recipe-list-items">
                 @include('transaction::receipt.partials.items', ['receipts' => $receipts])
             </div>
@@ -43,20 +48,37 @@
                 <div class="py-16 text-center text-gray-400"><i class="ph ph-receipt text-3xl"></i><p class="mt-2 text-sm">Resep produk tidak ditemukan</p></div>
             @endif
             <div x-show="hasMore" class="px-5 py-4">
-                <button type="button" @click="loadMoreRecipes()" :disabled="loadingMore" class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 text-sm font-semibold text-emerald-800 transition-colors hover:border-emerald-400 hover:bg-emerald-50 disabled:cursor-wait disabled:opacity-60">
+                <button type="button" @click="loadMoreRecipes()" :disabled="loadingMore" class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 text-sm font-semibold text-gray-500 transition-colors hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-wait disabled:opacity-60">
                     <i class="ph ph-arrow-circle-down text-base" :class="loadingMore ? 'animate-spin motion-reduce:animate-none' : ''"></i>
                     <span x-text="loadingMore ? 'Memuat resep...' : 'Muat Resep Lagi'"></span>
                 </button>
             </div>
         </div>
     </div>
-    <form x-show="searchOpen" x-cloak action="{{ route('receipt.index') }}" method="GET" class="md:hidden fixed left-4 right-4 z-[80] h-12 bg-white/90 backdrop-blur-xl border border-gray-200 rounded-full shadow-lg flex items-center" style="bottom: calc(96px + env(safe-area-inset-bottom))">
-        @if($type !== 'all')<input type="hidden" name="type" value="{{ $type }}">@endif
-        <i class="ph ph-magnifying-glass absolute left-4 text-[#0b595b]"></i>
-        <input x-ref="search" name="q" value="{{ $search }}" type="search" placeholder="Cari resep produk..." class="w-full h-full bg-transparent pl-11 pr-12 text-sm outline-none rounded-full">
-        <button type="submit" class="absolute right-3 text-xs font-semibold text-[#0b595b]">Cari</button>
-    </form>
-    <template x-teleport="body"><div x-show="filterOpen" x-cloak class="md:hidden fixed inset-0 z-[100] flex flex-col justify-end"><div class="absolute inset-0 bg-black/70" @click="filterOpen = false"></div><div class="relative w-full bg-white rounded-t-3xl shadow-2xl overflow-hidden pb-[env(safe-area-inset-bottom)]"><div class="flex justify-center pt-3 pb-1"><div class="w-16 h-1.5 bg-gray-300 rounded-full"></div></div><div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between"><h3 class="font-bold text-gray-800 text-lg">Filter Resep</h3><button type="button" @click="filterOpen = false" aria-label="Tutup filter" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500"><i class="ph-bold ph-x"></i></button></div><form action="{{ route('receipt.index') }}" method="GET">@if($search !== '')<input type="hidden" name="q" value="{{ $search }}">@endif<div class="p-5"><label for="receipt-type" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Jenis Produk</label><select id="receipt-type" name="type" class="w-full h-11 rounded-xl border border-gray-200 px-4 text-sm"><option value="all" @selected($type === 'all')>Semua Jenis</option><option value="product" @selected($type === 'product')>Produk</option><option value="kemasan" @selected($type === 'kemasan')>Kemasan</option></select></div><div class="px-5 py-4 border-t border-gray-100 flex gap-3"><a href="{{ route('receipt.index', $search !== '' ? ['q' => $search] : []) }}" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 flex items-center justify-center">Reset</a><button type="submit" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold">Terapkan</button></div></form></div></div></template>
+    <template x-teleport="body">
+        <div x-show="filterOpen" x-cloak class="md:hidden fixed inset-0 z-[100] flex flex-col justify-end">
+            <div class="absolute inset-0 bg-black/70" @click="filterOpen = false"></div>
+            <div class="relative w-full overflow-visible rounded-t-3xl bg-white shadow-2xl pb-[env(safe-area-inset-bottom)]">
+                <div class="flex justify-center pt-3 pb-1"><div class="w-16 h-1.5 rounded-full bg-gray-300"></div></div>
+                <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+                    <h3 class="text-lg font-bold text-gray-800">Filter Resep</h3>
+                    <button type="button" @click="filterOpen = false" aria-label="Tutup filter" class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500"><i class="ph-bold ph-x"></i></button>
+                </div>
+                <form action="{{ route('receipt.index') }}" method="GET">
+                    @if($search !== '')<input type="hidden" name="q" value="{{ $search }}">@endif
+                    @if($type !== 'all')<input type="hidden" name="type" value="{{ $type }}">@endif
+                    <div class="px-5 py-6">
+                        <label for="receipt-category-mobile-button" class="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-500">Kategori Produk</label>
+                        <x-erp.dropdown-select id="receipt-category-mobile" name="category" :options="$categoryOptions" :value="$category === 'all' ? '' : $category" placeholder="Semua Kategori" menu-placement="top" />
+                    </div>
+                    <div class="flex gap-3 border-t border-gray-100 px-5 py-4">
+                        <a href="{{ route('receipt.index', $search !== '' ? ['q' => $search] : []) }}" class="flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Reset</a>
+                        <button type="submit" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white">Terapkan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
 
     <template x-teleport="body">
     <div>

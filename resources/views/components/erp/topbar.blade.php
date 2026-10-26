@@ -1,16 +1,23 @@
 @props(['mobileOnly' => false])
+@php
+    $sortirFormHeader = request()->routeIs('sortir.create', 'sortir.edit', 'sortir.show');
+    $transferFormHeader = request()->routeIs('transfer-pengirim.create', 'transfer-pengirim.edit', 'transfer-pengirim.show', 'transfer-penerima.show');
+    $transactionFormHeader = $transferFormHeader || $sortirFormHeader || request()->routeIs('wholesale.create', 'wholesale.edit');
+    $transactionBackRoute = $transferFormHeader ? request()->segment(1) . '.index' : ($sortirFormHeader ? 'sortir.index' : 'wholesale.index');
+    $transactionBackLabel = $transferFormHeader ? 'Kembali ke Pindah Stok' : ($sortirFormHeader ? 'Kembali ke Sortir Barang' : 'Kembali ke Pengadaan');
+@endphp
 
 <style>
-    .erp-topbar-mobile { position:sticky; top:0; z-index:30; display:flex; height:60px; flex:none; align-items:center; justify-content:space-between; padding:0 16px; border-bottom:1px solid #f3f4f6; background:#fff; box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none; }
+    .erp-topbar-mobile { position:sticky; top:0; z-index:30; display:flex; min-height:60px; flex:none; align-items:center; justify-content:space-between; padding:0 16px; padding-top:env(safe-area-inset-top); border-bottom:1px solid rgba(255,255,255,.6); background:rgba(255,255,255,.72); box-shadow:0 6px 20px -2px rgba(0,0,0,.05), inset 0 1px 1px rgba(255,255,255,.9); -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%); }
     .erp-topbar-mobile__button { position:relative; display:flex; width:36px; height:36px; flex:none; align-items:center; justify-content:center; border:0; border-radius:12px; background:transparent; color:#1f2937; cursor:pointer; transition:color .18s ease,background .18s ease,transform .18s ease; -webkit-tap-highlight-color:transparent; }
     .erp-topbar-mobile__button:hover, .erp-topbar-mobile__button:focus-visible { background:rgba(236,253,245,.7); color:#0b595b; }
     .erp-topbar-mobile__button:active { transform:scale(.95); }
     .erp-topbar-mobile__button i { font-size:21px; line-height:1; }
-    .erp-topbar-mobile--wholesale-form > .erp-topbar-mobile__button { color:#0b595b; }
-    .erp-topbar-mobile--wholesale-form > .erp-topbar-mobile__button i { font-size:24px; }
-    .erp-topbar-mobile--wholesale-form .erp-topbar-mobile__notify > .erp-topbar-mobile__button { color:#374151; }
-    .erp-topbar-mobile--wholesale-form .erp-topbar-mobile__notify > .erp-topbar-mobile__button:hover { color:#0b595b; }
-    .erp-topbar-mobile--wholesale-form .erp-topbar-mobile__unread { top:6px; right:6px; width:8px; height:8px; border:0; box-shadow:0 0 0 2px #fff; }
+    .erp-topbar-mobile--transaction-form > .erp-topbar-mobile__button { color:#0b595b; }
+    .erp-topbar-mobile--transaction-form > .erp-topbar-mobile__button i { font-size:24px; }
+    .erp-topbar-mobile--transaction-form .erp-topbar-mobile__notify > .erp-topbar-mobile__button { color:#374151; }
+    .erp-topbar-mobile--transaction-form .erp-topbar-mobile__notify > .erp-topbar-mobile__button:hover { color:#0b595b; }
+    .erp-topbar-mobile--transaction-form .erp-topbar-mobile__unread { top:6px; right:6px; width:8px; height:8px; border:0; box-shadow:0 0 0 2px #fff; }
     .erp-topbar-mobile__logo { position:absolute; left:50%; display:flex; max-width:calc(100% - 120px); align-items:center; justify-content:center; transform:translateX(-50%); }
     .erp-topbar-mobile__logo img { display:block; width:auto; max-width:150px; height:30px; object-fit:contain; }
     .erp-topbar-mobile__notify { position:relative; }
@@ -24,9 +31,9 @@
     @media (min-width:768px) { .erp-topbar-mobile { display:none; } }
 </style>
 
-<header class="erp-topbar-mobile {{ request()->routeIs('wholesale.create', 'wholesale.edit') ? 'erp-topbar-mobile--wholesale-form' : '' }}">
-    @if (request()->routeIs('wholesale.create', 'wholesale.edit'))
-        <a href="{{ route('wholesale.index') }}" aria-label="Kembali ke Pengadaan" class="erp-topbar-mobile__button">
+<header class="erp-topbar-mobile {{ $transactionFormHeader ? 'erp-topbar-mobile--transaction-form' : '' }}">
+    @if ($transactionFormHeader)
+        <a href="{{ route($transactionBackRoute) }}" aria-label="{{ $transactionBackLabel }}" class="erp-topbar-mobile__button">
             <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
         </a>
     @else
@@ -50,7 +57,7 @@
 </header>
 
 @unless($mobileOnly)
-    <header class="hidden md:flex sticky top-4 sm:top-6 lg:top-5 z-30 mx-4 sm:mx-6 lg:mx-8 mt-4 sm:mt-6 lg:mt-5 items-center justify-between gap-4 rounded-full border border-gray-100 bg-white px-5 py-3 shadow-sm lg:px-6 lg:py-4">
+    <header class="hidden md:flex sticky top-4 sm:top-6 lg:top-5 z-30 mx-4 sm:mx-6 lg:mx-8 mt-4 sm:mt-6 lg:mt-5 items-center justify-between gap-4 rounded-full border border-white/70 bg-white/70 px-5 py-3 shadow-[0_10px_30px_-4px_rgba(15,92,69,0.06),0_2px_8px_rgba(0,0,0,0.03)] backdrop-blur-xl backdrop-saturate-150 lg:px-6 lg:py-4">
         <div class="flex items-center gap-4 pl-2">
             <button type="button" data-hamburger @click="sidebarOpen = !sidebarOpen" class="-ml-2 flex shrink-0 rounded-full p-2 text-gray-500 transition hover:bg-gray-100 lg:hidden" aria-label="Buka navigasi"><i class="ph ph-list text-2xl"></i></button>
             <div class="hidden sm:block"><h1 class="mb-1.5 text-base font-bold leading-none text-gray-900 sm:text-lg">@yield('page-title', trim($__env->yieldContent('title')) ?: 'Infruity')</h1><div class="flex items-center gap-1 text-[0.65rem] leading-none text-gray-400">@yield('page-breadcrumb', trim($__env->yieldContent('title')) ?: 'Infruity')</div></div>

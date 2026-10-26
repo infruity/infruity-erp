@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id" class="erp-html">
 <!--begin::Head-->
 
 <head>
@@ -17,17 +17,17 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <link rel="shortcut icon" href="{{ asset('images/logo-infruity.png') }}" />
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!--begin::Fonts(mandatory for all pages)-->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
-    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+
+
+
     <!--end::Fonts-->
     <!--begin::Vendor Stylesheets(used for this page only)-->
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}">
@@ -49,22 +49,25 @@
     @isset($livewire)
         @livewireStyles
     @endisset
-    <script>
-        function erpMobileChrome() {
-            return { sidebarOpen: false, sidebarCollapsed: false, theme: 'dark' };
-        }
-    </script>
+    @include('partials.erp-chrome')
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!--end::Global Stylesheets Bundle-->
     <script>
         // Frame-busting to prevent site from being loaded within a frame without permission (click-jacking) if (window.top != window.self) { window.top.location.replace(window.self.location.href); }
     </script>
 
+    <link rel="stylesheet" href="{{ asset('assets/css/erp-theme.css') }}?v={{ filemtime(public_path('assets/css/erp-theme.css')) }}">
+    <script defer src="{{ asset('assets/js/erp-overlays.js') }}?v={{ filemtime(public_path('assets/js/erp-overlays.js')) }}"></script>
+<link rel="stylesheet" href="{{ asset('assets/fonts/infruity/fonts.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/plugins/phosphor/phosphor.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/css/erp-workspace.css') }}?v={{ filemtime(public_path('assets/css/erp-workspace.css')) }}">
+<script defer src="{{ asset('assets/js/erp-collections.js') }}?v={{ filemtime(public_path('assets/js/erp-collections.js')) }}"></script>
+<link rel="stylesheet" href="{{ asset('assets/css/erp-shell.css') }}?v={{ filemtime(public_path('assets/css/erp-shell.css')) }}">
 </head>
 <!--end::Head-->
 <!--begin::Body-->
 
-<body id="kt_body" class="aside-enabled">
+<body id="kt_body" class="aside-enabled erp-ui erp-legacy {{ request()->routeIs('reports.hub', 'report-*', 'product-stock*', 'pos.payment', 'sortir.create', 'sortir.edit', 'sortir.show', 'transfer-pengirim.create', 'transfer-pengirim.edit', 'transfer-pengirim.show', 'transfer-penerima.show', 'wholesale.create', 'wholesale.edit', 'wholesale.show') ? 'erp-hide-dock' : '' }}">
     <!--begin::Theme mode setup on page load-->
     <script>
         var defaultThemeMode = "light";
@@ -88,22 +91,24 @@
     <!--end::Theme mode setup on page load-->
     <!--begin::Main-->
     <!--begin::Root-->
-    <div class="flex h-[100dvh] min-h-[100dvh] w-full overflow-hidden bg-[#e5e9f3] font-sans text-gray-800 antialiased"
-        x-data="erpMobileChrome()" @erp-mobile-sidebar-toggle.window="sidebarOpen = true">
+    <div class="erp-shell flex h-[100dvh] min-h-[100dvh] w-full overflow-hidden bg-[#e5e9f3] font-sans text-gray-800 antialiased"
+        x-data="erpChrome()" @erp-mobile-sidebar-toggle.window="sidebarOpen = true">
         <x-erp.sidebar />
-        <div class="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+        <div class="erp-shell__content flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
             <x-erp.topbar />
-            <main id="kt_content" class="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-none px-0 py-0 md:px-6 md:py-6 lg:px-8 scrollbar-hide">
+
+            <main id="kt_content" class="erp-main flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-none px-4 md:px-6 md:py-6 lg:px-8 scrollbar-hide">
                 <div id="kt_post" class="flex min-h-0 flex-1 flex-col">
-                    <div id="kt_content_container" class="container-xxl w-full flex-1 px-0 md:px-2">
+                    <div id="kt_content_container" class="w-full min-w-0 flex-1 px-0">
                         @include('template.notif')
                         @yield('content')
                     </div>
                 </div>
             </main>
         </div>
-        @unless (request()->routeIs('reports.hub', 'report-*'))
-            <x-erp.mobile-navbar />
+        <x-erp.mobile-navbar />
+        @unless (request()->routeIs('reports.hub', 'report-*', 'product-stock.show'))
+
         @endunless
     </div>
     <!--end::Root-->
@@ -140,6 +145,16 @@
             <script type="text/javascript" src="{{ asset($item) }}"></script>
         @endforeach
     @endif
+    <script>
+        if (window.jQuery?.fn?.dataTable) {
+            jQuery.extend(true, jQuery.fn.dataTable.defaults, { language: {
+                processing: 'Memuat data…', emptyTable: 'Belum ada data untuk ditampilkan.',
+                zeroRecords: 'Tidak ada hasil yang sesuai.', lengthMenu: 'Tampilkan _MENU_',
+                info: '_START_–_END_ dari _TOTAL_ data', infoEmpty: 'Belum ada data',
+                infoFiltered: '(dari _MAX_ data)', paginate: { previous: 'Sebelumnya', next: 'Berikutnya' }
+            } });
+        }
+    </script>
     @yield('script')
     <!--end::Custom Javascript-->
     <!--end::Javascript-->
@@ -237,7 +252,7 @@
                 });
         }
 
-        document.getElementById('btn-notif').addEventListener('click', () => {
+        document.getElementById('btn-notif')?.addEventListener('click', () => {
             Notification.requestPermission().then(permission => {
                 if (permission === 'granted') {
                     alert(

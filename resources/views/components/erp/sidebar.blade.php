@@ -2,7 +2,7 @@
 
 <style>
     [x-cloak] { display:none!important; }
-    .erp-sidebar-overlay { position:fixed; inset:0; z-index:40; background:rgba(0,0,0,.32); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
+    .erp-sidebar-overlay { position:fixed; inset:0; z-index:45; background:rgba(0,0,0,.32); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
     .erp-sidebar { position:fixed; inset:0 auto 0 0; z-index:50; display:flex; width:256px; height:100dvh; flex:none; flex-direction:column; overflow:hidden; background:#0b595b; color:#fff; transform:translateX(-100%); transition:transform .3s cubic-bezier(.4,0,.2,1); }
     .erp-sidebar.is-open { transform:translateX(0); }
     .erp-sidebar--mobile-only { display:flex; }
@@ -21,7 +21,7 @@
     .erp-sidebar__nav::-webkit-scrollbar-track { background:transparent; }
     .erp-sidebar__nav::-webkit-scrollbar-thumb { border-radius:10px; background:rgba(255,255,255,.2); }
     .erp-sidebar__group { margin-bottom:12px; }
-    .erp-sidebar .sidebar-link { display:flex; width:100%; min-height:48px; align-items:center; justify-content:space-between; gap:12px; overflow:hidden; border:0; border-radius:12px; padding:0 16px; background:transparent; color:rgba(255,255,255,.92); font-size:14px; line-height:1.25; text-align:left; text-decoration:none; white-space:nowrap; cursor:pointer; transition:background .2s ease,color .2s ease; }
+    .erp-sidebar .sidebar-link { display:flex; width:100%; min-height:44px; align-items:center; justify-content:space-between; gap:12px; overflow:hidden; border:0; border-radius:12px; padding:0 16px; background:transparent; color:#fff; font-size:14px; line-height:1.25; text-align:left; text-decoration:none; white-space:nowrap; cursor:pointer; transition:background .2s ease,color .2s ease; }
     .erp-sidebar .sidebar-link:hover { background:rgba(255,255,255,.08); }
     .erp-sidebar .sidebar-link.active { background:#d1f36e; color:#102f31!important; font-weight:600; box-shadow:0 2px 6px rgba(209,243,110,.2); }
     .erp-sidebar .sidebar-link.active .sidebar-icon { color:#102f31!important; }
@@ -29,7 +29,7 @@
     .erp-sidebar .sidebar-icon { width:24px; flex:none; color:#fff; font-size:21px; text-align:center; }
     .erp-sidebar .submenu-wrapper { display:grid; grid-template-rows:1fr; overflow:hidden; opacity:1; transition:grid-template-rows .3s ease,opacity .3s ease; }
     .erp-sidebar .submenu-wrapper > div { min-height:0; overflow:hidden; }
-    .erp-sidebar .submenu-link { position:relative; display:flex; min-height:40px; align-items:center; gap:12px; overflow:hidden; border-radius:9px; padding:8px 12px 8px 48px; color:rgba(255,255,255,.58); font-size:13px; line-height:1.35; text-decoration:none; white-space:normal; transition:color .18s ease,background .18s ease; }
+    .erp-sidebar .submenu-link { position:relative; display:flex; min-height:40px; align-items:center; gap:12px; overflow:hidden; border-radius:8px; padding:10px 16px 10px 48px; color:rgba(255,255,255,.45); font-size:14px; line-height:1.35; text-decoration:none; white-space:normal; transition:color .18s ease,background .18s ease; }
     .erp-sidebar .submenu-link::before { position:absolute; top:50%; left:28px; width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.28); content:''; transform:translateY(-50%); transition:all .18s ease; }
     .erp-sidebar .submenu-link:hover { color:rgba(255,255,255,.95); background:rgba(255,255,255,.04); }
     .erp-sidebar .submenu-link:hover::before { background:rgba(255,255,255,.7); transform:translateY(-50%) scale(1.15); }
@@ -107,16 +107,16 @@
 
     <nav id="sidebar-nav" class="erp-sidebar__nav" aria-label="Menu ERP">
         <div class="erp-sidebar__group">
-            <a href="{{ url('/dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard', 'crm.dashboard') ? 'active' : '' }}" @if(request()->routeIs('dashboard', 'crm.dashboard')) aria-current="page" @endif>
+            <a href="{{ url('/dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard', 'admin.crm-dashboard', 'crm.dashboard') ? 'active' : '' }}" @if(request()->routeIs('dashboard', 'admin.crm-dashboard', 'crm.dashboard')) aria-current="page" @endif>
                 <span class="erp-sidebar__link-label"><i class="ph ph-squares-four sidebar-icon" aria-hidden="true"></i><span class="font-medium">Dashboard</span></span>
             </a>
         </div>
 
         @php
             $masterRoutes = ['products.*', 'receipt.*', 'product-receipt.*', 'unit.*', 'supplier.*', 'customers.*', 'branch.*', 'user.*', 'position.*', 'staff.*', 'kurir.*', 'payment-method.*', 'roles.*'];
-            $inventoryRoutes = ['product-stock', 'sortir.*', 'transfer-pengirim.*', 'transfer-penerima.*', 'stock-opname.*'];
+            $inventoryRoutes = ['sortir.*', 'transfer-pengirim.*', 'transfer-penerima.*', 'stock-opname.*'];
             $salesRoutes = ['pos.*', 'order-book.*', 'delivery-order', 'delivery-order.*'];
-            $reportRoutes = ['reports.hub', 'report-*'];
+            $reportRoutes = ['reports.hub', 'report-*', 'product-stock', 'product-stock.*'];
         @endphp
 
         <div class="erp-sidebar__group">
@@ -153,7 +153,6 @@
                 <span class="erp-sidebar__link-label"><i class="ph ph-package sidebar-icon" aria-hidden="true"></i><span class="font-medium">Inventaris</span></span>
             </a>
             <div class="submenu-wrapper" x-show="!sidebarCollapsed"><div class="py-1 space-y-0.5">
-                <a href="{{ route('product-stock') }}" class="submenu-link {{ request()->routeIs('product-stock', 'product-stock.*') ? 'active' : '' }}"><span>Stok Barang</span></a>
                 <a href="{{ route('sortir.index') }}" class="submenu-link {{ request()->routeIs('sortir.*') ? 'active' : '' }}"><span>Sortir Barang</span></a>
                 <div x-data="{ transferOpen: true }">
                     <button type="button" @click="transferOpen = !transferOpen" class="submenu-link erp-sidebar__nested-toggle" :aria-expanded="transferOpen"><span>Pindah Stok</span><i class="ph ph-caret-down chevron-rotate" :class="transferOpen ? 'open' : ''" aria-hidden="true"></i></button>
@@ -198,6 +197,7 @@
                 <span class="erp-sidebar__link-label"><i class="ph ph-chart-line-up sidebar-icon" aria-hidden="true"></i><span class="font-medium">Laporan</span></span>
             </a>
             <div class="submenu-wrapper" x-show="!sidebarCollapsed"><div class="py-1 space-y-0.5">
+                <a href="{{ route('product-stock') }}" class="submenu-link {{ request()->routeIs('product-stock', 'product-stock.*') ? 'active' : '' }}"><span>Stok Barang</span></a>
                 <a href="{{ route('report-total-aset') }}" class="submenu-link {{ request()->routeIs('report-total-aset') ? 'active' : '' }}"><span>Total Aset</span></a>
                 <a href="{{ route('report-product-sales.index') }}" class="submenu-link {{ request()->routeIs('report-product-sales.*') ? 'active' : '' }}"><span>Pendapatan Penjualan</span></a>
                 <a href="{{ route('report-profit-revenue.index') }}" class="submenu-link {{ request()->routeIs('report-profit-revenue.*') ? 'active' : '' }}"><span>Keuntungan Penjualan</span></a>

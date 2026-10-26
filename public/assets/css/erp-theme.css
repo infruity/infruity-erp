@@ -1,0 +1,267 @@
+/* Infruity ERP. Values are taken from infruity-frontend's master, report and login
+   surfaces. Semantic info colours and chart series deliberately remain distinct. */
+:root {
+    --bs-primary: #0b595b; --bs-primary-rgb:11,89,91; --bs-primary-light:#ecfdf5; --bs-primary-active:#08484a;
+    --bs-success:#047857; --bs-success-light:#ecfdf5;
+    --erp-primary: #0b595b;
+    --erp-primary-hover: #08484a;
+    --erp-brand-green: #0F5C45;
+    --erp-primary-soft: #ecfdf5;
+    --erp-accent: #F2B400;
+    --erp-selected: #d1f36e;
+    --erp-canvas: #e5e9f3;
+    --erp-surface: #fff;
+    --erp-surface-muted: #f9fafb;
+    --erp-border: #e5e7eb;
+    --erp-border-subtle: #f3f4f6;
+    --erp-text: #1f2937;
+    --erp-heading: #111827;
+    --erp-muted: #6b7280;
+    --erp-success: #047857;
+    --erp-success-soft: #ecfdf5;
+    --erp-warning: #b45309;
+    --erp-warning-soft: #fffbeb;
+    --erp-danger: #dc2626;
+    --erp-danger-soft: #fef2f2;
+    --erp-info: #2563eb;
+    --erp-info-soft: #eff6ff;
+    --erp-radius-control: 12px;
+    --erp-radius-surface: 16px;
+    --erp-shadow-card: 0 1px 3px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.04);
+    --erp-shadow-soft: 0 10px 40px -10px rgba(0,0,0,.08);
+    --erp-font: 'Plus Jakarta Sans', sans-serif;
+    --erp-font-heading: 'Poppins', sans-serif;
+    --erp-dock-space: calc(104px + env(safe-area-inset-bottom));
+}
+html.erp-html { font-size:16px; }
+.erp-ui {
+    --bs-primary: var(--erp-primary);
+    --bs-primary-rgb: 11,89,91;
+    --bs-primary-active: var(--erp-primary-hover);
+    --bs-primary-light: var(--erp-primary-soft);
+    --bs-primary-inverse: #fff;
+    --bs-text-primary:var(--erp-primary); --bs-text-success:var(--erp-success);
+    --bs-text-warning:var(--erp-warning); --bs-text-danger:var(--erp-danger); --bs-text-info:var(--erp-info);
+    --bs-secondary:#f3f4f6; --bs-secondary-active:#e5e7eb; --bs-secondary-light:#f9fafb; --bs-secondary-inverse:#4b5563;
+    --bs-component-active-bg: var(--erp-primary);
+    --bs-component-hover-color: var(--erp-primary);
+    --bs-link-color: var(--erp-primary);
+    --bs-link-color-rgb: 11,89,91;
+    --bs-link-hover-color: var(--erp-primary-hover);
+    --bs-link-hover-color-rgb: 8,72,74;
+    --bs-success: var(--erp-success);
+    --bs-success-rgb: 4,120,87;
+    --bs-success-light: var(--erp-success-soft);
+    --bs-success-active: #065f46;
+    --bs-success-inverse: #fff;
+    --bs-warning: var(--erp-warning);
+    --bs-warning-rgb: 180,83,9;
+    --bs-warning-light: var(--erp-warning-soft);
+    --bs-warning-active: #92400e;
+    --bs-warning-inverse: #fff;
+    --bs-danger: var(--erp-danger);
+    --bs-danger-rgb: 220,38,38;
+    --bs-danger-light: var(--erp-danger-soft);
+    --bs-danger-active: #b91c1c;
+    --bs-danger-inverse: #fff;
+    --bs-info: var(--erp-info);
+    --bs-info-rgb: 37,99,235;
+    --bs-info-light: var(--erp-info-soft);
+    --bs-info-active: #1d4ed8;
+    --bs-info-inverse: #fff;
+    --bs-body-color: var(--erp-text);
+    --bs-body-bg: var(--erp-surface);
+    --bs-body-font-family: var(--erp-font);
+    --bs-border-color: var(--erp-border);
+    --bs-border-radius: var(--erp-radius-control);
+    --bs-border-radius-lg: var(--erp-radius-surface);
+    --bs-gray-100: #f3f4f6;
+    --bs-gray-200: #e5e7eb;
+    --bs-gray-300: #d1d5db;
+    --bs-gray-400: #9ca3af;
+    --bs-gray-500: #6b7280;
+    --bs-gray-600: #4b5563;
+    --bs-gray-700: #374151;
+    --bs-gray-800: #1f2937;
+    --bs-gray-900: #111827;
+    font-family: var(--erp-font);
+    color: var(--erp-text);
+    background: var(--erp-canvas);
+    accent-color: var(--erp-primary);
+    -webkit-tap-highlight-color: rgba(11,89,91,.12);
+}
+.erp-ui ::selection { background: #d1f36e; color: #102f31; }
+.erp-ui :is(input, textarea) { caret-color: var(--erp-primary); }
+.erp-ui :is(button,a,input,select,textarea,[tabindex]):focus-visible {
+    outline: 2px solid var(--erp-primary);
+    outline-offset: 3px;
+}
+.erp-ui :is(button,input,select,textarea) { font-family: inherit; }
+.erp-ui :is(button,a) { touch-action: manipulation; }
+.erp-ui :is(button:disabled,input:disabled,select:disabled,textarea:disabled) { cursor: not-allowed; }
+.erp-ui :is(button[aria-busy=true],form[aria-busy=true]) { cursor: progress; }
+.erp-ui .erp-button, .erp-ui .erp-link-button {
+    display: inline-flex; min-height: 44px; align-items: center; justify-content: center;
+    gap: 8px; padding: 10px 18px; border: 1px solid var(--erp-border);
+    border-radius: var(--erp-radius-control); background: var(--erp-surface);
+    color: var(--erp-text); font-size: 14px; font-weight: 600; line-height: 1.4;
+    text-decoration: none; transition: background-color .16s, border-color .16s;
+}
+.erp-ui .erp-button--primary { border-color: var(--erp-primary); background: var(--erp-primary); color: white; }
+.erp-ui .erp-button--primary:hover { border-color: var(--erp-primary-hover); background: var(--erp-primary-hover); }
+.erp-ui .erp-button--danger { border-color: var(--erp-danger); background: var(--erp-danger); color: white; }
+.erp-ui .erp-button:disabled { opacity: .5; }
+/* Adapter for existing Bootstrap controls. No global recolouring of info badges,
+   avatars, charts, supplied assets, or native form affordances. */
+.erp-legacy :is(.btn,.form-control,.form-select,.input-group-text) {
+    border-radius: var(--erp-radius-control);
+    font-family: var(--erp-font);
+    font-size: 14px;
+    line-height: 1.5;
+}
+.erp-legacy .erp-main { padding:0; }
+.erp-legacy .btn { min-height: 44px; font-weight: 600; padding: 10px 16px; }
+.erp-legacy .btn.btn-sm { min-height: 40px; padding: 8px 12px; font-size: 13px; }
+.erp-legacy .btn.btn-icon { width: 44px; padding: 0; flex: none; }
+.erp-legacy .btn.btn-icon.btn-sm { width: 40px; }
+.erp-legacy .btn:disabled { opacity: .5; }
+.erp-ui .btn.btn-primary {
+    --bs-btn-color:white; --bs-btn-bg:var(--erp-primary); --bs-btn-border-color:var(--erp-primary);
+    --bs-btn-hover-color:white; --bs-btn-hover-bg:var(--erp-primary-hover); --bs-btn-hover-border-color:var(--erp-primary-hover);
+    --bs-btn-active-color:white; --bs-btn-active-bg:var(--erp-primary-hover); --bs-btn-active-border-color:var(--erp-primary-hover);
+    --bs-btn-disabled-color:white; --bs-btn-disabled-bg:var(--erp-primary); --bs-btn-disabled-border-color:var(--erp-primary);
+    --bs-btn-focus-shadow-rgb:11,89,91;
+    background:var(--erp-primary); border-color:var(--erp-primary); color:white;
+}
+.erp-ui .btn.btn-primary:hover { background:var(--erp-primary-hover); }
+.erp-ui .btn.btn-outline-primary {
+    --bs-btn-color:var(--erp-primary); --bs-btn-border-color:var(--erp-primary);
+    --bs-btn-hover-color:white; --bs-btn-hover-bg:var(--erp-primary); --bs-btn-hover-border-color:var(--erp-primary);
+    --bs-btn-active-color:white; --bs-btn-active-bg:var(--erp-primary-hover); --bs-btn-active-border-color:var(--erp-primary-hover);
+    --bs-btn-disabled-color:var(--erp-primary); --bs-btn-disabled-border-color:var(--erp-primary);
+    --bs-btn-focus-shadow-rgb:11,89,91;
+}
+.erp-ui .btn.btn-secondary { border-color:var(--erp-border); background:var(--erp-surface); color:#4b5563; }
+.erp-ui .btn.btn-secondary:hover { background:var(--erp-surface-muted); }
+.erp-ui .nav-pills { --bs-nav-pills-link-active-bg:var(--erp-primary); }
+.erp-ui :is(.progress,.progress-stacked) { --bs-progress-bar-bg:var(--erp-primary); }
+.erp-ui .form-range::-webkit-slider-thumb { background:var(--erp-primary); }
+.erp-ui .form-range::-moz-range-thumb { background:var(--erp-primary); }
+.erp-ui .form-check-input:indeterminate, .erp-ui .form-check.form-check-solid .form-check-input[type=checkbox]:indeterminate { background-color:var(--erp-primary); border-color:var(--erp-primary); }
+.erp-legacy .btn.btn-light { background: var(--erp-surface); border-color: var(--erp-border); color: #4b5563; }
+.erp-legacy .btn.btn-light:hover { background: var(--erp-surface-muted); }
+.erp-legacy .btn.btn-light-primary { border-color: #a7f3d0; }
+.erp-legacy :is(.form-control,.form-select) { min-height: 44px; color: var(--erp-text); background-color: white; border-color: var(--erp-border); }
+.erp-legacy :is(.form-control,.form-select):focus { border-color: var(--erp-primary); box-shadow: 0 0 0 3px rgba(11,89,91,.1); }
+.erp-legacy :is(.form-control,.form-select):disabled { background-color: var(--erp-surface-muted); color: var(--erp-muted); }
+.erp-legacy :is(.form-control,.form-select).is-invalid { border-color: var(--erp-danger); }
+.erp-legacy .form-control::placeholder { color: var(--erp-muted); font-weight: 400; }
+.erp-legacy .form-label { color: #4b5563; font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.erp-legacy .form-check-input:checked { background-color: var(--erp-primary); border-color: var(--erp-primary); }
+.erp-legacy .form-check-input:focus { border-color: var(--erp-primary); box-shadow: 0 0 0 3px rgba(11,89,91,.12); }
+.erp-legacy .input-group-text { color: #4b5563; border-color: var(--erp-border); background: var(--erp-surface-muted); }
+.erp-legacy .card {
+    --bs-card-border-radius: var(--erp-radius-surface);
+    --bs-card-border-color: var(--erp-border-subtle);
+    --bs-card-box-shadow: var(--erp-shadow-card);
+    border: 1px solid var(--erp-border-subtle); box-shadow: var(--erp-shadow-card);
+}
+.erp-legacy .card > .card-header { gap: 12px; padding: 20px 24px; min-height: 64px; flex-wrap: wrap; border-bottom-color: var(--erp-border-subtle); }
+.erp-legacy .card > .card-body { padding: 24px; }
+.erp-legacy .card > .card-footer { padding: 16px 24px; border-top-color: var(--erp-border-subtle); }
+.erp-legacy :is(.card-title,h1,h2,h3,h4) { color: var(--erp-heading); }
+.erp-legacy .card-title { font-size: 16px; font-weight: 700; }
+.erp-legacy .badge { border-radius: 999px; padding: 5px 9px; font-size: 11px; font-weight: 600; line-height: 1.4; }
+.erp-legacy .table { color: var(--erp-text); font-size: 13px; font-variant-numeric: tabular-nums; }
+.erp-legacy .table th { color: var(--erp-muted); font-size: 11px; font-weight: 600; letter-spacing: .02em; }
+.erp-legacy .table td { padding-block: 14px; border-color: var(--erp-border-subtle); vertical-align: middle; }
+.erp-legacy .table th { padding-block: 12px; }
+.erp-legacy .dataTables_wrapper { min-width: 0; width: 100%; }
+.erp-legacy :is(.dataTables_scroll,.dataTables_scrollHead,.dataTables_scrollBody) { max-width: 100%; }
+.erp-legacy .dataTables_scrollBody { overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: #9ca3af #f9fafb; }
+.erp-legacy .dataTables_wrapper :is(.dataTables_info,.dataTables_length) { color: var(--erp-muted); font-size: 12px; }
+.erp-legacy .pagination { --bs-pagination-color: #4b5563; --bs-pagination-hover-color: var(--erp-primary); --bs-pagination-hover-bg: var(--erp-primary-soft); --bs-pagination-active-bg: var(--erp-primary); --bs-pagination-active-color: white; --bs-pagination-focus-box-shadow: 0 0 0 3px rgba(11,89,91,.1); gap: 4px; }
+.erp-legacy .page-link { border-radius: 10px; min-width: 36px; min-height: 36px; }
+.erp-legacy .nav-line-tabs .nav-link.active { color: var(--erp-primary); border-bottom-color: var(--erp-primary); }
+.erp-legacy .dropdown-menu { border: 1px solid var(--erp-border-subtle); border-radius: 16px; box-shadow: var(--erp-shadow-soft); padding: 8px; }
+.erp-legacy .dropdown-item { min-height: 40px; display: flex; align-items: center; border-radius: 8px; font-size: 13px; }
+.erp-legacy .dropdown-item:hover { color: var(--erp-primary); background: var(--erp-primary-soft); }
+.erp-legacy .modal-dialog { margin: 24px auto; padding-inline: 12px; max-width: min(640px,100%); }
+.erp-legacy .modal-dialog.modal-lg { max-width: min(900px,100%); }
+.erp-legacy .modal-dialog.modal-xl { max-width: min(1140px,100%); }
+.erp-legacy .modal-content { max-height: calc(100dvh - 48px); border: 0; border-radius: 20px; box-shadow: var(--erp-shadow-soft); overflow: hidden; }
+.erp-legacy .modal-content > :is(form,.form) { display: flex; flex-direction: column; min-height: 0; max-height: inherit; }
+.erp-legacy .modal-header { padding: 20px 24px; gap: 12px; border-bottom: 1px solid var(--erp-border-subtle); flex-shrink: 0; }
+.erp-legacy .modal-header h2 { font-size: 17px; line-height: 1.4; margin: 0; }
+.erp-legacy .modal-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 24px; }
+.erp-legacy .modal-body .scroll-y { max-height: none; }
+.erp-legacy .modal-footer { padding: 16px 24px; gap: 8px; background: white; border-top: 1px solid var(--erp-border-subtle); flex-shrink: 0; }
+/* Select2/Flatpickr/SweetAlert append to body, so scope by ERP body and plugin class. */
+.erp-ui .select2-container .select2-selection { min-height: 44px; border: 1px solid var(--erp-border); border-radius: 12px; background: white; color: var(--erp-text); font: 14px/1.5 var(--erp-font); }
+.erp-ui .select2-container--focus .select2-selection, .erp-ui .select2-container--open .select2-selection { border-color: var(--erp-primary); }
+.erp-ui .select2-dropdown { border-color: var(--erp-border); border-radius: 12px; overflow: hidden; box-shadow: var(--erp-shadow-soft); }
+.erp-ui .select2-search__field { min-height: 40px; font: 16px var(--erp-font); border-color: var(--erp-border); border-radius: 8px; }
+.erp-ui .select2-results__option { min-height: 40px; padding: 10px 14px; font: 13px/1.5 var(--erp-font); }
+.erp-ui .select2-results__option--highlighted[aria-selected] { background: var(--erp-primary); color: white; }
+.erp-ui .select2-results__option[aria-selected=true] { background: var(--erp-primary-soft); color: var(--erp-primary); }
+.erp-ui .flatpickr-calendar { border-radius: 16px; border: 1px solid var(--erp-border); box-shadow: var(--erp-shadow-soft); font-family: var(--erp-font); }
+.erp-ui .flatpickr-day.selected, .erp-ui .flatpickr-day.startRange, .erp-ui .flatpickr-day.endRange { background: var(--erp-primary); border-color: var(--erp-primary); }
+.erp-ui .flatpickr-day.inRange { background: var(--erp-primary-soft); border-color: var(--erp-primary-soft); box-shadow: -5px 0 0 var(--erp-primary-soft),5px 0 0 var(--erp-primary-soft); }
+.erp-ui .swal2-popup { border-radius: 20px; padding: 24px; font-family: var(--erp-font); color: var(--erp-text); box-shadow: var(--erp-shadow-soft); }
+.erp-ui .swal2-title { font-size: 20px; line-height: 1.4; }
+.erp-ui .swal2-html-container { font-size: 14px; line-height: 1.6; }
+.erp-ui .swal2-actions { gap: 10px; }
+.erp-ui .swal2-styled { min-height: 44px; border-radius: 12px; padding: 10px 20px; font: 600 14px var(--erp-font); }
+.erp-ui .swal2-styled.swal2-confirm { background-color: var(--erp-primary); }
+.erp-ui .swal2-styled.swal2-cancel { background-color: #4b5563; }
+.erp-ui .swal2-styled:focus-visible { box-shadow: 0 0 0 3px rgba(11,89,91,.16); }
+.erp-ui .swal2-input { border-radius: 12px; border-color: var(--erp-border); font: 16px var(--erp-font); }
+.erp-ui .tooltip { --bs-tooltip-bg: #111827; --bs-tooltip-color: white; --bs-tooltip-border-radius: 8px; font-family: var(--erp-font); }
+.erp-ui .alert { border-radius: 12px; font-size: 13px; line-height: 1.6; }
+.erp-ui .alert-danger { color: var(--erp-danger); background: var(--erp-danger-soft); border-color: #fecaca; }
+.erp-ui .alert-success { color: var(--erp-success); background: var(--erp-success-soft); border-color: #a7f3d0; }
+.erp-ui .alert-warning { color: var(--erp-warning); background: var(--erp-warning-soft); border-color: #fde68a; }
+.erp-ui .alert-info { color: var(--erp-info); background: var(--erp-info-soft); border-color: #bfdbfe; }
+.erp-ui .spinner-border { color: var(--erp-primary); }
+.erp-ui .btn-primary .spinner-border { color: currentColor; }
+.erp-ui .erp-error-page { min-height: 100dvh; display: grid; place-items: center; padding: 24px; }
+.erp-ui .erp-error-card { width: min(100%,480px); padding: clamp(24px,5vw,48px); border-radius: 20px; background: white; box-shadow: var(--erp-shadow-soft); text-align: center; }
+.erp-ui .erp-error-card img { max-width: 140px; max-height: 48px; margin-bottom: 32px; }
+.erp-ui .erp-error-code { margin: 0 0 16px; font: 700 clamp(48px,12vw,80px)/1 var(--erp-font-heading); color: var(--erp-primary); }
+.erp-ui .erp-error-card h1 { font-size: 22px; line-height: 1.4; color: var(--erp-heading); }
+.erp-ui .erp-error-card p { margin: 12px 0 28px; color: var(--erp-muted); font-size: 14px; line-height: 1.7; }
+@media (max-width:767px) {
+    /* Root reserves dock space for every scrolling/flex form, including its footer.
+       Pages that own a fixed action bar opt out explicitly via erp-hide-dock. */
+    /* The shell (erp-shell.css) owns the dock clearance for .erp-main. */
+    .erp-ui.erp-hide-dock .erp-mobile-nav { display: none; }
+    .erp-legacy .card > :is(.card-header,.card-body,.card-footer) { padding-inline: 20px; }
+    .erp-legacy .card > .card-header { padding-block: 16px; }
+    .erp-legacy .card > .card-body { padding-block: 20px; }
+    .erp-legacy .modal-dialog { margin: 12px auto; }
+    .erp-legacy .modal-content { max-height: calc(100dvh - 24px); border-radius: 20px; }
+    .erp-legacy .modal-body { padding: 20px; }
+    .erp-legacy .modal-header, .erp-legacy .modal-footer { padding: 16px 20px; }
+    .erp-legacy :is(.form-control,.form-select) { font-size: 16px; }
+    .erp-legacy .page-link { min-width: 40px; min-height: 40px; }
+}
+@media print {
+    .erp-ui { background: white; }
+    .erp-ui .erp-main { padding-bottom: 0; }
+    .erp-ui :is(.erp-mobile-nav,.erp-sidebar,.erp-topbar-mobile,.erp-print-hide) { display: none; }
+}
+.erp-legacy .erp-payment-spacer { flex:none; height:172px; }
+.erp-legacy .payment-action-bar { border-top:1px solid var(--erp-border); border-radius:20px 20px 0 0; padding-bottom:calc(12px + env(safe-area-inset-bottom)); }
+.erp-legacy .payment-action-bar .card-body { padding:0; }
+
+@media (min-width:768px) { .erp-legacy .erp-main { padding:24px; } }
+@media (min-width:1024px) { .erp-legacy .erp-main { padding:24px 32px; } }
+.erp-legacy .accordion { --bs-accordion-active-color:var(--erp-primary); --bs-accordion-active-bg:var(--erp-primary-soft); --bs-accordion-btn-focus-border-color:var(--erp-primary); --bs-accordion-btn-focus-box-shadow:0 0 0 3px rgba(11,89,91,.1); }
+.erp-legacy .accordion-button { min-height:44px; border-radius:12px; font:600 13px var(--erp-font); }
+.erp-legacy .accordion-button:not(.collapsed) { background:var(--erp-primary-soft); color:var(--erp-primary); }
+@media (max-width:767px) {
+    /* A non-shrinking content item lets the scroller's trailing dock padding
+       participate in scrollHeight even when its form is taller than the screen. */
+    .erp-legacy:not(.erp-hide-dock) #kt_post { flex:1 0 auto; }
+}
+
