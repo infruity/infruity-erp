@@ -5,7 +5,10 @@
 @section('dashboard-fullscreen', '1')
 
 @section('content')
-<div x-data="recipeCreateForm()" x-init="document.body.classList.add('erp-hide-dock')" class="flex min-h-0 flex-1 flex-col overflow-hidden bg-white lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm">
+<template x-teleport="body">
+<div x-data="recipeCreateForm()" x-init="document.body.classList.add('erp-hide-dock')" class="fixed inset-0 z-[130] flex flex-col justify-end overflow-hidden motion-reduce:transition-none lg:flex-row lg:justify-end">
+    <div class="absolute inset-0 bg-black/60" @click="window.location.href = '{{ route('receipt.index') }}'"></div>
+    <section class="relative z-10 mx-auto flex h-[85vh] max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border-t border-gray-100 bg-white shadow-2xl motion-reduce:transition-none lg:mx-0 lg:h-full lg:max-w-sm lg:rounded-none lg:border-l lg:border-t-0">
     <div class="flex shrink-0 justify-center pt-3 pb-1 lg:hidden"><div class="h-1.5 w-16 rounded-full bg-gray-300"></div></div>
     <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-5 py-4">
         <div>
@@ -61,8 +64,9 @@
         <div class="relative shrink-0 border-b border-gray-100 bg-gray-50/60"><i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><input x-model="ingredientQuery" @input.debounce.250ms="lookupIngredient()" @keydown.escape="ingredientPickerOpen = false" autocomplete="off" placeholder="Cari bahan baku..." class="h-12 w-full bg-transparent pl-11 pr-4 text-sm outline-none focus:bg-white"></div>
         <div class="min-h-0 flex-1 overflow-y-auto"><template x-for="item in ingredientResults" :key="item.id"><button type="button" @click="selectIngredient(item)" class="flex w-full items-center justify-between border-b border-gray-50 px-5 py-3 text-left transition hover:bg-emerald-50"><span><span class="block text-sm font-semibold text-gray-800" x-text="item.name"></span><span class="mt-0.5 block text-xs text-gray-400" x-text="'Rp ' + formatMoney(item.hpp || 0) + (unitOf(item) ? '/' + unitOf(item) : '')"></span></span><i class="ph-bold ph-plus text-emerald-700"></i></button></template><p x-show="ingredientQuery.length >= 2 && ingredientResults.length === 0" class="px-5 py-8 text-center text-sm text-gray-400">Bahan tidak ditemukan</p><p x-show="ingredientQuery.length < 2" class="px-5 py-8 text-center text-sm text-gray-400">Ketik minimal 2 karakter untuk mencari.</p></div>
         <div class="shrink-0 border-t border-gray-100 px-5 py-3 pb-[calc(.75rem+env(safe-area-inset-bottom))]"><button type="button" @click="ingredientPickerOpen = false" class="h-11 w-full rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Selesai</button></div>
-    </section></div>
+    </section>
 </div>
+</template>
 @endsection
 
 @push('scripts')
