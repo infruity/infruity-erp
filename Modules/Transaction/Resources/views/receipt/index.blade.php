@@ -163,7 +163,7 @@
                         <div>
                             <label class="mb-1.5 block text-xs font-semibold text-gray-600">Produk Hasil <span class="text-red-400">*</span></label>
                             <div class="relative">
-                                <input x-model="productSearch" @input.debounce.250ms="lookupProduct()" @focus="if (productResults.length) productOpen = true" @keydown.escape="productOpen = false" autocomplete="off" placeholder="Cari produk yang membutuhkan resep..." class="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 pr-10 text-sm outline-none focus:border-emerald-500">
+                                <input x-model="productSearch" @input.debounce.250ms="lookupProduct()" @focus="if (productResults.length) productOpen = true" @keydown.escape="productOpen = false" autocomplete="off" placeholder="Cari produk yang membutuhkan resep..." class="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 pr-10 text-base outline-none focus:border-emerald-500 md:text-sm">
                                 <i class="ph ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 <div x-show="productOpen" x-cloak @click.outside="productOpen = false" class="absolute z-40 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg">
                                     <template x-for="item in productResults" :key="item.id"><button type="button" @click="productId = item.id; productSearch = item.name; productOpen = false" class="w-full px-4 py-3 text-left text-sm text-emerald-900 hover:bg-emerald-50" x-text="item.name"></button></template>
@@ -186,7 +186,7 @@
                                 <div>
                                     <label class="mb-1.5 block text-xs font-semibold text-gray-600">Pilih Bahan <span class="text-red-400">*</span></label>
                                     <div class="relative">
-                                        <input x-model="ingredient.search" @input.debounce.250ms="lookupIngredient(ingredient)" @focus="if (ingredient.results.length) ingredient.open = true" @keydown.escape="ingredient.open = false" autocomplete="off" placeholder="Cari bahan baku..." class="h-11 w-full rounded-xl border border-gray-200 px-4 pr-10 text-sm outline-none focus:border-emerald-500">
+                                        <input x-model="ingredient.search" @input.debounce.250ms="lookupIngredient(ingredient)" @focus="if (ingredient.results.length) ingredient.open = true" @keydown.escape="ingredient.open = false" autocomplete="off" placeholder="Cari bahan baku..." class="h-11 w-full rounded-xl border border-gray-200 px-4 pr-10 text-base outline-none focus:border-emerald-500 md:text-sm">
                                         <i class="ph ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                         <div x-show="ingredient.open" x-cloak @click.outside="ingredient.open = false" class="absolute left-0 right-0 top-full z-40 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg">
                                         <template x-for="item in ingredient.results" :key="item.id"><button type="button" @click="ingredient.id = item.id; ingredient.search = item.name; ingredient.open = false" class="w-full px-4 py-3 text-left text-sm text-emerald-900 hover:bg-emerald-50" x-text="item.name"></button></template>
@@ -195,7 +195,7 @@
                                     </div>
                                 </div>
                                 <input type="hidden" name="product_receipt_id[]" :value="ingredient.id" required>
-                                <div><label class="mb-1.5 block text-xs font-semibold text-gray-600">Kuantitas <span class="text-red-400">*</span></label><input name="ingredients_quantity[]" x-model="ingredient.quantity" type="number" step="0.01" min="0.01" required placeholder="Masukkan kuantitas" class="h-11 w-full rounded-xl border border-gray-200 px-4 text-sm outline-none focus:border-emerald-500"></div>
+                                <div><label class="mb-1.5 block text-xs font-semibold text-gray-600">Kuantitas <span class="text-red-400">*</span></label><input name="ingredients_quantity[]" x-model="ingredient.quantity" type="number" step="0.01" min="0.01" required placeholder="Masukkan kuantitas" class="h-11 w-full rounded-xl border border-gray-200 px-4 text-base outline-none focus:border-emerald-500 md:text-sm"></div>
                             </div>
                         </template>
                         <p x-show="ingredients.length === 0" class="py-5 text-center text-xs text-gray-400">Belum ada bahan baku</p>
