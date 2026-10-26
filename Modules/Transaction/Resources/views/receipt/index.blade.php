@@ -143,51 +143,46 @@
                     </div>
                     <button type="button" @click="closeRecipeEditor()" aria-label="Tutup editor resep" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"><i class="ph-bold ph-x text-xl"></i></button>
                 </header>
-                <form x-data="recipeForm({ id: editingRecipe.product.id, name: editingRecipe.product.name }, editingRecipe.ingredients)"
+                <form x-data="recipeForm(editingRecipe.product, editingRecipe.ingredients, editingRecipe.description)"
                       :action="`{{ url('receipt') }}/${editingRecipe.id}`" method="POST"
                       @submit="if (!productId || !ingredients.length || ingredients.some(item => !item.id || !item.quantity || Number(item.quantity) <= 0)) { $event.preventDefault(); error = 'Pilih produk dan lengkapi semua bahan serta kuantitasnya.'; }"
                       class="flex min-h-0 flex-1 flex-col">
                     @csrf @method('PUT')
+                    <input type="hidden" name="description" :value="description">
                     <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain bg-gray-50/40 px-5 pt-5 pb-3.5">
-                        <div>
+                        <div class="relative shrink-0">
                             <label class="mb-1.5 block text-xs font-semibold text-gray-600">Pilih Produk <span class="text-red-400">*</span></label>
-                            <div class="relative">
-                                <input x-model="productSearch" @input.debounce.250ms="lookupProduct()" @focus="if (productResults.length) productOpen = true" @keydown.escape="productOpen = false" autocomplete="off" placeholder="Cari produk yang membutuhkan resep..." class="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 pr-10 text-base outline-none focus:border-emerald-500 md:text-sm">
-                                <i class="ph ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                <div x-show="productOpen" x-cloak @click.outside="productOpen = false" class="absolute z-40 mt-1.5 max-h-56 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-xl">
-                                    <template x-for="item in productResults" :key="item.id"><button type="button" @click="productId = item.id; productSearch = item.name; productOpen = false" class="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-emerald-50/50"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-sm shadow-sm" :class="item.material_icon_class || 'bg-gray-100'" x-text="item.material_emoji || '📦'"></span><span class="min-w-0 flex-1 truncate text-xs font-bold text-gray-900" x-text="item.name"></span><span class="shrink-0 text-xs font-medium text-gray-400" x-text="item.unit || 'unit'"></span></button></template>
-                                    <p x-show="productResults.length === 0" class="px-4 py-4 text-center text-xs text-gray-400">Produk tidak ditemukan</p>
-                                </div>
-                            </div>
+                            <button type="button" @click="toggleProductPicker()" @keydown.escape.stop="closeProductPicker()" :aria-expanded="productOpen" :class="productOpen ? 'border-blue-600 ring-2 ring-blue-600' : ''" class="flex min-h-[48px] w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-left transition hover:border-gray-300 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                <span class="flex min-w-0 items-center gap-3"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-base" :class="productId ? selectedProductIconClass : 'bg-gray-100'"><span x-show="productId" x-text="selectedProductEmoji"></span><i x-show="!productId" class="ph ph-bag text-base text-gray-400"></i></span><span class="min-w-0"><span class="block truncate text-sm" :class="productId ? 'font-semibold text-gray-900' : 'font-normal text-gray-400'" x-text="productSearch || 'Pilih produk...'">Pilih produk...</span><span x-show="productId && selectedProductUnit" x-cloak class="mt-0.5 block text-[11px] text-gray-400" x-text="'Satuan hasil: ' + selectedProductUnit"></span></span></span>
+                                <i class="ph-bold ph-caret-down ml-3 shrink-0 text-base text-gray-400 transition-transform" :class="productOpen ? 'rotate-180' : ''"></i>
+                            </button>
                             <input type="hidden" name="product_id" :value="productId" required>
-                        </div>
-                        <div>
-                            <label class="mb-1.5 block text-xs font-semibold text-gray-600">Keterangan</label>
-                            <textarea name="description" x-init="$el.value = editingRecipe.description || ''" rows="3" maxlength="255" placeholder="Catatan resep" class="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-base outline-none focus:border-emerald-500 md:text-sm"></textarea>
-                        </div>
-                        <div class="flex items-center justify-between gap-3 border-t border-gray-200 pt-4">
-                            <div><h3 class="text-sm font-bold text-gray-800">Daftar Bahan Baku <span class="text-red-400">*</span></h3><p class="mt-1 text-xs text-gray-400">Tambahkan bahan dan jumlah yang digunakan</p></div>
-                            <button type="button" @click="addIngredient()" class="flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-[#0b595b] px-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#084547] active:scale-95"><i class="ph-bold ph-plus"></i> Tambah</button>
-                        </div>
-                        <template x-for="(ingredient, index) in ingredients" :key="ingredient.key">
-                            <div class="space-y-4 rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm">
-                                <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-700" x-text="'Bahan Baku #' + (index + 1)"></span><button type="button" @click="ingredients.splice(index, 1)" class="h-8 w-8 rounded-lg text-red-500 hover:bg-red-50" :aria-label="'Hapus bahan ' + (index + 1)"><i class="ph ph-trash"></i></button></div>
-                                <div>
-                                    <label class="mb-1.5 block text-xs font-semibold text-gray-600">Pilih Bahan <span class="text-red-400">*</span></label>
-                                    <div class="relative">
-                                        <input x-model="ingredient.search" @input.debounce.250ms="lookupIngredient(ingredient)" @focus="if (ingredient.results.length) ingredient.open = true" @keydown.escape="ingredient.open = false" autocomplete="off" placeholder="Cari bahan baku..." class="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 pr-10 text-base outline-none focus:border-emerald-500 md:text-sm">
-                                        <i class="ph ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                        <div x-show="ingredient.open" x-cloak @click.outside="ingredient.open = false" class="absolute left-0 right-0 top-full z-40 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg">
-                                        <template x-for="item in ingredient.results" :key="item.id"><button type="button" @click="ingredient.id = item.id; ingredient.search = item.name; ingredient.open = false" class="w-full px-4 py-3 text-left text-sm text-emerald-900 hover:bg-emerald-50" x-text="item.name"></button></template>
-                                        <p x-show="ingredient.results.length === 0" class="px-4 py-3 text-xs text-gray-400">Bahan tidak ditemukan</p>
-                                        </div>
-                                    </div>
+                            <div x-show="productOpen" x-cloak x-transition.origin.top @click.outside="closeProductPicker()" class="absolute left-0 top-full z-30 mt-1.5 flex w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                                <div class="relative shrink-0 border-b border-gray-100 bg-gray-50/50"><i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i><input x-model="productQuery" @input.debounce.250ms="lookupProduct()" @keydown.escape.stop="closeProductPicker()" autocomplete="off" placeholder="Cari produk..." class="w-full bg-transparent py-2.5 pl-9 pr-4 text-xs outline-none transition-colors focus:bg-white"></div>
+                                <div class="max-h-52 divide-y divide-gray-50 overflow-y-auto overscroll-contain">
+                                    <div x-show="productLoading" class="px-4 py-4 text-center text-xs text-gray-400">Memuat produk...</div>
+                                    <template x-for="item in productResults" :key="item.id"><button type="button" @click="selectProduct(item)" :class="String(productId) === String(item.id) ? 'bg-emerald-50' : ''" class="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-emerald-50/50"><span class="flex min-w-0 flex-1 items-center gap-2.5"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-sm shadow-sm" :class="item.material_icon_class || 'bg-gray-100'" x-text="item.material_emoji || '📦'"></span><span class="truncate text-xs font-bold text-gray-900" x-text="item.name"></span></span><span class="flex shrink-0 items-center gap-2"><span class="text-xs font-medium text-gray-400" x-text="item.unit || 'unit'"></span><i x-show="String(productId) === String(item.id)" class="ph-bold ph-check text-sm text-emerald-600"></i></span></button></template>
+                                    <p x-show="!productLoading && !productLookupError && productResults.length === 0" class="px-4 py-6 text-center text-xs text-gray-400">Produk tidak ditemukan</p>
+                                    <p x-show="productLookupError" x-text="productLookupError" role="alert" class="px-4 py-4 text-center text-xs text-red-500"></p>
                                 </div>
-                                <input type="hidden" name="product_receipt_id[]" :value="ingredient.id" required>
-                                <div><label class="mb-1.5 block text-xs font-semibold text-gray-600">Kuantitas <span class="text-red-400">*</span></label><input name="ingredients_quantity[]" x-model="ingredient.quantity" type="number" step="0.01" min="0.01" required placeholder="Masukkan kuantitas" class="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-base outline-none focus:border-emerald-500 md:text-sm"></div>
                             </div>
-                        </template>
-                        <p x-show="ingredients.length === 0" class="py-5 text-center text-xs text-gray-400">Belum ada bahan baku</p>
+                        </div>
+                        <div class="shrink-0">
+                            <label class="mb-1.5 block text-xs font-semibold text-gray-600">Harga Pokok Produksi (HPP)</label>
+                            <div class="flex h-11 w-full items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 px-3.5"><span class="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-50 text-sm text-emerald-600"><i class="ph-duotone ph-coins"></i></span><span class="text-sm font-extrabold text-gray-900" x-text="'Rp ' + formatMoney(selectedProductHpp)">Rp 0</span><span class="text-[11px] text-gray-400" x-text="selectedProductUnit ? '/' + selectedProductUnit : '/porsi'"></span></div>
+                        </div>
+                        <section class="flex min-h-[220px] flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm">
+                            <div class="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 pb-3"><div><h3 class="text-sm font-bold text-gray-800">Daftar Bahan Baku <span class="text-red-400">*</span></h3><p class="mt-1 text-xs text-gray-400" x-text="ingredients.length + ' bahan terdaftar'"></p></div><button type="button" @click="addIngredient()" class="flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-[#0b595b] px-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#084547] active:scale-95"><i class="ph-bold ph-plus"></i> Tambah</button></div>
+                            <div x-show="ingredients.length === 0" class="flex flex-1 flex-col items-center justify-center py-8 text-center text-xs text-gray-400"><i class="ph ph-basket text-2xl"></i><p class="mt-2">Belum ada bahan baku.</p><button type="button" @click="addIngredient()" class="mt-1 font-semibold text-emerald-700">+ Tambah bahan</button></div>
+                            <div x-show="ingredients.length > 0" class="min-h-0 flex-1 divide-y divide-gray-100 overflow-y-auto">
+                                <template x-for="(ingredient, index) in ingredients" :key="ingredient.key"><div class="space-y-3 py-3">
+                                    <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-700" x-text="'Bahan Baku #' + (index + 1)"></span><button x-show="ingredients.length > 1" type="button" @click="ingredients.splice(index, 1)" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-300 transition hover:bg-red-50 hover:text-red-500" :aria-label="'Hapus bahan ' + (index + 1)"><i class="ph-bold ph-x"></i></button></div>
+                                    <div class="relative"><label class="mb-1.5 block text-xs font-semibold text-gray-600">Pilih Bahan <span class="text-red-400">*</span></label><input x-model="ingredient.search" @input.debounce.250ms="lookupIngredient(ingredient)" @focus="if (ingredient.results.length) ingredient.open = true" @keydown.escape="ingredient.open = false" autocomplete="off" placeholder="Cari bahan baku..." class="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 pr-10 text-base outline-none focus:border-emerald-500 md:text-sm"><i class="ph ph-magnifying-glass absolute right-4 top-[calc(50%+0.55rem)] -translate-y-1/2 text-gray-400"></i><div x-show="ingredient.open" x-cloak @click.outside="ingredient.open = false" class="absolute left-0 right-0 top-full z-40 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg"><template x-for="item in ingredient.results" :key="item.id"><button type="button" @click="selectIngredient(ingredient, item)" class="w-full px-4 py-3 text-left text-sm text-emerald-900 hover:bg-emerald-50" x-text="item.name"></button></template><p x-show="ingredient.results.length === 0" class="px-4 py-3 text-center text-xs text-gray-400">Bahan tidak ditemukan</p></div></div>
+                                    <input type="hidden" name="product_receipt_id[]" :value="ingredient.id" required>
+                                    <label class="flex h-9 items-center rounded-xl border border-gray-200 bg-gray-100 px-2.5 focus-within:border-emerald-500 focus-within:bg-white"><span class="mr-2 text-xs font-semibold text-gray-500">Kuantitas</span><input name="ingredients_quantity[]" x-model="ingredient.quantity" type="number" step="0.01" min="0.01" required placeholder="0" class="min-w-0 flex-1 bg-transparent text-right text-sm font-bold text-gray-900 outline-none"><span class="pl-2 text-xs font-semibold text-gray-500" x-text="ingredient.unit || 'unit'"></span></label>
+                                </div></template>
+                            </div>
+                        </section>
                         <p x-show="error" x-text="error" role="alert" class="text-xs text-red-600"></p>
                     </div>
                     <div class="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-white px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
@@ -322,39 +317,88 @@ async function deleteReceipt(id) {
     }
 }
 
-function recipeForm(selectedProduct, initialIngredients) {
+function recipeForm(selectedProduct, initialIngredients, initialDescription = '') {
     let nextKey = 0;
+    let productLookupSequence = 0;
+    const unitOf = item => typeof item?.unit === 'string' ? item.unit : (item?.unit?.abbreviation || item?.unit?.name || '');
     return {
         productId: selectedProduct?.id || '',
         productSearch: selectedProduct?.name || '',
+        productQuery: '',
+        selectedProductUnit: unitOf(selectedProduct),
+        selectedProductHpp: Number(selectedProduct?.hpp || 0),
+        selectedProductEmoji: selectedProduct?.material_emoji || '📦',
+        selectedProductIconClass: selectedProduct?.material_icon_class || 'bg-gray-100',
         productResults: [],
+        productLoading: false,
+        productLookupError: '',
         productOpen: false,
+        description: initialDescription || '',
         ingredients: initialIngredients.map(item => ({
             key: ++nextKey,
             id: item.id,
             search: item.name,
             quantity: item.quantity,
+            unit: unitOf(item),
+            hpp: Number(item.hpp || 0),
+            materialEmoji: item.material_emoji || '📦',
+            materialIconClass: item.material_icon_class || 'bg-gray-100',
             results: [],
             open: false,
         })),
         error: '',
-        addIngredient() {
-            this.ingredients.push({key: ++nextKey, id: '', search: '', quantity: '', results: [], open: false});
+        formatMoney(value) { return Math.round(Number(value || 0)).toLocaleString('id-ID'); },
+        toggleProductPicker() {
+            if (this.productOpen) { this.closeProductPicker(); return; }
+            this.productOpen = true;
+            this.productQuery = '';
+            this.productResults = [];
+            this.productLookupError = '';
+            this.lookupProduct();
+        },
+        closeProductPicker() {
+            this.productOpen = false;
+            productLookupSequence++;
+            this.productLoading = false;
+        },
+        selectProduct(item) {
+            this.productId = item.id;
+            this.productSearch = item.name;
+            this.selectedProductHpp = Number(item.hpp || 0);
+            this.selectedProductUnit = unitOf(item);
+            this.selectedProductEmoji = item.material_emoji || '📦';
+            this.selectedProductIconClass = item.material_icon_class || 'bg-gray-100';
+            this.closeProductPicker();
+            this.error = '';
         },
         async lookupProduct() {
-            this.productId = '';
-            if (this.productSearch.trim().length < 2) {
-                this.productResults = [];
-                this.productOpen = false;
-                return;
+            const query = this.productQuery.trim();
+            const requestId = ++productLookupSequence;
+            this.productLoading = true;
+            this.productLookupError = '';
+            try {
+                const response = await fetch(`{{ route('products.get-product-receipt') }}?search=${encodeURIComponent(query)}`, {headers: {'Accept': 'application/json'}});
+                if (!response.ok) throw new Error('Gagal mencari produk.');
+                const results = await response.json();
+                if (requestId === productLookupSequence && query === this.productQuery.trim()) this.productResults = results.slice(0, 30);
+            } catch (error) {
+                if (requestId === productLookupSequence) this.productLookupError = 'Gagal memuat produk.';
+            } finally {
+                if (requestId === productLookupSequence) this.productLoading = false;
             }
-            const response = await fetch(`{{ route('products.get-product-receipt') }}?search=${encodeURIComponent(this.productSearch.trim())}`, {headers: {'Accept': 'application/json'}});
-            if (!response.ok) {
-                this.error = 'Gagal mencari produk.';
-                return;
-            }
-            this.productResults = (await response.json()).slice(0, 30);
-            this.productOpen = true;
+        },
+        addIngredient() {
+            this.ingredients.push({key: ++nextKey, id: '', search: '', quantity: '', unit: '', hpp: 0, materialEmoji: '📦', materialIconClass: 'bg-gray-100', results: [], open: false});
+        },
+        selectIngredient(ingredient, item) {
+            ingredient.id = item.id;
+            ingredient.search = item.name;
+            ingredient.unit = unitOf(item);
+            ingredient.hpp = Number(item.hpp || 0);
+            ingredient.materialEmoji = item.material_emoji || '📦';
+            ingredient.materialIconClass = item.material_icon_class || 'bg-gray-100';
+            ingredient.open = false;
+            this.error = '';
         },
         async lookupIngredient(ingredient) {
             ingredient.id = '';
