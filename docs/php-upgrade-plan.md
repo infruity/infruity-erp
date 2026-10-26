@@ -2,7 +2,26 @@
 
 Branch: `feature/php-upgrade` (dibuat dari `backend`).
 
-## Kondisi saat ini
+## Progres
+
+| Langkah | Status | Commit |
+|---|---|---|
+| Bersihkan deprecation `(double)` cast | Selesai | `aa20eb3e` |
+| Laravel 10 → 11 | Selesai | `b4a0ce24` |
+| Laravel 11 → 12 | Selesai | `5fa5d4dc` |
+| Laravel 12 → 13 + PHP 8.5 + Excel 4 | Selesai | `2520735d` |
+| Audit sisa paket (livewire, dll) | Belum | — |
+| Regression test role/cabang | Belum | — |
+
+Hasil verifikasi terakhir (PHP 8.5.10): Laravel 13.38.0, **0 deprecation**, 481 route,
+login 200, dashboard/produk/sortir/stok opname/pindah stok render normal,
+test suite 36 lulus / 4 gagal (gagal karena setup SQLite tidak punya tabel `users`,
+bukan akibat upgrade).
+
+Catatan lingkungan: `php` default masih 8.3, jadi aplikasi **wajib** dijalankan dengan
+`/opt/homebrew/opt/php@8.5/bin/php` sampai symlink Homebrew diarahkan ke 8.5.
+
+## Kondisi awal (sebelum upgrade)
 
 | Komponen | Versi terpasang | Keterangan |
 |---|---|---|
