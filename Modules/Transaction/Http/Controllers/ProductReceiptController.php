@@ -76,7 +76,7 @@ class ProductReceiptController extends Controller
             return $denied;
         }
 
-        return view('transaction::receipt.create');
+        return view('transaction::receipt.create-form');
     }
 
     /**
