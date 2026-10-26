@@ -54,14 +54,16 @@ class CustomerController extends Controller
             ->paginate(50)
             ->withQueryString();
 
-        return view('master::customer.index', compact('records'));
+        $birthPlaces = DB::table('reg_regencies')->orderBy('name')->pluck('name')->all();
+
+        return view('master::customer.index', compact('records', 'birthPlaces'));
     }
 
     /**
      * Show the form for creating a new resource.
      * @return Renderable
      */
-    public function create()
+    public function create(Request $request)
     {
         if ($denied = $this->requireAccess('customers.create')) {
             return $denied;
@@ -72,6 +74,12 @@ class CustomerController extends Controller
         ];
         $data['data'] = null;
         $data['customerNumber'] = Customer::getCustomerNumber(); // ['code', 'number']
+        $indexView = $this->index($request);
+
+        if ($indexView instanceof \Illuminate\View\View) {
+            return $indexView->with('customerCreateOpen', true);
+        }
+
         $data['birthPlaces'] = DB::table('reg_regencies')->orderBy('name')->pluck('name')->all();
         return view('master::customer.create', $data);
     }
@@ -194,16 +202,13 @@ class CustomerController extends Controller
         $data['page_plugin_js'] = [
             'assets/plugins/custom/formrepeater/formrepeater.bundle.js',
         ];
-        $birthPlaces = DB::table('reg_regencies')->orderBy('name')->pluck('name')->all();
         $indexView = $this->index($request);
 
         if ($indexView instanceof \Illuminate\View\View) {
-            return $indexView
-                ->with('editingCustomer', $customer)
-                ->with('birthPlaces', $birthPlaces);
+            return $indexView->with('editingCustomer', $customer);
         }
 
-        $data['birthPlaces'] = $birthPlaces;
+        $data['birthPlaces'] = DB::table('reg_regencies')->orderBy('name')->pluck('name')->all();
         return view('master::customer.create', $data);
     }
 

@@ -6,6 +6,22 @@ use PHPUnit\Framework\TestCase;
 
 final class CustomerEditOverlayTest extends TestCase
 {
+    public function test_customer_create_entry_renders_the_list_with_the_add_drawer_open(): void
+    {
+        $root = dirname(__DIR__, 2);
+        $controller = file_get_contents($root . '/Modules/Master/Http/Controllers/CustomerController.php');
+        self::assertStringContainsString("->with('customerCreateOpen', true)", $controller);
+
+        $sharedView = file_get_contents($root . '/Modules/Master/Resources/views/partials/mobile-index.blade.php');
+        $createOverlay = file_get_contents($root . '/Modules/Master/Resources/views/customer/create-overlay.blade.php');
+        self::assertStringContainsString("@include('master::customer.create-overlay')", $sharedView);
+        self::assertStringContainsString("route('customers.store')", $createOverlay);
+        self::assertStringContainsString('customerCreateOpen', $createOverlay);
+        self::assertStringContainsString('history.pushState', $sharedView);
+        self::assertStringContainsString('regionEndpoints, createIndexUrl, createPageUrl', $sharedView);
+        self::assertStringContainsString('@mobile-add-toggle.window="openCreate()"', $sharedView);
+    }
+
     public function test_edit_route_renders_the_customer_list_with_a_persisted_edit_drawer(): void
     {
         $root = dirname(__DIR__, 2);
