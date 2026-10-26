@@ -48,7 +48,7 @@
                 <div x-show="ingredients.length === 0" class="flex flex-1 flex-col items-center justify-center py-8 text-center text-xs text-gray-400"><i class="ph ph-basket text-2xl"></i><p class="mt-2">Belum ada bahan baku.</p><button type="button" @click="openIngredientPicker()" class="mt-1 font-semibold text-emerald-700">+ Tambah bahan</button></div>
                 <div x-show="ingredients.length > 0" class="min-h-0 flex-1 divide-y divide-gray-100 overflow-y-auto">
                     <template x-for="(ingredient, index) in ingredients" :key="ingredient.key"><div class="flex items-center justify-between gap-3 py-2.5">
-                        <div class="flex min-w-0 flex-1 items-center gap-2.5"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-base text-rose-500"><i class="ph ph-orange-slice"></i></span><span class="min-w-0 flex-1"><span class="block truncate text-sm font-semibold text-gray-900" x-text="ingredient.search"></span><span class="mt-0.5 block text-xs text-gray-400">Total Modal <strong class="ml-1 font-bold text-emerald-700" x-text="'Rp ' + formatMoney(ingredientCost(ingredient))"></strong></span></span></div>
+                        <div class="flex min-w-0 flex-1 items-center gap-2.5"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-100 text-base shadow-sm" :class="ingredient.materialIconClass || 'bg-gray-100'"><span x-text="ingredient.materialEmoji || '📦'"></span></span><span class="min-w-0 flex-1"><span class="block truncate text-sm font-semibold text-gray-900" x-text="ingredient.search"></span><span class="mt-0.5 block text-xs text-gray-400">Total Modal <strong class="ml-1 font-bold text-emerald-700" x-text="'Rp ' + formatMoney(ingredientCost(ingredient))"></strong></span></span></div>
                         <div class="flex shrink-0 items-center gap-1.5"><label class="flex h-9 items-center rounded-xl border border-gray-200 bg-gray-100 px-2.5 focus-within:border-emerald-500 focus-within:bg-white"><input type="text" inputmode="decimal" maxlength="9" :value="ingredient.displayQuantity" @input="updateQuantity(ingredient, $event)" aria-label="Kuantitas bahan" class="w-12 bg-transparent text-right text-sm font-bold text-gray-900 outline-none"><span class="pl-1 text-xs font-semibold text-gray-500" x-text="ingredient.unit || 'unit'"></span></label><button x-show="ingredients.length > 1" type="button" @click="removeIngredient(index)" :aria-label="'Hapus ' + ingredient.search" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-300 transition hover:bg-red-50 hover:text-red-500"><i class="ph-bold ph-x"></i></button></div>
                         <input type="hidden" name="product_receipt_id[]" :value="ingredient.id" required><input type="hidden" name="ingredients_quantity[]" :value="ingredient.quantity" required>
                     </div></template>
@@ -86,7 +86,7 @@ function recipeCreateForm() {
     let nextKey = 0;
     const makeIngredient = item => {
         const quantity = String(item.quantity ?? '');
-        return {key: ++nextKey, id: item.id || '', search: item.name || '', quantity, displayQuantity: quantity.replace('.', ','), hpp: Number(item.hpp || 0), unit: unitOf(item)};
+        return {key: ++nextKey, id: item.id || '', search: item.name || '', quantity, displayQuantity: quantity.replace('.', ','), hpp: Number(item.hpp || 0), unit: unitOf(item), materialEmoji: item.material_emoji || '📦', materialIconClass: item.material_icon_class || 'bg-gray-100'};
     };
     return {
         productId: '', productSearch: '', productQuery: '', selectedProductUnit: '', productResults: [], productOpen: false,
@@ -120,7 +120,7 @@ function recipeCreateForm() {
             if (this.ingredients.some(ingredient => String(ingredient.id) === String(item.id))) { this.error = 'Bahan ini sudah ada di resep.'; return; }
             const unit = unitOf(item);
             const quantity = ['kg', 'liter', 'l'].includes(unit.toLowerCase()) ? '0.1' : '1';
-            this.ingredients.push(makeIngredient({id: item.id, name: item.name, quantity, hpp: item.hpp, unit}));
+            this.ingredients.push(makeIngredient({id: item.id, name: item.name, quantity, hpp: item.hpp, unit, material_emoji: item.material_emoji, material_icon_class: item.material_icon_class}));
             this.ingredientPickerOpen = false; this.error = '';
         },
         updateQuantity(item, event) {
