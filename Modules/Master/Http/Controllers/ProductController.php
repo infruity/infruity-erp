@@ -865,16 +865,26 @@ class ProductController extends Controller
     public function getProduct(Request $request)
     {
         $search = $request->input('search', '');
-        $query  = Product::with(['unit', 'category'])
+        $products = Product::with(['unit', 'category'])
             ->select('id', 'name', 'sku as code', 'hpp', 'price', 'stock', 'product_unit', 'category_id')
             ->where('name', 'like', '%' . $search . '%')
-            ->where('tipe', '!=', 'parcel') // Exclude parcel type
-            ->get()
-            ->map(function ($item) {
-                // Use hpp if available, otherwise use price
-                $item->hpp = $item->hpp ?: 0;
-                return $item;
-            });
+            ->where('tipe', '!=', 'parcel'); // Exclude parcel type
+
+        if ($request->boolean('raw_materials')) {
+            $products->where('status', 'no-receipt')
+                ->whereNull('is_variant')
+                ->orderBy('name')
+                ->limit(60);
+        }
+
+        $query = $products->get()->map(function ($item) use ($request) {
+            // Use hpp if available, otherwise use price
+            $item->hpp = $item->hpp ?: 0;
+            if ($request->boolean('raw_materials')) {
+                [$item->material_emoji, $item->material_icon_class] = \Modules\Master\Support\ProductIcon::resolve($item);
+            }
+            return $item;
+        });
 
         return response()->json($query);
     }
