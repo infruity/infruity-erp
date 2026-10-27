@@ -55,6 +55,7 @@ class UserController extends Controller
                         ->orWhere('email', 'like', $search);
                 });
             })
+            ->orderByDesc('is_aktif')
             ->orderBy('nm_user')
             ->paginate(50)
             ->withQueryString();

@@ -183,9 +183,15 @@ class UserStaffLinkTest extends TestCase
             'staff_id' => null,
         ]);
 
-        $this->get('/user')
+        $response = $this->get('/user')
             ->assertOk()
             ->assertSee('former@example.test')
             ->assertSee('Nonaktif');
+
+        $response->assertViewHas('users', function ($users) {
+            $userIds = $users->getCollection()->pluck('id_user')->all();
+
+            return array_search(3, $userIds, true) < array_search(4, $userIds, true);
+        });
     }
 }
