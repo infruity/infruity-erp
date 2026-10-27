@@ -34,6 +34,18 @@ test('user detail opens as a role-backed bottom sheet with interactive access sw
     assert.match(view, /rounded-t-3xl[^\"]*sm:rounded-2xl/);
 });
 
+test('access switch disabled bindings return booleans when saving state is unset', () => {
+    const bindings = [...view.matchAll(/role="switch"[^>]*:disabled="([^"]+)"/g)].map((match) => match[1]);
+    assert.equal(bindings.length, 2, 'group and module switches both define a disabled state');
+
+    for (const binding of bindings) {
+        const isDisabled = new Function('selected', `return ${binding}`);
+        assert.equal(isDisabled({can_change_permissions: true}), false);
+        assert.equal(isDisabled({can_change_permissions: true, permission_saving: true}), true);
+        assert.equal(isDisabled({can_change_permissions: false}), true);
+    }
+});
+
 test('detail access summary applies account overrides over assigned role grants', () => {
     const start = view.indexOf('function userMaster(');
     const end = view.indexOf('\n}\n</script>', start) + 2;
