@@ -34,6 +34,18 @@ test('user detail opens as a role-backed bottom sheet with interactive access sw
     assert.match(view, /rounded-t-3xl[^\"]*sm:rounded-2xl/);
 });
 
+test('permission switch tracks use green only for the active state', () => {
+    const switches = [...view.matchAll(/<button type="button" role="switch"[^>]*>/g)].map(match => match[0]);
+    assert.equal(switches.length, 2, 'group and module switches are both rendered');
+
+    for (const toggle of switches) {
+        const classes = toggle.match(/class="([^"]+)"/)?.[1].split(/\s+/) || [];
+        assert.equal(classes.includes('bg-gray-200'), false, 'a static gray class must not override the active color');
+        const colorBinding = toggle.match(/:class="([^"]*bg-emerald-500[^"]*)"/)?.[1] || '';
+        assert.match(colorBinding, /\? 'bg-emerald-500' : 'bg-gray-200'/);
+    }
+});
+
 test('access switch disabled bindings return booleans when saving state is unset', () => {
     const bindings = [...view.matchAll(/role="switch"[^>]*:disabled="([^"]+)"/g)].map((match) => match[1]);
     assert.equal(bindings.length, 2, 'group and module switches both define a disabled state');
