@@ -7,6 +7,62 @@
 @endsection
 
 @php
+    $permissionDefinitions = config('constant.permissions', []);
+    $accessGroupDefinitions = [
+        ['label' => 'Master', 'icon' => 'ph-folder', 'iconBg' => 'bg-emerald-50', 'iconColor' => 'text-emerald-500', 'modules' => [
+            ['key' => 'products', 'label' => 'Produk'], ['key' => 'category', 'label' => 'Kategori'],
+            ['key' => 'unit', 'label' => 'Satuan Produk'], ['key' => 'supplier', 'label' => 'Pemasok'],
+            ['key' => 'customers', 'label' => 'Pelanggan'], ['key' => 'branch', 'label' => 'Cabang'],
+            ['key' => 'position', 'label' => 'Jabatan'], ['key' => 'staff', 'label' => 'Karyawan'],
+            ['key' => 'payment-method', 'label' => 'Metode Pembayaran'], ['key' => 'user', 'label' => 'Akun Pengguna'],
+            ['key' => 'role-menu', 'label' => 'Hak Akses'], ['key' => 'role', 'label' => 'Peran'],
+            ['key' => 'account', 'label' => 'Akun'], ['key' => 'product-stock', 'label' => 'Stok Produk'],
+            ['key' => 'location', 'label' => 'Lokasi'], ['key' => 'handling', 'label' => 'Penanganan'],
+            ['key' => 'department', 'label' => 'Departemen'],
+            ['key' => 'kurir', 'label' => 'Kurir', 'permissions' => ['kurir.index']],
+        ]],
+        ['label' => 'Transaksi', 'icon' => 'ph-receipt', 'iconBg' => 'bg-amber-50', 'iconColor' => 'text-amber-500', 'modules' => [
+            ['key' => 'wholesale', 'label' => 'Pengadaan'], ['key' => 'sortir', 'label' => 'Sortir Barang'],
+            ['key' => 'transfer', 'label' => 'Pindah Stok'], ['key' => 'stock-opname', 'label' => 'Stok Opname'],
+            ['key' => 'production', 'label' => 'Produksi'], ['key' => 'pos', 'label' => 'Kasir / POS'],
+            ['key' => 'order-book', 'label' => 'Pesanan'], ['key' => 'delivery-order', 'label' => 'Pengiriman'],
+            ['key' => 'expenditure', 'label' => 'Pengeluaran'], ['key' => 'receipt', 'label' => 'Resep'],
+            ['key' => 'parcel', 'label' => 'Parcel'], ['key' => 'other-book', 'label' => 'Other Book'],
+            ['key' => 'product-receipt', 'label' => 'Resep Produk'], ['key' => 'stock-out', 'label' => 'Stok Keluar'],
+            ['key' => 'stock-out-type', 'label' => 'Tipe Stok Keluar'],
+        ]],
+        ['label' => 'CRM', 'icon' => 'ph-users', 'iconBg' => 'bg-purple-50', 'iconColor' => 'text-purple-500', 'modules' => [
+            ['key' => 'crm-dashboard', 'label' => 'Dashboard CRM'], ['key' => 'customer-report', 'label' => 'Laporan Customer'],
+            ['key' => 'tier', 'label' => 'Tier'], ['key' => 'setting-exp', 'label' => 'Pengaturan EXP'],
+            ['key' => 'point-schedule', 'label' => 'Jadwal Poin'], ['key' => 'deposito', 'label' => 'Deposito'],
+            ['key' => 'customer-deposito', 'label' => 'Deposito Customer'], ['key' => 'campaign', 'label' => 'Campaign'],
+        ]],
+        ['label' => 'Laporan', 'icon' => 'ph-chart-bar', 'iconBg' => 'bg-cyan-50', 'iconColor' => 'text-cyan-500', 'modules' => [
+            ['key' => 'report', 'label' => 'Laporan'],
+        ]],
+        ['label' => 'Pengaturan', 'icon' => 'ph-gear', 'iconBg' => 'bg-gray-100', 'iconColor' => 'text-gray-500', 'modules' => [
+            ['key' => 'setting-nota', 'label' => 'Nota & Cetak'],
+        ]],
+    ];
+    $accessGroups = collect($accessGroupDefinitions)->map(function ($group) use ($permissionDefinitions) {
+        $modules = collect($group['modules'])
+            ->filter(fn ($module) => isset($permissionDefinitions[$module['key']]) || !empty($module['permissions']))
+            ->map(function ($module) use ($permissionDefinitions) {
+                if (isset($permissionDefinitions[$module['key']])) {
+                    $actions = $permissionDefinitions[$module['key']]['actions'] ?? [];
+                    $module['permissions'] = collect(array_keys($actions))
+                        ->map(fn ($action) => $module['key'] . '.' . $action)
+                        ->values()
+                        ->all();
+                }
+                return $module;
+            })
+            ->values()
+            ->all();
+
+        return ['label' => $group['label'], 'icon' => $group['icon'], 'iconBg' => $group['iconBg'], 'iconColor' => $group['iconColor'], 'modules' => $modules];
+    })->filter(fn ($group) => count($group['modules']) > 0)->values()->all();
+
     $editableUsers = $users->getCollection()->map(fn ($user) => [
         'id' => $user->id_user,
         'name' => $user->nm_user,
@@ -15,13 +71,14 @@
         'modules_total' => $modulesTotal,
         'role' => $user->RoleUser?->id_role,
         'role_name' => $user->RoleUser?->role?->nm_role ?? 'Tanpa peran',
+        'permissions' => $user->RoleUser?->role?->roleMenu?->pluck('permission')->all() ?? [],
         'branches' => $user->branches->pluck('branch_id')->all(),
         'branch_names' => $user->branches->map(fn ($assignment) => $assignment->branch?->name)->filter()->values()->all(),
     ])->values();
 @endphp
 
 @section('content')
-<div x-data="userMaster(@js($editableUsers), @js(route('user.store')), @js(url('user')), @js(old('_user_id')), @js(old('full_name')), @js(old('email')), @js(old('id_role')), @js(old('id_branch', [])))"
+<div x-data="userMaster(@js($editableUsers), @js(route('user.store')), @js(url('user')), @js(old('_user_id')), @js(old('full_name')), @js(old('email')), @js(old('id_role')), @js(old('id_branch', [])), @js($accessGroups))"
      x-init="if (@js($errors->any())) restoreOld(); else if (new URLSearchParams(location.search).has('create')) openCreate()"
      @user-filter-open.window="filterOpen = true"
      @mobile-add-toggle.window="openCreate()"
@@ -93,24 +150,52 @@
     </template>
 
     <template x-teleport="body">
-        <div x-show="selected" x-cloak data-erp-modal role="dialog" aria-modal="true" aria-label="Detail Akun" class="fixed inset-0 z-[110] flex items-center justify-center px-4" @keydown.escape.window="selected = null">
+        <div x-show="selected" x-cloak data-erp-modal role="dialog" aria-modal="true" aria-label="Detail Akun"
+             x-transition:enter="transition-opacity ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-[120] flex items-end justify-center sm:items-center sm:px-4" @keydown.escape.window="selected = null">
             <div class="absolute inset-0 bg-black/60" @click="selected = null"></div>
-            <div class="relative w-full max-w-sm max-h-[calc(100dvh-2rem)] bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
-                <div class="flex shrink-0 items-center justify-between px-6 pt-6 pb-4"><h3 class="text-lg font-bold text-gray-800">Detail Akun</h3><button type="button" @click="selected = null" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div>
-                <template x-if="selected">
-                    <div class="min-h-0 overflow-y-auto px-6 pb-6 space-y-5 text-sm break-words">
-                        <div class="flex items-center gap-3"><i class="ph ph-envelope text-xl text-emerald-600 w-8"></i><div class="min-w-0"><div class="font-semibold text-gray-800 break-all" x-text="selected.email"></div><div class="text-[11px] text-gray-400">Alamat Email</div></div></div>
-                        <div class="flex items-center gap-3"><i class="ph ph-user text-xl text-emerald-600 w-8"></i><div><div class="font-semibold text-gray-800" x-text="selected.name"></div><div class="text-[11px] text-gray-400">Nama Pengguna</div></div></div>
-                        <div class="flex items-center gap-3"><i class="ph ph-shield-check text-xl text-emerald-600 w-8"></i><div><div class="font-semibold text-gray-800" x-text="selected.role_name"></div><div class="text-[11px] text-gray-400">Hak Akses</div></div></div>
-                        <div class="flex items-center gap-3"><i class="ph ph-map-pin text-xl text-emerald-600 w-8"></i><div><div class="font-semibold text-gray-800" x-text="selected.branch_names.join(', ') || 'Tanpa cabang'"></div><div class="text-[11px] text-gray-400">Cabang</div></div></div>
-                    </div>
-                </template>
-                <div class="flex shrink-0 border-t border-gray-100">
+            <div x-show="selected" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full sm:translate-y-4 sm:scale-95" x-transition:enter-end="translate-y-0 sm:scale-100" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 sm:scale-100" x-transition:leave-end="translate-y-full sm:translate-y-4 sm:scale-95" class="relative z-10 flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-xl sm:max-w-sm sm:rounded-2xl">
+                <div class="flex shrink-0 justify-center pt-3 pb-1 sm:hidden"><div class="h-1.5 w-16 rounded-full bg-gray-300"></div></div>
+                <div class="flex shrink-0 items-center gap-3 border-b border-gray-100 px-5 pt-2 pb-4 sm:pt-5">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-sm font-bold text-emerald-700"><span x-text="selected?.email ? selected.email[0].toUpperCase() : '?'" aria-hidden="true"></span></div>
+                    <div class="min-w-0 flex-1"><h3 class="truncate text-[14px] font-bold text-gray-900" x-text="selected?.email || ''"></h3><p class="truncate text-[11px] text-gray-400" x-text="selected?.name || 'Belum tertaut'"></p></div>
+                    <button type="button" @click="selected = null" aria-label="Tutup detail akun" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"><i class="ph-bold ph-x text-sm"></i></button>
+                </div>
+                <div class="shrink-0 px-4 pt-3 pb-1">
+                    <label for="user-access-search" class="sr-only">Cari modul atau sub modul</label>
+                    <div class="relative"><i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true"></i><input id="user-access-search" type="text" x-model="modalSearchQuery" placeholder="Cari modul atau sub modul..." class="h-9 w-full rounded-xl border border-gray-100 bg-gray-50 pl-9 pr-9 text-[13px] text-gray-800 placeholder-gray-400 transition-all focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"><button x-show="modalSearchQuery.length > 0" x-cloak type="button" @click="modalSearchQuery = ''" aria-label="Hapus pencarian modul" class="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 text-gray-500 transition-colors hover:bg-gray-300"><i class="ph-bold ph-x text-[10px]"></i></button></div>
+                </div>
+                <div class="max-h-[300px] overflow-y-auto overscroll-none px-4 py-2 scrollbar-hide flex flex-col gap-2">
+                    <template x-for="group in filteredAccessGroups" :key="group.label">
+                        <section class="mb-2">
+                            <div class="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-gray-50">
+                                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white" :class="[group.iconBg, group.iconColor]"><i :class="'ph-duotone ' + group.icon + ' text-base'" aria-hidden="true"></i></div>
+                                <div class="min-w-0 flex-1"><div class="text-[13px] font-semibold text-gray-800" x-text="group.label"></div><div class="text-[11px] text-gray-400" x-text="hasFullGroupAccess(selected, group) ? 'Akses penuh' : 'Akses sebagian / tidak ada'"></div></div>
+                                <span role="switch" aria-disabled="true" :aria-checked="hasFullGroupAccess(selected, group) ? 'true' : 'false'" :aria-label="'Akses grup ' + group.label" title="Hak akses mengikuti role akun" class="relative mr-1 h-6 w-11 shrink-0 rounded-full bg-gray-200 transition-colors" :class="hasFullGroupAccess(selected, group) ? 'bg-emerald-500' : 'bg-gray-200'"><span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="hasFullGroupAccess(selected, group) ? 'translate-x-5' : 'translate-x-0'"></span></span>
+                            </div>
+                            <div class="px-3 pt-1 pb-3"><div class="ml-[18px] flex flex-col gap-1 border-l-[1.5px] border-emerald-100">
+                                <template x-for="module in group.modules" :key="module.key">
+                                    <div class="flex items-center justify-between py-1.5 pr-2">
+                                        <div class="flex min-w-0 flex-1 items-center"><div class="w-6 shrink-0"><div class="h-[1.5px] w-full bg-emerald-100"></div></div><span class="truncate pl-1.5 text-[13px] font-medium text-gray-500" x-text="module.label"></span></div>
+                                        <span role="switch" aria-disabled="true" :aria-checked="hasModuleAccess(selected, module) ? 'true' : 'false'" :aria-label="'Akses ' + module.label" title="Hak akses mengikuti role akun" class="relative h-5 w-9 shrink-0 rounded-full bg-gray-200 transition-colors" :class="hasModuleAccess(selected, module) ? 'bg-emerald-500' : 'bg-gray-200'"><span class="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform" :class="hasModuleAccess(selected, module) ? 'translate-x-4' : 'translate-x-0'"></span></span>
+                                    </div>
+                                </template>
+                            </div></div>
+                        </section>
+                    </template>
+                    <div x-show="filteredAccessGroups.length === 0" class="py-8 text-center text-[13px] text-gray-400">Modul tidak ditemukan</div>
+                </div>
+                <div class="flex w-full shrink-0 border-t border-gray-100 pb-[env(safe-area-inset-bottom)]">
                     @if (check_access('user.edit'))
-                        <button type="button" @click="editSelected()" class="flex-1 h-12 text-sm font-semibold text-[#0b595b] hover:bg-emerald-50"><i class="ph ph-pencil-simple mr-1"></i> Edit</button>
+                        <button type="button" @click="editSelected()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-[#0b595b] transition-colors hover:bg-emerald-50"><i class="ph-bold ph-pencil-simple"></i>Edit</button>
                     @endif
                     @if (check_access('user.destroy'))
-                        <button type="button" @click="removeSelected()" class="flex-1 h-12 text-sm font-semibold text-red-600 hover:bg-red-50 border-l border-gray-100"><i class="ph ph-trash mr-1"></i> Hapus</button>
+                        <div class="w-px bg-gray-100"></div><button type="button" @click="removeSelected()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50"><i class="ph-bold ph-trash"></i>Hapus</button>
                     @endif
                 </div>
             </div>
@@ -152,11 +237,27 @@
 
 @push('scripts')
 <script>
-function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRole, oldBranches) {
+function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRole, oldBranches, accessGroups) {
     return {
-        users, storeUrl, baseUrl, drawerOpen: false, filterOpen: false, editing: null, selected: null,
+        users, storeUrl, baseUrl, accessGroups, drawerOpen: false, filterOpen: false, editing: null, selected: null, modalSearchQuery: '',
         form: { name: '', email: '', password: '', role: '', branches: [] },
-        openDetail(id) { this.selected = this.users.find(user => user.id === id) || null; },
+        get filteredAccessGroups() {
+            const query = this.modalSearchQuery.trim().toLocaleLowerCase();
+            if (!query) return this.accessGroups;
+            return this.accessGroups.map(group => {
+                if (group.label.toLocaleLowerCase().includes(query)) return group;
+                return { ...group, modules: group.modules.filter(module => module.label.toLocaleLowerCase().includes(query)) };
+            }).filter(group => group.modules.length > 0);
+        },
+        hasModuleAccess(user, module) {
+            if (!user) return false;
+            if (Number(user.role) === 1) return true;
+            return module.permissions.some(permission => (user.permissions || []).includes(permission));
+        },
+        hasFullGroupAccess(user, group) {
+            return Boolean(user) && group.modules.length > 0 && group.modules.every(module => this.hasModuleAccess(user, module));
+        },
+        openDetail(id) { this.modalSearchQuery = ''; this.selected = this.users.find(user => user.id === id) || null; },
         editSelected() { const user = this.selected; this.selected = null; if (user) this.openEdit(user.id); },
         removeSelected() { const user = this.selected; this.selected = null; if (user) this.remove(user.id, user.name); },
         openCreate() {
