@@ -251,19 +251,18 @@ test('permission search matches the reference focus ring and group/submodule fil
     assert.equal(app.filteredAccessGroups.length, 0);
 });
 
-test('account edit drawer matches the reference email and searchable employee-link layout', () => {
+test('account edit drawer allows multiple accounts to link to the same employee', () => {
     assert.match(view, /name="staff_id"/);
     assert.match(view, /Tautkan ke Karyawan/);
     assert.match(view, /Cari karyawan/);
-    assert.match(view, /Telah ditautkan/);
+    assert.doesNotMatch(view, /Telah ditautkan|linkedStaffUsers|staffLinkedToAnotherAccount/);
     assert.match(view, /Karyawan tidak ditemukan/);
     assert.match(view, /bg-black\/70/);
     assert.match(view, /max-h-\[90dvh\]/);
     assert.match(view, /rounded-t-3xl/);
     assert.match(view, /@js\(\$staffOptions\)/);
-    assert.match(view, /@js\(\$linkedStaffUsers\)/);
     assert.match(controller, /Staff::query\(\)->orderBy\('name'\)/);
-    assert.match(controller, /DB::table\('staff'\)->whereNotNull\('user_id'\)->pluck\('user_id', 'id'\)/);
+    assert.doesNotMatch(controller, /whereNotNull\('user_id'\)/);
 });
 
 test('edit mode exposes account identity and employee linking without create-only fields', () => {
@@ -290,7 +289,7 @@ test('edit account drawer matches reference scrolling and email focus styling', 
     }
 });
 
-test('edit form keeps its employee selected while locking staff linked to another account', () => {
+test('edit form can select an employee already linked to another account', () => {
     const start = view.indexOf('function userMaster(');
     const end = view.indexOf('\n}\n</script>', start) + 2;
     const context = {};
@@ -304,11 +303,9 @@ test('edit form keeps its employee selected while locking staff linked to anothe
     app.openEdit(8);
     assert.equal(app.form.staffId, '10');
     assert.equal(app.form.emailType, 'custom');
-    assert.equal(app.staffLinkedToAnotherAccount({id: 10}), false);
-    assert.equal(app.staffLinkedToAnotherAccount({id: 11}), true);
     app.toggleStaff(11);
-    assert.equal(app.form.staffId, '10');
-    app.toggleStaff(10);
+    assert.equal(app.form.staffId, '11');
+    app.toggleStaff(11);
     assert.equal(app.form.staffId, '');
 });
 

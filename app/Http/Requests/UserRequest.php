@@ -24,17 +24,10 @@ class UserRequest extends FormRequest
     public function rules()
     {
         $isCreate = $this->isMethod('post');
-        $currentUserId = $isCreate ? null : $this->route('user');
         $staffIdRule = [
             'nullable',
             'integer',
-            Rule::exists('staff', 'id')->where(function ($query) use ($currentUserId) {
-                $query->whereNull('user_id');
-                if ($currentUserId !== null) {
-                    $query->orWhere('user_id', $currentUserId);
-                }
-            }),
-            Rule::unique('users', 'staff_id')->ignore($currentUserId, 'id_user'),
+            Rule::exists('staff', 'id'),
         ];
 
         if (!$isCreate && $this->boolean('link_only')) {
@@ -59,7 +52,6 @@ class UserRequest extends FormRequest
     {
         return [
             'email.unique' => 'Email sudah digunakan user lain, mohon untuk menggunakan email yang lain',
-            'staff_id.unique' => 'Karyawan tersebut sudah tertaut ke akun lain.',
             'staff_id.exists' => 'Karyawan yang dipilih tidak tersedia.',
             // 'captcha' => 'captcha tidak sesuai',
             'password.required' => 'Password wajib diisi.',

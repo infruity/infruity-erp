@@ -85,7 +85,7 @@
 @endphp
 
 @section('content')
-<div x-data="userMaster(@js($editableUsers), @js(route('user.store')), @js(url('user')), @js(old('_user_id')), @js(old('full_name')), @js(old('email')), @js(old('id_role')), @js(old('id_branch', [])), @js($accessGroups), @js($nextAutoEmail), @js(old('email_type')), @js(old('staff_id')), @js($staffOptions), @js($linkedStaffUsers))"
+<div x-data="userMaster(@js($editableUsers), @js(route('user.store')), @js(url('user')), @js(old('_user_id')), @js(old('full_name')), @js(old('email')), @js(old('id_role')), @js(old('id_branch', [])), @js($accessGroups), @js($nextAutoEmail), @js(old('email_type')), @js(old('staff_id')), @js($staffOptions))"
      x-init="if (@js($errors->any())) restoreOld(); else if (new URLSearchParams(location.search).has('create')) openCreate()"
      @user-filter-open.window="filterOpen = true"
      @mobile-add-toggle.window="openCreate()"
@@ -258,10 +258,9 @@
                                 </div>
                                 <div class="relative max-h-48 overflow-y-auto overscroll-none bg-white">
                                     <template x-for="staff in filteredStaffOptions" :key="staff.id">
-                                        <button type="button" :disabled="staffLinkedToAnotherAccount(staff)" @click="toggleStaff(staff.id)" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left transition-colors last:border-b-0" :class="staffLinkedToAnotherAccount(staff) ? 'cursor-not-allowed bg-gray-50/50 text-gray-400' : 'cursor-pointer hover:bg-gray-50'">
-                                            <span x-show="!staffLinkedToAnotherAccount(staff)" class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 transition-colors" :class="String(form.staffId) === String(staff.id) ? 'border-emerald-500' : ''" aria-hidden="true"><span class="h-2 w-2 rounded-full bg-emerald-500 transition-transform" :class="String(form.staffId) === String(staff.id) ? 'scale-100' : 'scale-0'"></span></span>
-                                            <span x-show="staffLinkedToAnotherAccount(staff)" x-cloak class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-400" aria-hidden="true"><i class="ph-bold ph-lock-key text-[10px]"></i></span>
-                                            <span class="flex min-w-0 flex-1 items-center justify-between gap-3"><span class="truncate text-[13px] font-medium" :class="String(form.staffId) === String(staff.id) ? 'font-bold text-gray-900' : ''" x-text="staff.name"></span><span x-show="staffLinkedToAnotherAccount(staff)" x-cloak class="shrink-0 text-[10px] italic text-gray-400">Telah ditautkan</span></span>
+                                        <button type="button" @click="toggleStaff(staff.id)" class="flex w-full cursor-pointer items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left transition-colors last:border-b-0 hover:bg-gray-50">
+                                            <span class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 transition-colors" :class="String(form.staffId) === String(staff.id) ? 'border-emerald-500' : ''" aria-hidden="true"><span class="h-2 w-2 rounded-full bg-emerald-500 transition-transform" :class="String(form.staffId) === String(staff.id) ? 'scale-100' : 'scale-0'"></span></span>
+                                            <span class="flex min-w-0 flex-1 items-center justify-between gap-3"><span class="truncate text-[13px] font-medium" :class="String(form.staffId) === String(staff.id) ? 'font-bold text-gray-900' : ''" x-text="staff.name"></span></span>
                                         </button>
                                     </template>
                                     <p x-show="filteredStaffOptions.length === 0" class="px-4 py-5 text-center text-[13px] text-gray-400">Karyawan tidak ditemukan</p>
@@ -290,9 +289,9 @@
 
 @push('scripts')
 <script>
-function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRole, oldBranches, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions = [], linkedStaffUsers = {}) {
+function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRole, oldBranches, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions = []) {
     return {
-        users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, linkedStaffUsers, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, modalSearchQuery: '',
+        users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, modalSearchQuery: '',
         form: { name: '', email: '', emailType: 'auto', password: '', role: '', branches: [], staffId: '' },
         get filteredAccessGroups() {
             const query = this.modalSearchQuery.toLowerCase().trim();
@@ -306,12 +305,7 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
             const query = this.staffSearch.trim().toLocaleLowerCase();
             return this.staffOptions.filter(staff => String(staff.name || '').toLocaleLowerCase().includes(query));
         },
-        staffLinkedToAnotherAccount(staff) {
-            const linkedUserId = this.linkedStaffUsers?.[staff.id];
-            return linkedUserId != null && Number(linkedUserId) !== Number(this.editing);
-        },
         toggleStaff(staffId) {
-            if (this.staffLinkedToAnotherAccount({id: staffId})) return;
             this.form.staffId = String(this.form.staffId) === String(staffId) ? '' : String(staffId);
         },
         permissionAccess(user, permission) {

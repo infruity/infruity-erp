@@ -6,6 +6,7 @@ use App\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Modules\Master\Entities\Staff;
 use Tests\TestCase;
 
 class UserStaffLinkTest extends TestCase
@@ -24,7 +25,7 @@ class UserStaffLinkTest extends TestCase
             $table->string('email')->unique();
             $table->string('password')->nullable();
             $table->boolean('is_aktif')->default(true);
-            $table->unsignedBigInteger('staff_id')->nullable()->unique();
+            $table->unsignedBigInteger('staff_id')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
@@ -32,7 +33,6 @@ class UserStaffLinkTest extends TestCase
             $table->id();
             $table->string('name');
             $table->string('status')->default('aktif');
-            $table->unsignedBigInteger('user_id')->nullable()->unique();
             $table->timestamps();
         });
         Schema::create('role', function (Blueprint $table) {
@@ -97,7 +97,23 @@ class UserStaffLinkTest extends TestCase
         session(['role' => ['id_role' => 3]]);
     }
 
-    public function test_account_edit_persists_a_staff_link_and_rejects_a_staff_linked_to_another_account(): void
+    public function test_multiple_accounts_can_share_one_staff_record(): void
+    {
+        $this->put('/user/2', [
+            'link_only' => '1',
+            'staff_id' => 10,
+        ])->assertRedirect('/user');
+
+        $this->put('/user/3', [
+            'link_only' => '1',
+            'staff_id' => 10,
+        ])->assertRedirect('/user');
+
+        $this->assertDatabaseHas('users', ['id_user' => 2, 'staff_id' => 10]);
+        $this->assertDatabaseHas('users', ['id_user' => 3, 'staff_id' => 10]);
+    }
+
+    public function test_account_edit_links_many_accounts_to_one_staff_and_unlinks_only_the_selected_account(): void
     {
         $this->put('/user/2', [
             'link_only' => '1',
@@ -111,16 +127,16 @@ class UserStaffLinkTest extends TestCase
             'email' => 'first@example.test',
             'password' => 'secret',
         ]);
-        $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => 2]);
         $this->assertDatabaseHas('role_user', ['id_user' => 2, 'id_role' => 2]);
         $this->assertDatabaseHas('user_branch', ['user_id' => 2, 'branch_id' => 1]);
 
         $this->put('/user/3', [
             'link_only' => '1',
             'staff_id' => 10,
-        ])->assertSessionHasErrors('staff_id');
+        ])->assertRedirect('/user');
 
-        $this->assertDatabaseHas('users', ['id_user' => 3, 'staff_id' => null]);
+        $this->assertDatabaseHas('users', ['id_user' => 3, 'staff_id' => 10]);
+        $this->assertEqualsCanonicalizing([2, 3], Staff::findOrFail(10)->accounts()->pluck('id_user')->all());
 
         $this->put('/user/2', [
             'link_only' => '1',
@@ -128,7 +144,8 @@ class UserStaffLinkTest extends TestCase
         ])->assertRedirect('/user');
 
         $this->assertDatabaseHas('users', ['id_user' => 2, 'staff_id' => null]);
-        $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => null]);
+        $this->assertDatabaseHas('users', ['id_user' => 3, 'staff_id' => 10]);
+        $this->assertEqualsCanonicalizing([3], Staff::findOrFail(10)->accounts()->pluck('id_user')->all());
     }
 
     public function test_create_links_staff_using_ids_not_matching_names_or_emails(): void
@@ -145,12 +162,11 @@ class UserStaffLinkTest extends TestCase
         $account = DB::table('users')->where('email', 'account@example.test')->first();
         $this->assertNotNull($account);
         $this->assertDatabaseHas('users', ['id_user' => $account->id_user, 'staff_id' => 10]);
-        $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => $account->id_user]);
     }
 
-    public function test_account_hydration_reads_the_staff_user_id_relationship(): void
+    public function test_account_hydration_reads_the_canonical_staff_id_relationship(): void
     {
-        DB::table('staff')->where('id', 10)->update(['user_id' => 2]);
+        DB::table('users')->where('id_user', 2)->update(['staff_id' => 10]);
 
         $this->assertSame(10, User::findOrFail(2)->staff?->id);
 
@@ -159,6 +175,13 @@ class UserStaffLinkTest extends TestCase
             ->assertJsonPath('staff.id', 10);
 
         $this->get('/user')->assertOk()->assertSee('Dwi Febbrianti Robbiatul Adawiyah');
+    }
+
+    public function test_staff_account_relation_includes_inactive_accounts(): void
+    {
+        DB::table('users')->where('id_user', 3)->update(['is_aktif' => false, 'staff_id' => 10]);
+
+        $this->assertSame([3], Staff::findOrFail(10)->accounts()->pluck('id_user')->all());
     }
 
     public function test_user_index_renders_searchable_staff_link_options(): void

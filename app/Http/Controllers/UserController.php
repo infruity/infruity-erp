@@ -31,7 +31,6 @@ class UserController extends Controller
         $data['role'] = Role::all();
         $data['branch'] = Branch::all();
         $data['staffOptions'] = Staff::query()->orderBy('name')->get(['id', 'name']);
-        $data['linkedStaffUsers'] = DB::table('staff')->whereNotNull('user_id')->pluck('user_id', 'id')->all() + DB::table('users')->whereNotNull('staff_id')->pluck('id_user', 'staff_id')->all();
         $usedOperatorNumbers = DB::table('users')
             ->whereRaw('UPPER(email) LIKE ?', ['OPR%@INFRUITY.COM'])
             ->pluck('email')
@@ -188,18 +187,8 @@ class UserController extends Controller
     {
         $staffId = $staffId ? (int) $staffId : null;
 
-        Staff::query()->where('user_id', $user->id_user)->update(['user_id' => null]);
-
         if ($staffId !== null) {
-            $staff = Staff::query()->whereKey($staffId)->lockForUpdate()->firstOrFail();
-            if ($staff->user_id !== null && (int) $staff->user_id !== (int) $user->id_user) {
-                throw ValidationException::withMessages([
-                    'staff_id' => 'Karyawan tersebut sudah tertaut ke akun lain.',
-                ]);
-            }
-
-            $staff->user_id = $user->id_user;
-            $staff->save();
+            Staff::query()->whereKey($staffId)->lockForUpdate()->firstOrFail();
         }
 
         $user->staff_id = $staffId;
