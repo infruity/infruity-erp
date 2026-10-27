@@ -8,6 +8,7 @@ use App\Models\RoleUser;
 use App\Models\UserPermission;
 use Illuminate\Validation\ValidationException;
 use Modules\Master\Entities\Branch;
+use Modules\Master\Entities\Staff;
 use Modules\Master\Entities\UserBranch;
 use App\User;
 use Auth;
@@ -29,6 +30,8 @@ class UserController extends Controller
 
         $data['role'] = Role::all();
         $data['branch'] = Branch::all();
+        $data['staffOptions'] = Staff::query()->orderBy('name')->get(['id', 'name']);
+        $data['linkedStaffUsers'] = DB::table('users')->whereNotNull('staff_id')->pluck('id_user', 'staff_id')->all();
         $usedOperatorNumbers = DB::table('users')
             ->whereRaw('UPPER(email) LIKE ?', ['OPR%@INFRUITY.COM'])
             ->pluck('email')
@@ -44,7 +47,7 @@ class UserController extends Controller
             $nextOperatorNumber++;
         }
         $data['nextAutoEmail'] = sprintf('OPR%03d@INFRUITY.COM', $nextOperatorNumber);
-        $data['users'] = User::with('RoleUser.role', 'branches.branch', 'permissionOverrides')
+        $data['users'] = User::with('RoleUser.role', 'branches.branch', 'permissionOverrides', 'staff')
             ->when($request->filled('q'), function ($query) use ($request) {
                 $search = '%' . $request->input('q') . '%';
                 $query->where(function ($users) use ($search) {
@@ -76,7 +79,7 @@ class UserController extends Controller
         if (class_exists(\Debugbar::class)) {
             \Debugbar::disable();
         }
-        $user = User::with('RoleUser.role', 'branches.branch')->findOrFail($id);
+        $user = User::with('RoleUser.role', 'branches.branch', 'staff')->findOrFail($id);
         return response()->json($user);
     }
 
@@ -94,6 +97,7 @@ class UserController extends Controller
             $user->email = $request->email;
             $user->nm_user = $request->full_name;
             $user->password = Hash::make($request->password);
+            $user->staff_id = $request->input('staff_id') ?: null;
             $user->save();
             // add roles
             $role = new RoleUser();
@@ -138,6 +142,9 @@ class UserController extends Controller
             $user->nm_user = $request->full_name;
             if ($request->filled('password')) {
                 $user->password = Hash::make($request->password);
+            }
+            if ($request->has('staff_id')) {
+                $user->staff_id = $request->input('staff_id') ?: null;
             }
             $user->save();
             // add roles

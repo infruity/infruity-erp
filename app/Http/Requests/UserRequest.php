@@ -32,6 +32,7 @@ class UserRequest extends FormRequest
             'id_role' => ['required', 'exists:role,id_role'],
             'id_branch' => ['required', 'array', 'min:1'],
             'id_branch.*' => ['required', 'distinct', 'exists:branch,id'],
+            'staff_id' => ['nullable', 'integer', 'exists:staff,id', Rule::unique('users', 'staff_id')->ignore($isCreate ? null : $this->route('user'), 'id_user')],
         ];
     }
 
@@ -39,6 +40,8 @@ class UserRequest extends FormRequest
     {
         return [
             'email.unique' => 'Email sudah digunakan user lain, mohon untuk menggunakan email yang lain',
+            'staff_id.unique' => 'Karyawan tersebut sudah tertaut ke akun lain.',
+            'staff_id.exists' => 'Karyawan yang dipilih tidak tersedia.',
             // 'captcha' => 'captcha tidak sesuai',
             'password.required' => 'Password wajib diisi.',
             // 'password.string' => 'Password harus berupa teks.',

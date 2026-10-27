@@ -177,8 +177,8 @@ test('create user email mode defaults to the next OPR address and can switch to 
     assert.match(view, /Kustom/);
     assert.match(view, /name="email" x-model="form.email"/);
     assert.match(view, /name="email_type"/);
-    assert.match(view, /x-show="!editing" x-cloak class="flex rounded-lg bg-gray-100 p-0.5"/);
-    assert.match(view, /:readonly="!editing && form.emailType === 'auto'"/);
+    assert.doesNotMatch(view, /x-show="!editing" x-cloak class="flex rounded-lg bg-gray-100 p-0.5"/);
+    assert.match(view, /:readonly="form.emailType === 'auto'"/);
     assert.match(view, /name="full_name"/);
     assert.match(view, /name="password"/);
     assert.match(view, /name="id_role"/);
@@ -211,4 +211,41 @@ test('create user email mode defaults to the next OPR address and can switch to 
     invalid.restoreOld();
     assert.equal(invalid.form.email, 'custom@example.com');
     assert.equal(invalid.form.emailType, 'custom');
+});
+
+test('account edit drawer matches the reference email and searchable employee-link layout', () => {
+    assert.match(view, /name="staff_id"/);
+    assert.match(view, /Tautkan ke Karyawan/);
+    assert.match(view, /Cari karyawan/);
+    assert.match(view, /Telah ditautkan/);
+    assert.match(view, /Karyawan tidak ditemukan/);
+    assert.match(view, /bg-black\/70/);
+    assert.match(view, /max-h-\[90dvh\]/);
+    assert.match(view, /rounded-t-3xl/);
+    assert.match(view, /@js\(\$staffOptions\)/);
+    assert.match(view, /@js\(\$linkedStaffUsers\)/);
+    assert.match(controller, /Staff::query\(\)->orderBy\('name'\)/);
+    assert.match(controller, /whereNotNull\('staff_id'\)->pluck\('id_user', 'staff_id'\)/);
+});
+
+test('edit form keeps its employee selected while locking staff linked to another account', () => {
+    const start = view.indexOf('function userMaster(');
+    const end = view.indexOf('\n}\n</script>', start) + 2;
+    const context = {};
+    vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
+    const users = [
+        {id: 8, name: 'Existing User', email: 'existing@example.com', role: 2, branches: [1], staff_id: 10},
+        {id: 9, name: 'Other User', email: 'other@example.com', role: 2, branches: [1], staff_id: 11},
+    ];
+    const app = context.userMaster(users, '/user', '/user', null, null, null, null, [], [], 'OPR011@INFRUITY.COM', null, null, [{id: 10, name: 'Dwi Febbrianti'}, {id: 11, name: 'Achmad Noorman'}], {10: 8, 11: 9});
+
+    app.openEdit(8);
+    assert.equal(app.form.staffId, '10');
+    assert.equal(app.form.emailType, 'custom');
+    assert.equal(app.staffLinkedToAnotherAccount({id: 10}), false);
+    assert.equal(app.staffLinkedToAnotherAccount({id: 11}), true);
+    app.toggleStaff(11);
+    assert.equal(app.form.staffId, '10');
+    app.toggleStaff(10);
+    assert.equal(app.form.staffId, '');
 });

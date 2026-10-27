@@ -5,6 +5,7 @@ namespace App;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Modules\Master\Entities\Staff;
 use Modules\Master\Entities\UserBranch;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -58,6 +59,11 @@ class User extends Authenticatable
     public function branches()
     {
         return $this->hasMany(UserBranch::class, 'user_id');
+    }
+
+    public function staff()
+    {
+        return $this->belongsTo(Staff::class, 'staff_id', 'id');
     }
 
     public function user()
