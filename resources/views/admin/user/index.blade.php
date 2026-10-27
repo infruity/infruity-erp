@@ -227,7 +227,11 @@
                     <input type="hidden" name="_method" value="PUT" :disabled="!editing">
                     <input type="hidden" name="_user_id" :value="editing || ''">
                     <input type="hidden" name="staff_id" :value="form.staffId || ''">
-                    <div class="flex-1 overflow-y-auto bg-gray-50/60 px-5 py-5 space-y-5">
+                    <div class="relative flex-1 min-h-0 bg-gray-50/60"
+                         x-data="{ scrollPos: 0, thumbHeight: 0, isScrolling: false, scrollTimeout: null, updateScroll() { if (!this.$refs.scrollArea) return; const el = this.$refs.scrollArea; const scrollRatio = el.clientHeight / el.scrollHeight; this.thumbHeight = Math.max(el.clientHeight * scrollRatio, 30); const maxScrollTop = el.scrollHeight - el.clientHeight; const maxThumbTop = el.clientHeight - this.thumbHeight - 16; this.scrollPos = maxScrollTop <= 0 ? 0 : (el.scrollTop / maxScrollTop) * maxThumbTop; } }"
+                         x-init="$nextTick(() => updateScroll())" @resize.window="updateScroll()">
+                        <div x-ref="scrollArea" @scroll="updateScroll(); isScrolling = true; clearTimeout(scrollTimeout); scrollTimeout = setTimeout(() => isScrolling = false, 800)" class="h-full overflow-y-auto overscroll-none scrollbar-hide px-5 pb-6 pt-5">
+                            <div class="flex flex-col gap-5">
                         @if($errors->any())<div role="alert" class="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"><p class="font-semibold">Data belum dapat disimpan</p><ul class="mt-1 list-disc pl-4">@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul></div>@endif
                         <div>
                             <div class="mb-1.5 flex items-center justify-between gap-3">
@@ -241,14 +245,14 @@
                                     </label>
                                 </div>
                             </div>
-                            <input id="user-email" @if($errors->has('email')) aria-invalid="true" aria-describedby="user-email-error" @endif name="email" x-model="form.email" :readonly="form.emailType === 'auto'" :class="form.emailType === 'auto' ? 'bg-gray-50 text-gray-500 cursor-not-allowed border-gray-200' : 'bg-white text-gray-900 border-gray-200 focus:border-emerald-500'" required type="email" placeholder="nama@infruity.com" class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all">@error('email')<p id="user-email-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                            <input id="user-email" @if($errors->has('email')) aria-invalid="true" aria-describedby="user-email-error" @endif name="email" x-model="form.email" :readonly="form.emailType === 'auto'" :class="form.emailType === 'auto' ? 'bg-gray-50 text-gray-500 cursor-not-allowed border-gray-200' : 'bg-white text-gray-900 border-gray-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'" required type="email" placeholder="Misal: nama@infruity.com" class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all m-0">@error('email')<p id="user-email-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div class="w-full">
                             <label for="user-staff-search" class="mb-1.5 block text-xs font-semibold text-gray-600">Tautkan ke Karyawan</label>
                             <div class="flex w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white">
                                 <div class="relative shrink-0 border-b border-gray-100 bg-gray-50/50">
-                                    <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true"></i>
-                                    <input id="user-staff-search" x-model="staffSearch" type="search" placeholder="Cari karyawan..." class="w-full bg-transparent py-3 pl-10 pr-4 text-sm outline-none transition-colors">
+                                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-base text-gray-400" aria-hidden="true"></i>
+                                    <input id="user-staff-search" x-model="staffSearch" type="text" placeholder="Cari karyawan..." class="w-full bg-transparent py-3 pl-9 pr-4 text-sm outline-none transition-colors">
                                 </div>
                                 <div class="relative max-h-48 overflow-y-auto overscroll-none bg-white">
                                     <template x-for="staff in filteredStaffOptions" :key="staff.id">
@@ -266,6 +270,11 @@
                         <div><label for="user-password" class="text-xs font-semibold text-gray-600 mb-1.5 block">Kata Sandi <span class="text-red-400" x-show="!editing">*</span></label><input id="user-password" @if($errors->has('password')) aria-invalid="true" aria-describedby="user-password-error" @endif name="password" x-model="form.password" :required="!editing" type="password" autocomplete="new-password" :placeholder="editing ? 'Kosongkan jika tidak diubah' : 'Masukkan kata sandi'" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('password')<p id="user-password-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
                         <div><label for="user-role" class="text-xs font-semibold text-gray-600 mb-1.5 block">Hak Akses <span class="text-red-400">*</span></label><select id="user-role" @if($errors->has('id_role')) aria-invalid="true" aria-describedby="user-role-error" @endif name="id_role" x-model="form.role" required class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"><option value="">Pilih hak akses</option>@foreach ($role as $item)<option value="{{ $item->id_role }}">{{ $item->nm_role }}</option>@endforeach</select>@error('id_role')<p id="user-role-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
                         <fieldset><legend class="text-xs font-semibold text-gray-600 mb-1.5">Cabang <span class="text-red-400">*</span></legend><div class="bg-white border border-gray-200 rounded-xl max-h-48 overflow-y-auto divide-y divide-gray-100">@forelse ($branch as $item)<label class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 text-sm text-gray-700"><input type="checkbox" name="id_branch[]" value="{{ $item->id }}" :checked="form.branches.includes({{ $item->id }})" @change="toggleBranch({{ $item->id }})" class="accent-[#0b595b] rounded"><span>{{ $item->name }}</span></label>@empty <p class="px-4 py-3 text-sm text-gray-400">Belum ada cabang</p>@endforelse</div><p class="text-[11px] text-gray-400 mt-1.5">Pilih minimal satu cabang.</p></fieldset>
+                            </div>
+                        </div>
+                        <div class="absolute top-0 right-1 h-full w-1.5 pointer-events-none py-2">
+                            <div class="h-full w-full rounded-full bg-gray-400/50 transition-opacity duration-300 ease-in-out" :style="`height: ${thumbHeight}px; transform: translateY(${scrollPos}px);`" :class="isScrolling ? 'opacity-100' : 'opacity-0'"></div>
+                        </div>
                     </div>
                     <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3"><button type="button" @click="closeDrawer()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold" x-text="editing ? 'Simpan Perubahan' : 'Tambah Akun'"></button></div>
                 </form>

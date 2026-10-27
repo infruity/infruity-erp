@@ -266,6 +266,18 @@ test('account edit drawer matches the reference email and searchable employee-li
     assert.match(controller, /whereNotNull\('staff_id'\)->pluck\('id_user', 'staff_id'\)/);
 });
 
+test('edit account drawer matches reference scrolling and email focus styling', () => {
+    assert.match(view, /x-ref="scrollArea"/);
+    assert.match(view, /@scroll="updateScroll\(\); isScrolling = true; clearTimeout\(scrollTimeout\); scrollTimeout = setTimeout\(\(\) => isScrolling = false, 800\)"/);
+    assert.match(view, /@resize\.window="updateScroll\(\)"/);
+    assert.match(view, /:style="`height: \$\{thumbHeight\}px; transform: translateY\(\$\{scrollPos\}px\);`"/);
+    assert.match(view, /placeholder="Misal: nama@infruity\.com"/);
+    assert.match(view, /focus:ring-1 focus:ring-emerald-500/);
+    for (const field of ['staff_id', 'full_name', 'password', 'id_role', 'id_branch[]']) {
+        assert.ok(view.includes(`name="${field}"`), `existing edit field ${field} stays in the form`);
+    }
+});
+
 test('edit form keeps its employee selected while locking staff linked to another account', () => {
     const start = view.indexOf('function userMaster(');
     const end = view.indexOf('\n}\n</script>', start) + 2;
