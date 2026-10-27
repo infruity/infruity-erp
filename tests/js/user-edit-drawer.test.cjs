@@ -311,3 +311,17 @@ test('edit form keeps its employee selected while locking staff linked to anothe
     app.toggleStaff(10);
     assert.equal(app.form.staffId, '');
 });
+
+test('inactive accounts remain viewable but do not open the edit drawer', () => {
+    const start = view.indexOf('function userMaster(');
+    const end = view.indexOf('\n}\n</script>', start) + 2;
+    const context = {};
+    vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
+    const app = context.userMaster([
+        {id: 4, name: 'Former Account', email: 'former@example.test', is_aktif: false, staff_id: null},
+    ], '/user', '/user', null, null, null, null, [], [], 'OPR011@INFRUITY.COM', null, null, [], {});
+
+    app.openEdit(4);
+    assert.equal(app.drawerOpen, false);
+    assert.match(view, /x-show="selected\?\.is_aktif"/);
+});

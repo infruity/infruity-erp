@@ -170,4 +170,22 @@ class UserStaffLinkTest extends TestCase
             ->assertSee('Dwi Febbrianti Robbiatul Adawiyah')
             ->assertSee('staff_id');
     }
+
+    public function test_user_index_shows_inactive_accounts_and_their_status(): void
+    {
+        DB::table('users')->insert([
+            'id_user' => 4,
+            'nm_user' => 'Former Account',
+            'username' => 'former',
+            'email' => 'former@example.test',
+            'password' => 'secret',
+            'is_aktif' => false,
+            'staff_id' => null,
+        ]);
+
+        $this->get('/user')
+            ->assertOk()
+            ->assertSee('former@example.test')
+            ->assertSee('Nonaktif');
+    }
 }

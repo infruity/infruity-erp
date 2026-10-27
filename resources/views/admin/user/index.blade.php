@@ -75,9 +75,10 @@
         'role_name' => $user->RoleUser?->role?->nm_role ?? 'Tanpa peran',
         'permissions' => $user->RoleUser?->role?->roleMenu?->pluck('permission')->all() ?? [],
         'permission_overrides' => $user->permissionOverrides->mapWithKeys(fn ($override) => [$override->permission => (bool) $override->is_allowed])->all(),
-        'can_change_permissions' => $canManageUserPermissions && (int) $currentUserId !== (int) $user->id_user,
+        'can_change_permissions' => $canManageUserPermissions && (bool) $user->is_aktif && (int) $currentUserId !== (int) $user->id_user,
         'branches' => $user->branches->pluck('branch_id')->all(),
         'branch_names' => $user->branches->map(fn ($assignment) => $assignment->branch?->name)->filter()->values()->all(),
+        'is_aktif' => (bool) $user->is_aktif,
         'staff_id' => $user->staff?->id,
         'staff_name' => $user->staff?->name,
     ])->values();
@@ -123,7 +124,7 @@
                     <div @class(['w-9 h-9 md:w-10 md:h-10 rounded-xl border flex items-center justify-center shrink-0 font-bold text-sm', 'bg-emerald-50 border-emerald-100 text-emerald-700' => $loop->index % 5 === 0, 'bg-blue-50 border-blue-100 text-blue-700' => $loop->index % 5 === 1, 'bg-amber-50 border-amber-100 text-amber-700' => $loop->index % 5 === 2, 'bg-rose-50 border-rose-100 text-rose-700' => $loop->index % 5 === 3, 'bg-violet-50 border-violet-100 text-violet-700' => $loop->index % 5 === 4])>{{ mb_strtoupper(mb_substr($user->email ?: $user->nm_user, 0, 2)) }}</div>
                     <div class="flex-1 min-w-0">
                         <div class="text-sm font-semibold text-gray-900 truncate">{{ $user->email }}</div>
-                        <div class="mt-0.5 flex min-w-0 items-center gap-2"><span class="truncate text-[11px] text-gray-400">{{ $user->nm_user ?: 'Belum tertaut' }}</span><span @class(['shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold', 'bg-emerald-50 text-emerald-700' => $modulesTotal > 0 && $user->granted_modules_count === $modulesTotal, 'bg-amber-50 text-amber-700' => $user->granted_modules_count < $modulesTotal])>{{ $user->granted_modules_count }}/{{ $modulesTotal }} modul</span></div>
+                        <div class="mt-0.5 flex min-w-0 items-center gap-1.5"><span class="truncate text-[11px] text-gray-400">{{ $user->nm_user ?: 'Belum tertaut' }}</span><span class="shrink-0 rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-600">{{ $user->RoleUser?->role?->nm_role ?? '—' }}</span><span @class(['shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold', 'bg-emerald-50 text-emerald-700' => $user->is_aktif, 'bg-gray-100 text-gray-600' => !$user->is_aktif])>{{ $user->is_aktif ? 'Aktif' : 'Nonaktif' }}</span><span @class(['shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold', 'bg-emerald-50 text-emerald-700' => $modulesTotal > 0 && $user->granted_modules_count === $modulesTotal, 'bg-amber-50 text-amber-700' => $user->granted_modules_count < $modulesTotal])>{{ $user->granted_modules_count }}/{{ $modulesTotal }} modul</span></div>
                     </div>
                     <div class="hidden lg:flex gap-1.5 max-w-[35%] flex-wrap justify-end">
                         @forelse ($user->branches as $assignedBranch)
@@ -197,7 +198,7 @@
                     </template>
                     <div x-show="filteredAccessGroups.length === 0" class="py-8 text-center text-[13px] text-gray-400">Modul tidak ditemukan</div>
                 </div>
-                <div class="flex w-full shrink-0 border-t border-gray-100 pb-[env(safe-area-inset-bottom)]">
+                <div x-show="selected?.is_aktif" x-cloak class="flex w-full shrink-0 border-t border-gray-100 pb-[env(safe-area-inset-bottom)]">
                     @if (check_access('user.edit'))
                         <button type="button" @click="editSelected()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-[#0b595b] transition-colors hover:bg-emerald-50"><i class="ph-bold ph-pencil-simple"></i>Edit</button>
                     @endif
@@ -394,7 +395,7 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
         },
         openEdit(id) {
             const user = this.users.find(item => item.id === id);
-            if (!user) return;
+            if (!user || user.is_aktif === false) return;
             this.editing = id;
             this.staffSearch = '';
             this.form = { name: user.name || '', email: user.email || '', emailType: 'custom', password: '', role: String(user.role || ''), branches: (user.branches || []).map(Number), staffId: String(user.staff_id || '') };
@@ -404,6 +405,8 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
             this.form.branches = this.form.branches.includes(id) ? this.form.branches.filter(value => value !== id) : [...this.form.branches, id];
         },
         async remove(id, name) {
+            const user = this.users.find(item => item.id === id);
+            if (!user || user.is_aktif === false) return;
             const confirmed = await Swal.fire({ title: 'Hapus akun ' + name + '?', text: 'Akun pengguna akan dinonaktifkan.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Hapus', cancelButtonText: 'Batal', confirmButtonColor: '#dc2626' });
             if (!confirmed.isConfirmed) return;
             try {

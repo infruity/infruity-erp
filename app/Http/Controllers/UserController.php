@@ -47,7 +47,7 @@ class UserController extends Controller
             $nextOperatorNumber++;
         }
         $data['nextAutoEmail'] = sprintf('OPR%03d@INFRUITY.COM', $nextOperatorNumber);
-        $data['users'] = User::with('RoleUser.role', 'branches.branch', 'permissionOverrides', 'staff')
+        $data['users'] = User::withoutGlobalScope('is_aktif')->with('RoleUser.role', 'branches.branch', 'permissionOverrides', 'staff')
             ->when($request->filled('q'), function ($query) use ($request) {
                 $search = '%' . $request->input('q') . '%';
                 $query->where(function ($users) use ($search) {
