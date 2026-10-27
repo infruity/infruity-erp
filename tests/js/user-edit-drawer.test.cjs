@@ -213,6 +213,32 @@ test('create user email mode defaults to the next OPR address and can switch to 
     assert.equal(invalid.form.emailType, 'custom');
 });
 
+test('permission search matches the reference focus ring and group/submodule filtering', () => {
+    const input = view.match(/<input id="user-access-search"[^>]+>/)?.[0] || '';
+    const classes = input.match(/class="([^"]+)"/)?.[1].split(/\s+/) || [];
+    assert.ok(classes.includes('h-9') && classes.includes('rounded-xl') && classes.includes('bg-gray-50'));
+    assert.ok(classes.includes('outline-none'), 'the shared ERP focus-visible outline is suppressed on this reference-style input');
+    assert.ok(classes.includes('focus:ring-1') && classes.includes('focus:ring-emerald-500'));
+    assert.match(view, /x-show="modalSearchQuery\.length > 0"[^>]*@click="modalSearchQuery = ''"/);
+
+    const start = view.indexOf('function userMaster(');
+    const end = view.indexOf('\n}\n</script>', start) + 2;
+    const context = {};
+    vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
+    const groups = [
+        {label: 'Master', modules: [{label: 'Produk'}, {label: 'Kategori'}]},
+        {label: 'Transaksi', modules: [{label: 'Penjualan'}]},
+    ];
+    const app = context.userMaster([], '/user', '/user', null, null, null, null, [], groups);
+
+    app.modalSearchQuery = ' kategori ';
+    assert.deepEqual(Array.from(app.filteredAccessGroups, group => [group.label, Array.from(group.modules, module => module.label)]), [['Master', ['Kategori']]]);
+    app.modalSearchQuery = ' MASTER ';
+    assert.deepEqual(Array.from(app.filteredAccessGroups, group => [group.label, Array.from(group.modules, module => module.label)]), [['Master', ['Produk', 'Kategori']]]);
+    app.modalSearchQuery = 'not found';
+    assert.equal(app.filteredAccessGroups.length, 0);
+});
+
 test('account edit drawer matches the reference email and searchable employee-link layout', () => {
     assert.match(view, /name="staff_id"/);
     assert.match(view, /Tautkan ke Karyawan/);

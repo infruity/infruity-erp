@@ -174,7 +174,7 @@
                 </div>
                 <div class="shrink-0 px-4 pt-3 pb-1">
                     <label for="user-access-search" class="sr-only">Cari modul atau sub modul</label>
-                    <div class="relative"><i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true"></i><input id="user-access-search" type="text" x-model="modalSearchQuery" placeholder="Cari modul atau sub modul..." class="h-9 w-full rounded-xl border border-gray-100 bg-gray-50 pl-9 pr-9 text-[13px] text-gray-800 placeholder-gray-400 transition-all focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"><button x-show="modalSearchQuery.length > 0" x-cloak type="button" @click="modalSearchQuery = ''" aria-label="Hapus pencarian modul" class="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 text-gray-500 transition-colors hover:bg-gray-300"><i class="ph-bold ph-x text-[10px]"></i></button></div>
+                    <div class="relative"><i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true"></i><input id="user-access-search" type="text" x-model="modalSearchQuery" placeholder="Cari modul atau sub modul..." class="h-9 w-full rounded-xl border border-gray-100 bg-gray-50 pl-9 pr-9 text-[13px] text-gray-800 placeholder-gray-400 outline-none transition-all focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"><button x-show="modalSearchQuery.length > 0" x-cloak type="button" @click="modalSearchQuery = ''" aria-label="Hapus pencarian modul" class="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 text-gray-500 transition-colors hover:bg-gray-300"><i class="ph-bold ph-x text-[10px]"></i></button></div>
                 </div>
                 <p x-show="selected?.permission_saving" x-cloak role="status" class="px-5 pt-2 text-[11px] font-medium text-emerald-700">Menyimpan perubahan akses…</p>
                 <div class="max-h-[300px] overflow-y-auto overscroll-none px-4 py-2 scrollbar-hide flex flex-col gap-2">
@@ -282,11 +282,11 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
         users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, linkedStaffUsers, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, modalSearchQuery: '',
         form: { name: '', email: '', emailType: 'auto', password: '', role: '', branches: [], staffId: '' },
         get filteredAccessGroups() {
-            const query = this.modalSearchQuery.trim().toLocaleLowerCase();
+            const query = this.modalSearchQuery.toLowerCase().trim();
             if (!query) return this.accessGroups;
             return this.accessGroups.map(group => {
-                if (group.label.toLocaleLowerCase().includes(query)) return group;
-                return { ...group, modules: group.modules.filter(module => module.label.toLocaleLowerCase().includes(query)) };
+                if (group.label.toLowerCase().includes(query)) return group;
+                return { ...group, modules: group.modules.filter(module => module.label.toLowerCase().includes(query)) };
             }).filter(group => group.modules.length > 0);
         },
         get filteredStaffOptions() {
