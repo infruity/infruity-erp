@@ -34,15 +34,20 @@ test('user detail opens as a role-backed bottom sheet with interactive access sw
     assert.match(view, /rounded-t-3xl[^\"]*sm:rounded-2xl/);
 });
 
-test('permission switch tracks use green only for the active state', () => {
+test('permission switch tracks show green when active and gray when inactive', () => {
     const switches = [...view.matchAll(/<button type="button" role="switch"[^>]*>/g)].map(match => match[0]);
     assert.equal(switches.length, 2, 'group and module switches are both rendered');
 
     for (const toggle of switches) {
         const classes = toggle.match(/class="([^"]+)"/)?.[1].split(/\s+/) || [];
-        assert.equal(classes.includes('bg-gray-200'), false, 'a static gray class must not override the active color');
-        const colorBinding = toggle.match(/:class="([^"]*bg-emerald-500[^"]*)"/)?.[1] || '';
-        assert.match(colorBinding, /\? 'bg-emerald-500' : 'bg-gray-200'/);
+        assert.equal(classes.some(className => className.startsWith('bg-')), false, 'state colors must not be overridden by static utility classes');
+        const styleExpression = toggle.match(/:style="([^"]+)"/)?.[1] || '';
+        assert.ok(styleExpression, 'the track color is bound directly to access state');
+        const getStyle = new Function('hasAnyGroupAccess', 'hasModuleAccess', 'selected', 'group', 'module', `return (${styleExpression});`);
+        const activeStyle = getStyle(() => true, () => true, {}, {}, {});
+        const inactiveStyle = getStyle(() => false, () => false, {}, {}, {});
+        assert.equal(activeStyle.backgroundColor, '#10b981');
+        assert.equal(inactiveStyle.backgroundColor, '#e5e7eb');
     }
 });
 
