@@ -46,6 +46,31 @@ test('detail access summary reflects the assigned role permissions', () => {
     assert.equal(app.hasModuleAccess({role: 1, permissions: []}, module), true);
 });
 
+test('closing the create sheet removes its transient URL flag without losing other query state', () => {
+    assert.match(view, /@keydown\.escape\.window="closeDrawer\(\)"/);
+    assert.equal((view.match(/@click="closeDrawer\(\)"/g) || []).length, 3);
+
+    const start = view.indexOf('function userMaster(');
+    const end = view.indexOf('\n}\n</script>', start) + 2;
+    const historyCalls = [];
+    const context = {
+        URL,
+        window: {
+            location: {href: 'http://127.0.0.1:8000/user?create=1&role_id=2#list'},
+            history: {state: {scroll: 40}, replaceState(...args) { historyCalls.push(args); }},
+        },
+    };
+    vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
+    const app = context.userMaster([], '/user', '/user', null, null, null, null, [], [], 'OPR001@INFRUITY.COM', null);
+    app.drawerOpen = true;
+    app.closeDrawer();
+
+    assert.equal(app.drawerOpen, false);
+    assert.equal(historyCalls.length, 1);
+    assert.equal(historyCalls[0][0].scroll, 40);
+    assert.equal(historyCalls[0][2], '/user?role_id=2#list');
+});
+
 test('create user email mode defaults to the next OPR address and can switch to custom', () => {
     assert.match(view, /Bawaan/);
     assert.match(view, /Kustom/);
