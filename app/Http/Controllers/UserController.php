@@ -133,6 +133,14 @@ class UserController extends Controller
             return $denied;
         }
 
+        if ($request->boolean('link_only')) {
+            $user = User::findOrFail($id);
+            $user->staff_id = $request->input('staff_id') ?: null;
+            $user->save();
+
+            return redirect('user')->with('success', 'Tautan karyawan akun diperbarui');
+        }
+
         try {
             // save to user
             DB::beginTransaction();

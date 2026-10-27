@@ -226,6 +226,7 @@
                     @csrf
                     <input type="hidden" name="_method" value="PUT" :disabled="!editing">
                     <input type="hidden" name="_user_id" :value="editing || ''">
+                    <input type="hidden" name="link_only" value="1" :disabled="!editing">
                     <input type="hidden" name="staff_id" :value="form.staffId || ''">
                     <div class="relative flex-1 min-h-0 bg-gray-50/60"
                          x-data="{ scrollPos: 0, thumbHeight: 0, isScrolling: false, scrollTimeout: null, updateScroll() { if (!this.$refs.scrollArea) return; const el = this.$refs.scrollArea; const scrollRatio = el.clientHeight / el.scrollHeight; this.thumbHeight = Math.max(el.clientHeight * scrollRatio, 30); const maxScrollTop = el.scrollHeight - el.clientHeight; const maxThumbTop = el.clientHeight - this.thumbHeight - 16; this.scrollPos = maxScrollTop <= 0 ? 0 : (el.scrollTop / maxScrollTop) * maxThumbTop; } }"
@@ -236,16 +237,16 @@
                         <div>
                             <div class="mb-1.5 flex items-center justify-between gap-3">
                                 <label for="user-email" class="text-xs font-semibold text-gray-600">Alamat Email <span class="text-red-400">*</span></label>
-                                <div class="flex rounded-lg bg-gray-100 p-0.5" role="radiogroup" aria-label="Jenis email">
+                                <div x-show="!editing" x-cloak class="flex rounded-lg bg-gray-100 p-0.5" role="radiogroup" aria-label="Jenis email">
                                     <label class="cursor-pointer rounded-md px-2.5 py-1 text-[10px] font-medium transition-all" :class="form.emailType === 'auto' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'">
-                                        <input type="radio" name="email_type" value="auto" x-model="form.emailType" @change="setEmailType('auto')" class="sr-only">Bawaan
+                                        <input type="radio" name="email_type" value="auto" x-model="form.emailType" :disabled="Boolean(editing)" @change="setEmailType('auto')" class="sr-only">Bawaan
                                     </label>
                                     <label class="cursor-pointer rounded-md px-2.5 py-1 text-[10px] font-medium transition-all" :class="form.emailType === 'custom' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'">
-                                        <input type="radio" name="email_type" value="custom" x-model="form.emailType" @change="setEmailType('custom')" class="sr-only">Kustom
+                                        <input type="radio" name="email_type" value="custom" x-model="form.emailType" :disabled="Boolean(editing)" @change="setEmailType('custom')" class="sr-only">Kustom
                                     </label>
                                 </div>
                             </div>
-                            <input id="user-email" @if($errors->has('email')) aria-invalid="true" aria-describedby="user-email-error" @endif name="email" x-model="form.email" :readonly="form.emailType === 'auto'" :class="form.emailType === 'auto' ? 'bg-gray-50 text-gray-500 cursor-not-allowed border-gray-200' : 'bg-white text-gray-900 border-gray-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'" required type="email" placeholder="Misal: nama@infruity.com" class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all m-0">@error('email')<p id="user-email-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                            <input id="user-email" @if($errors->has('email')) aria-invalid="true" aria-describedby="user-email-error" @endif name="email" x-model="form.email" :readonly="editing || form.emailType === 'auto'" :class="form.emailType === 'auto' ? 'bg-gray-50 text-gray-500 cursor-not-allowed border-gray-200' : 'bg-white text-gray-900 border-gray-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'" required type="email" placeholder="Misal: nama@infruity.com" class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all m-0">@error('email')<p id="user-email-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div class="w-full">
                             <label for="user-staff-search" class="mb-1.5 block text-xs font-semibold text-gray-600">Tautkan ke Karyawan</label>
@@ -266,10 +267,12 @@
                                 </div>
                             </div>
                         </div>
+                        <fieldset x-show="!editing" x-cloak :disabled="Boolean(editing)" class="contents">
                         <div><label for="user-name" class="text-xs font-semibold text-gray-600 mb-1.5 block">Nama Lengkap <span class="text-red-400">*</span></label><input id="user-name" @if($errors->has('full_name')) aria-invalid="true" aria-describedby="user-name-error" @endif name="full_name" x-model="form.name" required type="text" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('full_name')<p id="user-name-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
                         <div><label for="user-password" class="text-xs font-semibold text-gray-600 mb-1.5 block">Kata Sandi <span class="text-red-400" x-show="!editing">*</span></label><input id="user-password" @if($errors->has('password')) aria-invalid="true" aria-describedby="user-password-error" @endif name="password" x-model="form.password" :required="!editing" type="password" autocomplete="new-password" :placeholder="editing ? 'Kosongkan jika tidak diubah' : 'Masukkan kata sandi'" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('password')<p id="user-password-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
                         <div><label for="user-role" class="text-xs font-semibold text-gray-600 mb-1.5 block">Hak Akses <span class="text-red-400">*</span></label><select id="user-role" @if($errors->has('id_role')) aria-invalid="true" aria-describedby="user-role-error" @endif name="id_role" x-model="form.role" required class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"><option value="">Pilih hak akses</option>@foreach ($role as $item)<option value="{{ $item->id_role }}">{{ $item->nm_role }}</option>@endforeach</select>@error('id_role')<p id="user-role-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
                         <fieldset><legend class="text-xs font-semibold text-gray-600 mb-1.5">Cabang <span class="text-red-400">*</span></legend><div class="bg-white border border-gray-200 rounded-xl max-h-48 overflow-y-auto divide-y divide-gray-100">@forelse ($branch as $item)<label class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 text-sm text-gray-700"><input type="checkbox" name="id_branch[]" value="{{ $item->id }}" :checked="form.branches.includes({{ $item->id }})" @change="toggleBranch({{ $item->id }})" class="accent-[#0b595b] rounded"><span>{{ $item->name }}</span></label>@empty <p class="px-4 py-3 text-sm text-gray-400">Belum ada cabang</p>@endforelse</div><p class="text-[11px] text-gray-400 mt-1.5">Pilih minimal satu cabang.</p></fieldset>
+                        </fieldset>
                             </div>
                         </div>
                         <div class="absolute top-0 right-1 h-full w-1.5 pointer-events-none py-2">

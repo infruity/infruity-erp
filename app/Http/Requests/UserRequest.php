@@ -24,6 +24,14 @@ class UserRequest extends FormRequest
     public function rules()
     {
         $isCreate = $this->isMethod('post');
+        $staffIdRule = ['nullable', 'integer', 'exists:staff,id', Rule::unique('users', 'staff_id')->ignore($isCreate ? null : $this->route('user'), 'id_user')];
+
+        if (!$isCreate && $this->boolean('link_only')) {
+            return [
+                'link_only' => ['required', 'accepted'],
+                'staff_id' => $staffIdRule,
+            ];
+        }
 
         return [
             'full_name' => ['required', 'string'],
@@ -32,7 +40,7 @@ class UserRequest extends FormRequest
             'id_role' => ['required', 'exists:role,id_role'],
             'id_branch' => ['required', 'array', 'min:1'],
             'id_branch.*' => ['required', 'distinct', 'exists:branch,id'],
-            'staff_id' => ['nullable', 'integer', 'exists:staff,id', Rule::unique('users', 'staff_id')->ignore($isCreate ? null : $this->route('user'), 'id_user')],
+            'staff_id' => $staffIdRule,
         ];
     }
 

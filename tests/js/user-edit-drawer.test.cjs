@@ -189,8 +189,8 @@ test('create user email mode defaults to the next OPR address and can switch to 
     assert.match(view, /Kustom/);
     assert.match(view, /name="email" x-model="form.email"/);
     assert.match(view, /name="email_type"/);
-    assert.doesNotMatch(view, /x-show="!editing" x-cloak class="flex rounded-lg bg-gray-100 p-0.5"/);
-    assert.match(view, /:readonly="form.emailType === 'auto'"/);
+    assert.match(view, /x-show="!editing" x-cloak class="flex rounded-lg bg-gray-100 p-0.5"/);
+    assert.match(view, /:readonly="editing \|\| form\.emailType === 'auto'"/);
     assert.match(view, /name="full_name"/);
     assert.match(view, /name="password"/);
     assert.match(view, /name="id_role"/);
@@ -264,6 +264,18 @@ test('account edit drawer matches the reference email and searchable employee-li
     assert.match(view, /@js\(\$linkedStaffUsers\)/);
     assert.match(controller, /Staff::query\(\)->orderBy\('name'\)/);
     assert.match(controller, /whereNotNull\('staff_id'\)->pluck\('id_user', 'staff_id'\)/);
+});
+
+test('edit mode exposes account identity and employee linking without create-only fields', () => {
+    assert.match(view, /name="link_only" value="1" :disabled="!editing"/);
+    assert.match(view, /x-show="!editing"[^>]*role="radiogroup"/);
+    assert.match(view, /:readonly="editing \|\| form\.emailType === 'auto'"/);
+    assert.match(view, /:disabled="Boolean\(editing\)"/);
+    assert.match(view, /x-show="!editing" x-cloak :disabled="Boolean\(editing\)" class="contents"/);
+    assert.match(view, /Tautkan ke Karyawan/);
+    for (const field of ['full_name', 'password', 'id_role', 'id_branch[]']) {
+        assert.ok(view.includes(`name="${field}"`), `create flow keeps ${field}`);
+    }
 });
 
 test('edit account drawer matches reference scrolling and email focus styling', () => {

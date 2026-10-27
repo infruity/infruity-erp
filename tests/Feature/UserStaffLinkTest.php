@@ -96,22 +96,22 @@ class UserStaffLinkTest extends TestCase
     public function test_account_edit_persists_a_staff_link_and_rejects_a_staff_linked_to_another_account(): void
     {
         $this->put('/user/2', [
-            'full_name' => 'First Account',
-            'email' => 'first@example.test',
-            'password' => '',
-            'id_role' => 2,
-            'id_branch' => [1],
+            'link_only' => '1',
             'staff_id' => 10,
         ])->assertRedirect('/user');
 
-        $this->assertDatabaseHas('users', ['id_user' => 2, 'staff_id' => 10]);
+        $this->assertDatabaseHas('users', [
+            'id_user' => 2,
+            'staff_id' => 10,
+            'nm_user' => 'First Account',
+            'email' => 'first@example.test',
+            'password' => 'secret',
+        ]);
+        $this->assertDatabaseHas('role_user', ['id_user' => 2, 'id_role' => 2]);
+        $this->assertDatabaseHas('user_branch', ['user_id' => 2, 'branch_id' => 1]);
 
         $this->put('/user/3', [
-            'full_name' => 'Second Account',
-            'email' => 'second@example.test',
-            'password' => '',
-            'id_role' => 2,
-            'id_branch' => [1],
+            'link_only' => '1',
             'staff_id' => 10,
         ])->assertSessionHasErrors('staff_id');
 
