@@ -513,15 +513,10 @@
                     </a>
                     <div class="submenu-wrapper" x-show="!sidebarCollapsed">
                         <div class="py-1 space-y-0.5">
-                            <a href="../../007. Keuangan/001. Pemasukan/index.html"
+                            <a href="../../007. Keuangan/001. Arus Kas/index.html"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
                                 <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
-                                <span>Pemasukan</span>
-                            </a>
-                            <a href="../../007. Keuangan/002. Pengeluaran/index.html"
-                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
-                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
-                                <span>Pengeluaran</span>
+                                <span>Arus Kas</span>
                             </a>
                         </div>
                     </div>
@@ -890,7 +885,7 @@
                                        @focus="isSearchFocused = true" 
                                        @blur="isSearchFocused = false"
                                        id="masterSearchInput"
-                                       type="text" placeholder="Cari cabang..."
+                                       type="text" placeholder="Cari..."
                                     class="flex-1 bg-transparent text-[13.5px] font-medium text-gray-800 placeholder-gray-400 outline-none h-full">
                                 
                                 <!-- Clear button -->
@@ -1490,14 +1485,19 @@
                  <template x-if="selectedDetailProduct">
                      <div class="flex flex-col gap-5 text-sm mb-2 flex-1 mt-2">
                          <div class="flex gap-3 items-center">
-                             <i class="ph-duotone ph-storefront text-2xl text-emerald-500 shrink-0"></i>
+                             <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs">
+                                 <i class="ph-duotone ph-storefront text-lg"></i>
+                             </div>
                              <div class="min-w-0 flex-1">
                                  <div class="font-bold text-gray-800 break-words" x-text="selectedDetailProduct.name"></div>
                                  <div class="text-[11px] text-gray-400 font-medium">Nama Lengkap Cabang</div>
                              </div>
-                         </div>                          <!-- Alamat Cabang (Tampil dengan Link jika ada mapLink, atau Teks biasa jika tanpa mapLink) -->
+                         </div>
+                         <!-- Alamat Cabang (Tampil dengan Link jika ada mapLink, atau Teks biasa jika tanpa mapLink) -->
                           <div x-show="selectedDetailProduct.address && selectedDetailProduct.address.trim() !== '' && selectedDetailProduct.address !== '-'" class="flex gap-3 items-start">
-                              <i class="ph-duotone ph-map-pin text-2xl text-emerald-500 shrink-0 mt-0.5"></i>
+                              <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs">
+                                  <i class="ph-duotone ph-map-pin text-lg"></i>
+                              </div>
                               <div class="min-w-0 flex-1">
                                   <template x-if="selectedDetailProduct.mapLink && selectedDetailProduct.mapLink.trim() !== ''">
                                       <div>
@@ -1520,8 +1520,10 @@
                           </div>
 
                         <!-- Terakhir Diperbarui & Diperbarui Oleh (Kombinasi B Tanpa Garis) -->
-                        <div class="flex gap-3 items-start">
-                            <i class="ph-duotone ph-clock text-2xl text-emerald-500 shrink-0 mt-0.5"></i>
+                        <div class="flex gap-3 items-center">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs">
+                                <i class="ph-duotone ph-clock text-lg"></i>
+                            </div>
                             <div class="min-w-0">
                                 <div class="text-xs font-bold text-gray-800 leading-snug" x-text="selectedDetailProduct.updatedBy?.name || 'Administrator'"></div>
                                 <div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Memperbarui pada ' + formatDate(selectedDetailProduct.updatedAt || selectedDetailProduct.createdAt || new Date().toISOString())"></div>

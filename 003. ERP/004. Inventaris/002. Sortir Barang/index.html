@@ -531,15 +531,10 @@
                     </a>
                     <div class="submenu-wrapper" x-show="!sidebarCollapsed">
                         <div class="py-1 space-y-0.5">
-                            <a href="../../007. Keuangan/001. Pemasukan/index.html"
+                            <a href="../../007. Keuangan/001. Arus Kas/index.html"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
                                 <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
-                                <span>Pemasukan</span>
-                            </a>
-                            <a href="../../007. Keuangan/002. Pengeluaran/index.html"
-                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
-                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
-                                <span>Pengeluaran</span>
+                                <span>Arus Kas</span>
                             </a>
                         </div>
                     </div>
@@ -923,7 +918,7 @@
                                        @focus="isSearchFocused = true" 
                                        @blur="isSearchFocused = false"
                                        id="pengadaanSearchInput"
-                                       type="text" placeholder="Cari cabang, nomor PO, atau bahan..."
+                                       type="text" placeholder="Cari..."
                                        class="flex-1 bg-transparent text-[13.5px] font-medium text-gray-800 placeholder-gray-400 outline-none h-full">
                                 
                                 <!-- Clear button -->
@@ -1535,7 +1530,9 @@
 
                         <!-- 1. Nomor PO & Cabang Tujuan -->
                         <div class="flex gap-3 items-center">
-                            <i class="ph-duotone ph-receipt text-2xl text-emerald-500 shrink-0"></i>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs">
+                                <i class="ph-duotone ph-receipt text-lg"></i>
+                            </div>
                             <div class="min-w-0 flex-1">
                                 <div class="font-bold text-gray-800 leading-snug truncate" x-text="selectedOrder.poNumber"></div>
                                 <div class="text-[11px] text-gray-400 font-medium mt-0.5 truncate" x-text="selectedOrder.targetBranch"></div>
@@ -1545,7 +1542,9 @@
 
                         <!-- 2. Grand Total & Jumlah Bahan -->
                         <div class="flex gap-3 items-center">
-                            <i class="ph-duotone ph-coins text-2xl text-emerald-500 shrink-0"></i>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs">
+                                <i class="ph-duotone ph-coins text-lg"></i>
+                            </div>
                             <div>
                                 <div class="font-bold text-gray-800" x-text="'Rp ' + (selectedOrder.grandTotal || 0).toLocaleString('id-ID')"></div>
                                 <div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Grand Total (' + (selectedOrder.items ? selectedOrder.items.length : 0) + ' Bahan Baku)'"></div>
@@ -1553,11 +1552,13 @@
                         </div>
 
                         <!-- 3. Petugas & Waktu Pembuatan -->
-                        <div class="flex gap-3 items-start">
-                            <i class="ph-duotone ph-clock text-2xl text-emerald-500 shrink-0 mt-0.5"></i>
+                        <div class="flex gap-3 items-center">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs">
+                                <i class="ph-duotone ph-clock text-lg"></i>
+                            </div>
                             <div class="min-w-0">
                                 <div class="text-xs font-bold text-gray-800 leading-snug truncate" x-text="selectedOrder.staffName || 'Petugas'"></div>
-                                <div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Dibuat pada ' + formatDate(selectedOrder.orderDate) + (selectedOrder.orderTime ? ', ' + selectedOrder.orderTime + ' WIB' : '')"></div>
+                                <div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Dibuat pada ' + formatDate(selectedOrder.orderDate) + (selectedOrder.orderTime ? ', ' + selectedOrder.orderTime : '')"></div>
                             </div>
                         </div>
 
@@ -1673,7 +1674,7 @@
                             <div class="p-3.5 rounded-2xl border border-gray-100 bg-white">
                                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Yang Melakukan Pengadaan</span>
                                 <h4 class="text-sm font-bold text-gray-900 truncate" x-text="selectedOrder.staffName"></h4>
-                                <p class="text-xs text-gray-500 mt-0.5" x-text="'Waktu: ' + (selectedOrder.orderTime ? selectedOrder.orderTime + ' WIB' : '-')"></p>
+                                <p class="text-xs text-gray-500 mt-0.5" x-text="'Waktu: ' + (selectedOrder.orderTime ? selectedOrder.orderTime : '-')"></p>
                                 <p class="text-xs text-gray-400" x-text="'Tanggal: ' + formatDate(selectedOrder.orderDate)"></p>
                             </div>
                             <div class="p-3.5 rounded-2xl border border-gray-100 bg-white">
@@ -2935,7 +2936,7 @@
                 formatDateTime(dateStr, timeStr) {
                     if (!dateStr) return '-';
                     const d = this.formatDate(dateStr);
-                    return timeStr ? `${d}, ${timeStr} WIB` : d;
+                    return timeStr ? `${d}, ${timeStr}` : d;
                 },
 
                 getItemSummary(items) {

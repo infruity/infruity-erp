@@ -514,15 +514,10 @@
                     </a>
                     <div class="submenu-wrapper" x-show="!sidebarCollapsed">
                         <div class="py-1 space-y-0.5">
-                            <a href="../../007. Keuangan/001. Pemasukan/index.html"
+                            <a href="../../007. Keuangan/001. Arus Kas/index.html"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
                                 <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
-                                <span>Pemasukan</span>
-                            </a>
-                            <a href="../../007. Keuangan/002. Pengeluaran/index.html"
-                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
-                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
-                                <span>Pengeluaran</span>
+                                <span>Arus Kas</span>
                             </a>
                         </div>
                     </div>
@@ -889,7 +884,7 @@
                                        @focus="isSearchFocused = true" 
                                        @blur="isSearchFocused = false"
                                        id="masterSearchInput"
-                                       type="text" placeholder="Cari produk atau varian..."
+                                       type="text" placeholder="Cari..."
                                     class="flex-1 bg-transparent text-[13.5px] font-medium text-gray-800 placeholder-gray-400 outline-none h-full">
                                 
                                 <!-- Clear button -->
@@ -1919,7 +1914,9 @@
 
                         <!-- Nama Produk -->
                         <div class="flex gap-3 items-center">
-                            <i class="ph-duotone ph-tag text-2xl text-emerald-500 shrink-0"></i>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs">
+                                <i class="ph-duotone ph-tag text-lg"></i>
+                            </div>
                             <div>
                                 <div class="font-bold text-gray-800 leading-snug" x-text="selectedDetailProduct.name"></div>
                                 <div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="selectedDetailProduct.type"></div>
@@ -1928,7 +1925,9 @@
 
                         <!-- Harga Jual -->
                         <div class="flex gap-3 items-center">
-                            <i class="ph-duotone ph-coins text-2xl text-emerald-500 shrink-0"></i>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs">
+                                <i class="ph-duotone ph-coins text-lg"></i>
+                            </div>
                             <div>
                                 <div class="font-bold text-gray-800" x-text="selectedDetailProduct.variants && selectedDetailProduct.variants.length > 0 ? priceRangeDisplay(selectedDetailProduct) : ('Rp ' + (selectedDetailProduct.price || 0).toLocaleString('id-ID') + ' / ' + selectedDetailProduct.unit)"></div>
                                 <div class="text-[11px] text-gray-400 font-medium">Harga Jual</div>
@@ -1936,8 +1935,10 @@
                         </div>
 
                         <!-- Terakhir Diperbarui & Diperbarui Oleh (Kombinasi B Tanpa Garis) -->
-                        <div class="flex gap-3 items-start">
-                            <i class="ph-duotone ph-clock text-2xl text-emerald-500 shrink-0 mt-0.5"></i>
+                        <div class="flex gap-3 items-center">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs">
+                                <i class="ph-duotone ph-clock text-lg"></i>
+                            </div>
                             <div class="min-w-0">
                                 <div class="text-xs font-bold text-gray-800 leading-snug" x-text="selectedDetailProduct.updatedBy?.name || 'Administrator'"></div>
                                 <div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Memperbarui pada ' + formatDate(selectedDetailProduct.updatedAt || selectedDetailProduct.createdAt || new Date().toISOString())"></div>
