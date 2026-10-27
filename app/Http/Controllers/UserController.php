@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UserRequest;
 use App\Models\Role;
 use App\Models\RoleUser;
+use App\Models\UserPermission;
+use Illuminate\Validation\ValidationException;
 use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\UserBranch;
 use App\User;
@@ -42,7 +44,7 @@ class UserController extends Controller
             $nextOperatorNumber++;
         }
         $data['nextAutoEmail'] = sprintf('OPR%03d@INFRUITY.COM', $nextOperatorNumber);
-        $data['users'] = User::with('RoleUser.role', 'branches.branch')
+        $data['users'] = User::with('RoleUser.role', 'branches.branch', 'permissionOverrides')
             ->when($request->filled('q'), function ($query) use ($request) {
                 $search = '%' . $request->input('q') . '%';
                 $query->where(function ($users) use ($search) {
@@ -162,6 +164,50 @@ class UserController extends Controller
         }
 
         return redirect('user')->with('success', 'Data User Disimpan');
+    }
+
+    public function updatePermissions(Request $request, $id)
+    {
+        $this->authorizeAccess('user.update');
+
+        $user = User::findOrFail($id);
+        abort_if((int) $user->id_user === (int) Auth::id(), 403, 'Hak akses akun sendiri tidak dapat diubah.');
+
+        $validated = $request->validate([
+            'overrides' => ['required', 'array', 'min:1'],
+            'overrides.*' => ['required', 'boolean'],
+        ]);
+
+        $knownPermissions = collect(config('constant.permissions', []))
+            ->flatMap(function ($module, $moduleKey) {
+                return collect(array_keys($module['actions'] ?? []))
+                    ->map(fn ($action) => $moduleKey . '.' . $action);
+            })
+            ->push('kurir.index')
+            ->unique()
+            ->values();
+        $overrides = $validated['overrides'];
+        $unknownPermissions = array_diff(array_keys($overrides), $knownPermissions->all());
+
+        if ($unknownPermissions !== []) {
+            throw ValidationException::withMessages([
+                'overrides' => 'Satu atau lebih hak akses tidak dikenal.',
+            ]);
+        }
+
+        DB::transaction(function () use ($user, $overrides) {
+            foreach ($overrides as $permission => $allowed) {
+                UserPermission::updateOrCreate(
+                    ['id_user' => $user->id_user, 'permission' => $permission],
+                    ['is_allowed' => (bool) $allowed]
+                );
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'overrides' => collect($overrides)->map(fn ($allowed) => (bool) $allowed)->all(),
+        ]);
     }
 
     public function destroy($id)

@@ -25,6 +25,7 @@ class WholesaleSaveButtonsTest extends TestCase
         Schema::create('role', function (Blueprint $t) { $t->integer('id_role')->primary(); });
         Schema::create('role_user', function (Blueprint $t) { $t->increments('id_ru'); $t->integer('id_user'); $t->integer('id_role'); $t->timestamps(); });
         Schema::create('role_menu', function (Blueprint $t) { $t->increments('id_rm'); $t->integer('id_role'); $t->string('permission'); });
+        Schema::create('user_permissions', function (Blueprint $t) { $t->increments('id'); $t->integer('id_user'); $t->string('permission', 160); $t->boolean('is_allowed'); $t->timestamps(); $t->unique(['id_user', 'permission']); });
         Schema::create('branch', function (Blueprint $t) { $t->increments('id'); });
         Schema::create('user_branch', function (Blueprint $t) { $t->integer('user_id'); $t->integer('branch_id'); });
         Schema::create('wholesale', function (Blueprint $t) {

@@ -63,6 +63,8 @@
         return ['label' => $group['label'], 'icon' => $group['icon'], 'iconBg' => $group['iconBg'], 'iconColor' => $group['iconColor'], 'modules' => $modules];
     })->filter(fn ($group) => count($group['modules']) > 0)->values()->all();
 
+    $canManageUserPermissions = check_access('user.update');
+    $currentUserId = auth()->id();
     $editableUsers = $users->getCollection()->map(fn ($user) => [
         'id' => $user->id_user,
         'name' => $user->nm_user,
@@ -72,6 +74,8 @@
         'role' => $user->RoleUser?->id_role,
         'role_name' => $user->RoleUser?->role?->nm_role ?? 'Tanpa peran',
         'permissions' => $user->RoleUser?->role?->roleMenu?->pluck('permission')->all() ?? [],
+        'permission_overrides' => $user->permissionOverrides->mapWithKeys(fn ($override) => [$override->permission => (bool) $override->is_allowed])->all(),
+        'can_change_permissions' => $canManageUserPermissions && (int) $currentUserId !== (int) $user->id_user,
         'branches' => $user->branches->pluck('branch_id')->all(),
         'branch_names' => $user->branches->map(fn ($assignment) => $assignment->branch?->name)->filter()->values()->all(),
     ])->values();
@@ -170,19 +174,20 @@
                     <label for="user-access-search" class="sr-only">Cari modul atau sub modul</label>
                     <div class="relative"><i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true"></i><input id="user-access-search" type="text" x-model="modalSearchQuery" placeholder="Cari modul atau sub modul..." class="h-9 w-full rounded-xl border border-gray-100 bg-gray-50 pl-9 pr-9 text-[13px] text-gray-800 placeholder-gray-400 transition-all focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"><button x-show="modalSearchQuery.length > 0" x-cloak type="button" @click="modalSearchQuery = ''" aria-label="Hapus pencarian modul" class="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 text-gray-500 transition-colors hover:bg-gray-300"><i class="ph-bold ph-x text-[10px]"></i></button></div>
                 </div>
+                <p x-show="selected?.permission_saving" x-cloak role="status" class="px-5 pt-2 text-[11px] font-medium text-emerald-700">Menyimpan perubahan akses…</p>
                 <div class="max-h-[300px] overflow-y-auto overscroll-none px-4 py-2 scrollbar-hide flex flex-col gap-2">
                     <template x-for="group in filteredAccessGroups" :key="group.label">
                         <section class="mb-2">
                             <div class="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-gray-50">
                                 <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white" :class="[group.iconBg, group.iconColor]"><i :class="'ph-duotone ' + group.icon + ' text-base'" aria-hidden="true"></i></div>
-                                <div class="min-w-0 flex-1"><div class="text-[13px] font-semibold text-gray-800" x-text="group.label"></div><div class="text-[11px] text-gray-400" x-text="hasFullGroupAccess(selected, group) ? 'Akses penuh' : 'Akses sebagian / tidak ada'"></div></div>
-                                <span role="switch" aria-disabled="true" :aria-checked="hasFullGroupAccess(selected, group) ? 'true' : 'false'" :aria-label="'Akses grup ' + group.label" title="Hak akses mengikuti role akun" class="relative mr-1 h-6 w-11 shrink-0 rounded-full bg-gray-200 transition-colors" :class="hasFullGroupAccess(selected, group) ? 'bg-emerald-500' : 'bg-gray-200'"><span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="hasFullGroupAccess(selected, group) ? 'translate-x-5' : 'translate-x-0'"></span></span>
+                                <div class="min-w-0 flex-1"><div class="text-[13px] font-semibold text-gray-800" x-text="group.label"></div><div class="text-[11px] text-gray-400" x-text="hasFullGroupAccess(selected, group) ? 'Akses penuh' : (hasAnyGroupAccess(selected, group) ? 'Akses sebagian' : 'Tidak ada akses')"></div></div>
+                                <button type="button" role="switch" :aria-checked="hasAnyGroupAccess(selected, group) ? 'true' : 'false'" :aria-disabled="(!selected?.can_change_permissions || selected?.permission_saving) ? 'true' : 'false'" :aria-label="'Akses grup ' + group.label" :title="selected?.can_change_permissions ? 'Simpan akses untuk seluruh modul di grup ini' : 'Hak akses hanya dapat diubah pada akun lain oleh pengguna berizin'" :disabled="!selected?.can_change_permissions || selected?.permission_saving" @click.stop="toggleGroupAccess(selected, group)" class="relative mr-1 h-6 w-11 shrink-0 rounded-full bg-gray-200 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:cursor-not-allowed disabled:opacity-60" :class="hasAnyGroupAccess(selected, group) ? 'bg-emerald-500' : 'bg-gray-200'"><span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="hasAnyGroupAccess(selected, group) ? 'translate-x-5' : 'translate-x-0'"></span></button>
                             </div>
                             <div class="px-3 pt-1 pb-3"><div class="ml-[18px] flex flex-col gap-1 border-l-[1.5px] border-emerald-100">
                                 <template x-for="module in group.modules" :key="module.key">
                                     <div class="flex items-center justify-between py-1.5 pr-2">
                                         <div class="flex min-w-0 flex-1 items-center"><div class="w-6 shrink-0"><div class="h-[1.5px] w-full bg-emerald-100"></div></div><span class="truncate pl-1.5 text-[13px] font-medium text-gray-500" x-text="module.label"></span></div>
-                                        <span role="switch" aria-disabled="true" :aria-checked="hasModuleAccess(selected, module) ? 'true' : 'false'" :aria-label="'Akses ' + module.label" title="Hak akses mengikuti role akun" class="relative h-5 w-9 shrink-0 rounded-full bg-gray-200 transition-colors" :class="hasModuleAccess(selected, module) ? 'bg-emerald-500' : 'bg-gray-200'"><span class="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform" :class="hasModuleAccess(selected, module) ? 'translate-x-4' : 'translate-x-0'"></span></span>
+                                        <button type="button" role="switch" :aria-checked="hasModuleAccess(selected, module) ? 'true' : 'false'" :aria-disabled="(!selected?.can_change_permissions || selected?.permission_saving) ? 'true' : 'false'" :aria-label="'Akses ' + module.label" :title="selected?.can_change_permissions ? 'Simpan akses untuk modul ini' : 'Hak akses hanya dapat diubah pada akun lain oleh pengguna berizin'" :disabled="!selected?.can_change_permissions || selected?.permission_saving" @click.stop="toggleModuleAccess(selected, module)" class="relative h-5 w-9 shrink-0 rounded-full bg-gray-200 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:cursor-not-allowed disabled:opacity-60" :class="hasModuleAccess(selected, module) ? 'bg-emerald-500' : 'bg-gray-200'"><span class="pointer-events-none absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform" :class="hasModuleAccess(selected, module) ? 'translate-x-4' : 'translate-x-0'"></span></button>
                                     </div>
                                 </template>
                             </div></div>
@@ -262,13 +267,58 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
                 return { ...group, modules: group.modules.filter(module => module.label.toLocaleLowerCase().includes(query)) };
             }).filter(group => group.modules.length > 0);
         },
-        hasModuleAccess(user, module) {
+        permissionAccess(user, permission) {
             if (!user) return false;
-            if (Number(user.role) === 1) return true;
-            return module.permissions.some(permission => (user.permissions || []).includes(permission));
+            const overrides = user.permission_overrides || {};
+            if (Object.prototype.hasOwnProperty.call(overrides, permission)) return Boolean(overrides[permission]);
+            return Number(user.role) === 1 || (user.permissions || []).includes(permission);
+        },
+        hasModuleAccess(user, module) {
+            return Boolean(user) && (module.permissions || []).some(permission => this.permissionAccess(user, permission));
+        },
+        hasAnyGroupAccess(user, group) {
+            return Boolean(user) && group.modules.some(module => this.hasModuleAccess(user, module));
         },
         hasFullGroupAccess(user, group) {
             return Boolean(user) && group.modules.length > 0 && group.modules.every(module => this.hasModuleAccess(user, module));
+        },
+        async savePermissionOverrides(user, changes) {
+            if (!user?.can_change_permissions || user.permission_saving || Object.keys(changes).length === 0) return false;
+
+            const previousOverrides = { ...(user.permission_overrides || {}) };
+            user.permission_overrides = { ...previousOverrides, ...changes };
+            user.permission_saving = true;
+
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                const response = await fetch(this.baseUrl + '/' + user.id + '/permissions', {
+                    method: 'PUT',
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ overrides: changes }),
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || !result.success) throw new Error(result.message || 'Silakan coba lagi.');
+                user.permission_overrides = { ...previousOverrides, ...result.overrides };
+                return true;
+            } catch (error) {
+                user.permission_overrides = previousOverrides;
+                await Swal.fire('Gagal menyimpan akses', error.message, 'error');
+                return false;
+            } finally {
+                user.permission_saving = false;
+            }
+        },
+        toggleModuleAccess(user, module) {
+            const allow = !this.hasModuleAccess(user, module);
+            const changes = {};
+            (module.permissions || []).forEach(permission => { changes[permission] = allow; });
+            return this.savePermissionOverrides(user, changes);
+        },
+        toggleGroupAccess(user, group) {
+            const allow = !this.hasAnyGroupAccess(user, group);
+            const changes = {};
+            group.modules.forEach(module => (module.permissions || []).forEach(permission => { changes[permission] = allow; }));
+            return this.savePermissionOverrides(user, changes);
         },
         openDetail(id) { this.modalSearchQuery = ''; this.selected = this.users.find(user => user.id === id) || null; },
         editSelected() { const user = this.selected; this.selected = null; if (user) this.openEdit(user.id); },

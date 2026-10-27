@@ -22,16 +22,19 @@ test('user edit overlay fades while the drawer slides', () => {
     assert.match(wrapper, /x-transition:leave-end="opacity-0"/);
 });
 
-test('user detail opens as a role-backed bottom sheet with read-only access switches', () => {
+test('user detail opens as a role-backed bottom sheet with interactive access switches', () => {
     assert.match(view, /'permissions' => \$user->RoleUser\?->role\?->roleMenu\?->pluck\('permission'\)->all\(\)/);
+    assert.match(view, /'permission_overrides' =>/);
     assert.match(view, /x-for="group in filteredAccessGroups"/);
     assert.match(view, /\['key' => 'kurir', 'label' => 'Kurir', 'permissions' => \['kurir\.index'\]\]/);
-    assert.match(view, /role="switch" aria-disabled="true"/);
+    assert.match(view, /@click\.stop="toggleGroupAccess\(selected, group\)"/);
+    assert.match(view, /@click\.stop="toggleModuleAccess\(selected, module\)"/);
+    assert.doesNotMatch(view, /role="switch" aria-disabled="true"/);
     assert.match(view, /items-end[^\"]*sm:items-center/);
     assert.match(view, /rounded-t-3xl[^\"]*sm:rounded-2xl/);
 });
 
-test('detail access summary reflects the assigned role permissions', () => {
+test('detail access summary applies account overrides over assigned role grants', () => {
     const start = view.indexOf('function userMaster(');
     const end = view.indexOf('\n}\n</script>', start) + 2;
     assert.ok(start >= 0 && end > start, 'userMaster is present in the user page');
@@ -41,9 +44,95 @@ test('detail access summary reflects the assigned role permissions', () => {
     const app = context.userMaster([], '/user', '/user', null, null, null, null, [], groups);
     const module = app.accessGroups?.[0]?.modules?.[0];
     assert.ok(module, 'access groups are available to the user screen');
-    assert.equal(app.hasModuleAccess({role: 2, permissions: ['products.index']}, module), true);
-    assert.equal(app.hasModuleAccess({role: 2, permissions: []}, module), false);
-    assert.equal(app.hasModuleAccess({role: 1, permissions: []}, module), true);
+    assert.equal(app.hasModuleAccess({role: 2, permissions: ['products.index'], permission_overrides: {}}, module), true);
+    assert.equal(app.hasModuleAccess({role: 2, permissions: ['products.index'], permission_overrides: {'products.index': false}}, module), false);
+    assert.equal(app.hasModuleAccess({role: 2, permissions: [], permission_overrides: {'products.create': true}}, module), true);
+    assert.equal(app.hasModuleAccess({role: 1, permissions: [], permission_overrides: {}}, module), true);
+    assert.equal(app.hasModuleAccess({role: 1, permissions: [], permission_overrides: {'products.index': false, 'products.create': false}}, module), false);
+});
+
+test('module and group switches persist user-specific access changes', async () => {
+    const start = view.indexOf('function userMaster(');
+    const end = view.indexOf('\n}\n</script>', start) + 2;
+    const calls = [];
+    const context = {
+        document: {querySelector: () => ({content: 'csrf-token'})},
+        fetch: async (url, options) => {
+            calls.push({url, options});
+            return {ok: true, json: async () => ({success: true, overrides: JSON.parse(options.body).overrides})};
+        },
+    };
+    vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
+    const productModule = {key: 'products', label: 'Produk', permissions: ['products.index', 'products.create']};
+    const stockModule = {key: 'stock-out', label: 'Stok Keluar', permissions: ['stock-out.index']};
+    const group = {label: 'Master', modules: [productModule, stockModule]};
+    const app = context.userMaster([], '/user', '/user', null, null, null, null, [], [group]);
+    const user = {id: 44, role: 2, permissions: ['products.index'], permission_overrides: {}, can_change_permissions: true};
+
+    await app.toggleModuleAccess(user, productModule);
+    assert.equal(app.hasModuleAccess(user, productModule), false);
+    assert.equal(calls[0].url, '/user/44/permissions');
+    assert.equal(calls[0].options.method, 'PUT');
+    assert.equal(calls[0].options.headers['X-CSRF-TOKEN'], 'csrf-token');
+    assert.deepEqual(JSON.parse(calls[0].options.body).overrides, {'products.index': false, 'products.create': false});
+
+    await app.toggleGroupAccess(user, group);
+    assert.equal(app.hasFullGroupAccess(user, group), true);
+    assert.deepEqual(JSON.parse(calls[1].options.body).overrides, {'products.index': true, 'products.create': true, 'stock-out.index': true});
+
+    await app.toggleGroupAccess(user, group);
+    assert.equal(app.hasAnyGroupAccess(user, group), false);
+    assert.deepEqual(JSON.parse(calls[2].options.body).overrides, {'products.index': false, 'products.create': false, 'stock-out.index': false});
+});
+
+test('a partially granted group switch clears all module permissions when turned off', async () => {
+    const start = view.indexOf('function userMaster(');
+    const end = view.indexOf('\n}\n</script>', start) + 2;
+    const calls = [];
+    const context = {
+        document: {querySelector: () => ({content: 'csrf-token'})},
+        fetch: async (url, options) => {
+            calls.push({url, options});
+            return {ok: true, json: async () => ({success: true, overrides: JSON.parse(options.body).overrides})};
+        },
+    };
+    vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
+    const productModule = {key: 'products', label: 'Produk', permissions: ['products.index', 'products.create']};
+    const stockModule = {key: 'stock-out', label: 'Stok Keluar', permissions: ['stock-out.index']};
+    const group = {label: 'Master', modules: [productModule, stockModule]};
+    const app = context.userMaster([], '/user', '/user', null, null, null, null, [], [group]);
+    const user = {id: 45, role: 2, permissions: ['products.index'], permission_overrides: {}, can_change_permissions: true};
+
+    assert.equal(app.hasAnyGroupAccess(user, group), true);
+    assert.equal(app.hasFullGroupAccess(user, group), false);
+    await app.toggleGroupAccess(user, group);
+    assert.equal(app.hasAnyGroupAccess(user, group), false);
+    assert.deepEqual(JSON.parse(calls[0].options.body).overrides, {'products.index': false, 'products.create': false, 'stock-out.index': false});
+});
+
+test('failed access saves revert switch state and self accounts cannot issue updates', async () => {
+    const start = view.indexOf('function userMaster(');
+    const end = view.indexOf('\n}\n</script>', start) + 2;
+    const calls = [];
+    const alerts = [];
+    const context = {
+        document: {querySelector: () => ({content: 'csrf-token'})},
+        fetch: async (...args) => { calls.push(args); return {ok: false, json: async () => ({message: 'Denied'})}; },
+        Swal: {fire: async (...args) => { alerts.push(args); }},
+    };
+    vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
+    const module = {key: 'products', label: 'Produk', permissions: ['products.index']};
+    const app = context.userMaster([], '/user', '/user', null, null, null, null, [], []);
+    const user = {id: 44, permissions: ['products.index'], permission_overrides: {}, can_change_permissions: true};
+
+    await app.toggleModuleAccess(user, module);
+    assert.equal(app.hasModuleAccess(user, module), true);
+    assert.equal(user.permission_saving, false);
+    assert.equal(alerts.length, 1);
+
+    const self = {...user, id: 45, can_change_permissions: false};
+    await app.toggleModuleAccess(self, module);
+    assert.equal(calls.length, 1);
 });
 
 test('closing the create sheet removes its transient URL flag without losing other query state', () => {

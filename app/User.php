@@ -50,6 +50,11 @@ class User extends Authenticatable
         return $this->belongsTo('App\Models\RoleUser', 'id_user', 'id_user');
     }
 
+    public function permissionOverrides()
+    {
+        return $this->hasMany(\App\Models\UserPermission::class, 'id_user', 'id_user');
+    }
+
     public function branches()
     {
         return $this->hasMany(UserBranch::class, 'user_id');

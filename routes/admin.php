@@ -20,6 +20,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 	Route::get('/list-permohonan', 'DashboardController@list_permohonan')->name('admin.module');
 	// Route::resource('layanan', LayananController::class);
 	Route::get('user/impersonate/{id}', [UserController::class, 'impersonate'])->name('user.impersonate');
+	Route::put('user/{id}/permissions', [UserController::class, 'updatePermissions'])->name('user.permissions.update');
 	Route::resource('user', UserController::class)->names('user')->except('show');
 	Route::resource('role-menu', P_rolemenu::class);
 	Route::resource('roles', P_role::class)->names('roles')->except('show');

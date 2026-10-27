@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Models\Menu;
 use App\Models\Role;
+use App\Models\UserPermission;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 
 class RoleMenu extends Model
@@ -24,6 +26,24 @@ class RoleMenu extends Model
 
     public static function checkAccess($permission)
     {
+        $user = Auth::user();
+        if ($user) {
+            $request = request();
+            $cacheKey = 'user_permission_overrides.' . $user->getAuthIdentifier();
+            if (! $request->attributes->has($cacheKey)) {
+                $overrides = UserPermission::where('id_user', $user->getAuthIdentifier())
+                    ->pluck('is_allowed', 'permission')
+                    ->map(fn ($allowed) => (bool) $allowed)
+                    ->all();
+                $request->attributes->set($cacheKey, $overrides);
+            }
+
+            $overrides = $request->attributes->get($cacheKey, []);
+            if (array_key_exists($permission, $overrides)) {
+                return (bool) $overrides[$permission];
+            }
+        }
+
         if (Session("role")["id_role"] == 1) {
             return true;
         } else {
