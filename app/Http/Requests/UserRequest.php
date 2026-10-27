@@ -24,7 +24,18 @@ class UserRequest extends FormRequest
     public function rules()
     {
         $isCreate = $this->isMethod('post');
-        $staffIdRule = ['nullable', 'integer', 'exists:staff,id', Rule::unique('users', 'staff_id')->ignore($isCreate ? null : $this->route('user'), 'id_user')];
+        $currentUserId = $isCreate ? null : $this->route('user');
+        $staffIdRule = [
+            'nullable',
+            'integer',
+            Rule::exists('staff', 'id')->where(function ($query) use ($currentUserId) {
+                $query->whereNull('user_id');
+                if ($currentUserId !== null) {
+                    $query->orWhere('user_id', $currentUserId);
+                }
+            }),
+            Rule::unique('users', 'staff_id')->ignore($currentUserId, 'id_user'),
+        ];
 
         if (!$isCreate && $this->boolean('link_only')) {
             return [

@@ -63,6 +63,11 @@ class User extends Authenticatable
 
     public function staff()
     {
+        return $this->hasOne(Staff::class, 'user_id', 'id_user');
+    }
+
+    public function legacyStaff()
+    {
         return $this->belongsTo(Staff::class, 'staff_id', 'id');
     }
 

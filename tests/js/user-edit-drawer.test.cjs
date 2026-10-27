@@ -263,7 +263,7 @@ test('account edit drawer matches the reference email and searchable employee-li
     assert.match(view, /@js\(\$staffOptions\)/);
     assert.match(view, /@js\(\$linkedStaffUsers\)/);
     assert.match(controller, /Staff::query\(\)->orderBy\('name'\)/);
-    assert.match(controller, /whereNotNull\('staff_id'\)->pluck\('id_user', 'staff_id'\)/);
+    assert.match(controller, /DB::table\('staff'\)->whereNotNull\('user_id'\)->pluck\('user_id', 'id'\)/);
 });
 
 test('edit mode exposes account identity and employee linking without create-only fields', () => {

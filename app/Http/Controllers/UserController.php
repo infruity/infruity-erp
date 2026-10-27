@@ -31,7 +31,7 @@ class UserController extends Controller
         $data['role'] = Role::all();
         $data['branch'] = Branch::all();
         $data['staffOptions'] = Staff::query()->orderBy('name')->get(['id', 'name']);
-        $data['linkedStaffUsers'] = DB::table('users')->whereNotNull('staff_id')->pluck('id_user', 'staff_id')->all();
+        $data['linkedStaffUsers'] = DB::table('staff')->whereNotNull('user_id')->pluck('user_id', 'id')->all() + DB::table('users')->whereNotNull('staff_id')->pluck('id_user', 'staff_id')->all();
         $usedOperatorNumbers = DB::table('users')
             ->whereRaw('UPPER(email) LIKE ?', ['OPR%@INFRUITY.COM'])
             ->pluck('email')
@@ -97,11 +97,11 @@ class UserController extends Controller
             $user->email = $request->email;
             $user->nm_user = $request->full_name;
             $user->password = Hash::make($request->password);
-            $user->staff_id = $request->input('staff_id') ?: null;
             $user->save();
+            $this->syncStaffLink($user, $request->input('staff_id'));
             // add roles
             $role = new RoleUser();
-            $role->id_user = DB::getPdo()->lastInsertId();
+            $role->id_user = $user->id_user;
             $role->id_role = $request->id_role ?? 99;
             $role->save();
             // dd($role);
@@ -134,9 +134,10 @@ class UserController extends Controller
         }
 
         if ($request->boolean('link_only')) {
-            $user = User::findOrFail($id);
-            $user->staff_id = $request->input('staff_id') ?: null;
-            $user->save();
+            DB::transaction(function () use ($id, $request) {
+                $user = User::query()->lockForUpdate()->findOrFail($id);
+                $this->syncStaffLink($user, $request->input('staff_id'));
+            });
 
             return redirect('user')->with('success', 'Tautan karyawan akun diperbarui');
         }
@@ -152,9 +153,10 @@ class UserController extends Controller
                 $user->password = Hash::make($request->password);
             }
             if ($request->has('staff_id')) {
-                $user->staff_id = $request->input('staff_id') ?: null;
+                $this->syncStaffLink($user, $request->input('staff_id'));
+            } else {
+                $user->save();
             }
-            $user->save();
             // add roles
             RoleUser::where('id_user', $id)->delete();
             $role = new RoleUser();
@@ -179,6 +181,28 @@ class UserController extends Controller
         }
 
         return redirect('user')->with('success', 'Data User Disimpan');
+    }
+
+    private function syncStaffLink(User $user, $staffId): void
+    {
+        $staffId = $staffId ? (int) $staffId : null;
+
+        Staff::query()->where('user_id', $user->id_user)->update(['user_id' => null]);
+
+        if ($staffId !== null) {
+            $staff = Staff::query()->whereKey($staffId)->lockForUpdate()->firstOrFail();
+            if ($staff->user_id !== null && (int) $staff->user_id !== (int) $user->id_user) {
+                throw ValidationException::withMessages([
+                    'staff_id' => 'Karyawan tersebut sudah tertaut ke akun lain.',
+                ]);
+            }
+
+            $staff->user_id = $user->id_user;
+            $staff->save();
+        }
+
+        $user->staff_id = $staffId;
+        $user->save();
     }
 
     public function updatePermissions(Request $request, $id)

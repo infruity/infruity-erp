@@ -78,7 +78,7 @@
         'can_change_permissions' => $canManageUserPermissions && (int) $currentUserId !== (int) $user->id_user,
         'branches' => $user->branches->pluck('branch_id')->all(),
         'branch_names' => $user->branches->map(fn ($assignment) => $assignment->branch?->name)->filter()->values()->all(),
-        'staff_id' => $user->staff_id,
+        'staff_id' => $user->staff?->id,
         'staff_name' => $user->staff?->name,
     ])->values();
 @endphp

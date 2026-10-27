@@ -18,7 +18,7 @@ class UserStaffLinkTest extends TestCase
         ]]);
 
         Schema::create('users', function (Blueprint $table) {
-            $table->integer('id_user')->primary();
+            $table->increments('id_user');
             $table->string('nm_user');
             $table->string('username')->nullable();
             $table->string('email')->unique();
@@ -32,6 +32,8 @@ class UserStaffLinkTest extends TestCase
             $table->id();
             $table->string('name');
             $table->string('status')->default('aktif');
+            $table->unsignedBigInteger('user_id')->nullable()->unique();
+            $table->timestamps();
         });
         Schema::create('role', function (Blueprint $table) {
             $table->integer('id_role')->primary();
@@ -84,6 +86,8 @@ class UserStaffLinkTest extends TestCase
         DB::table('role_menu')->insert([
             ['id_role' => 3, 'permission' => 'user.index'],
             ['id_role' => 3, 'permission' => 'user.update'],
+            ['id_role' => 3, 'permission' => 'user.edit'],
+            ['id_role' => 3, 'permission' => 'user.store'],
         ]);
         DB::table('branch')->insert(['id' => 1, 'name' => 'Cabang Test']);
         DB::table('user_branch')->insert(['user_id' => 2, 'branch_id' => 1]);
@@ -107,6 +111,7 @@ class UserStaffLinkTest extends TestCase
             'email' => 'first@example.test',
             'password' => 'secret',
         ]);
+        $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => 2]);
         $this->assertDatabaseHas('role_user', ['id_user' => 2, 'id_role' => 2]);
         $this->assertDatabaseHas('user_branch', ['user_id' => 2, 'branch_id' => 1]);
 
@@ -116,6 +121,44 @@ class UserStaffLinkTest extends TestCase
         ])->assertSessionHasErrors('staff_id');
 
         $this->assertDatabaseHas('users', ['id_user' => 3, 'staff_id' => null]);
+
+        $this->put('/user/2', [
+            'link_only' => '1',
+            'staff_id' => null,
+        ])->assertRedirect('/user');
+
+        $this->assertDatabaseHas('users', ['id_user' => 2, 'staff_id' => null]);
+        $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => null]);
+    }
+
+    public function test_create_links_staff_using_ids_not_matching_names_or_emails(): void
+    {
+        $this->post('/user', [
+            'full_name' => 'Account Name Different From Employee',
+            'email' => 'account@example.test',
+            'password' => 'test-password',
+            'id_role' => 2,
+            'id_branch' => [1],
+            'staff_id' => 10,
+        ])->assertRedirect('/user');
+
+        $account = DB::table('users')->where('email', 'account@example.test')->first();
+        $this->assertNotNull($account);
+        $this->assertDatabaseHas('users', ['id_user' => $account->id_user, 'staff_id' => 10]);
+        $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => $account->id_user]);
+    }
+
+    public function test_account_hydration_reads_the_staff_user_id_relationship(): void
+    {
+        DB::table('staff')->where('id', 10)->update(['user_id' => 2]);
+
+        $this->assertSame(10, User::findOrFail(2)->staff?->id);
+
+        $this->get('/user/2/edit')
+            ->assertOk()
+            ->assertJsonPath('staff.id', 10);
+
+        $this->get('/user')->assertOk()->assertSee('Dwi Febbrianti Robbiatul Adawiyah');
     }
 
     public function test_user_index_renders_searchable_staff_link_options(): void

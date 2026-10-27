@@ -29,6 +29,11 @@ class Staff extends Model
         return $this->belongsTo(Department::class, 'department_id', 'id');
     }
 
+    public function account()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id_user');
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'created_by', 'id_user');
