@@ -78,7 +78,7 @@
 @endphp
 
 @section('content')
-<div x-data="userMaster(@js($editableUsers), @js(route('user.store')), @js(url('user')), @js(old('_user_id')), @js(old('full_name')), @js(old('email')), @js(old('id_role')), @js(old('id_branch', [])), @js($accessGroups))"
+<div x-data="userMaster(@js($editableUsers), @js(route('user.store')), @js(url('user')), @js(old('_user_id')), @js(old('full_name')), @js(old('email')), @js(old('id_role')), @js(old('id_branch', [])), @js($accessGroups), @js($nextAutoEmail), @js(old('email_type')))"
      x-init="if (@js($errors->any())) restoreOld(); else if (new URLSearchParams(location.search).has('create')) openCreate()"
      @user-filter-open.window="filterOpen = true"
      @mobile-add-toggle.window="openCreate()"
@@ -222,7 +222,20 @@
                     <div class="flex-1 overflow-y-auto bg-gray-50/60 px-5 py-5 space-y-5">
                         @if($errors->any())<div role="alert" class="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"><p class="font-semibold">Data belum dapat disimpan</p><ul class="mt-1 list-disc pl-4">@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul></div>@endif
                         <div><label for="user-name" class="text-xs font-semibold text-gray-600 mb-1.5 block">Nama Lengkap <span class="text-red-400">*</span></label><input id="user-name" @if($errors->has('full_name')) aria-invalid="true" aria-describedby="user-name-error" @endif name="full_name" x-model="form.name" required type="text" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('full_name')<p id="user-name-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
-                        <div><label for="user-email" class="text-xs font-semibold text-gray-600 mb-1.5 block">Alamat Email <span class="text-red-400">*</span></label><input id="user-email" @if($errors->has('email')) aria-invalid="true" aria-describedby="user-email-error" @endif name="email" x-model="form.email" required type="email" placeholder="nama@infruity.com" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('email')<p id="user-email-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+                        <div>
+                            <div class="mb-1.5 flex items-center justify-between gap-3">
+                                <label for="user-email" class="text-xs font-semibold text-gray-600">Alamat Email <span class="text-red-400">*</span></label>
+                                <div x-show="!editing" x-cloak class="flex rounded-lg bg-gray-100 p-0.5" role="radiogroup" aria-label="Jenis email">
+                                    <label class="cursor-pointer rounded-md px-2.5 py-1 text-[10px] font-medium transition-all" :class="form.emailType === 'auto' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'">
+                                        <input type="radio" name="email_type" value="auto" x-model="form.emailType" @change="setEmailType('auto')" class="sr-only">Bawaan
+                                    </label>
+                                    <label class="cursor-pointer rounded-md px-2.5 py-1 text-[10px] font-medium transition-all" :class="form.emailType === 'custom' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'">
+                                        <input type="radio" name="email_type" value="custom" x-model="form.emailType" @change="setEmailType('custom')" class="sr-only">Kustom
+                                    </label>
+                                </div>
+                            </div>
+                            <input id="user-email" @if($errors->has('email')) aria-invalid="true" aria-describedby="user-email-error" @endif name="email" x-model="form.email" :readonly="!editing && form.emailType === 'auto'" :class="!editing && form.emailType === 'auto' ? 'bg-gray-50 text-gray-500 cursor-not-allowed border-gray-200' : 'bg-white text-gray-900 border-gray-200 focus:border-emerald-500'" required type="email" placeholder="nama@infruity.com" class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all">@error('email')<p id="user-email-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        </div>
                         <div><label for="user-password" class="text-xs font-semibold text-gray-600 mb-1.5 block">Kata Sandi <span class="text-red-400" x-show="!editing">*</span></label><input id="user-password" @if($errors->has('password')) aria-invalid="true" aria-describedby="user-password-error" @endif name="password" x-model="form.password" :required="!editing" type="password" autocomplete="new-password" :placeholder="editing ? 'Kosongkan jika tidak diubah' : 'Masukkan kata sandi'" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('password')<p id="user-password-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
                         <div><label for="user-role" class="text-xs font-semibold text-gray-600 mb-1.5 block">Hak Akses <span class="text-red-400">*</span></label><select id="user-role" @if($errors->has('id_role')) aria-invalid="true" aria-describedby="user-role-error" @endif name="id_role" x-model="form.role" required class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"><option value="">Pilih hak akses</option>@foreach ($role as $item)<option value="{{ $item->id_role }}">{{ $item->nm_role }}</option>@endforeach</select>@error('id_role')<p id="user-role-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
                         <fieldset><legend class="text-xs font-semibold text-gray-600 mb-1.5">Cabang <span class="text-red-400">*</span></legend><div class="bg-white border border-gray-200 rounded-xl max-h-48 overflow-y-auto divide-y divide-gray-100">@forelse ($branch as $item)<label class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 text-sm text-gray-700"><input type="checkbox" name="id_branch[]" value="{{ $item->id }}" :checked="form.branches.includes({{ $item->id }})" @change="toggleBranch({{ $item->id }})" class="accent-[#0b595b] rounded"><span>{{ $item->name }}</span></label>@empty <p class="px-4 py-3 text-sm text-gray-400">Belum ada cabang</p>@endforelse</div><p class="text-[11px] text-gray-400 mt-1.5">Pilih minimal satu cabang.</p></fieldset>
@@ -237,10 +250,10 @@
 
 @push('scripts')
 <script>
-function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRole, oldBranches, accessGroups) {
+function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRole, oldBranches, accessGroups, nextAutoEmail, oldEmailType) {
     return {
-        users, storeUrl, baseUrl, accessGroups, drawerOpen: false, filterOpen: false, editing: null, selected: null, modalSearchQuery: '',
-        form: { name: '', email: '', password: '', role: '', branches: [] },
+        users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, drawerOpen: false, filterOpen: false, editing: null, selected: null, modalSearchQuery: '',
+        form: { name: '', email: '', emailType: 'auto', password: '', role: '', branches: [] },
         get filteredAccessGroups() {
             const query = this.modalSearchQuery.trim().toLocaleLowerCase();
             if (!query) return this.accessGroups;
@@ -260,21 +273,26 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
         openDetail(id) { this.modalSearchQuery = ''; this.selected = this.users.find(user => user.id === id) || null; },
         editSelected() { const user = this.selected; this.selected = null; if (user) this.openEdit(user.id); },
         removeSelected() { const user = this.selected; this.selected = null; if (user) this.remove(user.id, user.name); },
+        setEmailType(type) {
+            this.form.emailType = type === 'auto' ? 'auto' : 'custom';
+            this.form.email = this.form.emailType === 'auto' ? this.nextAutoEmail : '';
+        },
         openCreate() {
             this.editing = null;
-            this.form = { name: oldName || '', email: oldEmail || '', password: '', role: oldRole || '', branches: (oldBranches || []).map(Number) };
+            this.form = { name: oldName || '', email: oldEmail || this.nextAutoEmail, emailType: this.oldEmailType === 'custom' ? 'custom' : 'auto', password: '', role: oldRole || '', branches: (oldBranches || []).map(Number) };
             this.drawerOpen = true;
         },
         restoreOld() {
-            if (oldUserId && this.users.some(user => user.id === Number(oldUserId))) this.openEdit(Number(oldUserId));
+            const isEditing = Boolean(oldUserId && this.users.some(user => user.id === Number(oldUserId)));
+            if (isEditing) this.openEdit(Number(oldUserId));
             else this.openCreate();
-            this.form = { name: oldName || '', email: oldEmail || '', password: '', role: oldRole || '', branches: (oldBranches || []).map(Number) };
+            this.form = { name: oldName || '', email: oldEmail || (isEditing ? '' : this.nextAutoEmail), emailType: isEditing ? 'custom' : (this.oldEmailType === 'custom' ? 'custom' : 'auto'), password: '', role: oldRole || '', branches: (oldBranches || []).map(Number) };
         },
         openEdit(id) {
             const user = this.users.find(item => item.id === id);
             if (!user) return;
             this.editing = id;
-            this.form = { name: user.name || '', email: user.email || '', password: '', role: String(user.role || ''), branches: (user.branches || []).map(Number) };
+            this.form = { name: user.name || '', email: user.email || '', emailType: 'custom', password: '', role: String(user.role || ''), branches: (user.branches || []).map(Number) };
             this.drawerOpen = true;
         },
         toggleBranch(id) {

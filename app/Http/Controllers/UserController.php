@@ -27,6 +27,21 @@ class UserController extends Controller
 
         $data['role'] = Role::all();
         $data['branch'] = Branch::all();
+        $usedOperatorNumbers = DB::table('users')
+            ->whereRaw('UPPER(email) LIKE ?', ['OPR%@INFRUITY.COM'])
+            ->pluck('email')
+            ->map(function ($email) {
+                return preg_match('/^OPR(\d+)@INFRUITY\.COM$/i', (string) $email, $matches) === 1
+                    ? (int) $matches[1]
+                    : null;
+            })
+            ->filter(fn ($number) => $number !== null)
+            ->all();
+        $nextOperatorNumber = 1;
+        while (in_array($nextOperatorNumber, $usedOperatorNumbers, true)) {
+            $nextOperatorNumber++;
+        }
+        $data['nextAutoEmail'] = sprintf('OPR%03d@INFRUITY.COM', $nextOperatorNumber);
         $data['users'] = User::with('RoleUser.role', 'branches.branch')
             ->when($request->filled('q'), function ($query) use ($request) {
                 $search = '%' . $request->input('q') . '%';
