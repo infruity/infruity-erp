@@ -86,6 +86,26 @@
     ])->values();
 @endphp
 
+@push('styles')
+<style>
+    @media (max-width: 1023px) {
+        .user-account-drawer-panel.is-editing {
+            max-height: 71.5dvh;
+        }
+
+        .user-account-drawer-panel.is-editing .user-account-role--edit {
+            padding-top: 12px;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .user-account-drawer-panel.is-editing .user-account-email-type-toggle {
+            display: none;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <div x-data="userMaster(@js($editableUsers), @js(route('user.store')), @js(url('user')), @js(old('_user_id')), @js(old('full_name')), @js(old('email')), @js(old('role_ids', [])), @js(old('id_branch', [])), @js($accessGroups), @js($nextAutoEmail), @js(old('email_type')), @js(old('staff_id')), @js($staffOptions))"
      x-init="if (@js($errors->any())) restoreOld(); else if (new URLSearchParams(location.search).has('create')) openCreate()"
@@ -222,7 +242,7 @@
              x-transition:leave-end="opacity-0"
              class="fixed inset-0 z-[100] flex flex-col justify-end lg:flex-row lg:justify-end" @keydown.escape.window="closeDrawer()">
             <div class="absolute inset-0 bg-black/70" @click="closeDrawer()"></div>
-            <div x-show="drawerOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full" x-transition:enter-end="translate-y-0 lg:translate-x-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 lg:translate-x-0" x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full" class="relative w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col max-h-[90dvh] lg:max-h-full lg:h-full rounded-t-3xl lg:rounded-none overflow-hidden">
+            <div x-show="drawerOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full" x-transition:enter-end="translate-y-0 lg:translate-x-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 lg:translate-x-0" x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full" :class="editing ? 'is-editing' : ''" class="user-account-drawer-panel relative w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col max-h-[90dvh] lg:max-h-full lg:h-full rounded-t-3xl lg:rounded-none overflow-hidden">
                 <div class="flex justify-center pt-3 pb-1 lg:hidden"><div class="w-16 h-1.5 bg-gray-300 rounded-full"></div></div>
                 <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between"><div><h3 class="text-[15px] font-bold text-gray-900" x-text="editing ? 'Edit Akun' : 'Tambah Akun'"></h3><p class="text-[12px] text-gray-400 mt-0.5" x-text="editing ? 'Perbarui data akun' : 'Isi data akun baru'"></p></div><button type="button" @click="closeDrawer()" class="w-9 h-9 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div>
                 <form method="POST" :action="editing ? baseUrl + '/' + editing : storeUrl" class="flex-1 min-h-0 flex flex-col">
@@ -240,7 +260,7 @@
                         <div>
                             <div class="mb-1.5 flex items-center justify-between gap-3">
                                 <label for="user-email" class="text-xs font-semibold text-gray-600">Alamat Email <span class="text-red-400">*</span></label>
-                                <div x-show="!editing" x-cloak class="flex rounded-lg bg-gray-100 p-0.5" role="radiogroup" aria-label="Jenis email">
+                                <div x-cloak class="user-account-email-type-toggle flex rounded-lg bg-gray-100 p-0.5" role="radiogroup" aria-label="Jenis email" :aria-disabled="Boolean(editing)">
                                     <label class="cursor-pointer rounded-md px-2.5 py-1 text-[10px] font-medium transition-all" :class="form.emailType === 'auto' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'">
                                         <input type="radio" name="email_type" value="auto" x-model="form.emailType" :disabled="Boolean(editing)" @change="setEmailType('auto')" class="sr-only">Bawaan
                                     </label>
@@ -269,7 +289,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div>
+                        <div class="user-account-role--edit">
                             <label for="user-roles" class="mb-1.5 block text-xs font-semibold text-gray-600">Hak Akses <span class="text-red-400">*</span></label>
                             <select id="user-roles" name="role_ids[]" x-model="form.roles" multiple required size="4" class="w-full min-h-[7rem] rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm outline-none focus:border-emerald-500">
                                 @foreach ($role as $item)<option value="{{ $item->id_role }}">{{ $item->nm_role }}</option>@endforeach

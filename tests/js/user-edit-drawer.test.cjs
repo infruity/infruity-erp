@@ -189,7 +189,8 @@ test('create user email mode defaults to the next OPR address and can switch to 
     assert.match(view, /Kustom/);
     assert.match(view, /name="email" x-model="form.email"/);
     assert.match(view, /name="email_type"/);
-    assert.match(view, /x-show="!editing" x-cloak class="flex rounded-lg bg-gray-100 p-0.5"/);
+    assert.doesNotMatch(view, /<div x-show="!editing"[^>]*role="radiogroup"/);
+    assert.ok(view.includes('role="radiogroup" aria-label="Jenis email" :aria-disabled="Boolean(editing)"'));
     assert.match(view, /:readonly="editing \|\| form\.emailType === 'auto'"/);
     assert.match(view, /name="full_name"/);
     assert.match(view, /name="password"/);
@@ -265,7 +266,8 @@ test('account edit drawer prevents one employee from linking to multiple account
 
 test('edit mode exposes account identity and employee linking without create-only fields', () => {
     assert.match(view, /name="link_only" value="1" :disabled="!editing"/);
-    assert.match(view, /x-show="!editing"[^>]*role="radiogroup"/);
+    assert.doesNotMatch(view, /<div x-show="!editing"[^>]*role="radiogroup"/);
+    assert.ok(view.includes('role="radiogroup" aria-label="Jenis email" :aria-disabled="Boolean(editing)"'));
     assert.match(view, /:readonly="editing \|\| form\.emailType === 'auto'"/);
     assert.match(view, /:disabled="Boolean\(editing\)"/);
     assert.match(view, /x-show="!editing" x-cloak :disabled="Boolean\(editing\)" class="contents"/);
@@ -285,6 +287,15 @@ test('edit account drawer matches reference scrolling and email focus styling', 
     for (const field of ['staff_id', 'full_name', 'password', 'role_ids[]', 'id_branch[]']) {
         assert.ok(view.includes(`name="${field}"`), `existing edit field ${field} stays in the form`);
     }
+});
+
+test('mobile edit account sheet matches the reference height and keeps roles scrollable', () => {
+    assert.match(view, /user-account-drawer-panel/);
+    assert.ok(view.includes(':class="editing ? \'is-editing\' : \'\'"'));
+    assert.ok(view.includes('@media (max-width: 1023px)') && view.includes('.user-account-drawer-panel.is-editing') && view.includes('max-height: 71.5dvh;') && view.includes('.user-account-role--edit'));
+    assert.ok(view.includes('@media (min-width: 1024px)') && view.includes('.user-account-email-type-toggle'));
+    assert.match(view, /x-ref="scrollArea"/);
+    assert.ok(view.includes('name="role_ids[]"'), 'multi-role assignment remains available below the initial edit view');
 });
 
 test('edit form cannot select an employee already linked to another account', () => {
