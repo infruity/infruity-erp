@@ -46,9 +46,14 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\RoleMenu', 'id_user', 'id_user');
     }
 
+    public function roleAssignments()
+    {
+        return $this->hasMany('App\Models\RoleUser', 'id_user', 'id_user');
+    }
+
     public function RoleUser()
     {
-        return $this->belongsTo('App\Models\RoleUser', 'id_user', 'id_user');
+        return $this->roleAssignments();
     }
 
     public function permissionOverrides()

@@ -16,6 +16,7 @@ use App\Models\Menu;
 use App\Models\Permission;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use App\User;
 
 class P_role extends Controller
 {
@@ -33,11 +34,38 @@ class P_role extends Controller
         }
 
         $search = trim((string) $request->query('q', ''));
-        $data['data'] = Role::withCount('roleMenu')
-            ->when($search !== '', fn ($query) => $query->where('nm_role', 'like', '%' . $search . '%'))
-            ->orderBy('nm_role')
-            ->paginate(30)
+        $modules = config('constant.permissions', []);
+        $accounts = User::with('roleAssignments.role.roleMenu')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($users) use ($search) {
+                    $users->where('email', 'like', '%' . $search . '%')
+                        ->orWhere('nm_user', 'like', '%' . $search . '%')
+                        ->orWhere('username', 'like', '%' . $search . '%');
+                    if (ctype_digit($search)) {
+                        $users->orWhere('id_user', (int) $search);
+                    }
+                });
+            })
+            ->orderBy('email')
+            ->paginate(50)
             ->withQueryString();
+
+        $accounts->getCollection()->transform(function ($account) use ($modules) {
+            $roles = $account->roleAssignments->pluck('role')->filter()->unique('id_role')->values();
+            $permissions = $roles->flatMap(fn ($role) => $role->roleMenu->pluck('permission'))->unique()->values()->all();
+            $grantedModules = collect($modules)->filter(function ($module, $moduleKey) use ($permissions) {
+                return collect($module['actions'] ?? [])->keys()->contains(
+                    fn ($action) => in_array($moduleKey . '.' . $action, $permissions, true)
+                );
+            })->count();
+
+            $account->setAttribute('assigned_roles', $roles);
+            $account->setAttribute('granted_modules_count', $grantedModules);
+            return $account;
+        });
+
+        $data['accounts'] = $accounts;
+        $data['modulesTotal'] = count($modules);
         $data['search'] = $search;
 
         return view("admin.role.index", $data);

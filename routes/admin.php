@@ -4,6 +4,7 @@ use App\Services\FcmService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LayananController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleContextController;
 use App\Http\Controllers\P_rolemenu;
 use Modules\Crm\Http\Controllers\DashboardController;
 use App\Http\Controllers\P_role;
@@ -22,6 +23,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 	Route::get('user/impersonate/{id}', [UserController::class, 'impersonate'])->name('user.impersonate');
 	Route::put('user/{id}/permissions', [UserController::class, 'updatePermissions'])->name('user.permissions.update');
 	Route::resource('user', UserController::class)->names('user')->except('show');
+	Route::post('role/switch', [RoleContextController::class, 'switch'])->name('role.switch');
 	Route::resource('role-menu', P_rolemenu::class);
 	Route::resource('roles', P_role::class)->names('roles')->except('show');
 	Route::get('roles/detail/{id}', [P_role::class, 'show'])->name('roles.show');

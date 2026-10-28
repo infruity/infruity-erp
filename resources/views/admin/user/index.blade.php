@@ -71,9 +71,11 @@
         'email' => $user->email,
         'granted_modules_count' => $user->granted_modules_count,
         'modules_total' => $modulesTotal,
-        'role' => $user->RoleUser?->id_role,
-        'role_name' => $user->RoleUser?->role?->nm_role ?? 'Tanpa peran',
-        'permissions' => $user->RoleUser?->role?->roleMenu?->pluck('permission')->all() ?? [],
+        'roles' => $user->roleAssignments->map(fn ($assignment) => [
+            'id' => (int) $assignment->id_role,
+            'name' => $assignment->role?->nm_role,
+        ])->filter(fn ($role) => $role['name'] !== null)->values()->all(),
+        'permissions' => $user->roleAssignments->flatMap(fn ($assignment) => $assignment->role?->roleMenu?->pluck('permission') ?? collect())->unique()->values()->all(),
         'permission_overrides' => $user->permissionOverrides->mapWithKeys(fn ($override) => [$override->permission => (bool) $override->is_allowed])->all(),
         'can_change_permissions' => $canManageUserPermissions && (bool) $user->is_aktif && (int) $currentUserId !== (int) $user->id_user,
         'branches' => $user->branches->pluck('branch_id')->all(),
@@ -85,7 +87,7 @@
 @endphp
 
 @section('content')
-<div x-data="userMaster(@js($editableUsers), @js(route('user.store')), @js(url('user')), @js(old('_user_id')), @js(old('full_name')), @js(old('email')), @js(old('id_role')), @js(old('id_branch', [])), @js($accessGroups), @js($nextAutoEmail), @js(old('email_type')), @js(old('staff_id')), @js($staffOptions))"
+<div x-data="userMaster(@js($editableUsers), @js(route('user.store')), @js(url('user')), @js(old('_user_id')), @js(old('full_name')), @js(old('email')), @js(old('role_ids', [])), @js(old('id_branch', [])), @js($accessGroups), @js($nextAutoEmail), @js(old('email_type')), @js(old('staff_id')), @js($staffOptions))"
      x-init="if (@js($errors->any())) restoreOld(); else if (new URLSearchParams(location.search).has('create')) openCreate()"
      @user-filter-open.window="filterOpen = true"
      @mobile-add-toggle.window="openCreate()"
@@ -124,7 +126,7 @@
                     <div @class(['w-9 h-9 md:w-10 md:h-10 rounded-xl border flex items-center justify-center shrink-0 font-bold text-sm', 'bg-emerald-50 border-emerald-100 text-emerald-700' => $loop->index % 5 === 0, 'bg-blue-50 border-blue-100 text-blue-700' => $loop->index % 5 === 1, 'bg-amber-50 border-amber-100 text-amber-700' => $loop->index % 5 === 2, 'bg-rose-50 border-rose-100 text-rose-700' => $loop->index % 5 === 3, 'bg-violet-50 border-violet-100 text-violet-700' => $loop->index % 5 === 4])>{{ mb_strtoupper(mb_substr($user->email ?: $user->nm_user, 0, 2)) }}</div>
                     <div class="flex-1 min-w-0">
                         <div class="text-sm font-semibold text-gray-900 truncate">{{ $user->email }}</div>
-                        <div class="mt-0.5 flex min-w-0 items-center gap-1.5"><span class="truncate text-[11px] text-gray-400">{{ $user->nm_user ?: 'Belum tertaut' }}</span><span class="shrink-0 rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-600">{{ $user->RoleUser?->role?->nm_role ?? '—' }}</span><span @class(['shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold', 'bg-emerald-50 text-emerald-700' => $user->is_aktif, 'bg-gray-100 text-gray-600' => !$user->is_aktif])>{{ $user->is_aktif ? 'Aktif' : 'Nonaktif' }}</span><span @class(['shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold', 'bg-emerald-50 text-emerald-700' => $modulesTotal > 0 && $user->granted_modules_count === $modulesTotal, 'bg-amber-50 text-amber-700' => $user->granted_modules_count < $modulesTotal])>{{ $user->granted_modules_count }}/{{ $modulesTotal }} modul</span></div>
+                        <div class="mt-0.5 flex min-w-0 items-center gap-1.5"><span class="truncate text-[11px] text-gray-400">{{ $user->nm_user ?: 'Belum tertaut' }}</span><span class="shrink-0 rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-600">{{ $user->role_names ? implode(' · ', $user->role_names) : 'Tanpa role' }}</span><span @class(['shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold', 'bg-emerald-50 text-emerald-700' => $user->is_aktif, 'bg-gray-100 text-gray-600' => !$user->is_aktif])>{{ $user->is_aktif ? 'Aktif' : 'Nonaktif' }}</span><span @class(['shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold', 'bg-emerald-50 text-emerald-700' => $modulesTotal > 0 && $user->granted_modules_count === $modulesTotal, 'bg-amber-50 text-amber-700' => $user->granted_modules_count < $modulesTotal])>{{ $user->granted_modules_count }}/{{ $modulesTotal }} modul</span></div>
                     </div>
                     <div class="hidden lg:flex gap-1.5 max-w-[35%] flex-wrap justify-end">
                         @forelse ($user->branches as $assignedBranch)
@@ -258,19 +260,26 @@
                                 </div>
                                 <div class="relative max-h-48 overflow-y-auto overscroll-none bg-white">
                                     <template x-for="staff in filteredStaffOptions" :key="staff.id">
-                                        <button type="button" @click="toggleStaff(staff.id)" class="flex w-full cursor-pointer items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left transition-colors last:border-b-0 hover:bg-gray-50">
+                                        <button type="button" @click="toggleStaff(staff.id)" :disabled="Boolean(staff.linked_user_id) && String(staff.linked_user_id) !== String(editing || '')" :title="staff.linked_user_id && String(staff.linked_user_id) !== String(editing || '') ? 'Karyawan sudah tertaut ke akun lain' : ''" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left transition-colors last:border-b-0 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-60">
                                             <span class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 transition-colors" :class="String(form.staffId) === String(staff.id) ? 'border-emerald-500' : ''" aria-hidden="true"><span class="h-2 w-2 rounded-full bg-emerald-500 transition-transform" :class="String(form.staffId) === String(staff.id) ? 'scale-100' : 'scale-0'"></span></span>
-                                            <span class="flex min-w-0 flex-1 items-center justify-between gap-3"><span class="truncate text-[13px] font-medium" :class="String(form.staffId) === String(staff.id) ? 'font-bold text-gray-900' : ''" x-text="staff.name"></span></span>
+                                            <span class="flex min-w-0 flex-1 items-center justify-between gap-3"><span class="truncate text-[13px] font-medium" :class="String(form.staffId) === String(staff.id) ? 'font-bold text-gray-900' : ''" x-text="staff.name"></span><span x-show="staff.linked_user_id && String(staff.linked_user_id) !== String(editing || '')" class="shrink-0 text-[10px] font-semibold text-gray-400">Sudah tertaut</span></span>
                                         </button>
                                     </template>
                                     <p x-show="filteredStaffOptions.length === 0" class="px-4 py-5 text-center text-[13px] text-gray-400">Karyawan tidak ditemukan</p>
                                 </div>
                             </div>
                         </div>
+                        <div>
+                            <label for="user-roles" class="mb-1.5 block text-xs font-semibold text-gray-600">Hak Akses <span class="text-red-400">*</span></label>
+                            <select id="user-roles" name="role_ids[]" x-model="form.roles" multiple required size="4" class="w-full min-h-[7rem] rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm outline-none focus:border-emerald-500">
+                                @foreach ($role as $item)<option value="{{ $item->id_role }}">{{ $item->nm_role }}</option>@endforeach
+                            </select>
+                            <p class="mt-1.5 text-[11px] text-gray-400">Pilih satu atau lebih role untuk akun ini.</p>
+                            @error('role_ids')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        </div>
                         <fieldset x-show="!editing" x-cloak :disabled="Boolean(editing)" class="contents">
                         <div><label for="user-name" class="text-xs font-semibold text-gray-600 mb-1.5 block">Nama Lengkap <span class="text-red-400">*</span></label><input id="user-name" @if($errors->has('full_name')) aria-invalid="true" aria-describedby="user-name-error" @endif name="full_name" x-model="form.name" required type="text" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('full_name')<p id="user-name-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
                         <div><label for="user-password" class="text-xs font-semibold text-gray-600 mb-1.5 block">Kata Sandi <span class="text-red-400" x-show="!editing">*</span></label><input id="user-password" @if($errors->has('password')) aria-invalid="true" aria-describedby="user-password-error" @endif name="password" x-model="form.password" :required="!editing" type="password" autocomplete="new-password" :placeholder="editing ? 'Kosongkan jika tidak diubah' : 'Masukkan kata sandi'" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('password')<p id="user-password-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
-                        <div><label for="user-role" class="text-xs font-semibold text-gray-600 mb-1.5 block">Hak Akses <span class="text-red-400">*</span></label><select id="user-role" @if($errors->has('id_role')) aria-invalid="true" aria-describedby="user-role-error" @endif name="id_role" x-model="form.role" required class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"><option value="">Pilih hak akses</option>@foreach ($role as $item)<option value="{{ $item->id_role }}">{{ $item->nm_role }}</option>@endforeach</select>@error('id_role')<p id="user-role-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
                         <fieldset><legend class="text-xs font-semibold text-gray-600 mb-1.5">Cabang <span class="text-red-400">*</span></legend><div class="bg-white border border-gray-200 rounded-xl max-h-48 overflow-y-auto divide-y divide-gray-100">@forelse ($branch as $item)<label class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 text-sm text-gray-700"><input type="checkbox" name="id_branch[]" value="{{ $item->id }}" :checked="form.branches.includes({{ $item->id }})" @change="toggleBranch({{ $item->id }})" class="accent-[#0b595b] rounded"><span>{{ $item->name }}</span></label>@empty <p class="px-4 py-3 text-sm text-gray-400">Belum ada cabang</p>@endforelse</div><p class="text-[11px] text-gray-400 mt-1.5">Pilih minimal satu cabang.</p></fieldset>
                         </fieldset>
                             </div>
@@ -289,10 +298,10 @@
 
 @push('scripts')
 <script>
-function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRole, oldBranches, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions = []) {
+function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRoles, oldBranches, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions = []) {
     return {
         users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, modalSearchQuery: '',
-        form: { name: '', email: '', emailType: 'auto', password: '', role: '', branches: [], staffId: '' },
+        form: { name: '', email: '', emailType: 'auto', password: '', roles: [], branches: [], staffId: '' },
         get filteredAccessGroups() {
             const query = this.modalSearchQuery.toLowerCase().trim();
             if (!query) return this.accessGroups;
@@ -306,13 +315,15 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
             return this.staffOptions.filter(staff => String(staff.name || '').toLocaleLowerCase().includes(query));
         },
         toggleStaff(staffId) {
+            const staff = this.staffOptions.find(option => String(option.id) === String(staffId));
+            if (staff?.linked_user_id && String(staff.linked_user_id) !== String(this.editing || '')) return;
             this.form.staffId = String(this.form.staffId) === String(staffId) ? '' : String(staffId);
         },
         permissionAccess(user, permission) {
             if (!user) return false;
             const overrides = user.permission_overrides || {};
             if (Object.prototype.hasOwnProperty.call(overrides, permission)) return Boolean(overrides[permission]);
-            return Number(user.role) === 1 || (user.permissions || []).includes(permission);
+            return (user.roles || []).some(role => Number(role.id) === 1) || (user.permissions || []).includes(permission);
         },
         hasModuleAccess(user, module) {
             return Boolean(user) && (module.permissions || []).some(permission => this.permissionAccess(user, permission));
@@ -378,21 +389,21 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
         openCreate() {
             this.editing = null;
             this.staffSearch = '';
-            this.form = { name: oldName || '', email: oldEmail || this.nextAutoEmail, emailType: this.oldEmailType === 'custom' ? 'custom' : 'auto', password: '', role: oldRole || '', branches: (oldBranches || []).map(Number), staffId: String(this.oldStaffId || '') };
+            this.form = { name: oldName || '', email: oldEmail || this.nextAutoEmail, emailType: this.oldEmailType === 'custom' ? 'custom' : 'auto', password: '', roles: Array.isArray(oldRoles) ? oldRoles.map(String) : (oldRoles ? [String(oldRoles)] : []), branches: (oldBranches || []).map(Number), staffId: String(this.oldStaffId || '') };
             this.drawerOpen = true;
         },
         restoreOld() {
             const isEditing = Boolean(oldUserId && this.users.some(user => user.id === Number(oldUserId)));
             if (isEditing) this.openEdit(Number(oldUserId));
             else this.openCreate();
-            this.form = { name: oldName || '', email: oldEmail || (isEditing ? '' : this.nextAutoEmail), emailType: isEditing ? 'custom' : (this.oldEmailType === 'custom' ? 'custom' : 'auto'), password: '', role: oldRole || '', branches: (oldBranches || []).map(Number), staffId: String(this.oldStaffId || '') };
+            this.form = { name: oldName || '', email: oldEmail || (isEditing ? '' : this.nextAutoEmail), emailType: isEditing ? 'custom' : (this.oldEmailType === 'custom' ? 'custom' : 'auto'), password: '', roles: Array.isArray(oldRoles) ? oldRoles.map(String) : (oldRoles ? [String(oldRoles)] : []), branches: (oldBranches || []).map(Number), staffId: String(this.oldStaffId || '') };
         },
         openEdit(id) {
             const user = this.users.find(item => item.id === id);
             if (!user || user.is_aktif === false) return;
             this.editing = id;
             this.staffSearch = '';
-            this.form = { name: user.name || '', email: user.email || '', emailType: 'custom', password: '', role: String(user.role || ''), branches: (user.branches || []).map(Number), staffId: String(user.staff_id || '') };
+            this.form = { name: user.name || '', email: user.email || '', emailType: 'custom', password: '', roles: (user.roles || []).map(role => String(role.id)), branches: (user.branches || []).map(Number), staffId: String(user.staff_id || '') };
             this.drawerOpen = true;
         },
         toggleBranch(id) {

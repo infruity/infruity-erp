@@ -25,7 +25,7 @@ class UserStaffLinkTest extends TestCase
             $table->string('email')->unique();
             $table->string('password')->nullable();
             $table->boolean('is_aktif')->default(true);
-            $table->unsignedBigInteger('staff_id')->nullable();
+            $table->unsignedBigInteger('staff_id')->nullable()->unique();
             $table->rememberToken();
             $table->timestamps();
         });
@@ -33,6 +33,7 @@ class UserStaffLinkTest extends TestCase
             $table->id();
             $table->string('name');
             $table->string('status')->default('aktif');
+            $table->unsignedBigInteger('user_id')->nullable()->unique();
             $table->timestamps();
         });
         Schema::create('role', function (Blueprint $table) {
@@ -44,6 +45,7 @@ class UserStaffLinkTest extends TestCase
             $table->integer('id_user');
             $table->integer('id_role');
             $table->timestamps();
+            $table->unique(['id_user', 'id_role']);
         });
         Schema::create('role_menu', function (Blueprint $table) {
             $table->increments('id_rm');
@@ -88,6 +90,7 @@ class UserStaffLinkTest extends TestCase
             ['id_role' => 3, 'permission' => 'user.update'],
             ['id_role' => 3, 'permission' => 'user.edit'],
             ['id_role' => 3, 'permission' => 'user.store'],
+            ['id_role' => 3, 'permission' => 'role.index'],
         ]);
         DB::table('branch')->insert(['id' => 1, 'name' => 'Cabang Test']);
         DB::table('user_branch')->insert(['user_id' => 2, 'branch_id' => 1]);
@@ -97,23 +100,21 @@ class UserStaffLinkTest extends TestCase
         session(['role' => ['id_role' => 3]]);
     }
 
-    public function test_multiple_accounts_can_share_one_staff_record(): void
+    public function test_a_staff_record_cannot_be_linked_to_multiple_accounts(): void
     {
-        $this->put('/user/2', [
-            'link_only' => '1',
-            'staff_id' => 10,
-        ])->assertRedirect('/user');
+        DB::table('users')->where('id_user', 2)->update(['staff_id' => 10]);
 
         $this->put('/user/3', [
             'link_only' => '1',
             'staff_id' => 10,
-        ])->assertRedirect('/user');
+        ])->assertSessionHasErrors('staff_id');
 
         $this->assertDatabaseHas('users', ['id_user' => 2, 'staff_id' => 10]);
-        $this->assertDatabaseHas('users', ['id_user' => 3, 'staff_id' => 10]);
+        $this->assertDatabaseHas('users', ['id_user' => 3, 'staff_id' => null]);
+        $this->assertSame(2, Staff::findOrFail(10)->account?->id_user);
     }
 
-    public function test_account_edit_links_many_accounts_to_one_staff_and_unlinks_only_the_selected_account(): void
+    public function test_account_edit_links_or_unlinks_its_single_staff_without_changing_other_account_data(): void
     {
         $this->put('/user/2', [
             'link_only' => '1',
@@ -129,14 +130,7 @@ class UserStaffLinkTest extends TestCase
         ]);
         $this->assertDatabaseHas('role_user', ['id_user' => 2, 'id_role' => 2]);
         $this->assertDatabaseHas('user_branch', ['user_id' => 2, 'branch_id' => 1]);
-
-        $this->put('/user/3', [
-            'link_only' => '1',
-            'staff_id' => 10,
-        ])->assertRedirect('/user');
-
-        $this->assertDatabaseHas('users', ['id_user' => 3, 'staff_id' => 10]);
-        $this->assertEqualsCanonicalizing([2, 3], Staff::findOrFail(10)->accounts()->pluck('id_user')->all());
+        $this->assertSame(2, Staff::findOrFail(10)->account?->id_user);
 
         $this->put('/user/2', [
             'link_only' => '1',
@@ -144,8 +138,66 @@ class UserStaffLinkTest extends TestCase
         ])->assertRedirect('/user');
 
         $this->assertDatabaseHas('users', ['id_user' => 2, 'staff_id' => null]);
-        $this->assertDatabaseHas('users', ['id_user' => 3, 'staff_id' => 10]);
-        $this->assertEqualsCanonicalizing([3], Staff::findOrFail(10)->accounts()->pluck('id_user')->all());
+        $this->assertNull(Staff::findOrFail(10)->fresh()->account);
+    }
+
+    public function test_create_can_assign_multiple_roles_to_one_account(): void
+    {
+        $this->post('/user', [
+            'full_name' => 'Multi Role Account',
+            'email' => 'multi-role@example.test',
+            'password' => 'test-password',
+            'role_ids' => [2, 3],
+            'id_branch' => [1],
+            'staff_id' => null,
+        ])->assertRedirect('/user');
+
+        $accountId = (int) DB::table('users')->where('email', 'multi-role@example.test')->value('id_user');
+        $this->assertGreaterThan(0, $accountId);
+        $this->assertEqualsCanonicalizing([2, 3], DB::table('role_user')->where('id_user', $accountId)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
+    }
+
+    public function test_update_replaces_all_roles_for_one_account_without_duplicates(): void
+    {
+        $this->put('/user/2', [
+            'full_name' => 'First Account Updated',
+            'email' => 'first@example.test',
+            'password' => '',
+            'role_ids' => [2, 3],
+            'id_branch' => [1],
+            'staff_id' => null,
+        ])->assertRedirect('/user');
+
+        $this->assertEqualsCanonicalizing([2, 3], DB::table('role_user')->where('id_user', 2)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
+        $this->assertSame(2, DB::table('role_user')->where('id_user', 2)->count());
+    }
+
+    public function test_link_only_edit_updates_multiple_roles_without_changing_account_details(): void
+    {
+        $this->put('/user/2', [
+            'link_only' => '1',
+            'staff_id' => null,
+            'role_ids' => [2, 3],
+        ])->assertRedirect('/user');
+
+        $this->assertEqualsCanonicalizing([2, 3], DB::table('role_user')->where('id_user', 2)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
+        $this->assertDatabaseHas('users', [
+            'id_user' => 2,
+            'nm_user' => 'First Account',
+            'email' => 'first@example.test',
+            'password' => 'secret',
+        ]);
+        $this->assertDatabaseHas('user_branch', ['user_id' => 2, 'branch_id' => 1]);
+    }
+
+    public function test_role_index_lists_all_roles_assigned_to_an_account(): void
+    {
+        DB::table('role_user')->insert(['id_user' => 2, 'id_role' => 3]);
+
+        $this->get('/roles')
+            ->assertOk()
+            ->assertSee('first@example.test')
+            ->assertSee('Operator · User Manager');
     }
 
     public function test_create_links_staff_using_ids_not_matching_names_or_emails(): void
@@ -154,7 +206,7 @@ class UserStaffLinkTest extends TestCase
             'full_name' => 'Account Name Different From Employee',
             'email' => 'account@example.test',
             'password' => 'test-password',
-            'id_role' => 2,
+            'role_ids' => [2],
             'id_branch' => [1],
             'staff_id' => 10,
         ])->assertRedirect('/user');
@@ -177,11 +229,31 @@ class UserStaffLinkTest extends TestCase
         $this->get('/user')->assertOk()->assertSee('Dwi Febbrianti Robbiatul Adawiyah');
     }
 
-    public function test_staff_account_relation_includes_inactive_accounts(): void
+    public function test_staff_account_relation_includes_inactive_account(): void
     {
         DB::table('users')->where('id_user', 3)->update(['is_aktif' => false, 'staff_id' => 10]);
 
-        $this->assertSame([3], Staff::findOrFail(10)->accounts()->pluck('id_user')->all());
+        $this->assertSame(3, Staff::findOrFail(10)->account?->id_user);
+    }
+
+    public function test_assigned_roles_can_be_switched_without_allowing_an_unassigned_role(): void
+    {
+        DB::table('role_user')->insert(['id_user' => 1, 'id_role' => 2]);
+
+        $this->get('/user')
+            ->assertOk()
+            ->assertSee('Role aktif')
+            ->assertSee('Ganti role');
+
+        $this->post('/role/switch', ['role_id' => 2])
+            ->assertRedirect();
+
+        $this->assertSame(2, (int) session('role.id_role'));
+        $this->assertSame(2, \App\Models\RoleMenu::currentRoleId());
+
+        $this->actingAs(User::findOrFail(2));
+        session(['role' => ['id_role' => 2]]);
+        $this->post('/role/switch', ['role_id' => 3])->assertForbidden();
     }
 
     public function test_user_index_renders_searchable_staff_link_options(): void

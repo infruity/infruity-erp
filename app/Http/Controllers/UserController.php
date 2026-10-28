@@ -28,9 +28,16 @@ class UserController extends Controller
             return $denied;
         }
 
-        $data['role'] = Role::all();
+        $data['role'] = Role::orderBy('nm_role')->get();
         $data['branch'] = Branch::all();
-        $data['staffOptions'] = Staff::query()->orderBy('name')->get(['id', 'name']);
+        $data['staffOptions'] = Staff::with('account:id_user,staff_id')
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn ($staff) => [
+                'id' => $staff->id,
+                'name' => $staff->name,
+                'linked_user_id' => $staff->account?->id_user,
+            ]);
         $usedOperatorNumbers = DB::table('users')
             ->whereRaw('UPPER(email) LIKE ?', ['OPR%@INFRUITY.COM'])
             ->pluck('email')
@@ -46,7 +53,10 @@ class UserController extends Controller
             $nextOperatorNumber++;
         }
         $data['nextAutoEmail'] = sprintf('OPR%03d@INFRUITY.COM', $nextOperatorNumber);
-        $data['users'] = User::withoutGlobalScope('is_aktif')->with('RoleUser.role', 'branches.branch', 'permissionOverrides', 'staff')
+        $selectedRoleId = $request->query('role_id');
+        $moduleDefinitions = config('constant.permissions', []);
+        $data['users'] = User::withoutGlobalScope('is_aktif')->with('roleAssignments.role.roleMenu', 'branches.branch', 'permissionOverrides', 'staff')
+            ->when($selectedRoleId, fn ($query) => $query->whereHas('roleAssignments', fn ($assignment) => $assignment->where('id_role', $selectedRoleId)))
             ->when($request->filled('q'), function ($query) use ($request) {
                 $search = '%' . $request->input('q') . '%';
                 $query->where(function ($users) use ($search) {
@@ -58,6 +68,22 @@ class UserController extends Controller
             ->orderBy('nm_user')
             ->paginate(50)
             ->withQueryString();
+        $data['users']->getCollection()->transform(function ($user) use ($moduleDefinitions) {
+            $roles = $user->roleAssignments->pluck('role')->filter()->unique('id_role')->values();
+            $permissions = $roles->flatMap(fn ($role) => $role->roleMenu->pluck('permission'))->unique()->values()->all();
+            $grantedModules = collect($moduleDefinitions)->filter(function ($module, $moduleKey) use ($permissions) {
+                return collect($module['actions'] ?? [])->keys()->contains(
+                    fn ($action) => in_array($moduleKey . '.' . $action, $permissions, true)
+                );
+            })->count();
+
+            $user->setAttribute('role_ids', $roles->pluck('id_role')->map(fn ($id) => (int) $id)->all());
+            $user->setAttribute('role_names', $roles->pluck('nm_role')->all());
+            $user->setAttribute('granted_modules_count', $grantedModules);
+            return $user;
+        });
+        $data['modulesTotal'] = count($moduleDefinitions);
+        $data['selectedRoleId'] = $selectedRoleId;
         return view("admin.user.index", $data);
     }
 
@@ -79,7 +105,8 @@ class UserController extends Controller
         if (class_exists(\Debugbar::class)) {
             \Debugbar::disable();
         }
-        $user = User::with('RoleUser.role', 'branches.branch', 'staff')->findOrFail($id);
+        $user = User::with('roleAssignments.role', 'branches.branch', 'staff')->findOrFail($id);
+        $user->setAttribute('role_ids', $user->roleAssignments->pluck('id_role')->map(fn ($id) => (int) $id)->all());
         return response()->json($user);
     }
 
@@ -99,16 +126,12 @@ class UserController extends Controller
             $user->password = Hash::make($request->password);
             $user->save();
             $this->syncStaffLink($user, $request->input('staff_id'));
-            // add roles
-            $role = new RoleUser();
-            $role->id_user = $user->id_user;
-            $role->id_role = $request->id_role ?? 99;
-            $role->save();
-            // dd($role);
+            $this->syncRoleAssignments($user, $request->input('role_ids', []));
+
             $userBranch = [];
             foreach ($request->id_branch as $branch) {
                 $userBranch[] = [
-                    'user_id' => $role->id_user,
+                    'user_id' => $user->id_user,
                     'branch_id' => $branch,
                 ];
             }
@@ -136,10 +159,16 @@ class UserController extends Controller
         if ($request->boolean('link_only')) {
             DB::transaction(function () use ($id, $request) {
                 $user = User::query()->lockForUpdate()->findOrFail($id);
-                $this->syncStaffLink($user, $request->input('staff_id'));
+
+                if ($request->has('staff_id')) {
+                    $this->syncStaffLink($user, $request->input('staff_id'));
+                }
+                if ($request->has('role_ids')) {
+                    $this->syncRoleAssignments($user, $request->input('role_ids', []));
+                }
             });
 
-            return redirect('user')->with('success', 'Tautan karyawan akun diperbarui');
+            return redirect('user')->with('success', 'Tautan karyawan dan role akun diperbarui');
         }
 
         try {
@@ -157,12 +186,7 @@ class UserController extends Controller
             } else {
                 $user->save();
             }
-            // add roles
-            RoleUser::where('id_user', $id)->delete();
-            $role = new RoleUser();
-            $role->id_user = $id;
-            $role->id_role = $request->id_role ?? 99;
-            $role->save();
+            $this->syncRoleAssignments($user, $request->input('role_ids', []));
 
             // add branches
             UserBranch::where('user_id', $id)->delete();
@@ -186,13 +210,46 @@ class UserController extends Controller
     private function syncStaffLink(User $user, $staffId): void
     {
         $staffId = $staffId ? (int) $staffId : null;
+        $userId = (int) $user->id_user;
+        $currentStaffId = $user->staff_id !== null ? (int) $user->staff_id : null;
+        $newStaff = null;
 
         if ($staffId !== null) {
-            Staff::query()->whereKey($staffId)->lockForUpdate()->firstOrFail();
+            $newStaff = Staff::query()->lockForUpdate()->findOrFail($staffId);
+            if ($newStaff->user_id !== null && (int) $newStaff->user_id !== $userId) {
+                throw ValidationException::withMessages([
+                    'staff_id' => 'Karyawan ini sudah tertaut ke akun lain.',
+                ]);
+            }
+        }
+
+        if ($currentStaffId !== null && $currentStaffId !== $staffId) {
+            DB::table('staff')
+                ->where('id', $currentStaffId)
+                ->where('user_id', $userId)
+                ->update(['user_id' => null]);
+        }
+
+        if ($newStaff) {
+            DB::table('staff')
+                ->where('id', $staffId)
+                ->update(['user_id' => $userId]);
         }
 
         $user->staff_id = $staffId;
         $user->save();
+    }
+
+    private function syncRoleAssignments(User $user, array $roleIds): void
+    {
+        RoleUser::where('id_user', $user->id_user)->delete();
+
+        foreach (array_values(array_unique(array_map('intval', $roleIds))) as $roleId) {
+            $assignment = new RoleUser();
+            $assignment->id_user = $user->id_user;
+            $assignment->id_role = $roleId;
+            $assignment->save();
+        }
     }
 
     public function updatePermissions(Request $request, $id)
@@ -296,7 +353,7 @@ class UserController extends Controller
             \Debugbar::disable();
         }
 
-        $data = User::with('RoleUser.role', 'branches.branch')->get();
+        $data = User::with('roleAssignments.role', 'branches.branch')->get();
 
         return DataTables::of($data)
             ->addIndexColumn()
@@ -306,7 +363,10 @@ class UserController extends Controller
             //     })->implode(', ');
             // })
             ->addColumn('role', function ($row) {
-                return '<span class="badge badge-light-success fw-bold me-1">' . e($row->RoleUser->role->nm_role ?? '-') . '</span>';
+                return $row->roleAssignments->map(fn ($assignment) => $assignment->role?->nm_role)
+                    ->filter()
+                    ->map(fn ($name) => '<span class="badge badge-light-success fw-bold me-1">' . e($name) . '</span>')
+                    ->implode(' ');
             })
             ->addColumn('branch', function ($row) {
                 return $row->branches->map(function ($ub) {

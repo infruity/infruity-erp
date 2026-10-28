@@ -1,5 +1,20 @@
 @props(['mobileOnly' => false])
 
+@php
+    $roleChoices = collect();
+    if (auth()->check() && \Illuminate\Support\Facades\Schema::hasTable('role_user') && \Illuminate\Support\Facades\Schema::hasTable('role')) {
+        $roleChoices = \App\Models\RoleUser::with('role')
+            ->where('id_user', auth()->id())
+            ->orderBy('id_ru')
+            ->get()
+            ->pluck('role')
+            ->filter()
+            ->unique('id_role')
+            ->values();
+    }
+    $activeRoleId = data_get(session('role'), 'id_role');
+@endphp
+
 <style>
     [x-cloak] { display:none!important; }
     .erp-sidebar-overlay { position:fixed; inset:0; z-index:45; background:rgba(0,0,0,.32); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
@@ -221,6 +236,20 @@
     <div class="erp-sidebar__profile" x-data="{ settingsOpen: false }">
         <div class="erp-sidebar__settings-menu" x-show="settingsOpen" x-cloak @click.outside="settingsOpen = false" @keydown.escape.window="settingsOpen = false">
             <div class="erp-sidebar__settings-heading"><strong>{{ auth()->user()->nm_user ?? auth()->user()->username ?? auth()->user()->name ?? 'Pengguna' }}</strong>Pengaturan akun</div>
+            @if($roleChoices->count() > 1)
+                <form method="POST" action="{{ route('role.switch') }}" class="px-3 py-2">
+                    @csrf
+                    <label for="sidebar-role-context" class="mb-1.5 block text-[11px] font-semibold text-gray-500">Role aktif</label>
+                    <select id="sidebar-role-context" name="role_id" class="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-xs text-gray-700">
+                        @foreach($roleChoices as $roleChoice)
+                            <option value="{{ $roleChoice->id_role }}" @selected((string) $activeRoleId === (string) $roleChoice->id_role)>{{ $roleChoice->nm_role }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="mt-2 w-full rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100">Ganti role</button>
+                </form>
+            @elseif($roleChoices->isNotEmpty())
+                <p class="px-4 py-2 text-[11px] text-gray-500">Role aktif: {{ $roleChoices->first()->nm_role }}</p>
+            @endif
             <a href="{{ route('settings.index') }}" class="erp-sidebar__settings-link"><i class="ph ph-user-circle" aria-hidden="true"></i>Pengaturan</a>
             <a href="{{ route('change-password') }}" class="erp-sidebar__settings-link"><i class="ph ph-lock-key" aria-hidden="true"></i>Ubah password</a>
             <button type="button" @click="theme = theme === 'light' ? 'dark' : 'light'; settingsOpen = false" class="erp-sidebar__settings-link"><i class="ph" :class="theme === 'light' ? 'ph-moon' : 'ph-sun'" aria-hidden="true"></i><span x-text="theme === 'light' ? 'Mode Gelap' : 'Mode Terang'"></span></button>

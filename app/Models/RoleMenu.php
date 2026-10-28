@@ -4,9 +4,10 @@ namespace App\Models;
 
 use App\Models\Menu;
 use App\Models\Role;
+use App\Models\RoleUser;
 use App\Models\UserPermission;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class RoleMenu extends Model
 {
@@ -24,7 +25,34 @@ class RoleMenu extends Model
         return $this->belongsTo(Permission::class, 'permission', 'name');
     }
 
-    public static function checkAccess($permission)
+    public static function currentRole(): ?Role
+    {
+        if (! Auth::check()) {
+            return null;
+        }
+
+        $assignments = RoleUser::with('role')->where('id_user', Auth::id());
+        $selectedRoleId = session('role.id_role');
+
+        if (is_numeric($selectedRoleId)) {
+            $selectedRole = (clone $assignments)
+                ->where('id_role', (int) $selectedRoleId)
+                ->first()?->role;
+
+            if ($selectedRole) {
+                return $selectedRole;
+            }
+        }
+
+        return $assignments->orderBy('id_ru')->first()?->role;
+    }
+
+    public static function currentRoleId(): ?int
+    {
+        return self::currentRole()?->id_role;
+    }
+
+    public static function checkAccess($permission): bool
     {
         $user = Auth::user();
         if ($user) {
@@ -44,16 +72,10 @@ class RoleMenu extends Model
             }
         }
 
-        if (Session("role")["id_role"] == 1) {
-            return true;
-        } else {
-            $data = self::where("id_role", Session("role")["id_role"])
-                ->where("permission", $permission)->get()->first();
-            if (isset($data)) {
-                return true;
-            } else {
-                return false;
-            }
-        }
+        $roleId = self::currentRoleId();
+
+        return $roleId === 1 || ($roleId !== null && self::where('id_role', $roleId)
+            ->where('permission', $permission)
+            ->exists());
     }
 }

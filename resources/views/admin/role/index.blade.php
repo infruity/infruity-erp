@@ -19,7 +19,8 @@
         <div class="hidden md:block px-5 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-500">Menampilkan {{ $accounts->count() }} dari {{ $accounts->total() }} akun</div>
         <div class="flex-1 overflow-y-auto pb-28 md:pb-0">
             @forelse($accounts as $account)
-                @php($accountRole = $account->RoleUser?->role)
+                @php($accountRoles = $account->assigned_roles)
+                @php($accountRole = $accountRoles->first())
                 @php($accountEmail = $account->email ?: $account->username ?: $account->nm_user ?: 'Akun pengguna')
                 @php($moduleCount = (int) $account->granted_modules_count)
                 @if($accountRole)
@@ -28,7 +29,7 @@
                     <div class="flex items-center gap-3 px-4 py-4 border-b border-gray-100">
                 @endif
                     <div @class(['w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 text-sm font-bold', 'bg-emerald-50 border-emerald-100 text-emerald-700' => $loop->index % 5 === 0, 'bg-blue-50 border-blue-100 text-blue-700' => $loop->index % 5 === 1, 'bg-amber-50 border-amber-100 text-amber-700' => $loop->index % 5 === 2, 'bg-rose-50 border-rose-100 text-rose-700' => $loop->index % 5 === 3, 'bg-violet-50 border-violet-100 text-violet-700' => $loop->index % 5 === 4])>{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($accountEmail, 0, 1)) }}</div>
-                    <span class="flex-1 min-w-0"><span class="block text-[13px] font-semibold text-gray-900 truncate">{{ $accountEmail }}</span><span class="block text-[11px] text-gray-400 mt-0.5 truncate">USR-{{ str_pad((string) $account->id_user, 4, '0', STR_PAD_LEFT) }}</span></span>
+                    <span class="flex-1 min-w-0"><span class="block text-[13px] font-semibold text-gray-900 truncate">{{ $accountEmail }}</span><span class="block text-[11px] text-gray-400 mt-0.5 truncate">USR-{{ str_pad((string) $account->id_user, 4, '0', STR_PAD_LEFT) }} · {{ $accountRoles->pluck('nm_role')->implode(' · ') ?: 'Tanpa role' }}</span></span>
                     <span @class(['shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold', 'bg-emerald-50 text-emerald-700' => $modulesTotal > 0 && $moduleCount === $modulesTotal, 'bg-amber-50 text-amber-700' => $moduleCount < $modulesTotal])>{{ $moduleCount }}/{{ $modulesTotal }} modul</span>
                     <i class="ph ph-caret-right text-gray-300 text-sm shrink-0"></i>
                 @if($accountRole)

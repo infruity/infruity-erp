@@ -23,7 +23,7 @@ test('user edit overlay fades while the drawer slides', () => {
 });
 
 test('user detail opens as a role-backed bottom sheet with interactive access switches', () => {
-    assert.match(view, /'permissions' => \$user->RoleUser\?->role\?->roleMenu\?->pluck\('permission'\)->all\(\)/);
+    assert.ok(view.includes("'permissions' => $user->roleAssignments->flatMap"));
     assert.match(view, /'permission_overrides' =>/);
     assert.match(view, /x-for="group in filteredAccessGroups"/);
     assert.match(view, /\['key' => 'kurir', 'label' => 'Kurir', 'permissions' => \['kurir\.index'\]\]/);
@@ -68,11 +68,11 @@ test('detail access summary applies account overrides over assigned role grants'
     const app = context.userMaster([], '/user', '/user', null, null, null, null, [], groups);
     const module = app.accessGroups?.[0]?.modules?.[0];
     assert.ok(module, 'access groups are available to the user screen');
-    assert.equal(app.hasModuleAccess({role: 2, permissions: ['products.index'], permission_overrides: {}}, module), true);
-    assert.equal(app.hasModuleAccess({role: 2, permissions: ['products.index'], permission_overrides: {'products.index': false}}, module), false);
-    assert.equal(app.hasModuleAccess({role: 2, permissions: [], permission_overrides: {'products.create': true}}, module), true);
-    assert.equal(app.hasModuleAccess({role: 1, permissions: [], permission_overrides: {}}, module), true);
-    assert.equal(app.hasModuleAccess({role: 1, permissions: [], permission_overrides: {'products.index': false, 'products.create': false}}, module), false);
+    assert.equal(app.hasModuleAccess({roles: [{id: 2}], permissions: ['products.index'], permission_overrides: {}}, module), true);
+    assert.equal(app.hasModuleAccess({roles: [{id: 2}], permissions: ['products.index'], permission_overrides: {'products.index': false}}, module), false);
+    assert.equal(app.hasModuleAccess({roles: [{id: 2}], permissions: [], permission_overrides: {'products.create': true}}, module), true);
+    assert.equal(app.hasModuleAccess({roles: [{id: 1}], permissions: [], permission_overrides: {}}, module), true);
+    assert.equal(app.hasModuleAccess({roles: [{id: 1}], permissions: [], permission_overrides: {'products.index': false, 'products.create': false}}, module), false);
 });
 
 test('module and group switches persist user-specific access changes', async () => {
@@ -91,7 +91,7 @@ test('module and group switches persist user-specific access changes', async () 
     const stockModule = {key: 'stock-out', label: 'Stok Keluar', permissions: ['stock-out.index']};
     const group = {label: 'Master', modules: [productModule, stockModule]};
     const app = context.userMaster([], '/user', '/user', null, null, null, null, [], [group]);
-    const user = {id: 44, role: 2, permissions: ['products.index'], permission_overrides: {}, can_change_permissions: true};
+    const user = {id: 44, roles: [{id: 2}], permissions: ['products.index'], permission_overrides: {}, can_change_permissions: true};
 
     await app.toggleModuleAccess(user, productModule);
     assert.equal(app.hasModuleAccess(user, productModule), false);
@@ -125,7 +125,7 @@ test('a partially granted group switch clears all module permissions when turned
     const stockModule = {key: 'stock-out', label: 'Stok Keluar', permissions: ['stock-out.index']};
     const group = {label: 'Master', modules: [productModule, stockModule]};
     const app = context.userMaster([], '/user', '/user', null, null, null, null, [], [group]);
-    const user = {id: 45, role: 2, permissions: ['products.index'], permission_overrides: {}, can_change_permissions: true};
+    const user = {id: 45, roles: [{id: 2}], permissions: ['products.index'], permission_overrides: {}, can_change_permissions: true};
 
     assert.equal(app.hasAnyGroupAccess(user, group), true);
     assert.equal(app.hasFullGroupAccess(user, group), false);
@@ -193,7 +193,7 @@ test('create user email mode defaults to the next OPR address and can switch to 
     assert.match(view, /:readonly="editing \|\| form\.emailType === 'auto'"/);
     assert.match(view, /name="full_name"/);
     assert.match(view, /name="password"/);
-    assert.match(view, /name="id_role"/);
+    assert.ok(view.includes('name="role_ids[]"'));
     assert.match(view, /name="id_branch\[\]"/);
     assert.match(view, /@js\(\$nextAutoEmail\)/);
     assert.match(controller, /\$data\['nextAutoEmail'\] = sprintf\('OPR%03d@INFRUITY\.COM'/);
@@ -214,7 +214,7 @@ test('create user email mode defaults to the next OPR address and can switch to 
     app.setEmailType('auto');
     assert.equal(app.form.email, 'OPR011@INFRUITY.COM');
 
-    const editing = context.userMaster([{id: 8, name: 'Existing User', email: 'existing@example.com', role: 2, branches: [1]}], '/user', '/user', null, null, null, null, [], [], 'OPR011@INFRUITY.COM', null);
+    const editing = context.userMaster([{id: 8, name: 'Existing User', email: 'existing@example.com', roles: [{id: 2}], branches: [1]}], '/user', '/user', null, null, null, null, [], [], 'OPR011@INFRUITY.COM', null);
     editing.openEdit(8);
     assert.equal(editing.form.email, 'existing@example.com');
     assert.equal(editing.form.emailType, 'custom');
@@ -251,18 +251,16 @@ test('permission search matches the reference focus ring and group/submodule fil
     assert.equal(app.filteredAccessGroups.length, 0);
 });
 
-test('account edit drawer allows multiple accounts to link to the same employee', () => {
+test('account edit drawer prevents one employee from linking to multiple accounts', () => {
     assert.match(view, /name="staff_id"/);
     assert.match(view, /Tautkan ke Karyawan/);
     assert.match(view, /Cari karyawan/);
-    assert.doesNotMatch(view, /Telah ditautkan|linkedStaffUsers|staffLinkedToAnotherAccount/);
     assert.match(view, /Karyawan tidak ditemukan/);
-    assert.match(view, /bg-black\/70/);
-    assert.match(view, /max-h-\[90dvh\]/);
-    assert.match(view, /rounded-t-3xl/);
+    assert.match(view, /staff\.linked_user_id/);
+    assert.match(view, /:disabled="Boolean\(staff\.linked_user_id\)/);
     assert.match(view, /@js\(\$staffOptions\)/);
-    assert.match(controller, /Staff::query\(\)->orderBy\('name'\)/);
-    assert.doesNotMatch(controller, /whereNotNull\('user_id'\)/);
+    assert.match(controller, /'linked_user_id' => \$staff->account\?->id_user/);
+    assert.match(controller, /update\(\['user_id' => \$userId\]\)/);
 });
 
 test('edit mode exposes account identity and employee linking without create-only fields', () => {
@@ -272,7 +270,7 @@ test('edit mode exposes account identity and employee linking without create-onl
     assert.match(view, /:disabled="Boolean\(editing\)"/);
     assert.match(view, /x-show="!editing" x-cloak :disabled="Boolean\(editing\)" class="contents"/);
     assert.match(view, /Tautkan ke Karyawan/);
-    for (const field of ['full_name', 'password', 'id_role', 'id_branch[]']) {
+    for (const field of ['full_name', 'password', 'role_ids[]', 'id_branch[]']) {
         assert.ok(view.includes(`name="${field}"`), `create flow keeps ${field}`);
     }
 });
@@ -284,28 +282,32 @@ test('edit account drawer matches reference scrolling and email focus styling', 
     assert.match(view, /:style="`height: \$\{thumbHeight\}px; transform: translateY\(\$\{scrollPos\}px\);`"/);
     assert.match(view, /placeholder="Misal: nama@infruity\.com"/);
     assert.match(view, /focus:ring-1 focus:ring-emerald-500/);
-    for (const field of ['staff_id', 'full_name', 'password', 'id_role', 'id_branch[]']) {
+    for (const field of ['staff_id', 'full_name', 'password', 'role_ids[]', 'id_branch[]']) {
         assert.ok(view.includes(`name="${field}"`), `existing edit field ${field} stays in the form`);
     }
 });
 
-test('edit form can select an employee already linked to another account', () => {
+test('edit form cannot select an employee already linked to another account', () => {
     const start = view.indexOf('function userMaster(');
     const end = view.indexOf('\n}\n</script>', start) + 2;
     const context = {};
     vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
     const users = [
-        {id: 8, name: 'Existing User', email: 'existing@example.com', role: 2, branches: [1], staff_id: 10},
-        {id: 9, name: 'Other User', email: 'other@example.com', role: 2, branches: [1], staff_id: 11},
+        {id: 8, name: 'Existing User', email: 'existing@example.com', roles: [{id: 2}], branches: [1], staff_id: 10},
+        {id: 9, name: 'Other User', email: 'other@example.com', roles: [{id: 2}], branches: [1], staff_id: 11},
     ];
-    const app = context.userMaster(users, '/user', '/user', null, null, null, null, [], [], 'OPR011@INFRUITY.COM', null, null, [{id: 10, name: 'Dwi Febbrianti'}, {id: 11, name: 'Achmad Noorman'}], {10: 8, 11: 9});
+    const staffOptions = [
+        {id: 10, name: 'Dwi Febbrianti', linked_user_id: 8},
+        {id: 11, name: 'Achmad Noorman', linked_user_id: 9},
+    ];
+    const app = context.userMaster(users, '/user', '/user', null, null, null, null, [], [], 'OPR011@INFRUITY.COM', null, null, staffOptions);
 
     app.openEdit(8);
     assert.equal(app.form.staffId, '10');
     assert.equal(app.form.emailType, 'custom');
     app.toggleStaff(11);
-    assert.equal(app.form.staffId, '11');
-    app.toggleStaff(11);
+    assert.equal(app.form.staffId, '10');
+    app.toggleStaff(10);
     assert.equal(app.form.staffId, '');
 });
 

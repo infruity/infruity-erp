@@ -29,9 +29,14 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    public function roleAssignments()
+    {
+        return $this->hasMany('App\Models\RoleUser', 'id_user', 'id_user');
+    }
+
     public function roleUser()
     {
-        return $this->belongsTo('App\Models\RoleUser', 'id_user', 'id_user');
+        return $this->roleAssignments();
     }
 
     public static function getDataPetugasSurvey()
