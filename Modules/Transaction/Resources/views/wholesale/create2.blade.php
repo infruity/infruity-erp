@@ -159,6 +159,7 @@
             .wholesale-procurement.is-edit-mode .wholesale-cart-item-meta { font-size:12px; }
             .wholesale-procurement.is-edit-mode .wholesale-cart-item-total { min-width:96px; font-size:13px; }
             .wholesale-procurement.is-edit-mode .wholesale-edit-item-quantity { white-space:nowrap; }
+            .wholesale-procurement.is-edit-mode #branch_id + .select2-container .select2-selection--single { position:relative; }
             .wholesale-procurement.is-edit-mode .select2-container--default .select2-selection--single .select2-selection__rendered { font-size:14px; }
         }
         /* Select2 appends its menu to body; style it independently of the form wrapper. */
