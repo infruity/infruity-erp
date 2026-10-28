@@ -16,7 +16,6 @@ use App\Models\Menu;
 use App\Models\Permission;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-use App\User;
 
 class P_role extends Controller
 {
@@ -39,39 +38,25 @@ class P_role extends Controller
     private function roleIndexViewData(Request $request): array
     {
         $search = trim((string) $request->query('q', ''));
-        $modules = config('constant.permissions', []);
-        $accounts = User::with('roleAssignments.role.roleMenu')
+        $roles = Role::query()
+            ->withCount('roleMenu')
             ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($users) use ($search) {
-                    $users->where('email', 'like', '%' . $search . '%')
-                        ->orWhere('nm_user', 'like', '%' . $search . '%')
-                        ->orWhere('username', 'like', '%' . $search . '%');
+                $query->where(function ($roles) use ($search) {
+                    $roles->where('nm_role', 'like', '%' . $search . '%')
+                        ->orWhere('description', 'like', '%' . $search . '%');
+
                     if (ctype_digit($search)) {
-                        $users->orWhere('id_user', (int) $search);
+                        $roles->orWhere('id_role', (int) $search);
                     }
                 });
             })
-            ->orderBy('email')
+            ->orderBy('nm_role')
             ->paginate(50)
             ->withQueryString();
 
-        $accounts->getCollection()->transform(function ($account) use ($modules) {
-            $roles = $account->roleAssignments->pluck('role')->filter()->unique('id_role')->values();
-            $permissions = $roles->flatMap(fn ($role) => $role->roleMenu->pluck('permission'))->unique()->values()->all();
-            $grantedModules = collect($modules)->filter(function ($module, $moduleKey) use ($permissions) {
-                return collect($module['actions'] ?? [])->keys()->contains(
-                    fn ($action) => in_array($moduleKey . '.' . $action, $permissions, true)
-                );
-            })->count();
-
-            $account->setAttribute('assigned_roles', $roles);
-            $account->setAttribute('granted_modules_count', $grantedModules);
-            return $account;
-        });
-
         return [
-            'accounts' => $accounts,
-            'modulesTotal' => count($modules),
+            'roles' => $roles,
+            'canShowRoles' => RoleMenu::checkAccess('role.show'),
             'search' => $search,
         ];
     }

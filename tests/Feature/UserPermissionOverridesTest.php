@@ -31,6 +31,7 @@ class UserPermissionOverridesTest extends TestCase
         Schema::create('role', function (Blueprint $table) {
             $table->integer('id_role')->primary();
             $table->string('nm_role')->nullable();
+            $table->string('description')->nullable();
         });
         Schema::create('role_user', function (Blueprint $table) {
             $table->increments('id_ru');
@@ -162,6 +163,38 @@ class UserPermissionOverridesTest extends TestCase
         $this->assertCount(1, $permissionQueries);
     }
 
+    public function test_hak_akses_lists_roles_instead_of_user_accounts(): void
+    {
+        DB::table('role_menu')->insert([
+            ['id_role' => 3, 'permission' => 'role.index'],
+            ['id_role' => 3, 'permission' => 'role.show'],
+        ]);
+
+        $this->get('/roles')
+            ->assertOk()
+            ->assertSee('Administrator')
+            ->assertSee('Operator')
+            ->assertSee('Permission Manager')
+            ->assertSee('Menampilkan 3 dari 3 role')
+            ->assertDontSee('first@example.test')
+            ->assertDontSee('second@example.test');
+    }
+
+    public function test_hak_akses_search_filters_by_role_name(): void
+    {
+        DB::table('role_menu')->insert([
+            ['id_role' => 3, 'permission' => 'role.index'],
+            ['id_role' => 3, 'permission' => 'role.show'],
+        ]);
+
+        $this->get('/roles?q=Operator')
+            ->assertOk()
+            ->assertSee('Operator')
+            ->assertSee('ROLE-0002')
+            ->assertDontSee('ROLE-0001')
+            ->assertDontSee('ROLE-0003');
+    }
+
     public function test_role_detail_shows_edit_and_delete_actions_before_the_permission_overlay(): void
     {
         DB::table('role_menu')->insert([
@@ -173,7 +206,8 @@ class UserPermissionOverridesTest extends TestCase
 
         $this->get('/roles/detail/2')
             ->assertOk()
-            ->assertSee('first@example.test')
+            ->assertSee('Operator')
+            ->assertDontSee('first@example.test')
             ->assertSee('data-role-detail-overlay', false)
             ->assertSee('data-role-permission-edit', false)
             ->assertSee('data-role-delete-action', false)
