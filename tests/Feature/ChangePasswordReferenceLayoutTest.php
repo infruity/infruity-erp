@@ -30,4 +30,12 @@ class ChangePasswordReferenceLayoutTest extends TestCase
         $this->assertStringContainsString('.erp-ui .erp-password-page { width:100vw; margin-inline:calc(50% - 50vw);', $styles);
         $this->assertStringContainsString('.erp-ui .erp-password-actions { position:fixed;', $styles);
     }
+
+    public function test_password_page_surface_and_action_fade_match_the_white_reference(): void
+    {
+        $styles = file_get_contents(public_path('assets/css/erp-theme.css'));
+
+        $this->assertStringContainsString('background:#fff; padding:24px 16px calc(92px + env(safe-area-inset-bottom));', $styles);
+        $this->assertStringContainsString('linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,.92) 30%, #fff 100%)', $styles);
+    }
 }
