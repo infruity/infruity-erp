@@ -1,6 +1,15 @@
 # Infruity
 
-Infruity adalah aplikasi backend berbasis **Laravel 10** dengan arsitektur modular (menggunakan [nwidart/laravel-modules](https://nwidart.com/laravel-modules/)) untuk mengelola operasional bisnis retail/distribusi — mulai dari manajemen data master, transaksi, point of sale (POS), hingga pelaporan dan CRM.
+Infruity adalah aplikasi backend berbasis **Laravel 13 / PHP 8.5** dengan arsitektur modular (menggunakan [nwidart/laravel-modules](https://nwidart.com/laravel-modules/)) untuk mengelola operasional bisnis retail/distribusi — mulai dari manajemen data master, transaksi, point of sale (POS), hingga pelaporan dan CRM.
+
+## Dokumentasi engineering
+
+- [Panduan pengembangan, arsitektur, testing, dan clean code](docs/engineering.md).
+- [Audit clean code/KISS dan kandidat cleanup, 28 Oktober 2026](docs/audit-2026-10-28.md).
+- [Riwayat upgrade PHP/Laravel](docs/php-upgrade-plan.md) — catatan historis, bukan status test terkini.
+- Acuan UI tambahan: `docs/ui-design-system.md` — tersedia lokal saat audit, belum tracked; panduan dasar UI juga dicatat pada panduan engineering.
+
+Audit mencakup working tree pada branch `feature/php-upgrade`. Versi runtime yang diperiksa: Laravel 13.38.0, PHP 8.5.10; lihat laporan audit untuk batas pemeriksaan dan kegagalan test yang masih terbuka.
 
 ## Daftar Isi
 
@@ -37,21 +46,21 @@ Fitur pendukung lainnya meliputi:
 - Barcode & QR Code generator.
 - Captcha untuk keamanan form.
 - Log viewer bawaan untuk memudahkan debugging.
-- Dokumentasi API berbasis OpenAPI.
+- Berkas routing OpenAPI tersedia, tetapi `routes/openapi.php` masih kosong; spesifikasi API belum tersedia.
 
 ## Teknologi yang Digunakan
 
-- **Backend:** PHP 8.1+, Laravel 10
+- **Backend:** PHP ^8.5, Laravel ^13.0 (sesuai `composer.json`)
 - **Modularisasi:** nwidart/laravel-modules
-- **Database:** MySQL (via Eloquent ORM & DBAL)
-- **Frontend:** Blade, Livewire 3, Bootstrap 4, jQuery, Laravel Mix (Webpack)
+- **Database:** MySQL (via Eloquent ORM/query builder; migrasi dan reporting mengandung SQL khusus MySQL)
+- **Frontend:** Blade, Alpine.js, stylesheet ERP, serta plugin legacy Bootstrap/jQuery; dependensi Livewire ^4.0 dan Laravel Mix 5 masih tercantum. Build Mix tidak mewakili seluruh aset runtime.
 - **Lainnya:** Laravel Sanctum (API auth), Yajra Datatables, Google API Client, Guzzle, Spatie Laravel HTML
 
 ## Persyaratan Sistem
 
 Pastikan environment pengembangan Anda memiliki:
 
-- PHP >= 8.1
+- PHP ^8.5; pastikan `php --version` memenuhi constraint sebelum menjalankan Composer/Artisan
 - Composer
 - Node.js & NPM
 - MySQL (atau database kompatibel lainnya)
@@ -75,7 +84,7 @@ Pastikan environment pengembangan Anda memiliki:
 3. **Install dependency JavaScript**
 
    ```bash
-   npm install
+   npm ci
    ```
 
 4. **Salin file environment**
@@ -92,13 +101,15 @@ Pastikan environment pengembangan Anda memiliki:
 
 6. **Konfigurasi database** pada file `.env` (lihat [Konfigurasi Environment](#konfigurasi-environment)).
 
-7. **Jalankan migrasi database**
+7. **Siapkan database pengembangan terisolasi**
+
+   Gunakan salinan schema/data yang disetujui pemilik database. Jangan mengasumsikan migrasi legacy dapat membangun instalasi kosong: jalur fresh install belum terverifikasi. Tinjau migration yang pending dan backup sebelum menjalankannya; jangan arahkan langkah berikut ke database produksi atau database bersama.
 
    ```bash
    php artisan migrate
    ```
 
-   Jika tersedia seeder untuk data awal:
+   Seeder bersifat opsional dan perlu ditinjau terlebih dahulu; bukan prasyarat setup yang telah terverifikasi:
 
    ```bash
    php artisan db:seed
@@ -110,7 +121,9 @@ Pastikan environment pengembangan Anda memiliki:
    php artisan storage:link
    ```
 
-9. **Compile asset frontend**
+9. **Compile asset frontend legacy (opsional, bila mengubah input Mix)**
+
+   UI ERP juga memuat aset langsung dari `public/assets/`. Jangan menganggap build berikut memperbarui seluruh UI. Jalur build legacy belum dijalankan pada audit ini; lihat [panduan engineering](docs/engineering.md).
 
    ```bash
    npm run dev
@@ -175,10 +188,10 @@ infruity-main/
 │   ├── api.php
 │   ├── admin.php
 │   └── channels.php
-└── public/                # Asset publik hasil compile
+└── public/                # Asset ERP langsung, vendor legacy, dan hasil compile Mix
 ```
 
-Setiap modul mengikuti struktur standar `laravel-modules`, sehingga dapat dikembangkan, diaktifkan, atau dinonaktifkan secara independen.
+Modul mengikuti struktur `laravel-modules` dan status aktivasinya diatur melalui `modules_statuses.json`. Beberapa alur saling bergantung (misalnya POS, stok, dan CRM); jangan menganggap menonaktifkan satu modul selalu aman tanpa meninjau dependensinya.
 
 ## Perintah Artisan Berguna
 
@@ -198,11 +211,18 @@ php artisan optimize:clear
 
 ## Testing
 
-Menjalankan test suite PHPUnit:
+Jalankan test hanya dengan koneksi terisolasi. Pastikan `bootstrap/cache/config.php` tidak ada atau gunakan cache path khusus test; konfigurasi yang di-cache dapat mengalahkan environment test.
 
 ```bash
-php artisan test
+APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=:memory: DATABASE_URL= \
+  CACHE_DRIVER=array SESSION_DRIVER=array MAIL_DRIVER=array QUEUE_CONNECTION=sync \
+  php vendor/bin/phpunit --do-not-cache-result
+
+# JavaScript: memakai Node test runner, tanpa instalasi npm untuk suite saat ini
+node --test tests/js/*.test.cjs
 ```
+
+Baseline audit 28 Oktober 2026: PHPUnit 116 test / 715 assertions, 4 error setup schema transfer dan 1 failure role/account; JavaScript 84 test lulus. Ini bukan suite hijau. SQLite tidak membuktikan perilaku lock/concurrency MySQL. Detail serta urutan perbaikannya ada pada [laporan audit](docs/audit-2026-10-28.md).
 
 ## Kontribusi
 
@@ -216,7 +236,3 @@ Kontribusi sangat terbuka. Silakan ikuti langkah berikut:
 ## Lisensi
 
 Proyek ini bersifat privat/proprietary. Hubungi pemilik proyek untuk informasi lebih lanjut terkait lisensi dan penggunaan.
-
-> Tes integrasi bot Telegram @InfruityyyBot
-
-> Tes integrasi bot Telegram @InfruityyyBot
