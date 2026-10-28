@@ -6,9 +6,10 @@
     $transactionBackRoute = $transferFormHeader ? request()->segment(1) . '.index' : ($sortirFormHeader ? 'sortir.index' : 'wholesale.index');
     $transactionBackLabel = $transferFormHeader ? 'Kembali ke Pindah Stok' : ($sortirFormHeader ? 'Kembali ke Sortir Barang' : 'Kembali ke Pengadaan');
     $productStockDetailHeader = request()->routeIs('product-stock.show');
-    $mobileBackHeader = $transactionFormHeader || $productStockDetailHeader;
-    $mobileBackRoute = $productStockDetailHeader ? 'product-stock' : $transactionBackRoute;
-    $mobileBackLabel = $productStockDetailHeader ? 'Kembali ke Stok Barang' : $transactionBackLabel;
+    $passwordUpdateHeader = request()->routeIs('change-password');
+    $mobileBackHeader = $transactionFormHeader || $productStockDetailHeader || $passwordUpdateHeader;
+    $mobileBackRoute = $productStockDetailHeader ? 'product-stock' : ($passwordUpdateHeader ? 'settings.index' : $transactionBackRoute);
+    $mobileBackLabel = $productStockDetailHeader ? 'Kembali ke Stok Barang' : ($passwordUpdateHeader ? 'Kembali ke Pengaturan' : $transactionBackLabel);
 @endphp
 
 <style>
