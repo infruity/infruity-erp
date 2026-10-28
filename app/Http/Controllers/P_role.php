@@ -131,6 +131,10 @@ class P_role extends Controller
         $data['permissions'] = config('constant.permissions', []);
         $data['rolePermissions'] = $role->roleMenu->pluck('permission')->all();
 
+        if ($request->header('X-Role-Modal') === 'true') {
+            return view('admin.role.detail-fragment', $data);
+        }
+
         return view('admin.role.index', $data);
     }
 

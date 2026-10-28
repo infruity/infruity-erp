@@ -248,6 +248,38 @@ class UserPermissionOverridesTest extends TestCase
             ->assertSee('action="http://localhost/role-menu/2"', false);
     }
 
+    public function test_role_index_prepares_same_page_detail_navigation(): void
+    {
+        DB::table('role_menu')->insert([
+            ['id_role' => 3, 'permission' => 'role.index'],
+            ['id_role' => 3, 'permission' => 'role.show'],
+        ]);
+
+        $this->get('/roles')
+            ->assertOk()
+            ->assertSee('data-role-detail-mount', false)
+            ->assertSee('data-role-detail-link', false)
+            ->assertSee('href="http://localhost/roles/detail/2"', false)
+            ->assertSee('@click="navigateRoleDetail($event, $el.href)"', false);
+    }
+
+    public function test_role_detail_request_can_return_a_modal_fragment_for_async_navigation(): void
+    {
+        DB::table('role_menu')->insert([
+            ['id_role' => 3, 'permission' => 'role.index'],
+            ['id_role' => 3, 'permission' => 'role.show'],
+            ['id_role' => 3, 'permission' => 'role-menu.update'],
+            ['id_role' => 3, 'permission' => 'role.destroy'],
+        ]);
+
+        $this->get('/roles/detail/2', ['X-Role-Modal' => 'true'])
+            ->assertOk()
+            ->assertSee('data-role-modal-fragment', false)
+            ->assertSee('data-role-detail-overlay', false)
+            ->assertSee('data-role-permission-overlay', false)
+            ->assertDontSee('<html', false);
+    }
+
     public function test_role_detail_keeps_parent_popup_and_mobile_nav_create_action(): void
     {
         DB::table('role_menu')->insert([
