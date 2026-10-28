@@ -5,6 +5,10 @@
     $transactionFormHeader = $transferFormHeader || $sortirFormHeader || request()->routeIs('wholesale.create', 'wholesale.edit');
     $transactionBackRoute = $transferFormHeader ? request()->segment(1) . '.index' : ($sortirFormHeader ? 'sortir.index' : 'wholesale.index');
     $transactionBackLabel = $transferFormHeader ? 'Kembali ke Pindah Stok' : ($sortirFormHeader ? 'Kembali ke Sortir Barang' : 'Kembali ke Pengadaan');
+    $productStockDetailHeader = request()->routeIs('product-stock.show');
+    $mobileBackHeader = $transactionFormHeader || $productStockDetailHeader;
+    $mobileBackRoute = $productStockDetailHeader ? 'product-stock' : $transactionBackRoute;
+    $mobileBackLabel = $productStockDetailHeader ? 'Kembali ke Stok Barang' : $transactionBackLabel;
 @endphp
 
 <style>
@@ -32,8 +36,8 @@
 </style>
 
 <header class="erp-topbar-mobile {{ $transactionFormHeader ? 'erp-topbar-mobile--transaction-form' : '' }}">
-    @if ($transactionFormHeader)
-        <a href="{{ route($transactionBackRoute) }}" aria-label="{{ $transactionBackLabel }}" class="erp-topbar-mobile__button">
+    @if ($mobileBackHeader)
+        <a href="{{ route($mobileBackRoute) }}" aria-label="{{ $mobileBackLabel }}" class="erp-topbar-mobile__button">
             <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
         </a>
     @else
