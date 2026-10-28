@@ -162,6 +162,21 @@ class UserPermissionOverridesTest extends TestCase
         $this->assertCount(1, $permissionQueries);
     }
 
+    public function test_role_detail_route_renders_the_roles_list_with_a_permission_overlay(): void
+    {
+        DB::table('role_menu')->insert([
+            ['id_role' => 3, 'permission' => 'role.index'],
+            ['id_role' => 3, 'permission' => 'role.show'],
+        ]);
+
+        $this->get('/roles/detail/2')
+            ->assertOk()
+            ->assertSee('data-role-permission-overlay', false)
+            ->assertSee('first@example.test')
+            ->assertSee('action="http://localhost/role-menu/2"', false)
+            ->assertSee('Simpan Hak Akses');
+    }
+
     public function test_permission_checker_supports_the_legacy_user_model(): void
     {
         $this->actingAs(LegacyUser::findOrFail(201));

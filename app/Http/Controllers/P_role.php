@@ -33,6 +33,11 @@ class P_role extends Controller
             return $denied;
         }
 
+        return view("admin.role.index", $this->roleIndexViewData($request));
+    }
+
+    private function roleIndexViewData(Request $request): array
+    {
         $search = trim((string) $request->query('q', ''));
         $modules = config('constant.permissions', []);
         $accounts = User::with('roleAssignments.role.roleMenu')
@@ -64,11 +69,11 @@ class P_role extends Controller
             return $account;
         });
 
-        $data['accounts'] = $accounts;
-        $data['modulesTotal'] = count($modules);
-        $data['search'] = $search;
-
-        return view("admin.role.index", $data);
+        return [
+            'accounts' => $accounts,
+            'modulesTotal' => count($modules),
+            'search' => $search,
+        ];
     }
 
     /**
@@ -126,21 +131,22 @@ class P_role extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         if ($denied = $this->requireAccess('role.show')) {
             return $denied;
         }
+        if ($denied = $this->requireAccess('role.index')) {
+            return $denied;
+        }
 
         $role = Role::with('roleMenu')->findOrFail($id);
+        $data = $this->roleIndexViewData($request);
+        $data['role'] = $role;
+        $data['permissions'] = config('constant.permissions', []);
+        $data['rolePermissions'] = $role->roleMenu->pluck('permission')->all();
 
-        // ambil semua nama route
-        $permissions = config('constant.permissions');
-
-        // ambil permission role yang aktif
-        $rolePermissions = $role->roleMenu->pluck('permission')->toArray();
-
-        return view('admin.role.edit', compact('role', 'permissions', 'rolePermissions'));
+        return view('admin.role.index', $data);
     }
 
     /**
