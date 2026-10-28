@@ -2,6 +2,7 @@
 namespace Modules\Master\Entities;
 
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Master\Entities\Department;
@@ -32,6 +33,11 @@ class Staff extends Model
     public function branch()
     {
         return $this->belongsTo(Branch::class, 'branch_id', 'id');
+    }
+
+    public function pendingRoles()
+    {
+        return $this->belongsToMany(Role::class, 'staff_role', 'staff_id', 'id_role', 'id', 'id_role');
     }
 
     public function account()

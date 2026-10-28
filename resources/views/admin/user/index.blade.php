@@ -272,7 +272,7 @@
                             <input id="user-email" @if($errors->has('email')) aria-invalid="true" aria-describedby="user-email-error" @endif name="email" x-model="form.email" :readonly="editing || form.emailType === 'auto'" :class="form.emailType === 'auto' ? 'bg-gray-50 text-gray-500 cursor-not-allowed border-gray-200' : 'bg-white text-gray-900 border-gray-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'" required type="email" placeholder="Misal: nama@infruity.com" class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all m-0">@error('email')<p id="user-email-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div class="w-full">
-                            <label for="user-staff-search" class="mb-1.5 block text-xs font-semibold text-gray-600">Tautkan ke Karyawan</label>
+                            <label for="user-staff-search" class="mb-1.5 block text-xs font-semibold text-gray-600">Tautkan ke Karyawan <span class="text-red-400">*</span></label>
                             <div class="flex w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white">
                                 <div class="relative shrink-0 border-b border-gray-100 bg-gray-50/50">
                                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-base text-gray-400" aria-hidden="true"></i>
@@ -280,30 +280,20 @@
                                 </div>
                                 <div class="relative max-h-48 overflow-y-auto overscroll-none scrollbar-hide bg-white">
                                     <template x-for="staff in filteredStaffOptions" :key="staff.id">
-                                        <button type="button" @click="toggleStaff(staff.id)" :disabled="isStaffLinkedElsewhere(staff)" :title="isStaffLinkedElsewhere(staff) ? 'Karyawan sudah tertaut ke akun lain' : ''" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left transition-colors last:border-b-0 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-50/50">
-                                            <span x-show="!isStaffLinkedElsewhere(staff)" class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 transition-colors" :class="String(form.staffId) === String(staff.id) ? 'border-emerald-500' : ''" aria-hidden="true"><span class="h-2 w-2 rounded-full bg-emerald-500 transition-transform" :class="String(form.staffId) === String(staff.id) ? 'scale-100' : 'scale-0'"></span></span>
-                                            <span x-show="isStaffLinkedElsewhere(staff)" class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-400" aria-hidden="true"><i class="ph ph-lock-key text-[10px]"></i></span>
-                                            <span class="flex min-w-0 flex-1 items-center justify-between gap-3"><span class="truncate text-[13px]" :class="isStaffLinkedElsewhere(staff) ? 'text-gray-400' : (String(form.staffId) === String(staff.id) ? 'font-bold text-gray-900' : 'font-medium text-gray-700')" x-text="staff.name"></span><span x-show="isStaffLinkedElsewhere(staff)" class="shrink-0 text-[10px] italic text-gray-400">Telah ditautkan</span></span>
+                                        <button type="button" @click="toggleStaff(staff.id)" :disabled="isStaffUnavailable(staff)" :title="isStaffUnavailable(staff) ? (isStaffLinkedElsewhere(staff) ? 'Karyawan sudah tertaut ke akun lain' : 'Lengkapi cabang dan Hak Akses di halaman Karyawan') : ''" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left transition-colors last:border-b-0 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-50/50">
+                                            <span x-show="!isStaffUnavailable(staff)" class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 transition-colors" :class="String(form.staffId) === String(staff.id) ? 'border-emerald-500' : ''" aria-hidden="true"><span class="h-2 w-2 rounded-full bg-emerald-500 transition-transform" :class="String(form.staffId) === String(staff.id) ? 'scale-100' : 'scale-0'"></span></span>
+                                            <span x-show="isStaffUnavailable(staff)" class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-400" aria-hidden="true"><i class="ph ph-lock-key text-[10px]"></i></span>
+                                            <span class="flex min-w-0 flex-1 items-center justify-between gap-3"><span class="truncate text-[13px]" :class="isStaffUnavailable(staff) ? 'text-gray-400' : (String(form.staffId) === String(staff.id) ? 'font-bold text-gray-900' : 'font-medium text-gray-700')" x-text="staff.name"></span><span x-show="isStaffLinkedElsewhere(staff)" class="shrink-0 text-[10px] italic text-gray-400">Telah ditautkan</span><span x-show="!isStaffLinkedElsewhere(staff) && isStaffIncomplete(staff)" class="shrink-0 text-[10px] italic text-gray-400">Lengkapi di Karyawan</span></span>
                                         </button>
                                     </template>
                                     <p x-show="filteredStaffOptions.length === 0" class="px-4 py-5 text-center text-[13px] text-gray-400">Karyawan tidak ditemukan</p>
                                 </div>
                             </div>
+                            <p class="mt-1.5 text-[11px] text-gray-400">Nama, cabang, dan Hak Akses akun mengikuti data karyawan.</p>
+                            @error('staff_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                         </div>
-                        <template x-if="!editing">
-                        <div class="pt-2">
-                            <label for="user-roles" class="mb-1.5 block text-xs font-semibold text-gray-600">Hak Akses <span class="text-red-400">*</span></label>
-                            <select id="user-roles" name="role_ids[]" x-model="form.roles" multiple required size="4" class="w-full min-h-[7rem] rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm outline-none focus:border-emerald-500">
-                                @foreach ($role as $item)<option value="{{ $item->id_role }}">{{ $item->nm_role }}</option>@endforeach
-                            </select>
-                            <p class="mt-1.5 text-[11px] text-gray-400">Pilih satu atau lebih role untuk akun ini.</p>
-                            @error('role_ids')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                        </div>
-                        </template>
                         <fieldset x-show="!editing" x-cloak :disabled="Boolean(editing)" class="contents">
-                        <div><label for="user-name" class="text-xs font-semibold text-gray-600 mb-1.5 block">Nama Lengkap <span class="text-red-400">*</span></label><input id="user-name" @if($errors->has('full_name')) aria-invalid="true" aria-describedby="user-name-error" @endif name="full_name" x-model="form.name" required type="text" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('full_name')<p id="user-name-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
                         <div><label for="user-password" class="text-xs font-semibold text-gray-600 mb-1.5 block">Kata Sandi <span class="text-red-400" x-show="!editing">*</span></label><input id="user-password" @if($errors->has('password')) aria-invalid="true" aria-describedby="user-password-error" @endif name="password" x-model="form.password" :required="!editing" type="password" autocomplete="new-password" :placeholder="editing ? 'Kosongkan jika tidak diubah' : 'Masukkan kata sandi'" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('password')<p id="user-password-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
-                        <fieldset><legend class="text-xs font-semibold text-gray-600 mb-1.5">Cabang <span class="text-red-400">*</span></legend><div class="bg-white border border-gray-200 rounded-xl max-h-48 overflow-y-auto divide-y divide-gray-100">@forelse ($branch as $item)<label class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 text-sm text-gray-700"><input type="checkbox" name="id_branch[]" value="{{ $item->id }}" :checked="form.branches.includes({{ $item->id }})" @change="toggleBranch({{ $item->id }})" class="accent-[#0b595b] rounded"><span>{{ $item->name }}</span></label>@empty <p class="px-4 py-3 text-sm text-gray-400">Belum ada cabang</p>@endforelse</div><p class="text-[11px] text-gray-400 mt-1.5">Pilih minimal satu cabang.</p></fieldset>
                         </fieldset>
                             </div>
                         </div>
@@ -324,7 +314,7 @@
 function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRoles, oldBranches, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions = []) {
     return {
         users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, modalSearchQuery: '',
-        form: { name: '', email: '', emailType: 'auto', password: '', roles: [], branches: [], staffId: '' },
+        form: { email: '', emailType: 'auto', password: '', staffId: '' },
         get filteredAccessGroups() {
             const query = this.modalSearchQuery.toLowerCase().trim();
             if (!query) return this.accessGroups;
@@ -340,9 +330,16 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
         isStaffLinkedElsewhere(staff) {
             return Boolean(staff?.linked_user_id) && String(staff.linked_user_id) !== String(this.editing || '');
         },
+        isStaffIncomplete(staff) {
+            return !staff?.branch_id || !Array.isArray(staff?.role_ids) || staff.role_ids.length === 0;
+        },
+        isStaffUnavailable(staff) {
+            return this.isStaffLinkedElsewhere(staff)
+                || (this.isStaffIncomplete(staff) && String(staff?.id) !== String(this.form.staffId || ''));
+        },
         toggleStaff(staffId) {
             const staff = this.staffOptions.find(option => String(option.id) === String(staffId));
-            if (this.isStaffLinkedElsewhere(staff)) return;
+            if (this.isStaffUnavailable(staff)) return;
             this.form.staffId = String(this.form.staffId) === String(staffId) ? '' : String(staffId);
         },
         permissionAccess(user, permission) {
@@ -415,25 +412,22 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
         openCreate() {
             this.editing = null;
             this.staffSearch = '';
-            this.form = { name: oldName || '', email: oldEmail || this.nextAutoEmail, emailType: this.oldEmailType === 'custom' ? 'custom' : 'auto', password: '', roles: Array.isArray(oldRoles) ? oldRoles.map(String) : (oldRoles ? [String(oldRoles)] : []), branches: (oldBranches || []).map(Number), staffId: String(this.oldStaffId || '') };
+            this.form = { email: oldEmail || this.nextAutoEmail, emailType: this.oldEmailType === 'custom' ? 'custom' : 'auto', password: '', staffId: String(this.oldStaffId || '') };
             this.drawerOpen = true;
         },
         restoreOld() {
             const isEditing = Boolean(oldUserId && this.users.some(user => user.id === Number(oldUserId)));
             if (isEditing) this.openEdit(Number(oldUserId));
             else this.openCreate();
-            this.form = { name: oldName || '', email: oldEmail || (isEditing ? '' : this.nextAutoEmail), emailType: isEditing ? 'custom' : (this.oldEmailType === 'custom' ? 'custom' : 'auto'), password: '', roles: Array.isArray(oldRoles) ? oldRoles.map(String) : (oldRoles ? [String(oldRoles)] : []), branches: (oldBranches || []).map(Number), staffId: String(this.oldStaffId || '') };
+            this.form = { email: oldEmail || (isEditing ? '' : this.nextAutoEmail), emailType: isEditing ? 'custom' : (this.oldEmailType === 'custom' ? 'custom' : 'auto'), password: '', staffId: String(this.oldStaffId || '') };
         },
         openEdit(id) {
             const user = this.users.find(item => item.id === id);
             if (!user || user.is_aktif === false) return;
             this.editing = id;
             this.staffSearch = '';
-            this.form = { name: user.name || '', email: user.email || '', emailType: 'custom', password: '', roles: (user.roles || []).map(role => String(role.id)), branches: (user.branches || []).map(Number), staffId: String(user.staff_id || '') };
+            this.form = { email: user.email || '', emailType: 'custom', password: '', staffId: String(user.staff_id || '') };
             this.drawerOpen = true;
-        },
-        toggleBranch(id) {
-            this.form.branches = this.form.branches.includes(id) ? this.form.branches.filter(value => value !== id) : [...this.form.branches, id];
         },
         async remove(id, name) {
             const user = this.users.find(item => item.id === id);

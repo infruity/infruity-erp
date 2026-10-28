@@ -192,10 +192,10 @@ test('create user email mode defaults to the next OPR address and can switch to 
     assert.doesNotMatch(view, /<div x-show="!editing"[^>]*role="radiogroup"/);
     assert.ok(view.includes('role="radiogroup" aria-label="Jenis email" :aria-disabled="Boolean(editing)"'));
     assert.match(view, /:readonly="editing \|\| form\.emailType === 'auto'"/);
-    assert.match(view, /name="full_name"/);
     assert.match(view, /name="password"/);
-    assert.ok(view.includes('name="role_ids[]"'));
-    assert.match(view, /name="id_branch\[\]"/);
+    assert.doesNotMatch(view, /name="full_name"/);
+    assert.doesNotMatch(view, /name="role_ids/);
+    assert.ok(!view.includes('name="id_branch[]"'));
     assert.match(view, /@js\(\$nextAutoEmail\)/);
     assert.match(controller, /\$data\['nextAutoEmail'\] = sprintf\('OPR%03d@INFRUITY\.COM'/);
 
@@ -226,12 +226,15 @@ test('create user email mode defaults to the next OPR address and can switch to 
     assert.equal(invalid.form.emailType, 'custom');
 });
 
-test('mobile create sheet matches the account reference and keeps required fields below the fold', () => {
+test('mobile create sheet keeps employee-owned fields out and retains the password field', () => {
     assert.match(view, /\.user-account-drawer-panel:not\(\.is-editing\)\s*\{\s*max-height:\s*71\.5dvh;/);
-    assert.match(view, /x-if="!editing">\s*<div class="pt-2">[\s\S]*?<label for="user-roles"/);
-    const fieldOrder = ['Alamat Email', 'Tautkan ke Karyawan', 'name="role_ids[]"', 'name="full_name"', 'name="password"', 'name="id_branch[]"']
+    assert.doesNotMatch(view, /name="role_ids/);
+    const fieldOrder = ['Alamat Email', 'Tautkan ke Karyawan', 'name="password"']
         .map(field => view.indexOf(field));
     assert.ok(fieldOrder.every((position, index) => position >= 0 && (index === 0 || position > fieldOrder[index - 1])));
+    assert.ok(!view.includes('name="full_name"'));
+    assert.ok(!view.includes('name="role_ids[]"'));
+    assert.ok(!view.includes('name="id_branch[]"'));
     assert.ok(view.includes('relative max-h-48 overflow-y-auto overscroll-none scrollbar-hide bg-white'));
     assert.ok(view.includes('rounded-full bg-gray-200 text-gray-400'));
     assert.ok(view.includes('Telah ditautkan'));
@@ -270,7 +273,9 @@ test('account edit drawer prevents one employee from linking to multiple account
     assert.match(view, /Cari karyawan/);
     assert.match(view, /Karyawan tidak ditemukan/);
     assert.match(view, /staff\.linked_user_id/);
-    assert.ok(view.includes(':disabled="isStaffLinkedElsewhere(staff)"'));
+    assert.ok(view.includes(':disabled="isStaffUnavailable(staff)"'));
+    assert.ok(controller.includes("'branch_id' => $staff->branch_id"));
+    assert.ok(controller.includes("'role_ids' => $staff->pendingRoles->pluck"));
     assert.match(view, /@js\(\$staffOptions\)/);
     assert.match(controller, /'linked_user_id' => \$staff->account\?->id_user/);
     assert.match(controller, /update\(\['user_id' => \$userId\]\)/);
@@ -284,8 +289,9 @@ test('edit mode exposes account identity and employee linking without create-onl
     assert.match(view, /:disabled="Boolean\(editing\)"/);
     assert.match(view, /x-show="!editing" x-cloak :disabled="Boolean\(editing\)" class="contents"/);
     assert.match(view, /Tautkan ke Karyawan/);
-    for (const field of ['full_name', 'password', 'role_ids[]', 'id_branch[]']) {
-        assert.ok(view.includes(`name="${field}"`), `create flow keeps ${field}`);
+    assert.ok(view.includes('name="password"'), 'password remains a create-only account field');
+    for (const field of ['full_name', 'role_ids[]', 'id_branch[]']) {
+        assert.ok(!view.includes(`name="${field}"`), `employee-owned ${field} is absent from the account drawer`);
     }
 });
 
@@ -296,14 +302,16 @@ test('edit account drawer matches reference scrolling and email focus styling', 
     assert.match(view, /:style="`height: \$\{thumbHeight\}px; transform: translateY\(\$\{scrollPos\}px\);`"/);
     assert.match(view, /placeholder="Misal: nama@infruity\.com"/);
     assert.match(view, /focus:ring-1 focus:ring-emerald-500/);
-    for (const field of ['staff_id', 'full_name', 'password', 'id_branch[]']) {
+    for (const field of ['staff_id', 'password']) {
         assert.ok(view.includes(`name="${field}"`), `existing edit field ${field} stays in the form`);
+    }
+    for (const field of ['full_name', 'role_ids[]', 'id_branch[]']) {
+        assert.ok(!view.includes(`name="${field}"`), `removed field ${field} is absent`);
     }
 });
 
-test('role picker is removed from edit while multi-role create remains available', () => {
-    assert.match(view, /<template x-if="!editing">[\s\S]*?<select id="user-roles" name="role_ids\[\]"/);
-    assert.ok(view.includes('name="role_ids[]"'), 'create still accepts multiple role assignments');
+test('account role assignment is provided by the employee form, not the account drawer', () => {
+    assert.doesNotMatch(view, /name="role_ids/);
 });
 
 test('mobile edit account sheet matches the reference height without the role picker', () => {
@@ -312,7 +320,7 @@ test('mobile edit account sheet matches the reference height without the role pi
     assert.ok(view.includes('@media (max-width: 1023px)') && view.includes('.user-account-drawer-panel.is-editing') && view.includes('max-height: 71.5dvh;'));
     assert.ok(view.includes('@media (min-width: 1024px)') && view.includes('.user-account-email-type-toggle'));
     assert.match(view, /x-ref="scrollArea"/);
-    assert.match(view, /<template x-if="!editing">[\s\S]*?<select id="user-roles"/);
+    assert.doesNotMatch(view, /id="user-roles"/);
 });
 
 test('edit form cannot select an employee already linked to another account', () => {
@@ -355,7 +363,36 @@ test('linked employee rows expose the lock state only for another account', () =
     assert.equal(app.isStaffLinkedElsewhere({id: 12, linked_user_id: null}), false);
     assert.ok(view.includes('ph-lock-key'));
     assert.ok(view.includes('x-show="isStaffLinkedElsewhere(staff)"'));
-    assert.ok(view.includes('x-show="!isStaffLinkedElsewhere(staff)"'));
+    assert.ok(view.includes('x-show="!isStaffUnavailable(staff)"'));
+});
+
+test('account creation only allows employees with configured roles and branch', () => {
+    const start = view.indexOf('function userMaster(');
+    const end = view.indexOf('\n}\n</script>', start) + 2;
+    const context = {};
+    vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
+    const staffOptions = [
+        {id: 10, name: 'No Branch', linked_user_id: null, branch_id: null, role_ids: [2]},
+        {id: 11, name: 'No Role', linked_user_id: null, branch_id: 1, role_ids: []},
+        {id: 12, name: 'Ready', linked_user_id: null, branch_id: 1, role_ids: [2]},
+        {id: 13, name: 'Legacy Linked', linked_user_id: 8, branch_id: null, role_ids: []},
+    ];
+    const app = context.userMaster([{id: 8, email: 'legacy@example.test', staff_id: 13}], '/user', '/user', null, null, null, null, [], [], 'OPR011@INFRUITY.COM', null, null, staffOptions);
+
+    app.openCreate();
+    assert.equal(app.isStaffIncomplete(staffOptions[0]), true);
+    assert.equal(app.isStaffUnavailable(staffOptions[0]), true);
+    assert.equal(app.isStaffUnavailable(staffOptions[1]), true);
+    assert.equal(app.isStaffUnavailable(staffOptions[2]), false);
+    app.toggleStaff(10);
+    assert.equal(app.form.staffId, '');
+    app.toggleStaff(12);
+    assert.equal(app.form.staffId, '12');
+
+    app.openEdit(8);
+    assert.equal(app.form.staffId, '13');
+    assert.equal(app.isStaffLinkedElsewhere(staffOptions[3]), false);
+    assert.equal(app.isStaffUnavailable(staffOptions[3]), false, 'an existing link remains editable even when legacy employee data is incomplete');
 });
 
 test('inactive accounts remain viewable but do not open the edit drawer', () => {

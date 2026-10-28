@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Modules\Master\Entities\Branch;
+use Modules\Master\Entities\Staff;
 
 class UserRequest extends FormRequest
 {
@@ -25,14 +27,13 @@ class UserRequest extends FormRequest
     {
         $isCreate = $this->isMethod('post');
         $staffIdRule = [
-            'nullable',
             'integer',
             Rule::exists('staff', 'id'),
             Rule::unique('users', 'staff_id')->ignore($isCreate ? null : $this->route('user'), 'id_user'),
         ];
 
         if (!$isCreate) {
-            array_unshift($staffIdRule, 'present');
+            array_unshift($staffIdRule, 'present', 'nullable');
 
             return [
                 'link_only' => ['required', 'accepted'],
@@ -40,26 +41,47 @@ class UserRequest extends FormRequest
             ];
         }
 
+        array_unshift($staffIdRule, 'required');
+
         return [
-            'full_name' => ['required', 'string'],
             'email' => ['required', 'email', Rule::unique('users', 'email')],
             'password' => ['required', 'string'],
-            'id_branch' => ['required', 'array', 'min:1'],
-            'id_branch.*' => ['required', 'distinct', 'exists:branch,id'],
             'staff_id' => $staffIdRule,
-            'role_ids' => ['required', 'array', 'min:1'],
-            'role_ids.*' => ['required', 'integer', 'distinct', 'exists:role,id_role'],
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        if (!$this->isMethod('post')) {
+            return;
+        }
+
+        $validator->after(function ($validator) {
+            if ($validator->errors()->has('staff_id') || !$this->filled('staff_id')) {
+                return;
+            }
+
+            $staff = Staff::query()->withCount('pendingRoles')->find($this->input('staff_id'));
+            if (!$staff) {
+                return;
+            }
+
+            if (!$staff->branch_id || !Branch::query()->whereKey($staff->branch_id)->exists()) {
+                $validator->errors()->add('staff_id', 'Pilih karyawan yang cabangnya sudah diatur.');
+            }
+            if ((int) $staff->pending_roles_count < 1) {
+                $validator->errors()->add('staff_id', 'Pilih karyawan yang Hak Akses-nya sudah diatur.');
+            }
+        });
     }
 
     public function messages()
     {
         return [
             'email.unique' => 'Email sudah digunakan user lain, mohon untuk menggunakan email yang lain',
+            'staff_id.required' => 'Pilih karyawan untuk akun ini.',
             'staff_id.exists' => 'Karyawan yang dipilih tidak tersedia.',
             'staff_id.unique' => 'Karyawan ini sudah tertaut ke akun lain.',
-            'role_ids.required' => 'Pilih minimal satu role untuk akun.',
-            'role_ids.min' => 'Pilih minimal satu role untuk akun.',
             // 'captcha' => 'captcha tidak sesuai',
             'password.required' => 'Password wajib diisi.',
             // 'password.string' => 'Password harus berupa teks.',

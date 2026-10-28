@@ -4,6 +4,9 @@
     $selectedDate = old('date_in', $data->date_in ?? now()->toDateString());
     $selectedPosition = (string) old('position', $data->position_id ?? '');
     $selectedBranch = (string) old('branch_id', $data->branch_id ?? '');
+    $selectedRoleIds = collect(old('role_ids', $editing ? $data->pendingRoles->pluck('id_role')->all() : []))
+        ->map(fn ($id) => (int) $id)
+        ->all();
 @endphp
 
 <form id="staff-form" action="{{ $editing ? route('staff.update', $data->id) : route('staff.store') }}" method="POST" class="flex min-h-0 flex-1 flex-col" data-staff-form>
@@ -74,6 +77,23 @@
                 </div>
                 @error('branch_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             </div>
+
+            <fieldset>
+                <legend class="mb-1.5 block text-xs font-semibold text-gray-600">Hak Akses <span class="text-red-400">*</span></legend>
+                <div class="max-h-48 overflow-y-auto divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
+                    @forelse ($roles as $role)
+                        <label class="flex cursor-pointer items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                            <input type="checkbox" name="role_ids[]" value="{{ $role->id_role }}" @checked(in_array((int) $role->id_role, $selectedRoleIds, true)) class="rounded accent-[#0b595b]">
+                            <span>{{ $role->nm_role }}</span>
+                        </label>
+                    @empty
+                        <p class="px-4 py-3 text-sm text-gray-400">Belum ada role</p>
+                    @endforelse
+                </div>
+                <p class="mt-1.5 text-[11px] text-gray-400">Pilih satu atau lebih hak akses. Hak akses ini akan diterapkan saat akun ditautkan.</p>
+                @error('role_ids')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                @error('role_ids.*')<p class="mt-1 text-xs text-red-600">Role yang dipilih tidak valid.</p>@enderror
+            </fieldset>
 
             @if ($editing && $data->account)
                 <section class="border-t border-gray-200 pt-5" aria-labelledby="staff-account-heading">

@@ -61,6 +61,13 @@ class UserStaffLinkTest extends TestCase
             $table->timestamps();
             $table->unique(['id_user', 'id_role']);
         });
+        Schema::create('staff_role', function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedBigInteger('staff_id');
+            $table->integer('id_role');
+            $table->timestamps();
+            $table->unique(['staff_id', 'id_role']);
+        });
         Schema::create('role_menu', function (Blueprint $table) {
             $table->increments('id_rm');
             $table->integer('id_role');
@@ -97,12 +104,13 @@ class UserStaffLinkTest extends TestCase
             ['id_user' => 3, 'nm_user' => 'Second Account', 'username' => 'second', 'email' => 'second@example.test', 'password' => 'secret', 'is_aktif' => true],
         ]);
         DB::table('staff')->insert([
-            ['id' => 10, 'name' => 'Dwi Febbrianti Robbiatul Adawiyah', 'status' => 'aktif'],
+            ['id' => 10, 'name' => 'Dwi Febbrianti Robbiatul Adawiyah', 'branch_id' => 1, 'status' => 'aktif'],
         ]);
         DB::table('role')->insert([
             ['id_role' => 2, 'nm_role' => 'Operator'],
             ['id_role' => 3, 'nm_role' => 'User Manager'],
         ]);
+        DB::table('staff_role')->insert(['staff_id' => 10, 'id_role' => 2]);
         DB::table('role_user')->insert([
             ['id_user' => 1, 'id_role' => 3],
             ['id_user' => 2, 'id_role' => 2],
@@ -143,6 +151,7 @@ class UserStaffLinkTest extends TestCase
             ->assertSee('name="date_in"', false)
             ->assertSee('name="position"', false)
             ->assertSee('name="branch_id"', false)
+            ->assertSee('name="role_ids[]"', false)
             ->assertDontSee('name="create_account"', false)
             ->assertDontSee('name="account_email"', false)
             ->assertDontSee('name="nickname"', false)
@@ -162,6 +171,7 @@ class UserStaffLinkTest extends TestCase
             ->assertSee('name="date_in"', false)
             ->assertSee('name="position"', false)
             ->assertSee('name="branch_id"', false)
+            ->assertSee('name="role_ids[]"', false)
             ->assertDontSee('name="nickname"', false)
             ->assertDontSee('name="nik"', false)
             ->assertDontSee('name="contact"', false)
@@ -179,6 +189,7 @@ class UserStaffLinkTest extends TestCase
             'date_in' => '2026-10-28',
             'position' => 1,
             'branch_id' => 1,
+            'role_ids' => [2, 3],
         ])->assertRedirect('/staff');
 
         $staff = DB::table('staff')->where('name', 'New Employee')->first();
@@ -187,6 +198,20 @@ class UserStaffLinkTest extends TestCase
         $this->assertSame(1, (int) $staff->position_id);
         $this->assertSame(1, (int) $staff->branch_id);
         $this->assertSame('Cabang Test', Staff::findOrFail($staff->id)->branch?->name);
+        $this->assertEqualsCanonicalizing([2, 3], DB::table('staff_role')->where('staff_id', $staff->id)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
+    }
+
+    public function test_staff_creation_requires_at_least_one_access_role(): void
+    {
+        $this->from('/staff?create=1')->post('/staff', [
+            'staff_name' => 'Employee Without Role',
+            'date_in' => '2026-10-28',
+            'position' => 1,
+            'branch_id' => 1,
+        ])->assertRedirect('/staff?create=1')
+            ->assertSessionHasErrors(['role_ids']);
+
+        $this->assertDatabaseMissing('staff', ['name' => 'Employee Without Role']);
     }
 
     public function test_staff_update_preserves_legacy_fields_not_shown_in_the_new_form(): void
@@ -205,6 +230,7 @@ class UserStaffLinkTest extends TestCase
             'date_in' => '2025-02-03',
             'position' => 1,
             'branch_id' => 1,
+            'role_ids' => [2],
         ])->assertRedirect('/staff');
 
         $this->assertDatabaseHas('staff', [
@@ -247,8 +273,28 @@ class UserStaffLinkTest extends TestCase
             'date_in' => '2026-01-10',
             'position' => 1,
             'branch_id' => 1,
+            'role_ids' => [2],
         ])->assertRedirect('/staff');
 
+        $this->assertDatabaseHas('users', ['id_user' => 2, 'nm_user' => 'Updated Employee Name']);
+    }
+
+    public function test_staff_role_updates_sync_to_a_linked_account_and_branch(): void
+    {
+        DB::table('users')->where('id_user', 2)->update(['staff_id' => 10]);
+        DB::table('staff')->where('id', 10)->update(['user_id' => 2]);
+
+        $this->put('/staff/10', [
+            'staff_name' => 'Updated Employee Name',
+            'date_in' => '2026-01-10',
+            'position' => 1,
+            'branch_id' => 1,
+            'role_ids' => [2, 3],
+        ])->assertRedirect('/staff');
+
+        $this->assertEqualsCanonicalizing([2, 3], DB::table('staff_role')->where('staff_id', 10)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
+        $this->assertEqualsCanonicalizing([2, 3], DB::table('role_user')->where('id_user', 2)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
+        $this->assertDatabaseHas('user_branch', ['user_id' => 2, 'branch_id' => 1]);
         $this->assertDatabaseHas('users', ['id_user' => 2, 'nm_user' => 'Updated Employee Name']);
     }
 
@@ -259,7 +305,7 @@ class UserStaffLinkTest extends TestCase
             ->assertDontSee('name="create_account"', false)
             ->assertDontSee('name="account_email"', false)
             ->assertDontSee('name="account_password"', false)
-            ->assertDontSee('name="role_ids[]"', false);
+            ->assertSee('name="role_ids[]"', false);
     }
 
     public function test_a_staff_record_cannot_be_linked_to_multiple_accounts(): void
@@ -286,7 +332,7 @@ class UserStaffLinkTest extends TestCase
         $this->assertDatabaseHas('users', [
             'id_user' => 2,
             'staff_id' => 10,
-            'nm_user' => 'First Account',
+            'nm_user' => 'Dwi Febbrianti Robbiatul Adawiyah',
             'email' => 'first@example.test',
             'password' => 'secret',
         ]);
@@ -314,31 +360,53 @@ class UserStaffLinkTest extends TestCase
             ->assertSee('name="email"', false)
             ->assertSee('Tautkan ke Karyawan')
             ->assertSee('name="staff_id"', false)
-            ->assertSee('name="full_name"', false)
             ->assertSee('name="password"', false)
-            ->assertSee('name="role_ids[]"', false)
-            ->assertSee('name="id_branch[]"', false);
+            ->assertDontSee('name="full_name"', false)
+            ->assertDontSee('name="role_ids[]"', false)
+            ->assertDontSee('name="id_branch[]"', false);
     }
 
     public function test_account_creation_on_user_page_creates_and_links_the_account(): void
     {
         $this->post('/user', [
-            'full_name' => 'New User Account',
             'email' => 'new-user@example.test',
             'password' => 'test-password',
-            'role_ids' => [2, 3],
-            'id_branch' => [1],
             'staff_id' => 10,
         ])->assertRedirect('/user');
 
         $account = DB::table('users')->where('email', 'new-user@example.test')->first();
         $this->assertNotNull($account);
-        $this->assertSame('New User Account', $account->nm_user);
+        $this->assertSame('Dwi Febbrianti Robbiatul Adawiyah', $account->nm_user);
         $this->assertSame(10, (int) $account->staff_id);
         $this->assertTrue(Hash::check('test-password', $account->password));
         $this->assertSame((int) $account->id_user, (int) DB::table('staff')->where('id', 10)->value('user_id'));
-        $this->assertEqualsCanonicalizing([2, 3], DB::table('role_user')->where('id_user', $account->id_user)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
+        $this->assertEqualsCanonicalizing([2], DB::table('role_user')->where('id_user', $account->id_user)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
         $this->assertDatabaseHas('user_branch', ['user_id' => $account->id_user, 'branch_id' => 1]);
+    }
+
+    public function test_account_creation_requires_a_karyawan_link(): void
+    {
+        $this->from('/user?create=1')->post('/user', [
+            'email' => 'unlinked@example.test',
+            'password' => 'test-password',
+        ])->assertRedirect('/user?create=1')
+            ->assertSessionHasErrors(['staff_id']);
+
+        $this->assertDatabaseMissing('users', ['email' => 'unlinked@example.test']);
+    }
+
+    public function test_account_creation_rejects_karyawan_without_branch_or_pending_role(): void
+    {
+        DB::table('staff')->insert(['id' => 11, 'name' => 'Incomplete Employee', 'status' => 'aktif']);
+
+        $this->from('/user?create=1')->post('/user', [
+            'email' => 'incomplete@example.test',
+            'password' => 'test-password',
+            'staff_id' => 11,
+        ])->assertRedirect('/user?create=1')
+            ->assertSessionHasErrors(['staff_id']);
+
+        $this->assertDatabaseMissing('users', ['email' => 'incomplete@example.test']);
     }
 
     public function test_link_only_edit_changes_only_the_employee_link(): void
@@ -353,7 +421,7 @@ class UserStaffLinkTest extends TestCase
         $this->assertDatabaseHas('users', [
             'id_user' => 2,
             'staff_id' => 10,
-            'nm_user' => 'First Account',
+            'nm_user' => 'Dwi Febbrianti Robbiatul Adawiyah',
             'email' => 'first@example.test',
             'password' => 'secret',
         ]);

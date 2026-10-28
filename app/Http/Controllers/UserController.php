@@ -7,9 +7,7 @@ use App\Models\Role;
 use App\Models\RoleUser;
 use App\Models\UserPermission;
 use Illuminate\Validation\ValidationException;
-use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\Staff;
-use Modules\Master\Entities\UserBranch;
 use App\User;
 use Auth;
 use DB;
@@ -29,14 +27,15 @@ class UserController extends Controller
         }
 
         $data['role'] = Role::orderBy('nm_role')->get();
-        $data['branch'] = Branch::all();
-        $data['staffOptions'] = Staff::with('account:id_user,staff_id')
+        $data['staffOptions'] = Staff::with(['account:id_user,staff_id', 'pendingRoles:id_role'])
             ->orderBy('name')
-            ->get(['id', 'name'])
+            ->get(['id', 'name', 'branch_id'])
             ->map(fn ($staff) => [
                 'id' => $staff->id,
                 'name' => $staff->name,
                 'linked_user_id' => $staff->account?->id_user,
+                'branch_id' => $staff->branch_id,
+                'role_ids' => $staff->pendingRoles->pluck('id_role')->map(fn ($id) => (int) $id)->all(),
             ]);
         $usedOperatorNumbers = DB::table('users')
             ->whereRaw('UPPER(email) LIKE ?', ['OPR%@INFRUITY.COM'])
@@ -118,24 +117,18 @@ class UserController extends Controller
 
         try {
             DB::beginTransaction();
+            $staff = Staff::query()->lockForUpdate()->findOrFail($request->staff_id);
             $user = new User();
             $user->username = $request->email;
             $user->email = $request->email;
-            $user->nm_user = $request->full_name;
+            $user->nm_user = $staff->name;
             $user->password = Hash::make($request->password);
             $user->save();
-            $this->syncStaffLink($user, $request->input('staff_id'));
-            $this->syncRoleAssignments($user, $request->input('role_ids', []));
-
-            $userBranch = [];
-            foreach ($request->id_branch as $branch) {
-                $userBranch[] = [
-                    'user_id' => $user->id_user,
-                    'branch_id' => $branch,
-                ];
-            }
-            UserBranch::insert($userBranch);
+            $this->syncStaffLink($user, $staff->id);
             DB::commit();
+        } catch (ValidationException $e) {
+            DB::rollback();
+            throw $e;
         } catch (Exception $e) {
             DB::rollback();
             return redirect()->back()->with('error', 'Data User Gagal Disimpan' . $e->getMessage())->withInput($request->except(['password']));
@@ -169,6 +162,8 @@ class UserController extends Controller
         $userId = (int) $user->id_user;
         $currentStaffId = $user->staff_id !== null ? (int) $user->staff_id : null;
         $newStaff = null;
+        $roleIds = [];
+        $linkChanged = $currentStaffId !== $staffId;
 
         if ($staffId !== null) {
             $newStaff = Staff::query()->lockForUpdate()->findOrFail($staffId);
@@ -176,6 +171,22 @@ class UserController extends Controller
                 throw ValidationException::withMessages([
                     'staff_id' => 'Karyawan ini sudah tertaut ke akun lain.',
                 ]);
+            }
+
+            if ($linkChanged) {
+                $roleIds = DB::table('staff_role')
+                    ->where('staff_id', $staffId)
+                    ->pluck('id_role')
+                    ->map(fn ($id) => (int) $id)
+                    ->all();
+                $hasBranch = $newStaff->branch_id
+                    && DB::table('branch')->where('id', $newStaff->branch_id)->exists();
+
+                if (!$hasBranch || $roleIds === []) {
+                    throw ValidationException::withMessages([
+                        'staff_id' => 'Lengkapi cabang dan Hak Akses karyawan sebelum menautkan akun.',
+                    ]);
+                }
             }
         }
 
@@ -192,8 +203,30 @@ class UserController extends Controller
                 ->update(['user_id' => $userId]);
         }
 
+        if ($newStaff && $linkChanged) {
+            $user->nm_user = $newStaff->name;
+        }
         $user->staff_id = $staffId;
         $user->save();
+
+        if ($newStaff && $linkChanged) {
+            $this->syncRoleAssignments($user, $roleIds);
+            $this->syncUserBranches($userId, [(int) $newStaff->branch_id]);
+        }
+    }
+
+    private function syncUserBranches(int $userId, array $branchIds): void
+    {
+        DB::table('user_branch')->where('user_id', $userId)->delete();
+        $branchIds = array_values(array_unique(array_map('intval', $branchIds)));
+        if ($branchIds === []) {
+            return;
+        }
+
+        DB::table('user_branch')->insert(array_map(fn ($branchId) => [
+            'user_id' => $userId,
+            'branch_id' => $branchId,
+        ], $branchIds));
     }
 
     private function syncRoleAssignments(User $user, array $roleIds): void

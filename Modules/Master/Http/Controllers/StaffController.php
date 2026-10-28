@@ -3,6 +3,7 @@ namespace Modules\Master\Http\Controllers;
 
 use Exception;
 use App\User;
+use App\Models\Role;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -90,6 +91,8 @@ class StaffController extends Controller
             'date_in' => ['nullable', 'date_format:Y-m-d'],
             'position' => ['required', 'integer', 'exists:position,id'],
             'branch_id' => ['required', 'integer', Rule::in($this->availableBranchIds())],
+            'role_ids' => ['required', 'array', 'min:1'],
+            'role_ids.*' => ['required', 'integer', 'distinct', 'exists:role,id_role'],
         ];
         $validator = Validator::make($request->all(), $rules);
 
@@ -109,6 +112,7 @@ class StaffController extends Controller
             $staff->status = 'aktif';
             $staff->created_by = Auth::user()->id_user;
             $staff->save();
+            $this->syncPendingRoles($staff->id, $request->input('role_ids', []));
 
             DB::commit();
         } catch (Exception $e) {
@@ -147,7 +151,7 @@ class StaffController extends Controller
             return $denied;
         }
 
-        $data['data'] = Staff::with('account')->findOrFail($id);
+        $data['data'] = Staff::with(['account', 'pendingRoles'])->findOrFail($id);
         return view('master::staff.create', array_merge($data, $this->staffFormData()));
     }
 
@@ -168,6 +172,8 @@ class StaffController extends Controller
             'date_in' => ['nullable', 'date_format:Y-m-d'],
             'position' => ['required', 'integer', 'exists:position,id'],
             'branch_id' => ['required', 'integer', Rule::in($this->availableBranchIds())],
+            'role_ids' => ['required', 'array', 'min:1'],
+            'role_ids.*' => ['required', 'integer', 'distinct', 'exists:role,id_role'],
         ];
         $validator = Validator::make($request->all(), $rules);
 
@@ -186,10 +192,18 @@ class StaffController extends Controller
             $staff->branch_id = $request->branch_id;
             $staff->updated_by = Auth::user()->id_user;
             $staff->save();
+            $this->syncPendingRoles($staff->id, $request->input('role_ids', []));
 
-            User::withoutGlobalScope('is_aktif')
+            $accountId = User::withoutGlobalScope('is_aktif')
                 ->where('staff_id', $staff->id)
-                ->update(['nm_user' => $staff->name]);
+                ->value('id_user');
+            if ($accountId) {
+                User::withoutGlobalScope('is_aktif')
+                    ->where('id_user', $accountId)
+                    ->update(['nm_user' => $staff->name]);
+                $this->syncAccountRoles((int) $accountId, $request->input('role_ids', []));
+                $this->syncAccountBranch((int) $accountId, (int) $staff->branch_id);
+            }
 
             DB::commit();
         } catch (Exception $e) {
@@ -319,11 +333,46 @@ class StaffController extends Controller
             ->make(true);
     }
 
+    private function syncPendingRoles(int $staffId, array $roleIds): void
+    {
+        $roleIds = array_values(array_unique(array_map('intval', $roleIds)));
+        DB::table('staff_role')->where('staff_id', $staffId)->delete();
+
+        $now = now();
+        DB::table('staff_role')->insert(array_map(fn ($roleId) => [
+            'staff_id' => $staffId,
+            'id_role' => $roleId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $roleIds));
+    }
+
+    private function syncAccountRoles(int $userId, array $roleIds): void
+    {
+        $roleIds = array_values(array_unique(array_map('intval', $roleIds)));
+        DB::table('role_user')->where('id_user', $userId)->delete();
+
+        $now = now();
+        DB::table('role_user')->insert(array_map(fn ($roleId) => [
+            'id_user' => $userId,
+            'id_role' => $roleId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $roleIds));
+    }
+
+    private function syncAccountBranch(int $userId, int $branchId): void
+    {
+        DB::table('user_branch')->where('user_id', $userId)->delete();
+        DB::table('user_branch')->insert(['user_id' => $userId, 'branch_id' => $branchId]);
+    }
+
     private function staffFormData(): array
     {
         return [
             'positions' => Position::orderBy('name')->get(['id', 'name']),
             'branches' => Branch::orderBy('name')->get(['id', 'name']),
+            'roles' => Role::orderBy('nm_role')->get(['id_role', 'nm_role']),
             'initialCreateOpen' => false,
         ];
     }
