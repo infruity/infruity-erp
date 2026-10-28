@@ -29,9 +29,12 @@ class UserPermissionOverridesTest extends TestCase
             $table->timestamps();
         });
         Schema::create('role', function (Blueprint $table) {
-            $table->integer('id_role')->primary();
-            $table->string('nm_role')->nullable();
-            $table->string('description')->nullable();
+            $table->integer('id_role', true);
+            $table->string('nm_role', 60);
+            $table->text('description')->nullable();
+            $table->integer('id_creator');
+            $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('role_user', function (Blueprint $table) {
             $table->increments('id_ru');
@@ -53,9 +56,9 @@ class UserPermissionOverridesTest extends TestCase
             ['id_user' => 202, 'nm_user' => 'Administrator Account', 'email' => 'admin@example.test', 'password' => 'secret', 'is_aktif' => true],
         ]);
         DB::table('role')->insert([
-            ['id_role' => 1, 'nm_role' => 'Administrator'],
-            ['id_role' => 2, 'nm_role' => 'Operator'],
-            ['id_role' => 3, 'nm_role' => 'Permission Manager'],
+            ['id_role' => 1, 'nm_role' => 'Administrator', 'id_creator' => 1],
+            ['id_role' => 2, 'nm_role' => 'Operator', 'id_creator' => 1],
+            ['id_role' => 3, 'nm_role' => 'Permission Manager', 'id_creator' => 1],
         ]);
         DB::table('role_user')->insert([
             ['id_user' => 100, 'id_role' => 3],
@@ -193,6 +196,36 @@ class UserPermissionOverridesTest extends TestCase
             ->assertSee('ROLE-0002')
             ->assertDontSee('ROLE-0001')
             ->assertDontSee('ROLE-0003');
+    }
+
+    public function test_role_creation_form_accepts_digits_and_hyphens(): void
+    {
+        DB::table('role_menu')->insert([
+            ['id_role' => 3, 'permission' => 'role.index'],
+            ['id_role' => 3, 'permission' => 'role.store'],
+        ]);
+
+        $this->get('/roles')
+            ->assertOk()
+            ->assertSee('pattern="[A-Za-z0-9 -]+"', false);
+    }
+
+    public function test_role_creation_request_accepts_digits_and_hyphens(): void
+    {
+        DB::table('role_menu')->insert([
+            ['id_role' => 3, 'permission' => 'role.store'],
+        ]);
+
+        $this->from('/roles')->post('/roles', [
+            'nm_role' => 'Test1',
+            'description' => 'Role untuk pengujian',
+        ])->assertRedirect(route('roles.index'))
+            ->assertSessionHas('success', 'Data role Disimpan');
+
+        $this->assertDatabaseHas('role', [
+            'nm_role' => 'Test1',
+            'description' => 'Role untuk pengujian',
+        ]);
     }
 
     public function test_role_detail_shows_edit_and_delete_actions_before_the_permission_overlay(): void
