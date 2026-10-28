@@ -268,7 +268,7 @@
                                 <div class="report-mobile-receipt__head"><div><span class="report-mobile-receipt__eyebrow" x-text="config.type === 'shipping' ? 'No. Resi' : 'No. Nota'"></span><strong x-text="entry.invoice || entry.type || 'Transaksi'"></strong></div><div class="report-mobile-receipt__date"><strong x-text="entry.date_formatted"></strong><span x-text="entry.time_formatted"></span></div></div>
                                 <div class="report-mobile-receipt__content">
                                     <p x-show="['sales', 'profit'].includes(config.type) && groupBy !== 'date' && branch === 'all' && entry.branch_name" class="report-mobile-receipt__branch" x-text="entry.branch_name"></p>
-                                    <template x-for="line in historyDetails(entry)" :key="line.label"><div class="report-mobile-receipt__line"><span x-text="line.label"></span><strong x-text="line.value"></strong></div></template>
+                                    <template x-for="line in historyDetails(entry)" :key="line.label"><div class="report-mobile-receipt__line"><span x-text="line.label"></span><strong :class="config.type === 'sales' && line.label === 'Pembayaran' ? 'is-payment' : ''" x-text="line.value"></strong></div></template>
                                     <div class="report-mobile-receipt__total"><span x-text="historyTotalLabel(entry)"></span><strong x-text="historyAmount(entry)"></strong></div>
                                 </div>
                             </article>
