@@ -207,6 +207,18 @@ class UserStaffLinkTest extends TestCase
         $this->assertSame(1, substr_count($response->getContent(), 'id="staff_edit_name"'));
     }
 
+    public function test_staff_edit_overlay_hides_the_linked_account_summary(): void
+    {
+        DB::table('users')->where('id_user', 2)->update(['staff_id' => 10]);
+
+        $this->get('/staff/10/edit')
+            ->assertOk()
+            ->assertDontSee('id="staff-account-heading"', false)
+            ->assertDontSee('Akun tertaut:')
+            ->assertDontSee('first@example.test')
+            ->assertDontSee('Kelola tautan akun');
+    }
+
     public function test_staff_edit_overlay_fragment_renders_the_real_update_form(): void
     {
         $this->get('/staff/10/edit?overlay=1')

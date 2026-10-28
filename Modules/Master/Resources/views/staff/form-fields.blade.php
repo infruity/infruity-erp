@@ -96,14 +96,6 @@
                 @error('role_ids.*')<p class="mt-1 text-xs text-red-600">Role yang dipilih tidak valid.</p>@enderror
             </fieldset>
 
-            @if ($editing && $data->account)
-                <section class="border-t border-gray-200 pt-5" aria-labelledby="staff-account-heading">
-                    <h3 id="staff-account-heading" class="text-sm font-bold text-gray-800">Akun Pengguna</h3>
-                    <p class="mt-1 text-xs text-gray-500">Akun tertaut: <span class="font-semibold text-gray-700">{{ $data->account->email }}</span> · {{ $data->account->is_aktif ? 'Aktif' : 'Nonaktif' }}</p>
-                    <p class="mt-1 text-xs text-gray-400">Nama akun mengikuti nama karyawan. Pengelolaan tautan tersedia di halaman Akun Pengguna.</p>
-                    @if (check_access('user.index'))<a href="{{ route('user.index') }}" class="mt-3 inline-flex h-9 items-center rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600">Kelola tautan akun</a>@endif
-                </section>
-            @endif
         </div>
     </div>
 
