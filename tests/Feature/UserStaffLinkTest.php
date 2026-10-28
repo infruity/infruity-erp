@@ -413,6 +413,7 @@ class UserStaffLinkTest extends TestCase
             ->assertSee('Tambah Akun', false)
             ->assertSee('name="email"', false)
             ->assertSee('Tautkan ke Karyawan')
+            ->assertDontSee('Nama, cabang, dan Hak Akses akun mengikuti data karyawan.')
             ->assertSee('name="staff_id"', false)
             ->assertSee('name="password"', false)
             ->assertDontSee('name="full_name"', false)

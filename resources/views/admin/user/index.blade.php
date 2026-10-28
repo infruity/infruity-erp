@@ -289,7 +289,6 @@
                                     <p x-show="filteredStaffOptions.length === 0" class="px-4 py-5 text-center text-[13px] text-gray-400">Karyawan tidak ditemukan</p>
                                 </div>
                             </div>
-                            <p class="mt-1.5 text-[11px] text-gray-400">Nama, cabang, dan Hak Akses akun mengikuti data karyawan.</p>
                             @error('staff_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <fieldset x-show="!editing" x-cloak :disabled="Boolean(editing)" class="contents">
