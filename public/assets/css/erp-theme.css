@@ -277,6 +277,8 @@ html.erp-html { font-size:16px; }
     .erp-ui .erp-settings-page .erp-settings-logout-form { width:min(100%, 384px); }
     .erp-ui .erp-settings-page .erp-settings-card { border-color:#f3f4f6; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,.03); }
     .erp-ui .erp-settings-page .erp-settings-options > .erp-settings-option + .erp-settings-option { border-top:1px solid var(--settings-line); }
+    .erp-ui .erp-settings-page .erp-settings-options > a.erp-settings-option:first-child { border-bottom:1px solid var(--settings-line); }
+    .erp-ui .erp-settings-page .erp-settings-options > .erp-settings-option:nth-child(2) { border-top:0; }
     .erp-ui .erp-settings-page .erp-settings-profile { gap:14px; padding:14px; }
     .erp-ui .erp-settings-page .erp-settings-name { font-size:15px; letter-spacing:-.025em; line-height:1.25; }
     .erp-ui .erp-settings-page .erp-settings-email { font-size:12px; font-weight:500; }

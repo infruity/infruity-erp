@@ -33,4 +33,12 @@ class SettingsReferenceLayoutTest extends TestCase
         $this->assertStringContainsString('.erp-ui .erp-settings-page .erp-settings-options > .erp-settings-option + .erp-settings-option {', $styles);
         $this->assertStringContainsString('border-top:1px solid var(--settings-line);', $styles);
     }
+
+    public function test_password_row_has_one_bottom_separator(): void
+    {
+        $styles = file_get_contents(public_path('assets/css/erp-theme.css'));
+
+        $this->assertStringContainsString('.erp-ui .erp-settings-page .erp-settings-options > a.erp-settings-option:first-child { border-bottom:1px solid var(--settings-line); }', $styles);
+        $this->assertStringContainsString('.erp-ui .erp-settings-page .erp-settings-options > .erp-settings-option:nth-child(2) { border-top:0; }', $styles);
+    }
 }
