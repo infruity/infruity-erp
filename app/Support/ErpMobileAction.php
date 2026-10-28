@@ -46,6 +46,7 @@ class ErpMobileAction
     private const LIST_CREATE_ROUTES = [
         'receipt.index',
         'roles.index',
+        'roles.show',
         'unit.*',
         'category.*',
         'supplier.*',
@@ -78,6 +79,10 @@ class ErpMobileAction
     /** URL of the create page for the current list route, when allowed. */
     private static function createPageUrl(Request $request): ?string
     {
+        if ($request->routeIs('roles.show')) {
+            return check_access('role.store') ? route('roles.index', ['create' => 1]) : null;
+        }
+
         foreach (self::CREATE_PAGES as [$patterns, $route, $permission]) {
             if (! $request->routeIs($patterns)) {
                 continue;
@@ -109,7 +114,7 @@ class ErpMobileAction
             return check_access('product-receipt.create');
         }
 
-        if ($request->routeIs('roles.index')) {
+        if ($request->routeIs('roles.index', 'roles.show')) {
             return check_access('role.store');
         }
 

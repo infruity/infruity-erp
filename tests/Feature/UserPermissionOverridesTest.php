@@ -215,6 +215,22 @@ class UserPermissionOverridesTest extends TestCase
             ->assertSee('action="http://localhost/role-menu/2"', false);
     }
 
+    public function test_role_detail_keeps_parent_popup_and_mobile_nav_create_action(): void
+    {
+        DB::table('role_menu')->insert([
+            ['id_role' => 3, 'permission' => 'role.index'],
+            ['id_role' => 3, 'permission' => 'role.show'],
+            ['id_role' => 3, 'permission' => 'role.store'],
+        ]);
+
+        $this->get('/roles/detail/2')
+            ->assertOk()
+            ->assertSee('data-role-detail-overlay', false)
+            ->assertSee('data-role-detail-panel class="relative z-10 flex max-h-[calc(100dvh-2rem)] w-full max-w-sm flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"', false)
+            ->assertSee('class="absolute inset-0 bg-black/60"', false)
+            ->assertSee('href="http://localhost/roles?create=1" aria-label="Tambah" title="Tambah" class="erp-mobile-nav__add"', false);
+    }
+
     public function test_role_detail_popup_uses_white_surfaces(): void
     {
         DB::table('role_menu')->insert([
