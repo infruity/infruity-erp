@@ -74,6 +74,8 @@ Ini peta tanggung jawab yang harus diperiksa, **bukan jaminan semua endpoint lam
 - Override permission akun dapat mengizinkan/menolak akses di atas fallback role. Backend endpoint tetap perlu melakukan pemeriksaan; menyembunyikan tombol bukan kontrol akses.
 - Penetapan role staf atau pewarisan role melalui pembuatan/relink akun membutuhkan `staff.assign-roles` bila set role berubah. Edit data biasa dengan set role tetap tidak membutuhkan izin tambahan. Role akun sendiri tidak dapat diubah; pemberian/penghapusan Administrator membutuhkan Administrator aktif. Lihat [hardening tahap pertama](security-hardening-2026-10-29.md) untuk kebijakan rollout dan regression test.
 - Scope cabang harus diterapkan saat lookup objek/item, bukan hanya saat menampilkan daftar cabang.
+- Untuk mutasi detail pengadaan, lookup mengikuti header berizin, lock header/detail dalam transaksi, dan tolak header `complete` termasuk untuk admin. Endpoint data juga memeriksa permission halaman sebelum query; filter laporan `all` bukan bypass scope cabang.
+- Editor pengeluaran mengirim `expenditure_id` eksplisit: `null` untuk create, ID untuk edit; key hilang menghasilkan 422. Invoice preview bukan identitas overwrite. Edit header in-place mempertahankan tautan pembayaran; nilai paid adalah kumulatif, bukan pembayaran tambahan. Deploy server/Blade bersama dan muat ulang tab lama. Lihat [kontrak serta batas hardening cabang/transaksi](branch-hardening-2026-10-29.md).
 - Simpan ledger, detail, stock, dan status yang saling bergantung secara atomik. Hitung nilai otoritatif di server dan uji retry/idempotency pada operasi keuangan.
 - SQLite fixture berguna untuk perilaku endpoint, tetapi tidak membuktikan `lockForUpdate`, isolation, atau race condition MySQL.
 

@@ -338,6 +338,7 @@ class MobileReportController extends Controller
             ->whereBetween('t.date', [$startDate, $endDate]);
         if ($branchId === 'null') $query->whereNull('t.branch_id');
         elseif ($branchId !== 'all') $query->where('t.branch_id', $branchId);
+        $this->scopeBranch($query, 't.branch_id', (string) $branchId);
         $this->applySearch($query, $search, ['p.name'], 't.date');
         return $query->selectRaw("t.date as date, t.branch_id, t.created_at as tx_date, t.invoice_number as invoice, p.name as name, NULL as courier_id, 'Barang Buang' as type")
             ->selectRaw('COALESCE(d.subtotal, 0) as amount, 0 as revenue, 0 as hpp, 0 as correction, d.quantity as quantity, 1 as item_count, (COALESCE(d.price, 0) * COALESCE(d.quantity, 0)) as gross_amount, COALESCE(d.discount, 0) as product_discount, 0 as prorata_discount, NULL as unit_price, 0 as unit_hpp');

@@ -3,6 +3,7 @@ namespace Modules\Transaction\Http\Controllers;
 
 use Exception;
 use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +22,7 @@ use Modules\Transaction\Entities\ProductHppRunning;
 use Modules\Transaction\Entities\ProductStock;
 use Modules\Transaction\Entities\Wholesale;
 use Modules\Transaction\Entities\WholesaleProduct;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Yajra\DataTables\Facades\DataTables;
 
 class WholesaleController extends Controller
@@ -336,9 +338,7 @@ class WholesaleController extends Controller
      */
     public function update_product(Request $request, $id)
     {
-        if ($denied = $this->requireAccess('wholesale.update-product')) {
-            return $denied;
-        }
+        $this->authorizeAccess('wholesale.update-product');
 
         // Validasi input
         // dd($request->all());
@@ -350,7 +350,7 @@ class WholesaleController extends Controller
 
         try {
             DB::beginTransaction();
-            $wholesaleProduct              = WholesaleProduct::findOrFail($id);
+            $wholesaleProduct              = $this->wholesaleProductForMutation($id);
             $wholesaleProduct->supplier_id = $validated['supplier_id'];
             $wholesaleProduct->price       = $validated['price'];
             $wholesaleProduct->quantity    = $validated['qty'];
@@ -358,6 +358,9 @@ class WholesaleController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
+            if ($e instanceof ModelNotFoundException || $e instanceof HttpExceptionInterface) {
+                throw $e;
+            }
             return response()->json(['message' => 'Product updated failed']);
         }
 
@@ -687,13 +690,11 @@ class WholesaleController extends Controller
 
     public function delete_product(Request $request, $id)
     {
-        if ($denied = $this->requireAccess('wholesale.delete_product')) {
-            return $denied;
-        }
+        $this->authorizeAccess('wholesale.delete_product');
 
         try {
             DB::beginTransaction();
-            $wholesaleProduct = WholesaleProduct::findOrFail($id);
+            $wholesaleProduct = $this->wholesaleProductForMutation($id);
             $wholesaleProduct->delete();
             DB::commit();
             return response()->json([
@@ -701,6 +702,9 @@ class WholesaleController extends Controller
             ], 201);
         } catch (Exception $e) {
             DB::rollback();
+            if ($e instanceof ModelNotFoundException || $e instanceof HttpExceptionInterface) {
+                throw $e;
+            }
             return response()->json([
                 'message' => 'Product gagal dihapus.',
             ], 404);
@@ -1176,6 +1180,18 @@ class WholesaleController extends Controller
             })
             ->rawColumns(['branch', 'po', 'staff', 'items', 'action', 'status', 'address'])
             ->make(true);
+    }
+
+    private function wholesaleProductForMutation($id): WholesaleProduct
+    {
+        $wholesale = Wholesale::whereIn('branch_id', UserBranch::getUserBranch())
+            ->whereHas('products', fn ($query) => $query->whereKey($id))
+            ->lockForUpdate()
+            ->firstOrFail();
+
+        abort_if($wholesale->status === 'complete', 409, 'Pengadaan yang sudah selesai tidak dapat diubah.');
+
+        return $wholesale->products()->lockForUpdate()->findOrFail($id);
     }
 
     private function hydrateWholesaleDetailPricing($detail, $branchId = null)
