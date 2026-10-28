@@ -162,19 +162,38 @@ class UserPermissionOverridesTest extends TestCase
         $this->assertCount(1, $permissionQueries);
     }
 
-    public function test_role_detail_route_renders_the_roles_list_with_a_permission_overlay(): void
+    public function test_role_detail_shows_edit_and_delete_actions_before_the_permission_overlay(): void
     {
         DB::table('role_menu')->insert([
             ['id_role' => 3, 'permission' => 'role.index'],
             ['id_role' => 3, 'permission' => 'role.show'],
+            ['id_role' => 3, 'permission' => 'role-menu.update'],
+            ['id_role' => 3, 'permission' => 'role.destroy'],
         ]);
 
         $this->get('/roles/detail/2')
             ->assertOk()
-            ->assertSee('data-role-permission-overlay', false)
             ->assertSee('first@example.test')
-            ->assertSee('action="http://localhost/role-menu/2"', false)
-            ->assertSee('Simpan Hak Akses');
+            ->assertSee('data-role-detail-overlay', false)
+            ->assertSee('data-role-permission-edit', false)
+            ->assertSee('data-role-delete-action', false)
+            ->assertSee('permissionOpen: false', false)
+            ->assertSee('action="http://localhost/role-menu/2"', false);
+    }
+
+    public function test_administrator_role_delete_action_is_visible_but_disabled(): void
+    {
+        DB::table('role_menu')->insert([
+            ['id_role' => 3, 'permission' => 'role.index'],
+            ['id_role' => 3, 'permission' => 'role.show'],
+            ['id_role' => 3, 'permission' => 'role-menu.update'],
+            ['id_role' => 3, 'permission' => 'role.destroy'],
+        ]);
+
+        $this->get('/roles/detail/1')
+            ->assertOk()
+            ->assertSee('data-role-delete-action disabled', false)
+            ->assertSee('data-role-permission-edit', false);
     }
 
     public function test_permission_checker_supports_the_legacy_user_model(): void

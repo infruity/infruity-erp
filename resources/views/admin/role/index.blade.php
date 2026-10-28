@@ -7,7 +7,38 @@
 @endsection
 
 @section('content')
-<div x-data="{ createOpen: false, permissionOpen: @js(isset($role)), closePermissionOverlay() { if (!this.permissionOpen) return; window.location.assign(@js(route('roles.index', request()->query()))) } }"
+<div x-data="{
+        createOpen: false,
+        roleDetailOpen: @js(isset($role)),
+        permissionOpen: false,
+        roleActionError: '',
+        roleIndexUrl: @js(route('roles.index', request()->query())),
+        roleDeleteUrl: @js(isset($role) ? route('roles.destroy', $role->id_role) : ''),
+        closeRoleDetail() { this.roleDetailOpen = false; window.location.assign(this.roleIndexUrl); },
+        closePermissionOverlay() { this.permissionOpen = false; this.roleDetailOpen = @js(isset($role)); },
+        async deleteRole() {
+            if (!this.roleDeleteUrl || !window.confirm('Yakin hapus role ini?')) return;
+            this.roleActionError = '';
+            try {
+                const response = await fetch(this.roleDeleteUrl, {
+                    method: 'DELETE',
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '',
+                        'Accept': 'application/json'
+                    }
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || result.success !== true) {
+                    this.roleActionError = result.message || 'Role tidak dapat dihapus.';
+                    return;
+                }
+                window.location.assign(this.roleIndexUrl);
+            } catch (error) {
+                this.roleActionError = 'Terjadi kesalahan saat menghapus role.';
+            }
+        }
+    }"
      x-init="if (new URLSearchParams(location.search).has('create') || @js($errors->any() || session()->has('error'))) createOpen = true"
      @mobile-add-toggle.window="createOpen = true"
      class="flex-1 flex flex-col min-h-0 -mx-4 md:mx-0">
@@ -45,6 +76,7 @@
     </div>
     <template x-teleport="body"><div x-show="createOpen" x-cloak data-erp-modal class="fixed inset-0 z-[100] flex flex-col justify-end lg:items-end" @keydown.escape.window="createOpen = false"><div class="absolute inset-0 bg-black/70" @click="createOpen = false"></div><div class="relative bg-white w-full lg:w-[420px] lg:h-full max-h-[95dvh] flex flex-col rounded-t-3xl lg:rounded-none overflow-hidden"><div class="flex justify-center pt-3 pb-1 lg:hidden"><div class="w-16 h-1.5 bg-gray-300 rounded-full"></div></div><div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between"><div><h3 class="text-[15px] font-bold text-gray-900">Tambah Role</h3><p class="text-[12px] text-gray-400 mt-0.5">Buat kelompok izin pengguna</p></div><button type="button" @click="createOpen = false" class="w-9 h-9 rounded-full bg-gray-100 text-gray-500" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div><form action="{{ route('roles.store') }}" method="POST" class="min-h-0 flex flex-col">@csrf<div class="min-h-0 overflow-y-auto bg-gray-50/60 px-5 py-5 space-y-5"><div><label for="role-name" class="text-xs font-semibold text-gray-600 mb-1.5 block">Nama Role <span class="text-red-400">*</span></label><input id="role-name" name="nm_role" value="{{ old('nm_role') }}" required minlength="4" maxlength="50" pattern="[A-Za-z ]+" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"></div><div><label for="role-description" class="text-xs font-semibold text-gray-600 mb-1.5 block">Keterangan</label><textarea id="role-description" name="description" maxlength="255" rows="3" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500">{{ old('description') }}</textarea></div>@if($errors->any())<p class="text-xs text-red-600">{{ $errors->first() }}</p>@endif @if(session('error'))<p class="text-xs text-red-600">{{ session('error') }}</p>@endif</div><div class="flex shrink-0 gap-3 px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100"><button type="button" @click="createOpen = false" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold">Tambah Role</button></div></form></div></div></template>
 @if(isset($role))
+    @include('admin.role.show')
     @include('admin.role.edit')
 @endif
 </div>
