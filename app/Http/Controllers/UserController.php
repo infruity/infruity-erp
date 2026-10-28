@@ -7,11 +7,14 @@ use App\Models\Role;
 use App\Models\RoleUser;
 use App\Models\UserPermission;
 use Illuminate\Validation\ValidationException;
+use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\Staff;
+use Modules\Master\Entities\UserBranch;
 use App\User;
 use Auth;
 use DB;
 use Exception;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -26,6 +29,7 @@ class UserController extends Controller
         }
 
         $data['role'] = Role::orderBy('nm_role')->get();
+        $data['branch'] = Branch::all();
         $data['staffOptions'] = Staff::with('account:id_user,staff_id')
             ->orderBy('name')
             ->get(['id', 'name'])
@@ -34,6 +38,21 @@ class UserController extends Controller
                 'name' => $staff->name,
                 'linked_user_id' => $staff->account?->id_user,
             ]);
+        $usedOperatorNumbers = DB::table('users')
+            ->whereRaw('UPPER(email) LIKE ?', ['OPR%@INFRUITY.COM'])
+            ->pluck('email')
+            ->map(function ($email) {
+                return preg_match('/^OPR(\d+)@INFRUITY\.COM$/i', (string) $email, $matches) === 1
+                    ? (int) $matches[1]
+                    : null;
+            })
+            ->filter(fn ($number) => $number !== null)
+            ->all();
+        $nextOperatorNumber = 1;
+        while (in_array($nextOperatorNumber, $usedOperatorNumbers, true)) {
+            $nextOperatorNumber++;
+        }
+        $data['nextAutoEmail'] = sprintf('OPR%03d@INFRUITY.COM', $nextOperatorNumber);
         $selectedRoleId = $request->query('role_id');
         $moduleDefinitions = config('constant.permissions', []);
         $data['users'] = User::withoutGlobalScope('is_aktif')->with('roleAssignments.role.roleMenu', 'branches.branch', 'permissionOverrides', 'staff')
@@ -74,7 +93,7 @@ class UserController extends Controller
             return $denied;
         }
 
-        return redirect()->route('staff.create');
+        return redirect()->route('user.index', ['create' => 1]);
     }
 
     public function edit($id)
@@ -91,13 +110,38 @@ class UserController extends Controller
         return response()->json($user);
     }
 
-    public function store(Request $request)
+    public function store(UserRequest $request)
     {
         if ($denied = $this->requireAccess('user.store')) {
             return $denied;
         }
 
-        return redirect()->route('staff.create');
+        try {
+            DB::beginTransaction();
+            $user = new User();
+            $user->username = $request->email;
+            $user->email = $request->email;
+            $user->nm_user = $request->full_name;
+            $user->password = Hash::make($request->password);
+            $user->save();
+            $this->syncStaffLink($user, $request->input('staff_id'));
+            $this->syncRoleAssignments($user, $request->input('role_ids', []));
+
+            $userBranch = [];
+            foreach ($request->id_branch as $branch) {
+                $userBranch[] = [
+                    'user_id' => $user->id_user,
+                    'branch_id' => $branch,
+                ];
+            }
+            UserBranch::insert($userBranch);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            return redirect()->back()->with('error', 'Data User Gagal Disimpan' . $e->getMessage())->withInput($request->except(['password']));
+        }
+
+        return redirect('user')->with('success', 'Data User Disimpan');
     }
 
     public function show($id)
@@ -150,6 +194,18 @@ class UserController extends Controller
 
         $user->staff_id = $staffId;
         $user->save();
+    }
+
+    private function syncRoleAssignments(User $user, array $roleIds): void
+    {
+        RoleUser::where('id_user', $user->id_user)->delete();
+
+        foreach (array_values(array_unique(array_map('intval', $roleIds))) as $roleId) {
+            $assignment = new RoleUser();
+            $assignment->id_user = $user->id_user;
+            $assignment->id_role = $roleId;
+            $assignment->save();
+        }
     }
 
     public function updatePermissions(Request $request, $id)

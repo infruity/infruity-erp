@@ -4,7 +4,6 @@
     $selectedDate = old('date_in', $data->date_in ?? now()->toDateString());
     $selectedPosition = (string) old('position', $data->position_id ?? '');
     $selectedBranch = (string) old('branch_id', $data->branch_id ?? '');
-    $selectedRoleIds = array_map('strval', (array) old('role_ids', []));
 @endphp
 
 <form id="staff-form" action="{{ $editing ? route('staff.update', $data->id) : route('staff.store') }}" method="POST" class="flex min-h-0 flex-1 flex-col" data-staff-form>
@@ -83,24 +82,6 @@
                     <p class="mt-1 text-xs text-gray-400">Nama akun mengikuti nama karyawan. Pengelolaan tautan tersedia di halaman Akun Pengguna.</p>
                     @if (check_access('user.index'))<a href="{{ route('user.index') }}" class="mt-3 inline-flex h-9 items-center rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600">Kelola tautan akun</a>@endif
                 </section>
-            @elseif (($canCreateAccount ?? false) && !$editing)
-                <details class="border-t border-gray-200 pt-5" @if(old('create_account')) open @endif>
-                    <summary class="cursor-pointer list-none text-sm font-bold text-gray-800">Akun Pengguna <span class="ml-1 text-xs font-normal text-gray-400">Opsional</span></summary>
-                    <p class="mt-1 text-xs text-gray-400">Pengaturan akun terpisah dari data karyawan dan akan langsung ditautkan.</p>
-                    <label for="create-account" class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-gray-700"><input id="create-account" name="create_account" type="checkbox" value="1" @checked(old('create_account')) class="rounded accent-[#0b595b]"> Buat akun pengguna</label>
-                    @error('create_account')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                    <div id="account-creation-fields" class="mt-4 space-y-4" @if(!old('create_account')) hidden @endif>
-                        <fieldset id="account-creation-fieldset" class="space-y-4" @disabled(!old('create_account'))>
-                            <div class="rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-3"><p class="text-[11px] font-medium text-emerald-800">Nama akun akan mengikuti nama karyawan.</p><p id="account-name-preview" class="mt-0.5 text-sm font-semibold text-emerald-900">{{ $selectedName ?: 'Isi nama karyawan di atas' }}</p></div>
-                            <div>
-                                <div class="mb-1.5 flex items-center justify-between gap-3"><label for="account_email" class="text-xs font-semibold text-gray-600">Alamat Email Akun <span class="text-red-400">*</span></label><div class="flex rounded-lg bg-gray-100 p-0.5" role="radiogroup" aria-label="Jenis email akun"><label class="cursor-pointer rounded-md px-2.5 py-1 text-[10px] font-medium"><input type="radio" name="account_email_type" value="auto" @checked(old('account_email_type', 'auto') === 'auto') class="sr-only">Bawaan</label><label class="cursor-pointer rounded-md px-2.5 py-1 text-[10px] font-medium"><input type="radio" name="account_email_type" value="custom" @checked(old('account_email_type') === 'custom') class="sr-only">Kustom</label></div></div>
-                                <input id="account_email" name="account_email" value="{{ old('account_email', $nextAutoEmail ?? '') }}" @readonly(old('account_email_type', 'auto') === 'auto') required type="email" placeholder="Misal: nama@infruity.com" class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">@error('account_email')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                            </div>
-                            <div><label for="account_password" class="mb-1.5 block text-xs font-semibold text-gray-600">Kata Sandi <span class="text-red-400">*</span></label><input id="account_password" name="account_password" required type="password" autocomplete="new-password" placeholder="Masukkan kata sandi" class="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">@error('account_password')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
-                            <div><label for="account-role-ids" class="mb-1.5 block text-xs font-semibold text-gray-600">Hak Akses <span class="text-red-400">*</span></label><select id="account-role-ids" name="role_ids[]" multiple required size="4" class="min-h-[7rem] w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm outline-none focus:border-emerald-500">@foreach($accountRoles as $accountRole)<option value="{{ $accountRole->id_role }}" @selected(in_array((string) $accountRole->id_role, $selectedRoleIds, true))>{{ $accountRole->nm_role }}</option>@endforeach</select><p class="mt-1.5 text-[11px] text-gray-400">Pilih satu atau lebih role untuk akun ini.</p>@error('role_ids')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
-                        </fieldset>
-                    </div>
-                </details>
             @endif
         </div>
     </div>

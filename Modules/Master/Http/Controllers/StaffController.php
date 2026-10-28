@@ -2,15 +2,12 @@
 namespace Modules\Master\Http\Controllers;
 
 use Exception;
-use App\Models\Role;
-use App\Models\RoleUser;
 use App\User;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Carbon;
@@ -56,7 +53,7 @@ class StaffController extends Controller
             });
 
         return view('master::staff.index', array_merge(
-            $this->accountFormData(),
+            $this->staffFormData(),
             [
                 'records' => $records,
                 'initialCreateOpen' => request()->boolean('create'),
@@ -88,22 +85,12 @@ class StaffController extends Controller
             return $denied;
         }
 
-        if ($request->boolean('create_account')) {
-            if ($denied = $this->requireAccess('user.store')) {
-                return $denied;
-            }
-        }
-
         $rules = [
-            'create_account' => ['nullable', 'boolean'],
             'staff_name' => ['required', 'string', 'max:255'],
             'date_in' => ['nullable', 'date_format:Y-m-d'],
             'position' => ['required', 'integer', 'exists:position,id'],
             'branch_id' => ['required', 'integer', Rule::in($this->availableBranchIds())],
         ];
-        if ($request->boolean('create_account')) {
-            $rules = array_merge($rules, $this->accountCreationRules());
-        }
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
@@ -123,10 +110,6 @@ class StaffController extends Controller
             $staff->created_by = Auth::user()->id_user;
             $staff->save();
 
-            if ($request->boolean('create_account')) {
-                $this->provisionAccount($staff, $request);
-            }
-
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
@@ -135,11 +118,7 @@ class StaffController extends Controller
                 ->with('error', 'Pembuatan Staff gagal' . $e->getMessage());
         }
 
-        $message = $request->boolean('create_account')
-            ? 'Pembuatan Karyawan dan Akun berhasil'
-            : 'Pembuatan Staff berhasil';
-
-        return redirect('staff')->with('success', $message);
+        return redirect('staff')->with('success', 'Pembuatan Staff berhasil');
     }
 
     /**
@@ -169,7 +148,7 @@ class StaffController extends Controller
         }
 
         $data['data'] = Staff::with('account')->findOrFail($id);
-        return view('master::staff.create', array_merge($data, $this->accountFormData()));
+        return view('master::staff.create', array_merge($data, $this->staffFormData()));
     }
 
     /**
@@ -184,28 +163,12 @@ class StaffController extends Controller
             return $denied;
         }
 
-        if ($request->boolean('create_account')) {
-            if ($denied = $this->requireAccess('user.store')) {
-                return $denied;
-            }
-
-            if (Staff::with('account')->findOrFail($id)->account) {
-                return redirect()->back()
-                    ->withErrors(['create_account' => 'Karyawan ini sudah memiliki akun pengguna.'])
-                    ->withInput($request->except(['account_password', 'password']));
-            }
-        }
-
         $rules = [
-            'create_account' => ['nullable', 'boolean'],
             'staff_name' => ['required', 'string', 'max:255'],
             'date_in' => ['nullable', 'date_format:Y-m-d'],
             'position' => ['required', 'integer', 'exists:position,id'],
             'branch_id' => ['required', 'integer', Rule::in($this->availableBranchIds())],
         ];
-        if ($request->boolean('create_account')) {
-            $rules = array_merge($rules, $this->accountCreationRules());
-        }
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
@@ -224,13 +187,9 @@ class StaffController extends Controller
             $staff->updated_by = Auth::user()->id_user;
             $staff->save();
 
-            if ($request->boolean('create_account')) {
-                $this->provisionAccount($staff, $request);
-            } else {
-                User::withoutGlobalScope('is_aktif')
-                    ->where('staff_id', $staff->id)
-                    ->update(['nm_user' => $staff->name]);
-            }
+            User::withoutGlobalScope('is_aktif')
+                ->where('staff_id', $staff->id)
+                ->update(['nm_user' => $staff->name]);
 
             DB::commit();
         } catch (Exception $e) {
@@ -360,33 +319,9 @@ class StaffController extends Controller
             ->make(true);
     }
 
-    private function accountFormData(): array
+    private function staffFormData(): array
     {
-        $canCreateAccount = function_exists('check_access') && check_access('user.store');
-        $nextAutoEmail = '';
-
-        if ($canCreateAccount) {
-            $usedOperatorNumbers = DB::table('users')
-                ->whereRaw('UPPER(email) LIKE ?', ['OPR%@INFRUITY.COM'])
-                ->pluck('email')
-                ->map(function ($email) {
-                    return preg_match('/^OPR(\\d+)@INFRUITY\\.COM$/i', (string) $email, $matches) === 1
-                        ? (int) $matches[1]
-                        : null;
-                })
-                ->filter(fn ($number) => $number !== null)
-                ->all();
-            $nextOperatorNumber = 1;
-            while (in_array($nextOperatorNumber, $usedOperatorNumbers, true)) {
-                $nextOperatorNumber++;
-            }
-            $nextAutoEmail = sprintf('OPR%03d@INFRUITY.COM', $nextOperatorNumber);
-        }
-
         return [
-            'canCreateAccount' => $canCreateAccount,
-            'accountRoles' => $canCreateAccount ? Role::orderBy('nm_role')->get() : collect(),
-            'nextAutoEmail' => $nextAutoEmail,
             'positions' => Position::orderBy('name')->get(['id', 'name']),
             'branches' => Branch::orderBy('name')->get(['id', 'name']),
             'initialCreateOpen' => false,
@@ -398,41 +333,6 @@ class StaffController extends Controller
         return Branch::query()->pluck('id')->map(fn ($id) => (int) $id)->all();
     }
 
-    private function accountCreationRules(): array
-    {
-        return [
-            'account_email_type' => ['required', Rule::in(['auto', 'custom'])],
-            'account_email' => ['required', 'email', Rule::unique('users', 'email')],
-            'account_password' => ['required', 'string'],
-            'role_ids' => ['required', 'array', 'min:1'],
-            'role_ids.*' => ['required', 'integer', 'distinct', 'exists:role,id_role'],
-        ];
-    }
-
-    private function provisionAccount(Staff $staff, Request $request): User
-    {
-        $user = new User();
-        $user->username = $request->input('account_email');
-        $user->email = $request->input('account_email');
-        $user->nm_user = $staff->name;
-        $user->password = Hash::make($request->input('account_password'));
-        $user->staff_id = $staff->id;
-        $user->save();
-
-        foreach (array_unique(array_map('intval', $request->input('role_ids', []))) as $roleId) {
-            $assignment = new RoleUser();
-            $assignment->id_user = $user->id_user;
-            $assignment->id_role = $roleId;
-            $assignment->save();
-        }
-
-        DB::table('user_branch')->insert([
-            'user_id' => $user->id_user,
-            'branch_id' => (int) $staff->branch_id,
-        ]);
-
-        return $user;
-    }
 
     public function getStaff(Request $request)
     {

@@ -6,20 +6,8 @@ const path = require('node:path');
 
 const viewPath = path.join(__dirname, '../../resources/views/admin/user/index.blade.php');
 const controllerPath = path.join(__dirname, '../../app/Http/Controllers/UserController.php');
-const staffViewPath = path.join(__dirname, '../../Modules/Master/Resources/views/staff/create.blade.php');
-const staffIndexPath = path.join(__dirname, '../../Modules/Master/Resources/views/staff/index.blade.php');
-const staffFieldsPath = path.join(__dirname, '../../Modules/Master/Resources/views/staff/form-fields.blade.php');
-const staffOverlayPath = path.join(__dirname, '../../Modules/Master/Resources/views/staff/create-overlay.blade.php');
-const staffScriptPath = path.join(__dirname, '../../Modules/Master/Resources/views/staff/js-create.blade.php');
-const staffControllerPath = path.join(__dirname, '../../Modules/Master/Http/Controllers/StaffController.php');
 const view = fs.readFileSync(viewPath, 'utf8');
 const controller = fs.readFileSync(controllerPath, 'utf8');
-const staffView = fs.readFileSync(staffViewPath, 'utf8');
-const staffIndex = fs.readFileSync(staffIndexPath, 'utf8');
-const staffFields = fs.readFileSync(staffFieldsPath, 'utf8');
-const staffOverlay = fs.readFileSync(staffOverlayPath, 'utf8');
-const staffScript = fs.readFileSync(staffScriptPath, 'utf8');
-const staffController = fs.readFileSync(staffControllerPath, 'utf8');
 const drawerStart = view.indexOf('x-show="drawerOpen" x-cloak data-erp-modal');
 const wrapperEnd = view.indexOf('>', drawerStart) + 1;
 const wrapper = view.slice(drawerStart, wrapperEnd);
@@ -77,7 +65,7 @@ test('detail access summary applies account overrides over assigned role grants'
     const context = {};
     vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
     const groups = [{label: 'Master', modules: [{key: 'products', label: 'Produk', permissions: ['products.index', 'products.create']}]}];
-    const app = context.userMaster([], '/user', groups);
+    const app = context.userMaster([], '/user', '/user', null, null, null, null, [], groups);
     const module = app.accessGroups?.[0]?.modules?.[0];
     assert.ok(module, 'access groups are available to the user screen');
     assert.equal(app.hasModuleAccess({roles: [{id: 2}], permissions: ['products.index'], permission_overrides: {}}, module), true);
@@ -102,7 +90,7 @@ test('module and group switches persist user-specific access changes', async () 
     const productModule = {key: 'products', label: 'Produk', permissions: ['products.index', 'products.create']};
     const stockModule = {key: 'stock-out', label: 'Stok Keluar', permissions: ['stock-out.index']};
     const group = {label: 'Master', modules: [productModule, stockModule]};
-    const app = context.userMaster([], '/user', [group]);
+    const app = context.userMaster([], '/user', '/user', null, null, null, null, [], [group]);
     const user = {id: 44, roles: [{id: 2}], permissions: ['products.index'], permission_overrides: {}, can_change_permissions: true};
 
     await app.toggleModuleAccess(user, productModule);
@@ -136,7 +124,7 @@ test('a partially granted group switch clears all module permissions when turned
     const productModule = {key: 'products', label: 'Produk', permissions: ['products.index', 'products.create']};
     const stockModule = {key: 'stock-out', label: 'Stok Keluar', permissions: ['stock-out.index']};
     const group = {label: 'Master', modules: [productModule, stockModule]};
-    const app = context.userMaster([], '/user', [group]);
+    const app = context.userMaster([], '/user', '/user', null, null, null, null, [], [group]);
     const user = {id: 45, roles: [{id: 2}], permissions: ['products.index'], permission_overrides: {}, can_change_permissions: true};
 
     assert.equal(app.hasAnyGroupAccess(user, group), true);
@@ -158,7 +146,7 @@ test('failed access saves revert switch state and self accounts cannot issue upd
     };
     vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
     const module = {key: 'products', label: 'Produk', permissions: ['products.index']};
-    const app = context.userMaster([], '/user', []);
+    const app = context.userMaster([], '/user', '/user', null, null, null, null, [], []);
     const user = {id: 44, permissions: ['products.index'], permission_overrides: {}, can_change_permissions: true};
 
     await app.toggleModuleAccess(user, module);
@@ -186,7 +174,7 @@ test('closing the create sheet removes its transient URL flag without losing oth
         },
     };
     vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
-    const app = context.userMaster([], '/user', [], null, null);
+    const app = context.userMaster([], '/user', '/user', null, null, null, null, [], [], 'OPR001@INFRUITY.COM', null);
     app.drawerOpen = true;
     app.closeDrawer();
 
@@ -196,97 +184,59 @@ test('closing the create sheet removes its transient URL flag without losing oth
     assert.equal(historyCalls[0][2], '/user?role_id=2#list');
 });
 
-test('staff create overlay uses the four reference fields and keeps old data intact on update', () => {
-    assert.match(staffOverlay, /data-staff-create-overlay/);
-    assert.match(staffOverlay, /x-transition:enter-start="translate-y-full/);
-    assert.match(staffOverlay, /@staff-create-open\.window="openDrawer\(\)"/);
-    assert.match(staffFields, /name="staff_name"/);
-    assert.match(staffFields, /name="date_in"/);
-    assert.match(staffFields, /name="position"/);
-    assert.match(staffFields, /name="branch_id"/);
-    assert.doesNotMatch(staffFields, /name="(?:nickname|nik|contact|email|gender|department|description|status|avatar)"/);
-    assert.match(staffFields, /<details class="border-t border-gray-200 pt-5"/);
-    assert.match(staffIndex, /'branch_label'/);
-    assert.match(staffView, /master::staff\.form-fields/);
-    assert.match(staffController, /'branch_id' => \['required', 'integer', Rule::in\(/);
-    assert.match(staffController, /\$staff->branch_id = \$request->branch_id/);
-});
+test('create user email mode defaults to the next OPR address and can switch to custom', () => {
+    assert.match(view, /Bawaan/);
+    assert.match(view, /Kustom/);
+    assert.match(view, /name="email" x-model="form.email"/);
+    assert.match(view, /name="email_type"/);
+    assert.doesNotMatch(view, /<div x-show="!editing"[^>]*role="radiogroup"/);
+    assert.ok(view.includes('role="radiogroup" aria-label="Jenis email" :aria-disabled="Boolean(editing)"'));
+    assert.match(view, /:readonly="editing \|\| form\.emailType === 'auto'"/);
+    assert.match(view, /name="full_name"/);
+    assert.match(view, /name="password"/);
+    assert.ok(view.includes('name="role_ids[]"'));
+    assert.match(view, /name="id_branch\[\]"/);
+    assert.match(view, /@js\(\$nextAutoEmail\)/);
+    assert.match(controller, /\$data\['nextAutoEmail'\] = sprintf\('OPR%03d@INFRUITY\.COM'/);
 
-test('staff create overlay opens as a sheet and closes without losing the current URL context', () => {
-    const start = staffScript.indexOf('window.staffCreateOverlay = function');
-    const end = staffScript.indexOf('\n};\n\n(() =>', start) + 3;
-    const historyCalls = [];
-    const location = {
-        href: 'http://127.0.0.1:8000/staff?role_id=2#list',
-        get pathname() { return new URL(this.href).pathname; },
-        get search() { return new URL(this.href).search; },
-    };
-    const context = {
-        URL,
-        URLSearchParams,
-        document: {
-            body: {classList: {toggle() {}}},
-            getElementById() { return {focus() {}}; },
-        },
-        window: {
-            location,
-            history: {
-                state: {scroll: 40},
-                pushState(state, _title, url) {
-                    historyCalls.push(['push', state, url]);
-                    this.previous = {href: location.href, state: this.state};
-                    location.href = new URL(url, location.href).href;
-                    this.state = state;
-                },
-                back() {
-                    historyCalls.push(['back']);
-                    location.href = this.previous.href;
-                    this.state = this.previous.state;
-                },
-                replaceState(state, _title, url) {
-                    historyCalls.push(['replace', state, url]);
-                    location.href = new URL(url, location.href).href;
-                    this.state = state;
-                },
-            },
-        },
-    };
-    vm.runInNewContext(`${staffScript.slice(start, end)}; globalThis.createOverlay = window.staffCreateOverlay;`, context);
-    const app = context.createOverlay(false);
-    app.$nextTick = callback => callback();
-
-    app.openDrawer();
-    assert.equal(app.drawerOpen, true);
-    assert.equal(new URL(location.href).searchParams.get('create'), '1');
-    app.closeDrawer();
-
-    assert.equal(app.drawerOpen, false);
-    assert.equal(location.href, 'http://127.0.0.1:8000/staff?role_id=2#list');
-    assert.deepEqual(historyCalls.map(call => call[0]), ['push', 'back']);
-});
-
-test('staff account form keeps provisioning controls outside employee fields', () => {
-    assert.match(staffFields, /name="account_email_type"/);
-    assert.match(staffFields, /name="account_email"/);
-    assert.match(staffFields, /name="account_password"/);
-    assert.match(staffScript, /const autoAccountEmail = @js\(\$nextAutoEmail/);
-    assert.match(staffScript, /syncAccountEmail\(true\)/);
-    assert.match(staffController, /sprintf\('OPR%03d@INFRUITY\.COM'/);
-});
-
-test('add account action opens account creation on the staff form', () => {
     const start = view.indexOf('function userMaster(');
     const end = view.indexOf('\n}\n</script>', start) + 2;
-    const navigations = [];
-    const context = {window: {location: {assign: url => navigations.push(url)}}};
+    const context = {};
     vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
-    const app = context.userMaster([], '/user', [], null, null, [], '/staff/create');
+    const users = Array.from({length: 10}, (_, index) => ({id: index + 1, email: `OPR${String(index + 1).padStart(3, '0')}@INFRUITY.COM`}));
+    const app = context.userMaster(users, '/user', '/user', null, null, null, null, [], [], 'OPR011@INFRUITY.COM', null);
 
     app.openCreate();
+    assert.equal(app.form.emailType, 'auto');
+    assert.equal(app.form.email, 'OPR011@INFRUITY.COM');
+    app.setEmailType('custom');
+    assert.equal(app.form.email, '');
+    app.form.email = 'person@example.com';
+    app.setEmailType('auto');
+    assert.equal(app.form.email, 'OPR011@INFRUITY.COM');
 
-    assert.deepEqual(navigations, ['/staff/create']);
+    const editing = context.userMaster([{id: 8, name: 'Existing User', email: 'existing@example.com', roles: [{id: 2}], branches: [1]}], '/user', '/user', null, null, null, null, [], [], 'OPR011@INFRUITY.COM', null);
+    editing.openEdit(8);
+    assert.equal(editing.form.email, 'existing@example.com');
+    assert.equal(editing.form.emailType, 'custom');
+
+    const invalid = context.userMaster([], '/user', '/user', null, 'New User', 'custom@example.com', '2', [1], [], 'OPR011@INFRUITY.COM', 'custom');
+    invalid.restoreOld();
+    assert.equal(invalid.form.email, 'custom@example.com');
+    assert.equal(invalid.form.emailType, 'custom');
 });
 
+test('mobile create sheet matches the account reference and keeps required fields below the fold', () => {
+    assert.match(view, /\.user-account-drawer-panel:not\(\.is-editing\)\s*\{\s*max-height:\s*71\.5dvh;/);
+    assert.match(view, /x-if="!editing">\s*<div class="pt-2">[\s\S]*?<label for="user-roles"/);
+    const fieldOrder = ['Alamat Email', 'Tautkan ke Karyawan', 'name="role_ids[]"', 'name="full_name"', 'name="password"', 'name="id_branch[]"']
+        .map(field => view.indexOf(field));
+    assert.ok(fieldOrder.every((position, index) => position >= 0 && (index === 0 || position > fieldOrder[index - 1])));
+    assert.ok(view.includes('relative max-h-48 overflow-y-auto overscroll-none scrollbar-hide bg-white'));
+    assert.ok(view.includes('rounded-full bg-gray-200 text-gray-400'));
+    assert.ok(view.includes('Telah ditautkan'));
+    assert.ok(view.includes('text-[10px] italic text-gray-400'));
+});
 
 test('permission search matches the reference focus ring and group/submodule filtering', () => {
     const input = view.match(/<input id="user-access-search"[^>]+>/)?.[0] || '';
@@ -304,7 +254,7 @@ test('permission search matches the reference focus ring and group/submodule fil
         {label: 'Master', modules: [{label: 'Produk'}, {label: 'Kategori'}]},
         {label: 'Transaksi', modules: [{label: 'Penjualan'}]},
     ];
-    const app = context.userMaster([], '/user', groups);
+    const app = context.userMaster([], '/user', '/user', null, null, null, null, [], groups);
 
     app.modalSearchQuery = ' kategori ';
     assert.deepEqual(Array.from(app.filteredAccessGroups, group => [group.label, Array.from(group.modules, module => module.label)]), [['Master', ['Kategori']]]);
@@ -326,40 +276,43 @@ test('account edit drawer prevents one employee from linking to multiple account
     assert.match(controller, /update\(\['user_id' => \$userId\]\)/);
 });
 
-test('user edit form only displays account identity and updates the employee link', () => {
-    assert.match(view, /name="link_only" value="1"/);
-    assert.match(view, /form\.email \|\| 'Email tidak tersedia'/);
+test('edit mode exposes account identity and employee linking without create-only fields', () => {
+    assert.match(view, /name="link_only" value="1" :disabled="!editing"/);
+    assert.doesNotMatch(view, /<div x-show="!editing"[^>]*role="radiogroup"/);
+    assert.ok(view.includes('role="radiogroup" aria-label="Jenis email" :aria-disabled="Boolean(editing)"'));
+    assert.match(view, /:readonly="editing \|\| form\.emailType === 'auto'"/);
+    assert.match(view, /:disabled="Boolean\(editing\)"/);
+    assert.match(view, /x-show="!editing" x-cloak :disabled="Boolean\(editing\)" class="contents"/);
     assert.match(view, /Tautkan ke Karyawan/);
-    assert.match(view, /name="staff_id"/);
     for (const field of ['full_name', 'password', 'role_ids[]', 'id_branch[]']) {
-        assert.equal(view.includes(`name="${field}"`), false, `${field} is not submitted from the account page`);
+        assert.ok(view.includes(`name="${field}"`), `create flow keeps ${field}`);
     }
 });
 
-test('account link drawer retains scroll behavior without account provisioning inputs', () => {
+test('edit account drawer matches reference scrolling and email focus styling', () => {
     assert.match(view, /x-ref="scrollArea"/);
     assert.match(view, /@scroll="updateScroll\(\); isScrolling = true; clearTimeout\(scrollTimeout\); scrollTimeout = setTimeout\(\(\) => isScrolling = false, 800\)"/);
     assert.match(view, /@resize\.window="updateScroll\(\)"/);
     assert.match(view, /:style="`height: \$\{thumbHeight\}px; transform: translateY\(\$\{scrollPos\}px\);`"/);
-    assert.match(view, /Alamat Email Akun/);
-    assert.match(view, /Tautkan ke Karyawan/);
+    assert.match(view, /placeholder="Misal: nama@infruity\.com"/);
     assert.match(view, /focus:ring-1 focus:ring-emerald-500/);
-    for (const field of ['full_name', 'password', 'role_ids[]', 'id_branch[]']) {
-        assert.equal(view.includes(`name="${field}"`), false, `${field} remains on the staff form`);
+    for (const field of ['staff_id', 'full_name', 'password', 'id_branch[]']) {
+        assert.ok(view.includes(`name="${field}"`), `existing edit field ${field} stays in the form`);
     }
 });
 
-test('role picker is moved to the staff account form and removed from the user page', () => {
-    assert.doesNotMatch(view, /name="role_ids\[\]"/);
-    assert.match(staffFields, /name="role_ids\[\]"/);
+test('role picker is removed from edit while multi-role create remains available', () => {
+    assert.match(view, /<template x-if="!editing">[\s\S]*?<select id="user-roles" name="role_ids\[\]"/);
+    assert.ok(view.includes('name="role_ids[]"'), 'create still accepts multiple role assignments');
 });
 
-test('mobile account link drawer keeps the reference height without create-only fields', () => {
+test('mobile edit account sheet matches the reference height without the role picker', () => {
     assert.match(view, /user-account-drawer-panel/);
     assert.ok(view.includes(':class="editing ? \'is-editing\' : \'\'"'));
     assert.ok(view.includes('@media (max-width: 1023px)') && view.includes('.user-account-drawer-panel.is-editing') && view.includes('max-height: 71.5dvh;'));
+    assert.ok(view.includes('@media (min-width: 1024px)') && view.includes('.user-account-email-type-toggle'));
     assert.match(view, /x-ref="scrollArea"/);
-    assert.doesNotMatch(view, /name="role_ids\[\]"/);
+    assert.match(view, /<template x-if="!editing">[\s\S]*?<select id="user-roles"/);
 });
 
 test('edit form cannot select an employee already linked to another account', () => {
@@ -375,10 +328,11 @@ test('edit form cannot select an employee already linked to another account', ()
         {id: 10, name: 'Dwi Febbrianti', linked_user_id: 8},
         {id: 11, name: 'Achmad Noorman', linked_user_id: 9},
     ];
-    const app = context.userMaster(users, '/user', [], null, null, staffOptions);
+    const app = context.userMaster(users, '/user', '/user', null, null, null, null, [], [], 'OPR011@INFRUITY.COM', null, null, staffOptions);
 
     app.openEdit(8);
     assert.equal(app.form.staffId, '10');
+    assert.equal(app.form.emailType, 'custom');
     app.toggleStaff(11);
     assert.equal(app.form.staffId, '10');
     app.toggleStaff(10);
@@ -393,7 +347,7 @@ test('linked employee rows expose the lock state only for another account', () =
     const app = context.userMaster([
         {id: 8, name: 'Current Account', email: 'current@example.test', staff_id: 10},
         {id: 9, name: 'Other Account', email: 'other@example.test', staff_id: 11},
-    ], '/user', [], null, null, []);
+    ], '/user', '/user', null, null, null, null, [], [], 'OPR011@INFRUITY.COM', null, null, []);
     app.openEdit(8);
 
     assert.equal(app.isStaffLinkedElsewhere({id: 10, linked_user_id: 8}), false);
@@ -411,22 +365,9 @@ test('inactive accounts remain viewable but do not open the edit drawer', () => 
     vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
     const app = context.userMaster([
         {id: 4, name: 'Former Account', email: 'former@example.test', is_aktif: false, staff_id: null},
-    ], '/user', [], null, null, []);
+    ], '/user', '/user', null, null, null, null, [], [], 'OPR011@INFRUITY.COM', null, null, [], {});
 
     app.openEdit(4);
     assert.equal(app.drawerOpen, false);
     assert.match(view, /x-show="selected\?\.is_aktif"/);
-});
-
-test('account creation lives on the staff form while user drawer only links existing accounts', () => {
-    for (const field of ['name="full_name"', 'name="password"', 'name="role_ids[]"', 'name="id_branch[]"']) {
-        assert.equal(view.includes(field), false, `${field} is no longer part of the user page form`);
-    }
-    assert.match(view, /name="staff_id"/);
-    assert.match(staffFields, /name="create_account"/);
-    assert.match(staffFields, /name="account_email"/);
-    assert.match(staffFields, /name="account_password"/);
-    assert.match(staffFields, /name="role_ids\[\]"/);
-    assert.doesNotMatch(staffFields, /name="id_branch\[\]"/);
-    assert.match(staffFields, /Nama akun akan mengikuti nama karyawan/i);
 });
