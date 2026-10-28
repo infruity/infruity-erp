@@ -181,6 +181,26 @@ class UserPermissionOverridesTest extends TestCase
             ->assertSee('action="http://localhost/role-menu/2"', false);
     }
 
+    public function test_role_detail_popup_uses_the_reference_summary_card_style(): void
+    {
+        DB::table('role_menu')->insert([
+            ['id_role' => 3, 'permission' => 'role.index'],
+            ['id_role' => 3, 'permission' => 'role.show'],
+            ['id_role' => 3, 'permission' => 'role-menu.update'],
+            ['id_role' => 3, 'permission' => 'role.destroy'],
+        ]);
+
+        $this->get('/roles/detail/1')
+            ->assertOk()
+            ->assertSee('data-role-detail-panel', false)
+            ->assertSee('data-role-detail-summary', false)
+            ->assertSee('bg-[#e4edfc]', false)
+            ->assertSee('bg-[#dce8f8]', false)
+            ->assertSee('bg-[#d2f0ec]', false)
+            ->assertSee('data-role-permission-edit', false)
+            ->assertSee('data-role-delete-action', false);
+    }
+
     public function test_administrator_role_delete_action_is_visible_but_disabled(): void
     {
         DB::table('role_menu')->insert([
