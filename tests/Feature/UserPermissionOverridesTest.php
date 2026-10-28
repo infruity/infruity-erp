@@ -215,7 +215,7 @@ class UserPermissionOverridesTest extends TestCase
             ->assertSee('action="http://localhost/role-menu/2"', false);
     }
 
-    public function test_role_detail_popup_uses_the_reference_summary_card_style(): void
+    public function test_role_detail_popup_uses_white_surfaces(): void
     {
         DB::table('role_menu')->insert([
             ['id_role' => 3, 'permission' => 'role.index'],
@@ -226,11 +226,8 @@ class UserPermissionOverridesTest extends TestCase
 
         $this->get('/roles/detail/1')
             ->assertOk()
-            ->assertSee('data-role-detail-panel', false)
-            ->assertSee('data-role-detail-summary', false)
-            ->assertSee('bg-[#e4edfc]', false)
-            ->assertSee('bg-[#dce8f8]', false)
-            ->assertSee('bg-[#d2f0ec]', false)
+            ->assertSee('data-role-detail-panel class="relative z-10 flex max-h-[calc(100dvh-2rem)] w-full max-w-sm flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"', false)
+            ->assertSee('data-role-detail-summary class="space-y-4 overflow-y-auto bg-white px-5 py-5"', false)
             ->assertSee('data-role-permission-edit', false)
             ->assertSee('data-role-delete-action', false);
     }
