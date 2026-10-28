@@ -269,3 +269,24 @@ html.erp-html { font-size:16px; }
     .erp-legacy:not(.erp-hide-dock) #kt_post { flex:1 0 auto; }
 }
 
+/* Settings mobile layout follows the standalone ERP reference. */
+@media (max-width: 767.98px) {
+    .erp-ui .erp-settings-page { gap:14px; padding:24px 0 20px; background:#f8fafc; }
+    .erp-ui .erp-settings-page .erp-settings-card,
+    .erp-ui .erp-settings-page .erp-settings-logout-form { width:min(100%, 384px); }
+    .erp-ui .erp-settings-page .erp-settings-card { border-color:#f3f4f6; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,.03); }
+    .erp-ui .erp-settings-page .erp-settings-profile { gap:14px; padding:14px; }
+    .erp-ui .erp-settings-page .erp-settings-name { font-size:15px; letter-spacing:-.025em; line-height:1.25; }
+    .erp-ui .erp-settings-page .erp-settings-email { font-size:12px; font-weight:500; }
+    .erp-ui .erp-settings-page .erp-settings-label { margin-bottom:4px; font-size:11px; letter-spacing:.05em; }
+    .erp-ui .erp-settings-page .erp-settings-value { font-size:13.5px; letter-spacing:normal; line-height:1.5; }
+    .erp-ui .erp-settings-page .erp-settings-option-label { font-size:13.5px; }
+    .erp-ui .erp-settings-page .erp-settings-option-value { font-size:12px; }
+    .erp-ui .erp-settings-page .erp-settings-logout { border-radius:16px; background:#e11d48; font-size:14.5px; }
+    .erp-ui .erp-settings-page .erp-settings-logout:hover,
+    .erp-ui .erp-settings-page .erp-settings-logout:focus-visible { background:#be123c; }
+}
+@media (min-width: 640px) and (max-width: 767.98px) {
+    .erp-ui .erp-settings-page .erp-settings-card,
+    .erp-ui .erp-settings-page .erp-settings-logout-form { width:min(100%, 448px); }
+}
