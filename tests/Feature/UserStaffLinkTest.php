@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Modules\Master\Entities\Staff;
 use Tests\TestCase;
@@ -32,6 +33,19 @@ class UserStaffLinkTest extends TestCase
         Schema::create('staff', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('nickname')->nullable();
+            $table->date('date_in')->nullable();
+            $table->string('gender')->nullable();
+            $table->string('nik')->nullable();
+            $table->string('contact')->nullable();
+            $table->string('email')->nullable();
+            $table->unsignedBigInteger('department_id')->nullable();
+            $table->unsignedBigInteger('position_id')->nullable();
+            $table->unsignedInteger('branch_id')->nullable();
+            $table->text('description')->nullable();
+            $table->string('image')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
             $table->string('status')->default('aktif');
             $table->unsignedBigInteger('user_id')->nullable()->unique();
             $table->timestamps();
@@ -63,6 +77,15 @@ class UserStaffLinkTest extends TestCase
             $table->increments('id');
             $table->string('name');
         });
+        Schema::create('position', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->unsignedBigInteger('department_id')->nullable();
+        });
+        Schema::create('department', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+        });
         Schema::create('user_branch', function (Blueprint $table) {
             $table->integer('user_id');
             $table->integer('branch_id');
@@ -90,14 +113,187 @@ class UserStaffLinkTest extends TestCase
             ['id_role' => 3, 'permission' => 'user.update'],
             ['id_role' => 3, 'permission' => 'user.edit'],
             ['id_role' => 3, 'permission' => 'user.store'],
+            ['id_role' => 3, 'permission' => 'staff.store'],
+            ['id_role' => 3, 'permission' => 'staff.create'],
+            ['id_role' => 3, 'permission' => 'staff.index'],
+            ['id_role' => 3, 'permission' => 'staff.edit'],
+            ['id_role' => 3, 'permission' => 'staff.update'],
             ['id_role' => 3, 'permission' => 'role.index'],
         ]);
         DB::table('branch')->insert(['id' => 1, 'name' => 'Cabang Test']);
+        DB::table('position')->insert(['id' => 1, 'name' => 'Operator', 'department_id' => 1]);
+        DB::table('department')->insert(['id' => 1, 'name' => 'Operasional']);
+        DB::table('user_branch')->insert(['user_id' => 1, 'branch_id' => 1]);
         DB::table('user_branch')->insert(['user_id' => 2, 'branch_id' => 1]);
         DB::table('user_branch')->insert(['user_id' => 3, 'branch_id' => 1]);
 
         $this->actingAs(User::findOrFail(1));
         session(['role' => ['id_role' => 3]]);
+    }
+
+    public function test_staff_create_opens_as_an_overlay_with_only_reference_employee_fields(): void
+    {
+        $this->get('/staff/create')->assertRedirect('/staff?create=1');
+
+        $this->get('/staff?create=1')
+            ->assertOk()
+            ->assertSee('data-staff-create-overlay', false)
+            ->assertSee('name="staff_name"', false)
+            ->assertSee('name="date_in"', false)
+            ->assertSee('name="position"', false)
+            ->assertSee('name="branch_id"', false)
+            ->assertSee('name="account_email"', false)
+            ->assertDontSee('name="nickname"', false)
+            ->assertDontSee('name="nik"', false)
+            ->assertDontSee('name="contact"', false)
+            ->assertDontSee('name="gender"', false)
+            ->assertDontSee('name="department"', false)
+            ->assertDontSee('name="description"', false)
+            ->assertDontSee('name="id_branch[]"', false);
+    }
+
+    public function test_staff_edit_form_keeps_the_same_four_employee_fields(): void
+    {
+        $this->get('/staff/10/edit')
+            ->assertOk()
+            ->assertSee('name="staff_name"', false)
+            ->assertSee('name="date_in"', false)
+            ->assertSee('name="position"', false)
+            ->assertSee('name="branch_id"', false)
+            ->assertDontSee('name="nickname"', false)
+            ->assertDontSee('name="nik"', false)
+            ->assertDontSee('name="contact"', false)
+            ->assertDontSee('name="gender"', false)
+            ->assertDontSee('name="department"', false)
+            ->assertDontSee('name="description"', false)
+            ->assertDontSee('name="status"', false)
+            ->assertDontSee('name="avatar"', false);
+    }
+
+    public function test_staff_creation_persists_the_selected_position_date_and_branch(): void
+    {
+        $this->post('/staff', [
+            'staff_name' => 'New Employee',
+            'date_in' => '2026-10-28',
+            'position' => 1,
+            'branch_id' => 1,
+        ])->assertRedirect('/staff');
+
+        $staff = DB::table('staff')->where('name', 'New Employee')->first();
+        $this->assertNotNull($staff);
+        $this->assertSame('2026-10-28', $staff->date_in);
+        $this->assertSame(1, (int) $staff->position_id);
+        $this->assertSame(1, (int) $staff->branch_id);
+        $this->assertSame('Cabang Test', Staff::findOrFail($staff->id)->branch?->name);
+    }
+
+    public function test_staff_update_preserves_legacy_fields_not_shown_in_the_new_form(): void
+    {
+        DB::table('staff')->where('id', 10)->update([
+            'nickname' => 'Legacy Nickname',
+            'nik' => '1234567890123456',
+            'contact' => '081234567890',
+            'email' => 'legacy@example.test',
+            'gender' => 'female',
+            'description' => 'Legacy notes',
+        ]);
+
+        $this->put('/staff/10', [
+            'staff_name' => 'Updated Employee',
+            'date_in' => '2025-02-03',
+            'position' => 1,
+            'branch_id' => 1,
+        ])->assertRedirect('/staff');
+
+        $this->assertDatabaseHas('staff', [
+            'id' => 10,
+            'name' => 'Updated Employee',
+            'nickname' => 'Legacy Nickname',
+            'nik' => '1234567890123456',
+            'contact' => '081234567890',
+            'email' => 'legacy@example.test',
+            'gender' => 'female',
+            'description' => 'Legacy notes',
+        ]);
+    }
+
+    public function test_staff_creation_provisions_a_linked_account_from_employee_data(): void
+    {
+        $this->post('/staff', [
+            'staff_name' => 'Employee Account Name',
+            'date_in' => '2026-01-10',
+            'position' => 1,
+            'branch_id' => 1,
+            'create_account' => '1',
+            'account_email_type' => 'custom',
+            'account_email' => 'employee-login@example.test',
+            'account_password' => 'test-password',
+            'role_ids' => [2, 3],
+        ])->assertRedirect('/staff');
+
+        $staff = DB::table('staff')->where('name', 'Employee Account Name')->first();
+        $account = DB::table('users')->where('email', 'employee-login@example.test')->first();
+
+        $this->assertNotNull($staff);
+        $this->assertNotNull($account);
+        $this->assertSame('Employee Account Name', $account->nm_user);
+        $this->assertSame((int) $staff->id, (int) $account->staff_id);
+        $this->assertSame('2026-01-10', $staff->date_in);
+        $this->assertSame(1, (int) $staff->position_id);
+        $this->assertSame(1, (int) $staff->branch_id);
+        $this->assertTrue(Hash::check('test-password', $account->password));
+        $this->assertEqualsCanonicalizing([2, 3], DB::table('role_user')->where('id_user', $account->id_user)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
+        $this->assertDatabaseHas('user_branch', ['user_id' => $account->id_user, 'branch_id' => 1]);
+    }
+
+    public function test_account_creation_validation_does_not_flash_the_password_back_to_the_session(): void
+    {
+        $this->from('/staff?create=1')->post('/staff', [
+            'staff_name' => 'Employee Without Complete Account Data',
+            'date_in' => '2026-01-10',
+            'position' => 1,
+            'branch_id' => 1,
+            'create_account' => '1',
+            'account_email_type' => 'custom',
+            'account_email' => 'incomplete-account@example.test',
+            'account_password' => 'test-password',
+        ])->assertRedirect('/staff?create=1')
+            ->assertSessionHasErrors(['role_ids'])
+            ->assertSessionMissing('_old_input.account_password');
+    }
+
+    public function test_staff_name_edits_keep_the_linked_account_name_in_sync(): void
+    {
+        DB::table('users')->where('id_user', 2)->update(['staff_id' => 10]);
+
+        $this->put('/staff/10', [
+            'staff_name' => 'Updated Employee Name',
+            'date_in' => '2026-01-10',
+            'position' => 1,
+            'branch_id' => 1,
+        ])->assertRedirect('/staff');
+
+        $this->assertDatabaseHas('users', ['id_user' => 2, 'nm_user' => 'Updated Employee Name']);
+    }
+
+    public function test_staff_edit_can_create_an_account_for_an_existing_unlinked_employee(): void
+    {
+        $this->put('/staff/10', [
+            'staff_name' => 'Existing Employee',
+            'date_in' => '2026-01-10',
+            'position' => 1,
+            'branch_id' => 1,
+            'create_account' => '1',
+            'account_email_type' => 'custom',
+            'account_email' => 'existing-staff-login@example.test',
+            'account_password' => 'test-password',
+            'role_ids' => [2],
+        ])->assertRedirect('/staff');
+
+        $account = DB::table('users')->where('email', 'existing-staff-login@example.test')->first();
+        $this->assertNotNull($account);
+        $this->assertSame(10, (int) $account->staff_id);
+        $this->assertSame('Existing Employee', $account->nm_user);
     }
 
     public function test_a_staff_record_cannot_be_linked_to_multiple_accounts(): void
@@ -141,53 +337,69 @@ class UserStaffLinkTest extends TestCase
         $this->assertNull(Staff::findOrFail(10)->fresh()->account);
     }
 
-    public function test_create_can_assign_multiple_roles_to_one_account(): void
+    public function test_account_creation_from_user_route_redirects_to_the_staff_form(): void
     {
         $this->post('/user', [
-            'full_name' => 'Multi Role Account',
-            'email' => 'multi-role@example.test',
-            'password' => 'test-password',
-            'role_ids' => [2, 3],
-            'id_branch' => [1],
-            'staff_id' => null,
-        ])->assertRedirect('/user');
+            'email' => 'blocked-user-page@example.test',
+        ])->assertRedirect(route('staff.create'));
 
-        $accountId = (int) DB::table('users')->where('email', 'multi-role@example.test')->value('id_user');
-        $this->assertGreaterThan(0, $accountId);
-        $this->assertEqualsCanonicalizing([2, 3], DB::table('role_user')->where('id_user', $accountId)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
+        $this->assertDatabaseMissing('users', ['email' => 'blocked-user-page@example.test']);
     }
 
-    public function test_update_replaces_all_roles_for_one_account_without_duplicates(): void
-    {
-        $this->put('/user/2', [
-            'full_name' => 'First Account Updated',
-            'email' => 'first@example.test',
-            'password' => '',
-            'role_ids' => [2, 3],
-            'id_branch' => [1],
-            'staff_id' => null,
-        ])->assertRedirect('/user');
-
-        $this->assertEqualsCanonicalizing([2, 3], DB::table('role_user')->where('id_user', 2)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
-        $this->assertSame(2, DB::table('role_user')->where('id_user', 2)->count());
-    }
-
-    public function test_link_only_edit_updates_multiple_roles_without_changing_account_details(): void
+    public function test_link_only_edit_changes_only_the_employee_link(): void
     {
         $this->put('/user/2', [
             'link_only' => '1',
-            'staff_id' => null,
+            'staff_id' => 10,
             'role_ids' => [2, 3],
         ])->assertRedirect('/user');
 
-        $this->assertEqualsCanonicalizing([2, 3], DB::table('role_user')->where('id_user', 2)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
+        $this->assertEqualsCanonicalizing([2], DB::table('role_user')->where('id_user', 2)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
         $this->assertDatabaseHas('users', [
             'id_user' => 2,
+            'staff_id' => 10,
             'nm_user' => 'First Account',
             'email' => 'first@example.test',
             'password' => 'secret',
         ]);
         $this->assertDatabaseHas('user_branch', ['user_id' => 2, 'branch_id' => 1]);
+    }
+
+    public function test_user_update_rejects_account_changes_outside_the_link_form(): void
+    {
+        $this->from('/user')->put('/user/2', [
+            'full_name' => 'Changed Outside Staff Form',
+            'email' => 'changed-outside-staff@example.test',
+            'password' => 'changed-password',
+            'role_ids' => [3],
+            'id_branch' => [1],
+            'staff_id' => null,
+        ])->assertRedirect('/user')
+            ->assertSessionHasErrors(['link_only']);
+
+        $this->assertDatabaseHas('users', [
+            'id_user' => 2,
+            'nm_user' => 'First Account',
+            'email' => 'first@example.test',
+            'password' => 'secret',
+            'staff_id' => null,
+        ]);
+        $this->assertSame([2], DB::table('role_user')->where('id_user', 2)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
+        $this->assertDatabaseHas('user_branch', ['user_id' => 2, 'branch_id' => 1]);
+    }
+
+    public function test_link_update_requires_an_explicit_staff_value_before_unlinking(): void
+    {
+        DB::table('users')->where('id_user', 2)->update(['staff_id' => 10]);
+        DB::table('staff')->where('id', 10)->update(['user_id' => 2]);
+
+        $this->from('/user')->put('/user/2', [
+            'link_only' => '1',
+        ])->assertRedirect('/user')
+            ->assertSessionHasErrors(['staff_id']);
+
+        $this->assertDatabaseHas('users', ['id_user' => 2, 'staff_id' => 10]);
+        $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => 2]);
     }
 
     public function test_role_index_lists_all_roles_assigned_to_an_account(): void
@@ -198,22 +410,6 @@ class UserStaffLinkTest extends TestCase
             ->assertOk()
             ->assertSee('first@example.test')
             ->assertSee('Operator · User Manager');
-    }
-
-    public function test_create_links_staff_using_ids_not_matching_names_or_emails(): void
-    {
-        $this->post('/user', [
-            'full_name' => 'Account Name Different From Employee',
-            'email' => 'account@example.test',
-            'password' => 'test-password',
-            'role_ids' => [2],
-            'id_branch' => [1],
-            'staff_id' => 10,
-        ])->assertRedirect('/user');
-
-        $account = DB::table('users')->where('email', 'account@example.test')->first();
-        $this->assertNotNull($account);
-        $this->assertDatabaseHas('users', ['id_user' => $account->id_user, 'staff_id' => 10]);
     }
 
     public function test_account_hydration_reads_the_canonical_staff_id_relationship(): void

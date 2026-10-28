@@ -1,71 +1,82 @@
 @push('scripts')
 <script>
-(() => {
-    const endpoints = { department: @js(route('ajax.department')), position: @js(route('ajax.position')) };
-    const pickers = Object.fromEntries([...document.querySelectorAll('[data-staff-picker]')].map(node => [node.dataset.staffPicker, node]));
-    async function search(key) {
-        const node = pickers[key];
-        if (!node) return;
-        const input = node.querySelector('input[role="combobox"]');
-        const list = node.querySelector('[role="listbox"]');
-        const departmentId = pickers.department.querySelector('input[type="hidden"]').value;
-        if (key === 'position' && !departmentId) { list.hidden = true; return; }
-        const params = new URLSearchParams({ search: input.value.trim() });
-        if (key === 'position') params.set('department_id', departmentId);
-        const query = input.value;
-        try {
-            const response = await fetch(`${endpoints[key]}?${params}`, { headers: { Accept: 'application/json' } });
-            if (!response.ok) throw new Error('Gagal memuat data');
-            let rows = await response.json();
-            if (input.value !== query) return;
-            rows = rows.filter(row => row.name.toLocaleLowerCase('id').includes(query.toLocaleLowerCase('id')));
-            list.replaceChildren();
-            for (const row of rows) {
-                const option = document.createElement('button');
-                option.type = 'button';
-                option.setAttribute('role', 'option');
-                option.className = 'w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-emerald-50 focus:bg-emerald-50';
-                option.textContent = row.name;
-                option.addEventListener('mousedown', event => event.preventDefault());
-                option.addEventListener('click', () => {
-                    node.querySelector('input[type="hidden"]').value = row.id;
-                    input.value = row.name;
-                    list.hidden = true;
-                    input.setAttribute('aria-expanded', 'false');
-                    if (key === 'department') {
-                        pickers.position.querySelector('input[type="hidden"]').value = '';
-                        pickers.position.querySelector('input[role="combobox"]').value = '';
-                    }
-                });
-                list.append(option);
+window.staffCreateOverlay = function (initialOpen = false) {
+    return {
+        drawerOpen: Boolean(initialOpen),
+        pushedHistoryEntry: false,
+        init() {
+            this.syncBodyScroll();
+            if (this.drawerOpen) this.focusNameField();
+        },
+        openDrawer() {
+            const url = new URL(window.location.href);
+            if (!url.searchParams.has('create')) {
+                url.searchParams.set('create', '1');
+                window.history.pushState({ ...(window.history.state || {}), staffCreateOverlay: true }, '', `${url.pathname}${url.search}${url.hash}`);
+                this.pushedHistoryEntry = true;
             }
-            if (!rows.length) { const empty = document.createElement('div'); empty.className = 'px-4 py-3 text-xs text-gray-400'; empty.textContent = 'Data tidak ditemukan'; list.append(empty); }
-            const openAbove = window.innerHeight - node.getBoundingClientRect().bottom < 230 && node.getBoundingClientRect().top > 230;
-            list.classList.toggle('bottom-full', openAbove);
-            list.classList.toggle('mb-1', openAbove);
-            list.classList.toggle('mt-1', !openAbove);
-            list.hidden = false;
-            input.setAttribute('aria-expanded', 'true');
-        } catch (error) { list.hidden = true; }
-    }
-    for (const [key, node] of Object.entries(pickers)) {
-        const input = node.querySelector('input[role="combobox"]');
-        const hidden = node.querySelector('input[type="hidden"]');
-        let timer;
-        input.addEventListener('focus', () => search(key));
-        input.addEventListener('input', () => { hidden.value = ''; if (key === 'department') { pickers.position.querySelector('input[type="hidden"]').value = ''; pickers.position.querySelector('input[role="combobox"]').value = ''; } clearTimeout(timer); timer = setTimeout(() => search(key), 200); });
-        input.addEventListener('blur', () => setTimeout(() => { node.querySelector('[role="listbox"]').hidden = true; input.setAttribute('aria-expanded', 'false'); }, 150));
-        input.addEventListener('keydown', event => { if (event.key === 'Escape') { node.querySelector('[role="listbox"]').hidden = true; input.setAttribute('aria-expanded', 'false'); } });
-    }
-    document.getElementById('avatar')?.addEventListener('change', event => {
-        const file = event.currentTarget.files?.[0];
-        if (!file) return;
-        const preview = document.getElementById('staff-avatar-preview');
-        preview.src = URL.createObjectURL(file);
-        preview.classList.remove('hidden');
-        document.getElementById('staff-avatar-placeholder')?.classList.add('hidden');
-        const remove = document.querySelector('input[name="avatar_remove"]');
-        if (remove) remove.checked = false;
+            this.drawerOpen = true;
+            this.syncBodyScroll();
+            this.$nextTick(() => this.focusNameField());
+        },
+        closeDrawer() {
+            this.drawerOpen = false;
+            this.syncBodyScroll();
+            const url = new URL(window.location.href);
+            if (!url.searchParams.has('create')) return;
+            if (this.pushedHistoryEntry && window.history.state?.staffCreateOverlay) {
+                this.pushedHistoryEntry = false;
+                window.history.back();
+                return;
+            }
+            url.searchParams.delete('create');
+            window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+        },
+        syncFromUrl() {
+            this.drawerOpen = new URLSearchParams(window.location.search).has('create');
+            this.pushedHistoryEntry = false;
+            this.syncBodyScroll();
+        },
+        syncBodyScroll() {
+            document.body.classList.toggle('overflow-hidden', this.drawerOpen);
+        },
+        focusNameField() {
+            document.getElementById('staff_name')?.focus({ preventScroll: true });
+        },
+    };
+};
+
+(() => {
+    const createAccount = document.getElementById('create-account');
+    const accountFields = document.getElementById('account-creation-fields');
+    const accountFieldset = document.getElementById('account-creation-fieldset');
+    const syncAccountFields = () => {
+        const enabled = Boolean(createAccount?.checked);
+        if (accountFields) accountFields.hidden = !enabled;
+        if (accountFieldset) accountFieldset.disabled = !enabled;
+    };
+    createAccount?.addEventListener('change', syncAccountFields);
+    syncAccountFields();
+
+    const accountEmail = document.getElementById('account_email');
+    const autoAccountEmail = @js($nextAutoEmail ?? '');
+    const syncAccountEmail = reset => {
+        if (!accountEmail) return;
+        const type = document.querySelector('input[name="account_email_type"]:checked')?.value || 'auto';
+        const isAuto = type === 'auto';
+        accountEmail.readOnly = isAuto;
+        accountEmail.classList.toggle('bg-gray-50', isAuto);
+        accountEmail.classList.toggle('bg-white', !isAuto);
+        accountEmail.classList.toggle('cursor-not-allowed', isAuto);
+        if (reset) accountEmail.value = isAuto ? autoAccountEmail : '';
+    };
+    document.querySelectorAll('input[name="account_email_type"]').forEach(input => input.addEventListener('change', () => syncAccountEmail(true)));
+    syncAccountEmail(true);
+
+    const staffName = document.getElementById('staff_name');
+    const accountNamePreview = document.getElementById('account-name-preview');
+    staffName?.addEventListener('input', () => {
+        if (accountNamePreview) accountNamePreview.textContent = staffName.value.trim() || 'Isi nama karyawan di atas';
     });
     document.getElementById('staff-form')?.addEventListener('submit', event => {
         const button = event.currentTarget.querySelector('[data-submit]');

@@ -89,25 +89,15 @@
 @push('styles')
 <style>
     @media (max-width: 1023px) {
-        .user-account-drawer-panel:not(.is-editing) {
-            max-height: 71.5dvh;
-        }
-
         .user-account-drawer-panel.is-editing {
             max-height: 71.5dvh;
-        }
-    }
-
-    @media (min-width: 1024px) {
-        .user-account-drawer-panel.is-editing .user-account-email-type-toggle {
-            display: none;
         }
     }
 </style>
 @endpush
 
 @section('content')
-<div x-data="userMaster(@js($editableUsers), @js(route('user.store')), @js(url('user')), @js(old('_user_id')), @js(old('full_name')), @js(old('email')), @js(old('role_ids', [])), @js(old('id_branch', [])), @js($accessGroups), @js($nextAutoEmail), @js(old('email_type')), @js(old('staff_id')), @js($staffOptions))"
+<div x-data="userMaster(@js($editableUsers), @js(url('user')), @js($accessGroups), @js(old('_user_id')), @js(old('staff_id')), @js($staffOptions), @js(route('staff.create')))"
      x-init="if (@js($errors->any())) restoreOld(); else if (new URLSearchParams(location.search).has('create')) openCreate()"
      @user-filter-open.window="filterOpen = true"
      @mobile-add-toggle.window="openCreate()"
@@ -127,8 +117,8 @@
                 <input name="q" value="{{ request('q') }}" type="search" placeholder="Cari nama atau email pengguna..." class="w-full h-11 rounded-full border border-gray-100 bg-gray-50/50 pl-11 pr-20 text-[13px] outline-none focus:border-emerald-500">
                 <button type="submit" class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#0b595b]">Cari</button>
             </form>
-            @if (check_access('user.create'))
-            <button type="button" @click="openCreate()" class="flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold shadow-sm"><i class="ph-bold ph-plus"></i> Tambah Akun</button>
+            @if (check_access('staff.create') && check_access('staff.store') && check_access('user.store'))
+            <a href="{{ route('staff.create') }}" class="flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold shadow-sm"><i class="ph-bold ph-plus"></i> Tambah Akun lewat Karyawan</a>
             @endif
         </div>
 
@@ -244,12 +234,12 @@
             <div class="absolute inset-0 bg-black/70" @click="closeDrawer()"></div>
             <div x-show="drawerOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full" x-transition:enter-end="translate-y-0 lg:translate-x-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 lg:translate-x-0" x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full" :class="editing ? 'is-editing' : ''" class="user-account-drawer-panel relative w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col max-h-[90dvh] lg:max-h-full lg:h-full rounded-t-3xl lg:rounded-none overflow-hidden">
                 <div class="flex justify-center pt-3 pb-1 lg:hidden"><div class="w-16 h-1.5 bg-gray-300 rounded-full"></div></div>
-                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between"><div><h3 class="text-[15px] font-bold text-gray-900" x-text="editing ? 'Edit Akun' : 'Tambah Akun'"></h3><p class="text-[12px] text-gray-400 mt-0.5" x-text="editing ? 'Perbarui data akun' : 'Isi data akun baru'"></p></div><button type="button" @click="closeDrawer()" class="w-9 h-9 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div>
-                <form method="POST" :action="editing ? baseUrl + '/' + editing : storeUrl" class="flex-1 min-h-0 flex flex-col">
+                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between"><div><h3 class="text-[15px] font-bold text-gray-900">Tautkan Akun</h3><p class="text-[12px] text-gray-400 mt-0.5">Pilih atau lepas karyawan untuk akun ini</p></div><button type="button" @click="closeDrawer()" class="w-9 h-9 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div>
+                <form method="POST" :action="baseUrl + '/' + editing" class="flex-1 min-h-0 flex flex-col">
                     @csrf
-                    <input type="hidden" name="_method" value="PUT" :disabled="!editing">
+                    @method('PUT')
                     <input type="hidden" name="_user_id" :value="editing || ''">
-                    <input type="hidden" name="link_only" value="1" :disabled="!editing">
+                    <input type="hidden" name="link_only" value="1">
                     <input type="hidden" name="staff_id" :value="form.staffId || ''">
                     <div class="relative flex-1 min-h-0 bg-gray-50/60"
                          x-data="{ scrollPos: 0, thumbHeight: 0, isScrolling: false, scrollTimeout: null, updateScroll() { if (!this.$refs.scrollArea) return; const el = this.$refs.scrollArea; const scrollRatio = el.clientHeight / el.scrollHeight; this.thumbHeight = Math.max(el.clientHeight * scrollRatio, 30); const maxScrollTop = el.scrollHeight - el.clientHeight; const maxThumbTop = el.clientHeight - this.thumbHeight - 16; this.scrollPos = maxScrollTop <= 0 ? 0 : (el.scrollTop / maxScrollTop) * maxThumbTop; } }"
@@ -257,19 +247,9 @@
                         <div x-ref="scrollArea" @scroll="updateScroll(); isScrolling = true; clearTimeout(scrollTimeout); scrollTimeout = setTimeout(() => isScrolling = false, 800)" class="h-full overflow-y-auto overscroll-none scrollbar-hide px-5 pb-6 pt-5">
                             <div class="flex flex-col gap-5">
                         @if($errors->any())<div role="alert" class="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"><p class="font-semibold">Data belum dapat disimpan</p><ul class="mt-1 list-disc pl-4">@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul></div>@endif
-                        <div>
-                            <div class="mb-1.5 flex items-center justify-between gap-3">
-                                <label for="user-email" class="text-xs font-semibold text-gray-600">Alamat Email <span class="text-red-400">*</span></label>
-                                <div x-cloak class="user-account-email-type-toggle flex rounded-lg bg-gray-100 p-0.5" role="radiogroup" aria-label="Jenis email" :aria-disabled="Boolean(editing)">
-                                    <label class="cursor-pointer rounded-md px-2.5 py-1 text-[10px] font-medium transition-all" :class="form.emailType === 'auto' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'">
-                                        <input type="radio" name="email_type" value="auto" x-model="form.emailType" :disabled="Boolean(editing)" @change="setEmailType('auto')" class="sr-only">Bawaan
-                                    </label>
-                                    <label class="cursor-pointer rounded-md px-2.5 py-1 text-[10px] font-medium transition-all" :class="form.emailType === 'custom' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'">
-                                        <input type="radio" name="email_type" value="custom" x-model="form.emailType" :disabled="Boolean(editing)" @change="setEmailType('custom')" class="sr-only">Kustom
-                                    </label>
-                                </div>
-                            </div>
-                            <input id="user-email" @if($errors->has('email')) aria-invalid="true" aria-describedby="user-email-error" @endif name="email" x-model="form.email" :readonly="editing || form.emailType === 'auto'" :class="form.emailType === 'auto' ? 'bg-gray-50 text-gray-500 cursor-not-allowed border-gray-200' : 'bg-white text-gray-900 border-gray-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'" required type="email" placeholder="Misal: nama@infruity.com" class="w-full h-11 border rounded-xl px-4 text-sm outline-none transition-all m-0">@error('email')<p id="user-email-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        <div class="rounded-xl border border-gray-200 bg-white px-4 py-3">
+                            <p class="text-[11px] font-semibold text-gray-500">Alamat Email Akun</p>
+                            <p class="mt-1 truncate text-sm font-medium text-gray-800" x-text="form.email || 'Email tidak tersedia'"></p>
                         </div>
                         <div class="w-full">
                             <label for="user-staff-search" class="mb-1.5 block text-xs font-semibold text-gray-600">Tautkan ke Karyawan</label>
@@ -290,28 +270,13 @@
                                 </div>
                             </div>
                         </div>
-                        <template x-if="!editing">
-                        <div class="pt-2">
-                            <label for="user-roles" class="mb-1.5 block text-xs font-semibold text-gray-600">Hak Akses <span class="text-red-400">*</span></label>
-                            <select id="user-roles" name="role_ids[]" x-model="form.roles" multiple required size="4" class="w-full min-h-[7rem] rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm outline-none focus:border-emerald-500">
-                                @foreach ($role as $item)<option value="{{ $item->id_role }}">{{ $item->nm_role }}</option>@endforeach
-                            </select>
-                            <p class="mt-1.5 text-[11px] text-gray-400">Pilih satu atau lebih role untuk akun ini.</p>
-                            @error('role_ids')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                        </div>
-                        </template>
-                        <fieldset x-show="!editing" x-cloak :disabled="Boolean(editing)" class="contents">
-                        <div><label for="user-name" class="text-xs font-semibold text-gray-600 mb-1.5 block">Nama Lengkap <span class="text-red-400">*</span></label><input id="user-name" @if($errors->has('full_name')) aria-invalid="true" aria-describedby="user-name-error" @endif name="full_name" x-model="form.name" required type="text" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('full_name')<p id="user-name-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
-                        <div><label for="user-password" class="text-xs font-semibold text-gray-600 mb-1.5 block">Kata Sandi <span class="text-red-400" x-show="!editing">*</span></label><input id="user-password" @if($errors->has('password')) aria-invalid="true" aria-describedby="user-password-error" @endif name="password" x-model="form.password" :required="!editing" type="password" autocomplete="new-password" :placeholder="editing ? 'Kosongkan jika tidak diubah' : 'Masukkan kata sandi'" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('password')<p id="user-password-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
-                        <fieldset><legend class="text-xs font-semibold text-gray-600 mb-1.5">Cabang <span class="text-red-400">*</span></legend><div class="bg-white border border-gray-200 rounded-xl max-h-48 overflow-y-auto divide-y divide-gray-100">@forelse ($branch as $item)<label class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 text-sm text-gray-700"><input type="checkbox" name="id_branch[]" value="{{ $item->id }}" :checked="form.branches.includes({{ $item->id }})" @change="toggleBranch({{ $item->id }})" class="accent-[#0b595b] rounded"><span>{{ $item->name }}</span></label>@empty <p class="px-4 py-3 text-sm text-gray-400">Belum ada cabang</p>@endforelse</div><p class="text-[11px] text-gray-400 mt-1.5">Pilih minimal satu cabang.</p></fieldset>
-                        </fieldset>
                             </div>
                         </div>
                         <div class="absolute top-0 right-1 h-full w-1.5 pointer-events-none py-2">
                             <div class="h-full w-full rounded-full bg-gray-400/50 transition-opacity duration-300 ease-in-out" :style="`height: ${thumbHeight}px; transform: translateY(${scrollPos}px);`" :class="isScrolling ? 'opacity-100' : 'opacity-0'"></div>
                         </div>
                     </div>
-                    <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3"><button type="button" @click="closeDrawer()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold" x-text="editing ? 'Simpan Perubahan' : 'Tambah Akun'"></button></div>
+                    <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3"><button type="button" @click="closeDrawer()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold">Simpan Tautan</button></div>
                 </form>
             </div>
         </div>
@@ -321,10 +286,10 @@
 
 @push('scripts')
 <script>
-function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRoles, oldBranches, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions = []) {
+function userMaster(users, baseUrl, accessGroups, oldUserId, oldStaffId, staffOptions = [], staffCreateUrl = '') {
     return {
-        users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, modalSearchQuery: '',
-        form: { name: '', email: '', emailType: 'auto', password: '', roles: [], branches: [], staffId: '' },
+        users, baseUrl, accessGroups, staffOptions, staffCreateUrl, oldUserId, oldStaffId, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, modalSearchQuery: '',
+        form: { email: '', staffId: '' },
         get filteredAccessGroups() {
             const query = this.modalSearchQuery.toLowerCase().trim();
             if (!query) return this.accessGroups;
@@ -401,10 +366,6 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
         openDetail(id) { this.modalSearchQuery = ''; this.selected = this.users.find(user => user.id === id) || null; },
         editSelected() { const user = this.selected; this.selected = null; if (user) this.openEdit(user.id); },
         removeSelected() { const user = this.selected; this.selected = null; if (user) this.remove(user.id, user.name); },
-        setEmailType(type) {
-            this.form.emailType = type === 'auto' ? 'auto' : 'custom';
-            this.form.email = this.form.emailType === 'auto' ? this.nextAutoEmail : '';
-        },
         closeDrawer() {
             this.drawerOpen = false;
             const url = new URL(window.location.href);
@@ -413,27 +374,21 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
             window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
         },
         openCreate() {
-            this.editing = null;
-            this.staffSearch = '';
-            this.form = { name: oldName || '', email: oldEmail || this.nextAutoEmail, emailType: this.oldEmailType === 'custom' ? 'custom' : 'auto', password: '', roles: Array.isArray(oldRoles) ? oldRoles.map(String) : (oldRoles ? [String(oldRoles)] : []), branches: (oldBranches || []).map(Number), staffId: String(this.oldStaffId || '') };
-            this.drawerOpen = true;
+            window.location.assign(this.staffCreateUrl);
         },
         restoreOld() {
-            const isEditing = Boolean(oldUserId && this.users.some(user => user.id === Number(oldUserId)));
-            if (isEditing) this.openEdit(Number(oldUserId));
-            else this.openCreate();
-            this.form = { name: oldName || '', email: oldEmail || (isEditing ? '' : this.nextAutoEmail), emailType: isEditing ? 'custom' : (this.oldEmailType === 'custom' ? 'custom' : 'auto'), password: '', roles: Array.isArray(oldRoles) ? oldRoles.map(String) : (oldRoles ? [String(oldRoles)] : []), branches: (oldBranches || []).map(Number), staffId: String(this.oldStaffId || '') };
+            const isEditing = Boolean(this.oldUserId && this.users.some(user => user.id === Number(this.oldUserId)));
+            if (!isEditing) return this.openCreate();
+            this.openEdit(Number(this.oldUserId));
+            this.form.staffId = String(this.oldStaffId || this.form.staffId || '');
         },
         openEdit(id) {
             const user = this.users.find(item => item.id === id);
             if (!user || user.is_aktif === false) return;
             this.editing = id;
             this.staffSearch = '';
-            this.form = { name: user.name || '', email: user.email || '', emailType: 'custom', password: '', roles: (user.roles || []).map(role => String(role.id)), branches: (user.branches || []).map(Number), staffId: String(user.staff_id || '') };
+            this.form = { email: user.email || '', staffId: String(user.staff_id || '') };
             this.drawerOpen = true;
-        },
-        toggleBranch(id) {
-            this.form.branches = this.form.branches.includes(id) ? this.form.branches.filter(value => value !== id) : [...this.form.branches, id];
         },
         async remove(id, name) {
             const user = this.users.find(item => item.id === id);

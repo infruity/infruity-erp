@@ -3,8 +3,9 @@
     $singular = 'Karyawan';
     $routeBase = 'staff';
     $nameField = 'name';
-    $subtitleFields = ['nickname','contact'];
-    $formFields = [['key'=>'name','label'=>'Nama Karyawan'],['key'=>'nickname','label'=>'Nama Panggilan'],['key'=>'contact','label'=>'No Kontak'],['key'=>'email','label'=>'E-mail'],['key'=>'position.name','label'=>'Jabatan'],['key'=>'department.name','label'=>'Departemen'],['key'=>'status','label'=>'Status']];
+    $subtitleFields = ['position_label'];
+    $trailingField = 'tenure_label';
+    $formFields = [['key'=>'name','label'=>'Nama Karyawan'],['key'=>'date_in','label'=>'Tanggal Masuk'],['key'=>'position_label','label'=>'Jabatan'],['key'=>'branch_label','label'=>'Cabang']];
     $pageMode = 'page';
 @endphp
 @include('master::partials.mobile-index')

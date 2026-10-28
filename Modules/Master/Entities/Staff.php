@@ -29,6 +29,11 @@ class Staff extends Model
         return $this->belongsTo(Department::class, 'department_id', 'id');
     }
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id', 'id');
+    }
+
     public function account()
     {
         return $this->hasOne(\App\User::class, 'staff_id', 'id')->withoutGlobalScope('is_aktif');

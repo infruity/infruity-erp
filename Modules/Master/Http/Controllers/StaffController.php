@@ -2,14 +2,20 @@
 namespace Modules\Master\Http\Controllers;
 
 use Exception;
+use App\Models\Role;
+use App\Models\RoleUser;
+use App\User;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Modules\Master\Entities\Department;
+use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
+use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\Position;
 use Modules\Master\Entities\Staff;
 use Yajra\DataTables\Facades\DataTables;
@@ -28,7 +34,34 @@ class StaffController extends Controller
             return $denied;
         }
 
-        return view('master::staff.index', ['records' => Staff::query()->with(['department:id,name', 'position:id,name'])->select('id', 'name', 'nickname', 'contact', 'email', 'department_id', 'position_id', 'status')->orderByDesc('id')->get()]);
+        $records = Staff::query()
+            ->with(['department:id,name', 'position:id,name', 'branch:id,name'])
+            ->select('id', 'name', 'department_id', 'position_id', 'branch_id', 'status', 'date_in')
+            ->orderByDesc('id')
+            ->get()
+            ->each(function ($staff) {
+                $staff->position_label = $staff->position?->name ?: 'Belum diatur';
+                $staff->branch_label = $staff->branch?->name ?: 'Belum diatur';
+
+                if (!$staff->date_in) {
+                    $staff->tenure_label = 'Belum diatur';
+                    return;
+                }
+
+                $tenure = Carbon::parse($staff->date_in)->diff(Carbon::now());
+                $parts = [];
+                if ($tenure->y > 0) $parts[] = $tenure->y . ' Thn';
+                if ($tenure->m > 0) $parts[] = $tenure->m . ' Bln';
+                $staff->tenure_label = $parts ? implode(' ', $parts) : 'Baru bergabung';
+            });
+
+        return view('master::staff.index', array_merge(
+            $this->accountFormData(),
+            [
+                'records' => $records,
+                'initialCreateOpen' => request()->boolean('create'),
+            ]
+        ));
     }
 
     /**
@@ -41,11 +74,7 @@ class StaffController extends Controller
             return $denied;
         }
 
-        $data['page_plugin_js'] = [
-            'assets/plugins/custom/formrepeater/formrepeater.bundle.js',
-        ];
-        $data['data'] = null;
-        return view('master::staff.create', $data);
+        return redirect()->route('staff.index', ['create' => 1]);
     }
 
     /**
@@ -59,65 +88,58 @@ class StaffController extends Controller
             return $denied;
         }
 
-        // dd($request->all());
-        $validator = Validator::make($request->all(), [
-            'staff_name'  => 'required',
-            'nickname'    => 'required',
-            'date_in'     => 'nullable|date|date_format:Y-m-d',
-            'gender'      => 'nullable|in:male,female',
-            'nik'         => 'nullable',
-            'contact'     => [
-                'nullable',
-                'numeric',
-                'digits_between:10,15',
-                'regex:/^(?:\+62|62|08)[0-9]{8,13}$/',
-            ],
-            'email'       => 'nullable|email',
-            // 'department' => 'required|exists:department,id',
-            // 'position' => 'required|exists:position,id',
-            'description' => 'nullable|string|max:1000',
-            'avatar'      => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+        if ($request->boolean('create_account')) {
+            if ($denied = $this->requireAccess('user.store')) {
+                return $denied;
+            }
+        }
+
+        $rules = [
+            'create_account' => ['nullable', 'boolean'],
+            'staff_name' => ['required', 'string', 'max:255'],
+            'date_in' => ['nullable', 'date_format:Y-m-d'],
+            'position' => ['required', 'integer', 'exists:position,id'],
+            'branch_id' => ['required', 'integer', Rule::in($this->availableBranchIds())],
+        ];
+        if ($request->boolean('create_account')) {
+            $rules = array_merge($rules, $this->accountCreationRules());
+        }
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return redirect()->back()
+            return redirect()->route('staff.index', ['create' => 1])
                 ->withErrors($validator)
-                ->withInput();
+                ->withInput($request->except(['account_password', 'password']));
         }
 
         try {
             DB::beginTransaction();
-            $staff                = new Staff();
-            $staff->name          = $request->staff_name;
-            $staff->nickname      = $request->nickname;
-            $staff->date_in       = $request->date_in;
-            $staff->gender        = $request->gender;
-            $staff->nik           = $request->nik;
-            $staff->contact       = $request->contact;
-            $staff->email         = $request->email;
-            $staff->department_id = $request->department;
-            $staff->position_id   = $request->position;
-            $staff->description   = $request->description;
-            $staff->status        = $request->status ?? 'aktif';
-            $staff->created_by    = Auth::user()->id_user;
-
-            if ($request->hasFile('avatar')) {
-                $file         = $request->file('avatar');
-                $filename     = time() . '_' . $file->getClientOriginalName();
-                $path         = $file->storeAs('staff', $filename, 'public');
-                $staff->image = $path;
-            }
-
+            $staff = new Staff();
+            $staff->name = $request->staff_name;
+            $staff->date_in = $request->date_in;
+            $staff->position_id = $request->position;
+            $staff->branch_id = $request->branch_id;
+            $staff->status = 'aktif';
+            $staff->created_by = Auth::user()->id_user;
             $staff->save();
+
+            if ($request->boolean('create_account')) {
+                $this->provisionAccount($staff, $request);
+            }
 
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            return redirect()->back()->withInput($request->all())
+            return redirect()->route('staff.index', ['create' => 1])
+                ->withInput($request->except(['account_password', 'password']))
                 ->with('error', 'Pembuatan Staff gagal' . $e->getMessage());
         }
 
-        return redirect('staff')->with('success', 'Pembuatan Staff berhasil');
+        $message = $request->boolean('create_account')
+            ? 'Pembuatan Karyawan dan Akun berhasil'
+            : 'Pembuatan Staff berhasil';
+
+        return redirect('staff')->with('success', $message);
     }
 
     /**
@@ -146,13 +168,8 @@ class StaffController extends Controller
             return $denied;
         }
 
-        $data['page_plugin_js'] = [
-            'assets/plugins/custom/formrepeater/formrepeater.bundle.js',
-        ];
-        $data['data']       = Staff::findOrFail($id);
-        $data['department'] = Department::where('id', $data['data']->department_id)->first();
-        $data['position']   = Position::where('id', $data['data']->position_id)->first();
-        return view('master::staff.create', $data);
+        $data['data'] = Staff::with('account')->findOrFail($id);
+        return view('master::staff.create', array_merge($data, $this->accountFormData()));
     }
 
     /**
@@ -167,71 +184,58 @@ class StaffController extends Controller
             return $denied;
         }
 
-        $validator = Validator::make($request->all(), [
-            'staff_name'  => 'required',
-            'nickname'    => 'required',
-            'date_in'     => 'nullable|date|date_format:Y-m-d',
-            'gender'      => 'nullable|in:male,female',
-            'nik'         => 'nullable',
-            'contact'     => [
-                'nullable',
-                'numeric',
-                'digits_between:10,15',
-                'regex:/^(?:\+62|62|08)[0-9]{8,13}$/',
-            ],
-            'email'       => 'nullable|email',
-            // 'department' => 'nullable|exists:department,id',
-            // 'position' => 'nullable|exists:position,id',
-            'description' => 'nullable|string|max:1000',
-            'avatar'      => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+        if ($request->boolean('create_account')) {
+            if ($denied = $this->requireAccess('user.store')) {
+                return $denied;
+            }
+
+            if (Staff::with('account')->findOrFail($id)->account) {
+                return redirect()->back()
+                    ->withErrors(['create_account' => 'Karyawan ini sudah memiliki akun pengguna.'])
+                    ->withInput($request->except(['account_password', 'password']));
+            }
+        }
+
+        $rules = [
+            'create_account' => ['nullable', 'boolean'],
+            'staff_name' => ['required', 'string', 'max:255'],
+            'date_in' => ['nullable', 'date_format:Y-m-d'],
+            'position' => ['required', 'integer', 'exists:position,id'],
+            'branch_id' => ['required', 'integer', Rule::in($this->availableBranchIds())],
+        ];
+        if ($request->boolean('create_account')) {
+            $rules = array_merge($rules, $this->accountCreationRules());
+        }
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput();
+                ->withInput($request->except(['account_password', 'password']));
         }
 
         try {
             DB::beginTransaction();
-            $staff                = Staff::findOrFail($id);
-            $staff->name          = $request->staff_name;
-            $staff->nickname      = $request->nickname;
-            $staff->date_in       = $request->date_in;
-            $staff->gender        = $request->gender;
-            $staff->nik           = $request->nik;
-            $staff->contact       = $request->contact;
-            $staff->email         = $request->email;
-            $staff->department_id = $request->department;
-            $staff->position_id   = $request->position;
-            $staff->description   = strip_tags($request->description ?? '');
-            $staff->status        = $request->status ?? 'aktif';
-            $staff->updated_by    = Auth::user()->id_user;
-
-            if ($request->hasFile('avatar')) {
-                // Hapus foto lama jika ada
-                if ($staff->image) {
-                    Storage::disk('public')->delete($staff->image);
-                }
-                $file         = $request->file('avatar');
-                $filename     = time() . '_' . $file->getClientOriginalName();
-                $path         = $file->storeAs('staff', $filename, 'public');
-                $staff->image = $path;
-            }
-
-            if ($request->avatar_remove == '1') {
-                if ($staff->image) {
-                    Storage::disk('public')->delete($staff->image);
-                }
-                $staff->image = null;
-            }
-
+            $staff = Staff::findOrFail($id);
+            $staff->name = $request->staff_name;
+            $staff->date_in = $request->date_in;
+            $staff->position_id = $request->position;
+            $staff->branch_id = $request->branch_id;
+            $staff->updated_by = Auth::user()->id_user;
             $staff->save();
+
+            if ($request->boolean('create_account')) {
+                $this->provisionAccount($staff, $request);
+            } else {
+                User::withoutGlobalScope('is_aktif')
+                    ->where('staff_id', $staff->id)
+                    ->update(['nm_user' => $staff->name]);
+            }
 
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            return redirect()->back()->withInput($request->all())
+            return redirect()->back()->withInput($request->except(['account_password', 'password']))
                 ->with('error', 'Update Staff gagal' . $e->getMessage());
         }
 
@@ -354,6 +358,80 @@ class StaffController extends Controller
             })
             ->rawColumns(['name', 'action', 'position'])
             ->make(true);
+    }
+
+    private function accountFormData(): array
+    {
+        $canCreateAccount = function_exists('check_access') && check_access('user.store');
+        $nextAutoEmail = '';
+
+        if ($canCreateAccount) {
+            $usedOperatorNumbers = DB::table('users')
+                ->whereRaw('UPPER(email) LIKE ?', ['OPR%@INFRUITY.COM'])
+                ->pluck('email')
+                ->map(function ($email) {
+                    return preg_match('/^OPR(\\d+)@INFRUITY\\.COM$/i', (string) $email, $matches) === 1
+                        ? (int) $matches[1]
+                        : null;
+                })
+                ->filter(fn ($number) => $number !== null)
+                ->all();
+            $nextOperatorNumber = 1;
+            while (in_array($nextOperatorNumber, $usedOperatorNumbers, true)) {
+                $nextOperatorNumber++;
+            }
+            $nextAutoEmail = sprintf('OPR%03d@INFRUITY.COM', $nextOperatorNumber);
+        }
+
+        return [
+            'canCreateAccount' => $canCreateAccount,
+            'accountRoles' => $canCreateAccount ? Role::orderBy('nm_role')->get() : collect(),
+            'nextAutoEmail' => $nextAutoEmail,
+            'positions' => Position::orderBy('name')->get(['id', 'name']),
+            'branches' => Branch::orderBy('name')->get(['id', 'name']),
+            'initialCreateOpen' => false,
+        ];
+    }
+
+    private function availableBranchIds(): array
+    {
+        return Branch::query()->pluck('id')->map(fn ($id) => (int) $id)->all();
+    }
+
+    private function accountCreationRules(): array
+    {
+        return [
+            'account_email_type' => ['required', Rule::in(['auto', 'custom'])],
+            'account_email' => ['required', 'email', Rule::unique('users', 'email')],
+            'account_password' => ['required', 'string'],
+            'role_ids' => ['required', 'array', 'min:1'],
+            'role_ids.*' => ['required', 'integer', 'distinct', 'exists:role,id_role'],
+        ];
+    }
+
+    private function provisionAccount(Staff $staff, Request $request): User
+    {
+        $user = new User();
+        $user->username = $request->input('account_email');
+        $user->email = $request->input('account_email');
+        $user->nm_user = $staff->name;
+        $user->password = Hash::make($request->input('account_password'));
+        $user->staff_id = $staff->id;
+        $user->save();
+
+        foreach (array_unique(array_map('intval', $request->input('role_ids', []))) as $roleId) {
+            $assignment = new RoleUser();
+            $assignment->id_user = $user->id_user;
+            $assignment->id_role = $roleId;
+            $assignment->save();
+        }
+
+        DB::table('user_branch')->insert([
+            'user_id' => $user->id_user,
+            'branch_id' => (int) $staff->branch_id,
+        ]);
+
+        return $user;
     }
 
     public function getStaff(Request $request)

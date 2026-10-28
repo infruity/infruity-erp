@@ -164,6 +164,9 @@
             <div class="relative z-10 w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex items-center justify-center min-h-40 rounded-t-3xl lg:rounded-none"><span class="text-sm font-medium text-gray-500">Memuat data pelanggan...</span></div>
         </div>
     @endif
+    @if ($routeBase === 'staff' && check_access('staff.create'))
+        @include('master::staff.create-overlay')
+    @endif
     @if ($routeBase === 'customers' && check_access('customers.create'))
         <template x-if="!customerEditOpen">
             @include('master::customer.create-overlay')
@@ -293,6 +296,10 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
         deleteDetail() { const record = this.detail; this.detail = null; if (record) this.confirmDelete(record); },
         searchServer() { const query = this.search.trim(); window.location.href = query ? `/${this.routeBase}?q=${encodeURIComponent(query)}` : `/${this.routeBase}`; },
         openCreate() {
+            if (this.routeBase === 'staff') {
+                window.dispatchEvent(new CustomEvent('staff-create-open'));
+                return;
+            }
             if (this.routeBase === 'customers') {
                 if (!this.customerCreateOpen) this.createReturnUrl = `${window.location.pathname}${window.location.search}`;
                 if (window.location.pathname !== new URL(this.createPageUrl, window.location.origin).pathname) {
