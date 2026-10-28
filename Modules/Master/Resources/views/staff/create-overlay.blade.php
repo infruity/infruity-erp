@@ -3,6 +3,7 @@
     $insideOverlay = true;
 @endphp
 
+<template x-teleport="body">
 <div x-data="staffCreateOverlay(@js($initialCreateOpen ?? false))"
      x-init="init()"
      @staff-create-open.window="openDrawer()"
@@ -26,5 +27,6 @@
         @include('master::staff.form-fields', ['insideOverlay' => true])
     </section>
 </div>
+</template>
 
 @include('master::staff.js-create')

@@ -163,6 +163,19 @@ class UserStaffLinkTest extends TestCase
             ->assertDontSee('name="id_branch[]"', false);
     }
 
+    public function test_staff_create_overlay_is_teleported_above_the_shell_header(): void
+    {
+        $source = file_get_contents(base_path('Modules/Master/Resources/views/staff/create-overlay.blade.php'));
+        $teleportStart = strpos($source, '<template x-teleport="body">');
+        $overlayStart = strpos($source, 'data-staff-create-overlay');
+        $teleportEnd = $teleportStart === false ? false : strpos($source, '</template>', $teleportStart);
+
+        $this->assertNotFalse($teleportStart);
+        $this->assertNotFalse($overlayStart);
+        $this->assertNotFalse($teleportEnd);
+        $this->assertTrue($teleportStart < $overlayStart && $overlayStart < $teleportEnd);
+    }
+
     public function test_staff_edit_route_renders_the_list_with_a_prefilled_edit_overlay(): void
     {
         $response = $this->get('/staff/10/edit');
