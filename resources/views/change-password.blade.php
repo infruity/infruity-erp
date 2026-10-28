@@ -1,122 +1,108 @@
 @extends('template.root')
-@section('page-name', Request::segment(1))
-@section('title-page', 'Ganti Password')
+@section('title', 'Perbarui Kata Sandi')
 @section('content')
-    <style>
-        .valid {
-            color: green;
-            opacity: 0.8;
-        }
+<section class="erp-password-page" aria-label="Perbarui kata sandi">
+    <form method="POST" action="{{ url('change-password') }}" id="password-change-form" class="erp-password-form">
+        @csrf
+        <div class="erp-password-card">
+            <header class="erp-password-intro">
+                <h1>Perbarui Kata Sandi</h1>
+                <p id="password-help">Gunakan minimal 12 karakter, termasuk huruf besar, huruf kecil, angka, dan karakter khusus (!@#$%^&amp;*()_+-).</p>
+                @if (session('error'))
+                    <p class="erp-password-server-error" role="alert">{{ session('error') }}</p>
+                @endif
+            </header>
 
-        .invalid {
-            color: red;
-            opacity: 0.8;
-        }
-
-        .valid::before {
-            content: '✔ ';
-        }
-
-        .invalid::before {
-            content: '✘ ';
-        }
-
-        .box {
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-    </style>
-    <div class="col-md-6">
-        <div class="login-main">
-            <form class="theme-form" method="POST" action="{{ url('change-password') }}">
-                @csrf
-                <div class="form-group">
-                    <label class="col-form-label">Password Lama</label>
-                    <input class="form-control" type="password" name="old_password" required="" id="password"
-                        placeholder="Masukkan Password Lama" value="{{ old('email') }}">
-                </div>
-                <div class="form-group">
-                    <label class="col-form-label">Password</label>
-                    <div class="form-input position-relative">
-                        <input class="form-control" type="password" name="password" required="" id="new_password"
-                            value="{{ old('password') ?? '' }}" placeholder="" oninput="validatePassword()">
-                        @error('password')
-                            <span class="text-danger">Password Tidak Valid</span>
-                        @enderror
+            <div class="erp-password-fields">
+                <div class="erp-password-field">
+                    <label for="old-password" class="erp-password-label">Kata Sandi Saat Ini</label>
+                    <div class="erp-password-control">
+                        <input id="old-password" type="password" name="old_password" autocomplete="current-password" class="erp-password-input" placeholder="Ketik kata sandi saat ini..." required>
+                        <button type="button" class="erp-password-toggle" data-password-toggle="old-password" aria-label="Tampilkan kata sandi saat ini" aria-controls="old-password" aria-pressed="false"><i class="ph ph-eye" aria-hidden="true"></i></button>
                     </div>
+                    @error('old_password')
+                        <p class="erp-password-error" role="alert">{{ $message }}</p>
+                    @enderror
                 </div>
-                <div class="form-group">
-                    <label class="col-form-label">Confirmation Password</label>
-                    <div class="form-input position-relative">
-                        <input class="form-control" type="password" name="password" required="" id="confirmPassword"
-                            value="{{ old('password') ?? '' }}" placeholder="" oninput="checkPassword()">
-                        <span id="error-message"></span>
-                        @error('password')
-                            <span class="text-danger">Password Tidak Valid</span>
-                        @enderror
+
+                <div class="erp-password-field">
+                    <label for="new-password" class="erp-password-label">Kata Sandi Baru</label>
+                    <div class="erp-password-control">
+                        <input id="new-password" type="password" name="password" autocomplete="new-password" minlength="12" class="erp-password-input" placeholder="Minimal 12 karakter..." aria-describedby="password-help" aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}" required>
+                        <button type="button" class="erp-password-toggle" data-password-toggle="new-password" aria-label="Tampilkan kata sandi baru" aria-controls="new-password" aria-pressed="false"><i class="ph ph-eye" aria-hidden="true"></i></button>
                     </div>
+                    @error('password')
+                        <p class="erp-password-error" role="alert">{{ $message }}</p>
+                    @enderror
                 </div>
-                <input type="checkbox" id="togglePassword" onclick="togglePasswordVisibility()" /> Show Password
-                <div class="box">
-                    <ul>
-                        <li id="length" class="invalid">Minimal 12 karakter</li>
-                        <li id="uppercase" class="invalid">Minimal satu huruf besar</li>
-                        <li id="number" class="invalid">Minimal satu angka</li>
-                        <li id="special" class="invalid">Minimal satu karakter spesial
-                            (!@#$%^&*()_+-)</li>
-                    </ul>
-                </div>
-                <br>
-                <div class="form-group mb-0">
-                    {{-- <div class="checkbox p-0">
-                        <a class="ms-2 mb-0 text-center" href="{{ url('register') }}">Lupa
-                            Password?</a>
-                    </div><a class="link" href="{{ url('/') }}"></a> --}}
-                    <div class="text-end mt-3">
-                        <button class="btn btn-primary btn-block w-100" type="submit">Ganti Password</button>
+
+                <div class="erp-password-field">
+                    <label for="confirm-password" class="erp-password-label">Konfirmasi Kata Sandi Baru</label>
+                    <div class="erp-password-control">
+                        <input id="confirm-password" type="password" name="password_confirmation" autocomplete="new-password" class="erp-password-input" placeholder="Ulangi kata sandi baru..." aria-describedby="password-confirmation-error" required>
+                        <button type="button" class="erp-password-toggle" data-password-toggle="confirm-password" aria-label="Tampilkan konfirmasi kata sandi" aria-controls="confirm-password" aria-pressed="false"><i class="ph ph-eye" aria-hidden="true"></i></button>
                     </div>
+                    <p id="password-confirmation-error" class="erp-password-error" data-password-confirmation-error role="alert" hidden>Kata sandi baru belum sama.</p>
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
+
+        <div class="erp-password-actions">
+            <button type="submit" class="erp-password-submit" data-password-submit disabled>Perbarui Kata Sandi</button>
+        </div>
+    </form>
+</section>
 @endsection
 @section('script')
-    <script>
-        function validatePassword() {
-            const password = document.getElementById('new_password').value;
+<script>
+(() => {
+    const form = document.getElementById('password-change-form');
+    if (!form) return;
 
-            document.getElementById('length').className = password.length >= 12 ? 'valid' : 'invalid';
-            document.getElementById('uppercase').className = /[A-Z]/.test(password) ? 'valid' : 'invalid';
-            document.getElementById('number').className = /[0-9]/.test(password) ? 'valid' : 'invalid';
-            document.getElementById('special').className = /[!@#$%^&*()_+\-]/.test(password) ? 'valid' : 'invalid';
+    const oldPassword = form.querySelector('[name="old_password"]');
+    const password = form.querySelector('[name="password"]');
+    const confirmation = form.querySelector('[name="password_confirmation"]');
+    const submit = form.querySelector('[data-password-submit]');
+    const confirmationError = form.querySelector('[data-password-confirmation-error]');
+    const rules = value => [
+        value.length >= 12,
+        /[A-Z]/.test(value),
+        /[a-z]/.test(value),
+        /[0-9]/.test(value),
+        /[!@#$%^&*()_+-]/.test(value),
+    ].every(Boolean);
+
+    const updateFormState = () => {
+        const matches = confirmation.value.length > 0 && confirmation.value === password.value;
+        const mismatch = confirmation.value.length > 0 && !matches;
+        confirmation.setCustomValidity(mismatch ? 'Kata sandi baru belum sama.' : '');
+        confirmationError.hidden = !mismatch;
+        submit.disabled = !oldPassword.value || !rules(password.value) || !matches;
+    };
+
+    form.addEventListener('input', updateFormState);
+    form.addEventListener('submit', event => {
+        updateFormState();
+        if (submit.disabled || !form.checkValidity()) {
+            event.preventDefault();
+            form.reportValidity();
         }
+    });
 
-        function checkPassword() {
-            const password = document.getElementById('new_password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const errorMessage = document.getElementById('error-message');
-            const submitButton = document.getElementById('submit-button');
+    form.querySelectorAll('[data-password-toggle]').forEach(toggle => {
+        const input = document.getElementById(toggle.dataset.passwordToggle);
+        const icon = toggle.querySelector('i');
+        const fieldName = toggle.getAttribute('aria-label').replace(/^Tampilkan /, '');
+        toggle.addEventListener('click', () => {
+            const visible = input.type === 'password';
+            input.type = visible ? 'text' : 'password';
+            toggle.setAttribute('aria-pressed', String(visible));
+            toggle.setAttribute('aria-label', `${visible ? 'Sembunyikan' : 'Tampilkan'} ${fieldName}`);
+            icon.className = visible ? 'ph ph-eye-slash' : 'ph ph-eye';
+        });
+    });
 
-            if (password !== confirmPassword) {
-                errorMessage.textContent = 'Password tidak sama!';
-                errorMessage.style.color = 'red';
-                return false;
-            }
-            errorMessage.textContent = '';
-            return true;
-        }
-
-        function togglePasswordVisibility() {
-            const passwordField = document.getElementById('password');
-            const confirmPasswordField = document.getElementById('confirmPassword');
-            const newPasswordField = document.getElementById('new_password');
-            const toggleCheckbox = document.getElementById('togglePassword');
-
-            passwordField.type = toggleCheckbox.checked ? 'text' : 'password';
-            confirmPasswordField.type = toggleCheckbox.checked ? 'text' : 'password';
-            newPasswordField.type = toggleCheckbox.checked ? 'text' : 'password';
-        }
-    </script>
+    updateFormState();
+})();
+</script>
 @endsection
