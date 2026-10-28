@@ -145,7 +145,7 @@
             .wholesale-procurement.is-edit-mode .wholesale-add-item { min-height:29px; padding:5px 11px !important; }
             .wholesale-procurement.is-edit-mode .wholesale-cart-list { max-height:none; flex:1; overflow-y:auto; padding:11px 18px 10px 13px; }
             .wholesale-procurement.is-edit-mode .wholesale-summary-card { position:fixed; right:0; bottom:0; left:0; z-index:40; margin:0 !important; border:0; border-top:1px solid #edf0f2; border-radius:0; padding:4px 0 0 !important; background:#fff; box-shadow:0 -8px 28px rgba(20,31,46,.08); }
-            .wholesale-procurement.is-edit-mode .wholesale-summary { position:static; margin:0 !important; border:0; padding:14px 18px calc(12px + env(safe-area-inset-bottom)) 16px; background:#fff; box-shadow:none; backdrop-filter:none; }
+            .wholesale-procurement.is-edit-mode .wholesale-summary { position:static; margin:0 !important; border:0 !important; padding:14px 18px calc(12px + env(safe-area-inset-bottom)) 16px; background:#fff; box-shadow:none; backdrop-filter:none; }
             .wholesale-procurement.is-edit-mode .wholesale-summary-total { padding-bottom:14px; border-bottom:1px solid #eef1f3; font-size:16px; }
             .wholesale-procurement.is-edit-mode .wholesale-summary-total strong { font-size:16px; }
             .wholesale-procurement.is-edit-mode .wholesale-summary .row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px !important; margin:13px 0 0 -3px !important; }
