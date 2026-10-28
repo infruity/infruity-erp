@@ -8,7 +8,7 @@
 @endphp
 
 <style>
-    .erp-topbar-mobile { position:sticky; top:0; z-index:30; display:flex; min-height:60px; flex:none; align-items:center; justify-content:space-between; padding:0 16px; padding-top:env(safe-area-inset-top); border-bottom:1px solid rgba(255,255,255,.6); background:rgba(255,255,255,.72); box-shadow:0 6px 20px -2px rgba(0,0,0,.05), inset 0 1px 1px rgba(255,255,255,.9); -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%); }
+    .erp-topbar-mobile { position:sticky; top:0; z-index:30; display:flex; min-height:60px; flex:none; align-items:center; justify-content:space-between; padding:0 16px; padding-top:env(safe-area-inset-top); border-bottom:1px solid rgba(255,255,255,.6); background:#fff; box-shadow:0 6px 20px -2px rgba(0,0,0,.05), inset 0 1px 1px rgba(255,255,255,.9); -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%); }
     .erp-topbar-mobile__button { position:relative; display:flex; width:36px; height:36px; flex:none; align-items:center; justify-content:center; border:0; border-radius:12px; background:transparent; color:#1f2937; cursor:pointer; transition:color .18s ease,background .18s ease,transform .18s ease; -webkit-tap-highlight-color:transparent; }
     .erp-topbar-mobile__button:hover, .erp-topbar-mobile__button:focus-visible { background:rgba(236,253,245,.7); color:#0b595b; }
     .erp-topbar-mobile__button:active { transform:scale(.95); }
