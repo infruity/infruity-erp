@@ -72,6 +72,7 @@ Ini peta tanggung jawab yang harus diperiksa, **bukan jaminan semua endpoint lam
 - Identitas akun memakai `id_user` pada tabel legacy; jangan mengasumsikan semua model memakai `id`.
 - Link akun–staff memakai ID eksplisit: `staff.user_id` sebagai relasi kanonis, dengan `users.staff_id` sebagai mirror kompatibilitas. Jangan menyimpulkan link dari nama/email.
 - Override permission akun dapat mengizinkan/menolak akses di atas fallback role. Backend endpoint tetap perlu melakukan pemeriksaan; menyembunyikan tombol bukan kontrol akses.
+- Penetapan role staf atau pewarisan role melalui pembuatan/relink akun membutuhkan `staff.assign-roles` bila set role berubah. Edit data biasa dengan set role tetap tidak membutuhkan izin tambahan. Role akun sendiri tidak dapat diubah; pemberian/penghapusan Administrator membutuhkan Administrator aktif. Lihat [hardening tahap pertama](security-hardening-2026-10-29.md) untuk kebijakan rollout dan regression test.
 - Scope cabang harus diterapkan saat lookup objek/item, bukan hanya saat menampilkan daftar cabang.
 - Simpan ledger, detail, stock, dan status yang saling bergantung secara atomik. Hitung nilai otoritatif di server dan uji retry/idempotency pada operasi keuangan.
 - SQLite fixture berguna untuk perilaku endpoint, tetapi tidak membuktikan `lockForUpdate`, isolation, atau race condition MySQL.
@@ -149,6 +150,8 @@ git diff --cached
 Stage hanya file/hunk pekerjaan sendiri. Pada file yang sudah dirty gunakan `git add -p` atau patch index terpilih, bukan `git add -A`. Setelah commit, periksa `git show --stat --oneline HEAD` serta `git diff` agar perubahan lokal lain tetap utuh.
 
 ## 5. Prosedur menghapus file/folder
+
+Endpoint reset lintas modul `wholesale.reset` beserta handlernya, dan demo broadcast `/test-fcm`, telah dipensiunkan pada hardening tahap pertama; jangan menghidupkannya kembali sebagai alat cleanup. Registrasi token perangkat `POST /api/save-fcm-token` tetap aktif dan berautentikasi.
 
 Tidak ada file yang dihapus pada audit. Gunakan daftar kandidat di laporan, bukan auto-delete berdasarkan scan.
 

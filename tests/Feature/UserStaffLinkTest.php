@@ -127,6 +127,7 @@ class UserStaffLinkTest extends TestCase
             ['id_role' => 3, 'permission' => 'staff.index'],
             ['id_role' => 3, 'permission' => 'staff.edit'],
             ['id_role' => 3, 'permission' => 'staff.update'],
+            ['id_role' => 3, 'permission' => 'staff.assign-roles'],
             ['id_role' => 3, 'permission' => 'role.index'],
         ]);
         DB::table('branch')->insert(['id' => 1, 'name' => 'Cabang Test']);
@@ -437,6 +438,35 @@ class UserStaffLinkTest extends TestCase
         $this->assertSame((int) $account->id_user, (int) DB::table('staff')->where('id', 10)->value('user_id'));
         $this->assertEqualsCanonicalizing([2], DB::table('role_user')->where('id_user', $account->id_user)->pluck('id_role')->map(fn ($id) => (int) $id)->all());
         $this->assertDatabaseHas('user_branch', ['user_id' => $account->id_user, 'branch_id' => 1]);
+    }
+
+    public function test_account_creation_cannot_adopt_an_administrator_role_for_a_nonadmin_actor(): void
+    {
+        DB::table('role')->insert(['id_role' => 1, 'nm_role' => 'Administrator']);
+        DB::table('staff_role')->where('staff_id', 10)->update(['id_role' => 1]);
+
+        $this->post('/user', [
+            'email' => 'unauthorized-admin@example.test',
+            'password' => 'fixture-password',
+            'staff_id' => 10,
+        ])->assertForbidden();
+
+        $this->assertDatabaseMissing('users', ['email' => 'unauthorized-admin@example.test']);
+        $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => null]);
+    }
+
+    public function test_account_creation_requires_assignment_permission_when_adopting_pending_roles(): void
+    {
+        DB::table('role_menu')->where('id_role', 3)->where('permission', 'staff.assign-roles')->delete();
+
+        $this->post('/user', [
+            'email' => 'unauthorized-role@example.test',
+            'password' => 'fixture-password',
+            'staff_id' => 10,
+        ])->assertForbidden();
+
+        $this->assertDatabaseMissing('users', ['email' => 'unauthorized-role@example.test']);
+        $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => null]);
     }
 
     public function test_account_creation_requires_a_karyawan_link(): void

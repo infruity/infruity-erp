@@ -1,6 +1,5 @@
 <?php
 // route for administrator
-use App\Services\FcmService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LayananController;
 use App\Http\Controllers\UserController;
@@ -9,7 +8,6 @@ use App\Http\Controllers\P_rolemenu;
 use Modules\Crm\Http\Controllers\DashboardController;
 use App\Http\Controllers\P_role;
 use App\Http\Controllers\FCMController;
-use App\Models\UserDevice;
 use Illuminate\Support\Facades\Http;
 
 
@@ -34,16 +32,6 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 	Route::get('roles/data', [P_role::class, 'get_data'])->name('roles.data');
 	Route::get('user/data', [UserController::class, 'get_data'])->name('user.data');
 	Route::post('/api/save-fcm-token', [FCMController::class, 'store']);
-	// Route::get('/test-fcm', [FCMController::class, 'testNotification']);
-	Route::get('/test-fcm', function (FcmService $fcm) {
-		$tokens = UserDevice::whereNotNull('fcm_token')
-			->pluck('fcm_token')
-			->unique()
-			->values()
-			->toArray();
-		$fcm->sendNotification($tokens, 'Halo dari Infruity 🍉', 'Tes notifikasi via Web');
-		return 'Notifikasi dikirim!';
-	});
 
 	Route::get('/get-ai-models', function (Illuminate\Http\Request $request) {
 		$response = Http::withHeaders([

@@ -6,6 +6,8 @@ use App\Http\Requests\UserRequest;
 use App\Models\Role;
 use App\Models\RoleUser;
 use App\Models\UserPermission;
+use App\Support\RoleAssignmentGuard;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Illuminate\Validation\ValidationException;
 use Modules\Master\Entities\Staff;
 use App\User;
@@ -126,6 +128,9 @@ class UserController extends Controller
             $user->save();
             $this->syncStaffLink($user, $staff->id);
             DB::commit();
+        } catch (HttpExceptionInterface $e) {
+            DB::rollBack();
+            throw $e;
         } catch (ValidationException $e) {
             DB::rollback();
             throw $e;
@@ -186,6 +191,14 @@ class UserController extends Controller
                     throw ValidationException::withMessages([
                         'staff_id' => 'Lengkapi cabang dan Hak Akses karyawan sebelum menautkan akun.',
                     ]);
+                }
+
+                $currentRoles = DB::table('role_user')->where('id_user', $userId)
+                    ->pluck('id_role')->map(fn ($id) => (int) $id)->all();
+                $requested = collect($roleIds)->unique()->sort()->values()->all();
+                $assigned = collect($currentRoles)->unique()->sort()->values()->all();
+                if ($requested !== $assigned) {
+                    RoleAssignmentGuard::authorize($requested, $assigned, $userId);
                 }
             }
         }
