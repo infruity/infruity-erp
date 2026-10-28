@@ -258,7 +258,7 @@ test('account edit drawer prevents one employee from linking to multiple account
     assert.match(view, /Cari karyawan/);
     assert.match(view, /Karyawan tidak ditemukan/);
     assert.match(view, /staff\.linked_user_id/);
-    assert.match(view, /:disabled="Boolean\(staff\.linked_user_id\)/);
+    assert.ok(view.includes(':disabled="isStaffLinkedElsewhere(staff)"'));
     assert.match(view, /@js\(\$staffOptions\)/);
     assert.match(controller, /'linked_user_id' => \$staff->account\?->id_user/);
     assert.match(controller, /update\(\['user_id' => \$userId\]\)/);
@@ -284,18 +284,23 @@ test('edit account drawer matches reference scrolling and email focus styling', 
     assert.match(view, /:style="`height: \$\{thumbHeight\}px; transform: translateY\(\$\{scrollPos\}px\);`"/);
     assert.match(view, /placeholder="Misal: nama@infruity\.com"/);
     assert.match(view, /focus:ring-1 focus:ring-emerald-500/);
-    for (const field of ['staff_id', 'full_name', 'password', 'role_ids[]', 'id_branch[]']) {
+    for (const field of ['staff_id', 'full_name', 'password', 'id_branch[]']) {
         assert.ok(view.includes(`name="${field}"`), `existing edit field ${field} stays in the form`);
     }
 });
 
-test('mobile edit account sheet matches the reference height and keeps roles scrollable', () => {
+test('role picker is removed from edit while multi-role create remains available', () => {
+    assert.match(view, /<template x-if="!editing">[\s\S]*?<select id="user-roles" name="role_ids\[\]"/);
+    assert.ok(view.includes('name="role_ids[]"'), 'create still accepts multiple role assignments');
+});
+
+test('mobile edit account sheet matches the reference height without the role picker', () => {
     assert.match(view, /user-account-drawer-panel/);
     assert.ok(view.includes(':class="editing ? \'is-editing\' : \'\'"'));
-    assert.ok(view.includes('@media (max-width: 1023px)') && view.includes('.user-account-drawer-panel.is-editing') && view.includes('max-height: 71.5dvh;') && view.includes('.user-account-role--edit'));
+    assert.ok(view.includes('@media (max-width: 1023px)') && view.includes('.user-account-drawer-panel.is-editing') && view.includes('max-height: 71.5dvh;'));
     assert.ok(view.includes('@media (min-width: 1024px)') && view.includes('.user-account-email-type-toggle'));
     assert.match(view, /x-ref="scrollArea"/);
-    assert.ok(view.includes('name="role_ids[]"'), 'multi-role assignment remains available below the initial edit view');
+    assert.match(view, /<template x-if="!editing">[\s\S]*?<select id="user-roles"/);
 });
 
 test('edit form cannot select an employee already linked to another account', () => {
@@ -320,6 +325,25 @@ test('edit form cannot select an employee already linked to another account', ()
     assert.equal(app.form.staffId, '10');
     app.toggleStaff(10);
     assert.equal(app.form.staffId, '');
+});
+
+test('linked employee rows expose the lock state only for another account', () => {
+    const start = view.indexOf('function userMaster(');
+    const end = view.indexOf('\n}\n</script>', start) + 2;
+    const context = {};
+    vm.runInNewContext(`${view.slice(start, end)}; globalThis.userMaster = userMaster;`, context);
+    const app = context.userMaster([
+        {id: 8, name: 'Current Account', email: 'current@example.test', staff_id: 10},
+        {id: 9, name: 'Other Account', email: 'other@example.test', staff_id: 11},
+    ], '/user', '/user', null, null, null, null, [], [], 'OPR011@INFRUITY.COM', null, null, []);
+    app.openEdit(8);
+
+    assert.equal(app.isStaffLinkedElsewhere({id: 10, linked_user_id: 8}), false);
+    assert.equal(app.isStaffLinkedElsewhere({id: 11, linked_user_id: 9}), true);
+    assert.equal(app.isStaffLinkedElsewhere({id: 12, linked_user_id: null}), false);
+    assert.ok(view.includes('ph-lock-key'));
+    assert.ok(view.includes('x-show="isStaffLinkedElsewhere(staff)"'));
+    assert.ok(view.includes('x-show="!isStaffLinkedElsewhere(staff)"'));
 });
 
 test('inactive accounts remain viewable but do not open the edit drawer', () => {

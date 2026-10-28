@@ -92,10 +92,6 @@
         .user-account-drawer-panel.is-editing {
             max-height: 71.5dvh;
         }
-
-        .user-account-drawer-panel.is-editing .user-account-role--edit {
-            padding-top: 12px;
-        }
     }
 
     @media (min-width: 1024px) {
@@ -280,16 +276,18 @@
                                 </div>
                                 <div class="relative max-h-48 overflow-y-auto overscroll-none bg-white">
                                     <template x-for="staff in filteredStaffOptions" :key="staff.id">
-                                        <button type="button" @click="toggleStaff(staff.id)" :disabled="Boolean(staff.linked_user_id) && String(staff.linked_user_id) !== String(editing || '')" :title="staff.linked_user_id && String(staff.linked_user_id) !== String(editing || '') ? 'Karyawan sudah tertaut ke akun lain' : ''" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left transition-colors last:border-b-0 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-60">
-                                            <span class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 transition-colors" :class="String(form.staffId) === String(staff.id) ? 'border-emerald-500' : ''" aria-hidden="true"><span class="h-2 w-2 rounded-full bg-emerald-500 transition-transform" :class="String(form.staffId) === String(staff.id) ? 'scale-100' : 'scale-0'"></span></span>
-                                            <span class="flex min-w-0 flex-1 items-center justify-between gap-3"><span class="truncate text-[13px] font-medium" :class="String(form.staffId) === String(staff.id) ? 'font-bold text-gray-900' : ''" x-text="staff.name"></span><span x-show="staff.linked_user_id && String(staff.linked_user_id) !== String(editing || '')" class="shrink-0 text-[10px] font-semibold text-gray-400">Sudah tertaut</span></span>
+                                        <button type="button" @click="toggleStaff(staff.id)" :disabled="isStaffLinkedElsewhere(staff)" :title="isStaffLinkedElsewhere(staff) ? 'Karyawan sudah tertaut ke akun lain' : ''" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left transition-colors last:border-b-0 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-60">
+                                            <span x-show="!isStaffLinkedElsewhere(staff)" class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 transition-colors" :class="String(form.staffId) === String(staff.id) ? 'border-emerald-500' : ''" aria-hidden="true"><span class="h-2 w-2 rounded-full bg-emerald-500 transition-transform" :class="String(form.staffId) === String(staff.id) ? 'scale-100' : 'scale-0'"></span></span>
+                                            <span x-show="isStaffLinkedElsewhere(staff)" class="flex h-4 w-4 shrink-0 items-center justify-center text-gray-400" aria-hidden="true"><i class="ph ph-lock-key text-sm"></i></span>
+                                            <span class="flex min-w-0 flex-1 items-center justify-between gap-3"><span class="truncate text-[13px] font-medium" :class="String(form.staffId) === String(staff.id) ? 'font-bold text-gray-900' : ''" x-text="staff.name"></span><span x-show="isStaffLinkedElsewhere(staff)" class="shrink-0 text-[10px] font-semibold text-gray-400">Sudah tertaut</span></span>
                                         </button>
                                     </template>
                                     <p x-show="filteredStaffOptions.length === 0" class="px-4 py-5 text-center text-[13px] text-gray-400">Karyawan tidak ditemukan</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="user-account-role--edit">
+                        <template x-if="!editing">
+                        <div>
                             <label for="user-roles" class="mb-1.5 block text-xs font-semibold text-gray-600">Hak Akses <span class="text-red-400">*</span></label>
                             <select id="user-roles" name="role_ids[]" x-model="form.roles" multiple required size="4" class="w-full min-h-[7rem] rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm outline-none focus:border-emerald-500">
                                 @foreach ($role as $item)<option value="{{ $item->id_role }}">{{ $item->nm_role }}</option>@endforeach
@@ -297,6 +295,7 @@
                             <p class="mt-1.5 text-[11px] text-gray-400">Pilih satu atau lebih role untuk akun ini.</p>
                             @error('role_ids')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                         </div>
+                        </template>
                         <fieldset x-show="!editing" x-cloak :disabled="Boolean(editing)" class="contents">
                         <div><label for="user-name" class="text-xs font-semibold text-gray-600 mb-1.5 block">Nama Lengkap <span class="text-red-400">*</span></label><input id="user-name" @if($errors->has('full_name')) aria-invalid="true" aria-describedby="user-name-error" @endif name="full_name" x-model="form.name" required type="text" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('full_name')<p id="user-name-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
                         <div><label for="user-password" class="text-xs font-semibold text-gray-600 mb-1.5 block">Kata Sandi <span class="text-red-400" x-show="!editing">*</span></label><input id="user-password" @if($errors->has('password')) aria-invalid="true" aria-describedby="user-password-error" @endif name="password" x-model="form.password" :required="!editing" type="password" autocomplete="new-password" :placeholder="editing ? 'Kosongkan jika tidak diubah' : 'Masukkan kata sandi'" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('password')<p id="user-password-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
@@ -334,9 +333,12 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
             const query = this.staffSearch.trim().toLocaleLowerCase();
             return this.staffOptions.filter(staff => String(staff.name || '').toLocaleLowerCase().includes(query));
         },
+        isStaffLinkedElsewhere(staff) {
+            return Boolean(staff?.linked_user_id) && String(staff.linked_user_id) !== String(this.editing || '');
+        },
         toggleStaff(staffId) {
             const staff = this.staffOptions.find(option => String(option.id) === String(staffId));
-            if (staff?.linked_user_id && String(staff.linked_user_id) !== String(this.editing || '')) return;
+            if (this.isStaffLinkedElsewhere(staff)) return;
             this.form.staffId = String(this.form.staffId) === String(staffId) ? '' : String(staffId);
         },
         permissionAccess(user, permission) {
