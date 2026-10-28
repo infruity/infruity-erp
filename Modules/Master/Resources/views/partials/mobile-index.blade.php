@@ -167,6 +167,13 @@
     @if ($routeBase === 'staff' && check_access('staff.create'))
         @include('master::staff.create-overlay')
     @endif
+    @if ($routeBase === 'staff' && check_access('staff.edit'))
+        @include('master::staff.edit-overlay', [
+            'data' => $editingStaff ?? null,
+            'initialOpen' => $initialEditOpen ?? false,
+            'returnUrl' => $initialEditReturnUrl ?? route('staff.index'),
+        ])
+    @endif
     @if ($routeBase === 'customers' && check_access('customers.create'))
         <template x-if="!customerEditOpen">
             @include('master::customer.create-overlay')
@@ -348,6 +355,10 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
             }
         },
         openEdit(record) {
+            if (this.routeBase === 'staff') {
+                window.dispatchEvent(new CustomEvent('staff-edit-open', { detail: record }));
+                return;
+            }
             if (this.routeBase === 'customers') { this.openCustomerEdit(record); return; }
             if (this.mode !== 'ajax') { window.location.href = `/${this.routeBase}/${record.id}/edit`; return; }
             this.editing = record.id;

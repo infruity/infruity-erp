@@ -1,7 +1,8 @@
 @php
     $editing = isset($data) && $data !== null;
+    $fieldIdPrefix = $editing ? 'staff_edit' : 'staff';
     $selectedName = old('staff_name', $data->name ?? '');
-    $selectedDate = old('date_in', $data->date_in ?? now()->toDateString());
+    $selectedDate = old('date_in', $data->date_in ?? ($editing ? '' : now()->toDateString()));
     $selectedPosition = (string) old('position', $data->position_id ?? '');
     $selectedBranch = (string) old('branch_id', $data->branch_id ?? '');
     $selectedRoleIds = collect(old('role_ids', $editing ? $data->pendingRoles->pluck('id_role')->all() : []))
@@ -9,7 +10,7 @@
         ->all();
 @endphp
 
-<form id="staff-form" action="{{ $editing ? route('staff.update', $data->id) : route('staff.store') }}" method="POST" class="flex min-h-0 flex-1 flex-col" data-staff-form>
+<form id="{{ $editing ? 'staff-edit-form' : 'staff-form' }}" action="{{ $editing ? route('staff.update', $data->id) : route('staff.store') }}" method="POST" class="flex min-h-0 flex-1 flex-col" data-staff-form>
     @csrf
     @if ($editing)
         @method('PUT')
@@ -25,14 +26,14 @@
             @endif
 
             <div>
-                <label for="staff_name" class="mb-1.5 block text-xs font-semibold text-gray-600">Nama Karyawan <span class="text-red-400">*</span></label>
-                <input id="staff_name" name="staff_name" value="{{ $selectedName }}" type="text" required maxlength="255" placeholder="Misal: John Doe" class="m-0 h-11 w-full rounded-xl border {{ $errors->has('staff_name') ? 'border-red-400' : 'border-gray-200' }} bg-white px-4 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+                <label for="{{ $fieldIdPrefix }}_name" class="mb-1.5 block text-xs font-semibold text-gray-600">Nama Karyawan <span class="text-red-400">*</span></label>
+                <input id="{{ $fieldIdPrefix }}_name" name="staff_name" value="{{ $selectedName }}" type="text" required maxlength="255" placeholder="Misal: John Doe" class="m-0 h-11 w-full rounded-xl border {{ $errors->has('staff_name') ? 'border-red-400' : 'border-gray-200' }} bg-white px-4 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
                 @error('staff_name')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             </div>
 
             <div>
-                <label for="date_in" class="mb-1.5 block text-xs font-semibold text-gray-600">Tanggal Masuk</label>
-                <input id="date_in" name="date_in" value="{{ $selectedDate }}" type="date" class="m-0 h-11 w-full rounded-xl border {{ $errors->has('date_in') ? 'border-red-400' : 'border-gray-200' }} bg-white px-4 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+                <label for="{{ $fieldIdPrefix }}_date_in" class="mb-1.5 block text-xs font-semibold text-gray-600">Tanggal Masuk</label>
+                <input id="{{ $fieldIdPrefix }}_date_in" name="date_in" value="{{ $selectedDate }}" type="date" class="m-0 h-11 w-full rounded-xl border {{ $errors->has('date_in') ? 'border-red-400' : 'border-gray-200' }} bg-white px-4 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
                 @error('date_in')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             </div>
 
@@ -109,7 +110,7 @@
     <div class="shrink-0 border-t border-gray-100 bg-white px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <div class="flex items-center gap-3">
             @if ($insideOverlay ?? false)
-                <button type="button" @click="closeDrawer()" class="flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button>
+                <button type="button" @click="{{ $cancelAction ?? 'closeDrawer()' }}" class="flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button>
             @else
                 <a href="{{ route('staff.index') }}" class="flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</a>
             @endif

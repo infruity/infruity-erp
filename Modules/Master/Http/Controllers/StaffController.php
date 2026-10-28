@@ -32,32 +32,15 @@ class StaffController extends Controller
             return $denied;
         }
 
-        $records = Staff::query()
-            ->with(['department:id,name', 'position:id,name', 'branch:id,name'])
-            ->select('id', 'name', 'department_id', 'position_id', 'branch_id', 'status', 'date_in')
-            ->orderByDesc('id')
-            ->get()
-            ->each(function ($staff) {
-                $staff->position_label = $staff->position?->name ?: 'Belum diatur';
-                $staff->branch_label = $staff->branch?->name ?: 'Belum diatur';
-
-                if (!$staff->date_in) {
-                    $staff->tenure_label = 'Belum diatur';
-                    return;
-                }
-
-                $tenure = Carbon::parse($staff->date_in)->diff(Carbon::now());
-                $parts = [];
-                if ($tenure->y > 0) $parts[] = $tenure->y . ' Thn';
-                if ($tenure->m > 0) $parts[] = $tenure->m . ' Bln';
-                $staff->tenure_label = $parts ? implode(' ', $parts) : 'Baru bergabung';
-            });
+        $records = $this->staffListRecords();
 
         return view('master::staff.index', array_merge(
             $this->staffFormData(),
             [
                 'records' => $records,
                 'initialCreateOpen' => request()->boolean('create'),
+                'initialEditOpen' => false,
+                'initialEditReturnUrl' => route('staff.index'),
             ]
         ));
     }
@@ -145,14 +128,30 @@ class StaffController extends Controller
      * @param int $id
      * @return Renderable
      */
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
         if ($denied = $this->requireAccess('staff.edit')) {
             return $denied;
         }
 
-        $data['data'] = Staff::with(['account', 'pendingRoles'])->findOrFail($id);
-        return view('master::staff.create', array_merge($data, $this->staffFormData()));
+        $editingStaff = Staff::with(['account', 'pendingRoles'])->findOrFail($id);
+        $formData = array_merge(['data' => $editingStaff], $this->staffFormData());
+
+        if ($request->boolean('overlay')) {
+            return view('master::staff.edit-form', $formData);
+        }
+
+        $records = check_access('staff.index')
+            ? $this->staffListRecords()
+            : $this->staffListRecords((int) $editingStaff->id);
+
+        return view('master::staff.index', array_merge($this->staffFormData(), [
+            'records' => $records,
+            'initialCreateOpen' => false,
+            'initialEditOpen' => true,
+            'initialEditReturnUrl' => route('staff.index'),
+            'editingStaff' => $editingStaff,
+        ]));
     }
 
     /**
@@ -365,6 +364,34 @@ class StaffController extends Controller
     {
         DB::table('user_branch')->where('user_id', $userId)->delete();
         DB::table('user_branch')->insert(['user_id' => $userId, 'branch_id' => $branchId]);
+    }
+
+    private function staffListRecords(?int $onlyId = null)
+    {
+        $query = Staff::query()
+            ->with(['department:id,name', 'position:id,name', 'branch:id,name'])
+            ->select('id', 'name', 'department_id', 'position_id', 'branch_id', 'status', 'date_in')
+            ->orderByDesc('id');
+
+        if ($onlyId !== null) {
+            $query->whereKey($onlyId);
+        }
+
+        return $query->get()->each(function ($staff) {
+            $staff->position_label = $staff->position?->name ?: 'Belum diatur';
+            $staff->branch_label = $staff->branch?->name ?: 'Belum diatur';
+
+            if (!$staff->date_in) {
+                $staff->tenure_label = 'Belum diatur';
+                return;
+            }
+
+            $tenure = Carbon::parse($staff->date_in)->diff(Carbon::now());
+            $parts = [];
+            if ($tenure->y > 0) $parts[] = $tenure->y . ' Thn';
+            if ($tenure->m > 0) $parts[] = $tenure->m . ' Bln';
+            $staff->tenure_label = $parts ? implode(' ', $parts) : 'Baru bergabung';
+        });
     }
 
     private function staffFormData(): array

@@ -163,15 +163,24 @@ class UserStaffLinkTest extends TestCase
             ->assertDontSee('name="id_branch[]"', false);
     }
 
-    public function test_staff_edit_form_keeps_the_same_four_employee_fields(): void
+    public function test_staff_edit_route_renders_the_list_with_a_prefilled_edit_overlay(): void
     {
-        $this->get('/staff/10/edit')
+        $response = $this->get('/staff/10/edit');
+        $response
             ->assertOk()
+            ->assertSee('data-staff-edit-overlay', false)
+            ->assertSee('id="staff_edit_name"', false)
+            ->assertSee('id="staff_edit_date_in"', false)
+            ->assertSee('id="staff_edit_date_in" name="date_in" value=""', false)
+            ->assertSee('data-staff-form', false)
+            ->assertSee('Edit Karyawan')
+            ->assertSee('value="Dwi Febbrianti Robbiatul Adawiyah"', false)
             ->assertSee('name="staff_name"', false)
             ->assertSee('name="date_in"', false)
             ->assertSee('name="position"', false)
             ->assertSee('name="branch_id"', false)
             ->assertSee('name="role_ids[]"', false)
+            ->assertDontSee('Kembali ke karyawan')
             ->assertDontSee('name="nickname"', false)
             ->assertDontSee('name="nik"', false)
             ->assertDontSee('name="contact"', false)
@@ -180,6 +189,26 @@ class UserStaffLinkTest extends TestCase
             ->assertDontSee('name="description"', false)
             ->assertDontSee('name="status"', false)
             ->assertDontSee('name="avatar"', false);
+
+        $this->assertSame(1, substr_count($response->getContent(), 'id="staff_name"'));
+        $this->assertSame(1, substr_count($response->getContent(), 'id="staff_edit_name"'));
+    }
+
+    public function test_staff_edit_overlay_fragment_renders_the_real_update_form(): void
+    {
+        $this->get('/staff/10/edit?overlay=1')
+            ->assertOk()
+            ->assertSee('id="staff-edit-form"', false)
+            ->assertSee('id="staff_edit_name"', false)
+            ->assertSee('id="staff_edit_date_in"', false)
+            ->assertSee('action="http://localhost/staff/10"', false)
+            ->assertSee('name="staff_name"', false)
+            ->assertSee('name="date_in"', false)
+            ->assertSee('name="position"', false)
+            ->assertSee('name="branch_id"', false)
+            ->assertSee('name="role_ids[]"', false)
+            ->assertDontSee('data-staff-edit-overlay', false)
+            ->assertDontSee('Kembali ke karyawan');
     }
 
     public function test_staff_creation_persists_the_selected_position_date_and_branch(): void

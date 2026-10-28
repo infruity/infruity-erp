@@ -1,5 +1,6 @@
 @push('scripts')
 <script>
+(function () {
 window.staffCreateOverlay = function (initialOpen = false) {
     return {
         drawerOpen: Boolean(initialOpen),
