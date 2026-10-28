@@ -11,7 +11,17 @@ class WholesaleEditBranchArrowTest extends TestCase
         $source = file_get_contents(base_path('Modules/Transaction/Resources/views/wholesale/create2.blade.php'));
 
         $this->assertMatchesRegularExpression(
-            '/\.wholesale-procurement\.is-edit-mode\s+#branch_id\s*\+\s*\.select2-container--open\s+\.select2-selection__arrow\s+b\s*\{[^}]*transform\s*:\s*rotate\(225deg\)[^}]*\}/s',
+            '/\.wholesale-procurement\.is-edit-mode\s+#branch_id\s*\+\s*\.select2-container\s+\.select2-selection__arrow\s*\{[^}]*display\s*:\s*none[^}]*\}/s',
+            $source,
+            'The edit mode must hide Select2’s native arrow to avoid relying on theme styles.'
+        );
+        $this->assertMatchesRegularExpression(
+            '/\.wholesale-procurement\.is-edit-mode\s+#branch_id\s*\+\s*\.select2-container\s+\.select2-selection--single::after\s*\{[^}]*content\s*:\s*""[^}]*border-right\s*:\s*2px solid #[0-9a-f]+[^}]*transform\s*:\s*rotate\(45deg\)[^}]*\}/is',
+            $source,
+            'The closed edit-mode branch selector must draw its own down caret.'
+        );
+        $this->assertMatchesRegularExpression(
+            '/\.wholesale-procurement\.is-edit-mode\s+#branch_id\s*\+\s*\.select2-container--open\s+\.select2-selection--single::after\s*\{[^}]*transform\s*:\s*rotate\(225deg\)[^}]*\}/s',
             $source,
             'The open edit-mode branch selector must point its caret upward.'
         );

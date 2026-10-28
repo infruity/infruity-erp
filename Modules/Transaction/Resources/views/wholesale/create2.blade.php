@@ -160,11 +160,12 @@
             .wholesale-procurement.is-edit-mode .wholesale-cart-item-total { min-width:96px; font-size:13px; }
             .wholesale-procurement.is-edit-mode .wholesale-edit-item-quantity { white-space:nowrap; }
             .wholesale-procurement.is-edit-mode #branch_id + .select2-container .select2-selection--single { position:relative; padding:0 16px; background:#f9fafb; transition:background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
-            .wholesale-procurement.is-edit-mode #branch_id + .select2-container .select2-selection__rendered { padding-left:0; color:#1f2937; font-size:14px; }
+            .wholesale-procurement.is-edit-mode #branch_id + .select2-container .select2-selection__rendered { padding-left:0; padding-right:36px; color:#1f2937; font-size:14px; }
             .wholesale-procurement.is-edit-mode #branch_id + .select2-container .select2-selection__rendered:not(.select2-selection__placeholder) { font-weight:600; }
-            .wholesale-procurement.is-edit-mode #branch_id + .select2-container .select2-selection--single .select2-selection__arrow b { border-right-color:#9ca3af !important; border-bottom-color:#9ca3af !important; transition:transform .2s ease, border-color .2s ease; }
+            .wholesale-procurement.is-edit-mode #branch_id + .select2-container .select2-selection__arrow { display:none; }
+            .wholesale-procurement.is-edit-mode #branch_id + .select2-container .select2-selection--single::after { content:""; position:absolute; top:50%; right:18px; width:8px; height:8px; margin-top:-6px; border-right:2px solid #9ca3af; border-bottom:2px solid #9ca3af; transform:rotate(45deg); pointer-events:none; transition:transform .2s ease, border-color .2s ease; }
             .wholesale-procurement.is-edit-mode #branch_id + .select2-container--open .select2-selection--single { background:#fff; }
-            .wholesale-procurement.is-edit-mode #branch_id + .select2-container--open .select2-selection__arrow b { transform:rotate(225deg); border-right-color:#0b595b !important; border-bottom-color:#0b595b !important; }
+            .wholesale-procurement.is-edit-mode #branch_id + .select2-container--open .select2-selection--single::after { margin-top:-2px; transform:rotate(225deg); border-right-color:#0b595b; border-bottom-color:#0b595b; }
         }
         /* Select2 appends its menu to body; style it independently of the form wrapper. */
         .select2-dropdown.wholesale-branch-dropdown { overflow:hidden; margin-top:6px; border:1px solid #f3f4f6; border-radius:12px; background:#fff; color:#374151; box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1); }
