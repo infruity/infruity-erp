@@ -89,6 +89,10 @@
 @push('styles')
 <style>
     @media (max-width: 1023px) {
+        .user-account-drawer-panel:not(.is-editing) {
+            max-height: 71.5dvh;
+        }
+
         .user-account-drawer-panel.is-editing {
             max-height: 71.5dvh;
         }
@@ -274,12 +278,12 @@
                                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-base text-gray-400" aria-hidden="true"></i>
                                     <input id="user-staff-search" x-model="staffSearch" type="text" placeholder="Cari karyawan..." class="w-full bg-transparent py-3 pl-9 pr-4 text-sm outline-none transition-colors">
                                 </div>
-                                <div class="relative max-h-48 overflow-y-auto overscroll-none bg-white">
+                                <div class="relative max-h-48 overflow-y-auto overscroll-none scrollbar-hide bg-white">
                                     <template x-for="staff in filteredStaffOptions" :key="staff.id">
-                                        <button type="button" @click="toggleStaff(staff.id)" :disabled="isStaffLinkedElsewhere(staff)" :title="isStaffLinkedElsewhere(staff) ? 'Karyawan sudah tertaut ke akun lain' : ''" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left transition-colors last:border-b-0 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-60">
+                                        <button type="button" @click="toggleStaff(staff.id)" :disabled="isStaffLinkedElsewhere(staff)" :title="isStaffLinkedElsewhere(staff) ? 'Karyawan sudah tertaut ke akun lain' : ''" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left transition-colors last:border-b-0 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-50/50">
                                             <span x-show="!isStaffLinkedElsewhere(staff)" class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 transition-colors" :class="String(form.staffId) === String(staff.id) ? 'border-emerald-500' : ''" aria-hidden="true"><span class="h-2 w-2 rounded-full bg-emerald-500 transition-transform" :class="String(form.staffId) === String(staff.id) ? 'scale-100' : 'scale-0'"></span></span>
-                                            <span x-show="isStaffLinkedElsewhere(staff)" class="flex h-4 w-4 shrink-0 items-center justify-center text-gray-400" aria-hidden="true"><i class="ph ph-lock-key text-sm"></i></span>
-                                            <span class="flex min-w-0 flex-1 items-center justify-between gap-3"><span class="truncate text-[13px] font-medium" :class="String(form.staffId) === String(staff.id) ? 'font-bold text-gray-900' : ''" x-text="staff.name"></span><span x-show="isStaffLinkedElsewhere(staff)" class="shrink-0 text-[10px] font-semibold text-gray-400">Sudah tertaut</span></span>
+                                            <span x-show="isStaffLinkedElsewhere(staff)" class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-400" aria-hidden="true"><i class="ph ph-lock-key text-[10px]"></i></span>
+                                            <span class="flex min-w-0 flex-1 items-center justify-between gap-3"><span class="truncate text-[13px]" :class="isStaffLinkedElsewhere(staff) ? 'text-gray-400' : (String(form.staffId) === String(staff.id) ? 'font-bold text-gray-900' : 'font-medium text-gray-700')" x-text="staff.name"></span><span x-show="isStaffLinkedElsewhere(staff)" class="shrink-0 text-[10px] italic text-gray-400">Telah ditautkan</span></span>
                                         </button>
                                     </template>
                                     <p x-show="filteredStaffOptions.length === 0" class="px-4 py-5 text-center text-[13px] text-gray-400">Karyawan tidak ditemukan</p>
@@ -287,7 +291,7 @@
                             </div>
                         </div>
                         <template x-if="!editing">
-                        <div>
+                        <div class="pt-2">
                             <label for="user-roles" class="mb-1.5 block text-xs font-semibold text-gray-600">Hak Akses <span class="text-red-400">*</span></label>
                             <select id="user-roles" name="role_ids[]" x-model="form.roles" multiple required size="4" class="w-full min-h-[7rem] rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm outline-none focus:border-emerald-500">
                                 @foreach ($role as $item)<option value="{{ $item->id_role }}">{{ $item->nm_role }}</option>@endforeach

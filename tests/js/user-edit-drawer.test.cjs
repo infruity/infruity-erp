@@ -226,6 +226,18 @@ test('create user email mode defaults to the next OPR address and can switch to 
     assert.equal(invalid.form.emailType, 'custom');
 });
 
+test('mobile create sheet matches the account reference and keeps required fields below the fold', () => {
+    assert.match(view, /\.user-account-drawer-panel:not\(\.is-editing\)\s*\{\s*max-height:\s*71\.5dvh;/);
+    assert.match(view, /x-if="!editing">\s*<div class="pt-2">[\s\S]*?<label for="user-roles"/);
+    const fieldOrder = ['Alamat Email', 'Tautkan ke Karyawan', 'name="role_ids[]"', 'name="full_name"', 'name="password"', 'name="id_branch[]"']
+        .map(field => view.indexOf(field));
+    assert.ok(fieldOrder.every((position, index) => position >= 0 && (index === 0 || position > fieldOrder[index - 1])));
+    assert.ok(view.includes('relative max-h-48 overflow-y-auto overscroll-none scrollbar-hide bg-white'));
+    assert.ok(view.includes('rounded-full bg-gray-200 text-gray-400'));
+    assert.ok(view.includes('Telah ditautkan'));
+    assert.ok(view.includes('text-[10px] italic text-gray-400'));
+});
+
 test('permission search matches the reference focus ring and group/submodule filtering', () => {
     const input = view.match(/<input id="user-access-search"[^>]+>/)?.[0] || '';
     const classes = input.match(/class="([^"]+)"/)?.[1].split(/\s+/) || [];
