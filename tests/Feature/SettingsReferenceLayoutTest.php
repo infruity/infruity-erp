@@ -23,6 +23,7 @@ class SettingsReferenceLayoutTest extends TestCase
         $styles = file_get_contents(public_path('assets/css/erp-theme.css'));
 
         $this->assertStringContainsString('body:has(.erp-settings-page) #kt_content { padding:0; scroll-padding-bottom:0; }', $styles);
+        $this->assertStringContainsString('width:100vw; margin-inline:calc(50% - 50vw);', $styles);
     }
 
     public function test_settings_option_rows_have_a_divider_between_each_row(): void
