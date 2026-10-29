@@ -313,170 +313,38 @@ class PosController extends Controller
             return $denied;
         }
 
-        // dd($request->all());
         $data = $request->validate([
             'date'           => 'required|date',
             'transaction_id' => 'required|exists:pos_transaction,id',
             // 'branch_id' => 'required|exists:branch,id',
             // 'account_id' => 'required|exists:account,id',
             // 'payment_id' => 'required|exists:payment_method,id',
-            'payments'       => 'required|array',
+            'payments'       => 'required|array|min:1',
+            'payments.*.payment_id' => 'required|integer|exists:payment_method,id',
+            'payments.*.amount' => ['required', 'regex:/^\d+(?:\.\d{3})*$/'],
             'total_payment'  => 'required|numeric|min:0',
             'customer_id'    => 'nullable',
         ]);
 
+        $paymentAmounts = collect($data['payments'])->map(fn ($item) => (float) str_replace('.', '', (string) $item['amount']));
+        if (($paymentAmounts->sum() > 0 && $paymentAmounts->contains(fn ($amount) => $amount <= 0)) || abs($paymentAmounts->sum() - (float) $data['total_payment']) > 0.01) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['payments' => 'Jumlah rincian pembayaran tidak valid atau tidak sama dengan total pembayaran.']);
+        }
+
         try {
             DB::beginTransaction();
 
-            // Simpan ke tabel pembayaran
-            $paymentNames   = collect($data['payments'])->pluck('payment_name')->toArray();
-            $paymentIds     = collect($data['payments'])->pluck('payment_id')->toArray();
-            $paymentAmounts = collect($data['payments'])->map(function ($item) {
-                return (float) preg_replace('/[^\d]/', '', $item['amount']);
-            })->toArray();
-
-            $payment = new Payment([
-                'uuid'              => Str::uuid(),
-                'date'              => $data['date'],
-                'nota_number'       => date('YmdHis') . Str::random(4),
-                'pos_id'            => $data['transaction_id'],
-                // 'branch_id' => $data['branch_id'],
-                // 'account_id' => $data['account_id'],
-                'payment_method'    => json_encode($paymentNames),
-                'payment_method_id' => json_encode($paymentIds),
-                'payment_amount'    => json_encode($paymentAmounts),
-                'total'             => array_sum($paymentAmounts),
-                'created_by'        => Auth::id(),
-            ]);
-            // dd($payment);
-            $payment->save();
-
-            $posForVoucher = PosModel::findOrFail($data['transaction_id']);
-
-            // Pengecekan stok seperti pada saveTransaction (hanya untuk transaksi yang belum terpotong stoknya)
-            if (in_array($posForVoucher->status, ['draft', 'temp', 'pending'])) {
-                $posDetails = PosDetailModel::where('pos_id', $data['transaction_id'])->get();
-                $parcelDetails = ProductionParcelDetail::where('pos_id', $data['transaction_id'])->get();
-                $productions = Production::with('productionDetails')->where('pos_id', $data['transaction_id'])->get();
-
-                $allProductIdsToLock = [];
-                $requiredStocks = [];
-
-                $addRequiredStock = function($productId, $qty) use (&$requiredStocks, &$allProductIdsToLock) {
-                    if (!$productId) return;
-                    
-                    if (!in_array($productId, $allProductIdsToLock)) {
-                        $allProductIdsToLock[] = $productId;
-                    }
-
-                    $product = Product::find($productId);
-                    $stockProductId = $productId;
-                    if ($product) {
-                        $parentId = $product->getParentId();
-                        $stockProductId = $parentId ?? $product->id;
-                        if ($parentId && !in_array($parentId, $allProductIdsToLock)) {
-                            $allProductIdsToLock[] = $parentId;
-                        }
-                    }
-                    
-                    if (!isset($requiredStocks[$stockProductId])) {
-                        $requiredStocks[$stockProductId] = 0;
-                    }
-                    $requiredStocks[$stockProductId] += (float)$qty;
-                };
-
-                foreach ($posDetails as $detail) {
-                    if ($detail->type === 'product') {
-                        $addRequiredStock($detail->product_id, $detail->quantity);
-                    } elseif ($detail->type === 'parcel') {
-                        if ($detail->parcel_id) {
-                            $addRequiredStock($detail->parcel_id, $detail->quantity);
-                        }
-                    } elseif ($detail->type === 'jus') {
-                        $production = $productions->where('product_id', $detail->product_id)->first();
-                        $productionQty = $production ? $production->quantity : 0;
-                        $consumeStockQty = $detail->quantity - $productionQty;
-                        if ($consumeStockQty > 0) {
-                            $addRequiredStock($detail->product_id, $consumeStockQty);
-                        }
-                    }
-                }
-
-                foreach ($parcelDetails as $pDetail) {
-                    $addRequiredStock($pDetail->product_id, $pDetail->quantity);
-                }
-
-                foreach ($productions as $production) {
-                    foreach ($production->productionDetails as $pDetail) {
-                        $addRequiredStock($pDetail->product_id, $pDetail->quantity);
-                    }
-                }
-
-                $allProductIdsToLock = array_unique($allProductIdsToLock);
-                sort($allProductIdsToLock);
-
-                // Kunci master produk secara berurutan agar antrean checkout terjaga dan bebas Deadlock
-                foreach ($allProductIdsToLock as $lockId) {
-                    Product::where('id', $lockId)->lockForUpdate()->first();
-                }
-
-                // Validasi stok akumulatif dari semua sumber
-                foreach ($requiredStocks as $stockProductId => $requiredQty) {
-                    $productStock = ProductStock::where('id', $stockProductId)
-                        ->where('branch_id', $posForVoucher->branch_id)
-                        ->first();
-                    $currentStock = $productStock ? (float)$productStock->stock_available : 0;
-
-                    if ($currentStock < $requiredQty) {
-                        $product     = Product::find($stockProductId);
-                        $productName = $product ? $product->name : 'Produk #' . $stockProductId;
-                        throw new \Exception("Stok \"{$productName}\" tidak mencukupi. Stok tersedia: {$currentStock}, dibutuhkan: {$requiredQty}");
-                    }
-                }
+            $pos = PosModel::whereKey($data['transaction_id'])
+                ->whereIn('branch_id', UserBranch::getUserBranch())->lockForUpdate()->firstOrFail();
+            if (! in_array($pos->status, ['draft', 'temp', 'pending', 'debt'], true)) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['transaction_id' => 'Transaksi ini tidak dapat dibayar lagi.']);
             }
-
-            if (empty($posForVoucher->deposito_id) && empty($posForVoucher->voucher)) {
-                $deposito = Deposito::where('customer_id', $data['customer_id'])->first();
-                $voucher  = $deposito?->voucher ?? 0;
-                
-                if ($deposito && $voucher > 0 && $deposito->voucher_qty > 0) {
-                    PosModel::where("id", $data['transaction_id'])->update([
-                        'voucher'     => $voucher,
-                        'voucher_qty' => 1,
-                        'deposito_id' => $deposito->id,
-                    ]);
-                    $deposito->decrement('voucher_qty');
-                }
-            }
-
-            $totalPayment = Payment::where('pos_id', $data['transaction_id'])
-                ->sum('total');
-
-            $pos       = PosModel::findOrFail($data['transaction_id']);
-            $total     = $pos->total - $pos->voucher;
-            $pos->paid = $totalPayment;
-            if ($totalPayment > $total) {
-                $lastPayment         = Payment::findOrFail($payment->id);
-                $lastPayment->return = ($totalPayment - $total);
-                $lastPayment->save();
-            } else {
-                $lastPayment            = Payment::findOrFail($payment->id);
-                $lastPayment->remaining = ($total - $totalPayment);
-                $lastPayment->save();
-            }
-            $status = 'debt';
-            if ($totalPayment >= $total) {
-                $status = 'paid';
-            }
-            // $pos->ongkir_status = 'delivered';
-            $pos->status = $status;
-            $pos->save();
-
-            if (in_array($status, ['paid', 'debt'])) {
-                Production::where('pos_id', $pos->id)
-                    ->where('status', 'draft')
-                    ->update(['status' => 'complete']);
-            }
+            $payments = collect($data['payments'])->map(fn ($item) => [
+                'payment_id' => (int) $item['payment_id'],
+                'amount' => (float) str_replace('.', '', (string) $item['amount']),
+            ])->all();
+            $payment = app(\Modules\Pos\Services\CompletePayment::class)
+                ->handle($pos, $payments, $data['date'], (int) Auth::id());
 
             DB::commit();
             return response()->json([
@@ -487,6 +355,10 @@ class PosController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollback();
+            if ($e instanceof \Illuminate\Validation\ValidationException
+                || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                throw $e;
+            }
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan transaksi',

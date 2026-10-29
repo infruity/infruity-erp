@@ -77,6 +77,7 @@ Ini peta tanggung jawab yang harus diperiksa, **bukan jaminan semua endpoint lam
 - Untuk mutasi detail pengadaan, lookup mengikuti header berizin, lock header/detail dalam transaksi, dan tolak header `complete` termasuk untuk admin. Endpoint data juga memeriksa permission halaman sebelum query; filter laporan `all` bukan bypass scope cabang.
 - Editor pengeluaran mengirim `expenditure_id` eksplisit: `null` untuk create, ID untuk edit; key hilang menghasilkan 422. Invoice preview bukan identitas overwrite. Edit header in-place mempertahankan tautan pembayaran; nilai paid adalah kumulatif, bukan pembayaran tambahan. Deploy server/Blade bersama dan muat ulang tab lama. Lihat [kontrak serta batas hardening cabang/transaksi](branch-hardening-2026-10-29.md).
 - Simpan ledger, detail, stock, dan status yang saling bergantung secara atomik. Hitung nilai otoritatif di server dan uji retry/idempotency pada operasi keuangan.
+- Pembayaran POS/COD memakai `Modules/Pos/Services/CompletePayment.php` di dalam transaksi dan row lock invoice berizin milik caller. COD adalah satu kali penerimaan (`delivered` → 409 pada retry), bukan replay request-key. Draft tetap melewati pemeriksaan stok/voucher/finalisasi produksi; debt tidak diperiksa ulang sebagai konsumsi awal. Paid dihitung neto setelah return. Lihat [kontrak COD dan batas pengujiannya](cod-payment-hardening-2026-10-29.md).
 - SQLite fixture berguna untuk perilaku endpoint, tetapi tidak membuktikan `lockForUpdate`, isolation, atau race condition MySQL.
 
 ## 3. Clean code dan KISS: aturan praktis
@@ -129,6 +130,8 @@ APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=:memory: DATABASE_URL= \
   CACHE_DRIVER=array SESSION_DRIVER=array MAIL_DRIVER=array QUEUE_CONNECTION=sync \
   php vendor/bin/phpunit --do-not-cache-result --filter PosPaymentIdempotencyTest
 ```
+
+Untuk adapter pembayaran POS lokal ber-request-key yang belum tracked, tambahkan `INFRUITY_TEST_LEGACY_POS_ADAPTER=0` pada command PHPUnit; default test voucher mengikuti adapter legacy yang tracked. Flag hanya memilih ekspektasi replay di test, bukan mengubah backend. Lihat [rincian dua mode verifikasi COD/POS](cod-payment-hardening-2026-10-29.md#isolasi-pekerjaan-lokal-dan-commit).
 
 Test baru yang menyentuh database harus membuat fixture sendiri atau memakai MySQL khusus test yang disetujui. Jangan mengambil `User::first()`/produk yang kebetulan ada di database developer. Test concurrency nyata membutuhkan koneksi independen pada MySQL khusus test dan harus mempunyai cleanup yang terisolasi.
 
