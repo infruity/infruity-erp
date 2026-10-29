@@ -10,8 +10,12 @@ use Modules\Master\Entities\Staff;
 use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\UserBranch;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Modules\Pos\Entities\Payment;
+use Illuminate\Support\Str;
 
 class DeliveryOrderController extends Controller
 {
@@ -93,49 +97,57 @@ class DeliveryOrderController extends Controller
 
     public function setSelesai(Request $request, $id)
     {
-        $this->authorizeAccess('delivery-order.set-selesai');
-        $data = $request->validate([
-            'nominal' => ['nullable', 'regex:/^(?:0|[1-9]\d*|[1-9]\d{0,2}(?:\.\d{3})+)$/', 'max:17'],
-        ]);
-        $amount = (float) str_replace('.', '', (string) ($data['nominal'] ?? '0'));
-        if ($amount > 9999999999999) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['nominal' => 'Nominal melebihi batas penyimpanan.']);
+        if ($denied = $this->requireAccess('delivery-order.set-selesai')) {
+            return $denied;
         }
 
         try {
             DB::beginTransaction();
-            $pos = PosModel::whereIn('branch_id', UserBranch::getUserBranch())
-                ->where('ongkir', '>', 0)->lockForUpdate()->findOrFail($id);
-            abort_if($pos->ongkir_status === 'delivered', 409, 'Pengiriman sudah diterima. Muat ulang daftar sebelum melakukan pembayaran lain.');
-            abort_unless(in_array($pos->status, ['draft', 'temp', 'pending', 'debt', 'paid'], true), 409, 'Transaksi ini tidak dapat diterima.');
-            abort_if($pos->status === 'paid' && $amount > 0, 409, 'Invoice sudah lunas; gunakan penerimaan tanpa pembayaran.');
-            if ($pos->status !== 'paid' && $amount <= 0 && (string) ($data['nominal'] ?? '') !== '0') {
-                throw \Illuminate\Validation\ValidationException::withMessages(['nominal' => 'Nominal pembayaran wajib diisi; gunakan 0 hanya untuk pelunasan voucher.']);
-            }
+            $pos = PosModel::find($id);
             $pos->ongkir_status = 'delivered';
 
-            if ($pos->status !== 'paid') {
-                $payments = [];
-                if ($amount > 0) {
-                    $cash = DB::table('payment_method')->whereRaw('LOWER(name) = ?', ['cash'])->first();
-                    abort_unless($cash, 422, 'Metode pembayaran Cash belum tersedia.');
-                    $payments = [['payment_id' => (int) $cash->id, 'amount' => $amount]];
+            if ($request->has('nominal') && $request->nominal > 0) {
+                $payment = new Payment([
+                    'uuid' => Str::uuid(),
+                    'date' => date('Y-m-d'),
+                    'nota_number' => date('YmdHis'),
+                    'pos_id' => $id,
+                    'branch_id' => 1,
+                    // 'account_id' => $data['account_id'],
+                    'payment_method' => json_encode(['cash']),
+                    'payment_method_id' => json_encode([1]),
+                    'payment_amount' => json_encode([preg_replace('/[^0-9]/', '', $request->nominal)]),
+                    'total' => preg_replace('/[^0-9]/', '', $request->nominal),
+                    'created_by' => Auth::user()->id_user,
+                ]);
+                $payment->save();
+                $totalPayment = Payment::where('pos_id', $id)->sum('total');
+                $pos = PosModel::findOrFail($id);
+                $total = $pos->total - $pos->voucher;
+                $pos->paid = $totalPayment;
+                if ($totalPayment > $total) {
+                    $lastPayment = Payment::findOrFail($payment->id);
+                    $lastPayment->return = ($totalPayment - $total);
+                    $lastPayment->save();
+                } else {
+                    $lastPayment = Payment::findOrFail($payment->id);
+                    $lastPayment->remaining = ($total - $totalPayment);
+                    $lastPayment->save();
                 }
-                app(\Modules\Pos\Services\CompletePayment::class)->handle($pos, $payments, now()->toDateString(), (int) Auth::id());
-            } else {
-                $pos->save();
+                $status = 'debt';
+                if ($totalPayment >= $total) {
+                    $status = 'paid';
+                }
+                // $pos->ongkir_status = 'delivered';
+                $pos->status = $status;
             }
+
+            $pos->save();
             DB::commit();
             return response()->json(['success' => true]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            if ($th instanceof \Illuminate\Database\Eloquent\ModelNotFoundException
-                || $th instanceof \Illuminate\Validation\ValidationException
-                || $th instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
-                throw $th;
-            }
-            report($th);
-            return response()->json(['success' => false, 'message' => 'Gagal menerima pengiriman. Muat ulang daftar sebelum mencoba kembali.'], 500);
+            return response()->json(['error' => false, 'message' => $th->getMessage()]);
         }
     }
 
@@ -172,10 +184,9 @@ class DeliveryOrderController extends Controller
 
     public function get_data(Request $request)
     {
-        $this->authorizeAccess('delivery-order.index');
         $query = PosModel::with('customer', 'paymentDetails', 'details', 'branch', 'courier')
-            ->whereIn('branch_id', UserBranch::getUserBranch())
-            ->where('ongkir', '>', 0);
+        // ->whereIn('branch_id', UserBranch::getUserBranch())
+        ->where('ongkir', '>', 0);
         if ($request->has('status_filter') && $request->status_filter !== 'all') {
             $query = $query->where('ongkir_status', $request->status_filter);
         }

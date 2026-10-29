@@ -136,17 +136,8 @@ class ProductController extends Controller
         // dd($request->all(), $request->file('avatar'));
         $validator = Validator::make($request->all(), [
             'product_name'    => 'required|unique:products,name',
-            'price'           => $this->wholeRupiahPriceRules(),
-            'variant'         => 'nullable|array',
-            'variant.id'      => 'nullable|array',
-            'variant.price'   => 'nullable|array',
-            'variant.price.*' => $this->wholeRupiahPriceRules(),
-            'branch'           => 'nullable|array',
-            'branch.id'        => 'nullable|array',
-            'branch.id.*'      => 'required|integer|exists:branch,id',
-            'branch.price'     => 'nullable|array',
-            'branch.price.*'   => $this->wholeRupiahPriceRules(),
-            'product_unit_id'  => 'required|exists:product_units,id',
+            'price'           => 'required',
+            'product_unit_id' => 'required|exists:product_units,id',
             'status'          => 'required',
             // 'category_id' => 'required|exists:products_category,id',
             'avatar'          => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -157,13 +148,6 @@ class ProductController extends Controller
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
-        }
-
-        $allowedBranchIds = array_map('intval', UserBranch::getUserBranch());
-        foreach ((array) $request->input('branch.id', []) as $branchId) {
-            if (! in_array((int) $branchId, $allowedBranchIds, true)) {
-                abort(403);
-            }
         }
 
         try {
@@ -184,12 +168,12 @@ class ProductController extends Controller
                     $category->save();
                 }
             }
-            $branches              = Branch::whereIn('id', $allowedBranchIds)->get();
+            $branches              = Branch::all();
             $product               = new Product();
             $product->name         = $request->product_name;
             $product->category_id  = $category->id ?? null;
             $product->description  = strip_tags($request->description ?? '');
-            $product->price        = (int) $validator->validated()['price'];
+            $product->price        = $request->price ?? '';
             $product->product_unit = $request->product_unit_id ?? '';
             $product->stock        = $request->stock ?? 0;
             $product->limit        = $request->limit ?? 0;
@@ -209,16 +193,12 @@ class ProductController extends Controller
             $product->save();
 
             $productId = $product->id;
-            $selectedVariantIds = [];
             if (isset($request->variant)) {
                 foreach ($request->variant['id'] as $key => $value) {
                     if (is_numeric($value)) {
-                        $existingVariantId = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-                        if ($existingVariantId === false || isset($selectedVariantIds[$existingVariantId])) {
-                            throw new \InvalidArgumentException('Varian produk tidak valid atau terduplikat.');
-                        }
-                        $selectedVariantIds[$existingVariantId] = true;
-                        $variant = Product::findOrFail($existingVariantId);
+                        $variant             = Product::find($value);
+                        $variant->is_variant = 1;
+                        $variant->save();
                     } else {
                         if ($value == $product->name) {
                             return redirect()->back()
@@ -228,7 +208,7 @@ class ProductController extends Controller
                         $variant               = new Product();
                         $variant->parent_id    = $productId;
                         $variant->name         = $value;
-                        $variant->price        = (int) $request->variant['price'][$key];
+                        $variant->price        = $request->variant['price'][$key];
                         $variant->category_id  = $product->category_id;
                         $variant->product_unit = $product->product_unit;
                         $variant->stock        = $product->stock;
@@ -262,20 +242,20 @@ class ProductController extends Controller
                             ->where('branch_id', $value)
                             ->first();
                         if ($branch) {
-                            $branch->price = (int) ($request->branch['price'][$key] ?? 0);
+                            $branch->price = $request->branch['price'][$key] ?? 0;
                             $branch->save();
                         } else {
                             $branch             = new ProductBranch();
                             $branch->product_id = $productId;
                             $branch->branch_id  = $value;
-                            $branch->price      = (int) ($request->branch['price'][$key] ?? 0);
+                            $branch->price      = $request->branch['price'][$key] ?? 0;
                             $branch->save();
                         }
                     } else {
                         $branch             = new ProductBranch();
                         $branch->product_id = $productId;
                         $branch->branch_id  = $value;
-                        $branch->price      = (int) ($request->branch['price'][$key] ?? 0);
+                        $branch->price      = $request->branch['price'][$key] ?? 0;
                         $branch->save();
                     }
                 }
@@ -486,17 +466,8 @@ class ProductController extends Controller
         // dd($request->all(), $request->file('avatar'));
         $validator = Validator::make($request->all(), [
             'product_name'    => 'required|unique:products,name,' . $id,
-            'price'           => $this->wholeRupiahPriceRules(),
-            'variant'         => 'nullable|array',
-            'variant.id'      => 'nullable|array',
-            'variant.price'   => 'nullable|array',
-            'variant.price.*' => $this->wholeRupiahPriceRules(),
-            'branch'           => 'nullable|array',
-            'branch.id'        => 'nullable|array',
-            'branch.id.*'      => 'required|integer|exists:branch,id',
-            'branch.price'     => 'nullable|array',
-            'branch.price.*'   => $this->wholeRupiahPriceRules(),
-            'product_unit_id'  => 'required|exists:product_units,id',
+            'price'           => 'required',
+            'product_unit_id' => 'required|exists:product_units,id',
             'status'          => 'required',
             'selected_branch_id' => 'nullable|integer|exists:branch,id',
             // 'category_id'     => 'nullable|exists:products_category,id',
@@ -510,7 +481,7 @@ class ProductController extends Controller
                 ->withInput();
         }
 
-        $allowedBranchIds = array_map('intval', UserBranch::getUserBranch());
+        $allowedBranchIds = UserBranch::getUserBranch();
         $selectedBranchId = (int) $request->input('selected_branch_id', 0);
         if ($selectedBranchId && ! in_array($selectedBranchId, $allowedBranchIds, true)) {
             abort(403);
@@ -552,7 +523,7 @@ class ProductController extends Controller
             $product->name         = $request->product_name;
             $product->category_id  = $category->id ?? null;
             $product->description  = strip_tags($request->description ?? '');
-            $product->price        = (int) $validator->validated()['price'];
+            $product->price        = $request->price ?? '';
             $product->product_unit = $request->product_unit_id ?? '';
             $product->stock        = $request->stock ?? 0;
             $product->limit        = $request->limit ?? 0;
@@ -569,15 +540,6 @@ class ProductController extends Controller
                 $product->save();
             }
 
-            $variantIds = array_values(array_filter(
-                (array) $request->input('variant.id', []),
-                fn ($value) => is_numeric($value)
-            ));
-            if (count($variantIds) !== count(array_unique($variantIds)) ||
-                ProductChild::where('parent_id', $id)->whereIn('product_id', $variantIds)->distinct()->count('product_id') !== count($variantIds)) {
-                throw new \InvalidArgumentException('Daftar varian berisi produk asing atau duplikat.');
-            }
-
             // Hapus semua varian yang ada
             ProductChild::where('parent_id', $id)->delete();
             $productId = $id;
@@ -585,9 +547,9 @@ class ProductController extends Controller
             if (isset($request->variant)) {
                 foreach ($request->variant['id'] as $key => $value) {
                     if (is_numeric($value)) {
-                        // Membership was checked against product_child before replacing this parent's links.
-                        $variant = Product::findOrFail($value);
-                        $variantPrice = (int) ($request->variant['price'][$key] ?? 0);
+                        $variant             = Product::find($value);
+                        $variant->is_variant = 1;
+                        $variantPrice = $request->variant['price'][$key] ?? 0;
                         if ($selectedBranchId) {
                             ProductBranch::updateOrCreate(
                                 ['product_id' => $variant->id, 'branch_id' => $selectedBranchId],
@@ -601,7 +563,7 @@ class ProductController extends Controller
                         $variant               = new Product();
                         $variant->parent_id    = $productId;
                         $variant->name         = $value;
-                        $variant->price        = (int) ($request->variant['price'][$key] ?? 0);
+                        $variant->price        = $request->variant['price'][$key] ?? 0;
                         $variant->category_id  = $product->category_id;
                         $variant->product_unit = $product->product_unit;
                         $variant->stock        = $product->stock;
@@ -613,7 +575,7 @@ class ProductController extends Controller
                         $variant->save();
                         $variantId = $variant->id;
 
-                        $listBranch = Branch::whereIn('id', $allowedBranchIds)->get();
+                        $listBranch = Branch::all();
                         foreach ($listBranch as $key => $item) {
                             $branch             = new ProductBranch();
                             $branch->product_id = $variantId;
@@ -640,20 +602,20 @@ class ProductController extends Controller
                             ->where('branch_id', $value)
                             ->first();
                         if ($branch) {
-                            $branch->price = (int) ($request->branch['price'][$key] ?? 0);
+                            $branch->price = $request->branch['price'][$key] ?? 0;
                             $branch->save();
                         } else {
                             $branch             = new ProductBranch();
                             $branch->product_id = $productId;
                             $branch->branch_id  = $value;
-                            $branch->price      = (int) ($request->branch['price'][$key] ?? 0);
+                            $branch->price      = $request->branch['price'][$key] ?? 0;
                             $branch->save();
                         }
                     } else {
                         $branch             = new ProductBranch();
                         $branch->product_id = $productId;
                         $branch->branch_id  = $value;
-                        $branch->price      = (int) ($request->branch['price'][$key] ?? 0);
+                        $branch->price      = $request->branch['price'][$key] ?? 0;
                         $branch->save();
                     }
                 }
@@ -706,18 +668,6 @@ class ProductController extends Controller
         }
     }
 
-    private function wholeRupiahPriceRules(): array
-    {
-        return [
-            'required', 'integer', 'min:0', 'max:2147483647', 'regex:/\\A[0-9]+\\z/',
-            static function ($attribute, $value, $fail) {
-                if (! is_int($value) && ! is_string($value)) {
-                    $fail('Harga harus berupa rupiah bulat.');
-                }
-            },
-        ];
-    }
-
     public function updatePrice(Request $request, $id)
     {
         if ($denied = $this->requireAccess('products.update')) {
@@ -725,9 +675,8 @@ class ProductController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            // Both price columns are signed INT rupiah; accept unformatted whole amounts only.
-            'price'     => $this->wholeRupiahPriceRules(),
-            'branch_id' => 'required|integer|min:0',
+            'price'     => 'required|numeric|min:0',
+            'branch_id' => 'required|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -747,11 +696,11 @@ class ProductController extends Controller
                 Product::findOrFail($id);
                 ProductBranch::updateOrCreate(
                     ['product_id' => $id, 'branch_id' => $request->branch_id],
-                    ['price' => (int) $validator->validated()['price']]
+                    ['price' => preg_replace('/[^0-9]/', '', $request->price)]
                 );
             } else {
                 $product        = Product::findOrFail($id);
-                $product->price = (int) $validator->validated()['price'];
+                $product->price = preg_replace('/[^0-9]/', '', $request->price);
                 $product->save();
             }
             DB::commit();
@@ -778,13 +727,13 @@ class ProductController extends Controller
             ->addColumn('action', function ($row) {
                 return '
                 <button class="btn btn-sm btn-light-primary edit-variant variant" type="button"
-                        data-id="' . e($row->id) . '"
-                        data-name="' . e($row->name) . '"
-                        data-price="' . e($row->price) . '">
+                        data-id="' . $row->id . '"
+                        data-name="' . $row->name . '"
+                        data-price="' . $row->price . '">
                     Edit
                 </button>
                 <button class="btn btn-sm btn-light-danger delete-variant variant" type="button"
-                        data-id="' . e($row->id) . '">
+                        data-id="' . $row->id . '">
                     Hapus
                 </button>
             ';
@@ -802,7 +751,7 @@ class ProductController extends Controller
         $validator = Validator::make($request->all(), [
             'parent_id'    => 'required|exists:products,id',
             'product_name' => 'required|string|max:255|unique:products,name',
-            'price'        => $this->wholeRupiahPriceRules(),
+            'price'        => 'required|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -818,7 +767,7 @@ class ProductController extends Controller
             $product               = new Product();
             $product->parent_id    = $request->parent_id;
             $product->name         = $request->product_name;
-            $product->price        = (int) $validator->validated()['price'];
+            $product->price        = $request->price;
             $product->category_id  = $parentProduct->category_id;
             $product->product_unit = $parentProduct->product_unit;
             $product->stock        = $parentProduct->stock;
@@ -826,19 +775,7 @@ class ProductController extends Controller
             $product->handling     = $parentProduct->handling;
             $product->created_by   = Auth::user()->id_user;
             $product->description  = $parentProduct->description;
-            $product->is_variant   = 1;
             $product->save();
-
-            $child = new ProductChild();
-            $child->parent_id = $parentProduct->id;
-            $child->product_id = $product->id;
-            $child->save();
-            foreach (UserBranch::getUserBranch() as $branchId) {
-                ProductBranch::updateOrCreate(
-                    ['product_id' => $product->id, 'branch_id' => $branchId],
-                    ['price' => $product->price]
-                );
-            }
 
             DB::commit();
             return response()->json([
@@ -863,8 +800,7 @@ class ProductController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'product_name' => 'required|string|max:255',
-                'price'        => $this->wholeRupiahPriceRules(),
-                'parent_id'    => 'required|integer|exists:products,id',
+                'price'        => 'required|numeric',
             ]);
             if ($validator->fails()) {
                 return response()->json([
@@ -873,23 +809,11 @@ class ProductController extends Controller
                 ], 422);
             }
             DB::beginTransaction();
-            $variant = Product::whereKey($id)
-                ->whereHas('parentProduct', fn ($query) => $query->where('parent_id', $request->parent_id))
-                ->lockForUpdate()
-                ->firstOrFail();
+            $variant        = Product::findOrFail($id);
             $variant->name  = $request->product_name;
-            $variant->price = (int) $validator->validated()['price'];
+            $variant->price = $request->price;
             $variant->save();
-            foreach (UserBranch::getUserBranch() as $branchId) {
-                ProductBranch::updateOrCreate(
-                    ['product_id' => $variant->id, 'branch_id' => $branchId],
-                    ['price' => $variant->price]
-                );
-            }
             DB::commit();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Variant tidak ditemukan.'], 404);
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json(['message' => 'Gagal memperbarui variant: ' . $e->getMessage()], 500);
@@ -898,36 +822,18 @@ class ProductController extends Controller
         return response()->json(['message' => 'Updated']);
     }
 
-    public function destroyVariant(Request $request, $id)
+    public function destroyVariant($id)
     {
         if ($denied = $this->requireAccess('products.destroy-variant')) {
             return $denied;
         }
 
-        $request->validate(['parent_id' => 'required|integer|exists:products,id']);
-
         try {
             DB::beginTransaction();
-            $variant = Product::whereKey($id)
-                ->whereHas('parentProduct', fn ($query) => $query->where('parent_id', $request->parent_id))
-                ->firstOrFail();
-            ProductChild::where('parent_id', $request->parent_id)->where('product_id', $variant->id)->delete();
-            // Only a dedicated, unshared variant belongs to this parent's delete lifecycle.
-            if ($variant->parent_id == $request->parent_id) {
-                if (ProductChild::where('product_id', $variant->id)->exists()) {
-                    $variant->parent_id = null;
-                    $variant->save();
-                } else {
-                    ProductBranch::where('product_id', $variant->id)->delete();
-                    $variant->delete();
-                }
-            }
+            $variant = Product::findOrFail($id);
+            $variant->delete();
             DB::commit();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Variant tidak ditemukan.'], 404);
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json(['message' => 'Gagal menghapus variant: ' . $e->getMessage()], 500);
         }
 

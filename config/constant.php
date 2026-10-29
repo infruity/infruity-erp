@@ -143,9 +143,7 @@ return [
         ],
         'staff' => [
             'label' => 'Staff',
-            'actions' => $resourceActions('Staff', [
-                'assign-roles' => 'Tetapkan Hak Akses Karyawan',
-            ]),
+            'actions' => $resourceActions('Staff'),
         ],
         'branch' => [
             'label' => 'Cabang',
@@ -181,6 +179,7 @@ return [
                 'delete_product' => 'Hapus Produk Kulak',
                 'update_receive_product' => 'Simpan Penerimaan Produk Kulak',
                 'set_selesai' => 'Selesaikan Kulak',
+                'reset' => 'Reset Transaksi Kulak',
             ]),
         ],
         'sortir' => [

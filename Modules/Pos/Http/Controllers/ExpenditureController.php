@@ -12,9 +12,6 @@ use Modules\Master\Entities\UserBranch;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Validation\Rule;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Modules\Pos\Entities\ExpenditurePayment;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -93,9 +90,7 @@ class ExpenditureController extends Controller
         }
 
         $data['alpinejs'] = true;
-        $data['data'] = Expenditure::with('branch', 'payment', 'paymentMethod')
-            ->whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
-        abort_unless($this->canEdit($data['data']), 409, 'Transaksi final sudah tidak dapat diubah.');
+        $data['data'] = Expenditure::with('branch', 'payment', 'paymentMethod')->findOrFail($id);
         $data['detail'] = ExpenditureDetail::with('product', 'product.unit')->where('expenditure_id', $id)->get();
         $data['invoice_number'] = $data['data']->invoice_number;
         return view('pos::expenditure.create', $data);
@@ -129,20 +124,14 @@ class ExpenditureController extends Controller
 
         try {
             DB::beginTransaction();
-            $pos = Expenditure::whereIn('branch_id', UserBranch::getUserBranch())->lockForUpdate()->findOrFail($id);
-            $pos->setRelation('payment', ExpenditurePayment::where('expenditure_id', $pos->id)->lockForUpdate()->get());
-            abort_unless($this->canDelete($pos), 409, 'Transaksi final atau transaksi dengan pembayaran tidak dapat dihapus.');
+            $pos = Expenditure::findOrFail($id);
             $pos->delete();
             ExpenditureDetail::where('expenditure_id', $id)->delete();
-            ExpenditurePayment::where('expenditure_id', $id)->delete();
             DB::commit();
             return response()->json([
                 'success' => true,
                 'message' => 'Data berhasil dihapus.'
             ]);
-        } catch (HttpExceptionInterface | ModelNotFoundException $e) {
-            DB::rollBack();
-            throw $e;
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json([
@@ -154,123 +143,106 @@ class ExpenditureController extends Controller
 
     public function saveTransaction(Request $request)
     {
-        $this->authorizeAccess('expenditure.save-transaction');
-        $branchIds = array_map('intval', UserBranch::getUserBranch());
+        if ($denied = $this->requireAccess('expenditure.save-transaction')) {
+            return $denied;
+        }
+
+        // dd($request->all());
         $data = $request->validate([
-            'expenditure_id' => ['present', 'nullable', 'integer', 'min:1'],
-            'branch_id' => ['required', 'integer', Rule::in($branchIds)],
-            'date' => ['required', 'date'],
-            'invoice_number' => ['nullable', 'string', 'max:255'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.id' => ['nullable', 'integer'],
-            'items.*.name' => ['required', 'string', 'max:255'],
-            'items.*.unit' => ['nullable', 'string', 'max:255'],
-            'items.*.price' => ['required', 'numeric', 'min:0'],
-            'items.*.qty' => ['required', 'numeric', 'gt:0'],
-            'items.*.discount' => ['nullable', 'numeric', 'min:0'],
-            'items.*.total_input' => ['required', 'numeric', 'min:0'],
-            'total' => ['required', 'numeric', 'min:0'],
-            'subtotal' => ['required', 'numeric', 'min:0'],
-            'status' => ['nullable', 'in:draft,paid,debt,temp,pending'],
-            'payment' => ['nullable', 'numeric', 'min:0'],
-            'payment_method' => ['nullable', 'integer', 'exists:payment_method,id', Rule::requiredIf((float) $request->input('payment', 0) > 0)],
-            'type' => ['required', 'in:pengeluaran,pemasukan'],
+            // 'customer_id' => 'nullable|exists:customer,id',
+            'branch_id' => 'nullable',
+            'date' => 'required|date',
+            'invoice_number' => 'nullable',
+            'items' => 'required|array',
+            'total' => 'required|numeric',
+            'subtotal' => 'required|numeric',
+            'status' => 'nullable|in:draft,paid,debt,temp,pending',
+            'payment' => 'nullable|numeric',
+            'payment_method' => 'nullable|numeric',
+            'type' => 'required|in:pengeluaran,pemasukan',
         ]);
 
         try {
-            $transactionId = DB::transaction(function () use ($data, $branchIds) {
-                $userId = Auth::id();
-                if (! empty($data['expenditure_id'])) {
-                    $pos = Expenditure::whereIn('branch_id', $branchIds)
-                        ->lockForUpdate()->findOrFail($data['expenditure_id']);
-                    abort_if((int) $pos->branch_id !== (int) $data['branch_id'], 422, 'Cabang transaksi yang sudah tersimpan tidak dapat dipindahkan.');
-                    abort_unless($this->canEdit($pos), 409, 'Transaksi final sudah tidak dapat diubah.');
-                    abort_if(in_array($pos->status, ['paid', 'debt'], true)
-                        && ! in_array($data['status'] ?? 'draft', ['paid', 'debt'], true),
-                        409, 'Transaksi final tidak dapat dikembalikan menjadi draft.');
-                } else {
-                    // A preview invoice is never the identity of an existing transaction.
-                    $pos = new Expenditure([
-                        'uuid' => Str::uuid(),
-                        'invoice_number' => Expenditure::getOrderNumber(),
-                        'created_by' => $userId,
-                    ]);
-                }
+            $userId = Auth::id();
+            DB::beginTransaction();
+            $cek = Expenditure::where('invoice_number', $data['invoice_number'])->first();
+            if ($cek) {
+                $pos = Expenditure::find($cek->id);
+                $posDetail = ExpenditureDetail::where('expenditure_id', $cek->id);
+                ExpenditureDetail::where('expenditure_id', $cek->id)->delete();
+                $pos->delete();
+            }
+            // Simpan ke tabel transaksi (buat dulu kalau belum ada)
+            $pos = new Expenditure([
+                'uuid' => Str::uuid(),
+                'branch_id' => $data['branch_id'],
+                'date' => $data['date'],
+                'invoice_number' => Expenditure::getOrderNumber(),
+                'subtotal' => $data['subtotal'],
+                'total' => $data['total'],
+                'paid' => $data['payment'] ?? 0,
+                'payment_method' => $data['payment_method'] ?? null,
+                'status' => $data['status'] ?? 'draft',
+                'type' => $data['type'],
+                'created_by' => $userId,
+            ]);
+            $pos->created_at = now();
+            $pos->save();
 
-                $payments = $pos->exists
-                    ? ExpenditurePayment::where('expenditure_id', $pos->id)->lockForUpdate()->get()
-                    : collect();
-                $amount = (float) ($data['payment'] ?? $pos->paid ?? 0);
-                $method = $data['payment_method'] ?? $pos->payment_method;
-                if ($payments->count() > 1) {
-                    $netPaid = (float) $payments->sum(fn ($payment) => (float) $payment->total - (float) $payment->return);
-                    abort_if(abs($amount - $netPaid) > 0.005 || (int) $method !== (int) $pos->payment_method,
-                        409, 'Pembayaran multi-nota tidak dapat diubah melalui editor transaksi.');
-                    $amount = $netPaid;
-                }
-
-                $pos->fill([
-                    'branch_id' => $data['branch_id'], 'date' => $data['date'], 'total' => $data['total'],
-                    'paid' => $amount, 'payment_method' => $method, 'status' => $data['status'] ?? 'draft',
-                    'type' => $data['type'],
+            // Simpan item transaksi
+            $transaksiId = $pos->id;
+            foreach ($data['items'] as $item) {
+                ExpenditureDetail::insert([
+                    'expenditure_id' => $transaksiId,
+                    'product_id' => $item['id'],
+                    'product_name' => $item['name'],
+                    'product_unit' => $item['unit'],
+                    'price' => $item['price'],
+                    'quantity' => $item['qty'],
+                    'discount' => $item['discount'] ?? 0,
+                    'subtotal' => $item['total_input'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                    'type' => 'product',
+                    'created_by' => $userId,
                 ]);
-                $pos->updated_by = $userId;
-                $pos->save();
-                ExpenditureDetail::where('expenditure_id', $pos->id)->delete();
-                foreach ($data['items'] as $item) {
-                    ExpenditureDetail::insert([
-                        'expenditure_id' => $pos->id, 'product_id' => $item['id'] ?? null,
-                        'product_name' => $item['name'], 'product_unit' => $item['unit'] ?? null,
-                        'price' => $item['price'], 'quantity' => $item['qty'], 'discount' => $item['discount'] ?? 0,
-                        'subtotal' => $item['total_input'], 'created_at' => now(), 'updated_at' => now(),
-                        'type' => 'product', 'created_by' => $userId,
-                    ]);
-                }
+            }
+            // dd($request->all());
 
-                if ($payments->count() === 1) {
-                    // The editor carries cumulative paid, not a new payment intent.
-                    $payment = $payments->first();
-                    $payment->fill(['total' => $amount + (float) $payment->return,
-                        'payment_method_id' => $method, 'date' => $data['date'], 'branch_id' => $pos->branch_id]);
-                    $payment->updated_by = $userId;
-                    $payment->save();
-                } elseif ($payments->isEmpty() && $amount > 0) {
-                    ExpenditurePayment::create([
-                        'uuid' => Str::uuid(), 'date' => $data['date'], 'nota_number' => now()->format('YmdHis'),
-                        'expenditure_id' => $pos->id, 'branch_id' => $pos->branch_id,
-                        'payment_method_id' => $method, 'total' => $amount, 'created_by' => $userId,
-                    ]);
-                }
+            $payment = new ExpenditurePayment([
+                'uuid' => Str::uuid(),
+                'date' => $data['date'],
+                'nota_number' => date('YmdHis'),
+                'expenditure_id' => $pos->id,
+                'branch_id' => $data['branch_id'],
+                // 'account_id' => $data['account_id'],
+                'payment_method_id' => $data['payment_method'],
+                'total' => $data['payment'],
+                'created_by' => Auth::user()->id_user,
+            ]);
+            // dd($payment);
+            $payment->save();
+            DB::commit();
+            DB::disconnect();
 
-                return $pos->id;
-            });
-
-            return response()->json(['success' => true, 'message' => 'Transaksi berhasil disimpan', 'transaksi_id' => $transactionId]);
-        } catch (HttpExceptionInterface | ModelNotFoundException $e) {
-            throw $e;
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi berhasil disimpan',
+                'transaksi_id' => $transaksiId
+            ]);
         } catch (\Throwable $e) {
-            report($e);
-            return response()->json(['success' => false, 'message' => 'Gagal menyimpan transaksi'], 500);
+            DB::rollBack();
+            DB::disconnect();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan transaksi',
+                'error' => $e->getMessage()
+            ], 500);
         }
-    }
-
-    private function canDelete(Expenditure $transaction): bool
-    {
-        return ! in_array($transaction->status, ['paid', 'debt'], true)
-            && (float) $transaction->paid === 0.0
-            && ! $transaction->payment->contains(fn ($payment) => (float) $payment->total != 0 || (float) $payment->return != 0);
-    }
-
-    private function canEdit(Expenditure $transaction): bool
-    {
-        return in_array($transaction->status, ['temp', 'draft'], true)
-            || (in_array($transaction->status, ['pending', 'paid', 'debt'], true)
-                && $transaction->updated_at && $transaction->updated_at->gte(now()->subMinutes(30)));
     }
 
     public function get_data(Request $request)
     {
-        $this->authorizeAccess('expenditure.index');
         $query = Expenditure::with('branch', 'payment')->whereIn('branch_id', UserBranch::getUserBranch());
         if ($request->has('status_filter') && $request->status_filter !== 'all') {
             $query = $query->where('status', $request->status_filter);
@@ -282,8 +254,7 @@ class ExpenditureController extends Controller
             $query->where('branch_id', $request->cabang_filter);
         }
         $data = $query->orderBy('id', 'DESC')->get();
-        $canEdit = $this->hasAccess('expenditure.edit');
-        $canDelete = $this->hasAccess('expenditure.destroy');
+        // dd($data);
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('name', function ($item) {
@@ -309,7 +280,7 @@ class ExpenditureController extends Controller
                 }
                 return $html;
             })
-            ->addColumn('action', function ($item) use ($canEdit, $canDelete) {
+            ->addColumn('action', function ($item) {
                 $html = '';
                 $html .= '
                     <div class="dropstart">
@@ -317,7 +288,13 @@ class ExpenditureController extends Controller
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
                         <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
-                if ($canEdit && $this->canEdit($item)) {
+                $isRecent = false;
+                $timeRef = isset($item->updated_at) ? $item->updated_at : (isset($item->created_at) ? $item->created_at : null);
+                if ($timeRef && \Carbon\Carbon::parse($timeRef)->diffInMinutes(now()) <= 30) {
+                    $isRecent = true;
+                }
+
+                if (in_array($item->status, ['temp', 'draft']) || $isRecent) {
                     $html .= '
                             <li>
                                 <a class="dropdown-item" href="' . route('expenditure.edit', $item->id) . '">
@@ -325,7 +302,7 @@ class ExpenditureController extends Controller
                                 </a>
                             </li>';
                 }
-                if ($canDelete && $this->canDelete($item)) {
+                if (!in_array($item->status, ['paid', 'debt'])) {
                     $html .= '
                             <li>
                                 <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $item->id . ')">

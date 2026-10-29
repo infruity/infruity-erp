@@ -3,11 +3,11 @@ namespace Modules\Transaction\Http\Controllers;
 
 use Exception;
 use Illuminate\Contracts\Support\Renderable;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -22,7 +22,6 @@ use Modules\Transaction\Entities\ProductHppRunning;
 use Modules\Transaction\Entities\ProductStock;
 use Modules\Transaction\Entities\Wholesale;
 use Modules\Transaction\Entities\WholesaleProduct;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Yajra\DataTables\Facades\DataTables;
 
 class WholesaleController extends Controller
@@ -338,7 +337,9 @@ class WholesaleController extends Controller
      */
     public function update_product(Request $request, $id)
     {
-        $this->authorizeAccess('wholesale.update-product');
+        if ($denied = $this->requireAccess('wholesale.update-product')) {
+            return $denied;
+        }
 
         // Validasi input
         // dd($request->all());
@@ -350,7 +351,7 @@ class WholesaleController extends Controller
 
         try {
             DB::beginTransaction();
-            $wholesaleProduct              = $this->wholesaleProductForMutation($id);
+            $wholesaleProduct              = WholesaleProduct::findOrFail($id);
             $wholesaleProduct->supplier_id = $validated['supplier_id'];
             $wholesaleProduct->price       = $validated['price'];
             $wholesaleProduct->quantity    = $validated['qty'];
@@ -358,9 +359,6 @@ class WholesaleController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            if ($e instanceof ModelNotFoundException || $e instanceof HttpExceptionInterface) {
-                throw $e;
-            }
             return response()->json(['message' => 'Product updated failed']);
         }
 
@@ -690,11 +688,13 @@ class WholesaleController extends Controller
 
     public function delete_product(Request $request, $id)
     {
-        $this->authorizeAccess('wholesale.delete_product');
+        if ($denied = $this->requireAccess('wholesale.delete_product')) {
+            return $denied;
+        }
 
         try {
             DB::beginTransaction();
-            $wholesaleProduct = $this->wholesaleProductForMutation($id);
+            $wholesaleProduct = WholesaleProduct::findOrFail($id);
             $wholesaleProduct->delete();
             DB::commit();
             return response()->json([
@@ -702,9 +702,6 @@ class WholesaleController extends Controller
             ], 201);
         } catch (Exception $e) {
             DB::rollback();
-            if ($e instanceof ModelNotFoundException || $e instanceof HttpExceptionInterface) {
-                throw $e;
-            }
             return response()->json([
                 'message' => 'Product gagal dihapus.',
             ], 404);
@@ -780,6 +777,67 @@ class WholesaleController extends Controller
             return response()->json([
                 'message' => 'Product gagal diterima.',
             ], 404);
+        }
+    }
+
+    public function reset_transactions(Request $request)
+    {
+        if ($denied = $this->requireAccess('wholesale.reset')) {
+            return $denied;
+        }
+
+        $tables = [
+            'wholesale',
+            'wholesale_product',
+            'wholsale_product',
+            'pos_transaction',
+            'pos_transaction_detail',
+            'pos_payment',
+            'sortir_transaction',
+            'sortir_transaction_detail',
+            'production',
+            'production_detail',
+            'production_parcel',
+            'production_parcel_detail',
+            'transfer',
+            'transfer_detail',
+            'stock_opname',
+            'stock_opname_discussions',
+            'stock_opname_history',
+            'order_book',
+            'order_book_detail',
+            'expenditure',
+            'expenditure_detail',
+            'expenditure_payment',
+        ];
+
+        try {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+
+            $resetTables = [];
+            foreach ($tables as $table) {
+                if (!Schema::hasTable($table)) {
+                    continue;
+                }
+                DB::table($table)->truncate();
+                $resetTables[] = $table;
+            }
+
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+            return response()->json([
+                'success'        => true,
+                'message'        => 'Transaksi wholesale berhasil direset.',
+                'reset_tables'   => $resetTables,
+            ]);
+        } catch (\Throwable $e) {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mereset transaksi wholesale.',
+                'error'   => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -1180,18 +1238,6 @@ class WholesaleController extends Controller
             })
             ->rawColumns(['branch', 'po', 'staff', 'items', 'action', 'status', 'address'])
             ->make(true);
-    }
-
-    private function wholesaleProductForMutation($id): WholesaleProduct
-    {
-        $wholesale = Wholesale::whereIn('branch_id', UserBranch::getUserBranch())
-            ->whereHas('products', fn ($query) => $query->whereKey($id))
-            ->lockForUpdate()
-            ->firstOrFail();
-
-        abort_if($wholesale->status === 'complete', 409, 'Pengadaan yang sudah selesai tidak dapat diubah.');
-
-        return $wholesale->products()->lockForUpdate()->findOrFail($id);
     }
 
     private function hydrateWholesaleDetailPricing($detail, $branchId = null)

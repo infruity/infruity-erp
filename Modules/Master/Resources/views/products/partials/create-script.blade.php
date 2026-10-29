@@ -517,7 +517,7 @@
                 // Edit: buka modal dan isi data
                 $('#variant_table').on('click', '.edit-variant', function() {
                     $('#variant_id').val($(this).data('id'));
-                    $('#variant_name').val($(this).attr('data-name'));
+                    $('#variant_name').val($(this).data('name'));
                     $('#variant_price').val($(this).data('price'));
                     document.getElementById('editVariantModal').showModal();
                 });

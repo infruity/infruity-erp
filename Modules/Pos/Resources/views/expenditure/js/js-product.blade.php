@@ -26,7 +26,6 @@
             ongkirGlobal: 0,
             diskonOngkir: 0,
             payment: 0,
-            expenditureId: null,
 
             // Add Product
             showAddModal: false,
@@ -626,34 +625,6 @@
                 return number.toLocaleString("id-ID");
             },
 
-            submitExpenditure(data, doneCallback) {
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                return fetch('/expenditure/save-transaction', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-                    body: JSON.stringify(data),
-                })
-                    .then(async response => {
-                        const result = await response.json();
-                        if (!response.ok || result.success !== true) {
-                            throw new Error(result.message || 'Gagal menyimpan transaksi.');
-                        }
-                        return result;
-                    })
-                    .then(result => {
-                        this.expenditureId = result.transaksi_id;
-                        redirectToHome();
-                        return result;
-                    })
-                    .catch(error => {
-                        Swal.fire({ icon: 'error', title: 'Gagal', text: error.message || 'Gagal menyimpan transaksi.' });
-                        return null;
-                    })
-                    .finally(() => {
-                        if (typeof doneCallback === 'function') doneCallback();
-                    });
-            },
-
             // Action save Transaction
             saveTransaction(doneCallback) {
                 if (this.cart.length === 0) {
@@ -674,7 +645,6 @@
                 const paymentMethod = document.querySelector('select[name="payment_id"]').value;
 
                 const data = {
-                    expenditure_id: this.expenditureId,
                     branch_id: branchId,
                     type: type,
                     date: transactionDate,
@@ -686,7 +656,39 @@
                     payment: payment,
                     payment_method: paymentMethod,
                 };
-                return this.submitExpenditure(data, doneCallback);
+                // Simulasi kirim ke server
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                fetch('/expenditure/save-transaction', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(data),
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        // Swal.fire({
+                        //     icon: 'success',
+                        //     title: 'Berhasil',
+                        //     text: 'Transaksi berhasil disimpan!',
+                        // });
+                        // this.resetPOS(); // Reset cart dsb.
+                        // console.log(res);
+                        redirectToHome();
+
+                    })
+                    .catch(err => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: 'Gagal menyimpan transaksi.',
+                        });
+                        console.error(err);
+                        if (typeof doneCallback === 'function') doneCallback();
+                        return;
+                    });
             },
             // Save Order Book
             saveToOrderBook(doneCallback) {
@@ -708,7 +710,6 @@
                 const paymentMethod = document.querySelector('select[name="payment_id"]').value;
 
                 const data = {
-                    expenditure_id: this.expenditureId,
                     branch_id: branchId,
                     type: type,
                     date: transactionDate,
@@ -721,7 +722,39 @@
                     payment_method: paymentMethod,
                 };
 
-                return this.submitExpenditure(data, doneCallback);
+                // Simulasi kirim ke server
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                fetch('/expenditure/save-transaction', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(data),
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        // Swal.fire({
+                        //     icon: 'success',
+                        //     title: 'Berhasil',
+                        //     text: 'Transaksi berhasil disimpan!',
+                        // });
+                        // this.resetPOS(); // Reset cart dsb.
+                        // window.location.href = '/pos';
+                        redirectToHome();
+
+                    })
+                    .catch(err => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: 'Gagal menyimpan transaksi.',
+                        });
+                        console.error(err);
+                        if (typeof doneCallback === 'function') doneCallback();
+                        return;
+                    });
             },
             // Pembayaran 
             goToPayment(doneCallback) {
@@ -814,11 +847,12 @@
             },
 
             loadExistingData(data, detail) {
-                this.expenditureId = data.id;
                 // Load existing cart items
+                console.log('data', data);
+                console.log('detail', detail);
                 detail.map(item => {
                     const obj = {
-                        id: item.product_id ?? null,
+                        id: item.id,
                         name: item.product_name,
                         price: this.sanitizeNumber(Number(item.price || 0)), // pastikan number dulu
                         hpp: parseFloat(item.hpp || 0),

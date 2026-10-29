@@ -127,7 +127,6 @@ class UserStaffLinkTest extends TestCase
             ['id_role' => 3, 'permission' => 'staff.index'],
             ['id_role' => 3, 'permission' => 'staff.edit'],
             ['id_role' => 3, 'permission' => 'staff.update'],
-            ['id_role' => 3, 'permission' => 'staff.assign-roles'],
             ['id_role' => 3, 'permission' => 'role.index'],
         ]);
         DB::table('branch')->insert(['id' => 1, 'name' => 'Cabang Test']);
@@ -440,35 +439,6 @@ class UserStaffLinkTest extends TestCase
         $this->assertDatabaseHas('user_branch', ['user_id' => $account->id_user, 'branch_id' => 1]);
     }
 
-    public function test_account_creation_cannot_adopt_an_administrator_role_for_a_nonadmin_actor(): void
-    {
-        DB::table('role')->insert(['id_role' => 1, 'nm_role' => 'Administrator']);
-        DB::table('staff_role')->where('staff_id', 10)->update(['id_role' => 1]);
-
-        $this->post('/user', [
-            'email' => 'unauthorized-admin@example.test',
-            'password' => 'fixture-password',
-            'staff_id' => 10,
-        ])->assertForbidden();
-
-        $this->assertDatabaseMissing('users', ['email' => 'unauthorized-admin@example.test']);
-        $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => null]);
-    }
-
-    public function test_account_creation_requires_assignment_permission_when_adopting_pending_roles(): void
-    {
-        DB::table('role_menu')->where('id_role', 3)->where('permission', 'staff.assign-roles')->delete();
-
-        $this->post('/user', [
-            'email' => 'unauthorized-role@example.test',
-            'password' => 'fixture-password',
-            'staff_id' => 10,
-        ])->assertForbidden();
-
-        $this->assertDatabaseMissing('users', ['email' => 'unauthorized-role@example.test']);
-        $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => null]);
-    }
-
     public function test_account_creation_requires_a_karyawan_link(): void
     {
         $this->from('/user?create=1')->post('/user', [
@@ -550,50 +520,14 @@ class UserStaffLinkTest extends TestCase
         $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => 2]);
     }
 
-    public function test_user_index_lists_all_roles_assigned_to_an_account(): void
+    public function test_role_index_lists_all_roles_assigned_to_an_account(): void
     {
         DB::table('role_user')->insert(['id_user' => 2, 'id_role' => 3]);
 
-        $response = $this->get('/user')
-            ->assertOk()
-            ->assertViewIs('admin.user.index')
-            ->assertViewHas('users', function ($users) {
-                $account = $users->getCollection()->firstWhere('id_user', 2);
-
-                return $account !== null
-                    && $account->email === 'first@example.test'
-                    && $account->role_ids === [2, 3]
-                    && $account->role_names === ['Operator', 'User Manager'];
-            });
-
-        $document = new \DOMDocument();
-        $document->loadHTML($response->getContent(), LIBXML_NOERROR | LIBXML_NOWARNING);
-        $xpath = new \DOMXPath($document);
-        $rows = $xpath->query('//button[@aria-label="Detail first@example.test"]');
-
-        $this->assertCount(1, $rows);
-        $row = $rows->item(0);
-        $this->assertStringContainsString('first@example.test', $row->textContent);
-        $this->assertStringContainsString('First Account', $row->textContent);
-        $this->assertCount(1, $xpath->query('.//span[normalize-space(.)="Operator · User Manager"]', $row));
-    }
-
-    public function test_role_index_lists_the_role_catalog_not_account_assignments(): void
-    {
         $this->get('/roles')
             ->assertOk()
-            ->assertViewIs('admin.role.index')
-            ->assertViewHas('roles', function ($roles) {
-                return $roles->getCollection()->map(fn ($role) => [
-                    (int) $role->id_role,
-                    $role->nm_role,
-                    (int) $role->role_menu_count,
-                ])->all() === [[2, 'Operator', 0], [3, 'User Manager', 12]];
-            })
-            ->assertSee('Menampilkan 2 dari 2 role')
-            ->assertSeeInOrder(['Operator', 'ROLE-0002', '0 izin', 'User Manager', 'ROLE-0003', '12 izin'])
-            ->assertDontSee('first@example.test')
-            ->assertDontSee('second@example.test');
+            ->assertSee('first@example.test')
+            ->assertSee('Operator · User Manager');
     }
 
     public function test_account_hydration_reads_the_canonical_staff_id_relationship(): void

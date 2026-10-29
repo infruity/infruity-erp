@@ -384,71 +384,107 @@
             }
         }
 
-        const deliverySubmissions = new Set();
-
-        function setSelesai(id) { return confirmDelivery(id, false); }
-        function setBayar(id) { return confirmDelivery(id, true); }
-
-        function confirmDelivery(id, collectCash) {
-            if (deliverySubmissions.has(String(id))) return;
-            return Swal.fire({
+        function setSelesai(id) {
+            Swal.fire({
                 title: 'Barang diterima?',
-                text: collectCash ? undefined : 'Data yang dirubah tidak bisa dikembalikan!',
-                html: collectCash ? `
-                    <p>Pemohon belum melakukan bayar, Harap masukkan nominal pembayaran:</p>
-                    <label for="nominalBayar">Nominal Pembayaran:</label>
-                    <input type="text" inputmode="numeric" id="nominalBayar" class="swal2-input" placeholder="Masukkan nominal">
-                    <p class="small">Isi 0 jika seluruh sisa tagihan ditutup voucher. Ketersediaan voucher diperiksa server.</p>
-                ` : undefined,
+                text: 'Data yang dirubah tidak bisa dikembalikan!',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, diterima!',
                 cancelButtonText: 'Batal',
-                customClass: { confirmButton: 'btn btn-danger', cancelButton: 'btn btn-secondary' },
-                buttonsStyling: false,
-                didOpen: collectCash ? () => {
-                    document.getElementById('nominalBayar').addEventListener('input', function() {
-                        this.value = formatRupiah(this.value);
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/delivery-order/set-selesai/${id}`, // Ganti dengan URL yang sesuai
+                        type: 'PUT',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: response.message || 'Data berhasil diubah.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+
+                            // Reload DataTable setelah berhasil menghapus data
+                            reloadDataTable();
+                        },
+                        error: function(xhr) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: xhr.responseJSON?.message ||
+                                    'Terjadi kesalahan saat mengubah data.'
+                            });
+                        }
                     });
-                } : undefined,
-                preConfirm: collectCash ? () => {
-                    const value = document.getElementById('nominalBayar').value.trim();
-                    const amount = Number(value.replace(/\./g, ''));
-                    if (!/^(?:0|[1-9]\d*|[1-9]\d{0,2}(?:\.\d{3})+)$/.test(value)
-                        || value.length > 17 || amount < 0 || amount > 9999999999999) {
-                        Swal.showValidationMessage('Masukkan rupiah bulat, misalnya 10.000, atau 0 untuk penyelesaian dengan voucher.');
-                        return false;
-                    }
-                    return value;
-                } : undefined,
-            }).then(result => {
-                if (result.isConfirmed) submitDelivery(id, collectCash ? result.value : undefined);
+                }
             });
         }
 
-        function submitDelivery(id, nominal) {
-            const key = String(id);
-            if (deliverySubmissions.has(key)) return;
-            deliverySubmissions.add(key);
-            const data = { _token: $('meta[name="csrf-token"]').attr('content') };
-            if (nominal !== undefined) data.nominal = nominal;
-            $.ajax({
-                url: `/delivery-order/set-selesai/${id}`,
-                type: 'PUT',
-                data,
-                success: function(response) {
-                    if (response.success !== true) {
-                        Swal.fire({ icon: 'error', title: 'Gagal', text: response.message || 'Penerimaan belum dapat dipastikan. Muat ulang daftar.' });
-                        return;
-                    }
-                    Swal.fire({ icon: 'success', title: 'Berhasil', text: response.message || 'Data berhasil diubah.', showConfirmButton: false, timer: 1500 });
-                    reloadDataTable();
+        function setBayar(id) {
+            Swal.fire({
+                title: 'Barang diterima?',
+                html: `
+                    <p>Pemohon belum melakukan bayar, Harap masukkan nominal pembayaran:</p>
+                    <label for="nominalBayar">Nominal Pembayaran:</label>
+                    <input type="text" id="nominalBayar" class="swal2-input" placeholder="Masukkan nominal">
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, diterima!',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-secondary'
                 },
-                error: function(xhr) {
-                    Swal.fire({ icon: 'error', title: 'Gagal', text: xhr.responseJSON?.message || 'Penerimaan belum dapat dipastikan. Muat ulang daftar sebelum mencoba kembali.' });
-                    if (xhr.status === 409) reloadDataTable();
+                buttonsStyling: false,
+                didOpen: () => {
+                    const input = document.getElementById('nominalBayar');
+                    input.addEventListener('input', function() {
+                        this.value = formatRupiah(this.value);
+                    });
                 },
-                complete: function() { deliverySubmissions.delete(key); },
+                preConfirm: () => {
+                    return document.getElementById('nominalBayar').value;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/delivery-order/set-selesai/${id}`,
+                        type: 'PUT',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            nominal: result.value // ambil nominal yang sudah diformat
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: response.message || 'Data berhasil diubah.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            reloadDataTable();
+                        },
+                        error: function(xhr) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: xhr.responseJSON?.message ||
+                                    'Terjadi kesalahan saat mengubah data.'
+                            });
+                        }
+                    });
+                }
             });
         }
 

@@ -9,7 +9,6 @@ use Modules\Crm\Entities\CustomerTier;
 use Modules\Crm\Entities\PointDecrement;
 use Modules\Crm\Entities\PointSchedule;
 use Modules\Crm\Entities\SettingExp;
-use Modules\Crm\Support\ExpSettingsRules;
 use Modules\Crm\Entities\PointFrequency;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -98,27 +97,20 @@ class PointScheduleController extends Controller
             return $denied;
         }
 
-        $validated = $request->validate([
-            'start_date' => ['required', 'date_format:Y-m-d'],
-            'end_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:start_date'],
-            'frequency' => ['required', 'integer', 'exists:crm_point_frequency,value'],
-            'break' => ['required', 'integer', 'in:1,2'],
-        ] + ExpSettingsRules::rules());
-
         DB::beginTransaction();
         try {
             $settingPoint = PointSchedule::findOrFail($id);
-            $settingPoint->start_date = $validated['start_date'];
-            $settingPoint->end_date = $validated['end_date'];
-            $settingPoint->frequency = $validated['frequency'];
-            $settingPoint->break = $validated['break'];
+            $settingPoint->start_date = $request->start_date;
+            $settingPoint->end_date = $request->end_date;
+            $settingPoint->frequency = $request->frequency;
+            $settingPoint->break = $request->break;
             $settingPoint->updated_by = Auth::id();
             $settingPoint->save();
 
             $settingExp = SettingExp::findOrFail($id);
-            $settingExp->skala = $validated['skala'];
-            $settingExp->value = $validated['value'];
-            $settingExp->value_exp = $validated['value'] * $validated['skala'];
+            $settingExp->skala = $request->skala;
+            $settingExp->value = $request->value;
+            $settingExp->value_exp = $request->value * $request->skala;
             $settingExp->updated_by = Auth::id();
             $settingExp->save();
 
@@ -145,7 +137,7 @@ class PointScheduleController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             return redirect()->back()->withInput($request->all())
-                ->with('error', 'Pembuatan Atur Jadwal Reset Automatis gagal.');
+                ->with('error', 'Pembuatan Atur Jadwal Reset Automatis gagal: ' . $e->getMessage());
         }
     }
 

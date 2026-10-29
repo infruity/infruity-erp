@@ -26,7 +26,6 @@ use Modules\Transaction\Entities\ProductionDetail;
 use Modules\Transaction\Entities\ProductionParcelDetail;
 use Modules\Transaction\Entities\ProductStock;
 use Modules\Transaction\Entities\ProductReceipt;
-use Modules\Transaction\Entities\Receipt;
 use Yajra\DataTables\Facades\DataTables;
 
 class PosController extends Controller
@@ -314,38 +313,170 @@ class PosController extends Controller
             return $denied;
         }
 
+        // dd($request->all());
         $data = $request->validate([
             'date'           => 'required|date',
             'transaction_id' => 'required|exists:pos_transaction,id',
             // 'branch_id' => 'required|exists:branch,id',
             // 'account_id' => 'required|exists:account,id',
             // 'payment_id' => 'required|exists:payment_method,id',
-            'payments'       => 'required|array|min:1',
-            'payments.*.payment_id' => 'required|integer|exists:payment_method,id',
-            'payments.*.amount' => ['required', 'regex:/^\d+(?:\.\d{3})*$/'],
+            'payments'       => 'required|array',
             'total_payment'  => 'required|numeric|min:0',
             'customer_id'    => 'nullable',
         ]);
 
-        $paymentAmounts = collect($data['payments'])->map(fn ($item) => (float) str_replace('.', '', (string) $item['amount']));
-        if (($paymentAmounts->sum() > 0 && $paymentAmounts->contains(fn ($amount) => $amount <= 0)) || abs($paymentAmounts->sum() - (float) $data['total_payment']) > 0.01) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['payments' => 'Jumlah rincian pembayaran tidak valid atau tidak sama dengan total pembayaran.']);
-        }
-
         try {
             DB::beginTransaction();
 
-            $pos = PosModel::whereKey($data['transaction_id'])
-                ->whereIn('branch_id', UserBranch::getUserBranch())->lockForUpdate()->firstOrFail();
-            if (! in_array($pos->status, ['draft', 'temp', 'pending', 'debt'], true)) {
-                throw \Illuminate\Validation\ValidationException::withMessages(['transaction_id' => 'Transaksi ini tidak dapat dibayar lagi.']);
+            // Simpan ke tabel pembayaran
+            $paymentNames   = collect($data['payments'])->pluck('payment_name')->toArray();
+            $paymentIds     = collect($data['payments'])->pluck('payment_id')->toArray();
+            $paymentAmounts = collect($data['payments'])->map(function ($item) {
+                return (float) preg_replace('/[^\d]/', '', $item['amount']);
+            })->toArray();
+
+            $payment = new Payment([
+                'uuid'              => Str::uuid(),
+                'date'              => $data['date'],
+                'nota_number'       => date('YmdHis') . Str::random(4),
+                'pos_id'            => $data['transaction_id'],
+                // 'branch_id' => $data['branch_id'],
+                // 'account_id' => $data['account_id'],
+                'payment_method'    => json_encode($paymentNames),
+                'payment_method_id' => json_encode($paymentIds),
+                'payment_amount'    => json_encode($paymentAmounts),
+                'total'             => array_sum($paymentAmounts),
+                'created_by'        => Auth::id(),
+            ]);
+            // dd($payment);
+            $payment->save();
+
+            $posForVoucher = PosModel::findOrFail($data['transaction_id']);
+
+            // Pengecekan stok seperti pada saveTransaction (hanya untuk transaksi yang belum terpotong stoknya)
+            if (in_array($posForVoucher->status, ['draft', 'temp', 'pending'])) {
+                $posDetails = PosDetailModel::where('pos_id', $data['transaction_id'])->get();
+                $parcelDetails = ProductionParcelDetail::where('pos_id', $data['transaction_id'])->get();
+                $productions = Production::with('productionDetails')->where('pos_id', $data['transaction_id'])->get();
+
+                $allProductIdsToLock = [];
+                $requiredStocks = [];
+
+                $addRequiredStock = function($productId, $qty) use (&$requiredStocks, &$allProductIdsToLock) {
+                    if (!$productId) return;
+                    
+                    if (!in_array($productId, $allProductIdsToLock)) {
+                        $allProductIdsToLock[] = $productId;
+                    }
+
+                    $product = Product::find($productId);
+                    $stockProductId = $productId;
+                    if ($product) {
+                        $parentId = $product->getParentId();
+                        $stockProductId = $parentId ?? $product->id;
+                        if ($parentId && !in_array($parentId, $allProductIdsToLock)) {
+                            $allProductIdsToLock[] = $parentId;
+                        }
+                    }
+                    
+                    if (!isset($requiredStocks[$stockProductId])) {
+                        $requiredStocks[$stockProductId] = 0;
+                    }
+                    $requiredStocks[$stockProductId] += (float)$qty;
+                };
+
+                foreach ($posDetails as $detail) {
+                    if ($detail->type === 'product') {
+                        $addRequiredStock($detail->product_id, $detail->quantity);
+                    } elseif ($detail->type === 'parcel') {
+                        if ($detail->parcel_id) {
+                            $addRequiredStock($detail->parcel_id, $detail->quantity);
+                        }
+                    } elseif ($detail->type === 'jus') {
+                        $production = $productions->where('product_id', $detail->product_id)->first();
+                        $productionQty = $production ? $production->quantity : 0;
+                        $consumeStockQty = $detail->quantity - $productionQty;
+                        if ($consumeStockQty > 0) {
+                            $addRequiredStock($detail->product_id, $consumeStockQty);
+                        }
+                    }
+                }
+
+                foreach ($parcelDetails as $pDetail) {
+                    $addRequiredStock($pDetail->product_id, $pDetail->quantity);
+                }
+
+                foreach ($productions as $production) {
+                    foreach ($production->productionDetails as $pDetail) {
+                        $addRequiredStock($pDetail->product_id, $pDetail->quantity);
+                    }
+                }
+
+                $allProductIdsToLock = array_unique($allProductIdsToLock);
+                sort($allProductIdsToLock);
+
+                // Kunci master produk secara berurutan agar antrean checkout terjaga dan bebas Deadlock
+                foreach ($allProductIdsToLock as $lockId) {
+                    Product::where('id', $lockId)->lockForUpdate()->first();
+                }
+
+                // Validasi stok akumulatif dari semua sumber
+                foreach ($requiredStocks as $stockProductId => $requiredQty) {
+                    $productStock = ProductStock::where('id', $stockProductId)
+                        ->where('branch_id', $posForVoucher->branch_id)
+                        ->first();
+                    $currentStock = $productStock ? (float)$productStock->stock_available : 0;
+
+                    if ($currentStock < $requiredQty) {
+                        $product     = Product::find($stockProductId);
+                        $productName = $product ? $product->name : 'Produk #' . $stockProductId;
+                        throw new \Exception("Stok \"{$productName}\" tidak mencukupi. Stok tersedia: {$currentStock}, dibutuhkan: {$requiredQty}");
+                    }
+                }
             }
-            $payments = collect($data['payments'])->map(fn ($item) => [
-                'payment_id' => (int) $item['payment_id'],
-                'amount' => (float) str_replace('.', '', (string) $item['amount']),
-            ])->all();
-            $payment = app(\Modules\Pos\Services\CompletePayment::class)
-                ->handle($pos, $payments, $data['date'], (int) Auth::id());
+
+            if (empty($posForVoucher->deposito_id) && empty($posForVoucher->voucher)) {
+                $deposito = Deposito::where('customer_id', $data['customer_id'])->first();
+                $voucher  = $deposito?->voucher ?? 0;
+                
+                if ($deposito && $voucher > 0 && $deposito->voucher_qty > 0) {
+                    PosModel::where("id", $data['transaction_id'])->update([
+                        'voucher'     => $voucher,
+                        'voucher_qty' => 1,
+                        'deposito_id' => $deposito->id,
+                    ]);
+                    $deposito->decrement('voucher_qty');
+                }
+            }
+
+            $totalPayment = Payment::where('pos_id', $data['transaction_id'])
+                ->sum('total');
+
+            $pos       = PosModel::findOrFail($data['transaction_id']);
+            $total     = $pos->total - $pos->voucher;
+            $pos->paid = $totalPayment;
+            if ($totalPayment > $total) {
+                $lastPayment         = Payment::findOrFail($payment->id);
+                $lastPayment->return = ($totalPayment - $total);
+                $lastPayment->save();
+            } else {
+                $lastPayment            = Payment::findOrFail($payment->id);
+                $lastPayment->remaining = ($total - $totalPayment);
+                $lastPayment->save();
+            }
+            $status = 'debt';
+            if ($totalPayment >= $total) {
+                $status = 'paid';
+            }
+            // $pos->ongkir_status = 'delivered';
+            $pos->status = $status;
+            $pos->save();
+
+            if (in_array($status, ['paid', 'debt'])) {
+                Production::where('pos_id', $pos->id)
+                    ->where('status', 'draft')
+                    ->update(['status' => 'complete']);
+            }
 
             DB::commit();
             return response()->json([
@@ -356,10 +487,6 @@ class PosController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollback();
-            if ($e instanceof \Illuminate\Validation\ValidationException
-                || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
-                throw $e;
-            }
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan transaksi',
@@ -421,16 +548,7 @@ class PosController extends Controller
             'jus.*.discount'    => 'nullable|numeric|min:0',
             'jus.*.total_input' => 'nullable|numeric|min:0',
             'jus.*.product_receipt_id' => 'nullable|array',
-            'jus.*.product_receipt_id.*' => ['required', 'integer', 'exists:products,id'],
             'jus.*.product_receipt_qty' => 'nullable|array',
-            'jus.*.product_receipt_qty.*' => [
-                'required', 'numeric', 'gt:0',
-                static function ($attribute, $value, $fail) {
-                    if (! is_finite((float) $value)) {
-                        $fail('Kuantitas bahan harus berupa angka finite.');
-                    }
-                },
-            ],
             'subtotal'          => 'required|numeric|min:0',
             'discount'          => 'nullable|numeric|min:0',
             'ongkir'            => 'required|numeric|min:0',
@@ -452,26 +570,6 @@ class PosController extends Controller
         try {
             $userId     = Auth::id();
             $isTempSave = ($data['status'] ?? null) === 'temp';
-            DB::beginTransaction();
-
-            $juiceProductIds = [];
-            foreach ($data['jus'] ?? [] as $juice) {
-                if (!empty($juice['productId']) && is_numeric($juice['productId'])) {
-                    $juiceProductIds[] = (int) $juice['productId'];
-                }
-            }
-            $juiceProductIds = array_values(array_unique($juiceProductIds));
-            sort($juiceProductIds, SORT_NUMERIC);
-            $juiceRecipesByProduct = [];
-            foreach ($juiceProductIds as $juiceProductId) {
-                $receipt = Receipt::where('product_id', $juiceProductId)
-                    ->orderByDesc('id')->lockForUpdate()->first();
-                $juiceRecipesByProduct[$juiceProductId] = $receipt
-                    ? ProductReceipt::where('receipt_id', $receipt->id)
-                        ->where('product_id', $juiceProductId)
-                        ->orderBy('id')->lockForUpdate()->get()
-                    : collect();
-            }
 
             
             // Kumpulkan semua ID Produk untuk mengurutkan lockForUpdate (Mencegah Deadlock)
@@ -505,8 +603,10 @@ class PosController extends Controller
                     if (!empty($jus['productId'])) {
                         $allProductIdsToLock[] = $jus['productId'];
                     }
-                    foreach ($juiceRecipesByProduct[(int) ($jus['productId'] ?? 0)] ?? [] as $ingredient) {
-                        $allProductIdsToLock[] = $ingredient->product_receipt_id;
+                    if (!empty($jus['product_receipt_id'])) {
+                        foreach ($jus['product_receipt_id'] as $receiptProductId) {
+                            $allProductIdsToLock[] = $receiptProductId;
+                        }
                     }
                 }
             }
@@ -526,6 +626,8 @@ class PosController extends Controller
             }
             $allProductIdsToLock = array_unique(array_merge($allProductIdsToLock, $parentIdsToLock));
             sort($allProductIdsToLock);
+
+            DB::beginTransaction();
 
             // Kunci master produk secara berurutan agar antrean checkout terjaga dan bebas Deadlock
             foreach ($allProductIdsToLock as $lockId) {
@@ -609,10 +711,11 @@ class PosController extends Controller
                         $addRequiredStock($productId, $consumeStockQty);
                     }
 
-                    if ($productionQty > 0) {
-                        foreach ($juiceRecipesByProduct[(int) $productId] ?? [] as $ingredient) {
-                            $requiredQty = (float) $ingredient->quantity * $productionQty;
-                            $addRequiredStock($ingredient->product_receipt_id, $requiredQty);
+                    if ($productionQty > 0 && isset($jus['product_receipt_id']) && is_array($jus['product_receipt_id'])) {
+                        foreach ($jus['product_receipt_id'] as $key => $receiptProductId) {
+                            $receiptQty  = (float)($jus['product_receipt_qty'][$key] ?? 0);
+                            $requiredQty = $receiptQty * $productionQty;
+                            $addRequiredStock($receiptProductId, $requiredQty);
                         }
                     }
                 }
@@ -841,25 +944,6 @@ class PosController extends Controller
 
             if (!empty($data['jus'])) {
                 $remainingStockJus = [];
-                $movingHpp = static function (int $productId): float {
-                    $parentIds = DB::table('product_child')
-                        ->where('product_id', $productId)
-                        ->distinct()
-                        ->pluck('parent_id');
-                    if ($parentIds->count() > 1) {
-                        throw \Illuminate\Validation\ValidationException::withMessages([
-                            'jus' => 'Varian dengan lebih dari satu parent tidak dapat dihitung HPP-nya secara pasti.',
-                        ]);
-                    }
-                    $stockProductId = (int) ($parentIds->first() ?? $productId);
-                    $hpp = ProductHppRunning::where('product_id', $stockProductId)
-                        ->orderByDesc('created_at')
-                        ->orderByDesc('trx_id')
-                        ->value('hpp_berjalan');
-
-                    return (float) ($hpp ?? Product::whereKey($stockProductId)->value('hpp') ?? 0);
-                };
-
                 foreach ($data['jus'] as $index => $value) {
                     $productId = $value['productId'];
                     if (!isset($remainingStockJus[$productId])) {
@@ -885,29 +969,6 @@ class PosController extends Controller
                     // Update remaining stock
                     $remainingStockJus[$productId] -= $consumeStockQty;
 
-                    $recipeHpp = 0.0;
-                    if ($productionQty > 0) {
-                        $recipeIngredients = $juiceRecipesByProduct[(int) $productId] ?? collect();
-                        if ($recipeIngredients->isEmpty()) {
-                            throw \Illuminate\Validation\ValidationException::withMessages([
-                                'jus' => 'Resep bahan tersimpan diperlukan untuk menghitung HPP produksi jus.',
-                            ]);
-                        }
-                        foreach ($recipeIngredients as $ingredient) {
-                            $ingredientQuantity = $ingredient->quantity;
-                            if (! is_numeric($ingredientQuantity) || ! is_finite((float) $ingredientQuantity) || (float) $ingredientQuantity <= 0) {
-                                throw \Illuminate\Validation\ValidationException::withMessages([
-                                    'jus' => 'Kuantitas setiap bahan resep tersimpan harus finite dan lebih besar dari nol.',
-                                ]);
-                            }
-                            $recipeHpp += (float) $ingredientQuantity * $movingHpp((int) $ingredient->product_receipt_id);
-                        }
-                    }
-
-                    $jusHpp = $qtyToProcess > 0
-                        ? (($consumeStockQty * $movingHpp((int) $productId)) + ($productionQty * $recipeHpp)) / $qtyToProcess
-                        : 0;
-
                     if ($productionQty > 0) {
                         $production = new Production([
                             'production_number' => Production::getOrderNumber(),
@@ -921,13 +982,15 @@ class PosController extends Controller
                             'branch_id'         => $data['branch_id'] ?? null,
                         ]);
                         $production->save();
-                        foreach ($juiceRecipesByProduct[(int) $productId] ?? [] as $ingredient) {
-                            $productionDetail = new ProductionDetail([
-                                'production_id' => $production->id,
-                                'product_id'    => $ingredient->product_receipt_id,
-                                'quantity'      => (float) $ingredient->quantity * $productionQty,
-                            ]);
-                            $productionDetail->save();
+                        if (isset($value['product_receipt_id'])) {
+                            foreach ($value['product_receipt_id'] as $receiptKey => $productReceiptId) {
+                                $productionDetail = new ProductionDetail([
+                                    'production_id' => $production->id,
+                                    'product_id'    => $productReceiptId,
+                                    'quantity'      => $value['product_receipt_qty'][$receiptKey] * $productionQty,
+                                ]);
+                                $productionDetail->save();
+                            }
                         }
                     }
 
@@ -943,10 +1006,9 @@ class PosController extends Controller
                         'discount'   => $value['discount'],
                         'diskon_global' => $jusDiscount,
                         'subtotal'   => $jusSubtotal,
-                        'hpp'        => $jusHpp,
-                        'subtotal_hpp' => $jusHpp * $qtyToProcess,
-                        'exp'        => $value['price'] - $jusHpp,
-                        'exp_value'  => ($value['price'] - $jusHpp) * $settingExp->value_exp,
+                        'hpp'        => $value['hpp'],
+                        'exp'        => $value['price'] - $value['hpp'],
+                        'exp_value'  => ($value['price'] - $value['hpp']) * $settingExp->value_exp,
                         'created_at' => now(),
                         'updated_at' => now(),
                         'type'       => 'jus',
@@ -978,9 +1040,6 @@ class PosController extends Controller
                 'transaksi_id'   => $transaksiId,
                 'invoice_number' => $pos->invoice_number,
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-            throw $e;
         } catch (\Throwable $e) {
             DB::rollBack();
             return response()->json([

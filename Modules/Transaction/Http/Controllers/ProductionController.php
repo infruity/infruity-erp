@@ -111,170 +111,123 @@ class ProductionController extends Controller
         }
 
         try {
-            return DB::transaction(function () use ($request) {
-
-                // Check if this is an update (id is provided) or a new record
-                $production = null;
-                if ($request->id) {
-                    $production = Production::whereKey($request->id)->lockForUpdate()->firstOrFail();
-                }
-
-                // Reuse the UI's stable number for temp saves and posting retries.
-                if (! $production) {
-                    $production = Production::where('created_by', Auth::user()->id_user)
-                        ->where('production_number', $request->production_number)
-                        ->lockForUpdate()
-                        ->first();
-                }
-
-                if ($production && $production->status === 'complete') {
-                    throw new \Exception('Produksi complete tidak dapat diubah.');
-                }
-
-                // Current reads above must not establish a repeatable-read snapshot before
-                // waiting for the real product-row locks. The aggregate view is read after them.
-                $required = [];
+            // Validasi stok bahan baku (seperti PosController saveTransaction)
+            if (in_array($request->submit_type, ['draft', 'posting'])) {
                 foreach ($request->ingredients as $ingredient) {
-                    // Quantities are persisted as DECIMAL(10, 2); compare in hundredths.
-                    $required[$ingredient['id']] = ($required[$ingredient['id']] ?? 0) + (int) round((float) $ingredient['quantity'] * 100);
-                }
-                $previousDetails = $production
-                    ? ProductionDetail::where('production_id', $production->id)->lockForUpdate()->get()
-                    : collect();
-                $productIds = array_unique(array_merge(array_keys($required), [$request->product_id],
-                    $previousDetails->pluck('product_id')->all(), $production ? [$production->product_id] : []));
-                $productIds = array_map('intval', $productIds);
-                $parentLinks = DB::table('product_child')
-                    ->whereIn('product_id', $productIds)
-                    ->orderBy('id')
-                    ->lockForUpdate()
-                    ->get(['product_id', 'parent_id']);
-                $stockParentByProduct = [];
-                foreach ($parentLinks as $link) {
-                    // A product's first explicit parent link is the same mapping used by its stock view row.
-                    $stockParentByProduct[(int) $link->product_id] ??= (int) $link->parent_id;
-                }
-                foreach ($productIds as $productId) {
-                    $stockParentByProduct[$productId] ??= $productId;
-                }
-                $requiredByStockParent = [];
-                foreach ($required as $productId => $requiredQty) {
-                    $stockParentId = $stockParentByProduct[(int) $productId];
-                    $requiredByStockParent[$stockParentId] = ($requiredByStockParent[$stockParentId] ?? 0) + $requiredQty;
-                }
-                $stockParentIds = array_values(array_unique(array_values($stockParentByProduct)));
-                $lockProductIds = array_values(array_unique(array_merge($productIds, $stockParentIds)));
-                sort($lockProductIds, SORT_NUMERIC);
-                $products = Product::whereIn('id', $lockProductIds)->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+                    $requiredQty = (float)$ingredient['quantity'];
+                    $productName = Product::where('id', $ingredient['id'])->value('name') ?? 'Bahan #' . $ingredient['id'];
 
-                if (in_array($request->submit_type, ['draft', 'posting'])) {
-                    foreach ($requiredByStockParent as $stockParentId => $requiredQty) {
-                        $currentStock = (float) (ProductStock::where('id', $stockParentId)
-                            ->where('branch_id', $request->branch_id)->value('stock_available') ?? 0);
-                        // The view already includes this posting: remove its old net effect
-                        // only in the same branch, grouping parent and variant IDs by stock pool.
-                        if ($production && in_array($production->status, ['posting', 'complete'])
-                            && (string) $production->branch_id === (string) $request->branch_id) {
-                            foreach ($previousDetails as $detail) {
-                                $detailStockParent = $stockParentByProduct[(int) $detail->product_id] ?? (int) $detail->product_id;
-                                if ($detailStockParent === (int) $stockParentId) {
-                                    $currentStock += (float) $detail->quantity;
-                                }
-                            }
-                            $oldOutputStockParent = $stockParentByProduct[(int) $production->product_id] ?? (int) $production->product_id;
-                            if ($oldOutputStockParent === (int) $stockParentId) {
-                                $currentStock -= (float) $production->quantity;
-                            }
-                        }
-                        if ((int) round($currentStock * 100) < $requiredQty) {
-                            $productName = $products[$stockParentId]->name;
-                            $requiredQty /= 100;
-                            throw new \Exception("Stok bahan baku \"{$productName}\" tidak mencukupi. Stok tersedia: {$currentStock}, dibutuhkan: {$requiredQty}");
-                        }
-                    }
-                }
-
-                // If still no production, create new one
-                if (! $production) {
-                    $production                    = new Production();
-                    $production->production_number = $request->production_number;
-                    $production->created_by        = Auth::user()->id_user;
-                }
-
-                // Update production data
-                $production->product_id      = $request->product_id;
-                $production->production_date = $request->production_date;
-                $production->status          = $request->submit_type;
-                $production->quantity        = $request->quantity;
-                $production->staff_id        = $request->staff_id;
-                $production->description     = $request->notes;
-                $production->branch_id       = $request->branch_id;
-                $production->updated_by      = Auth::user()->id_user;
-                $production->service_cost    = preg_replace('/[^0-9]/', '', $request->service_cost);
-                if ($request->sell_price) {
-                    $production->sell_price = preg_replace('/[^0-9]/', '', $request->sell_price);
-                }
-                $production->created_by      = Auth::user()->id_user;
-                $production->save();
-
-                // Clear existing production details
-                ProductionDetail::where('production_id', $production->id)->delete();
-
-                // Add new production details from ingredients array
-                foreach ($request->ingredients as $ingredient) {
-                    $productionDetail                = new ProductionDetail();
-                    $productionDetail->production_id = $production->id;
-                    $productionDetail->product_id    = $ingredient['id'];
-                    $productionDetail->quantity      = $ingredient['quantity'];
-                    $productionDetail->created_by    = Auth::user()->id_user;
-                    $productionDetail->save();
-                }
-
-                // Handle different submit types like PosController
-                if ($request->submit_type == 'temp') {
-                    return response()->json([
-                        'success' => true,
-                        'message' => 'Produksi berhasil disimpan',
-                    ], 200);
-                } elseif ($request->submit_type == 'draft') {
-                    return response()->json([
-                        'success' => true,
-                        'message' => 'Produksi berhasil disimpan',
-                    ], 200);
-                } else {
-                    // posting - calculate and update HPP using ingredients array data
-                    $totalHpp = 0;
-                    foreach ($request->ingredients as $ingredient) {
-                        $totalHpp += floatval($ingredient['hpp']) * floatval($ingredient['quantity']);
-                    }
-
-                    // Update product HPP per unit
-                    $hppPerUnit = $request->quantity > 0 ? $totalHpp / $request->quantity : 0;
-                    Product::where('id', $request->product_id)->update([
-                        'hpp' => $hppPerUnit,
-                    ]);
-
-                    $branch = ProductBranch::where('product_id', $request->product_id)
+                    $productStock = ProductStock::where('id', $ingredient['id'])
                         ->where('branch_id', $request->branch_id)
                         ->first();
-                    if ($branch) {
-                        $branch->price = $request->sell_price;
-                        $branch->save();
-                    } else {
-                        $branch             = new ProductBranch();
-                        $branch->product_id = $request->product_id;
-                        $branch->branch_id  = $request->branch_id;
-                        $branch->price      = $request->sell_price;
-                        $branch->save();
+                    $currentStock = $productStock ? (float)$productStock->stock_available : 0;
+
+                    if ($currentStock < $requiredQty) {
+                        throw new \Exception("Stok bahan baku \"{$productName}\" tidak mencukupi. Stok tersedia: {$currentStock}, dibutuhkan: {$requiredQty}");
                     }
-                    return response()->json([
-                        'success' => true,
-                        'message' => 'Produksi berhasil disimpan',
-                    ], 200);
+                }
+            }
+
+            DB::beginTransaction();
+
+            // Check if this is an update (id is provided) or a new record
+            $production = null;
+            if ($request->id) {
+                $production = Production::find($request->id);
+            }
+
+            // If no production found with ID, check for existing temp production
+            if (! $production) {
+                $production = Production::where('created_by', Auth::user()->id_user)
+                    ->where('status', 'temp')
+                    ->where('production_number', $request->production_number)
+                    ->first();
+            }
+
+            // If still no production, create new one
+            if (! $production) {
+                $production                    = new Production();
+                $production->production_number = $request->production_number;
+                $production->created_by        = Auth::user()->id_user;
+            }
+
+            // Update production data
+            $production->product_id      = $request->product_id;
+            $production->production_date = $request->production_date;
+            $production->status          = $request->submit_type;
+            $production->quantity        = $request->quantity;
+            $production->staff_id        = $request->staff_id;
+            $production->description     = $request->notes;
+            $production->branch_id       = $request->branch_id;
+            $production->updated_by      = Auth::user()->id_user;
+            $production->service_cost    = preg_replace('/[^0-9]/', '', $request->service_cost);
+            if ($request->sell_price) {
+                $production->sell_price = preg_replace('/[^0-9]/', '', $request->sell_price);
+            }
+            $production->created_by      = Auth::user()->id_user;
+            $production->save();
+
+            // Clear existing production details
+            ProductionDetail::where('production_id', $production->id)->delete();
+
+            // Add new production details from ingredients array
+            foreach ($request->ingredients as $ingredient) {
+                $productionDetail                = new ProductionDetail();
+                $productionDetail->production_id = $production->id;
+                $productionDetail->product_id    = $ingredient['id'];
+                $productionDetail->quantity      = $ingredient['quantity'];
+                $productionDetail->created_by    = Auth::user()->id_user;
+                $productionDetail->save();
+            }
+
+            // Handle different submit types like PosController
+            if ($request->submit_type == 'temp') {
+                DB::commit();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Produksi berhasil disimpan',
+                ], 200);
+            } elseif ($request->submit_type == 'draft') {
+                DB::commit();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Produksi berhasil disimpan',
+                ], 200);
+            } else {
+                // posting - calculate and update HPP using ingredients array data
+                $totalHpp = 0;
+                foreach ($request->ingredients as $ingredient) {
+                    $totalHpp += floatval($ingredient['hpp']) * floatval($ingredient['quantity']);
                 }
 
-            }, 3);
+                // Update product HPP per unit
+                $hppPerUnit = $request->quantity > 0 ? $totalHpp / $request->quantity : 0;
+                Product::where('id', $request->product_id)->update([
+                    'hpp' => $hppPerUnit,
+                ]);
+
+                $branch = ProductBranch::where('product_id', $request->product_id)
+                    ->where('branch_id', $request->branch_id)
+                    ->first();
+                if ($branch) {
+                    $branch->price = $request->sell_price;
+                    $branch->save();
+                } else {
+                    $branch             = new ProductBranch();
+                    $branch->product_id = $request->product_id;
+                    $branch->branch_id  = $request->branch_id;
+                    $branch->price      = $request->sell_price;
+                    $branch->save();
+                }
+                DB::commit();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Produksi berhasil disimpan',
+                ], 200);
+            }
+
         } catch (Exception $e) {
+            DB::rollback();
             return response()->json([
                 'success' => false,
                 'message' => 'Produksi gagal: ' . $e->getMessage(),

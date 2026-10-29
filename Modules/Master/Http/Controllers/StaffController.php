@@ -4,7 +4,6 @@ namespace Modules\Master\Http\Controllers;
 use Exception;
 use App\User;
 use App\Models\Role;
-use App\Support\RoleAssignmentGuard;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -17,7 +16,6 @@ use Illuminate\Validation\Rule;
 use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\Position;
 use Modules\Master\Entities\Staff;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Yajra\DataTables\Facades\DataTables;
 
 class StaffController extends Controller
@@ -86,8 +84,6 @@ class StaffController extends Controller
                 ->withErrors($validator)
                 ->withInput($request->except(['account_password', 'password']));
         }
-
-        $this->authorizeRoleAssignment($request->input('role_ids', []));
 
         try {
             DB::beginTransaction();
@@ -188,34 +184,27 @@ class StaffController extends Controller
 
         try {
             DB::beginTransaction();
-            $staff = Staff::query()->lockForUpdate()->findOrFail($id);
-            $accountId = $staff->user_id ?: User::withoutGlobalScope('is_aktif')
-                ->where('staff_id', $staff->id)
-                ->value('id_user');
-            $rolesChanged = $this->authorizeRoleAssignment($request->input('role_ids', []), $staff, $accountId);
+            $staff = Staff::findOrFail($id);
             $staff->name = $request->staff_name;
             $staff->date_in = $request->date_in;
             $staff->position_id = $request->position;
             $staff->branch_id = $request->branch_id;
             $staff->updated_by = Auth::user()->id_user;
             $staff->save();
-            if ($rolesChanged) {
-                $this->syncPendingRoles($staff->id, $request->input('role_ids', []));
-            }
+            $this->syncPendingRoles($staff->id, $request->input('role_ids', []));
+
+            $accountId = User::withoutGlobalScope('is_aktif')
+                ->where('staff_id', $staff->id)
+                ->value('id_user');
             if ($accountId) {
                 User::withoutGlobalScope('is_aktif')
                     ->where('id_user', $accountId)
                     ->update(['nm_user' => $staff->name]);
-                if ($rolesChanged) {
-                    $this->syncAccountRoles((int) $accountId, $request->input('role_ids', []));
-                }
+                $this->syncAccountRoles((int) $accountId, $request->input('role_ids', []));
                 $this->syncAccountBranch((int) $accountId, (int) $staff->branch_id);
             }
 
             DB::commit();
-        } catch (HttpExceptionInterface $e) {
-            DB::rollBack();
-            throw $e;
         } catch (Exception $e) {
             DB::rollback();
             return redirect()->back()->withInput($request->except(['account_password', 'password']))
@@ -341,27 +330,6 @@ class StaffController extends Controller
             })
             ->rawColumns(['name', 'action', 'position'])
             ->make(true);
-    }
-
-    private function authorizeRoleAssignment(array $roleIds, ?Staff $staff = null, ?int $accountId = null): bool
-    {
-        $requested = collect($roleIds)->map(fn ($id) => (int) $id)->unique()->sort()->values()->all();
-        $pending = $staff
-            ? DB::table('staff_role')->where('staff_id', $staff->id)
-                ->orderBy('id_role')->pluck('id_role')->map(fn ($id) => (int) $id)->all()
-            : [];
-        $assigned = $accountId !== null
-            ? DB::table('role_user')->where('id_user', $accountId)
-                ->orderBy('id_role')->pluck('id_role')->map(fn ($id) => (int) $id)->all()
-            : $pending;
-
-        if ($staff && $requested === $pending && $requested === $assigned) {
-            return false;
-        }
-
-        RoleAssignmentGuard::authorize($requested, array_merge($pending, $assigned), $accountId);
-
-        return true;
     }
 
     private function syncPendingRoles(int $staffId, array $roleIds): void
