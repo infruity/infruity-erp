@@ -550,14 +550,50 @@ class UserStaffLinkTest extends TestCase
         $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => 2]);
     }
 
-    public function test_role_index_lists_all_roles_assigned_to_an_account(): void
+    public function test_user_index_lists_all_roles_assigned_to_an_account(): void
     {
         DB::table('role_user')->insert(['id_user' => 2, 'id_role' => 3]);
 
+        $response = $this->get('/user')
+            ->assertOk()
+            ->assertViewIs('admin.user.index')
+            ->assertViewHas('users', function ($users) {
+                $account = $users->getCollection()->firstWhere('id_user', 2);
+
+                return $account !== null
+                    && $account->email === 'first@example.test'
+                    && $account->role_ids === [2, 3]
+                    && $account->role_names === ['Operator', 'User Manager'];
+            });
+
+        $document = new \DOMDocument();
+        $document->loadHTML($response->getContent(), LIBXML_NOERROR | LIBXML_NOWARNING);
+        $xpath = new \DOMXPath($document);
+        $rows = $xpath->query('//button[@aria-label="Detail first@example.test"]');
+
+        $this->assertCount(1, $rows);
+        $row = $rows->item(0);
+        $this->assertStringContainsString('first@example.test', $row->textContent);
+        $this->assertStringContainsString('First Account', $row->textContent);
+        $this->assertCount(1, $xpath->query('.//span[normalize-space(.)="Operator · User Manager"]', $row));
+    }
+
+    public function test_role_index_lists_the_role_catalog_not_account_assignments(): void
+    {
         $this->get('/roles')
             ->assertOk()
-            ->assertSee('first@example.test')
-            ->assertSee('Operator · User Manager');
+            ->assertViewIs('admin.role.index')
+            ->assertViewHas('roles', function ($roles) {
+                return $roles->getCollection()->map(fn ($role) => [
+                    (int) $role->id_role,
+                    $role->nm_role,
+                    (int) $role->role_menu_count,
+                ])->all() === [[2, 'Operator', 0], [3, 'User Manager', 12]];
+            })
+            ->assertSee('Menampilkan 2 dari 2 role')
+            ->assertSeeInOrder(['Operator', 'ROLE-0002', '0 izin', 'User Manager', 'ROLE-0003', '12 izin'])
+            ->assertDontSee('first@example.test')
+            ->assertDontSee('second@example.test');
     }
 
     public function test_account_hydration_reads_the_canonical_staff_id_relationship(): void

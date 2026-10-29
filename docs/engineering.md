@@ -1,6 +1,6 @@
 # Panduan engineering Infruity
 
-Dokumen kerja untuk pengembangan dan review. Kondisi runtime diperiksa **28 Oktober 2026**, branch `feature/php-upgrade`; [laporan audit](audit-2026-10-28.md) menyimpan baseline, bukti, dan pekerjaan yang belum selesai. Dokumen ini tidak menyatakan aplikasi sudah production-ready.
+Dokumen kerja untuk pengembangan dan review. Kondisi runtime diperiksa **28 Oktober 2026**, branch `feature/php-upgrade`; [laporan audit](audit-2026-10-28.md) menyimpan baseline, bukti, dan pekerjaan yang belum selesai. Dokumen ini tidak menyatakan aplikasi sudah production-ready. Status pengujian diperbarui **29 Oktober 2026** pada [laporan pemulihan quality gate](quality-gate-2026-10-29.md): full working tree 298 test PHP / 1.839 assertions dan 95 test JS lulus, tanpa runner issue.
 
 ## 1. Runtime dan setup aman
 
@@ -118,6 +118,10 @@ node --test tests/js/*.test.cjs
 
 Pada baseline audit tidak ada config cache. Jangan menghapus cache aplikasi/server bersama demi test. Jika ada config cache, siapkan lingkungan test terpisah terlebih dahulu.
 
+Runner memakai schema PHPUnit terpasang, `failOnAllIssues="true"`, dan `cacheResult="false"`. Warning/notice/deprecation/risky/error tidak boleh ditutupi untuk membuat suite hijau. Dua test konfigurasi serta probe exit code memverifikasi kebijakan ini; lihat laporan quality gate.
+
+Untuk adapter pembayaran POS lokal ber-request-key yang belum tracked, tambahkan `INFRUITY_TEST_LEGACY_POS_ADAPTER=0` pada command PHPUnit; default test voucher mengikuti adapter legacy yang tracked. Flag hanya memilih ekspektasi replay di test, bukan mengubah backend. Lihat [rincian dua mode verifikasi COD/POS](cod-payment-hardening-2026-10-29.md#isolasi-pekerjaan-lokal-dan-commit).
+
 ```bash
 # Guard: hentikan sebelum test jika config aplikasi sedang di-cache.
 test ! -f bootstrap/cache/config.php || { printf '%s\n' 'Gunakan environment test terpisah: config cache masih ada.'; exit 1; }
@@ -130,8 +134,6 @@ APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=:memory: DATABASE_URL= \
   CACHE_DRIVER=array SESSION_DRIVER=array MAIL_DRIVER=array QUEUE_CONNECTION=sync \
   php vendor/bin/phpunit --do-not-cache-result --filter PosPaymentIdempotencyTest
 ```
-
-Untuk adapter pembayaran POS lokal ber-request-key yang belum tracked, tambahkan `INFRUITY_TEST_LEGACY_POS_ADAPTER=0` pada command PHPUnit; default test voucher mengikuti adapter legacy yang tracked. Flag hanya memilih ekspektasi replay di test, bukan mengubah backend. Lihat [rincian dua mode verifikasi COD/POS](cod-payment-hardening-2026-10-29.md#isolasi-pekerjaan-lokal-dan-commit).
 
 Test baru yang menyentuh database harus membuat fixture sendiri atau memakai MySQL khusus test yang disetujui. Jangan mengambil `User::first()`/produk yang kebetulan ada di database developer. Test concurrency nyata membutuhkan koneksi independen pada MySQL khusus test dan harus mempunyai cleanup yang terisolasi.
 
