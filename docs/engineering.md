@@ -1,6 +1,6 @@
 # Panduan engineering Infruity
 
-Dokumen kerja untuk pengembangan dan review. Kondisi runtime diperiksa **28 Oktober 2026**, branch `feature/php-upgrade`; [laporan audit](audit-2026-10-28.md) menyimpan baseline, bukti, dan pekerjaan yang belum selesai. Dokumen ini tidak menyatakan aplikasi sudah production-ready. Status pengujian diperbarui **29 Oktober 2026** pada [laporan pemulihan quality gate](quality-gate-2026-10-29.md): full working tree 298 test PHP / 1.839 assertions dan 95 test JS lulus, tanpa runner issue.
+Dokumen kerja untuk pengembangan dan review. Kondisi runtime diperiksa **28 Oktober 2026**, branch `feature/php-upgrade`; [laporan audit](audit-2026-10-28.md) menyimpan baseline, bukti, dan pekerjaan yang belum selesai. Dokumen ini tidak menyatakan aplikasi sudah production-ready. Status pengujian diperbarui **29 Oktober 2026** setelah [pemulihan quality gate](quality-gate-2026-10-29.md) dan [escaping HTML varian](variant-html-hardening-2026-10-29.md): full working tree **318 test PHP / 2.163 assertions dan 102 test JS lulus**, tanpa runner issue.
 
 ## 1. Runtime dan setup aman
 
@@ -100,6 +100,7 @@ Tujuannya mengurangi alasan perubahan dan risiko, bukan menambah layer sebanyak 
 - Cari komponen bersama lebih dulu: `components/erp/detail-dialog.blade.php` untuk frame detail; shell/dock tidak didefinisikan ulang di setiap halaman.
 - `erp-shell.css` mengelola layout shell; `erp-theme.css` token/adapter; stylesheet halaman mengelola halaman terkait.
 - Letakkan state interaksi pada scope pemiliknya. Pertahankan deep link, Back/Forward, validasi, permission, dan kontrak JSON ketika memindahkan script Blade ke asset JS.
+- Escape nilai dinamis pada HTML raw/atribut di boundary output (`e()` pada PHP); `rawColumns` bukan sanitizer. Untuk data atribut berupa teks yang harus tetap literal, gunakan `.attr()`/`dataset`, bukan konversi otomatis `.data()`. Jangan mengubah data tersimpan untuk memperbaiki escaping; lihat [regression varian dan batas uji browser](variant-html-hardening-2026-10-29.md).
 - Jangan langsung mengganti seluruh legacy build atau menghapus vendor berdasarkan nama. Layout lama masih dapat memuatnya; library juga dapat memuat font/gambar secara tidak langsung.
 - Acuan UI tambahan `ui-design-system.md` tersedia lokal pada saat audit, tetapi belum tracked. Jangan menjadikannya satu-satunya panduan pada checkout bersih sampai perubahan tersebut direview/di-commit pemiliknya.
 

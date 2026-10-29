@@ -727,13 +727,13 @@ class ProductController extends Controller
             ->addColumn('action', function ($row) {
                 return '
                 <button class="btn btn-sm btn-light-primary edit-variant variant" type="button"
-                        data-id="' . $row->id . '"
-                        data-name="' . $row->name . '"
-                        data-price="' . $row->price . '">
+                        data-id="' . e($row->id) . '"
+                        data-name="' . e($row->name) . '"
+                        data-price="' . e($row->price) . '">
                     Edit
                 </button>
                 <button class="btn btn-sm btn-light-danger delete-variant variant" type="button"
-                        data-id="' . $row->id . '">
+                        data-id="' . e($row->id) . '">
                     Hapus
                 </button>
             ';
