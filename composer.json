@@ -62,6 +62,9 @@
         "classmap": [
             "database/seeds",
             "database/factories"
+        ],
+        "exclude-from-classmap": [
+            "/Modules/Transaction/Http/Controllers/ProductionController_temp.php"
         ]
     },
     "autoload-dev": {

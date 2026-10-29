@@ -123,7 +123,7 @@ class StockOpnameController extends Controller
             $stock->avg_price = $avg_price ?? 0;
             $stock->stock = $stockAvailable;
             $stock->real_stock = $validated['real_stock'];
-            $stock->difference =  (Double)$validated['real_stock'] - (Double)$stockAvailable;
+            $stock->difference =  (float)$validated['real_stock'] - (float)$stockAvailable;
             $stock->details = isset($validated['details']) ? json_encode($validated['details']) : null;
             $stock->status = 'pending';
             $stock->created_by = Auth::user()->id_user;
@@ -235,7 +235,7 @@ class StockOpnameController extends Controller
             $stock->date = $validated['date'];
             $stock->branch_id = $validated['branch_id'];
             $stock->real_stock = $validated['real_stock'];
-            $stock->difference = (Double)$validated['real_stock'] - (Double)$stock->stock;
+            $stock->difference = (float)$validated['real_stock'] - (float)$stock->stock;
             $stock->details = isset($validated['details']) ? json_encode($validated['details']) : null;
             $stock->updated_by = Auth::user()->id_user;
             $stock->save();
@@ -599,7 +599,7 @@ class StockOpnameController extends Controller
             $currentStock = $productStock->stock_available;
             $avg_price = $productStock->avg_hpp;
             
-            $difference = (Double)$stockOpname->real_stock - (Double)$currentStock;
+            $difference = (float)$stockOpname->real_stock - (float)$currentStock;
 
             $stockOpname->stock = $currentStock;
             $stockOpname->difference = $difference;

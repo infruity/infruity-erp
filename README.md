@@ -123,7 +123,7 @@ Pastikan environment pengembangan Anda memiliki:
 
 9. **Compile asset frontend legacy (opsional, bila mengubah input Mix)**
 
-   UI ERP juga memuat aset langsung dari `public/assets/`. Jangan menganggap build berikut memperbarui seluruh UI. Jalur build legacy belum dijalankan pada audit ini; lihat [panduan engineering](docs/engineering.md).
+   UI ERP juga memuat aset langsung dari `public/assets/`. Jangan menganggap build berikut memperbarui seluruh UI. Build legacy berhasil diuji terisolasi dengan Node 22.23.4 pada 29 Oktober 2026; output dan batasnya dicatat di [panduan engineering](docs/engineering.md).
 
    ```bash
    npm run dev

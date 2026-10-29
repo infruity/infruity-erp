@@ -37,7 +37,9 @@ class PhpunitConfigurationTest extends TestCase
         $this->assertSame('true', $root->getAttribute('failOnAllIssues'));
         $this->assertSame('false', $root->getAttribute('cacheResult'));
         $xpath = new DOMXPath($document);
-        foreach (['APP_ENV' => 'testing', 'DB_CONNECTION' => 'sqlite', 'DB_DATABASE' => ':memory:',
+        $this->assertSame('512M', $xpath->evaluate('string(/phpunit/php/ini[@name="memory_limit"]/@value)'));
+        foreach (['APP_ENV' => 'testing', 'APP_KEY' => 'base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+            'DB_CONNECTION' => 'sqlite', 'DB_DATABASE' => ':memory:',
             'CACHE_DRIVER' => 'array', 'SESSION_DRIVER' => 'array', 'MAIL_DRIVER' => 'array', 'QUEUE_CONNECTION' => 'sync'] as $name => $value) {
             $this->assertSame($value, $xpath->evaluate('string(/phpunit/php/server[@name="' . $name . '"]/@value)'), $name);
         }

@@ -40,7 +40,7 @@ class DashboardController extends Controller
 
             if ($productStock) {
                 $currentStock = $productStock->stock_available;
-                $difference = (Double)$stockOpname->real_stock - (Double)$currentStock;
+                $difference = (float)$stockOpname->real_stock - (float)$currentStock;
 
                 $stockOpname->stock = $currentStock;
                 $stockOpname->difference = $difference;

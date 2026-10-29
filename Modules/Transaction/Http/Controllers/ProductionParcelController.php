@@ -487,7 +487,27 @@ class ProductionParcelController extends Controller
             DB::beginTransaction();
 
             $userId = Auth::id(); // Ambil user sekali
-            $parcel = ProductionParcel::findOrFail($id);
+            $parcel = ProductionParcel::whereKey($id)->lockForUpdate()->firstOrFail();
+            if ($parcel->status === 'complete') {
+                $product = $parcel->product_id ? Product::find($parcel->product_id) : null;
+                $receipt = $product ? Receipt::where('product_id', $product->id)->first() : null;
+                $production = $product ? Production::where('product_id', $product->id)->where('status', 'complete')->first() : null;
+                if (! $product || ! $receipt || ! $production) {
+                    throw new \DomainException('Hasil parcel complete tidak lengkap.');
+                }
+                DB::commit();
+                return response()->json([
+                    'message' => 'Parcel berhasil diterima dan menjadi produk.',
+                    'parcel_id' => $parcel->id,
+                    'product_id' => $product->id,
+                    'receipt_id' => $receipt->id,
+                    'production_id' => $production->id,
+                ], 200);
+            }
+            // Both draft and posting expose Process in the existing parcel UI.
+            if (! in_array($parcel->status, ['draft', 'posting'], true)) {
+                throw new \DomainException('Status parcel tidak dapat diselesaikan.');
+            }
             $parcel->status = 'complete';
 
             // Create product
@@ -561,13 +581,17 @@ class ProductionParcelController extends Controller
 
             return response()->json([
                 'message' => 'Parcel berhasil diterima dan menjadi produk.',
+                'parcel_id' => $parcel->id,
+                'product_id' => $product->id,
+                'receipt_id' => $receipt->id,
+                'production_id' => $production->id,
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
 
             return response()->json([
                 'message' => 'Parcel gagal diterima. ' . $e->getMessage(),
-            ], 500);
+            ], $e instanceof \DomainException ? 409 : 500);
         }
     }
 }

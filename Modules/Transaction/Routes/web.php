@@ -75,7 +75,6 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     });
 
     // Transfer - Shared (AJAX)
-    Route::post('transfer/save-stock', [TransferController::class, 'save_stock'])->name('transfer.save-stock');
     Route::post('transfer/save-correction', [TransferController::class, 'saveCorrection'])->name('transfer.save-correction');
     Route::post('transfer/save-transaction', [TransferController::class, 'saveTransaction'])->name('transfer.save-transaction');
 

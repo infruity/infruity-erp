@@ -6,6 +6,7 @@ use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Crm\Entities\SettingExp;
+use Modules\Crm\Support\ExpSettingsRules;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -90,13 +91,14 @@ class SettingExpController extends Controller
             return $denied;
         }
 
-        // dd($request->all());
+        $validated = $request->validate(ExpSettingsRules::rules());
+
         DB::beginTransaction();
         try {
             $settingExp = SettingExp::findOrFail($id);
-            $settingExp->skala = $request->skala;
-            $settingExp->value = $request->value;
-            $settingExp->value_exp = $request->value * $request->skala;
+            $settingExp->skala = $validated['skala'];
+            $settingExp->value = $validated['value'];
+            $settingExp->value_exp = $validated['value'] * $validated['skala'];
             $settingExp->updated_by = Auth::id();
             $settingExp->save();
 
@@ -106,7 +108,7 @@ class SettingExpController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             return redirect()->back()->withInput($request->all())
-                ->with('error', 'Pembuatan Setting Exp gagal' . $e->getMessage());
+                ->with('error', 'Pembuatan Setting Exp gagal.');
         }
     }
 

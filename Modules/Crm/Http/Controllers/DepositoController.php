@@ -77,36 +77,53 @@ class DepositoController extends Controller
             'customer_id' => 'required|exists:customer,id',
             'tier_id' => 'required|exists:crm_tier,id',
             'date' => 'required|date',
-            'deposito' => 'required',
+            'deposito' => ['required', 'regex:/^(?:[1-9][0-9]*|[1-9][0-9]{0,2}(?:\.[0-9]{3})+)$/D'],
         ]);
 
-        // Simpan data ke database
         try {
-            DB::beginTransaction();
+            $deposito = DB::transaction(function () use ($validated) {
+                $tier = Tier::query()->lockForUpdate()->findOrFail($validated['tier_id']);
+                Validator::make($tier->getAttributes(), [
+                    'deposito' => ['required', 'integer', 'gt:0'],
+                    'voucher' => ['required', 'integer', 'min:0'],
+                    'exp' => ['required', 'integer', 'min:0'],
+                ])->validate();
+                $this->validateAmount($validated['deposito'], $tier->deposito);
 
-            $tier = Tier::findOrFail($validated['tier_id']);
-            $pointSchedule = PointSchedule::first();
-            // dd($tier, $pointSchedule);
+                $pointSchedule = PointSchedule::query()->lockForUpdate()->first();
+                if (! $pointSchedule) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'tier_id' => 'Jadwal poin belum diatur.',
+                    ]);
+                }
+                Validator::make($pointSchedule->getAttributes(), [
+                    'start_date' => ['required', 'date_format:Y-m-d'],
+                    'end_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:start_date'],
+                ])->validate();
 
-            $deposito = new Deposito();
-            $deposito->customer_id = $validated['customer_id'];
-            $deposito->deposito_date = $validated['date'];
-            $deposito->tier_id = $validated['tier_id'];
-            $deposito->start_period = $pointSchedule->start_date;
-            $deposito->end_period = $pointSchedule->end_date;
-            $deposito->voucher = $tier->voucher;
-            $deposito->voucher_qty = $tier->deposito / $tier->voucher;
-            $deposito->exp = $tier->exp;
-            $deposito->deposito = preg_replace('/[^0-9]/', '', $validated['deposito']);
-            $deposito->save();
+                $deposito = new Deposito();
+                $deposito->customer_id = $validated['customer_id'];
+                $deposito->deposito_date = $validated['date'];
+                $deposito->tier_id = $tier->id;
+                $deposito->start_period = $pointSchedule->start_date;
+                $deposito->end_period = $pointSchedule->end_date;
+                $deposito->voucher = $tier->voucher;
+                $deposito->voucher_qty = (int) $tier->voucher > 0
+                    ? intdiv((int) $tier->deposito, (int) $tier->voucher)
+                    : 0;
+                $deposito->exp = $tier->exp;
+                $deposito->deposito = (string) $tier->deposito;
+                $deposito->save();
 
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
+                return $deposito;
+            });
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
             return response()->json([
-                'message' => 'Deposito gagal disimpan.' . $e->getMessage(),
-                'data' => $deposito
-            ], 404);
+                'message' => 'Deposito gagal disimpan.',
+                'data' => null,
+            ], 500);
         }
 
         // Kirim response JSON
@@ -114,6 +131,14 @@ class DepositoController extends Controller
             'message' => 'Deposito berhasil disimpan.',
             'data' => $deposito
         ], 201);
+    }
+
+    private function validateAmount($amount, $expected): void
+    {
+        // The UI emits whole rupiah, either plain or dot-separated groups of three.
+        Validator::make(['deposito' => str_replace('.', '', (string) $amount)], [
+            'deposito' => ['required', 'integer', 'gt:0', 'in:' . $expected],
+        ])->validate();
     }
 
     /**
@@ -161,24 +186,27 @@ class DepositoController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customer,id',
             'date' => 'required|date',
-            'deposito' => 'required',
+            'deposito' => ['required', 'regex:/^(?:[1-9][0-9]*|[1-9][0-9]{0,2}(?:\.[0-9]{3})+)$/D'],
         ]);
 
-        // Simpan data ke database
         try {
-            DB::beginTransaction();
-            $deposito = Deposito::findOrFail($id);
-            $deposito->customer_id = $validated['customer_id'];
-            $deposito->date = $validated['date'];
-            $deposito->deposito = preg_replace('/[^0-9]/', '', $validated['deposito']);
-            $deposito->save();
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
+            $deposito = DB::transaction(function () use ($validated, $id) {
+                $deposito = Deposito::query()->lockForUpdate()->findOrFail($id);
+                // An edit keeps the original tier/benefit snapshot; it must not reprice it.
+                $this->validateAmount($validated['deposito'], $deposito->deposito);
+                $deposito->customer_id = $validated['customer_id'];
+                $deposito->deposito_date = $validated['date'];
+                $deposito->save();
+
+                return $deposito;
+            });
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
             return response()->json([
-                'message' => 'Deposito gagal disimpan.' . $e->getMessage(),
-                'data' => $deposito
-            ], 404);
+                'message' => 'Deposito gagal disimpan.',
+                'data' => null,
+            ], 500);
         }
 
         // Kirim response JSON
@@ -212,7 +240,7 @@ class DepositoController extends Controller
             DB::rollback();
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus data: ' . $e->getMessage()
+                'message' => 'Gagal menghapus data.'
             ], 500);
         }
     }

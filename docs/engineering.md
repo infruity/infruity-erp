@@ -1,6 +1,6 @@
 # Panduan engineering Infruity
 
-Dokumen kerja untuk pengembangan dan review. Kondisi runtime diperiksa **28 Oktober 2026**, branch `feature/php-upgrade`; [laporan audit](audit-2026-10-28.md) menyimpan baseline, bukti, dan pekerjaan yang belum selesai. Dokumen ini tidak menyatakan aplikasi sudah production-ready. Status pengujian diperbarui **29 Oktober 2026** setelah [pemulihan quality gate](quality-gate-2026-10-29.md) dan [escaping HTML varian](variant-html-hardening-2026-10-29.md): full working tree **318 test PHP / 2.163 assertions dan 102 test JS lulus**, tanpa runner issue.
+Dokumen kerja untuk pengembangan dan review. Runtime awal diperiksa **28 Oktober 2026** pada branch `feature/php-upgrade`; [audit baseline](audit-2026-10-28.md) menyimpan temuan awal dan [status penyelesaian tindak lanjut](audit-completion-2026-10-29.md) diperbarui **30 Oktober 2026**. Full PHPUnit pada working tree gabungan (run sebelumnya) menghasilkan **508 test / 3.345 assertions dengan 6 failure** di `DeliveryOrderPaymentTest`; run itu mencakup perubahan lokal pengguna yang tidak ikut task commit dan mendahului dua regression test review terakhir. Task-only postimage final menghasilkan **479 test / 3.031 assertions, 26 failure + 1 error**, dengan identitas sama seperti source HEAD `6d1002e1` (287 test / 1.803 assertions, 26 failure + 1 error) pada runner, dependency, dan environment POS default yang sama. Fokus regresi task lulus: **194 test / 1.240 assertions**. Workflow menjalankan full suite sebagai laporan baseline non-blocking, sementara suite fokus task tetap blocking; hosted CI belum dijalankan. Jangan menyebut checkout task-only atau CI hijau.
 
 ## 1. Runtime dan setup aman
 
@@ -36,7 +36,7 @@ Perintah di luar mesin ini cukup menggunakan PHP 8.5 yang benar di PATH. Jangan 
 4. Jangan menjalankan `migrate:fresh`, `db:wipe`, seed, restore dump, atau `guest:prepare` ke database bisnis tanpa izin eksplisit. `guest:prepare` adalah operasi penulisan, bukan health check.
 5. Jangan menyimpan dump bisnis, kredensial Google/Firebase, token, atau `.env` dalam Git maupun `public/`.
 
-`composer.lock` ada secara lokal tetapi diabaikan Git pada baseline audit. Karena itu `composer install` pada checkout bersih belum menjamin versi identik dengan mesin audit. Perbaikan lockfile harus berupa pekerjaan tersendiri: review isi, runtime, audit dependency, lalu track lockfile yang disetujui; jangan menjalankan `composer update` massal sebagai bagian refactor UI.
+`composer.lock` kini menjadi input versi yang dilacak bersama `composer.json`; lockfile divalidasi dan platform check lulus pada PHP 8.5. `package-lock.json` juga dilacak; `npm ci` dan build Mix berhasil di staging scratch terisolasi dengan Node 22.23.4. Build memberi peringatan database caniuse-lite yang usang, dan audit dependency mempunyai advisory; lihat [status tindak lanjut](audit-completion-2026-10-29.md). Jangan menjalankan update massal sebagai bagian refactor UI.
 
 ## 2. Peta arsitektur aktual
 
@@ -119,7 +119,7 @@ node --test tests/js/*.test.cjs
 
 Pada baseline audit tidak ada config cache. Jangan menghapus cache aplikasi/server bersama demi test. Jika ada config cache, siapkan lingkungan test terpisah terlebih dahulu.
 
-Runner memakai schema PHPUnit terpasang, `failOnAllIssues="true"`, dan `cacheResult="false"`. Warning/notice/deprecation/risky/error tidak boleh ditutupi untuk membuat suite hijau. Dua test konfigurasi serta probe exit code memverifikasi kebijakan ini; lihat laporan quality gate.
+Runner memakai schema PHPUnit terpasang, `failOnAllIssues="true"`, `cacheResult="false"`, dan batas memori test 512 MB. Warning/notice/deprecation/risky/error tidak boleh ditutupi untuk membuat suite hijau. Dua test konfigurasi serta probe exit code memverifikasi kebijakan ini; lihat laporan quality gate.
 
 Untuk adapter pembayaran POS lokal ber-request-key yang belum tracked, tambahkan `INFRUITY_TEST_LEGACY_POS_ADAPTER=0` pada command PHPUnit; default test voucher mengikuti adapter legacy yang tracked. Flag hanya memilih ekspektasi replay di test, bukan mengubah backend. Lihat [rincian dua mode verifikasi COD/POS](cod-payment-hardening-2026-10-29.md#isolasi-pekerjaan-lokal-dan-commit).
 
@@ -144,7 +144,7 @@ Test baru yang menyentuh database harus membuat fixture sendiri atau memakai MyS
 - `view:cache` menyentuh cache view aplikasi. Pada audit, 292 Blade dikompilasi menggunakan compiler aplikasi ke scratch terpisah, kemudian di-lint; cache view aktif tidak dibersihkan.
 - Compile/lint tidak mengeksekusi query view dan tidak memverifikasi tampilan browser. Uji browser pada route/state terkait tetap diperlukan untuk perubahan UI.
 - Node test runner saat ini menggunakan fixture/stub, bukan browser E2E. Sertakan uji render, cancel, Back/Forward, permission, error, serta tampilan mobile/desktop sesuai perubahan.
-- `npm ci` dan build Mix belum dieksekusi dalam audit: tidak ada `node_modules` pada workspace. Jangan menandai build lulus hanya karena asset hasil build lama tersedia.
+- `npm ci` dan build Mix legacy telah diverifikasi di staging scratch dengan lockfile yang sama; perintah CI menggunakan Node 22 dan `NODE_OPTIONS=--openssl-legacy-provider` untuk kompatibilitas Webpack 4. Jangan menjalankan build di worktree yang memuat perubahan aset pengguna tanpa staging terpisah; verifikasi build bukan verifikasi visual browser.
 
 ### Sebelum commit
 
