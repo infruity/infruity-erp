@@ -61,7 +61,7 @@
     #delivery-order-page { min-height:0; flex:1; border-radius:0; }
     #delivery-order-page .erp-workspace-content { min-height:0; }
     #delivery-order-page .erp-workspace-heading { display:none; }
-    #delivery-order-page .erp-workspace-toolbar { position:relative; gap:0; padding:16px; }
+    #delivery-order-page .erp-workspace-toolbar { position:sticky; top:0; z-index:25; gap:0; padding:16px; background:#fff; }
     #delivery-order-page .erp-workspace-toolbar .erp-search { flex:1 0 100%; min-width:0; padding-right:68px; }
     #delivery-order-page .erp-workspace-toolbar .erp-search > input { font-size:16px; }
     #delivery-order-page .delivery-order-filter-trigger { position:absolute; top:16px; right:16px; width:52px; min-height:44px; gap:0; border:0; border-left:1px solid var(--erp-border); border-radius:0; padding:0; background:transparent; box-shadow:none; color:var(--erp-muted); }
