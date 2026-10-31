@@ -16,7 +16,7 @@
 .delivery-order-detail-modal__title { margin:0; color:#24364f; font:700 18px/1.4 var(--erp-font); }
 .delivery-order-detail-modal__body { display:flex; min-height:0; flex:1 1 auto; flex-direction:column; gap:14px; overflow-y:auto; padding:4px 20px 16px; overscroll-behavior:contain; }
 .delivery-order-detail-modal__row { display:flex; min-width:0; align-items:center; gap:12px; }
-.delivery-order-detail-modal__icon { display:flex; width:40px; height:40px; flex:0 0 40px; align-items:center; justify-content:center; border:1px solid #99f6e4; border-radius:12px; background:rgba(20,184,166,.08); color:#0b6978; font-size:18px; }
+.delivery-order-detail-modal__icon { display:flex; width:40px; height:40px; flex:0 0 40px; align-items:center; justify-content:center; border:1px solid rgba(167,243,208,.8); border-radius:12px; background:#ecfdf5; color:#0b595b; font-size:18px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
 .delivery-order-detail-modal__copy { min-width:0; flex:1; }
 .delivery-order-detail-modal__value { display:block; color:#24364f; font:700 14px/1.35 var(--erp-font); }
 .delivery-order-detail-modal__label { display:block; margin-top:3px; color:#8da0ba; font:500 11px/1.35 var(--erp-font); }
@@ -155,35 +155,35 @@
         </header>
         <div class="delivery-order-detail-modal__body">
             <div class="delivery-order-detail-modal__row">
-                <span class="delivery-order-detail-modal__icon" aria-hidden="true"><i class="ph ph-user"></i></span>
+                <span class="delivery-order-detail-modal__icon" aria-hidden="true"><i class="ph-duotone ph-user text-lg"></i></span>
                 <div class="delivery-order-detail-modal__copy">
                     <span class="delivery-order-detail-modal__value" data-delivery-order-detail-field="customer"></span>
                     <a class="delivery-order-detail-modal__value delivery-order-detail-modal__link delivery-order-detail-modal__link--dashed delivery-order-detail-modal__link--wrap delivery-order-detail-modal__link--phone" data-delivery-order-detail-field="phone" target="_blank" rel="noopener noreferrer"></a>
                 </div>
             </div>
             <div class="delivery-order-detail-modal__row">
-                <span class="delivery-order-detail-modal__icon" aria-hidden="true"><i class="ph ph-map-pin"></i></span>
+                <span class="delivery-order-detail-modal__icon" aria-hidden="true"><i class="ph-duotone ph-map-pin text-lg"></i></span>
                 <div class="delivery-order-detail-modal__copy">
                     <a class="delivery-order-detail-modal__value delivery-order-detail-modal__link delivery-order-detail-modal__link--dashed" data-delivery-order-detail-field="address" target="_blank" rel="noopener noreferrer"></a>
                     <span class="delivery-order-detail-modal__label">Alamat Pengiriman (Klik untuk Buka Gmaps)</span>
                 </div>
             </div>
             <div class="delivery-order-detail-modal__row">
-                <span class="delivery-order-detail-modal__icon" aria-hidden="true"><i class="ph ph-bag"></i></span>
+                <span class="delivery-order-detail-modal__icon" aria-hidden="true"><i class="ph-duotone ph-bag text-lg"></i></span>
                 <div class="delivery-order-detail-modal__copy">
                     <span class="delivery-order-detail-modal__value" data-delivery-order-detail-field="subtotal"></span>
                     <span class="delivery-order-detail-modal__label">Total Belanja</span>
                 </div>
             </div>
             <div class="delivery-order-detail-modal__row">
-                <span class="delivery-order-detail-modal__icon" aria-hidden="true"><i class="ph ph-moped"></i></span>
+                <span class="delivery-order-detail-modal__icon" aria-hidden="true"><i class="ph-duotone ph-moped text-lg"></i></span>
                 <div class="delivery-order-detail-modal__copy">
                     <span class="delivery-order-detail-modal__value" data-delivery-order-detail-field="shipping-fee"></span>
                     <span class="delivery-order-detail-modal__label">Ongkos Kirim Kurir</span>
                 </div>
             </div>
             <div class="delivery-order-detail-modal__row">
-                <span class="delivery-order-detail-modal__icon" aria-hidden="true"><i class="ph ph-receipt"></i></span>
+                <span class="delivery-order-detail-modal__icon" aria-hidden="true"><i class="ph-duotone ph-receipt text-lg"></i></span>
                 <div class="delivery-order-detail-modal__copy">
                     <span class="delivery-order-detail-modal__value" data-delivery-order-detail-field="grand-total"></span>
                     <span class="delivery-order-detail-modal__label">Total Belanja (Include Ongkir)</span>

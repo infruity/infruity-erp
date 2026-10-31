@@ -139,6 +139,10 @@ class DeliveryOrderListTest extends TestCase
 
         $this->assertStringContainsString('id="delivery-order-detail-modal"', $html);
         $this->assertStringContainsString('role="dialog" aria-modal="true"', $html);
+        $this->assertStringContainsString('.delivery-order-detail-modal__icon { display:flex; width:40px; height:40px; flex:0 0 40px; align-items:center; justify-content:center; border:1px solid rgba(167,243,208,.8); border-radius:12px; background:#ecfdf5; color:#0b595b; font-size:18px; box-shadow:0 1px 2px rgba(0,0,0,.05); }', $html);
+        foreach (['user', 'map-pin', 'bag', 'moped', 'receipt'] as $icon) {
+            $this->assertStringContainsString('<i class="ph-duotone ph-' . $icon . ' text-lg"></i>', $html);
+        }
         $this->assertStringContainsString('data-delivery-order-detail-close', $html);
         $this->assertStringContainsString('data-delivery-order-detail-action', $html);
         $this->assertStringContainsString('delivery-order-detail-modal__link--wrap', $html);
