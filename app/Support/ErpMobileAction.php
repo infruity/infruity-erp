@@ -23,6 +23,7 @@ class ErpMobileAction
         [['transfer-penerima.index'], 'transfer-pengirim.create', 'transfer-pengirim.create'],
         [['stock-opname.index'], null, 'stock-opname.create'],
         [['production.index'], 'production.create', 'production.create'],
+        [['delivery-order'], 'pos.index', 'pos.create'],
         [['pos.index'], 'pos.create', 'pos.create'],
         [['order-book.index'], 'order-book.create', 'order-book.create'],
         [['expenditure.index'], 'expenditure.create', 'expenditure.create'],

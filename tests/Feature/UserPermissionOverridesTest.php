@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\RoleMenu;
 use App\Models\User as LegacyUser;
+use App\Support\ErpMobileAction;
 use App\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -294,6 +295,28 @@ class UserPermissionOverridesTest extends TestCase
             ->assertSee('data-role-detail-panel class="relative z-10 flex max-h-[calc(100dvh-2rem)] w-full max-w-sm flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"', false)
             ->assertSee('class="absolute inset-0 bg-black/60"', false)
             ->assertSee('href="http://localhost/roles?create=1" aria-label="Tambah" title="Tambah" class="erp-mobile-nav__add"', false);
+    }
+
+    public function test_delivery_order_mobile_dock_add_action_uses_pos_create_permission(): void
+    {
+        DB::table('role_menu')->insert([
+            ['id_role' => 3, 'permission' => 'pos.create'],
+        ]);
+
+        $request = app('request');
+        $request->setRouteResolver(fn () => app('router')->getRoutes()->getByName('delivery-order'));
+        $this->app->instance('request', $request);
+
+        $this->assertSame('delivery-order', $request->route()?->getName());
+        $this->assertTrue(check_access('pos.create'));
+        $this->assertSame(route('pos.index'), ErpMobileAction::resolve($request)['url']);
+
+        $html = view('components.erp.mobile-navbar')->render();
+
+        $this->assertStringContainsString(
+            'href="' . route('pos.index') . '" aria-label="Tambah" title="Tambah" class="erp-mobile-nav__add"',
+            $html
+        );
     }
 
     public function test_role_detail_popup_uses_white_surfaces(): void
