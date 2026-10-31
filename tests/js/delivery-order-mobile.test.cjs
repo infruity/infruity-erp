@@ -121,7 +121,7 @@ test('mobile delivery card handles completed, paid orders and missing phone digi
     assert.equal(view.paymentLabel,'Sudah Lunas');
 });
 
-test('only internal unpaid undelivered orders open the in-modal payment receipt step',()=>{
+test('all unpaid undelivered orders open the in-modal payment receipt step',()=>{
     const internalUnpaid=cards.buildDetailViewModel({
         orderId:'50',
         courierType:'Internal',
@@ -156,7 +156,7 @@ test('only internal unpaid undelivered orders open the in-modal payment receipt 
     });
 
     assert.equal(cards.requiresPaymentReceiptStep(internalUnpaid),true);
-    assert.equal(cards.requiresPaymentReceiptStep(externalUnpaid),false);
+    assert.equal(cards.requiresPaymentReceiptStep(externalUnpaid),true);
     assert.equal(cards.requiresPaymentReceiptStep(internalPaid),false);
     assert.equal(cards.requiresPaymentReceiptStep(internalReceived),false);
 });

@@ -125,10 +125,9 @@
 
     function requiresPaymentReceiptStep(order) {
         if (!order) return false;
-        const courier = normalizeCourierType(order.courierType);
         const delivery = order.deliveryState || deliveryState(order.deliveryStatus);
         const payment = order.paymentState || paymentState(order.paymentStatus);
-        return courier === 'internal' && delivery === 'unreceived' && payment === 'unpaid';
+        return delivery === 'unreceived' && payment === 'unpaid';
     }
 
     function buildPaymentBalance(grandTotal, receivedAmount) {
@@ -364,6 +363,34 @@
         return true;
     }
 
+    function openPaymentReceiptStep(orderId, trigger = null) {
+        const modal = document.getElementById('delivery-order-detail-modal');
+        if (!modal) return false;
+
+        const requestedId = String(orderId);
+        const activeTrigger = trigger && typeof trigger.closest === 'function'
+            ? trigger
+            : document.activeElement;
+        let row = activeTrigger?.closest?.('tr') || null;
+        if (row?.classList.contains('child')) row = row.previousElementSibling;
+
+        let nameLink = row?.querySelector('[data-delivery-order-id]') || null;
+        if (nameLink?.getAttribute('data-delivery-order-id') !== requestedId) {
+            nameLink = Array.from(document.querySelectorAll('[data-delivery-order-id]'))
+                .find(node => node.getAttribute('data-delivery-order-id') === requestedId) || null;
+            row = nameLink?.closest('tr') || null;
+            if (row?.classList.contains('child')) row = row.previousElementSibling;
+        }
+
+        if (!row || !nameLink) return false;
+        const order = rowData(row);
+        if (order.orderId !== requestedId || !requiresPaymentReceiptStep(buildDetailViewModel(order))) return false;
+
+        const returnFocus = activeTrigger?.closest?.('tr') === row ? activeTrigger : nameLink;
+        if (!openDetailModal(order, returnFocus)) return false;
+        return showPaymentStep(modal);
+    }
+
     function closeDetailModal() {
         const modal = document.getElementById('delivery-order-detail-modal');
         if (!modal || modal.hidden || paymentSaving) return;
@@ -530,5 +557,12 @@
         return true;
     }
 
-    return { attach, buildViewModel, buildDetailViewModel, requiresPaymentReceiptStep, buildPaymentBalance };
+    return {
+        attach,
+        buildViewModel,
+        buildDetailViewModel,
+        requiresPaymentReceiptStep,
+        buildPaymentBalance,
+        openPaymentReceiptStep
+    };
 });

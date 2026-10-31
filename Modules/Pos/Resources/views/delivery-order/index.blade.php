@@ -501,6 +501,17 @@
         }
 
         function setBayar(id) {
+            if (window.DeliveryOrderMobileCards?.openPaymentReceiptStep) {
+                if (!window.DeliveryOrderMobileCards.openPaymentReceiptStep(id)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Data pembayaran tidak tersedia. Silakan muat ulang halaman.'
+                    });
+                }
+                return;
+            }
+
             Swal.fire({
                 title: 'Barang diterima?',
                 html: `

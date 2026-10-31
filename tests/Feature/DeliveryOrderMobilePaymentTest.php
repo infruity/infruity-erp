@@ -26,5 +26,11 @@ class DeliveryOrderMobilePaymentTest extends TestCase
         $this->assertStringContainsString('data-delivery-order-payment-balance', $html);
         $this->assertStringContainsString('data-delivery-order-payment-back', $html);
         $this->assertStringContainsString('data-delivery-order-payment-submit>Bayar</button>', $html);
+
+        $source = file_get_contents(base_path('Modules/Pos/Resources/views/delivery-order/index.blade.php'));
+        $this->assertIsString($source);
+        $this->assertStringContainsString('openPaymentReceiptStep(id)', $source);
+        $this->assertStringContainsString("function setSelesai(id)", $source);
+        $this->assertStringContainsString("text: 'Data yang dirubah tidak bisa dikembalikan!'", $source);
     }
 }
