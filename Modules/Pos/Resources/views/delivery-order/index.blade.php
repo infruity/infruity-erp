@@ -30,6 +30,31 @@
 .delivery-order-detail-modal__action:hover { background:#08484a; }
 .delivery-order-detail-modal__action:active { transform:scale(.99); }
 .delivery-order-detail-modal__action:focus-visible { outline:3px solid #2dd4bf; outline-offset:2px; }
+.delivery-order-detail-modal [hidden] { display:none !important; }
+.delivery-order-payment-step { display:flex; min-height:0; flex:1 1 auto; flex-direction:column; }
+.delivery-order-payment-step__body { display:flex; min-height:0; flex:1 1 auto; flex-direction:column; gap:14px; overflow-y:auto; padding:20px 20px 16px; overscroll-behavior:contain; }
+.delivery-order-payment-step__title { margin:0 0 20px; color:#1f2937; font:700 18px/1.4 var(--erp-font); }
+.delivery-order-payment-step__row { display:flex; min-width:0; align-items:center; gap:12px; }
+.delivery-order-payment-step__icon { display:flex; width:40px; height:40px; flex:0 0 40px; align-items:center; justify-content:center; border:1px solid rgba(167,243,208,.8); border-radius:12px; background:#ecfdf5; color:#0b595b; font-size:18px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+.delivery-order-payment-step__copy { min-width:0; flex:1; }
+.delivery-order-payment-step__value { display:block; color:#24364f; font:700 14px/1.35 var(--erp-font); }
+.delivery-order-payment-step__value--total { font-size:16px; }
+.delivery-order-payment-step__label { display:block; margin-top:3px; color:#8da0ba; font:500 11px/1.35 var(--erp-font); }
+.delivery-order-payment-step__input-wrap { position:relative; min-width:0; flex:1; }
+.delivery-order-payment-step__prefix { position:absolute; top:50%; left:12px; color:#8da0ba; font:700 12px/1 var(--erp-font); transform:translateY(-50%); pointer-events:none; }
+.delivery-order-payment-step__input { width:100%; height:44px; border:1px solid #cbd5e1; border-radius:12px; background:#fff; padding:0 12px 0 40px; color:#24364f; font:700 16px/1 var(--erp-font); }
+.delivery-order-payment-step__input:focus { border-color:#0b595b; outline:2px solid rgba(45,212,191,.3); }
+.delivery-order-payment-step__balance { display:flex; min-height:42px; align-items:center; justify-content:space-between; gap:12px; border:1px solid; border-radius:12px; padding:10px 12px; font:500 12px/1.3 var(--erp-font); }
+.delivery-order-payment-step__balance-label { display:flex; align-items:center; gap:7px; }
+.delivery-order-payment-step__balance-value { font-weight:700; }
+.delivery-order-payment-step__balance[data-state="paid"] { border-color:#a7f3d0; background:#ecfdf5; color:#065f46; }
+.delivery-order-payment-step__balance[data-state="underpaid"] { border-color:#fecdd3; background:#fff1f2; color:#9f1239; }
+.delivery-order-payment-step__balance[data-state="overpaid"] { border-color:#fde68a; background:#fffbeb; color:#92400e; }
+.delivery-order-payment-step__error { margin:0; color:#be123c; font:500 12px/1.4 var(--erp-font); }
+.delivery-order-payment-step__footer { display:flex; flex:none; gap:8px; border-top:1px solid rgba(148,163,184,.2); padding:12px 16px 16px; }
+.delivery-order-payment-step__back { min-height:44px; flex:1; border:1px solid #e5e7eb; border-radius:15px; background:#fff; color:#4b5563; font:700 14px/1.2 var(--erp-font); cursor:pointer; }
+.delivery-order-payment-step__submit { flex:1; }
+.delivery-order-payment-step__back:focus-visible,.delivery-order-payment-step__submit:focus-visible { outline:3px solid #2dd4bf; outline-offset:2px; }
 @media (max-width:767.98px) {
     body:has(#delivery-order-page) #kt_content { padding:0!important; scroll-padding-bottom:0; }
     body:has(#delivery-order-page) #kt_content_container { display:flex; min-height:0; flex:1; flex-direction:column; padding:0!important; }
@@ -150,10 +175,10 @@
 <div id="delivery-order-detail-modal" class="delivery-order-detail-modal" hidden aria-hidden="true">
     <button type="button" class="delivery-order-detail-modal__backdrop" data-delivery-order-detail-close tabindex="-1" aria-label="Tutup detail pengiriman"></button>
     <section class="delivery-order-detail-modal__panel" role="dialog" aria-modal="true" aria-labelledby="delivery-order-detail-title" tabindex="-1">
-        <header class="delivery-order-detail-modal__header">
+        <header class="delivery-order-detail-modal__header" data-delivery-order-detail-header>
             <h2 id="delivery-order-detail-title" class="delivery-order-detail-modal__title">Detail Pengiriman</h2>
         </header>
-        <div class="delivery-order-detail-modal__body">
+        <div class="delivery-order-detail-modal__body" data-delivery-order-detail-body>
             <div class="delivery-order-detail-modal__row">
                 <span class="delivery-order-detail-modal__icon" aria-hidden="true"><i class="ph-duotone ph-user text-lg"></i></span>
                 <div class="delivery-order-detail-modal__copy">
@@ -190,9 +215,54 @@
                 </div>
             </div>
         </div>
-        <footer class="delivery-order-detail-modal__footer">
+        <footer class="delivery-order-detail-modal__footer" data-delivery-order-detail-footer>
             <button type="button" class="delivery-order-detail-modal__action" data-delivery-order-detail-action>Tutup</button>
         </footer>
+        <div class="delivery-order-payment-step" data-delivery-order-payment-step hidden>
+            <div class="delivery-order-payment-step__body">
+                <h3 id="delivery-order-payment-title" class="delivery-order-payment-step__title">Penerimaan Pembayaran</h3>
+                <div class="delivery-order-payment-step__row">
+                    <span class="delivery-order-payment-step__icon" aria-hidden="true"><i class="ph-duotone ph-bag"></i></span>
+                    <div class="delivery-order-payment-step__copy">
+                        <span class="delivery-order-payment-step__value" data-delivery-order-payment-field="subtotal"></span>
+                        <span class="delivery-order-payment-step__label">Total Belanja</span>
+                    </div>
+                </div>
+                <div class="delivery-order-payment-step__row">
+                    <span class="delivery-order-payment-step__icon" aria-hidden="true"><i class="ph-duotone ph-moped"></i></span>
+                    <div class="delivery-order-payment-step__copy">
+                        <span class="delivery-order-payment-step__value" data-delivery-order-payment-field="shipping-fee"></span>
+                        <span class="delivery-order-payment-step__label">Total Ongkir</span>
+                    </div>
+                </div>
+                <div class="delivery-order-payment-step__row">
+                    <span class="delivery-order-payment-step__icon" aria-hidden="true"><i class="ph-duotone ph-receipt"></i></span>
+                    <div class="delivery-order-payment-step__copy">
+                        <span class="delivery-order-payment-step__value delivery-order-payment-step__value--total" data-delivery-order-payment-field="grand-total"></span>
+                        <span class="delivery-order-payment-step__label">Total Belanja + Ongkir</span>
+                    </div>
+                </div>
+                <div class="delivery-order-payment-step__row">
+                    <span class="delivery-order-payment-step__icon" aria-hidden="true"><i class="ph-duotone ph-money"></i></span>
+                    <label class="delivery-order-payment-step__input-wrap">
+                        <span class="delivery-order-payment-step__prefix" aria-hidden="true">Rp</span>
+                        <input type="text" inputmode="numeric" autocomplete="off" class="delivery-order-payment-step__input" data-delivery-order-payment-amount aria-label="Nominal pembayaran yang diterima">
+                    </label>
+                </div>
+                <div class="delivery-order-payment-step__balance" data-delivery-order-payment-balance data-state="paid" aria-live="polite">
+                    <span class="delivery-order-payment-step__balance-label">
+                        <i class="ph-bold ph-check-circle" data-delivery-order-payment-balance-icon aria-hidden="true"></i>
+                        <span data-delivery-order-payment-balance-label>Lunas :</span>
+                    </span>
+                    <strong class="delivery-order-payment-step__balance-value" data-delivery-order-payment-balance-value>Rp 0</strong>
+                </div>
+                <p class="delivery-order-payment-step__error" data-delivery-order-payment-error role="alert" hidden></p>
+            </div>
+            <footer class="delivery-order-payment-step__footer">
+                <button type="button" class="delivery-order-payment-step__back" data-delivery-order-payment-back>Kembali</button>
+                <button type="button" class="delivery-order-detail-modal__action delivery-order-payment-step__submit" data-delivery-order-payment-submit>Bayar</button>
+            </footer>
+        </div>
     </section>
 </div>
 <div class="modal fade" id="kt_modal_add_customer" tabindex="-1" aria-hidden="true">

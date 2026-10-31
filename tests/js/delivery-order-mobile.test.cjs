@@ -43,6 +43,9 @@ test('mobile delivery detail shows the reference totals, address and receipt act
         customerName:'Kak Alvi',
         customerPhone:'081234568219',
         address:'Indomaret Kedung sekar',
+        subtotal:25000,
+        shippingFee:27000,
+        grandTotal:52000,
         subtotalLabel:'Rp 25.000',
         shippingFeeLabel:'Rp 27.000',
         grandTotalLabel:'Rp 52.000',
@@ -116,4 +119,62 @@ test('mobile delivery card handles completed, paid orders and missing phone digi
     assert.equal(view.amountLabel,'Rp 7.500');
     assert.equal(view.deliveryLabel,'Sudah Diterima');
     assert.equal(view.paymentLabel,'Sudah Lunas');
+});
+
+test('only internal unpaid undelivered orders open the in-modal payment receipt step',()=>{
+    const internalUnpaid=cards.buildDetailViewModel({
+        orderId:'50',
+        courierType:'Internal',
+        deliveryStatus:'unreceived',
+        paymentStatus:'unpaid',
+        total:379000,
+        shippingFee:7000
+    });
+    const externalUnpaid=cards.buildDetailViewModel({
+        orderId:'51',
+        courierType:'External',
+        deliveryStatus:'unreceived',
+        paymentStatus:'unpaid',
+        total:379000,
+        shippingFee:7000
+    });
+    const internalPaid=cards.buildDetailViewModel({
+        orderId:'52',
+        courierType:'Internal',
+        deliveryStatus:'unreceived',
+        paymentStatus:'paid',
+        total:379000,
+        shippingFee:7000
+    });
+    const internalReceived=cards.buildDetailViewModel({
+        orderId:'53',
+        courierType:'Internal',
+        deliveryStatus:'received',
+        paymentStatus:'unpaid',
+        total:379000,
+        shippingFee:7000
+    });
+
+    assert.equal(cards.requiresPaymentReceiptStep(internalUnpaid),true);
+    assert.equal(cards.requiresPaymentReceiptStep(externalUnpaid),false);
+    assert.equal(cards.requiresPaymentReceiptStep(internalPaid),false);
+    assert.equal(cards.requiresPaymentReceiptStep(internalReceived),false);
+});
+
+test('payment receipt details keep subtotal, shipping and grand total available as amounts',()=>{
+    const detail=cards.buildDetailViewModel({total:379000,shippingFee:7000});
+
+    assert.deepEqual([detail.subtotal,detail.shippingFee,detail.grandTotal],[372000,7000,379000]);
+});
+
+test('payment receipt balance shows paid, underpaid and overpaid amounts',()=>{
+    assert.deepEqual(cards.buildPaymentBalance(379000,379000),{
+        type:'paid',label:'Lunas :',value:'Rp 0'
+    });
+    assert.deepEqual(cards.buildPaymentBalance(379000,372000),{
+        type:'underpaid',label:'Kurang Bayar :',value:'Rp 7.000'
+    });
+    assert.deepEqual(cards.buildPaymentBalance(379000,380000),{
+        type:'overpaid',label:'Lebih Bayar :',value:'Rp 1.000'
+    });
 });

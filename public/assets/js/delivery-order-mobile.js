@@ -109,6 +109,9 @@
             customerName: String(order.customerName || 'Pelanggan Umum').trim(),
             customerPhone: displayPhone(order.customerPhone),
             address: String(order.address || '').trim(),
+            subtotal,
+            shippingFee,
+            grandTotal,
             subtotalLabel: formatAmount(subtotal),
             shippingFeeLabel: formatAmount(shippingFee),
             grandTotalLabel: formatAmount(grandTotal),
@@ -118,6 +121,27 @@
             paymentState: payment,
             courierType: normalizeCourierType(order.courierType)
         };
+    }
+
+    function requiresPaymentReceiptStep(order) {
+        if (!order) return false;
+        const courier = normalizeCourierType(order.courierType);
+        const delivery = order.deliveryState || deliveryState(order.deliveryStatus);
+        const payment = order.paymentState || paymentState(order.paymentStatus);
+        return courier === 'internal' && delivery === 'unreceived' && payment === 'unpaid';
+    }
+
+    function buildPaymentBalance(grandTotal, receivedAmount) {
+        const difference = amountValue(receivedAmount) - amountValue(grandTotal);
+        if (difference === 0) return { type: 'paid', label: 'Lunas :', value: 'Rp 0' };
+        if (difference < 0) {
+            return {
+                type: 'underpaid',
+                label: 'Kurang Bayar :',
+                value: formatAmount(Math.abs(difference))
+            };
+        }
+        return { type: 'overpaid', label: 'Lebih Bayar :', value: formatAmount(difference) };
     }
 
     function text(element) {
@@ -156,10 +180,128 @@
     let activeOrder = null;
     let activeTrigger = null;
     let previousBodyOverflow = '';
+    let paymentSaving = false;
 
     function setDetailField(modal, field, value) {
         const node = modal.querySelector(`[data-delivery-order-detail-field="${field}"]`);
         if (node) node.textContent = value;
+    }
+
+    function setPaymentField(modal, field, value) {
+        const node = modal.querySelector(`[data-delivery-order-payment-field="${field}"]`);
+        if (node) node.textContent = value;
+    }
+
+    function showDetailStep(modal, focusAction = false) {
+        modal.querySelector('[data-delivery-order-detail-header]')?.removeAttribute('hidden');
+        modal.querySelector('[data-delivery-order-detail-body]')?.removeAttribute('hidden');
+        modal.querySelector('[data-delivery-order-detail-footer]')?.removeAttribute('hidden');
+        modal.querySelector('[data-delivery-order-payment-step]')?.setAttribute('hidden', '');
+        modal.querySelector('[role="dialog"]')?.setAttribute('aria-labelledby', 'delivery-order-detail-title');
+        modal.dataset.deliveryOrderStep = 'detail';
+        if (focusAction) modal.querySelector('[data-delivery-order-detail-action]')?.focus({ preventScroll: true });
+    }
+
+    function updatePaymentBalance(modal, receivedAmount) {
+        const balance = buildPaymentBalance(activeOrder?.grandTotal || 0, receivedAmount);
+        const container = modal.querySelector('[data-delivery-order-payment-balance]');
+        const label = modal.querySelector('[data-delivery-order-payment-balance-label]');
+        const value = modal.querySelector('[data-delivery-order-payment-balance-value]');
+        const icon = modal.querySelector('[data-delivery-order-payment-balance-icon]');
+        if (container) container.dataset.state = balance.type;
+        if (label) label.textContent = balance.label;
+        if (value) value.textContent = balance.value;
+        if (icon) {
+            icon.className = balance.type === 'paid'
+                ? 'ph-bold ph-check-circle'
+                : balance.type === 'underpaid'
+                    ? 'ph-bold ph-warning-circle'
+                    : 'ph-bold ph-arrow-u-up-left';
+        }
+    }
+
+    function showPaymentStep(modal) {
+        if (!activeOrder || !requiresPaymentReceiptStep(activeOrder)) return false;
+        modal.querySelector('[data-delivery-order-detail-header]')?.setAttribute('hidden', '');
+        modal.querySelector('[data-delivery-order-detail-body]')?.setAttribute('hidden', '');
+        modal.querySelector('[data-delivery-order-detail-footer]')?.setAttribute('hidden', '');
+        const step = modal.querySelector('[data-delivery-order-payment-step]');
+        step?.removeAttribute('hidden');
+        modal.querySelector('[role="dialog"]')?.setAttribute('aria-labelledby', 'delivery-order-payment-title');
+        modal.dataset.deliveryOrderStep = 'payment';
+        setPaymentField(modal, 'subtotal', formatAmount(activeOrder.subtotal));
+        setPaymentField(modal, 'shipping-fee', formatAmount(activeOrder.shippingFee));
+        setPaymentField(modal, 'grand-total', formatAmount(activeOrder.grandTotal));
+
+        const input = modal.querySelector('[data-delivery-order-payment-amount]');
+        if (input) input.value = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(activeOrder.grandTotal);
+        const error = modal.querySelector('[data-delivery-order-payment-error]');
+        if (error) {
+            error.textContent = '';
+            error.hidden = true;
+        }
+        const back = modal.querySelector('[data-delivery-order-payment-back]');
+        const submit = modal.querySelector('[data-delivery-order-payment-submit]');
+        if (back) back.disabled = false;
+        if (submit) submit.disabled = false;
+        updatePaymentBalance(modal, activeOrder.grandTotal);
+        const body = modal.querySelector('.delivery-order-payment-step__body');
+        if (body) body.scrollTop = 0;
+        input?.focus({ preventScroll: true });
+        return true;
+    }
+
+    function showPaymentError(modal, message) {
+        const error = modal.querySelector('[data-delivery-order-payment-error]');
+        if (!error) return;
+        error.textContent = message;
+        error.hidden = false;
+    }
+
+    function submitPaymentAndReceive() {
+        const modal = document.getElementById('delivery-order-detail-modal');
+        const input = modal?.querySelector('[data-delivery-order-payment-amount]');
+        const submit = modal?.querySelector('[data-delivery-order-payment-submit]');
+        const back = modal?.querySelector('[data-delivery-order-payment-back]');
+        if (!modal || !activeOrder || !input || paymentSaving || !requiresPaymentReceiptStep(activeOrder)) return;
+
+        const nominal = Number(input.value.replace(/\D/g, '')) || 0;
+        const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        if (!window.jQuery || typeof window.jQuery.ajax !== 'function') {
+            showPaymentError(modal, 'Tidak dapat mengirim pembayaran. Silakan coba lagi.');
+            return;
+        }
+
+        paymentSaving = true;
+        if (submit) submit.disabled = true;
+        if (back) back.disabled = true;
+        const error = modal.querySelector('[data-delivery-order-payment-error]');
+        if (error) error.hidden = true;
+
+        window.jQuery.ajax({
+            url: `/delivery-order/set-selesai/${encodeURIComponent(activeOrder.orderId)}`,
+            type: 'PUT',
+            data: { _token: token, nominal }
+        }).done(response => {
+            paymentSaving = false;
+            closeDetailModal();
+            if (window.Swal?.fire) {
+                window.Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: response?.message || 'Data berhasil diubah.',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+            if (typeof window.reloadDataTable === 'function') window.reloadDataTable();
+        }).fail(xhr => {
+            showPaymentError(modal, xhr.responseJSON?.message || 'Terjadi kesalahan saat menerima pembayaran.');
+        }).always(() => {
+            paymentSaving = false;
+            if (submit) submit.disabled = false;
+            if (back) back.disabled = false;
+        });
     }
 
     function whatsappHref(phone) {
@@ -212,6 +354,8 @@
 
         activeOrder = detail;
         activeTrigger = trigger || document.activeElement;
+        paymentSaving = false;
+        showDetailStep(modal);
         previousBodyOverflow = document.body.style.overflow;
         modal.hidden = false;
         modal.setAttribute('aria-hidden', 'false');
@@ -222,8 +366,9 @@
 
     function closeDetailModal() {
         const modal = document.getElementById('delivery-order-detail-modal');
-        if (!modal || modal.hidden) return;
+        if (!modal || modal.hidden || paymentSaving) return;
 
+        showDetailStep(modal);
         modal.hidden = true;
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = previousBodyOverflow;
@@ -236,9 +381,16 @@
     function handleDetailAction() {
         if (!activeOrder) return;
         const order = activeOrder;
-        closeDetailModal();
-        if (order.deliveryState === 'received' || !order.orderId) return;
+        if (order.deliveryState === 'received' || !order.orderId) {
+            closeDetailModal();
+            return;
+        }
+        if (requiresPaymentReceiptStep(order)) {
+            showPaymentStep(document.getElementById('delivery-order-detail-modal'));
+            return;
+        }
 
+        closeDetailModal();
         const action = window[order.actionMethod];
         if (typeof action === 'function') action(order.orderId);
     }
@@ -251,6 +403,16 @@
             if (event.target.closest('[data-delivery-order-detail-close]')) closeDetailModal();
         });
         modal.querySelector('[data-delivery-order-detail-action]')?.addEventListener('click', handleDetailAction);
+        modal.querySelector('[data-delivery-order-payment-back]')?.addEventListener('click', () => showDetailStep(modal, true));
+        modal.querySelector('[data-delivery-order-payment-submit]')?.addEventListener('click', submitPaymentAndReceive);
+        modal.querySelector('[data-delivery-order-payment-amount]')?.addEventListener('input', event => {
+            const digits = event.currentTarget.value.replace(/\D/g, '');
+            const amount = Number(digits) || 0;
+            event.currentTarget.value = digits
+                ? new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(amount)
+                : '';
+            updatePaymentBalance(modal, amount);
+        });
         document.addEventListener('keydown', event => {
             if (modal.hidden) return;
             if (event.key === 'Escape') {
@@ -261,8 +423,8 @@
             if (event.key !== 'Tab') return;
 
             const dialog = modal.querySelector('[role="dialog"]');
-            const focusable = Array.from(modal.querySelectorAll('a[href], button:not([disabled])'))
-                .filter(node => node.tabIndex >= 0 && !node.hasAttribute('hidden'));
+            const focusable = Array.from(modal.querySelectorAll('a[href], button:not([disabled]), input:not([disabled])'))
+                .filter(node => node.tabIndex >= 0 && !node.closest('[hidden]'));
             if (!focusable.length) {
                 event.preventDefault();
                 dialog?.focus();
@@ -368,5 +530,5 @@
         return true;
     }
 
-    return { attach, buildViewModel, buildDetailViewModel };
+    return { attach, buildViewModel, buildDetailViewModel, requiresPaymentReceiptStep, buildPaymentBalance };
 });
