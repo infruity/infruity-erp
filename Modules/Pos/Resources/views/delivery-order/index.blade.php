@@ -2,12 +2,53 @@
 @section('title', 'Pengiriman')
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('assets/css/delivery-order-reference.css') }}?v={{ filemtime(public_path('assets/css/delivery-order-reference.css')) }}">
 <style>
 .delivery-order-filter-chips { display:flex; flex-wrap:wrap; gap:6px; }
 .delivery-order-filter-chip { border:1px solid #e5e7eb; border-radius:999px; padding:6px 10px; background:#fff; color:#4b5563; font:500 12px/1.35 var(--erp-font); cursor:pointer; transition:background .15s,border-color .15s,color .15s; }
 .delivery-order-filter-chip:hover { border-color:#99f6e4; color:#0f766e; }
 .delivery-order-filter-chip.is-active { border-color:#a7f3d0; background:#ecfdf5; color:#047857; font-weight:600; }
 .delivery-order-filter-chip:focus-visible { outline:2px solid #0f766e; outline-offset:2px; }
+.delivery-order-filter-trigger.is-active { color:#0b595b; }
+.delivery-order-filter-sheet { position:fixed; inset:0; z-index:1250; display:flex; flex-direction:column; justify-content:flex-end; }
+.delivery-order-filter-sheet[hidden] { display:none !important; }
+.delivery-order-filter-sheet__backdrop { position:absolute; inset:0; border:0; padding:0; background:rgba(0,0,0,.7); opacity:0; transition:opacity .3s ease; }
+.delivery-order-filter-sheet__panel { position:relative; z-index:1; display:flex; width:100%; max-height:85vh; max-height:85dvh; flex-direction:column; overflow:hidden; border-radius:24px 24px 0 0; background:#fff; padding-bottom:env(safe-area-inset-bottom); box-shadow:0 -10px 35px rgba(0,0,0,.12); transform:translateY(100%); transition:transform .3s ease; }
+.delivery-order-filter-sheet.is-open .delivery-order-filter-sheet__backdrop { opacity:1; }
+.delivery-order-filter-sheet.is-open .delivery-order-filter-sheet__panel { transform:translateY(0); }
+.delivery-order-filter-sheet__handle { display:flex; width:100%; flex:none; justify-content:center; border:0; background:transparent; padding:12px 0 4px; cursor:pointer; }
+.delivery-order-filter-sheet__handle span { width:64px; height:6px; border-radius:999px; background:#d1d5db; }
+.delivery-order-filter-sheet__header { display:flex; flex:none; align-items:center; justify-content:space-between; border-bottom:1px solid #f3f4f6; background:#fff; padding:16px 20px; }
+.delivery-order-filter-sheet__title { margin:0; color:#1f2937; font:700 18px/1.35 var(--erp-font); }
+.delivery-order-filter-sheet__subtitle { margin:2px 0 0; color:#9ca3af; font:400 11px/1.4 var(--erp-font); }
+.delivery-order-filter-sheet__close { display:flex; width:32px; height:32px; flex:none; align-items:center; justify-content:center; border:0; border-radius:50%; background:#f3f4f6; color:#6b7280; font-size:18px; cursor:pointer; }
+.delivery-order-filter-sheet__body { display:flex; min-height:0; flex:1 1 auto; flex-direction:column; gap:20px; overflow-y:auto; overscroll-behavior:contain; padding:16px; scrollbar-width:none; }
+.delivery-order-filter-sheet__body::-webkit-scrollbar { display:none; }
+.delivery-order-filter-sheet__section { padding:0 4px; }
+.delivery-order-filter-sheet__label { display:block; margin:0 0 8px; color:#6b7280; font:700 12px/1.35 var(--erp-font); letter-spacing:.06em; text-transform:uppercase; }
+.delivery-order-filter-sheet__branch-card { overflow:hidden; border:1px solid #e5e7eb; border-radius:8px; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+.delivery-order-filter-sheet__branch-search { position:relative; border-bottom:1px solid #f3f4f6; }
+.delivery-order-filter-sheet__branch-search i { position:absolute; top:50%; left:12px; color:#9ca3af; font-size:13px; transform:translateY(-50%); }
+.delivery-order-filter-sheet__branch-search input { width:100%; border:0; outline:0; background:transparent; padding:10px 12px 10px 32px; color:#374151; font:400 12px/1.5 var(--erp-font); }
+.delivery-order-filter-sheet__branch-search input:focus { background:#f9fafb; }
+.delivery-order-filter-sheet__branch-list { min-height:144px; max-height:144px; overflow-y:auto; overscroll-behavior:contain; background:rgba(249,250,251,.3); }
+.delivery-order-filter-sheet__branch-option { display:flex; min-height:38px; align-items:center; gap:12px; border-bottom:1px solid rgba(243,244,246,.7); padding:10px 14px; color:#4b5563; font:500 12px/1.5 var(--erp-font); cursor:pointer; }
+.delivery-order-filter-sheet__branch-option:last-of-type { border-bottom:0; }
+.delivery-order-filter-sheet__branch-option input { appearance:none; width:16px; height:16px; flex:none; margin:0; border:2px solid #cbd5e1; border-radius:50%; background:#fff; cursor:pointer; }
+.delivery-order-filter-sheet__branch-option input:checked { border-color:#10b981; background:radial-gradient(circle,#10b981 0 4px,#fff 4.5px); }
+.delivery-order-filter-sheet__branch-option input:focus-visible { outline:2px solid #0f766e; outline-offset:2px; }
+.delivery-order-filter-sheet__branch-option:has(input:checked) { color:#111827; font-weight:700; }
+.delivery-order-filter-sheet__empty { margin:0; padding:14px 10px; color:#9ca3af; font:400 12px/1.4 var(--erp-font); text-align:center; }
+.delivery-order-filter-sheet__chips { display:flex; flex-wrap:wrap; gap:8px; }
+.delivery-order-filter-sheet__chip { border:1px solid #e5e7eb; border-radius:999px; background:#fff; padding:6px 12px; color:#4b5563; font:500 12px/1.5 var(--erp-font); cursor:pointer; transition:background .15s,border-color .15s,color .15s; }
+.delivery-order-filter-sheet__chip.is-active { border-color:#6ee7b7; background:#ecfdf5; color:#047857; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+.delivery-order-filter-sheet__chip:focus-visible,.delivery-order-filter-sheet__close:focus-visible,.delivery-order-filter-sheet__button:focus-visible { outline:2px solid #0f766e; outline-offset:2px; }
+.delivery-order-filter-sheet__footer { display:flex; flex:none; gap:8px; border-top:1px solid #f3f4f6; background:#fff; padding:16px 16px calc(16px + env(safe-area-inset-bottom)); }
+.delivery-order-filter-sheet__button { min-height:44px; flex:1; border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:#4b5563; font:600 14px/1.2 var(--erp-font); cursor:pointer; transition:transform .15s,background .15s; }
+.delivery-order-filter-sheet__button:active { transform:scale(.98); }
+.delivery-order-filter-sheet__button--primary { border-color:#0b595b; background:#0b595b; color:#fff; box-shadow:0 2px 4px rgba(0,0,0,.08); }
+.delivery-order-filter-sheet__button--primary:hover { background:#0a4e50; }
+@media (min-width:768px) { .delivery-order-filter-sheet { display:none !important; } }
 .delivery-order-detail-modal { position:fixed; inset:0; z-index:1200; display:flex; align-items:center; justify-content:center; padding:16px; }
 .delivery-order-detail-modal[hidden] { display:none !important; }
 .delivery-order-detail-modal__backdrop { position:absolute; inset:0; border:0; padding:0; background:rgba(0,0,0,.6); }
@@ -63,11 +104,13 @@
     #delivery-order-page .erp-workspace-heading { display:none; }
     #delivery-order-page .erp-workspace-toolbar { position:sticky; top:0; z-index:25; gap:0; padding:16px; background:#fff; }
     #delivery-order-page .erp-workspace-toolbar .erp-search { flex:1 0 100%; min-width:0; padding-right:68px; }
+    #delivery-order-page .erp-workspace-toolbar > .erp-mobile-search-shell { min-width:0; flex:1 1 100%; padding:0; background:transparent; }
     #delivery-order-page .erp-workspace-toolbar .erp-search > input { font-size:16px; }
     #delivery-order-page .delivery-order-filter-trigger { position:absolute; top:16px; right:16px; width:52px; min-height:44px; gap:0; border:0; border-left:1px solid var(--erp-border); border-radius:0; padding:0; background:transparent; box-shadow:none; color:var(--erp-muted); }
     #delivery-order-page .delivery-order-filter-trigger:hover { background:transparent; color:var(--erp-primary); }
     #delivery-order-page .delivery-order-filter-trigger > i { font-size:20px; }
     #delivery-order-page .delivery-order-filter-trigger > span { display:none; }
+    #delivery-order-page .delivery-order-filter-menu { display:none!important; }
     #delivery-order-page .erp-record-controls { display:none; }
     .erp-collection[data-erp-collection="pos-table"] .delivery-order-card__head { width:100%; min-height:61px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border:0; border-radius:0; background:#fff; color:#1f2937; text-align:left; font:inherit; }
     .erp-collection[data-erp-collection="pos-table"] .delivery-order-card__head:hover { background:#f9fafb; }
@@ -95,7 +138,7 @@
     .delivery-order-card__courier { max-width:120px; margin-top:2px; overflow:hidden; color:#6b7280; font-size:11px; font-weight:400; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
 }
 </style>
-<x-erp.workspace id="delivery-order-page" title="Pengiriman" subtitle="Kelola pengiriman dan lihat rincian transaksi."><x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari nama pelanggan, kurir, atau 4 digit HP" placeholder="Cari..."></div><a href="{{ route('pos.index') }}" class="erp-action erp-action--primary d-none d-sm-inline-flex" aria-label="Tambah pengiriman lewat POS"><i class="ph ph-plus" aria-hidden="true"></i><span>Tambah Pengiriman</span></a><button type="button" class="erp-action delivery-order-filter-trigger" data-delivery-order-filter-trigger data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end" aria-label="Filter pengiriman"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px delivery-order-filter-menu"
+<x-erp.workspace id="delivery-order-page" title="Pengiriman" subtitle="Kelola pengiriman dan lihat rincian transaksi."><x-slot:toolbar><div class="erp-search d-none d-md-flex"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-kt-ecommerce-product-filter="search" aria-label="Cari nama pelanggan, kurir, atau 4 digit HP" placeholder="Cari..."></div><x-erp.mobile-search class="d-md-none erp-mobile-search-shell--fill"><x-slot:input><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari nama pelanggan, kurir, atau 4 digit HP" placeholder="Cari..." class="erp-mobile-search__input"></x-slot:input><x-slot:clear><button type="button" data-delivery-order-mobile-search-clear aria-label="Hapus pencarian" class="erp-mobile-search__clear" hidden><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear><x-slot:filter><button type="button" data-delivery-order-mobile-filter-trigger aria-label="Filter pengiriman" aria-haspopup="dialog" aria-controls="delivery-order-mobile-filter-sheet" aria-expanded="false" aria-pressed="false" class="erp-mobile-search__filter"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span class="erp-mobile-search__filter-dot" data-delivery-order-mobile-filter-dot hidden></span></button></x-slot:filter></x-erp.mobile-search><a href="{{ route('pos.index') }}" class="erp-action erp-action--primary d-none d-sm-inline-flex" aria-label="Tambah pengiriman lewat POS"><i class="ph ph-plus" aria-hidden="true"></i><span>Tambah Pengiriman</span></a><button type="button" class="erp-action delivery-order-filter-trigger d-none d-md-inline-flex" data-delivery-order-filter-trigger aria-haspopup="dialog" aria-controls="delivery-order-mobile-filter-sheet" aria-expanded="false" aria-label="Filter pengiriman" aria-pressed="false"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px delivery-order-filter-menu"
                             data-kt-menu="true">
                             <!--begin::Header-->
                             <div class="px-7 py-5">
@@ -172,6 +215,66 @@
                     </thead>
                     <tbody class="fw-semibold text-gray-600"></tbody>
                 </table></x-erp.collection></x-erp.workspace>
+<div id="delivery-order-mobile-filter-sheet" class="delivery-order-filter-sheet" hidden>
+    <button type="button" class="delivery-order-filter-sheet__backdrop bg-black/70" data-delivery-order-filter-close tabindex="-1" aria-label="Tutup filter pengiriman"></button>
+    <section class="delivery-order-filter-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="delivery-order-mobile-filter-title" tabindex="-1">
+        <button type="button" class="delivery-order-filter-sheet__handle" data-delivery-order-filter-close aria-label="Tutup filter pengiriman"><span aria-hidden="true"></span></button>
+        <header class="delivery-order-filter-sheet__header">
+            <div>
+                <h2 id="delivery-order-mobile-filter-title" class="delivery-order-filter-sheet__title">Filter Pengiriman</h2>
+                <p class="delivery-order-filter-sheet__subtitle">Saring cabang, status, dan periode pengiriman</p>
+            </div>
+            <button type="button" class="delivery-order-filter-sheet__close" data-delivery-order-filter-close aria-label="Tutup filter pengiriman"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
+        </header>
+        <div class="delivery-order-filter-sheet__body">
+            <section class="delivery-order-filter-sheet__section" aria-labelledby="delivery-order-mobile-branch-label">
+                <h3 id="delivery-order-mobile-branch-label" class="delivery-order-filter-sheet__label">Cabang Tujuan</h3>
+                <div class="delivery-order-filter-sheet__branch-card">
+                    <label class="delivery-order-filter-sheet__branch-search">
+                        <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+                        <input id="delivery-order-mobile-branch-search" type="search" placeholder="Cari cabang..." autocomplete="off" aria-label="Cari cabang">
+                    </label>
+                    <div class="delivery-order-filter-sheet__branch-list" role="radiogroup" aria-labelledby="delivery-order-mobile-branch-label">
+                        @if (count($branches) > 1)
+                            <label class="delivery-order-filter-sheet__branch-option" data-delivery-order-mobile-branch-option>
+                                <input type="radio" name="delivery-order-mobile-branch" value="all" data-delivery-order-mobile-branch checked>
+                                <span>Semua Cabang</span>
+                            </label>
+                        @endif
+                        @foreach ($branches as $branch)
+                            <label class="delivery-order-filter-sheet__branch-option" data-delivery-order-mobile-branch-option>
+                                <input type="radio" name="delivery-order-mobile-branch" value="{{ $branch->id }}" data-delivery-order-mobile-branch>
+                                <span>{{ ucwords($branch->name) }}</span>
+                            </label>
+                        @endforeach
+                        <p class="delivery-order-filter-sheet__empty" data-delivery-order-mobile-branch-empty hidden>Cabang tidak ditemukan</p>
+                    </div>
+                </div>
+            </section>
+            <section class="delivery-order-filter-sheet__section" aria-labelledby="delivery-order-mobile-delivery-label">
+                <h3 id="delivery-order-mobile-delivery-label" class="delivery-order-filter-sheet__label">Status Penerimaan</h3>
+                <div class="delivery-order-filter-sheet__chips" role="group" aria-label="Status Penerimaan">
+                    <button type="button" class="delivery-order-filter-sheet__chip is-active" data-delivery-order-mobile-filter="delivery" data-filter-value="all" aria-pressed="true">Semua Status</button>
+                    <button type="button" class="delivery-order-filter-sheet__chip" data-delivery-order-mobile-filter="delivery" data-filter-value="unreceived" aria-pressed="false">Belum Diterima</button>
+                    <button type="button" class="delivery-order-filter-sheet__chip" data-delivery-order-mobile-filter="delivery" data-filter-value="received" aria-pressed="false">Sudah Diterima</button>
+                </div>
+            </section>
+            <section class="delivery-order-filter-sheet__section" aria-labelledby="delivery-order-mobile-payment-label">
+                <h3 id="delivery-order-mobile-payment-label" class="delivery-order-filter-sheet__label">Status Pembayaran</h3>
+                <div class="delivery-order-filter-sheet__chips" role="group" aria-label="Status Pembayaran">
+                    <button type="button" class="delivery-order-filter-sheet__chip is-active" data-delivery-order-mobile-filter="payment" data-filter-value="all" aria-pressed="true">Semua Status</button>
+                    <button type="button" class="delivery-order-filter-sheet__chip" data-delivery-order-mobile-filter="payment" data-filter-value="unpaid" aria-pressed="false">Belum Lunas</button>
+                    <button type="button" class="delivery-order-filter-sheet__chip" data-delivery-order-mobile-filter="payment" data-filter-value="paid" aria-pressed="false">Sudah Lunas</button>
+                </div>
+            </section>
+            @include('pos::delivery-order.partials.reference-dates')
+        </div>
+        <footer class="delivery-order-filter-sheet__footer">
+            <button type="button" class="delivery-order-filter-sheet__button" data-delivery-order-filter-reset>Reset</button>
+            <button type="button" class="delivery-order-filter-sheet__button delivery-order-filter-sheet__button--primary" data-delivery-order-filter-apply>Terapkan</button>
+        </footer>
+    </section>
+</div>
 <div id="delivery-order-detail-modal" class="delivery-order-detail-modal" hidden aria-hidden="true">
     <button type="button" class="delivery-order-detail-modal__backdrop" data-delivery-order-detail-close tabindex="-1" aria-label="Tutup detail pengiriman"></button>
     <section class="delivery-order-detail-modal__panel" role="dialog" aria-modal="true" aria-labelledby="delivery-order-detail-title" tabindex="-1">
@@ -327,17 +430,185 @@
     </div>
 @section('script')
     <script src="{{ asset('assets/js/delivery-order-mobile.js') }}"></script>
+    <script src="{{ asset('assets/js/delivery-order-filter-state.js') }}"></script>
+    <script src="{{ asset('assets/js/delivery-order-reference-dates.js') }}?v={{ filemtime(public_path('assets/js/delivery-order-reference-dates.js')) }}"></script>
     <script type="text/javascript">
         var dataTable;
         $(document).ready(function() {
             const $branchFilter = $('[data-kt-ecommerce-product-filter="cabang"]');
             const $dateFilter = $('#kt_ecommerce_sales_flatpickr');
             const $activeBranchButtonLabel = $('#active-branch-button-label');
-            const isMobileView = window.matchMedia('(max-width: 767.98px)').matches;
+            const $filterSheet = $('#delivery-order-mobile-filter-sheet');
+            const $filterPanel = $filterSheet.find('[role="dialog"]');
+            const $mobileFilterTrigger = $('[data-delivery-order-mobile-filter-trigger]');
+            const $desktopFilterTrigger = $('[data-delivery-order-filter-trigger]');
+            const $searchFields = $('[data-kt-ecommerce-product-filter="search"]');
+            const $mobileSearchClear = $('[data-delivery-order-mobile-search-clear]');
+            const defaultBranch = String($branchFilter.val() || 'all');
+            const filterState = window.DeliveryOrderFilterState.create({ branch: defaultBranch });
+            const dateFilterUi = window.DeliveryOrderReferenceDates.attach({ root: $filterSheet[0], state: filterState, timezone: @json(config('app.timezone')) });
+            const mobileViewport = window.matchMedia('(max-width: 767.98px)');
+            let previousMobileViewport = mobileViewport.matches;
+            let salesFlatpickr;
+            const searchDebounce = window.DeliveryOrderFilterState.createDebouncedSearch(query => {
+                dataTable.search(query).draw();
+            });
+            let filterCloseTimer;
+            let filterOpenFrame;
+            let filterSheetClosing = false;
+            let previousBodyOverflow = '';
+            let filterReturnFocus = null;
 
             function updateActiveFilterInfo() {
-                const selectedBranch = $branchFilter.find('option:selected').text().trim() || 'Semua cabang';
+                const filters = filterState.applied;
+                const branchOption = Array.from($branchFilter[0]?.options || []).find(option => option.value === filters.branch);
+                const selectedBranch = filters.branch === 'all' ? 'Semua cabang' : (branchOption?.text.trim() || 'Semua cabang');
+                const hasActiveFilters = filters.branch !== defaultBranch || filters.delivery !== 'all'
+                    || filters.payment !== 'all' || Boolean(filters.dateRange);
                 $activeBranchButtonLabel.text(selectedBranch);
+                $('.delivery-order-filter-trigger').toggleClass('is-active', hasActiveFilters)
+                    .attr('aria-pressed', String(hasActiveFilters));
+                $mobileFilterTrigger.toggleClass('is-active', hasActiveFilters)
+                    .attr('aria-pressed', String(hasActiveFilters));
+                $('[data-delivery-order-mobile-filter-dot]').prop('hidden', !hasActiveFilters);
+            }
+
+            function syncDesktopFilterControls(filters) {
+                $('[data-delivery-order-filter]').each(function() {
+                    const group = this.getAttribute('data-delivery-order-filter');
+                    const active = this.getAttribute('data-filter-value') === filters[group];
+                    this.classList.toggle('is-active', active);
+                    this.setAttribute('aria-pressed', String(active));
+                });
+                const branchExists = Array.from($branchFilter[0]?.options || []).some(option => option.value === filters.branch);
+                if (branchExists) $branchFilter.val(filters.branch).trigger('change.select2');
+                if (salesFlatpickr) {
+                    if (filters.dateRange) salesFlatpickr.setDate(filters.dateRange, false);
+                    else salesFlatpickr.clear(false);
+                }
+                updateActiveFilterInfo();
+            }
+
+            function syncMobileFilterControls(filters) {
+                $filterSheet.find('[data-delivery-order-mobile-branch]').each(function() {
+                    this.checked = this.value === filters.branch;
+                });
+                $filterSheet.find('[data-delivery-order-mobile-filter]').each(function() {
+                    const group = this.getAttribute('data-delivery-order-mobile-filter');
+                    const active = this.getAttribute('data-filter-value') === filters[group];
+                    this.classList.toggle('is-active', active);
+                    this.setAttribute('aria-pressed', String(active));
+                });
+                dateFilterUi.sync();
+            }
+
+            function filterMobileBranches() {
+                const query = document.getElementById('delivery-order-mobile-branch-search').value.trim().toLocaleLowerCase();
+                const options = Array.from($filterSheet[0].querySelectorAll('[data-delivery-order-mobile-branch-option]'));
+                let visibleCount = 0;
+                options.forEach(option => {
+                    const matches = option.textContent.trim().toLocaleLowerCase().includes(query);
+                    option.hidden = !matches;
+                    if (matches) visibleCount += 1;
+                });
+                $filterSheet.find('[data-delivery-order-mobile-branch-empty]').prop('hidden', visibleCount > 0);
+            }
+
+            function openMobileFilterSheet(event) {
+                if (!$filterSheet.prop('hidden') && !filterSheetClosing) return;
+                if (filterCloseTimer) {
+                    window.clearTimeout(filterCloseTimer);
+                    filterCloseTimer = null;
+                }
+                filterSheetClosing = false;
+                filterReturnFocus = event?.currentTarget || document.activeElement;
+                filterState.open();
+                dateFilterUi.open();
+                document.getElementById('delivery-order-mobile-branch-search').value = '';
+                filterMobileBranches();
+                syncMobileFilterControls(filterState.pending);
+                previousBodyOverflow = document.body.style.overflow;
+                document.body.style.overflow = 'hidden';
+                $filterSheet.prop('hidden', false);
+                $mobileFilterTrigger.add($desktopFilterTrigger).attr('aria-expanded', 'true');
+                filterOpenFrame = window.requestAnimationFrame(() => {
+                    filterOpenFrame = null;
+                    $filterSheet.addClass('is-open');
+                });
+                $filterPanel[0]?.focus({ preventScroll: true });
+            }
+
+            function closeMobileFilterSheet(options = {}) {
+                if ($filterSheet.prop('hidden') || filterSheetClosing) return;
+                filterSheetClosing = true;
+                const immediate = options.immediate === true;
+                const focusTarget = Object.prototype.hasOwnProperty.call(options, 'focusTarget')
+                    ? options.focusTarget
+                    : filterReturnFocus;
+                filterState.discard();
+                dateFilterUi.close();
+                if (filterOpenFrame) {
+                    window.cancelAnimationFrame(filterOpenFrame);
+                    filterOpenFrame = null;
+                }
+                if (filterCloseTimer) {
+                    window.clearTimeout(filterCloseTimer);
+                    filterCloseTimer = null;
+                }
+                $filterSheet.removeClass('is-open');
+                $mobileFilterTrigger.add($desktopFilterTrigger).attr('aria-expanded', 'false');
+                document.body.style.overflow = previousBodyOverflow;
+                if (immediate) {
+                    $filterSheet.prop('hidden', true);
+                    filterSheetClosing = false;
+                } else {
+                    filterCloseTimer = window.setTimeout(() => {
+                        filterCloseTimer = null;
+                        if (!$filterSheet.hasClass('is-open')) {
+                            $filterSheet.prop('hidden', true);
+                            filterSheetClosing = false;
+                        }
+                    }, 300);
+                }
+                if (focusTarget && typeof focusTarget.focus === 'function'
+                    && focusTarget.getClientRects().length) {
+                    focusTarget.focus({ preventScroll: true });
+                }
+            }
+
+            function dismissMobileFilterForDesktop() {
+                if (previousMobileViewport === mobileViewport.matches) return;
+                previousMobileViewport = mobileViewport.matches;
+                if ($filterSheet.prop('hidden')) return;
+                closeMobileFilterSheet({
+                    immediate: true,
+                    focusTarget: mobileViewport.matches ? $mobileFilterTrigger[0] : $desktopFilterTrigger[0]
+                });
+            }
+
+            window.addEventListener('resize', dismissMobileFilterForDesktop);
+            window.DeliveryOrderFilterState.bindDesktopDismissal(
+                mobileViewport,
+                () => !$filterSheet.prop('hidden'),
+                dismissMobileFilterForDesktop
+            );
+
+            function resetMobileFilterSheet() {
+                const filters = filterState.reset();
+                searchDebounce.cancel();
+                $searchFields.val('');
+                $mobileSearchClear.prop('hidden', true);
+                dataTable.search('').draw();
+                syncDesktopFilterControls(filters);
+                syncMobileFilterControls(filters);
+                closeMobileFilterSheet();
+            }
+
+            function applyMobileFilterSheet() {
+                const filters = filterState.apply();
+                syncDesktopFilterControls(filters);
+                closeMobileFilterSheet();
+                dataTable.draw();
             }
 
             dataTable = $('#pos-table').DataTable({
@@ -358,12 +629,12 @@
                     url: "{{ route('delivery-order.data') }}",
                     data: function(d) {
                         d.url = "{{ request()->segment(1) }}";
-                        d.delivery_status_filter = $('[data-delivery-order-filter="delivery"][aria-pressed="true"]').attr('data-filter-value') || 'all';
-                        d.payment_status_filter = $('[data-delivery-order-filter="payment"][aria-pressed="true"]').attr('data-filter-value') || 'all';
-                        d.cabang_filter = $('[data-kt-ecommerce-product-filter="cabang"]').val();
-                        var range = $('#kt_ecommerce_sales_flatpickr').val();
-                        if (range) {
-                            var dates = range.split(' to ');
+                        const filters = filterState.applied;
+                        d.delivery_status_filter = filters.delivery;
+                        d.payment_status_filter = filters.payment;
+                        d.cabang_filter = filters.branch;
+                        if (filters.dateRange) {
+                            const dates = filters.dateRange.split(' to ');
                             d.start_date = dates[0];
                             d.end_date = dates[1] ?? dates[0]; // jika hanya pilih 1 tanggal
                         }
@@ -400,37 +671,42 @@
                 window.DeliveryOrderMobileCards.attach(dataTable);
             }
 
-            let searchTimer;
-            $('#search').on('input', function() {
-                clearTimeout(searchTimer);
+            $searchFields.on('input', function() {
                 const query = this.value;
-                searchTimer = setTimeout(function() {
-                    dataTable.search(query).draw();
-                }, 250);
+                $searchFields.not(this).val(query);
+                $mobileSearchClear.prop('hidden', !query);
+                searchDebounce.schedule(query);
+            });
+
+            $mobileSearchClear.on('click', function() {
+                searchDebounce.cancel();
+                $searchFields.val('');
+                $mobileSearchClear.prop('hidden', true);
+                dataTable.search('').draw();
+                document.getElementById('search')?.focus();
             });
 
             $('[data-delivery-order-filter]').on('click', function() {
                 const group = this.getAttribute('data-delivery-order-filter');
-                const value = this.getAttribute('data-filter-value');
-                $(`[data-delivery-order-filter="${group}"]`).each(function() {
-                    const active = this.getAttribute('data-filter-value') === value;
-                    this.classList.toggle('is-active', active);
-                    this.setAttribute('aria-pressed', String(active));
-                });
+                const key = group === 'delivery' ? 'delivery' : 'payment';
+                filterState.setApplied(key, this.getAttribute('data-filter-value'));
+                syncDesktopFilterControls(filterState.applied);
                 dataTable.draw();
             });
 
-            $('[data-kt-ecommerce-product-filter="cabang"]').on('change', function() {
+            $branchFilter.on('change', function() {
+                filterState.setApplied('branch', this.value || 'all');
                 updateActiveFilterInfo();
                 dataTable.draw(); // trigger fetch ulang dari server
             });
 
-            const salesFlatpickr = $("#kt_ecommerce_sales_flatpickr").flatpickr({
-                altInput: !0,
-                altFormat: "d/m/Y",
-                dateFormat: "Y-m-d",
-                mode: "range",
-                onChange: function(e, t, n) {
+            salesFlatpickr = $dateFilter.flatpickr({
+                altInput: true,
+                altFormat: 'd/m/Y',
+                dateFormat: 'Y-m-d',
+                mode: 'range',
+                onChange: function(selectedDates, dateRange) {
+                    filterState.setApplied('dateRange', dateRange || '');
                     updateActiveFilterInfo();
                     dataTable.draw();
                 }
@@ -438,8 +714,50 @@
 
             $('#kt_ecommerce_sales_flatpickr_clear').on('click', function() {
                 salesFlatpickr.clear(false);
+                filterState.setApplied('dateRange', '');
                 updateActiveFilterInfo();
                 dataTable.draw();
+            });
+
+            $mobileFilterTrigger.on('click', openMobileFilterSheet);
+            $desktopFilterTrigger.on('click', openMobileFilterSheet);
+            $filterSheet.on('click', '[data-delivery-order-filter-close]', closeMobileFilterSheet);
+            $filterSheet.on('click', '[data-delivery-order-filter-reset]', resetMobileFilterSheet);
+            $filterSheet.on('click', '[data-delivery-order-filter-apply]', applyMobileFilterSheet);
+            $filterSheet.on('input', '#delivery-order-mobile-branch-search', filterMobileBranches);
+            $filterSheet.on('change', '[data-delivery-order-mobile-branch]', function() {
+                filterState.setPending('branch', this.value);
+            });
+            $filterSheet.on('click', '[data-delivery-order-mobile-filter]', function() {
+                const group = this.getAttribute('data-delivery-order-mobile-filter');
+                filterState.setPending(group, this.getAttribute('data-filter-value'));
+                syncMobileFilterControls(filterState.pending);
+            });
+            document.addEventListener('keydown', function(event) {
+                if ($filterSheet.prop('hidden') || filterSheetClosing) return;
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    closeMobileFilterSheet();
+                    return;
+                }
+                if (event.key !== 'Tab') return;
+                const focusable = Array.from($filterPanel[0].querySelectorAll('button:not(:disabled), input:not(:disabled)'))
+                    .filter(element => !element.hidden && element.getClientRects().length);
+                if (!focusable.length) {
+                    event.preventDefault();
+                    $filterPanel[0].focus();
+                    return;
+                }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                const activeIndex = focusable.indexOf(document.activeElement);
+                if (event.shiftKey && activeIndex <= 0) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && (activeIndex === -1 || activeIndex === focusable.length - 1)) {
+                    event.preventDefault();
+                    first.focus();
+                }
             });
 
             updateActiveFilterInfo();
