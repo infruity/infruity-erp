@@ -42,9 +42,12 @@ class LoginController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
+        $loginIdentifier = $request->input('email');
+        $loginField = filter_var($loginIdentifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
         // dd($request->all());
         if (Auth::attempt(array(
-            'username' => $request->email,
+            $loginField => $loginIdentifier,
             'password' => $request->password,
         ), $request->boolean('remember'))) {
             $role_user = RoleUser::where("id_user", Auth::user()->id_user)->OrderBy("created_at", "asc")->first();
