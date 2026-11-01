@@ -53,7 +53,10 @@ test('mobile delivery detail shows the reference totals, address and receipt act
         actionLabel:'Sudah Diterima',
         actionMethod:'setBayar',
         paymentState:'unpaid',
-        courierType:'internal'
+        courierType:'internal',
+        billing:{available:false},
+        paymentUrl:'',
+        posUrl:''
     });
 });
 

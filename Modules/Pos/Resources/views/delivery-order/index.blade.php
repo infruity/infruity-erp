@@ -282,6 +282,17 @@
             <h2 id="delivery-order-detail-title" class="delivery-order-detail-modal__title">Detail Pengiriman</h2>
         </header>
         <div class="delivery-order-detail-modal__body" data-delivery-order-detail-body>
+            <div class="delivery-order-receipt-status" aria-label="Status barang dan pembayaran">
+                <div><span>Barang</span><strong data-delivery-order-detail-field="delivery-status"></strong></div>
+                <div><span>Pembayaran</span><strong data-delivery-order-detail-field="payment-status"></strong></div>
+            </div>
+            <dl class="delivery-order-billing-summary">
+                <div data-delivery-order-voucher-row hidden><dt>Potongan voucher</dt><dd data-delivery-order-billing-field="voucher"></dd></div>
+                <div><dt>Sudah dibayar</dt><dd data-delivery-order-billing-field="previous-paid"></dd></div>
+                <div><dt>Sisa tagihan</dt><dd data-delivery-order-billing-field="remaining"></dd></div>
+            </dl>
+            <p class="delivery-order-billing-note" data-delivery-order-billing-note hidden></p>
+            <a class="delivery-order-payment-link" data-delivery-order-continue-payment hidden>Lanjutkan Pembayaran</a>
             <div class="delivery-order-detail-modal__row">
                 <span class="delivery-order-detail-modal__icon" aria-hidden="true"><i class="ph-duotone ph-user text-lg"></i></span>
                 <div class="delivery-order-detail-modal__copy">
@@ -314,7 +325,7 @@
                 <span class="delivery-order-detail-modal__icon" aria-hidden="true"><i class="ph-duotone ph-receipt text-lg"></i></span>
                 <div class="delivery-order-detail-modal__copy">
                     <span class="delivery-order-detail-modal__value" data-delivery-order-detail-field="grand-total"></span>
-                    <span class="delivery-order-detail-modal__label">Total Belanja (Include Ongkir)</span>
+                    <span class="delivery-order-detail-modal__label" data-delivery-order-detail-field="grand-total-label">Total Belanja (Include Ongkir)</span>
                 </div>
             </div>
         </div>
@@ -342,14 +353,22 @@
                     <span class="delivery-order-payment-step__icon" aria-hidden="true"><i class="ph-duotone ph-receipt"></i></span>
                     <div class="delivery-order-payment-step__copy">
                         <span class="delivery-order-payment-step__value delivery-order-payment-step__value--total" data-delivery-order-payment-field="grand-total"></span>
-                        <span class="delivery-order-payment-step__label">Total Belanja + Ongkir</span>
+                        <span class="delivery-order-payment-step__label">Total Tagihan (Setelah Voucher)</span>
                     </div>
                 </div>
+                <dl class="delivery-order-billing-summary">
+                    <div data-delivery-order-voucher-row hidden><dt>Potongan voucher</dt><dd data-delivery-order-billing-field="voucher"></dd></div>
+                    <div><dt>Sudah dibayar sebelumnya</dt><dd data-delivery-order-billing-field="previous-paid"></dd></div>
+                    <div><dt>Sisa sebelum penerimaan ini</dt><dd data-delivery-order-billing-field="remaining"></dd></div>
+                </dl>
+                <p class="delivery-order-billing-note" data-delivery-order-billing-note hidden></p>
+                <a class="delivery-order-payment-link" data-delivery-order-continue-payment hidden>Periksa Pembayaran di POS</a>
+                <label class="delivery-order-payment-amount-label" for="delivery-order-received-amount">Uang diterima saat ini</label>
                 <div class="delivery-order-payment-step__row">
                     <span class="delivery-order-payment-step__icon" aria-hidden="true"><i class="ph-duotone ph-money"></i></span>
                     <label class="delivery-order-payment-step__input-wrap">
                         <span class="delivery-order-payment-step__prefix" aria-hidden="true">Rp</span>
-                        <input type="text" inputmode="numeric" autocomplete="off" class="delivery-order-payment-step__input" data-delivery-order-payment-amount aria-label="Nominal pembayaran yang diterima">
+                        <input id="delivery-order-received-amount" type="text" inputmode="numeric" autocomplete="off" class="delivery-order-payment-step__input" data-delivery-order-payment-amount aria-label="Nominal pembayaran yang diterima" aria-describedby="delivery-order-receipt-outcome" placeholder="Masukkan nominal">
                     </label>
                 </div>
                 <div class="delivery-order-payment-step__balance" data-delivery-order-payment-balance data-state="paid" aria-live="polite">
@@ -359,6 +378,11 @@
                     </span>
                     <strong class="delivery-order-payment-step__balance-value" data-delivery-order-payment-balance-value>Rp 0</strong>
                 </div>
+                <p id="delivery-order-receipt-outcome" class="delivery-order-billing-note" data-delivery-order-receipt-outcome>Preview belum tersimpan. Periksa nominal sebelum melanjutkan.</p>
+                <label class="delivery-order-zero-confirm" data-delivery-order-zero-confirm-wrap hidden>
+                    <input type="checkbox" data-delivery-order-zero-confirm>
+                    <span>Belum ada pembayaran. Saya konfirmasi barang diterima dan sisa tagihan tetap belum lunas.</span>
+                </label>
                 <p class="delivery-order-payment-step__error" data-delivery-order-payment-error role="alert" hidden></p>
             </div>
             <footer class="delivery-order-payment-step__footer">
@@ -429,7 +453,7 @@
         </div>
     </div>
 @section('script')
-    <script src="{{ asset('assets/js/delivery-order-mobile.js') }}"></script>
+    <script src="{{ asset('assets/js/delivery-order-mobile.js') }}?v={{ filemtime(public_path('assets/js/delivery-order-mobile.js')) }}"></script>
     <script src="{{ asset('assets/js/delivery-order-filter-state.js') }}"></script>
     <script src="{{ asset('assets/js/delivery-order-reference-dates.js') }}?v={{ filemtime(public_path('assets/js/delivery-order-reference-dates.js')) }}"></script>
     <script type="text/javascript">
@@ -794,6 +818,10 @@
                             _token: $('meta[name="csrf-token"]').attr('content')
                         },
                         success: function(response) {
+                            if (response?.success !== true) {
+                                Swal.fire({ icon: 'error', title: 'Gagal', text: response?.message || 'Penerimaan barang belum tersimpan.' });
+                                return;
+                            }
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Berhasil',
@@ -802,7 +830,6 @@
                                 timer: 1500
                             });
 
-                            // Reload DataTable setelah berhasil menghapus data
                             reloadDataTable();
                         },
                         error: function(xhr) {
@@ -819,91 +846,13 @@
         }
 
         function setBayar(id) {
-            if (window.DeliveryOrderMobileCards?.openPaymentReceiptStep) {
-                if (!window.DeliveryOrderMobileCards.openPaymentReceiptStep(id)) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: 'Data pembayaran tidak tersedia. Silakan muat ulang halaman.'
-                    });
-                }
-                return;
-            }
-
+            if (window.DeliveryOrderMobileCards?.openPaymentReceiptStep?.(id)) return;
             Swal.fire({
-                title: 'Barang diterima?',
-                html: `
-                    <p>Pemohon belum melakukan bayar, Harap masukkan nominal pembayaran:</p>
-                    <label for="nominalBayar">Nominal Pembayaran:</label>
-                    <input type="text" inputmode="numeric" id="nominalBayar" class="swal2-input" placeholder="Masukkan nominal">
-                `,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, diterima!',
-                cancelButtonText: 'Batal',
-                customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
-                },
-                buttonsStyling: false,
-                didOpen: () => {
-                    const input = document.getElementById('nominalBayar');
-                    input.addEventListener('input', function() {
-                        this.value = formatRupiah(this.value);
-                    });
-                },
-                preConfirm: () => {
-                    return document.getElementById('nominalBayar').value;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: `/delivery-order/set-selesai/${id}`,
-                        type: 'PUT',
-                        data: {
-                            _token: $('meta[name="csrf-token"]').attr('content'),
-                            nominal: result.value // ambil nominal yang sudah diformat
-                        },
-                        success: function(response) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: response.message || 'Data berhasil diubah.',
-                                showConfirmButton: false,
-                                timer: 1500
-                            });
-                            reloadDataTable();
-                        },
-                        error: function(xhr) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: xhr.responseJSON?.message ||
-                                    'Terjadi kesalahan saat mengubah data.'
-                            });
-                        }
-                    });
-                }
+                icon: 'error',
+                title: 'Gagal',
+                text: 'Data pembayaran belum siap. Silakan muat ulang halaman atau periksa melalui POS.'
             });
         }
-
-        function formatRupiah(angka) {
-            if (!angka) return '';
-            angka = angka.toString().replace(/[^,\d]/g, '');
-            const parts = angka.split(',');
-            let sisa = parts[0].length % 3;
-            let rupiah = parts[0].substr(0, sisa);
-            let ribuan = parts[0].substr(sisa).match(/\d{3}/g);
-
-            if (ribuan) {
-                const separator = sisa ? '.' : '';
-                rupiah += separator + ribuan.join('.');
-            }
-
-            rupiah = parts[1] !== undefined ? rupiah + ',' + parts[1] : rupiah;
-            return rupiah;
-        }
-
 
         $('#kt_modal_add_customer').on('show.bs.modal', function() {
             let targetDiv = $('#listKurir');

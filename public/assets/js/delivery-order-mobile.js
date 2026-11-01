@@ -56,7 +56,34 @@
     }
 
     function formatAmount(value) {
-        return `Rp ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(amountValue(value))}`;
+        return `Rp ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(amountValue(value))}`;
+    }
+
+    // Use the fields already serialized by get_data; never infer an unpaid balance from a badge.
+    function buildBillingSummary(raw) {
+        const unavailable = { available: false };
+        if (!raw || !Object.prototype.hasOwnProperty.call(raw, 'voucher')) return unavailable;
+        const cents = value => {
+            if (value === null || value === undefined || !/^\d+(?:\.\d{1,2})?$/.test(String(value))) return null;
+            const amount = Math.round(Number(value) * 100);
+            return Number.isSafeInteger(amount) && amount >= 0 ? amount : null;
+        };
+        const total = cents(raw.total);
+        const voucher = cents(raw.voucher ?? 0);
+        let paid = cents(raw.paid);
+        if (Array.isArray(raw.payment_details)) {
+            const payments = raw.payment_details.map(payment => cents(payment?.total));
+            if (payments.includes(null)) return unavailable;
+            paid = payments.reduce((sum, amount) => sum + amount, 0);
+        }
+        if (total === null || voucher === null || paid === null || voucher > total || !Number.isSafeInteger(paid)) return unavailable;
+        return {
+            available: true,
+            invoiceTotal: (total - voucher) / 100,
+            voucher: voucher / 100,
+            previousPaid: paid / 100,
+            remaining: Math.max(0, total - voucher - paid) / 100
+        };
     }
 
     function buildViewModel(order) {
@@ -75,7 +102,8 @@
             amountLabel: formatAmount(amount),
             deliveryLabel: delivery === 'received' ? 'Sudah Diterima' : 'Belum Diterima',
             deliveryState: delivery,
-            paymentLabel: payment === 'paid' ? 'Sudah Lunas' : 'Belum Lunas',
+            paymentLabel: payment === 'paid' ? 'Sudah Lunas'
+                : order.billing?.available && order.billing.previousPaid > 0 && order.billing.remaining > 0 ? 'Bayar Sebagian' : 'Belum Lunas',
             paymentState: payment,
             courierName: String(order.courierName || 'Kurir belum dipilih').trim(),
             avatarTheme: avatarTheme(customerName)
@@ -119,7 +147,10 @@
             actionLabel: delivery === 'received' ? 'Tutup' : 'Sudah Diterima',
             actionMethod: payment === 'paid' ? 'setSelesai' : 'setBayar',
             paymentState: payment,
-            courierType: normalizeCourierType(order.courierType)
+            courierType: normalizeCourierType(order.courierType),
+            billing: order.billing || { available: false },
+            paymentUrl: order.paymentUrl || '',
+            posUrl: order.posUrl || ''
         };
     }
 
@@ -130,8 +161,25 @@
         return delivery === 'unreceived' && payment === 'unpaid';
     }
 
+    function parseReceiptAmount(value) {
+        const raw = String(value ?? '').trim();
+        if (!/^(?:\d+|\d{1,3}(?:\.\d{3})+)$/.test(raw)) return null;
+        const amount = Number(raw.replace(/\./g, ''));
+        return Number.isSafeInteger(amount) ? amount : null;
+    }
+
+    function validateReceipt(order, value, zeroConfirmed) {
+        if (!requiresPaymentReceiptStep(order) || !order.billing?.available || order.billing.remaining <= 0) {
+            return 'Rincian pembayaran belum dapat dipastikan. Periksa pembayaran melalui POS.';
+        }
+        const amount = parseReceiptAmount(value);
+        if (amount === null) return 'Masukkan nominal rupiah yang valid. Kosong bukan berarti Rp0.';
+        if (amount === 0 && !zeroConfirmed) return 'Centang konfirmasi belum ada pembayaran untuk menerima barang tanpa pembayaran.';
+        return '';
+    }
+
     function buildPaymentBalance(grandTotal, receivedAmount) {
-        const difference = amountValue(receivedAmount) - amountValue(grandTotal);
+        const difference = Math.round((amountValue(receivedAmount) - amountValue(grandTotal)) * 100) / 100;
         if (difference === 0) return { type: 'paid', label: 'Lunas :', value: 'Rp 0' };
         if (difference < 0) {
             return {
@@ -148,6 +196,7 @@
     }
 
     function rowData(row) {
+        if (row.classList.contains('child')) row = row.previousElementSibling;
         const cells = Array.from(row.cells || []);
         const nameCell = cells[0];
         const courierCell = cells[2];
@@ -162,8 +211,19 @@
         const badges = Array.from(statusCell?.querySelectorAll('.badge') || []);
         const amountText = Array.from(courierCell?.querySelectorAll('span') || []).find(node => /Rp\.?\s*\d/i.test(text(node)));
 
+        const orderId = nameLink?.getAttribute('data-delivery-order-id') || '';
+        const table = row.closest('table');
+        let raw = null;
+        if (table && window.jQuery?.fn?.dataTable?.isDataTable(table)) {
+            const data = window.jQuery(table).DataTable().row(row).data();
+            if (data && String(data.id) === orderId) raw = data;
+        }
+
         return {
-            orderId: nameLink?.getAttribute('data-delivery-order-id') || '',
+            orderId,
+            billing: buildBillingSummary(raw),
+            paymentUrl: row.querySelector('.bi-cash-stack')?.closest('a')?.getAttribute('href') || '',
+            posUrl: nameLink?.getAttribute('href') || '',
             customerName: text(nameLink) || 'Pelanggan Umum',
             customerPhone: nameLink?.getAttribute('data-delivery-order-phone') || '',
             address: nameLink?.getAttribute('data-delivery-order-address') || text(nameCell?.querySelector('span')),
@@ -191,6 +251,47 @@
         if (node) node.textContent = value;
     }
 
+    function renderBilling(modal, order) {
+        const billing = order.billing;
+        const available = billing.available;
+        const mismatch = available && ((order.paymentState === 'paid') !== (billing.remaining === 0));
+        const view = buildViewModel({ paymentStatus: order.paymentState, billing });
+        setDetailField(modal, 'delivery-status', order.deliveryState === 'received' ? 'Sudah Diterima' : 'Belum Diterima');
+        setDetailField(modal, 'payment-status', view.paymentLabel);
+        for (const field of ['delivery-status', 'payment-status']) {
+            const node = modal.querySelector(`[data-delivery-order-detail-field="${field}"]`);
+            if (node) node.dataset.state = field === 'delivery-status' ? order.deliveryState : order.paymentState;
+        }
+        for (const field of ['previous-paid', 'remaining', 'voucher']) {
+            const amount = field === 'previous-paid' ? billing.previousPaid : field === 'voucher' ? billing.voucher : billing.remaining;
+            modal.querySelectorAll(`[data-delivery-order-billing-field="${field}"]`).forEach(node => {
+                node.textContent = available ? formatAmount(amount) : 'Belum tersedia';
+            });
+        }
+        modal.querySelectorAll('[data-delivery-order-voucher-row]').forEach(node => { node.hidden = !available || billing.voucher <= 0; });
+        const message = !available ? 'Rincian pembayaran belum tersedia. Periksa melalui POS sebelum mencatat pembayaran.'
+            : mismatch ? 'Saldo dan status pembayaran tidak sesuai. Periksa pembayaran melalui POS.'
+                : order.deliveryState === 'received' && order.paymentState === 'unpaid' ? 'Barang sudah diterima. Sisa pembayaran tetap belum lunas.' : '';
+        modal.querySelectorAll('[data-delivery-order-billing-note]').forEach(node => {
+            node.textContent = message;
+            node.hidden = !message;
+        });
+        modal.querySelectorAll('[data-delivery-order-continue-payment]').forEach(link => {
+            link.hidden = true;
+            link.removeAttribute('href');
+            const href = order.paymentUrl || order.posUrl;
+            if (!href || (order.paymentState === 'paid' && !mismatch && available)) return;
+            if (link.closest('[data-delivery-order-payment-step]') && available && !mismatch) return;
+            try {
+                const url = new URL(href, window.location.href);
+                if (url.origin !== window.location.origin || !['http:', 'https:'].includes(url.protocol)) return;
+                link.href = url.href;
+                link.textContent = order.deliveryState === 'received' && order.paymentUrl ? 'Lanjutkan Pembayaran' : 'Periksa Pembayaran di POS';
+                link.hidden = false;
+            } catch (_) { /* A malformed link must never become a payment destination. */ }
+        });
+    }
+
     function showDetailStep(modal, focusAction = false) {
         modal.querySelector('[data-delivery-order-detail-header]')?.removeAttribute('hidden');
         modal.querySelector('[data-delivery-order-detail-body]')?.removeAttribute('hidden');
@@ -202,7 +303,9 @@
     }
 
     function updatePaymentBalance(modal, receivedAmount) {
-        const balance = buildPaymentBalance(activeOrder?.grandTotal || 0, receivedAmount);
+        const balance = receivedAmount === null || !activeOrder?.billing.available
+            ? { type: 'pending', label: 'Masukkan nominal :', value: '—' }
+            : buildPaymentBalance(activeOrder.billing.remaining, receivedAmount);
         const container = modal.querySelector('[data-delivery-order-payment-balance]');
         const label = modal.querySelector('[data-delivery-order-payment-balance-label]');
         const value = modal.querySelector('[data-delivery-order-payment-balance-value]');
@@ -210,12 +313,20 @@
         if (container) container.dataset.state = balance.type;
         if (label) label.textContent = balance.label;
         if (value) value.textContent = balance.value;
+        const outcome = modal.querySelector('[data-delivery-order-receipt-outcome]');
+        if (outcome) outcome.textContent = balance.type === 'underpaid'
+            ? `Setelah disimpan, barang diterima dan sisa ${balance.value} tetap belum lunas.`
+            : balance.type === 'paid' ? 'Preview lunas. Pembayaran baru tercatat setelah berhasil disimpan.'
+                : balance.type === 'overpaid' ? `Preview lunas dengan kembalian ${balance.value}. Belum tersimpan.`
+                    : 'Preview belum tersimpan. Masukkan uang baru yang diterima, bukan total pembayaran sebelumnya.';
+        const submit = modal.querySelector('[data-delivery-order-payment-submit]');
+        if (submit) submit.textContent = receivedAmount === 0 ? 'Terima Barang' : 'Bayar';
         if (icon) {
             icon.className = balance.type === 'paid'
                 ? 'ph-bold ph-check-circle'
                 : balance.type === 'underpaid'
                     ? 'ph-bold ph-warning-circle'
-                    : 'ph-bold ph-arrow-u-up-left';
+                    : balance.type === 'overpaid' ? 'ph-bold ph-arrow-u-up-left' : 'ph-bold ph-pencil-simple';
         }
     }
 
@@ -230,10 +341,18 @@
         modal.dataset.deliveryOrderStep = 'payment';
         setPaymentField(modal, 'subtotal', formatAmount(activeOrder.subtotal));
         setPaymentField(modal, 'shipping-fee', formatAmount(activeOrder.shippingFee));
-        setPaymentField(modal, 'grand-total', formatAmount(activeOrder.grandTotal));
+        setPaymentField(modal, 'grand-total', activeOrder.billing.available ? formatAmount(activeOrder.billing.invoiceTotal) : 'Belum tersedia');
 
         const input = modal.querySelector('[data-delivery-order-payment-amount]');
-        if (input) input.value = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(activeOrder.grandTotal);
+        const ready = activeOrder.billing.available && activeOrder.billing.remaining > 0;
+        if (input) {
+            input.value = '';
+            input.disabled = !ready;
+            input.removeAttribute('aria-invalid');
+        }
+        const zero = modal.querySelector('[data-delivery-order-zero-confirm]');
+        if (zero) zero.checked = false;
+        modal.querySelector('[data-delivery-order-zero-confirm-wrap]')?.setAttribute('hidden', '');
         const error = modal.querySelector('[data-delivery-order-payment-error]');
         if (error) {
             error.textContent = '';
@@ -242,11 +361,14 @@
         const back = modal.querySelector('[data-delivery-order-payment-back]');
         const submit = modal.querySelector('[data-delivery-order-payment-submit]');
         if (back) back.disabled = false;
-        if (submit) submit.disabled = false;
-        updatePaymentBalance(modal, activeOrder.grandTotal);
+        if (submit) submit.disabled = !ready;
+        if (!ready) showPaymentError(modal, 'Rincian pembayaran belum dapat dipastikan. Periksa pembayaran melalui POS.');
+        updatePaymentBalance(modal, null);
         const body = modal.querySelector('.delivery-order-payment-step__body');
         if (body) body.scrollTop = 0;
-        input?.focus({ preventScroll: true });
+        const focus = ready ? input : back;
+        focus?.focus({ preventScroll: true });
+        focus?.scrollIntoView({ block: 'nearest' });
         return true;
     }
 
@@ -264,7 +386,18 @@
         const back = modal?.querySelector('[data-delivery-order-payment-back]');
         if (!modal || !activeOrder || !input || paymentSaving || !requiresPaymentReceiptStep(activeOrder)) return;
 
-        const nominal = Number(input.value.replace(/\D/g, '')) || 0;
+        const zero = modal.querySelector('[data-delivery-order-zero-confirm]');
+        const validation = validateReceipt(activeOrder, input.value, zero?.checked === true);
+        if (validation) {
+            showPaymentError(modal, validation);
+            input.setAttribute('aria-invalid', 'true');
+            const focus = parseReceiptAmount(input.value) === 0 && !zero?.checked ? zero : input;
+            focus?.focus({ preventScroll: true });
+            focus?.scrollIntoView({ block: 'nearest' });
+            return;
+        }
+        input.removeAttribute('aria-invalid');
+        const nominal = parseReceiptAmount(input.value);
         const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
         if (!window.jQuery || typeof window.jQuery.ajax !== 'function') {
             showPaymentError(modal, 'Tidak dapat mengirim pembayaran. Silakan coba lagi.');
@@ -272,6 +405,9 @@
         }
 
         paymentSaving = true;
+        input.disabled = true;
+        if (zero) zero.disabled = true;
+        modal.querySelector('[role="dialog"]')?.setAttribute('aria-busy', 'true');
         if (submit) submit.disabled = true;
         if (back) back.disabled = true;
         const error = modal.querySelector('[data-delivery-order-payment-error]');
@@ -282,6 +418,10 @@
             type: 'PUT',
             data: { _token: token, nominal }
         }).done(response => {
+            if (response?.success !== true) {
+                showPaymentError(modal, response?.message || 'Pembayaran belum tersimpan. Periksa kembali sebelum mencoba lagi.');
+                return;
+            }
             paymentSaving = false;
             closeDetailModal();
             if (window.Swal?.fire) {
@@ -298,6 +438,9 @@
             showPaymentError(modal, xhr.responseJSON?.message || 'Terjadi kesalahan saat menerima pembayaran.');
         }).always(() => {
             paymentSaving = false;
+            input.disabled = false;
+            if (zero) zero.disabled = false;
+            modal.querySelector('[role="dialog"]')?.removeAttribute('aria-busy');
             if (submit) submit.disabled = false;
             if (back) back.disabled = false;
         });
@@ -312,13 +455,15 @@
 
     function openDetailModal(order, trigger) {
         const modal = document.getElementById('delivery-order-detail-modal');
-        if (!modal) return false;
+        if (!modal || paymentSaving) return false;
 
         const detail = buildDetailViewModel(order);
         setDetailField(modal, 'customer', detail.customerName);
         setDetailField(modal, 'subtotal', detail.subtotalLabel);
         setDetailField(modal, 'shipping-fee', detail.shippingFeeLabel);
-        setDetailField(modal, 'grand-total', detail.grandTotalLabel);
+        setDetailField(modal, 'grand-total', detail.billing.available ? formatAmount(detail.billing.invoiceTotal) : detail.grandTotalLabel);
+        setDetailField(modal, 'grand-total-label', detail.billing.available ? 'Total Tagihan (Setelah Voucher)' : 'Total Belanja (Include Ongkir)');
+        renderBilling(modal, detail);
 
         const phone = modal.querySelector('[data-delivery-order-detail-field="phone"]');
         const phoneUrl = whatsappHref(detail.customerPhone);
@@ -355,7 +500,7 @@
         activeTrigger = trigger || document.activeElement;
         paymentSaving = false;
         showDetailStep(modal);
-        previousBodyOverflow = document.body.style.overflow;
+        if (modal.hidden) previousBodyOverflow = document.body.style.overflow;
         modal.hidden = false;
         modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
@@ -430,15 +575,28 @@
             if (event.target.closest('[data-delivery-order-detail-close]')) closeDetailModal();
         });
         modal.querySelector('[data-delivery-order-detail-action]')?.addEventListener('click', handleDetailAction);
-        modal.querySelector('[data-delivery-order-payment-back]')?.addEventListener('click', () => showDetailStep(modal, true));
+        modal.querySelector('[data-delivery-order-payment-back]')?.addEventListener('click', () => {
+            if (!paymentSaving) showDetailStep(modal, true);
+        });
         modal.querySelector('[data-delivery-order-payment-submit]')?.addEventListener('click', submitPaymentAndReceive);
         modal.querySelector('[data-delivery-order-payment-amount]')?.addEventListener('input', event => {
-            const digits = event.currentTarget.value.replace(/\D/g, '');
-            const amount = Number(digits) || 0;
-            event.currentTarget.value = digits
-                ? new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(amount)
-                : '';
+            const amount = parseReceiptAmount(event.currentTarget.value);
+            event.currentTarget.removeAttribute('aria-invalid');
+            const error = modal.querySelector('[data-delivery-order-payment-error]');
+            if (error) error.hidden = true;
+            const zero = modal.querySelector('[data-delivery-order-zero-confirm]');
+            if (zero) zero.checked = false;
+            const wrap = modal.querySelector('[data-delivery-order-zero-confirm-wrap]');
+            if (wrap) wrap.hidden = amount !== 0;
             updatePaymentBalance(modal, amount);
+        });
+        modal.querySelector('[data-delivery-order-payment-amount]')?.addEventListener('focus', event => {
+            const amount = parseReceiptAmount(event.currentTarget.value);
+            if (amount !== null) event.currentTarget.value = String(amount);
+        });
+        modal.querySelector('[data-delivery-order-payment-amount]')?.addEventListener('blur', event => {
+            const amount = parseReceiptAmount(event.currentTarget.value);
+            if (amount !== null) event.currentTarget.value = new Intl.NumberFormat('id-ID').format(amount);
         });
         document.addEventListener('keydown', event => {
             if (modal.hidden) return;
@@ -563,6 +721,9 @@
         buildDetailViewModel,
         requiresPaymentReceiptStep,
         buildPaymentBalance,
+        buildBillingSummary,
+        parseReceiptAmount,
+        validateReceipt,
         openPaymentReceiptStep
     };
 });

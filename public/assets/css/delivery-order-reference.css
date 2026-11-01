@@ -1,4 +1,20 @@
 /* Reference presentation stays local; business actions remain in their original handlers. */
+#delivery-order-detail-modal .delivery-order-receipt-status { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+#delivery-order-detail-modal .delivery-order-receipt-status > div { min-width:0; }
+#delivery-order-detail-modal .delivery-order-receipt-status span { display:block; margin-bottom:4px; color:#6b7280; font:500 11px/16px var(--erp-font); }
+#delivery-order-detail-modal .delivery-order-receipt-status strong { display:inline-block; border-radius:8px; padding:5px 8px; font:700 12px/18px var(--erp-font); background:#fff1f2; color:#9f1239; }
+#delivery-order-detail-modal .delivery-order-receipt-status strong:is([data-state="paid"],[data-state="received"]) { background:#ecfdf5; color:#065f46; }
+#delivery-order-detail-modal .delivery-order-billing-summary { display:flex; flex-direction:column; gap:8px; margin:0; border:1px solid #e5e7eb; border-radius:12px; padding:12px; font:500 12px/18px var(--erp-font); }
+#delivery-order-detail-modal .delivery-order-billing-summary > div { display:flex; justify-content:space-between; gap:12px; }
+#delivery-order-detail-modal .delivery-order-billing-summary dt { margin:0; color:#6b7280; font-weight:500; }
+#delivery-order-detail-modal .delivery-order-billing-summary dd { margin:0; color:#1f2937; font-weight:700; text-align:right; overflow-wrap:anywhere; }
+#delivery-order-detail-modal .delivery-order-billing-note { margin:0; color:#6b7280; font:500 12px/18px var(--erp-font); }
+#delivery-order-detail-modal .delivery-order-payment-link { align-self:flex-start; color:#0b595b; text-decoration:underline; font:700 12px/18px var(--erp-font); }
+#delivery-order-detail-modal .delivery-order-payment-amount-label { margin:0 0 -8px; color:#374151; font:700 12px/18px var(--erp-font); }
+#delivery-order-detail-modal .delivery-order-zero-confirm { display:flex; align-items:flex-start; gap:10px; margin:0; padding:12px; border:1px solid #fecdd3; border-radius:12px; background:#fff1f2; color:#9f1239; font:500 12px/18px var(--erp-font); cursor:pointer; }
+#delivery-order-detail-modal .delivery-order-zero-confirm input { flex:none; width:18px; height:18px; margin:0; accent-color:#0b595b; }
+#delivery-order-detail-modal .delivery-order-payment-step__balance[data-state="pending"] { border-color:#e5e7eb; background:#f9fafb; color:#6b7280; }
+#delivery-order-detail-modal :is(.delivery-order-payment-link,.delivery-order-zero-confirm input):focus-visible { outline:2px solid #10b981; outline-offset:3px; }
 #delivery-order-page .delivery-order-filter-menu { display:none!important; }
 #delivery-order-mobile-filter-sheet { display:flex!important; justify-content:flex-end; padding:0; }
 #delivery-order-mobile-filter-sheet[hidden], #delivery-order-mobile-filter-sheet [hidden] { display:none!important; }

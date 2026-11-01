@@ -21,7 +21,7 @@ class DeliveryOrderMobilePaymentTest extends TestCase
         $this->assertStringContainsString('data-delivery-order-payment-field="subtotal"', $html);
         $this->assertStringContainsString('data-delivery-order-payment-field="shipping-fee"', $html);
         $this->assertStringContainsString('data-delivery-order-payment-field="grand-total"', $html);
-        $this->assertStringContainsString('Total Belanja + Ongkir', $html);
+        $this->assertStringContainsString('Total Tagihan (Setelah Voucher)', $html);
         $this->assertStringContainsString('aria-label="Nominal pembayaran yang diterima"', $html);
         $this->assertStringContainsString('data-delivery-order-payment-balance', $html);
         $this->assertStringContainsString('data-delivery-order-payment-back', $html);
@@ -29,7 +29,7 @@ class DeliveryOrderMobilePaymentTest extends TestCase
 
         $source = file_get_contents(base_path('Modules/Pos/Resources/views/delivery-order/index.blade.php'));
         $this->assertIsString($source);
-        $this->assertStringContainsString('openPaymentReceiptStep(id)', $source);
+        $this->assertStringContainsString('window.DeliveryOrderMobileCards?.openPaymentReceiptStep?.(id)', $source);
         $this->assertStringContainsString("function setSelesai(id)", $source);
         $this->assertStringContainsString("text: 'Data yang dirubah tidak bisa dikembalikan!'", $source);
     }
