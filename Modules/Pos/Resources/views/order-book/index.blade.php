@@ -1,6 +1,7 @@
 @extends('template.root')
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('assets/css/order-book-filter-responsive.css') }}?v={{ filemtime(public_path('assets/css/order-book-filter-responsive.css')) }}">
     {{-- @livewire('product-table') --}}
     <div class="order-book-page">
         <style>
