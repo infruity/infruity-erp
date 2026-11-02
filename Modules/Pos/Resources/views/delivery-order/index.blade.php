@@ -282,15 +282,6 @@
             <h2 id="delivery-order-detail-title" class="delivery-order-detail-modal__title">Detail Pengiriman</h2>
         </header>
         <div class="delivery-order-detail-modal__body" data-delivery-order-detail-body>
-            <div class="delivery-order-receipt-status" aria-label="Status barang dan pembayaran">
-                <div><span>Barang</span><strong data-delivery-order-detail-field="delivery-status"></strong></div>
-                <div><span>Pembayaran</span><strong data-delivery-order-detail-field="payment-status"></strong></div>
-            </div>
-            <dl class="delivery-order-billing-summary">
-                <div data-delivery-order-voucher-row hidden><dt>Potongan voucher</dt><dd data-delivery-order-billing-field="voucher"></dd></div>
-                <div><dt>Sudah dibayar</dt><dd data-delivery-order-billing-field="previous-paid"></dd></div>
-                <div><dt>Sisa tagihan</dt><dd data-delivery-order-billing-field="remaining"></dd></div>
-            </dl>
             <p class="delivery-order-billing-note" data-delivery-order-billing-note hidden></p>
             <a class="delivery-order-payment-link" data-delivery-order-continue-payment hidden>Lanjutkan Pembayaran</a>
             <div class="delivery-order-detail-modal__row">
@@ -363,22 +354,21 @@
                 </dl>
                 <p class="delivery-order-billing-note" data-delivery-order-billing-note hidden></p>
                 <a class="delivery-order-payment-link" data-delivery-order-continue-payment hidden>Periksa Pembayaran di POS</a>
-                <label class="delivery-order-payment-amount-label" for="delivery-order-received-amount">Uang diterima saat ini</label>
+                <label class="delivery-order-payment-amount-label" data-delivery-order-payment-amount-label for="delivery-order-received-amount">Uang diterima saat ini</label>
                 <div class="delivery-order-payment-step__row">
                     <span class="delivery-order-payment-step__icon" aria-hidden="true"><i class="ph-duotone ph-money"></i></span>
                     <label class="delivery-order-payment-step__input-wrap">
                         <span class="delivery-order-payment-step__prefix" aria-hidden="true">Rp</span>
-                        <input id="delivery-order-received-amount" type="text" inputmode="numeric" autocomplete="off" class="delivery-order-payment-step__input" data-delivery-order-payment-amount aria-label="Nominal pembayaran yang diterima" aria-describedby="delivery-order-receipt-outcome" placeholder="Masukkan nominal">
+                        <input id="delivery-order-received-amount" type="text" inputmode="numeric" autocomplete="off" class="delivery-order-payment-step__input" data-delivery-order-payment-amount aria-label="Nominal pembayaran yang diterima" placeholder="Masukkan nominal">
                     </label>
                 </div>
-                <div class="delivery-order-payment-step__balance" data-delivery-order-payment-balance data-state="paid" aria-live="polite">
+                <div class="delivery-order-payment-step__balance" data-delivery-order-payment-balance hidden data-state="paid" aria-live="polite">
                     <span class="delivery-order-payment-step__balance-label">
                         <i class="ph-bold ph-check-circle" data-delivery-order-payment-balance-icon aria-hidden="true"></i>
                         <span data-delivery-order-payment-balance-label>Lunas :</span>
                     </span>
                     <strong class="delivery-order-payment-step__balance-value" data-delivery-order-payment-balance-value>Rp 0</strong>
                 </div>
-                <p id="delivery-order-receipt-outcome" class="delivery-order-billing-note" data-delivery-order-receipt-outcome>Preview belum tersimpan. Periksa nominal sebelum melanjutkan.</p>
                 <label class="delivery-order-zero-confirm" data-delivery-order-zero-confirm-wrap hidden>
                     <input type="checkbox" data-delivery-order-zero-confirm>
                     <span>Belum ada pembayaran. Saya konfirmasi barang diterima dan sisa tagihan tetap belum lunas.</span>
@@ -797,52 +787,7 @@
         }
 
         function setSelesai(id) {
-            Swal.fire({
-                title: 'Barang diterima?',
-                text: 'Data yang dirubah tidak bisa dikembalikan!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, diterima!',
-                cancelButtonText: 'Batal',
-                customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
-                },
-                buttonsStyling: false
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: `/delivery-order/set-selesai/${id}`, // Ganti dengan URL yang sesuai
-                        type: 'PUT',
-                        data: {
-                            _token: $('meta[name="csrf-token"]').attr('content')
-                        },
-                        success: function(response) {
-                            if (response?.success !== true) {
-                                Swal.fire({ icon: 'error', title: 'Gagal', text: response?.message || 'Penerimaan barang belum tersimpan.' });
-                                return;
-                            }
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: response.message || 'Data berhasil diubah.',
-                                showConfirmButton: false,
-                                timer: 1500
-                            });
-
-                            reloadDataTable();
-                        },
-                        error: function(xhr) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: xhr.responseJSON?.message ||
-                                    'Terjadi kesalahan saat mengubah data.'
-                            });
-                        }
-                    });
-                }
-            });
+            setBayar(id);
         }
 
         function setBayar(id) {

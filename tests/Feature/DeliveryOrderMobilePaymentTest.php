@@ -31,6 +31,14 @@ class DeliveryOrderMobilePaymentTest extends TestCase
         $this->assertIsString($source);
         $this->assertStringContainsString('window.DeliveryOrderMobileCards?.openPaymentReceiptStep?.(id)', $source);
         $this->assertStringContainsString("function setSelesai(id)", $source);
-        $this->assertStringContainsString("text: 'Data yang dirubah tidak bisa dikembalikan!'", $source);
+        $this->assertStringNotContainsString("title: 'Barang diterima?'", $source);
+        $this->assertStringNotContainsString('delivery-order-receipt-status', $html);
+        $this->assertStringNotContainsString('delivery-order-receipt-outcome', $html);
+        $detail = explode('data-delivery-order-detail-body>', $html)[1];
+        $detail = explode('data-delivery-order-detail-footer', $detail)[0];
+        $this->assertStringNotContainsString('delivery-order-billing-summary', $detail);
+        $this->assertSame(1, substr_count($html, '<dl class="delivery-order-billing-summary"'));
+        $this->assertStringContainsString('data-delivery-order-payment-amount-label', $html);
+        $this->assertStringContainsString('data-delivery-order-payment-balance hidden', $html);
     }
 }

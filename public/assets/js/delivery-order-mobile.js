@@ -255,13 +255,6 @@
         const billing = order.billing;
         const available = billing.available;
         const mismatch = available && ((order.paymentState === 'paid') !== (billing.remaining === 0));
-        const view = buildViewModel({ paymentStatus: order.paymentState, billing });
-        setDetailField(modal, 'delivery-status', order.deliveryState === 'received' ? 'Sudah Diterima' : 'Belum Diterima');
-        setDetailField(modal, 'payment-status', view.paymentLabel);
-        for (const field of ['delivery-status', 'payment-status']) {
-            const node = modal.querySelector(`[data-delivery-order-detail-field="${field}"]`);
-            if (node) node.dataset.state = field === 'delivery-status' ? order.deliveryState : order.paymentState;
-        }
         for (const field of ['previous-paid', 'remaining', 'voucher']) {
             const amount = field === 'previous-paid' ? billing.previousPaid : field === 'voucher' ? billing.voucher : billing.remaining;
             modal.querySelectorAll(`[data-delivery-order-billing-field="${field}"]`).forEach(node => {
@@ -303,24 +296,23 @@
     }
 
     function updatePaymentBalance(modal, receivedAmount) {
-        const balance = receivedAmount === null || !activeOrder?.billing.available
-            ? { type: 'pending', label: 'Masukkan nominal :', value: '—' }
-            : buildPaymentBalance(activeOrder.billing.remaining, receivedAmount);
+        const paid = activeOrder?.paymentState === 'paid';
+        const available = activeOrder?.billing.available && (paid || receivedAmount !== null);
+        const balance = available ? buildPaymentBalance(
+            paid ? activeOrder.billing.invoiceTotal : activeOrder.billing.remaining,
+            paid ? activeOrder.billing.previousPaid : receivedAmount
+        ) : null;
         const container = modal.querySelector('[data-delivery-order-payment-balance]');
         const label = modal.querySelector('[data-delivery-order-payment-balance-label]');
         const value = modal.querySelector('[data-delivery-order-payment-balance-value]');
         const icon = modal.querySelector('[data-delivery-order-payment-balance-icon]');
+        if (container) container.hidden = !available;
+        const submit = modal.querySelector('[data-delivery-order-payment-submit]');
+        if (submit) submit.textContent = paid || receivedAmount === 0 ? 'Terima Barang' : 'Bayar';
+        if (!balance) return;
         if (container) container.dataset.state = balance.type;
         if (label) label.textContent = balance.label;
         if (value) value.textContent = balance.value;
-        const outcome = modal.querySelector('[data-delivery-order-receipt-outcome]');
-        if (outcome) outcome.textContent = balance.type === 'underpaid'
-            ? `Setelah disimpan, barang diterima dan sisa ${balance.value} tetap belum lunas.`
-            : balance.type === 'paid' ? 'Preview lunas. Pembayaran baru tercatat setelah berhasil disimpan.'
-                : balance.type === 'overpaid' ? `Preview lunas dengan kembalian ${balance.value}. Belum tersimpan.`
-                    : 'Preview belum tersimpan. Masukkan uang baru yang diterima, bukan total pembayaran sebelumnya.';
-        const submit = modal.querySelector('[data-delivery-order-payment-submit]');
-        if (submit) submit.textContent = receivedAmount === 0 ? 'Terima Barang' : 'Bayar';
         if (icon) {
             icon.className = balance.type === 'paid'
                 ? 'ph-bold ph-check-circle'
@@ -331,7 +323,7 @@
     }
 
     function showPaymentStep(modal) {
-        if (!activeOrder || !requiresPaymentReceiptStep(activeOrder)) return false;
+        if (!activeOrder || activeOrder.deliveryState !== 'unreceived') return false;
         modal.querySelector('[data-delivery-order-detail-header]')?.setAttribute('hidden', '');
         modal.querySelector('[data-delivery-order-detail-body]')?.setAttribute('hidden', '');
         modal.querySelector('[data-delivery-order-detail-footer]')?.setAttribute('hidden', '');
@@ -344,9 +336,20 @@
         setPaymentField(modal, 'grand-total', activeOrder.billing.available ? formatAmount(activeOrder.billing.invoiceTotal) : 'Belum tersedia');
 
         const input = modal.querySelector('[data-delivery-order-payment-amount]');
-        const ready = activeOrder.billing.available && activeOrder.billing.remaining > 0;
+        const paid = activeOrder.paymentState === 'paid';
+        const ready = paid || (activeOrder.billing.available && activeOrder.billing.remaining > 0);
+        const label = modal.querySelector('[data-delivery-order-payment-amount-label]');
+        if (label) {
+            label.textContent = paid ? 'Pembayaran sudah tercatat' : 'Uang diterima saat ini';
+            label.hidden = paid;
+        }
+        input?.setAttribute('aria-label', paid ? 'Pembayaran sudah tercatat' : 'Nominal pembayaran yang diterima');
+        const summary = modal.querySelector('.delivery-order-billing-summary');
+        if (summary) summary.hidden = paid;
         if (input) {
-            input.value = '';
+            input.value = paid && activeOrder.billing.available ? new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(activeOrder.billing.previousPaid) : '';
+            input.readOnly = paid;
+            input.placeholder = paid && !activeOrder.billing.available ? 'Belum tersedia' : 'Masukkan nominal';
             input.disabled = !ready;
             input.removeAttribute('aria-invalid');
         }
@@ -366,7 +369,7 @@
         updatePaymentBalance(modal, null);
         const body = modal.querySelector('.delivery-order-payment-step__body');
         if (body) body.scrollTop = 0;
-        const focus = ready ? input : back;
+        const focus = paid ? submit : ready ? input : back;
         focus?.focus({ preventScroll: true });
         focus?.scrollIntoView({ block: 'nearest' });
         return true;
@@ -384,10 +387,11 @@
         const input = modal?.querySelector('[data-delivery-order-payment-amount]');
         const submit = modal?.querySelector('[data-delivery-order-payment-submit]');
         const back = modal?.querySelector('[data-delivery-order-payment-back]');
-        if (!modal || !activeOrder || !input || paymentSaving || !requiresPaymentReceiptStep(activeOrder)) return;
+        if (!modal || !activeOrder || !input || paymentSaving || activeOrder.deliveryState !== 'unreceived') return;
 
         const zero = modal.querySelector('[data-delivery-order-zero-confirm]');
-        const validation = validateReceipt(activeOrder, input.value, zero?.checked === true);
+        const paid = activeOrder.paymentState === 'paid';
+        const validation = paid ? '' : validateReceipt(activeOrder, input.value, zero?.checked === true);
         if (validation) {
             showPaymentError(modal, validation);
             input.setAttribute('aria-invalid', 'true');
@@ -416,7 +420,8 @@
         window.jQuery.ajax({
             url: `/delivery-order/set-selesai/${encodeURIComponent(activeOrder.orderId)}`,
             type: 'PUT',
-            data: { _token: token, nominal }
+            // Paid receipt confirmation must never create another Payment.
+            data: paid ? { _token: token } : { _token: token, nominal }
         }).done(response => {
             if (response?.success !== true) {
                 showPaymentError(modal, response?.message || 'Pembayaran belum tersimpan. Periksa kembali sebelum mencoba lagi.');
@@ -529,7 +534,7 @@
 
         if (!row || !nameLink) return false;
         const order = rowData(row);
-        if (order.orderId !== requestedId || !requiresPaymentReceiptStep(buildDetailViewModel(order))) return false;
+        if (order.orderId !== requestedId || buildDetailViewModel(order).deliveryState !== 'unreceived') return false;
 
         const returnFocus = activeTrigger?.closest?.('tr') === row ? activeTrigger : nameLink;
         if (!openDetailModal(order, returnFocus)) return false;
@@ -557,14 +562,7 @@
             closeDetailModal();
             return;
         }
-        if (requiresPaymentReceiptStep(order)) {
-            showPaymentStep(document.getElementById('delivery-order-detail-modal'));
-            return;
-        }
-
-        closeDetailModal();
-        const action = window[order.actionMethod];
-        if (typeof action === 'function') action(order.orderId);
+        showPaymentStep(document.getElementById('delivery-order-detail-modal'));
     }
 
     function bindDetailModal() {
