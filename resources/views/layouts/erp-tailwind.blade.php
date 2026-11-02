@@ -254,6 +254,7 @@
 <link rel="stylesheet" href="{{ asset('assets/css/erp-workspace.css') }}?v={{ filemtime(public_path('assets/css/erp-workspace.css')) }}">
 <script defer src="{{ asset('assets/js/erp-collections.js') }}?v={{ filemtime(public_path('assets/js/erp-collections.js')) }}"></script>
 <link rel="stylesheet" href="{{ asset('assets/css/erp-shell.css') }}?v={{ filemtime(public_path('assets/css/erp-shell.css')) }}">
+<link rel="stylesheet" href="{{ asset('assets/css/erp-filters.css') }}?v={{ filemtime(public_path('assets/css/erp-filters.css')) }}">
 </head>
 
 <body class="erp-ui font-sans bg-[#e5e9f3] text-gray-800 antialiased h-[100dvh] min-h-[100dvh] overflow-hidden">
