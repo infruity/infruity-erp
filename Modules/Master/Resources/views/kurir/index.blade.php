@@ -23,7 +23,8 @@
         [
             'key' => 'name',
             'label' => 'Nama Kurir',
-            'required' => true,
+            'visibleWhen' => ['key' => 'type', 'value' => 'external'],
+            'requiredWhen' => ['key' => 'type', 'value' => 'external'],
             'placeholder' => 'Misal: Gojek, Grab, Maxim',
         ],
         [

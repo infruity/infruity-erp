@@ -444,7 +444,31 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
                 if (requestId === this.customerEditRequestId) this.customerEditLoading = false;
             }
         },
-        async save() { if (this.saving || !this.validateRequiredPickers()) return; this.saving = true; this.error = ''; try { const url = this.editing ? `/${this.routeBase}/${this.editing}` : `/${this.routeBase}`; const response = await fetch(url, { method: this.editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }, body: JSON.stringify(this.form) }); const data = await response.json(); if (!response.ok || data.success === false) throw new Error(Object.values(data.errors || {}).flat().join(' ') || data.message || 'Gagal menyimpan data.'); window.location.reload(); } catch (error) { this.error = error.message; this.saving = false; } },
+        async save() {
+            if (this.saving || !this.validateRequiredPickers()) return;
+            const payload = { ...this.form };
+            if (this.routeBase === 'kurir' && payload.type === 'internal') {
+                const staff = this.selectedFieldOption(this.fields.find(field => field.key === 'staff_id'));
+                if (!staff) {
+                    this.fieldPickerOpen.staff_id = true;
+                    this.error = 'Pilih Karyawan wajib dipilih.';
+                    return;
+                }
+                payload.name = staff.label;
+            }
+            this.saving = true;
+            this.error = '';
+            try {
+                const url = this.editing ? `/${this.routeBase}/${this.editing}` : `/${this.routeBase}`;
+                const response = await fetch(url, { method: this.editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }, body: JSON.stringify(payload) });
+                const data = await response.json();
+                if (!response.ok || data.success === false) throw new Error(Object.values(data.errors || {}).flat().join(' ') || data.message || 'Gagal menyimpan data.');
+                window.location.reload();
+            } catch (error) {
+                this.error = error.message;
+                this.saving = false;
+            }
+        },
         async confirmDelete(record) { const result = await Swal.fire({ title: `Hapus ${title}?`, text: `${this.label(record)} akan dihapus.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Hapus', cancelButtonText: 'Batal', confirmButtonColor: '#ef4444' }); if (!result.isConfirmed) return; try { const response = await fetch(`/${this.routeBase}/${record.id}`, { method: 'DELETE', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } }); const data = await response.json(); if (!response.ok || data.success === false) throw new Error(data.message || 'Gagal menghapus data.'); window.location.reload(); } catch (error) { Swal.fire({ icon: 'error', title: 'Gagal', text: error.message }); } },
     };
 }
