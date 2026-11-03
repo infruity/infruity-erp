@@ -296,6 +296,21 @@ class TransferController extends Controller
                 }
                 // One stock query for all items (the view rebuilds the whole ledger per call).
                 $stock = InventorySnapshot::stockAvailable($sortedItems->pluck('id'), $data['branch_id']);
+                // A pending transfer already took its items out of the origin stock;
+                // when it is edited, give its own quantities back before checking.
+                if ($pos && in_array($pos->status, ['pending', 'proses'], true)
+                    && (int) $pos->branch_id === (int) $data['branch_id']) {
+                    $ownQty = TransferDetail::where('transfer_id', $pos->id)
+                        ->whereNotNull('sent_quantity')
+                        ->groupBy('product_id')
+                        ->selectRaw('product_id, SUM(sent_quantity) AS qty')
+                        ->pluck('qty', 'product_id');
+                    foreach ($ownQty as $productId => $qty) {
+                        if (isset($stock[(int) $productId])) {
+                            $stock[(int) $productId] += (float) $qty;
+                        }
+                    }
+                }
                 foreach ($sortedItems as $item) {
                     $available = $stock[(int) $item['id']] ?? 0.0;
                     if ($available < (float) $item['qty']) {
@@ -359,6 +374,8 @@ class TransferController extends Controller
                         'product_id'  => $item['id'],
                         'price'       => $item['price'],
                         'quantity'    => $item['qty'],
+                        // Leaves the origin stock from now on (see transaction_stock.sql).
+                        'sent_quantity' => ($data['status'] ?? 'draft') === 'pending' ? $item['qty'] : null,
                         'discount'    => $item['discount'] ?? 0,
                         'subtotal'    => $item['total_input'],
                         'created_at'  => now(),
@@ -424,6 +441,14 @@ class TransferController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Tidak dapat mengoreksi transaksi yang sudah selesai.',
+                ], 422);
+            }
+
+            if ($detail->sent_quantity !== null && (float) $request->quantity > (float) $detail->sent_quantity) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jumlah diterima tidak boleh melebihi jumlah dikirim.',
                 ], 422);
             }
 
@@ -501,7 +526,7 @@ class TransferController extends Controller
                     if (abs((float) $item['expected_quantity'] - (float) $detail->quantity) > 0.001) {
                         throw \Illuminate\Validation\ValidationException::withMessages(['items' => 'Jumlah barang telah diperbarui. Muat ulang halaman sebelum menerima.']);
                     }
-                    $sent = (float) ($detail->corrections->last()?->old_quantity ?? $detail->quantity);
+                    $sent = (float) ($detail->sent_quantity ?? $detail->corrections->last()?->old_quantity ?? $detail->quantity);
                     if ((float) $item['quantity'] > $sent) {
                         throw \Illuminate\Validation\ValidationException::withMessages(['items' => 'Jumlah diterima tidak boleh melebihi jumlah dikirim.']);
                     }
@@ -516,7 +541,10 @@ class TransferController extends Controller
                     }
                 }
             }
-            $groups = $details->groupBy('product_id')->sortKeys();
+            // Items with sent_quantity already left the origin stock when the transfer
+            // was sent; a shortfall on receipt is shrinkage. Older items (no
+            // sent_quantity) still leave the origin now, so check their stock.
+            $groups = $details->whereNull('sent_quantity')->groupBy('product_id')->sortKeys();
             foreach ($groups as $productId => $group) {
                 \Modules\Master\Entities\Product::whereKey($productId)->lockForUpdate()->firstOrFail();
             }
@@ -539,16 +567,31 @@ class TransferController extends Controller
     public function products(Request $request)
     {
         abort_unless($this->hasAccess('transfer-pengirim.create') || $this->hasAccess('transfer-pengirim.edit'), 403);
-        $request->validate(['branch_id' => 'required|integer', 'term' => 'nullable|string|max:150']);
+        $request->validate(['branch_id' => 'required|integer', 'term' => 'nullable|string|max:150', 'transfer_id' => 'nullable|integer']);
         abort_unless(in_array((int) $request->branch_id, array_map('intval', UserBranch::getUserBranch()), true), 403);
+
+        // Editing a pending transfer: its items are already out of the origin stock,
+        // so show them as available again for this form.
+        $ownQty = collect();
+        if ($request->filled('transfer_id')) {
+            $own = Transfer::whereKey($request->transfer_id)->where('created_by', Auth::id())
+                ->where('branch_id', $request->branch_id)->whereIn('status', ['pending', 'proses'])->exists();
+            if ($own) {
+                $ownQty = TransferDetail::where('transfer_id', $request->transfer_id)->whereNotNull('sent_quantity')
+                    ->groupBy('product_id')->selectRaw('product_id, SUM(sent_quantity) AS qty')->pluck('qty', 'product_id');
+            }
+        }
+
         $products = \Modules\Master\Entities\Product::with('unit')->select('products.*', 'product_stock.stock_available', 'product_stock.avg_hpp')
             ->join('product_stock', 'products.id', '=', 'product_stock.id')
-            ->where('product_stock.branch_id', $request->branch_id)->where('product_stock.stock_available', '>', 0)
+            ->where('product_stock.branch_id', $request->branch_id)
+            ->where(fn ($q) => $q->where('product_stock.stock_available', '>', 0)->orWhereIn('products.id', $ownQty->keys()->all()))
             ->where('products.tipe', '!=', 'parcel')->whereNull('products.is_variant')
             ->where('products.name', 'like', '%' . $request->input('term', '') . '%')->orderBy('products.name')->limit(200)->get();
         return response()->json($products->map(fn ($product) => [
             'id' => $product->id, 'name' => $product->name, 'unit' => $product->unit?->abbreviation ?? '',
-            'price' => round((float) ($product->avg_hpp ?? $product->hpp ?? 0), 2), 'stock' => (float) $product->stock_available,
+            'price' => round((float) ($product->avg_hpp ?? $product->hpp ?? 0), 2),
+            'stock' => (float) $product->stock_available + (float) ($ownQty[$product->id] ?? 0),
         ]));
     }
 
@@ -588,7 +631,7 @@ class TransferController extends Controller
                     'received_at' => $item->tanggal_diterima, 'status' => $item->status,
                     'items' => $item->detail->map(fn ($detail) => [
                         'id' => $detail->id, 'name' => $detail->product?->name ?? 'Produk dihapus', 'unit' => $detail->product?->unit?->abbreviation ?? '',
-                        'quantity' => (float) $detail->quantity, 'sent' => (float) ($detail->corrections->last()?->old_quantity ?? $detail->quantity),
+                        'quantity' => (float) $detail->quantity, 'sent' => (float) ($detail->sent_quantity ?? $detail->corrections->last()?->old_quantity ?? $detail->quantity),
                         'note' => $detail->corrections->first()?->note ?? '',
                     ]),
                     'can_show' => $permissions['show'],

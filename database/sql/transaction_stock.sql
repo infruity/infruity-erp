@@ -159,10 +159,13 @@ CREATE OR REPLACE VIEW transaction_stock_base AS
 	UNION ALL
 
 	-- TRANSFER (ASAL)
+	-- Transfer dengan sent_quantity: stok asal keluar sejak dikirim (pending/proses)
+	-- sejumlah yang dikirim, selisih terima = susut. Transfer lama (tanpa
+	-- sent_quantity) tetap keluar saat selesai sejumlah yang diterima.
 	SELECT
 		transfer.branch_id,
 		transfer_detail.product_id,
-		- transfer_detail.quantity,
+		- COALESCE(transfer_detail.sent_quantity, transfer_detail.quantity),
 		transfer_detail.price,
 		transfer.created_at,
 		'mengirim' AS reff,
@@ -173,6 +176,7 @@ CREATE OR REPLACE VIEW transaction_stock_base AS
 	JOIN transfer_detail ON transfer_detail.transfer_id = transfer.id
 	LEFT JOIN users u10 ON u10.id_user = transfer.created_by
 	WHERE transfer.`status` = 'selesai'
+		OR (transfer.`status` IN ('pending', 'proses') AND transfer_detail.sent_quantity IS NOT NULL)
 
 	UNION ALL
 

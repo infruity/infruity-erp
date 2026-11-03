@@ -13,7 +13,7 @@
                 this.cart = (config.details || []).map(detail => {
                     const history = [...(detail.corrections || [])].sort((a,b) => Number(b.id) - Number(a.id));
                     return {id: detail.product_id, detailId: detail.id, name: detail.product?.name || 'Produk dihapus', unit: detail.product?.unit?.abbreviation || '',
-                        qty: Number(detail.quantity), expected: Number(detail.quantity), sent: Number(history.at(-1)?.old_quantity ?? detail.quantity),
+                        qty: Number(detail.quantity), expected: Number(detail.quantity), sent: Number(detail.sent_quantity ?? history.at(-1)?.old_quantity ?? detail.quantity),
                         price: Number(detail.price) || 0, discount: Number(detail.discount) || 0, note: history[0]?.note || '', stock: null};
                 });
                 this._beforeUnload = event => { if (this.dirty && !this.navigationAllowed) { event.preventDefault(); event.returnValue = ''; } };
@@ -62,6 +62,7 @@
                 this.loadingProducts = true; this.productsError = '';
                 try {
                     const params = new URLSearchParams({branch_id:branch,term:this.productSearch});
+                    if (this.transactionId) params.set('transfer_id', this.transactionId);
                     const response = await fetch(config.productsUrl + '?' + params, {headers:{Accept:'application/json'}});
                     const result = await response.json().catch(() => ({message:'Produk gagal dimuat. Masuk kembali jika sesi berakhir.'}));
                     if (!response.ok || !Array.isArray(result)) throw new Error(response.status >= 500 ? 'Produk gagal dimuat. Periksa koneksi dan coba lagi.' : result.message || 'Produk gagal dimuat.');

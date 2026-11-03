@@ -43,7 +43,7 @@ class TransferMobileFlowTest extends TestCase
             $t->integer('created_by'); $t->integer('updated_by')->nullable(); $t->integer('pic_penerima')->nullable(); $t->dateTime('tanggal_diterima')->nullable(); $t->timestamps();
         });
         Schema::create('transfer_detail', function (Blueprint $t) {
-            $t->increments('id'); $t->integer('transfer_id'); $t->integer('product_id'); $t->decimal('quantity', 10, 2);
+            $t->increments('id'); $t->integer('transfer_id'); $t->integer('product_id'); $t->decimal('quantity', 10, 2); $t->decimal('sent_quantity', 10, 2)->nullable();
             $t->decimal('price', 15, 2); $t->decimal('discount', 15, 2); $t->decimal('subtotal', 15, 2); $t->integer('created_by'); $t->timestamps();
         });
         Schema::create('transfer_detail_correction', function (Blueprint $t) {
@@ -164,9 +164,43 @@ class TransferMobileFlowTest extends TestCase
         $this->assertDatabaseHas('transfer', ['status' => 'pending']);
     }
 
+    public function test_sent_quantity_is_recorded_only_when_the_transfer_is_sent(): void
+    {
+        $first = $this->postJson('/_test/transfer-save', $this->payload())->assertOk()->json('transaksi_id');
+        $this->assertDatabaseHas('transfer_detail', ['transfer_id' => $first, 'sent_quantity' => null]);
+        $payload = $this->payload('pending'); $payload['transfer_id'] = $first;
+        $this->postJson('/_test/transfer-save', $payload)->assertOk();
+        $this->assertDatabaseHas('transfer_detail', ['transfer_id' => $first, 'quantity' => 2.5, 'sent_quantity' => 2.5]);
+    }
+
+    public function test_sent_transfer_is_received_without_origin_stock_check(): void
+    {
+        // Its items already left the origin stock when it was sent.
+        $id = $this->send(); $this->receivingBranch();
+        DB::table('product_stock')->where('branch_id', 1)->update(['stock_available' => 0]);
+        $this->postJson('/_test/transfer-receive/' . $id, $this->receipt(2))->assertOk();
+        $this->assertDatabaseHas('transfer_detail', ['quantity' => 2, 'sent_quantity' => 2.5]);
+        $this->assertDatabaseHas('transfer', ['id' => $id, 'status' => 'selesai']);
+    }
+
+    public function test_editing_a_sent_transfer_can_reuse_its_own_quantity(): void
+    {
+        $id = $this->send();
+        // The view would now show 10 - 2.5 left at the origin.
+        DB::table('product_stock')->where('branch_id', 1)->update(['stock_available' => 7.5]);
+        $payload = $this->payload('pending'); $payload['transfer_id'] = $id;
+        $payload['items'][0]['qty'] = 10; $payload['items'][0]['total_input'] = $payload['subtotal'] = $payload['total'] = 50000;
+        $this->postJson('/_test/transfer-save', $payload)->assertOk();
+        DB::table('product_stock')->where('branch_id', 1)->update(['stock_available' => 0]);
+        $payload['items'][0]['qty'] = 10.5; $payload['items'][0]['total_input'] = $payload['subtotal'] = $payload['total'] = 52500;
+        $this->postJson('/_test/transfer-save', $payload)->assertUnprocessable();
+    }
+
     public function test_failed_final_stock_check_rolls_back_corrections_and_status_together(): void
     {
+        // Transfers sent before sent_quantity existed still check origin stock on receipt.
         $id = $this->send(); $this->receivingBranch();
+        DB::table('transfer_detail')->update(['sent_quantity' => null]);
         DB::table('product_stock')->where('branch_id', 1)->update(['stock_available' => 1]);
         $this->postJson('/_test/transfer-receive/' . $id, $this->receipt(2))->assertUnprocessable();
         $this->assertDatabaseHas('transfer', ['status' => 'pending', 'total' => 12500]);
