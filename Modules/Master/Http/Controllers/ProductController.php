@@ -318,7 +318,11 @@ class ProductController extends Controller
 
         $data['product'] = Product::findOrFail($id);
         $data['report'] = DB::table('report_total_belanja')->where('product_id', $id)->first()
-            ?? (object) ['total_belanja' => 0, 'total_cogs' => 0, 'total_recovered_cogs' => 0, 'last_asset' => 0];
+            ?? (object) [
+                'total_belanja' => 0, 'total_masuk_lain' => 0, 'total_cogs' => 0, 'total_kerugian' => 0,
+                'total_bahan_produksi' => 0, 'total_opname' => 0, 'total_transfer' => 0,
+                'last_asset' => 0, 'selisih_control' => 0,
+            ];
         return view('master::products.show-transaction', $data);
     }
 
@@ -334,7 +338,7 @@ class ProductController extends Controller
         ]);
 
         $query = ProductHppRunning::where('product_id', $request->product_id)
-            ->orderBy('created_at', 'asc');
+            ->orderBy('seq', 'asc');
 
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
@@ -441,9 +445,6 @@ class ProductController extends Controller
             })
             ->editColumn('cogs', function ($item) {
                 return 'Rp ' . number_format($item->cogs, 0, ',', '.');
-            })
-            ->editColumn('recovered_cogs', function ($item) {
-                return 'Rp ' . number_format($item->recovered_cogs, 0, ',', '.');
             })
             ->addColumn('created_at', function ($item) {
                 return \Carbon\Carbon::parse($item->created_at)->format('d M Y H:i:s');

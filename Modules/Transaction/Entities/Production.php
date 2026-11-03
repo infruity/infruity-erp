@@ -21,6 +21,7 @@ class Production extends Model
         'description',
         'sell_price',
         'service_cost',
+        'hpp_per_unit',
         'staff_id',
         'branch_id',
         'created_by',

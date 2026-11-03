@@ -875,8 +875,8 @@ class ReportController extends Controller
         // Evaluate the moving-HPP view once per request instead of embedding it
         // multiple times in the grouped stock query and DataTables count query.
         $latestHppByProduct = DB::table('product_hpp')
-            ->select('product_id', 'total_aset_berjalan', 'hpp_berjalan', 'created_at')
-            ->orderByDesc('created_at')
+            ->select('product_id', 'total_aset_berjalan', 'hpp_berjalan', 'seq')
+            ->orderByDesc('seq')
             ->get()
             ->unique('product_id')
             ->keyBy('product_id');

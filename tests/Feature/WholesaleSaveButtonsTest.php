@@ -40,7 +40,8 @@ class WholesaleSaveButtonsTest extends TestCase
         Schema::create('product_branch', function (Blueprint $t) {
             $t->increments('id'); $t->integer('product_id'); $t->integer('branch_id'); $t->decimal('price', 15, 2); $t->timestamps();
         });
-        Schema::create('product_hpp', function (Blueprint $t) { $t->increments('id'); $t->integer('product_id'); $t->timestamps(); });
+        Schema::create('product_hpp', function (Blueprint $t) { $t->increments('id'); $t->integer('product_id'); $t->integer('seq'); $t->decimal('hpp_berjalan', 30, 6); $t->timestamps(); });
+        Schema::create('product_child', function (Blueprint $t) { $t->increments('id'); $t->integer('parent_id'); $t->integer('product_id'); });
         DB::table('role')->insert(['id_role' => 2]);
         DB::table('role_user')->insert(['id_user' => 7, 'id_role' => 2]);
         DB::table('role_menu')->insert(['id_role' => 2, 'permission' => 'wholesale.save-transaction']);

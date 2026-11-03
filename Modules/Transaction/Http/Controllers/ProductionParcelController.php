@@ -2,6 +2,7 @@
 
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\ProductionCost;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -556,6 +557,9 @@ class ProductionParcelController extends Controller
             // Insert massal untuk meningkatkan performa
             ProductReceipt::insert($productReceipts);
             ProductionDetail::insert($productionDetail);
+
+            // Freeze the parcel HPP: ingredient moving HPP + service fee per parcel.
+            ProductionCost::freeze($production, (float) ($parcel->fee ?? 0));
 
             DB::commit();
 

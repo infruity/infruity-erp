@@ -48,8 +48,8 @@ class InventorySnapshot
     }
 
     /**
-     * Latest product_hpp row per product id (ordered by created_at, then trx_id,
-     * both descending). Ids without HPP history map to null.
+     * Latest product_hpp row per product id (highest ledger seq). Ids without
+     * HPP history map to null.
      *
      * @return array<int, ProductHppRunning|null>
      */
@@ -64,8 +64,7 @@ class InventorySnapshot
 
         $rows = ProductHppRunning::query()
             ->whereIn('product_id', $ids)
-            ->orderBy('created_at', 'desc')
-            ->orderBy('trx_id', 'desc')
+            ->orderBy('seq', 'desc')
             ->get();
 
         foreach ($rows as $row) {
