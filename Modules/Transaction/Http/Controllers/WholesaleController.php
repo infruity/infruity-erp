@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\ProductHpp;
 use Exception;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -14,11 +15,8 @@ use Illuminate\Support\Str;
 use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\Product;
 use Modules\Master\Entities\ProductBranch;
-use Modules\Master\Entities\ProductChild;
 use Modules\Master\Entities\Supplier;
 use Modules\Master\Entities\UserBranch;
-use Modules\Pos\Entities\PosDetailModel;
-use Modules\Transaction\Entities\ProductHppRunning;
 use Modules\Transaction\Entities\ProductStock;
 use Modules\Transaction\Entities\Wholesale;
 use Modules\Transaction\Entities\WholesaleProduct;
@@ -401,40 +399,14 @@ class WholesaleController extends Controller
             $wholesale->order_date  = $request->order_date;
             $wholesale->description = $request->description;
 
-            if ($request->submit_type == 'posting') {
-                $wholesaleProduct = WholesaleProduct::with('product', 'productStock')->where('wholesale_id', $id)->get();
-                foreach ($wholesaleProduct as $key => $value) {
-                    $wholesaleProductChild = ProductChild::with('product', 'productStock')->where('parent_id', $value->product_id);
-                    $totalStock            = $wholesaleProductChild->get()->sum(function ($child) {
-                        return $child->productStock->stock_available ?? 0;
-                    });
-                    // dd($totalStock);
-                    $stock  = $value->productStock->stock_available ?? 0;
-                    $stock += $totalStock;
-                    $hpp    = $value->product->hpp ?? 0;
-
-                    // dd($stock);
-                    if ($stock == 0) {
-                        Product::where("id", $value->product_id)->update([
-                            'hpp' => $value->price,
-                        ]);
-                        Product::whereIn('id', $wholesaleProductChild->pluck('product_id')->toArray())->update([
-                            'hpp' => $value->price,
-                        ]);
-                    } else {
-                        $newHpp = collect([$hpp, $value->price])->avg();
-                        Product::where("id", $value->product_id)->update([
-                            'hpp' => $newHpp,
-                        ]);
-                        Product::whereIn('id', $wholesaleProductChild->pluck('product_id')->toArray())->update([
-                            'hpp' => $newHpp,
-                        ]);
-                    }
-                }
-            }
-
-            // dd($wholesaleProduct);
             $wholesale->save();
+
+            // Posted: copy the new moving HPP (from the ledger) into the product catalog.
+            if ($request->submit_type == 'posting') {
+                ProductHpp::syncCatalog(
+                    WholesaleProduct::where('wholesale_id', $id)->pluck('product_id')
+                );
+            }
 
             DB::commit();
         } catch (Exception $e) {
@@ -1037,44 +1009,11 @@ class WholesaleController extends Controller
                     );
                 }
 
-                // =========================
-                // UPDATE HPP SAAT POSTING
-                // =========================
-                if (($data['status'] ?? 'draft') === 'posting') {
+            }
 
-                    $productHpp = ProductHppRunning::where('product_id', $item['id'])
-                        ->latest()
-                        ->first();
-
-                    if ($productHpp) {
-                        Product::where('id', $item['id'])->update([
-                            'hpp' => $productHpp->hpp_berjalan,
-                        ]);
-
-                        $childIds = ProductChild::where('parent_id', $item['id'])
-                            ->pluck('product_id');
-
-                        Product::whereIn('id', $childIds)->update([
-                            'hpp' => $productHpp->hpp_berjalan,
-                        ]);
-
-                        if ((float) ($productHpp->qty_berjalan ?? 0) > 0) {
-                            $hppBerjalan = (float) $productHpp->hpp_berjalan;
-                            PosDetailModel::whereIn('product_id', $childIds)
-                                ->where('hpp', 0)
-                                ->update([
-                                    'hpp'          => $hppBerjalan,
-                                    'subtotal_hpp' => DB::raw(
-                                        'CASE
-                                            WHEN COALESCE(debt_quantity, 0) > 0
-                                                THEN COALESCE(subtotal_hpp, 0) + (' . $hppBerjalan . ' * debt_quantity)
-                                            ELSE ' . $hppBerjalan . ' * quantity
-                                        END'
-                                    ),
-                                ]);
-                        }
-                    }
-                }
+            // Posted: copy the new moving HPP into the product catalog.
+            if (($data['status'] ?? 'draft') === 'posting') {
+                ProductHpp::syncCatalog($existingProductIds);
             }
 
             DB::commit();

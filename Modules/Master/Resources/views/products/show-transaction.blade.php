@@ -20,7 +20,6 @@
                             <th class="text-nowrap text-center min-w-120px">Total Belanja</th>
                             <th class="text-nowrap text-center min-w-100px">Covered Qty</th>
                             <th class="text-nowrap text-center min-w-120px">COGS</th>
-                            <th class="text-nowrap text-center min-w-120px">Recovered COGS</th>
                             <th class="text-nowrap text-center min-w-120px">Saldo Qty</th>
                             <th class="text-nowrap text-center min-w-120px">Pending Qty</th>
                             <th class="text-nowrap text-center min-w-120px">Total Aset</th>
@@ -30,7 +29,7 @@
                     </thead>
                     <tbody class="fw-semibold text-gray-600">
                     </tbody>
-                </table></x-erp.collection><section id="check-balance"><header class="erp-detail-header"><h2>Ringkasan rekonsiliasi</h2></header><dl class="erp-detail-grid"><div><dt>Grand Total</dt><dd>Rp {{ toNumber($report->total_belanja) }}</dd></div><div><dt>Total Belanja</dt><dd>Rp {{ toNumber($report->total_belanja) }}</dd></div></dl><dl class="erp-detail-grid"><div><dt>Grand Total</dt><dd>Rp {{ tonumberround($report->total_cogs + $report->total_recovered_cogs + $report->last_asset, 0) }}</dd></div><div><dt>COGS/Var (recognized)</dt><dd>Rp {{ tonumberround($report->total_cogs, 0) }}</dd></div><div><dt>Recovered COGS</dt><dd>Rp {{ tonumberround($report->total_recovered_cogs, 0) }}</dd></div><div><dt>Lost Asset</dt><dd>Rp {{ tonumberround($report->last_asset, 0) }}</dd></div><div><dt>Opname (+/-)</dt><dd>Rp -</dd></div></dl></section></x-erp.workspace><script type="text/javascript">
+                </table></x-erp.collection><section id="check-balance"><header class="erp-detail-header"><h2>Ringkasan rekonsiliasi</h2></header><dl class="erp-detail-grid"><div><dt>Total Belanja</dt><dd>Rp {{ tonumberround($report->total_belanja, 0) }}</dd></div><div><dt>Masuk Lain (produksi/stok masuk)</dt><dd>Rp {{ tonumberround($report->total_masuk_lain, 0) }}</dd></div><div><dt>Penyesuaian Opname (+/-)</dt><dd>Rp {{ tonumberround($report->total_opname, 0) }}</dd></div><div><dt>Transfer (+/-)</dt><dd>Rp {{ tonumberround($report->total_transfer, 0) }}</dd></div></dl><dl class="erp-detail-grid"><div><dt>COGS Penjualan</dt><dd>Rp {{ tonumberround($report->total_cogs, 0) }}</dd></div><div><dt>Kerugian (barang buang/stok keluar)</dt><dd>Rp {{ tonumberround($report->total_kerugian, 0) }}</dd></div><div><dt>Bahan Produksi</dt><dd>Rp {{ tonumberround($report->total_bahan_produksi, 0) }}</dd></div><div><dt>Aset Terakhir</dt><dd>Rp {{ tonumberround($report->last_asset, 0) }}</dd></div><div><dt>Selisih Kontrol</dt><dd>Rp {{ tonumberround($report->selisih_control, 0) }}</dd></div></dl></section></x-erp.workspace><script type="text/javascript">
         var dataTable;
 
         function formatNumber(data) {
@@ -94,11 +93,6 @@
                     {
                         data: 'cogs',
                         name: 'cogs',
-                        className: 'text-end text-nowrap',
-                    },
-                    {
-                        data: 'recovered_cogs',
-                        name: 'recovered_cogs',
                         className: 'text-end text-nowrap',
                     },
                     {

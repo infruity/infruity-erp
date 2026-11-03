@@ -2,6 +2,7 @@
 namespace Modules\Transaction\Http\Controllers;
 
 use App\Support\InventorySnapshot;
+use App\Support\ProductionCost;
 use Exception;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -193,17 +194,8 @@ class ProductionController extends Controller
                     'message' => 'Produksi berhasil disimpan',
                 ], 200);
             } else {
-                // posting - calculate and update HPP using ingredients array data
-                $totalHpp = 0;
-                foreach ($request->ingredients as $ingredient) {
-                    $totalHpp += floatval($ingredient['hpp']) * floatval($ingredient['quantity']);
-                }
-
-                // Update product HPP per unit
-                $hppPerUnit = $request->quantity > 0 ? $totalHpp / $request->quantity : 0;
-                Product::where('id', $request->product_id)->update([
-                    'hpp' => $hppPerUnit,
-                ]);
+                // posting - freeze HPP from the ingredients' moving HPP (server side)
+                ProductionCost::freeze($production, (float) $production->service_cost);
 
                 $branch = ProductBranch::where('product_id', $request->product_id)
                     ->where('branch_id', $request->branch_id)
@@ -255,6 +247,12 @@ class ProductionController extends Controller
             });
 
             $data['hpp_per_unit'] = $data['data']->quantity > 0 ? $data['total_hpp'] / $data['data']->quantity : 0;
+
+            // Posted runs show the HPP frozen at posting, not today's ingredient prices.
+            if ($data['data']->hpp_per_unit !== null) {
+                $data['hpp_per_unit'] = (float) $data['data']->hpp_per_unit;
+                $data['total_hpp']    = $data['hpp_per_unit'] * (float) $data['data']->quantity;
+            }
 
             return view('transaction::production.show', $data);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -335,6 +333,9 @@ class ProductionController extends Controller
             if ($request->sell_price) {
                 $production->sell_price = preg_replace('/[^0-9]/', '', $request->sell_price);
             }
+            if ($request->submit_type == 'posting') {
+                $this->assertIngredientStock($production);
+            }
             $production->save();
 
             // Jika status temp, redirect ke halaman yang sama untuk continue editing
@@ -350,14 +351,7 @@ class ProductionController extends Controller
             }
 
             if ($request->submit_type == 'posting') {
-                $productionDetail = ProductionDetail::with('products')->where('production_id', $id)->get();
-                $hpp              = 0;
-                foreach ($productionDetail as $key => $value) {
-                    $hpp += $value->products->hpp * $value->quantity;
-                }
-                Product::where('id', $productId)->update([
-                    'hpp' => $hpp,
-                ]);
+                ProductionCost::freeze($production, (float) $production->service_cost);
             }
 
             DB::commit();
@@ -368,6 +362,32 @@ class ProductionController extends Controller
         }
 
         return redirect('production')->with('success', 'Produksi berhasil');
+    }
+
+    /**
+     * Stops a posting when an ingredient has less stock than the run uses, so
+     * stock never goes below zero. Runs already posted are skipped: their usage
+     * is already in the stock ledger.
+     */
+    private function assertIngredientStock(Production $production): void
+    {
+        if (in_array($production->getOriginal('status'), ['posting', 'complete'], true)) {
+            return;
+        }
+
+        $needed = [];
+        foreach (ProductionDetail::where('production_id', $production->id)->get(['product_id', 'quantity']) as $detail) {
+            $needed[(int) $detail->product_id] = ($needed[(int) $detail->product_id] ?? 0) + (float) $detail->quantity;
+        }
+
+        $stock = InventorySnapshot::stockAvailable(array_keys($needed), $production->branch_id);
+        foreach ($needed as $productId => $requiredQty) {
+            $currentStock = $stock[$productId] ?? 0.0;
+            if ($currentStock < $requiredQty) {
+                $productName = Product::where('id', $productId)->value('name') ?? 'Bahan #' . $productId;
+                throw new \Exception("Stok bahan baku \"{$productName}\" tidak mencukupi. Stok tersedia: {$currentStock}, dibutuhkan: {$requiredQty}");
+            }
+        }
     }
 
     /**
@@ -407,20 +427,13 @@ class ProductionController extends Controller
             DB::beginTransaction();
 
             $production                  = Production::findOrFail($data['production_id']);
+            $this->assertIngredientStock($production);
             $production->status          = 'posting';
             $production->completion_date = $data['completion_date'];
             $production->notes           = $data['notes'] ?? null;
             $production->save();
 
-            // Update HPP seperti di method update
-            $productionDetail = ProductionDetail::with('products')->where('production_id', $data['production_id'])->get();
-            $hpp              = 0;
-            foreach ($productionDetail as $value) {
-                $hpp += $value->products->hpp * $value->quantity;
-            }
-            Product::where('id', $production->product_id)->update([
-                'hpp' => $hpp,
-            ]);
+            ProductionCost::freeze($production, (float) $production->service_cost);
 
             DB::commit();
 

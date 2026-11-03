@@ -923,8 +923,7 @@ class PosController extends Controller
             $hppOf = function (int $productId) use (&$hppSnapshot, $hppIsStale) {
                 if ($hppIsStale($productId)) {
                     return ProductHppRunning::where('product_id', $productId)
-                        ->orderBy('created_at', 'desc')
-                        ->orderBy('trx_id', 'desc')
+                        ->orderBy('seq', 'desc')
                         ->first();
                 }
 
@@ -945,8 +944,7 @@ class PosController extends Controller
                     // Jika product memiliki parent, gunakan parent_id untuk HPP, jika tidak gunakan product itu sendiri
                     $hppProductId = $parentId ?? $product->id;
                     $productHpp   = $hppOf($hppProductId);
-                    $currentStock = $productHpp ? $productHpp->qty_berjalan : 0;
-                    $hppValue     = $productHpp ? ($productHpp->hpp_berjalan ?? 0) : 0;
+                    $hppValue     = (float) ($productHpp->hpp_berjalan ?? 0);
 
                     $posDetail = PosDetailModel::create([
                         'pos_id'               => $transaksiId,
@@ -966,33 +964,18 @@ class PosController extends Controller
                     ]);
                     $hppTouched[$hppProductId] = true;
 
-                    if ($currentStock <= 0) {
-                        $posDetail->update([
-                            'hpp'           => 0,
-                            'debt_quantity' => 0,
-                            'subtotal_hpp'  => 0,
-                        ]);
-                    } else {
-                        if ($currentStock < $posDetail->quantity) {
-                            $posDetail->update([
-                                'hpp'           => 0,
-                                'debt_quantity' => $posDetail->quantity - $currentStock,
-                                'subtotal_hpp'  => ($productHpp->hpp_berjalan ?? 0) * $currentStock,
-                            ]);
-                        } else {
-                            $posDetail->update([
-                                'hpp'           => $productHpp->hpp_berjalan ?? 0,
-                                'debt_quantity' => 0,
-                                'subtotal_hpp'  => ($productHpp->hpp_berjalan ?? 0) * $posDetail->quantity,
-                            ]);
-                        }
-                    }
+                    // Stock was validated above, so the whole qty goes out at the moving HPP.
+                    $posDetail->update([
+                        'hpp'           => $hppValue,
+                        'debt_quantity' => 0,
+                        'subtotal_hpp'  => $hppValue * (float) $posDetail->quantity,
+                    ]);
                 }
             }
 
             $movingHpp = static function (int $productId) use (&$hppSnapshot, $hppIsStale): float {
                 $current = $hppIsStale($productId)
-                    ? ProductHppRunning::where('product_id', $productId)->orderByDesc('created_at')->value('hpp_berjalan')
+                    ? ProductHppRunning::where('product_id', $productId)->orderByDesc('seq')->value('hpp_berjalan')
                     : $hppSnapshot[$productId]?->hpp_berjalan;
                 return (float) ($current ?? Product::whereKey($productId)->value('hpp') ?? 0);
             };
@@ -1108,7 +1091,10 @@ class PosController extends Controller
                     // Update remaining stock
                     $remainingStockJus[$productId] -= $consumeStockQty;
 
-                    $recipeHpp = 0;
+                    // HPP per unit of the juice made now: recipe ingredients at their
+                    // moving HPP + the juice product's service fee (products.fee).
+                    $recipeHpp      = 0;
+                    $jusServiceCost = 0;
                     if ($productionQty > 0) {
                         if (empty($value['product_receipt_id'])) {
                             throw ValidationException::withMessages(['jus' => 'Resep jus diperlukan ketika stok produk jadi tidak mencukupi.']);
@@ -1117,6 +1103,8 @@ class PosController extends Controller
                             $recipeHpp += (float) ($value['product_receipt_qty'][$receiptKey] ?? 0)
                                 * $movingHpp((int) $receiptProductId);
                         }
+                        $jusServiceCost = (float) (Product::whereKey($value['productId'])->value('fee') ?? 0);
+                        $recipeHpp += $jusServiceCost;
                     }
                     $jusHpp = $qtyToProcess > 0
                         ? (($consumeStockQty * $movingHpp((int) $productId)) + ($productionQty * $recipeHpp)) / $qtyToProcess
@@ -1130,6 +1118,9 @@ class PosController extends Controller
                             'status'            => $statusToSave === 'paid' || $statusToSave === 'debt' ? 'complete' : 'draft',
                             'created_by'        => Auth::user()->id_user,
                             'quantity'          => $productionQty,
+                            // Frozen now: ingredients' moving HPP + service fee, per unit.
+                            'service_cost'      => $jusServiceCost,
+                            'hpp_per_unit'      => $recipeHpp,
                             'staff_id'          => Auth::user()->id_user,
                             'pos_id'            => $transaksiId,
                             'branch_id'         => $data['branch_id'] ?? null,
