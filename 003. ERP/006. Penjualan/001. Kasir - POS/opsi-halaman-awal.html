@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perbandingan Font Angka: Plus Jakarta Sans vs Poppins — Kasir / POS | Infruity ERP</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans & Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        poppins: ['"Poppins"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#0b595b',
+                        accent: '#c5f037',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f1f5f4;
+        }
+
+        .font-poppins {
+            font-family: 'Poppins', sans-serif !important;
+        }
+
+        .icon-rounded {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 22px;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            user-select: none;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen text-gray-800 antialiased" x-data="posFontComparisonApp()">
+
+    <!-- ============================================================== -->
+    <!-- TOP STICKY CONTROL BAR                                         -->
+    <!-- ============================================================== -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-gray-200/80 shadow-xs">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3.5 flex flex-col gap-3">
+
+            <!-- Judul & Switcher Layar -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-[#0b595b] text-white flex items-center justify-center shadow-xs shrink-0">
+                        <i class="ph-bold ph-text-t text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h1 class="text-sm sm:text-base font-extrabold text-gray-900 tracking-tight">
+                                Tentu Bisa! Perbandingan Font Angka: Plus Jakarta Sans vs Poppins
+                            </h1>
+                            <span
+                                class="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-[#0b595b] border border-emerald-200">
+                                Poppins Sudah Terpasang di Proyek
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-gray-500">
+                            Font <strong>Poppins</strong> memiliki bentuk angka geometrik yang lebih bulat (angka 0, 6, 8, 9 sangat membulat modern).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Switcher Mode Layar -->
+                <div class="inline-flex p-1 rounded-xl bg-gray-100 border border-gray-200/80">
+                    <button type="button" @click="viewportMode = 'mobile'"
+                        class="px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                        :class="viewportMode === 'mobile' ? 'bg-white text-[#0b595b] shadow-xs' : 'text-gray-500 hover:text-gray-800'">
+                        <i class="ph-bold ph-device-mobile"></i>
+                        <span>Mobile (Bandingkan Font)</span>
+                    </button>
+                    <button type="button" @click="viewportMode = 'desktop'"
+                        class="px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                        :class="viewportMode === 'desktop' ? 'bg-white text-[#0b595b] shadow-xs' : 'text-gray-500 hover:text-gray-800'">
+                        <i class="ph-bold ph-desktop"></i>
+                        <span>Tabel Desktop</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Karakter Angka 0 - 9 Side-by-side -->
+            <div class="bg-gray-50/80 rounded-2xl p-3 border border-gray-200/70 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div class="flex items-center justify-between bg-white px-3.5 py-2 rounded-xl border border-gray-100">
+                    <div>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Plus Jakarta Sans (Saat Ini):</span>
+                        <span class="font-sans font-bold text-sm text-gray-900 tracking-wider">0 1 2 3 4 5 6 7 8 9 · Rp 10.000.000 / 24.500.000</span>
+                    </div>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-bold shrink-0">Sans</span>
+                </div>
+                <div class="flex items-center justify-between bg-emerald-50/50 px-3.5 py-2 rounded-xl border border-emerald-200/80">
+                    <div>
+                        <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">Poppins (Bulat Geometris):</span>
+                        <span class="font-poppins font-bold text-sm text-gray-900 tracking-wider">0 1 2 3 4 5 6 7 8 9 · Rp 10.000.000 / 24.500.000</span>
+                    </div>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-600 text-white font-bold shrink-0">Poppins</span>
+                </div>
+            </div>
+
+            <!-- Filter Status Live & Toggle Gaya Interaktif -->
+            <div class="flex flex-wrap items-center justify-between gap-2.5 pt-1 border-t border-gray-100">
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-1">Filter:</span>
+                    <template x-for="st in ['Semua', 'Pending', 'Belum Bayar', 'Kurang Bayar', 'Lunas']" :key="st">
+                        <button type="button" @click="activeStatus = st"
+                            class="px-3 py-1 rounded-full text-xs font-semibold border transition cursor-pointer flex items-center gap-1.5"
+                            :class="activeStatus === st ? 'bg-[#0b595b] text-white border-[#0b595b] shadow-2xs' : 'bg-white text-gray-600 border-gray-200 hover:border-emerald-300'">
+                            <span x-show="st !== 'Semua'" class="w-1.5 h-1.5 rounded-full"
+                                :class="getDotColor(st)"></span>
+                            <span x-text="st"></span>
+                            <span class="text-[10px] opacity-75 tabular-nums"
+                                x-text="'(' + countByStatus(st) + ')'"></span>
+                        </button>
+                    </template>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                    <!-- Search Input -->
+                    <div
+                        class="relative flex-1 sm:w-44 flex items-center bg-gray-50 border border-gray-200 rounded-full h-8 px-3 focus-within:bg-white focus-within:border-emerald-500 transition">
+                        <i class="ph-bold ph-magnifying-glass text-gray-400 text-xs mr-2"></i>
+                        <input type="text" x-model="search" placeholder="Cari..."
+                            class="w-full bg-transparent text-xs font-medium text-gray-800 outline-none placeholder-gray-400">
+                        <button x-show="search" @click="search = ''" x-cloak
+                            class="text-gray-400 hover:text-gray-600 ml-1 cursor-pointer">
+                            <i class="ph-bold ph-x text-[10px]"></i>
+                        </button>
+                    </div>
+
+                    <!-- Toggle Font Global di Frame 2 -->
+                    <button type="button" @click="applyPoppinsToAll = !applyPoppinsToAll"
+                        class="h-8 px-3 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition shrink-0 cursor-pointer"
+                        :class="applyPoppinsToAll ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'">
+                        <i class="ph-bold ph-text-aa text-sm"></i>
+                        <span x-text="applyPoppinsToAll ? 'Mode: Semua Frame Pakai Poppins' : 'Mode: Perbandingan Berdampingan'"></span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- ============================================================== -->
+    <!-- PERBANDINGAN 3 FRAME MOBILE SIDE-BY-SIDE                       -->
+    <!-- ============================================================== -->
+    <main x-show="viewportMode === 'mobile'"
+        class="max-w-[1440px] mx-auto px-4 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+
+        <!-- ========================================================== -->
+        <!-- FRAME 1: PLUS JAKARTA SANS (FONT ASLI ERP)                 -->
+        <!-- ========================================================== -->
+        <div class="flex flex-col gap-3">
+            <div class="bg-white rounded-2xl border border-gray-200/90 p-4 shadow-2xs">
+                <div class="flex items-center justify-between gap-2 mb-1">
+                    <span
+                        class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-gray-800 text-white">OPSI 1</span>
+                    <span class="text-[11px] font-semibold text-gray-500">Plus Jakarta Sans</span>
+                </div>
+                <h2 class="text-sm font-extrabold text-gray-900">Font Angka: Plus Jakarta Sans</h2>
+                <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+                    Angka lebih ramping, tinggi, dan tegas formal. Menghemat ruang horizontal pada nominal panjang.
+                </p>
+            </div>
+
+            <!-- Phone Frame -->
+            <div
+                class="w-full max-w-[400px] mx-auto bg-white rounded-[32px] border-[6px] border-gray-900/90 shadow-xl overflow-hidden flex flex-col h-[680px] relative">
+                <!-- Header -->
+                <div
+                    class="px-4 py-3 bg-white/85 backdrop-blur-md border-b border-gray-200/60 flex items-center justify-between shrink-0">
+                    <i class="ph-bold ph-list text-xl text-gray-700"></i>
+                    <img src="assets/logo/Infruity Logo - 6.png" alt="Infruity" style="height: 26px;"
+                        class="object-contain"
+                        onerror="this.onerror=null;this.src='../../assets/logo/Infruity Logo - 6.png';">
+                    <div class="relative"><i class="ph-bold ph-bell text-lg text-gray-700"></i></div>
+                </div>
+                <!-- Search -->
+                <div class="p-3.5 border-b border-gray-100 bg-white shrink-0">
+                    <div
+                        class="flex items-center rounded-full h-10 pl-3.5 pr-1.5 bg-gray-50/70 border border-gray-200/80">
+                        <i class="ph-bold ph-magnifying-glass text-[#0b595b]/80 text-sm mr-2"></i>
+                        <span class="flex-1 text-xs text-gray-400 truncate"
+                            x-text="search ? search : 'Cari...'"></span>
+                        <div class="h-4 w-px bg-gray-200 mx-1"></div>
+                        <span class="w-7 h-7 rounded-full flex items-center justify-center text-gray-400">
+                            <span class="icon-rounded" style="font-size: 18px;">tune</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- List Frame 1 (Plus Jakarta Sans) -->
+                <div class="flex-1 overflow-y-auto divide-y divide-gray-100 pb-24 scrollbar-hide">
+                    <template x-for="order in filteredOrders" :key="'pjs-' + order.id">
+                        <div @click="openSimulator(order)"
+                            class="px-4 py-3 flex items-center justify-between gap-2.5 hover:bg-gray-50/80 transition cursor-pointer">
+                            <!-- Kiri: Avatar + Nama (4 digit) di B1, Tanggal Transaksi di B2 -->
+                            <div class="flex items-center gap-3 min-w-0 flex-1">
+                                <div class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center font-bold text-xs border shadow-2xs"
+                                    :class="getAvatarTheme(order.customerName)">
+                                    <span x-text="getInitials(order.customerName)"></span>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-semibold text-gray-900 truncate">
+                                        <span x-text="order.customerName"></span>
+                                        <span class="text-gray-400 font-normal text-[11px]"
+                                            x-show="order.customerPhone"
+                                            x-text="' (' + last4(order.customerPhone) + ')'"></span>
+                                    </p>
+                                    <p class="text-[11px] text-gray-400 mt-0.5 truncate tabular-nums font-sans"
+                                        x-text="order.dateTime"></p>
+                                </div>
+                            </div>
+
+                            <!-- Kanan: B1 = Status, B2 = Angka Plus Jakarta Sans -->
+                            <div class="text-right shrink-0 tabular-nums font-sans">
+                                <div>
+                                    <span :class="getStatusClass(order.status)" x-text="order.status"></span>
+                                </div>
+                                <div class="text-[11px] mt-0.5 whitespace-nowrap">
+                                    <template x-if="order.status === 'Lunas'">
+                                        <span class="font-bold text-gray-900" x-text="formatRp(order.grandTotal)"></span>
+                                    </template>
+                                    <template x-if="order.status !== 'Lunas'">
+                                        <span>
+                                            <span class="font-medium text-gray-800" x-text="formatRp(order.paidAmount)"></span>
+                                            <span class="text-gray-300 mx-0.5">/</span>
+                                            <span class="font-bold text-gray-900" x-text="formatPlain(order.grandTotal)"></span>
+                                        </span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Bottom Nav -->
+                <div class="absolute bottom-3 left-4 right-4 pointer-events-none">
+                    <div
+                        class="bg-white/75 backdrop-blur-xl border border-gray-200/80 shadow-lg rounded-full h-14 px-3 flex items-center justify-around">
+                        <i class="ph-fill ph-squares-four text-lg text-gray-400"></i>
+                        <i class="ph-bold ph-chart-bar text-lg text-gray-400"></i>
+                        <div
+                            class="w-10 h-10 rounded-xl bg-[#0b595b] text-white flex items-center justify-center shadow-sm">
+                            <i class="ph-bold ph-plus text-base"></i>
+                        </div>
+                        <i class="ph-fill ph-storefront text-lg text-[#0b595b]"></i>
+                        <i class="ph-fill ph-user text-lg text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================== -->
+        <!-- FRAME 2: KHUSUS ANGKA PAKAI POPPINS (ANGKA BULAT GEOMETRIS)-->
+        <!-- ========================================================== -->
+        <div class="flex flex-col gap-3">
+            <div class="bg-white rounded-2xl border-2 border-emerald-500/50 p-4 shadow-2xs">
+                <div class="flex items-center justify-between gap-2 mb-1">
+                    <div class="flex items-center gap-1.5">
+                        <span
+                            class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#0b595b] text-white">OPSI 2</span>
+                        <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#c5f037] text-gray-900">Poppins</span>
+                    </div>
+                    <span class="text-[11px] font-semibold text-[#0b595b]">Khusus Angka Nominal</span>
+                </div>
+                <h2 class="text-sm font-extrabold text-gray-900">Font Angka: Poppins (Bulat & Modern)</h2>
+                <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+                    Teks teks nama & status tetap Plus Jakarta Sans, namun <strong>khusus angka nominal</strong> menggunakan font <strong>Poppins</strong> yang bulat ramah.
+                </p>
+            </div>
+
+            <!-- Phone Frame -->
+            <div
+                class="w-full max-w-[400px] mx-auto bg-white rounded-[32px] border-[6px] border-gray-900/90 shadow-xl overflow-hidden flex flex-col h-[680px] relative">
+                <!-- Header -->
+                <div
+                    class="px-4 py-3 bg-white/85 backdrop-blur-md border-b border-gray-200/60 flex items-center justify-between shrink-0">
+                    <i class="ph-bold ph-list text-xl text-gray-700"></i>
+                    <img src="assets/logo/Infruity Logo - 6.png" alt="Infruity" style="height: 26px;"
+                        class="object-contain"
+                        onerror="this.onerror=null;this.src='../../assets/logo/Infruity Logo - 6.png';">
+                    <div class="relative"><i class="ph-bold ph-bell text-lg text-gray-700"></i></div>
+                </div>
+                <!-- Search -->
+                <div class="p-3.5 border-b border-gray-100 bg-white shrink-0">
+                    <div
+                        class="flex items-center rounded-full h-10 pl-3.5 pr-1.5 bg-gray-50/70 border border-gray-200/80">
+                        <i class="ph-bold ph-magnifying-glass text-[#0b595b]/80 text-sm mr-2"></i>
+                        <span class="flex-1 text-xs text-gray-400 truncate"
+                            x-text="search ? search : 'Cari...'"></span>
+                        <div class="h-4 w-px bg-gray-200 mx-1"></div>
+                        <span class="w-7 h-7 rounded-full flex items-center justify-center text-gray-400">
+                            <span class="icon-rounded" style="font-size: 18px;">tune</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- List Frame 2 (Khusus Angka Poppins) -->
+                <div class="flex-1 overflow-y-auto divide-y divide-gray-100 pb-24 scrollbar-hide">
+                    <template x-for="order in filteredOrders" :key="'pop-num-' + order.id">
+                        <div @click="openSimulator(order)"
+                            class="px-4 py-3 flex items-center justify-between gap-2.5 hover:bg-gray-50/80 transition cursor-pointer">
+                            <!-- Kiri: Avatar + Nama (4 digit) di B1, Tanggal Transaksi di B2 -->
+                            <div class="flex items-center gap-3 min-w-0 flex-1">
+                                <div class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center font-bold text-xs border shadow-2xs"
+                                    :class="getAvatarTheme(order.customerName)">
+                                    <span x-text="getInitials(order.customerName)"></span>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-semibold text-gray-900 truncate">
+                                        <span x-text="order.customerName"></span>
+                                        <span class="text-gray-400 font-normal text-[11px]"
+                                            x-show="order.customerPhone"
+                                            x-text="' (' + last4(order.customerPhone) + ')'"></span>
+                                    </p>
+                                    <p class="text-[11px] text-gray-400 mt-0.5 truncate tabular-nums font-sans"
+                                        x-text="order.dateTime"></p>
+                                </div>
+                            </div>
+
+                            <!-- Kanan: B1 = Status, B2 = Angka Poppins Bulat -->
+                            <div class="text-right shrink-0 tabular-nums">
+                                <div>
+                                    <span :class="getStatusClass(order.status)" x-text="order.status"></span>
+                                </div>
+                                <div class="text-[11px] mt-0.5 whitespace-nowrap font-poppins">
+                                    <template x-if="order.status === 'Lunas'">
+                                        <span class="font-bold text-gray-900" x-text="formatRp(order.grandTotal)"></span>
+                                    </template>
+                                    <template x-if="order.status !== 'Lunas'">
+                                        <span>
+                                            <span class="font-medium text-gray-800" x-text="formatRp(order.paidAmount)"></span>
+                                            <span class="text-gray-300 mx-0.5 font-sans">/</span>
+                                            <span class="font-bold text-gray-900" x-text="formatPlain(order.grandTotal)"></span>
+                                        </span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Bottom Nav -->
+                <div class="absolute bottom-3 left-4 right-4 pointer-events-none">
+                    <div
+                        class="bg-white/75 backdrop-blur-xl border border-gray-200/80 shadow-lg rounded-full h-14 px-3 flex items-center justify-around">
+                        <i class="ph-fill ph-squares-four text-lg text-gray-400"></i>
+                        <i class="ph-bold ph-chart-bar text-lg text-gray-400"></i>
+                        <div
+                            class="w-10 h-10 rounded-xl bg-[#0b595b] text-white flex items-center justify-center shadow-sm">
+                            <i class="ph-bold ph-plus text-base"></i>
+                        </div>
+                        <i class="ph-fill ph-storefront text-lg text-[#0b595b]"></i>
+                        <i class="ph-fill ph-user text-lg text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================== -->
+        <!-- FRAME 3: FULL POPPINS (SEMUA TEKS & ANGKA)                 -->
+        <!-- ========================================================== -->
+        <div class="flex flex-col gap-3">
+            <div class="bg-white rounded-2xl border border-gray-200/90 p-4 shadow-2xs">
+                <div class="flex items-center justify-between gap-2 mb-1">
+                    <span
+                        class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-teal-700 text-white">OPSI 3</span>
+                    <span class="text-[11px] font-semibold text-teal-800">Full Poppins</span>
+                </div>
+                <h2 class="text-sm font-extrabold text-gray-900">Seluruh Teks & Angka: Poppins</h2>
+                <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+                    Menerapkan Poppins ke seluruh baris (nama pelanggan, tanggal, status, dan angka) untuk konsistensi tipografi menyeluruh.
+                </p>
+            </div>
+
+            <!-- Phone Frame -->
+            <div
+                class="w-full max-w-[400px] mx-auto bg-white rounded-[32px] border-[6px] border-gray-900/90 shadow-xl overflow-hidden flex flex-col h-[680px] relative font-poppins">
+                <!-- Header -->
+                <div
+                    class="px-4 py-3 bg-white/85 backdrop-blur-md border-b border-gray-200/60 flex items-center justify-between shrink-0">
+                    <i class="ph-bold ph-list text-xl text-gray-700"></i>
+                    <img src="assets/logo/Infruity Logo - 6.png" alt="Infruity" style="height: 26px;"
+                        class="object-contain"
+                        onerror="this.onerror=null;this.src='../../assets/logo/Infruity Logo - 6.png';">
+                    <div class="relative"><i class="ph-bold ph-bell text-lg text-gray-700"></i></div>
+                </div>
+                <!-- Search -->
+                <div class="p-3.5 border-b border-gray-100 bg-white shrink-0">
+                    <div
+                        class="flex items-center rounded-full h-10 pl-3.5 pr-1.5 bg-gray-50/70 border border-gray-200/80">
+                        <i class="ph-bold ph-magnifying-glass text-[#0b595b]/80 text-sm mr-2"></i>
+                        <span class="flex-1 text-xs text-gray-400 truncate"
+                            x-text="search ? search : 'Cari...'"></span>
+                        <div class="h-4 w-px bg-gray-200 mx-1"></div>
+                        <span class="w-7 h-7 rounded-full flex items-center justify-center text-gray-400">
+                            <span class="icon-rounded" style="font-size: 18px;">tune</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- List Frame 3 (Full Poppins) -->
+                <div class="flex-1 overflow-y-auto divide-y divide-gray-100 pb-24 scrollbar-hide">
+                    <template x-for="order in filteredOrders" :key="'pop-all-' + order.id">
+                        <div @click="openSimulator(order)"
+                            class="px-4 py-3 flex items-center justify-between gap-2.5 hover:bg-gray-50/80 transition cursor-pointer font-poppins">
+                            <!-- Kiri: Avatar + Nama (4 digit) di B1, Tanggal Transaksi di B2 -->
+                            <div class="flex items-center gap-3 min-w-0 flex-1">
+                                <div class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center font-bold text-xs border shadow-2xs"
+                                    :class="getAvatarTheme(order.customerName)">
+                                    <span x-text="getInitials(order.customerName)"></span>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-semibold text-gray-900 truncate">
+                                        <span x-text="order.customerName"></span>
+                                        <span class="text-gray-400 font-normal text-[11px]"
+                                            x-show="order.customerPhone"
+                                            x-text="' (' + last4(order.customerPhone) + ')'"></span>
+                                    </p>
+                                    <p class="text-[11px] text-gray-400 mt-0.5 truncate tabular-nums"
+                                        x-text="order.dateTime"></p>
+                                </div>
+                            </div>
+
+                            <!-- Kanan: B1 = Status, B2 = Angka Poppins -->
+                            <div class="text-right shrink-0 tabular-nums">
+                                <div>
+                                    <span :class="getStatusClass(order.status)" x-text="order.status"></span>
+                                </div>
+                                <div class="text-[11px] mt-0.5 whitespace-nowrap">
+                                    <template x-if="order.status === 'Lunas'">
+                                        <span class="font-bold text-gray-900" x-text="formatRp(order.grandTotal)"></span>
+                                    </template>
+                                    <template x-if="order.status !== 'Lunas'">
+                                        <span>
+                                            <span class="font-medium text-gray-800" x-text="formatRp(order.paidAmount)"></span>
+                                            <span class="text-gray-300 mx-0.5 font-sans">/</span>
+                                            <span class="font-bold text-gray-900" x-text="formatPlain(order.grandTotal)"></span>
+                                        </span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Bottom Nav -->
+                <div class="absolute bottom-3 left-4 right-4 pointer-events-none">
+                    <div
+                        class="bg-white/75 backdrop-blur-xl border border-gray-200/80 shadow-lg rounded-full h-14 px-3 flex items-center justify-around">
+                        <i class="ph-fill ph-squares-four text-lg text-gray-400"></i>
+                        <i class="ph-bold ph-chart-bar text-lg text-gray-400"></i>
+                        <div
+                            class="w-10 h-10 rounded-xl bg-[#0b595b] text-white flex items-center justify-center shadow-sm">
+                            <i class="ph-bold ph-plus text-base"></i>
+                        </div>
+                        <i class="ph-fill ph-storefront text-lg text-[#0b595b]"></i>
+                        <i class="ph-fill ph-user text-lg text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============================================================== -->
+    <!-- MODE DESKTOP TABEL                                             -->
+    <!-- ============================================================== -->
+    <main x-show="viewportMode === 'desktop'" x-cloak class="max-w-[1440px] mx-auto px-4 sm:px-6 py-5 space-y-6">
+        <section class="bg-white rounded-3xl border border-gray-200/90 shadow-xs overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#0b595b] text-white mr-2">
+                        DESKTOP VIEW
+                    </span>
+                    <span class="text-sm font-extrabold text-gray-900">
+                        Tabel Kasir - POS dengan Font Angka Poppins
+                    </span>
+                </div>
+                <span class="text-xs text-gray-500">Angka ditampilkan dengan font Poppins bulat modern</span>
+            </div>
+
+            <div class="divide-y divide-gray-100">
+                <div
+                    class="flex items-center gap-4 px-6 py-3 bg-gray-50/40 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                    <div class="flex-1">Pelanggan</div>
+                    <div class="w-44">Tanggal Transaksi</div>
+                    <div class="w-44 text-right">Total Belanja</div>
+                    <div class="w-44 text-right">Terbayar</div>
+                    <div class="w-32 text-right">Status</div>
+                </div>
+
+                <template x-for="order in filteredOrders" :key="'desk-' + order.id">
+                    <div @click="openSimulator(order)"
+                        class="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50/70 transition cursor-pointer">
+                        <div class="flex-1 min-w-0 flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center font-bold text-xs border"
+                                :class="getAvatarTheme(order.customerName)" x-text="getInitials(order.customerName)">
+                            </div>
+                            <div class="text-sm font-semibold text-gray-900 truncate">
+                                <span x-text="order.customerName"></span>
+                                <span class="text-gray-400 font-normal text-xs" x-show="order.customerPhone"
+                                    x-text="' (' + last4(order.customerPhone) + ')'"></span>
+                            </div>
+                        </div>
+                        <div class="w-44 text-xs font-medium text-gray-600 tabular-nums" x-text="order.dateTime"></div>
+                        <div class="w-44 text-right text-sm font-bold text-gray-900 tabular-nums font-poppins"
+                            x-text="formatRp(order.grandTotal)"></div>
+                        <div class="w-44 text-right text-sm tabular-nums font-semibold text-gray-800 font-poppins"
+                            x-text="order.status === 'Pending' ? '-' : formatRp(order.paidAmount)"></div>
+                        <div class="w-32 text-right">
+                            <span :class="getStatusClass(order.status)" x-text="order.status"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================================== -->
+    <!-- MODAL SIMULASI STATUS & BAYAR                                  -->
+    <!-- ============================================================== -->
+    <div x-show="simModalOpen" x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs">
+        <div @click.outside="simModalOpen = false"
+            class="bg-white rounded-3xl w-full max-w-sm border border-gray-100 shadow-2xl overflow-hidden p-6">
+            <template x-if="selectedOrder">
+                <div>
+                    <div class="flex items-start justify-between gap-2 mb-4">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-[#0b595b]">Uji Coba Poppins</span>
+                            <h3 class="text-base font-extrabold text-gray-900 mt-0.5">
+                                <span x-text="selectedOrder.customerName"></span>
+                                <span class="text-gray-400 font-normal text-xs" x-show="selectedOrder.customerPhone"
+                                    x-text="' (' + last4(selectedOrder.customerPhone) + ')'"></span>
+                            </h3>
+                        </div>
+                        <button type="button" @click="simModalOpen = false"
+                            class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 cursor-pointer">
+                            <i class="ph-bold ph-x text-xs"></i>
+                        </button>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-2xl p-3.5 border border-gray-100 space-y-2 text-xs tabular-nums mb-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Plus Jakarta Sans:</span>
+                            <span class="font-sans font-bold text-gray-900" x-text="formatRp(selectedOrder.grandTotal)"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-emerald-700 font-bold">Poppins:</span>
+                            <span class="font-poppins font-bold text-gray-900" x-text="formatRp(selectedOrder.grandTotal)"></span>
+                        </div>
+                        <div class="flex justify-between pt-2 border-t border-gray-200/70">
+                            <span class="text-gray-500">Slash (Poppins):</span>
+                            <span class="font-poppins font-bold text-gray-900">
+                                <span x-text="formatRp(selectedOrder.paidAmount)"></span> / <span x-text="formatPlain(selectedOrder.grandTotal)"></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <p class="text-[11px] font-bold text-gray-500 mb-2">Ubah Status:</p>
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <button type="button" @click="setOrderState(selectedOrder, 'Pending')"
+                            class="py-2 px-3 rounded-xl border text-xs font-bold transition cursor-pointer text-left"
+                            :class="selectedOrder.status === 'Pending' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'">
+                            <div>Pending</div>
+                            <div class="text-[10px] font-normal opacity-75">Bayar 0</div>
+                        </button>
+                        <button type="button" @click="setOrderState(selectedOrder, 'Belum Bayar')"
+                            class="py-2 px-3 rounded-xl border text-xs font-bold transition cursor-pointer text-left"
+                            :class="selectedOrder.status === 'Belum Bayar' ? 'bg-rose-600 text-white border-rose-600' : 'bg-white border-gray-200 text-rose-600 hover:bg-rose-50'">
+                            <div>Belum Bayar</div>
+                            <div class="text-[10px] font-normal opacity-75">Bayar 0</div>
+                        </button>
+                        <button type="button" @click="setOrderState(selectedOrder, 'Kurang Bayar')"
+                            class="py-2 px-3 rounded-xl border text-xs font-bold transition cursor-pointer text-left"
+                            :class="selectedOrder.status === 'Kurang Bayar' ? 'bg-amber-500 text-white border-amber-500' : 'bg-white border-gray-200 text-amber-600 hover:bg-amber-50'">
+                            <div>Kurang Bayar</div>
+                            <div class="text-[10px] font-normal opacity-75">Bayar 50%</div>
+                        </button>
+                        <button type="button" @click="setOrderState(selectedOrder, 'Lunas')"
+                            class="py-2 px-3 rounded-xl border text-xs font-bold transition cursor-pointer text-left"
+                            :class="selectedOrder.status === 'Lunas' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white border-gray-200 text-emerald-600 hover:bg-emerald-50'">
+                            <div>Lunas</div>
+                            <div class="text-[10px] font-normal opacity-75">Bayar Penuh</div>
+                        </button>
+                    </div>
+
+                    <!-- Slider Uji Coba Angka Bayar Saat Kurang Bayar -->
+                    <div x-show="selectedOrder.status === 'Kurang Bayar'" class="pt-3 border-t border-gray-100">
+                        <div class="flex justify-between text-[11px] font-semibold text-gray-600 mb-1.5">
+                            <span>Geser Nominal Dibayar:</span>
+                            <span class="font-bold text-[#0b595b] font-poppins" x-text="formatRp(selectedOrder.paidAmount)"></span>
+                        </div>
+                        <input type="range" min="1000000" :max="Math.max(1000000, selectedOrder.grandTotal - 1000000)" step="500000"
+                            x-model.number="selectedOrder.paidAmount"
+                            class="w-full accent-[#0b595b] cursor-pointer">
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <script>
+        function posFontComparisonApp() {
+            return {
+                viewportMode: 'mobile',
+                activeStatus: 'Semua',
+                search: '',
+                usePillBadge: false,
+                applyPoppinsToAll: false,
+                simModalOpen: false,
+                selectedOrder: null,
+
+                orders: [
+                    { id: 1, customerName: 'Kak Alvi', customerPhone: '081234568219', dateTime: '27 Okt 2026, 09:00', grandTotal: 24500000, paidAmount: 10000000, status: 'Kurang Bayar' },
+                    { id: 2, customerName: 'Ayu Rhisma', customerPhone: '085711224311', dateTime: '27 Okt 2026, 14:17', grandTotal: 15750000, paidAmount: 0, status: 'Belum Bayar' },
+                    { id: 3, customerName: 'Bu Enda', customerPhone: '', dateTime: '26 Okt 2026, 19:34', grandTotal: 48000000, paidAmount: 0, status: 'Pending' },
+                    { id: 4, customerName: 'Nono', customerPhone: '081388999902', dateTime: '26 Okt 2026, 13:51', grandTotal: 12000000, paidAmount: 12000000, status: 'Lunas' },
+                    { id: 5, customerName: 'Putri', customerPhone: '', dateTime: '26 Okt 2026, 18:08', grandTotal: 85500000, paidAmount: 50000000, status: 'Kurang Bayar' },
+                    { id: 6, customerName: 'Ikhsan', customerPhone: '082233441754', dateTime: '25 Okt 2026, 12:25', grandTotal: 32400000, paidAmount: 0, status: 'Belum Bayar' },
+                    { id: 7, customerName: 'Rio', customerPhone: '081977665544', dateTime: '25 Okt 2026, 17:42', grandTotal: 65000000, paidAmount: 65000000, status: 'Lunas' },
+                    { id: 8, customerName: 'Fitri', customerPhone: '081299887711', dateTime: '25 Okt 2026, 11:59', grandTotal: 18200000, paidAmount: 9000000, status: 'Kurang Bayar' },
+                    { id: 9, customerName: 'Hendra', customerPhone: '085288201234', dateTime: '24 Okt 2026, 16:16', grandTotal: 94750000, paidAmount: 0, status: 'Belum Bayar' },
+                    { id: 10, customerName: 'Siti', customerPhone: '', dateTime: '24 Okt 2026, 10:33', grandTotal: 27500000, paidAmount: 27500000, status: 'Lunas' }
+                ],
+
+                get filteredOrders() {
+                    return this.orders.filter(o => {
+                        if (this.activeStatus !== 'Semua' && o.status !== this.activeStatus) return false;
+                        if (this.search.trim() !== '') {
+                            const q = this.search.toLowerCase().trim();
+                            const matchName = o.customerName.toLowerCase().includes(q);
+                            const matchPhone = o.customerPhone.includes(q) || this.last4(o.customerPhone).includes(q);
+                            const matchSt = o.status.toLowerCase().includes(q);
+                            if (!matchName && !matchPhone && !matchSt) return false;
+                        }
+                        return true;
+                    });
+                },
+
+                countByStatus(st) {
+                    if (st === 'Semua') return this.orders.length;
+                    return this.orders.filter(o => o.status === st).length;
+                },
+
+                last4(phone) {
+                    return phone ? String(phone).slice(-4) : '';
+                },
+
+                formatRp(val) {
+                    return 'Rp ' + Number(val || 0).toLocaleString('id-ID');
+                },
+
+                formatPlain(val) {
+                    return Number(val || 0).toLocaleString('id-ID');
+                },
+
+                getInitials(name) {
+                    if (!name) return '??';
+                    const parts = name.trim().split(/\s+/);
+                    return parts.length === 1 ? parts[0].slice(0, 2).toUpperCase() : (parts[0][0] + parts[1][0]).toUpperCase();
+                },
+
+                getAvatarTheme(name) {
+                    const themes = [
+                        'bg-emerald-50 text-emerald-700 border-emerald-200',
+                        'bg-blue-50 text-blue-700 border-blue-200',
+                        'bg-purple-50 text-purple-700 border-purple-200',
+                        'bg-amber-50 text-amber-700 border-amber-200',
+                        'bg-teal-50 text-teal-700 border-teal-200',
+                        'bg-rose-50 text-rose-700 border-rose-200'
+                    ];
+                    let hash = 0;
+                    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+                    return themes[Math.abs(hash) % themes.length];
+                },
+
+                getDotColor(st) {
+                    switch (st) {
+                        case 'Pending': return 'bg-gray-400';
+                        case 'Belum Bayar': return 'bg-rose-500';
+                        case 'Kurang Bayar': return 'bg-amber-500';
+                        case 'Lunas': return 'bg-emerald-500';
+                        default: return 'bg-gray-400';
+                    }
+                },
+
+                getStatusClass(status) {
+                    if (this.usePillBadge) {
+                        switch (status) {
+                            case 'Pending': return 'inline-flex px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-gray-100 text-gray-600 border border-gray-200';
+                            case 'Belum Bayar': return 'inline-flex px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-rose-50 text-rose-600 border border-rose-200';
+                            case 'Kurang Bayar': return 'inline-flex px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200';
+                            case 'Lunas': return 'inline-flex px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200';
+                            default: return 'inline-flex px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-gray-100 text-gray-600';
+                        }
+                    }
+                    switch (status) {
+                        case 'Pending': return 'text-xs font-bold text-gray-500';
+                        case 'Belum Bayar': return 'text-xs font-bold text-rose-600';
+                        case 'Kurang Bayar': return 'text-xs font-bold text-amber-600';
+                        case 'Lunas': return 'text-xs font-bold text-emerald-600';
+                        default: return 'text-xs font-bold text-gray-500';
+                    }
+                },
+
+                openSimulator(order) {
+                    this.selectedOrder = order;
+                    this.simModalOpen = true;
+                },
+
+                setOrderState(order, newStatus) {
+                    order.status = newStatus;
+                    if (newStatus === 'Pending' || newStatus === 'Belum Bayar') {
+                        order.paidAmount = 0;
+                    } else if (newStatus === 'Kurang Bayar') {
+                        if (order.paidAmount <= 0 || order.paidAmount >= order.grandTotal) {
+                            order.paidAmount = Math.max(1000000, Math.floor((order.grandTotal * 0.5) / 500000) * 500000);
+                        }
+                    } else if (newStatus === 'Lunas') {
+                        order.paidAmount = order.grandTotal;
+                    }
+                }
+            };
+        }
+    </script>
+</body>
+
+</html>

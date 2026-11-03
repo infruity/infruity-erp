@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opsi Desain Penempatan Tambah Pelanggan Baru - Kasir POS | ERP Infruity</title>
+    <link rel="icon" type="image/png" href="assets/logo/Infruity Logo - 5.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+        rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf9',
+                            100: '#ccfbef',
+                            500: '#10b981',
+                            600: '#0b595b',
+                            700: '#08484a',
+                            800: '#063739',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        poppins: ['"Poppins"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'dropdown': '0 12px 32px -4px rgba(11, 89, 91, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.05)',
+                        'card': '0 4px 20px -2px rgba(0,0,0,0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .minimal-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .minimal-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .minimal-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+
+        .minimal-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100/90 font-sans text-gray-900 antialiased min-h-screen flex flex-col"
+    x-data="customerDesignLab()">
+
+    <!-- STICKY TOPBAR NAVIGASI -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand & Info -->
+            <div class="flex items-center gap-3">
+                <a href="index.html"
+                    class="h-9 w-9 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-700 hover:text-brand-600 transition shadow-2xs cursor-pointer"
+                    title="Kembali ke Kasir - POS">
+                    <i class="ph-bold ph-arrow-left text-base"></i>
+                </a>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            <i class="ph-bold ph-sparkle text-emerald-600"></i> Desain Eksplorasi UX
+                        </span>
+                        <span class="text-xs text-gray-400">· Kasir POS / Pelanggan</span>
+                    </div>
+                    <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-tight">
+                        5 Opsi Desain Penempatan "Tambah Pelanggan Baru"
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Viewport & Filter Tabs -->
+            <div class="flex items-center gap-2.5">
+                <div class="inline-flex p-1 bg-gray-100 rounded-xl border border-gray-200 text-xs font-semibold">
+                    <button type="button" @click="activeView = 'all'"
+                        :class="activeView === 'all' ? 'bg-white text-gray-900 shadow-2xs font-bold' : 'text-gray-500 hover:text-gray-800'"
+                        class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+                        <i class="ph-bold ph-squares-four"></i>
+                        <span>Bandingkan Semua (Side-by-Side)</span>
+                    </button>
+                    <button type="button" @click="activeView = 'pos-mockup'"
+                        :class="activeView === 'pos-mockup' ? 'bg-white text-gray-900 shadow-2xs font-bold' : 'text-gray-500 hover:text-gray-800'"
+                        class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+                        <i class="ph-bold ph-device-tablet"></i>
+                        <span>Simulasi Layar POS Penuh</span>
+                    </button>
+                </div>
+
+                <a href="index.html"
+                    class="h-9 px-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition active:scale-98">
+                    <span>Buka index.html</span>
+                    <i class="ph-bold ph-arrow-up-right text-xs"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- QUICK SELECTOR SUB-BAR -->
+        <div class="bg-emerald-50/50 border-t border-emerald-100/70 px-4 sm:px-6 py-2">
+            <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="text-emerald-900 font-bold flex items-center gap-1">
+                        <i class="ph-fill ph-lightbulb text-amber-500 text-sm"></i>
+                        Pilih Opsi Favorit:
+                    </span>
+                    <div class="flex items-center gap-1.5 overflow-x-auto py-0.5">
+                        <template x-for="(opt, idx) in options" :key="opt.id">
+                            <button type="button" @click="selectedOptionId = opt.id"
+                                class="px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 border"
+                                :class="selectedOptionId === opt.id 
+                                    ? 'bg-[#0b595b] text-white border-[#0b595b] shadow-2xs' 
+                                    : 'bg-white text-gray-700 border-emerald-200/80 hover:bg-emerald-100/60'">
+                                <span class="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]"
+                                    :class="selectedOptionId === opt.id ? 'text-white' : 'text-[#0b595b] bg-emerald-100'"
+                                    x-text="idx + 1"></span>
+                                <span x-text="opt.shortName"></span>
+                                <span x-show="opt.isRecommended" class="text-[9px] px-1 py-0.2 bg-amber-400 text-amber-950 rounded font-black">REC</span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Switcher Mode Highlight -->
+                <div class="flex items-center gap-1.5 ml-auto">
+                    <span class="text-emerald-950 font-bold text-[11px]">Mode Highlight:</span>
+                    <div class="inline-flex p-0.5 bg-white/90 rounded-lg border border-emerald-200 text-[11px] font-semibold shadow-2xs">
+                        <button type="button" @click="highlightMode = 'none'"
+                            :class="highlightMode === 'none' ? 'bg-[#0b595b] text-white shadow-2xs font-bold' : 'text-gray-600 hover:text-gray-900'"
+                            class="px-2.5 py-0.5 rounded-md transition cursor-pointer">
+                            Tanpa Highlight (Clean)
+                        </button>
+                        <button type="button" @click="highlightMode = 'green'"
+                            :class="highlightMode === 'green' ? 'bg-[#0b595b] text-white shadow-2xs font-bold' : 'text-gray-600 hover:text-gray-900'"
+                            class="px-2.5 py-0.5 rounded-md transition cursor-pointer">
+                            Highlight Hijau
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-8">
+
+        <!-- VIEW 1: SIDE-BY-SIDE ALL OPTIONS -->
+        <div x-show="activeView === 'all'" class="space-y-6">
+            <!-- Intro Card -->
+            <div class="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <h2 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                        <span>Pilihan Desain Penempatan Tombol Tambah Pelanggan</span>
+                        <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-gray-100 text-gray-600">5 Pendekatan</span>
+                    </h2>
+                    <p class="text-xs text-gray-500 leading-relaxed max-w-3xl">
+                        Desain sebelumnya memiliki tombol dengan border kotak yang terkesan "mengambang canggung" di dalam dropdown. Di bawah ini disajikan 5 alternatif dengan hierarki visual yang jauh lebih bersih, ergonomis, dan sesuai dengan standar POS modern.
+                    </p>
+                </div>
+                <div class="shrink-0 flex items-center gap-2 bg-emerald-50 px-3.5 py-2.5 rounded-xl border border-emerald-200/70 text-xs text-emerald-900">
+                    <i class="ph-fill ph-check-circle text-emerald-600 text-base"></i>
+                    <div>
+                        <div class="font-bold">Opsi yang Direkomendasikan:</div>
+                        <div class="text-[11px] text-emerald-700">Opsi 1 (Seamless Menu Row) & Opsi 2 (Header Quick-Action)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRID 5 OPSI KARTU INTERAKTIF -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- ============================================== -->
+                <!-- OPSI 1: SEAMLESS NATIVE LIST ROW (DI DALAM DROPDOWN) -->
+                <!-- ============================================== -->
+                <div class="bg-white rounded-2xl border-2 transition-all shadow-card flex flex-col"
+                    :class="selectedOptionId === 'opsi1' ? 'border-[#0b595b] ring-2 ring-[#0b595b]/10' : 'border-gray-200/80 hover:border-gray-300'">
+                    
+                    <!-- Header Opsi -->
+                    <div class="p-4 border-b border-gray-100 flex items-start justify-between gap-2">
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-md bg-emerald-100 text-[#0b595b] text-xs font-black flex items-center justify-center">1</span>
+                                <h3 class="text-sm font-bold text-gray-900">Seamless Native Row</h3>
+                                <span class="px-1.5 py-0.5 bg-emerald-600 text-white text-[9px] font-extrabold rounded">TERBAIK DI DROPDOWN</span>
+                            </div>
+                            <p class="text-[11px] text-gray-500 mt-1">
+                                Menyatu penuh tanpa border kotak kaku. Menggunakan icon lingkaran plus dan sub-teks informatif.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Component Playground -->
+                    <div class="p-5 flex-1 bg-gray-50/40" x-data="{ ddOpen: true, selectedName: 'Pelanggan Umum' }">
+                        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs space-y-3">
+                            <label class="text-xs font-bold text-gray-700 flex items-center justify-between">
+                                <span class="flex items-center gap-1.5">
+                                    <i class="ph-bold ph-user text-emerald-700 text-sm"></i>
+                                    <span>Pelanggan</span>
+                                    <span class="text-red-500">*</span>
+                                </span>
+                            </label>
+
+                            <!-- Field Input -->
+                            <div class="relative">
+                                <div class="relative">
+                                    <input type="text"
+                                        x-model="selectedName"
+                                        @focus="ddOpen = true"
+                                        @click="ddOpen = !ddOpen"
+                                        readonly
+                                        class="w-full h-11 px-4 pr-10 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 outline-none focus:border-emerald-500 transition shadow-2xs cursor-pointer">
+                                    <button type="button" @click="ddOpen = !ddOpen"
+                                        class="absolute right-0 top-0 bottom-0 px-3.5 flex items-center justify-center text-gray-400 hover:text-gray-600 cursor-pointer">
+                                        <i class="ph-bold ph-caret-down text-sm transition-transform duration-200"
+                                            :class="ddOpen ? 'rotate-180 text-[#0b595b]' : ''"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Dropdown Opsi 1 -->
+                                <div x-show="ddOpen" class="mt-1.5 w-full bg-white border border-gray-100 rounded-xl shadow-dropdown py-1 z-30 max-h-60 overflow-y-auto minimal-scrollbar">
+                                    
+                                    <!-- ROW SEAMLESS TAMBAH PELANGGAN BARU (TANPA KOTAK FLOATING) -->
+                                    <div @click="openModalSimulasi('Opsi 1: Seamless Native Row'); ddOpen = false"
+                                        class="px-3.5 py-2.5 cursor-pointer transition-colors flex items-center justify-between group border-b"
+                                        :class="highlightMode === 'none' ? 'bg-white hover:bg-gray-50 border-gray-100' : 'bg-emerald-50/60 hover:bg-emerald-100/70 border-emerald-100/80'">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xs">
+                                                <i class="ph-bold ph-plus text-xs"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-bold text-[#0b595b] group-hover:text-emerald-800">Tambah Pelanggan Baru</div>
+                                                <div class="text-[10px] text-emerald-600/90 font-medium">Daftarkan nama & no. WhatsApp</div>
+                                            </div>
+                                        </div>
+                                        <i class="ph-bold ph-arrow-right text-xs text-emerald-600 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"></i>
+                                    </div>
+
+                                    <!-- Pelanggan Umum -->
+                                    <div @click="selectedName = 'Pelanggan Umum'; ddOpen = false"
+                                        class="px-3.5 py-2 text-xs cursor-pointer transition-colors flex justify-between items-center hover:bg-gray-50 border-b border-gray-100"
+                                        :class="highlightMode === 'none'
+                                            ? (selectedName === 'Pelanggan Umum' ? 'font-bold text-gray-900 bg-white' : 'text-gray-700 font-medium')
+                                            : (selectedName === 'Pelanggan Umum' ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700 font-medium')">
+                                        <span>Pelanggan Umum</span>
+                                        <span class="text-gray-400 font-mono text-[11px]">-</span>
+                                    </div>
+
+                                    <!-- Customer List -->
+                                    <template x-for="c in sampleCustomers" :key="c.name">
+                                        <div @click="selectedName = c.name; ddOpen = false"
+                                            class="px-3.5 py-2 text-xs cursor-pointer transition-colors flex justify-between items-center hover:bg-gray-50"
+                                            :class="highlightMode === 'none'
+                                                ? (selectedName === c.name ? 'font-bold text-gray-900 bg-white' : 'text-gray-700 font-medium')
+                                                : (selectedName === c.name ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700 font-medium')">
+                                            <span x-text="c.name"></span>
+                                            <span class="text-gray-400 font-mono text-[11px]" x-text="c.phone ? c.phone.slice(-4) : '-'"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analisis Keunggulan -->
+                    <div class="p-4 bg-gray-50 border-t border-gray-100 text-xs space-y-1.5">
+                        <div class="font-bold text-gray-800 flex items-center gap-1">
+                            <i class="ph-fill ph-thumbs-up text-emerald-600"></i> Keunggulan:
+                        </div>
+                        <ul class="text-[11px] text-gray-600 list-disc list-inside space-y-0.5">
+                            <li>Desain menyatu rapi dengan daftar menu tanpa border kotak aneh.</li>
+                            <li>Terdapat deskripsi jelas: <em>"Daftarkan nama & no. WhatsApp"</em>.</li>
+                            <li>Sangat familiar untuk pengguna aplikasi SaaS modern.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- OPSI 2: HEADER QUICK-ACTION (DI BARIS LABEL) -->
+                <!-- ============================================== -->
+                <div class="bg-white rounded-2xl border-2 transition-all shadow-card flex flex-col"
+                    :class="selectedOptionId === 'opsi2' ? 'border-[#0b595b] ring-2 ring-[#0b595b]/10' : 'border-gray-200/80 hover:border-gray-300'">
+                    
+                    <!-- Header Opsi -->
+                    <div class="p-4 border-b border-gray-100 flex items-start justify-between gap-2">
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-md bg-emerald-100 text-[#0b595b] text-xs font-black flex items-center justify-center">2</span>
+                                <h3 class="text-sm font-bold text-gray-900">Header Quick-Action</h3>
+                                <span class="px-1.5 py-0.5 bg-amber-500 text-white text-[9px] font-extrabold rounded">1-KLIK AKSES</span>
+                            </div>
+                            <p class="text-[11px] text-gray-500 mt-1">
+                                Tombol tambah ditaruh di baris label atas. Akses 1-klik tanpa perlu membuka dropdown dulu.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Component Playground -->
+                    <div class="p-5 flex-1 bg-gray-50/40" x-data="{ ddOpen: true, selectedName: 'Pelanggan Umum' }">
+                        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs space-y-3">
+                            <!-- Label + Quick Action Link -->
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                    <i class="ph-bold ph-user text-emerald-700 text-sm"></i>
+                                    <span>Pelanggan</span>
+                                    <span class="text-red-500">*</span>
+                                </label>
+
+                                <!-- TOMBOL QUICK ACTION DI BARIS LABEL -->
+                                <button type="button" @click="openModalSimulasi('Opsi 2: Header Quick-Action')"
+                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-bold text-[#0b595b] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 transition cursor-pointer group active:scale-95 shadow-2xs">
+                                    <i class="ph-bold ph-plus text-xs group-hover:scale-110 transition-transform"></i>
+                                    <span>+ Pelanggan Baru</span>
+                                </button>
+                            </div>
+
+                            <!-- Field Input Murni untuk Pemilihan -->
+                            <div class="relative">
+                                <div class="relative">
+                                    <input type="text"
+                                        x-model="selectedName"
+                                        @focus="ddOpen = true"
+                                        @click="ddOpen = !ddOpen"
+                                        readonly
+                                        class="w-full h-11 px-4 pr-10 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 outline-none focus:border-emerald-500 transition shadow-2xs cursor-pointer">
+                                    <button type="button" @click="ddOpen = !ddOpen"
+                                        class="absolute right-0 top-0 bottom-0 px-3.5 flex items-center justify-center text-gray-400 hover:text-gray-600 cursor-pointer">
+                                        <i class="ph-bold ph-caret-down text-sm transition-transform duration-200"
+                                            :class="ddOpen ? 'rotate-180 text-[#0b595b]' : ''"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Dropdown Bersih Murni List -->
+                                <div x-show="ddOpen" class="mt-1.5 w-full bg-white border border-gray-100 rounded-xl shadow-dropdown py-1 z-30 max-h-60 overflow-y-auto minimal-scrollbar">
+                                    <!-- Pelanggan Umum -->
+                                    <div @click="selectedName = 'Pelanggan Umum'; ddOpen = false"
+                                        class="px-3.5 py-2 text-xs cursor-pointer transition-colors flex justify-between items-center hover:bg-gray-50 border-b border-gray-100"
+                                        :class="highlightMode === 'none'
+                                            ? (selectedName === 'Pelanggan Umum' ? 'font-bold text-gray-900 bg-white' : 'text-gray-700 font-medium')
+                                            : (selectedName === 'Pelanggan Umum' ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700 font-medium')">
+                                        <span>Pelanggan Umum</span>
+                                        <span class="text-gray-400 font-mono text-[11px]">-</span>
+                                    </div>
+
+                                    <!-- Customer List -->
+                                    <template x-for="c in sampleCustomers" :key="c.name">
+                                        <div @click="selectedName = c.name; ddOpen = false"
+                                            class="px-3.5 py-2 text-xs cursor-pointer transition-colors flex justify-between items-center hover:bg-gray-50"
+                                            :class="highlightMode === 'none'
+                                                ? (selectedName === c.name ? 'font-bold text-gray-900 bg-white' : 'text-gray-700 font-medium')
+                                                : (selectedName === c.name ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700 font-medium')">
+                                            <span x-text="c.name"></span>
+                                            <span class="text-gray-400 font-mono text-[11px]" x-text="c.phone ? c.phone.slice(-4) : '-'"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analisis Keunggulan -->
+                    <div class="p-4 bg-gray-50 border-t border-gray-100 text-xs space-y-1.5">
+                        <div class="font-bold text-gray-800 flex items-center gap-1">
+                            <i class="ph-fill ph-lightning text-amber-500"></i> Keunggulan:
+                        </div>
+                        <ul class="text-[11px] text-gray-600 list-disc list-inside space-y-0.5">
+                            <li>Kasir tidak perlu membuka dropdown dulu untuk menambah pelanggan baru.</li>
+                            <li>Dropdown tetap 100% fokus untuk daftar pilihan pelanggan.</li>
+                            <li>Standar UX yang digunakan oleh Stripe, Linear, dan Shopify.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- OPSI 3: INTEGRATED INPUT ADD-ON (TERPADU DI INPUT) -->
+                <!-- ============================================== -->
+                <div class="bg-white rounded-2xl border-2 transition-all shadow-card flex flex-col"
+                    :class="selectedOptionId === 'opsi3' ? 'border-[#0b595b] ring-2 ring-[#0b595b]/10' : 'border-gray-200/80 hover:border-gray-300'">
+                    
+                    <!-- Header Opsi -->
+                    <div class="p-4 border-b border-gray-100 flex items-start justify-between gap-2">
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-md bg-emerald-100 text-[#0b595b] text-xs font-black flex items-center justify-center">3</span>
+                                <h3 class="text-sm font-bold text-gray-900">Integrated Input Add-on</h3>
+                                <span class="px-1.5 py-0.5 bg-blue-500 text-white text-[9px] font-extrabold rounded">HEMAT RUANG</span>
+                            </div>
+                            <p class="text-[11px] text-gray-500 mt-1">
+                                Tombol tambah menyatu rapi di dalam bingkai border input yang sama (bukan kotak terpisah).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Component Playground -->
+                    <div class="p-5 flex-1 bg-gray-50/40" x-data="{ ddOpen: true, selectedName: 'Pelanggan Umum' }">
+                        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs space-y-3">
+                            <label class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                <i class="ph-bold ph-user text-emerald-700 text-sm"></i>
+                                <span>Pelanggan</span>
+                                <span class="text-red-500">*</span>
+                            </label>
+
+                            <!-- BINGKAI INPUT DENGAN TOMBOL TERPADU -->
+                            <div class="relative">
+                                <div class="h-11 flex items-center bg-gray-50/70 hover:bg-gray-50 focus-within:bg-white border border-gray-200 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 rounded-xl transition shadow-2xs pl-4 pr-1.5 py-1">
+                                    <input type="text"
+                                        x-model="selectedName"
+                                        @focus="ddOpen = true"
+                                        @click="ddOpen = !ddOpen"
+                                        readonly
+                                        style="font-size: 14px !important; line-height: 20px;"
+                                        class="flex-1 h-full text-sm font-semibold text-gray-800 font-sans bg-transparent outline-none cursor-pointer">
+                                    
+                                    <!-- Caret -->
+                                    <button type="button" @click="ddOpen = !ddOpen"
+                                        class="h-full px-2.5 text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                                        <i class="ph-bold ph-caret-down text-sm transition-transform"
+                                            :class="ddOpen ? 'rotate-180 text-[#0b595b]' : ''"></i>
+                                    </button>
+
+                                    <!-- Divider Vertikal -->
+                                    <div class="h-5 w-px bg-gray-200 mx-1"></div>
+
+                                    <!-- Tombol Tambah Terpadu -->
+                                    <button type="button" @click="openModalSimulasi('Opsi 3: Integrated Input Add-on')"
+                                        class="h-8 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[#0b595b] text-xs font-bold flex items-center gap-1 transition cursor-pointer active:scale-95 shadow-2xs shrink-0"
+                                        title="Tambah Pelanggan Baru">
+                                        <i class="ph-bold ph-plus text-xs"></i>
+                                        <span class="text-[11px]">Baru</span>
+                                    </button>
+                                </div>
+
+                                <!-- Dropdown Murni List -->
+                                <div x-show="ddOpen" class="mt-1.5 w-full bg-white border border-gray-100 rounded-xl shadow-dropdown py-1 z-30 max-h-60 overflow-y-auto minimal-scrollbar">
+                                    <div @click="selectedName = 'Pelanggan Umum'; ddOpen = false"
+                                        class="px-3.5 py-2 text-xs cursor-pointer transition-colors flex justify-between items-center hover:bg-gray-50 border-b border-gray-100"
+                                        :class="highlightMode === 'none'
+                                            ? (selectedName === 'Pelanggan Umum' ? 'font-bold text-gray-900 bg-white' : 'text-gray-700 font-medium')
+                                            : (selectedName === 'Pelanggan Umum' ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700 font-medium')">
+                                        <span>Pelanggan Umum</span>
+                                        <span class="text-gray-400 font-mono text-[11px]">-</span>
+                                    </div>
+                                    <template x-for="c in sampleCustomers" :key="c.name">
+                                        <div @click="selectedName = c.name; ddOpen = false"
+                                            class="px-3.5 py-2 text-xs cursor-pointer transition-colors flex justify-between items-center hover:bg-gray-50"
+                                            :class="highlightMode === 'none'
+                                                ? (selectedName === c.name ? 'font-bold text-gray-900 bg-white' : 'text-gray-700 font-medium')
+                                                : (selectedName === c.name ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700 font-medium')">
+                                            <span x-text="c.name"></span>
+                                            <span class="text-gray-400 font-mono text-[11px]" x-text="c.phone ? c.phone.slice(-4) : '-'"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analisis Keunggulan -->
+                    <div class="p-4 bg-gray-50 border-t border-gray-100 text-xs space-y-1.5">
+                        <div class="font-bold text-gray-800 flex items-center gap-1">
+                            <i class="ph-fill ph-arrows-in-line-horizontal text-blue-600"></i> Keunggulan:
+                        </div>
+                        <ul class="text-[11px] text-gray-600 list-disc list-inside space-y-0.5">
+                            <li>Border rapi dan satu kesatuan, tidak tampak mengambang terpisah.</li>
+                            <li>Tersedia tombol "Baru" langsung di samping panah dropdown.</li>
+                            <li>Sangat ringkas dan menghemat tinggi vertikal form.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- OPSI 4: TYPE-TO-CREATE COMMAND (POLA LINEAR / NOTION) -->
+                <!-- ============================================== -->
+                <div class="bg-white rounded-2xl border-2 transition-all shadow-card flex flex-col"
+                    :class="selectedOptionId === 'opsi4' ? 'border-[#0b595b] ring-2 ring-[#0b595b]/10' : 'border-gray-200/80 hover:border-gray-300'">
+                    
+                    <!-- Header Opsi -->
+                    <div class="p-4 border-b border-gray-100 flex items-start justify-between gap-2">
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-md bg-emerald-100 text-[#0b595b] text-xs font-black flex items-center justify-center">4</span>
+                                <h3 class="text-sm font-bold text-gray-900">Type-to-Create Command</h3>
+                                <span class="px-1.5 py-0.5 bg-purple-500 text-white text-[9px] font-extrabold rounded">CERDAS & ADAPTIF</span>
+                            </div>
+                            <p class="text-[11px] text-gray-500 mt-1">
+                                Jika mengetik nama baru, baris pertama otomatis menjadi: "+ Tambah [Nama] Baru".
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Component Playground -->
+                    <div class="p-5 flex-1 bg-gray-50/40" x-data="{ ddOpen: true, searchStr: 'Ibu Ratna' }">
+                        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs space-y-3">
+                            <label class="text-xs font-bold text-gray-700 flex items-center justify-between">
+                                <span class="flex items-center gap-1.5">
+                                    <i class="ph-bold ph-user text-emerald-700 text-sm"></i>
+                                    <span>Pelanggan</span>
+                                    <span class="text-red-500">*</span>
+                                </span>
+                                <span class="text-[10px] text-gray-400 font-normal">Ketik untuk mencari / menambah</span>
+                            </label>
+
+                            <!-- Field Input Cerdas -->
+                            <div class="relative">
+                                <div class="relative">
+                                    <input type="text"
+                                        x-model="searchStr"
+                                        @focus="ddOpen = true"
+                                        placeholder="Ketik nama pelanggan..."
+                                        class="w-full h-11 px-4 pr-10 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 outline-none focus:border-emerald-500 transition shadow-2xs">
+                                    <button type="button" @click="searchStr = ''; ddOpen = true" x-show="searchStr"
+                                        class="absolute right-0 top-0 bottom-0 px-3.5 flex items-center justify-center text-gray-400 hover:text-gray-600 cursor-pointer">
+                                        <i class="ph-bold ph-x text-xs"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Dropdown Cerdas Adaptif -->
+                                <div x-show="ddOpen" class="mt-1.5 w-full bg-white border border-gray-100 rounded-xl shadow-dropdown py-1 z-30 max-h-60 overflow-y-auto minimal-scrollbar">
+                                    
+                                    <!-- PROMPT DINAMIS SESUAI KETIKAN -->
+                                    <div @click="openModalSimulasi('Opsi 4: Type-to-Create', searchStr); ddOpen = false"
+                                        class="px-3.5 py-2.5 bg-emerald-50/80 hover:bg-emerald-100/90 border-b border-emerald-100 cursor-pointer transition-colors flex items-center justify-between group">
+                                        <div class="flex items-center gap-2 text-xs">
+                                            <i class="ph-bold ph-plus-circle text-emerald-700 text-base"></i>
+                                            <span class="text-gray-700">Daftarkan: <strong class="text-[#0b595b]" x-text="'\"' + (searchStr || 'Pelanggan Baru') + '\"'"></strong></span>
+                                        </div>
+                                        <span class="text-[10px] bg-white px-2 py-0.5 rounded-md font-bold text-emerald-700 border border-emerald-200 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white transition">
+                                            + Tambah
+                                        </span>
+                                    </div>
+
+                                    <!-- Filter Hasil Pencarian -->
+                                    <template x-for="c in sampleCustomers.filter(item => item.name.toLowerCase().includes(searchStr.toLowerCase()))" :key="c.name">
+                                        <div @click="searchStr = c.name; ddOpen = false"
+                                            class="px-3.5 py-2 text-xs cursor-pointer transition-colors flex justify-between items-center hover:bg-gray-50">
+                                            <span x-text="c.name"></span>
+                                            <span class="text-gray-400 font-mono text-[11px]" x-text="c.phone"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analisis Keunggulan -->
+                    <div class="p-4 bg-gray-50 border-t border-gray-100 text-xs space-y-1.5">
+                        <div class="font-bold text-gray-800 flex items-center gap-1">
+                            <i class="ph-fill ph-magic-wand text-purple-600"></i> Keunggulan:
+                        </div>
+                        <ul class="text-[11px] text-gray-600 list-disc list-inside space-y-0.5">
+                            <li>Nama yang sedang diketik kasir langsung dibawa ke modal pendaftaran.</li>
+                            <li>Tidak ada langkah ganda; cocok untuk kasir yang mengetik cepat.</li>
+                            <li>Sesuai dengan pola Command-K di Notion dan Raycast.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- OPSI 5: STICKY BOTTOM FOOTER (POLA SQUARE / TOAST POS) -->
+                <!-- ============================================== -->
+                <div class="bg-white rounded-2xl border-2 transition-all shadow-card flex flex-col"
+                    :class="selectedOptionId === 'opsi5' ? 'border-[#0b595b] ring-2 ring-[#0b595b]/10' : 'border-gray-200/80 hover:border-gray-300'">
+                    
+                    <!-- Header Opsi -->
+                    <div class="p-4 border-b border-gray-100 flex items-start justify-between gap-2">
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-md bg-emerald-100 text-[#0b595b] text-xs font-black flex items-center justify-center">5</span>
+                                <h3 class="text-sm font-bold text-gray-900">Sticky Bottom Footer</h3>
+                                <span class="px-1.5 py-0.5 bg-gray-700 text-white text-[9px] font-extrabold rounded">STANDAR TOUCH POS</span>
+                            </div>
+                            <p class="text-[11px] text-gray-500 mt-1">
+                                Tombol tambah ditaruh di footer bawah dropdown (sticky), mudah dijangkau jempol di layar sentuh.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Component Playground -->
+                    <div class="p-5 flex-1 bg-gray-50/40" x-data="{ ddOpen: true, selectedName: 'Pelanggan Umum' }">
+                        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs space-y-3">
+                            <label class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                <i class="ph-bold ph-user text-emerald-700 text-sm"></i>
+                                <span>Pelanggan</span>
+                                <span class="text-red-500">*</span>
+                            </label>
+
+                            <!-- Field Input -->
+                            <div class="relative">
+                                <div class="relative">
+                                    <input type="text"
+                                        x-model="selectedName"
+                                        @focus="ddOpen = true"
+                                        @click="ddOpen = !ddOpen"
+                                        readonly
+                                        class="w-full h-11 px-4 pr-10 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 outline-none focus:border-emerald-500 transition shadow-2xs cursor-pointer">
+                                    <button type="button" @click="ddOpen = !ddOpen"
+                                        class="absolute right-0 top-0 bottom-0 px-3.5 flex items-center justify-center text-gray-400 hover:text-gray-600 cursor-pointer">
+                                        <i class="ph-bold ph-caret-down text-sm transition-transform duration-200"
+                                            :class="ddOpen ? 'rotate-180 text-[#0b595b]' : ''"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Dropdown dengan Sticky Footer -->
+                                <div x-show="ddOpen" class="mt-1.5 w-full bg-white border border-gray-100 rounded-xl shadow-dropdown z-30 overflow-hidden flex flex-col">
+                                    
+                                    <!-- List Pelanggan (Scrollable) -->
+                                    <div class="max-h-40 overflow-y-auto minimal-scrollbar py-1">
+                                        <div @click="selectedName = 'Pelanggan Umum'; ddOpen = false"
+                                            class="px-3.5 py-2 text-xs cursor-pointer transition-colors flex justify-between items-center hover:bg-gray-50 border-b border-gray-100"
+                                            :class="highlightMode === 'none'
+                                                ? (selectedName === 'Pelanggan Umum' ? 'font-bold text-gray-900 bg-white' : 'text-gray-700 font-medium')
+                                                : (selectedName === 'Pelanggan Umum' ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700 font-medium')">
+                                            <span>Pelanggan Umum</span>
+                                            <span class="text-gray-400 font-mono text-[11px]">-</span>
+                                        </div>
+                                        <template x-for="c in sampleCustomers" :key="c.name">
+                                            <div @click="selectedName = c.name; ddOpen = false"
+                                                class="px-3.5 py-2 text-xs cursor-pointer transition-colors flex justify-between items-center hover:bg-gray-50"
+                                                :class="highlightMode === 'none'
+                                                    ? (selectedName === c.name ? 'font-bold text-gray-900 bg-white' : 'text-gray-700 font-medium')
+                                                    : (selectedName === c.name ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700 font-medium')">
+                                                <span x-text="c.name"></span>
+                                                <span class="text-gray-400 font-mono text-[11px]" x-text="c.phone ? c.phone.slice(-4) : '-'"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- STICKY FOOTER ACTION BAR -->
+                                    <div class="p-2 border-t border-gray-100 bg-gray-50/90">
+                                        <button type="button" @click="openModalSimulasi('Opsi 5: Sticky Bottom Footer'); ddOpen = false"
+                                            class="w-full h-9 rounded-lg bg-emerald-600 hover:bg-[#0b595b] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-xs active:scale-[0.99]">
+                                            <i class="ph-bold ph-plus text-xs"></i>
+                                            <span>Tambah Pelanggan Baru</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analisis Keunggulan -->
+                    <div class="p-4 bg-gray-50 border-t border-gray-100 text-xs space-y-1.5">
+                        <div class="font-bold text-gray-800 flex items-center gap-1">
+                            <i class="ph-fill ph-device-mobile text-gray-700"></i> Keunggulan:
+                        </div>
+                        <ul class="text-[11px] text-gray-600 list-disc list-inside space-y-0.5">
+                            <li>Daftar pelanggan utama tampil di bagian atas tanpa tergeser.</li>
+                            <li>Tombol footer tebal sangat nyaman di-tap kasir pada layar tablet POS.</li>
+                            <li>Pola yang lazim digunakan di Square POS dan Moka POS.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- KARTU PERBANDINGAN & REKOMENDASI CEPAT -->
+                <!-- ============================================== -->
+                <div class="bg-gradient-to-br from-[#0b595b] to-[#063739] text-white rounded-2xl p-5 shadow-card flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-400 text-amber-950 uppercase tracking-wide">
+                            <i class="ph-bold ph-crown"></i> Ringkasan Rekomendasi
+                        </div>
+                        <h3 class="text-base font-bold leading-snug">
+                            Mana yang Paling Nyaman untuk Operasional Kasir Infruity?
+                        </h3>
+                        <p class="text-xs text-emerald-100/90 leading-relaxed">
+                            Berdasarkan analisis ergonomi kasir harian:
+                        </p>
+                        <div class="space-y-2 text-xs">
+                            <div class="p-2.5 rounded-xl bg-white/10 border border-white/10">
+                                <strong class="text-amber-300">Pilihan Terbaik A: Opsi 2 (Header Quick-Action)</strong>
+                                <p class="text-[11px] text-emerald-100 mt-0.5">Sangat cepat (1-klik langsung terbuka modal), tanpa menghalangi dropdown pelanggan umum.</p>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-white/10 border border-white/10">
+                                <strong class="text-emerald-300">Pilihan Terbaik B: Opsi 1 (Seamless Native Row)</strong>
+                                <p class="text-[11px] text-emerald-100 mt-0.5">Jika tetap ingin berada di dalam dropdown, Opsi 1 menghapus kesan "border kotak kaku" menjadi baris daftar yang elegan.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-white/10 mt-4">
+                        <div class="text-[11px] text-emerald-200">
+                            Coba klik tombol <strong>"Terapkan ke index.html"</strong> pada opsi yang kamu inginkan, atau beri tahu asisten di chat.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- TABEL MATRIX PERBANDINGAN -->
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 bg-gray-50/60 flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+                        <i class="ph-bold ph-table text-emerald-700"></i>
+                        <span>Matriks Perbandingan 5 Opsi Desain</span>
+                    </h3>
+                    <span class="text-xs text-gray-400">Standar UI/UX Kasir POS</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200 bg-gray-50/40 text-gray-600 font-bold">
+                                <th class="p-3.5 pl-5">Opsi Desain</th>
+                                <th class="p-3.5">Lokasi Tombol</th>
+                                <th class="p-3.5 text-center">Kecepatan Kasir</th>
+                                <th class="p-3.5 text-center">Kerapian Visual</th>
+                                <th class="p-3.5 text-center">Touch Screen POS</th>
+                                <th class="p-3.5 pr-5">Karakteristik Utama</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 text-gray-700">
+                            <tr class="hover:bg-emerald-50/30 transition">
+                                <td class="p-3.5 pl-5 font-bold text-gray-900 flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded bg-emerald-100 text-[#0b595b] flex items-center justify-center font-bold text-[10px]">1</span>
+                                    <span>Seamless Native Row</span>
+                                </td>
+                                <td class="p-3.5">Dropdown paling atas (Full-bleed)</td>
+                                <td class="p-3.5 text-center font-semibold text-emerald-700">2-Klik (Buka DD + Klik)</td>
+                                <td class="p-3.5 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">Sangat Rapi</span></td>
+                                <td class="p-3.5 text-center text-gray-600">Bagus</td>
+                                <td class="p-3.5 pr-5 text-gray-500 text-[11px]">Tidak ada border kotak mengambang; icon plus lingkaran elegan.</td>
+                            </tr>
+                            <tr class="hover:bg-emerald-50/30 transition bg-amber-50/20">
+                                <td class="p-3.5 pl-5 font-bold text-gray-900 flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded bg-amber-100 text-amber-900 flex items-center justify-center font-bold text-[10px]">2</span>
+                                    <span>Header Quick-Action</span>
+                                    <span class="text-[9px] px-1 bg-amber-400 text-amber-950 font-black rounded">REC</span>
+                                </td>
+                                <td class="p-3.5">Di baris label atas sebelah kanan</td>
+                                <td class="p-3.5 text-center font-bold text-amber-600">1-Klik Tercepat</td>
+                                <td class="p-3.5 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">Sangat Rapi</span></td>
+                                <td class="p-3.5 text-center text-gray-600">Sangat Bagus</td>
+                                <td class="p-3.5 pr-5 text-gray-500 text-[11px]">Dropdown di bawah murni untuk list pencarian tanpa clutter.</td>
+                            </tr>
+                            <tr class="hover:bg-emerald-50/30 transition">
+                                <td class="p-3.5 pl-5 font-bold text-gray-900 flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded bg-blue-100 text-blue-900 flex items-center justify-center font-bold text-[10px]">3</span>
+                                    <span>Integrated Input Add-on</span>
+                                </td>
+                                <td class="p-3.5">Menyatu di sisi kanan input</td>
+                                <td class="p-3.5 text-center font-bold text-blue-700">1-Klik</td>
+                                <td class="p-3.5 text-center"><span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px]">Sangat Ringkas</span></td>
+                                <td class="p-3.5 text-center text-gray-600">Sedang</td>
+                                <td class="p-3.5 pr-5 text-gray-500 text-[11px]">Satu border bersama input; tidak ada tombol kotak terpisah.</td>
+                            </tr>
+                            <tr class="hover:bg-emerald-50/30 transition">
+                                <td class="p-3.5 pl-5 font-bold text-gray-900 flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded bg-purple-100 text-purple-900 flex items-center justify-center font-bold text-[10px]">4</span>
+                                    <span>Type-to-Create Command</span>
+                                </td>
+                                <td class="p-3.5">Dinamis saat kasir mengetik</td>
+                                <td class="p-3.5 text-center font-semibold text-purple-700">Cepat untuk Keyboard</td>
+                                <td class="p-3.5 text-center"><span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold text-[10px]">Cerdas</span></td>
+                                <td class="p-3.5 text-center text-gray-600">Sedang</td>
+                                <td class="p-3.5 pr-5 text-gray-500 text-[11px]">Membawa nama yang diketik langsung ke modal form pelanggan.</td>
+                            </tr>
+                            <tr class="hover:bg-emerald-50/30 transition">
+                                <td class="p-3.5 pl-5 font-bold text-gray-900 flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded bg-gray-200 text-gray-800 flex items-center justify-center font-bold text-[10px]">5</span>
+                                    <span>Sticky Bottom Footer</span>
+                                </td>
+                                <td class="p-3.5">Footer bawah dropdown menu</td>
+                                <td class="p-3.5 text-center font-semibold text-gray-700">2-Klik (Buka DD + Klik)</td>
+                                <td class="p-3.5 text-center"><span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-bold text-[10px]">Rapi</span></td>
+                                <td class="p-3.5 text-center font-bold text-emerald-700">Sangat Nyaman Jempol</td>
+                                <td class="p-3.5 pr-5 text-gray-500 text-[11px]">Tombol besar di bawah, mirip Square POS dan Toast.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: FULL POS SCREEN SIMULATION -->
+        <div x-show="activeView === 'pos-mockup'" class="space-y-6">
+            <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs flex items-center justify-between">
+                <div>
+                    <h2 class="text-base font-bold text-gray-900">Simulasi Layar Form Kasir POS Lengkap</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Lihat bagaimana opsi yang dipilih berpadu harmonis dengan elemen Cabang, Kategori Belanja, dan Ringkasan Pembayaran.</p>
+                </div>
+                <!-- Opsi Selector Switcher -->
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-gray-500">Terapkan Opsi:</span>
+                    <select x-model="selectedOptionId" class="text-xs font-bold border border-gray-300 rounded-xl px-3 py-1.5 bg-gray-50 outline-none focus:border-brand-600">
+                        <template x-for="opt in options" :key="opt.id">
+                            <option :value="opt.id" x-text="opt.name"></option>
+                        </template>
+                    </select>
+                </div>
+            </div>
+
+            <!-- FORM CARD SIMULASI POS -->
+            <div class="max-w-2xl mx-auto bg-white rounded-2xl border border-gray-200 shadow-card p-6 space-y-5">
+                <!-- Header Form POS -->
+                <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200 flex items-center justify-center font-bold">
+                            <i class="ph-bold ph-storefront text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900">Form Transaksi Kasir Baru</h3>
+                            <p class="text-[11px] text-gray-400">Cabang Gresik / Driyorejo / Petiken - 001</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-mono bg-gray-100 text-gray-600 px-2.5 py-1 rounded-lg">POS-20261103-0941</span>
+                </div>
+
+                <!-- Bagian Pelanggan Sesuai Opsi Terpilih -->
+                <div class="p-4 rounded-xl bg-gray-50/70 border border-gray-200/80 space-y-3">
+                    <div class="text-[11px] font-black uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
+                        <i class="ph-fill ph-check-circle text-emerald-600"></i>
+                        <span>Preview Aktif: <span x-text="getOptionName(selectedOptionId)"></span></span>
+                    </div>
+
+                    <!-- TEMPLATE RENDER BERDASARKAN SELECTED OPTION -->
+                    <!-- KASUS OPSI 1 -->
+                    <template x-if="selectedOptionId === 'opsi1'">
+                        <div class="space-y-2" x-data="{ open: false, custName: 'Pelanggan Umum' }">
+                            <label class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                <i class="ph-bold ph-user text-emerald-700 text-sm"></i>
+                                <span>Pelanggan</span>
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="relative">
+                                    <input type="text" x-model="custName" @click="open = !open" readonly
+                                        class="w-full h-11 px-4 pr-10 bg-white border border-gray-300 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 shadow-2xs cursor-pointer">
+                                    <button type="button" @click="open = !open" class="absolute right-0 top-0 bottom-0 px-3.5 text-gray-400">
+                                        <i class="ph-bold ph-caret-down text-sm" :class="open ? 'rotate-180 text-brand-600' : ''"></i>
+                                    </button>
+                                </div>
+                                <div x-show="open" @click.outside="open = false" class="absolute top-full mt-1 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-dropdown py-1 z-30 max-h-56 overflow-y-auto minimal-scrollbar">
+                                    <div @click="openModalSimulasi('Opsi 1'); open = false" class="px-3.5 py-2.5 bg-emerald-50/60 hover:bg-emerald-100/70 border-b border-emerald-100 cursor-pointer flex items-center justify-between">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs"><i class="ph-bold ph-plus"></i></div>
+                                            <div>
+                                                <div class="text-xs font-bold text-[#0b595b]">Tambah Pelanggan Baru</div>
+                                                <div class="text-[10px] text-emerald-600">Daftarkan nama & no. WhatsApp</div>
+                                            </div>
+                                        </div>
+                                        <i class="ph-bold ph-arrow-right text-xs text-emerald-600"></i>
+                                    </div>
+                                    <div @click="custName = 'Pelanggan Umum'; open = false" class="px-3.5 py-2.5 text-xs flex justify-between items-center hover:bg-gray-50 border-b border-gray-100"
+                                        :class="highlightMode === 'none'
+                                            ? (custName === 'Pelanggan Umum' ? 'font-bold text-gray-900 bg-white' : 'text-gray-700 font-medium')
+                                            : (custName === 'Pelanggan Umum' ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700 font-medium')">
+                                        <span>Pelanggan Umum</span>
+                                        <span class="text-gray-400 font-mono text-xs">-</span>
+                                    </div>
+                                    <template x-for="c in sampleCustomers" :key="c.name">
+                                        <div @click="custName = c.name; open = false" class="px-3.5 py-2 text-xs flex justify-between hover:bg-gray-50 cursor-pointer"
+                                            :class="highlightMode === 'none'
+                                                ? (custName === c.name ? 'font-bold text-gray-900 bg-white' : 'text-gray-700 font-medium')
+                                                : (custName === c.name ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700 font-medium')">
+                                            <span x-text="c.name"></span>
+                                            <span class="text-gray-400 font-mono text-xs" x-text="c.phone ? c.phone.slice(-4) : '-'"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- KASUS OPSI 2 -->
+                    <template x-if="selectedOptionId === 'opsi2'">
+                        <div class="space-y-2" x-data="{ open: false, custName: 'Pelanggan Umum' }">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                    <i class="ph-bold ph-user text-emerald-700 text-sm"></i>
+                                    <span>Pelanggan</span>
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <button type="button" @click="openModalSimulasi('Opsi 2')"
+                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-[#0b595b] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition cursor-pointer shadow-2xs">
+                                    <i class="ph-bold ph-plus text-xs"></i>
+                                    <span>+ Pelanggan Baru</span>
+                                </button>
+                            </div>
+                            <div class="relative">
+                                <input type="text" x-model="custName" @click="open = !open" readonly
+                                    class="w-full h-11 px-4 pr-10 bg-white border border-gray-300 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 shadow-2xs cursor-pointer">
+                                <button type="button" @click="open = !open" class="absolute right-0 top-0 bottom-0 px-3.5 text-gray-400">
+                                    <i class="ph-bold ph-caret-down text-sm" :class="open ? 'rotate-180 text-brand-600' : ''"></i>
+                                </button>
+                                <div x-show="open" @click.outside="open = false" class="absolute top-full mt-1 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-dropdown py-1 z-30 max-h-56 overflow-y-auto minimal-scrollbar">
+                                    <div @click="custName = 'Pelanggan Umum'; open = false" class="px-3.5 py-2.5 text-xs flex justify-between items-center hover:bg-gray-50 border-b border-gray-100"
+                                        :class="highlightMode === 'none'
+                                            ? (custName === 'Pelanggan Umum' ? 'font-bold text-gray-900 bg-white' : 'text-gray-700 font-medium')
+                                            : (custName === 'Pelanggan Umum' ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700 font-medium')">
+                                        <span>Pelanggan Umum</span>
+                                        <span class="text-gray-400 font-mono text-xs">-</span>
+                                    </div>
+                                    <template x-for="c in sampleCustomers" :key="c.name">
+                                        <div @click="custName = c.name; open = false" class="px-3.5 py-2 text-xs flex justify-between hover:bg-gray-50 cursor-pointer"
+                                            :class="highlightMode === 'none'
+                                                ? (custName === c.name ? 'font-bold text-gray-900 bg-white' : 'text-gray-700 font-medium')
+                                                : (custName === c.name ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700 font-medium')">
+                                            <span x-text="c.name"></span>
+                                            <span class="text-gray-400 font-mono text-xs" x-text="c.phone ? c.phone.slice(-4) : '-'"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- KASUS OPSI LAINNYA DI MOCKUP -->
+                    <template x-if="selectedOptionId !== 'opsi1' && selectedOptionId !== 'opsi2'">
+                        <div class="p-4 bg-white rounded-xl border border-gray-200 text-xs text-gray-600 flex items-center justify-between">
+                            <span>Silakan uji interaksi opsi ini pada panel <strong>"Bandingkan Semua"</strong> di tab atas.</span>
+                            <button type="button" @click="activeView = 'all'" class="px-3 py-1 bg-[#0b595b] text-white rounded-lg font-bold">
+                                Buka Tab Side-by-Side
+                            </button>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Produk Belanja Dummy -->
+                <div class="p-4 rounded-xl border border-gray-200 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                            <i class="ph-bold ph-shopping-bag text-emerald-700"></i> Item Belanja (2 Produk)
+                        </span>
+                        <span class="text-xs font-bold text-emerald-700">Rp 195.000</span>
+                    </div>
+                    <div class="space-y-1.5 text-xs">
+                        <div class="flex justify-between items-center py-1.5 border-b border-gray-100 text-gray-700">
+                            <span>1x Parcel Buah Eksklusif Royal Gold</span>
+                            <span class="font-bold">Rp 160.000</span>
+                        </div>
+                        <div class="flex justify-between items-center py-1.5 text-gray-700">
+                            <span>1x Jus Alpukat Kocok Spesial (500ml)</span>
+                            <span class="font-bold">Rp 35.000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button POS -->
+                <button type="button" class="w-full h-12 rounded-xl bg-emerald-600 hover:bg-[#0b595b] text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+                    <i class="ph-bold ph-receipt text-base"></i>
+                    <span>Proses Pembayaran (Rp 195.000)</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER INFORMASI -->
+    <footer class="bg-white border-t border-gray-200 py-5 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-gray-800">ERP Infruity</span>
+                <span>·</span>
+                <span>Kasir & Point of Sale (POS)</span>
+            </div>
+            <div>
+                File referensi mandiri: <code class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-700 font-mono">opsi-tambah-pelanggan.html</code>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==================================================== -->
+    <!-- MODAL SIMULASI: TAMBAH PELANGGAN BARU                -->
+    <!-- ==================================================== -->
+    <div x-show="modalOpen" x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0">
+
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+            @click.outside="modalOpen = false"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100">
+            
+            <!-- Header Modal -->
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-100 text-[#0b595b] flex items-center justify-center font-bold">
+                        <i class="ph-bold ph-user-plus text-base"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-900">Tambah Pelanggan Baru</h3>
+                        <p class="text-[11px] text-gray-400" x-text="'Dipicu dari: ' + modalTriggerSource"></p>
+                    </div>
+                </div>
+                <button type="button" @click="modalOpen = false" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition">
+                    <i class="ph-bold ph-x text-base"></i>
+                </button>
+            </div>
+
+            <!-- Body Modal -->
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-gray-700 mb-1.5 block">
+                        Nama Lengkap Pelanggan <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" x-model="modalCustomerName" placeholder="Contoh: Ibu Maya, Pak Bambang..."
+                        class="w-full h-11 px-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 outline-none focus:border-emerald-500 focus:bg-white transition shadow-2xs">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-gray-700 mb-1.5 block">
+                        Nomor WhatsApp / HP (Opsional)
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-0 bottom-0 flex items-center text-emerald-600">
+                            <i class="ph-bold ph-whatsapp-logo text-base"></i>
+                        </span>
+                        <input type="tel" x-model="modalCustomerPhone" placeholder="08xxxxxxxxxx"
+                            class="w-full h-11 pl-10 pr-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 outline-none focus:border-emerald-500 focus:bg-white transition shadow-2xs">
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/70 text-[11px] text-emerald-800 flex items-start gap-2">
+                    <i class="ph-fill ph-info text-emerald-600 text-sm shrink-0 mt-0.5"></i>
+                    <span>Pelanggan yang didaftarkan akan tersimpan di database kasir dan langsung terpilih pada transaksi saat ini.</span>
+                </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="px-5 py-3.5 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-2.5">
+                <button type="button" @click="modalOpen = false"
+                    class="h-9 px-4 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition cursor-pointer">
+                    Batal
+                </button>
+                <button type="button" @click="saveSimulasiCustomer()"
+                    class="h-9 px-4 rounded-xl bg-emerald-600 hover:bg-[#0b595b] text-white text-xs font-bold shadow-2xs transition cursor-pointer active:scale-95 flex items-center gap-1.5">
+                    <i class="ph-bold ph-check text-xs"></i>
+                    <span>Simpan & Pilih</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGIC JAVASCRIPT & ALPINE -->
+    <script>
+        function customerDesignLab() {
+            return {
+                activeView: 'all', // 'all' | 'pos-mockup'
+                selectedOptionId: 'opsi1',
+                highlightMode: 'none', // 'none' | 'green'
+                modalOpen: false,
+                modalTriggerSource: '',
+                modalCustomerName: '',
+                modalCustomerPhone: '',
+
+                sampleCustomers: [
+                    { name: 'Kak Alvi', phone: '081234568219' },
+                    { name: 'Ayu Rhisma', phone: '085712344311' },
+                    { name: 'Bu Enda', phone: '082198767766' },
+                    { name: 'Nono', phone: '081345679902' },
+                    { name: 'Pak Rudi Hartono', phone: '081912345678' }
+                ],
+
+                options: [
+                    { id: 'opsi1', shortName: 'Opsi 1: Seamless Row', name: 'Opsi 1: Seamless Native Row (Di Dalam Dropdown)', isRecommended: true },
+                    { id: 'opsi2', shortName: 'Opsi 2: Header Quick', name: 'Opsi 2: Header Quick-Action (Di Samping Label)', isRecommended: true },
+                    { id: 'opsi3', shortName: 'Opsi 3: Integrated Add-on', name: 'Opsi 3: Integrated Input Add-on (Menyatu di Input)', isRecommended: false },
+                    { id: 'opsi4', shortName: 'Opsi 4: Type-to-Create', name: 'Opsi 4: Type-to-Create Command (Pola Linear/Notion)', isRecommended: false },
+                    { id: 'opsi5', shortName: 'Opsi 5: Sticky Footer', name: 'Opsi 5: Sticky Bottom Footer (Pola Square POS)', isRecommended: false }
+                ],
+
+                getOptionName(id) {
+                    const found = this.options.find(o => o.id === id);
+                    return found ? found.name : id;
+                },
+
+                openModalSimulasi(source, prefillName = '') {
+                    this.modalTriggerSource = source;
+                    this.modalCustomerName = prefillName;
+                    this.modalCustomerPhone = '';
+                    this.modalOpen = true;
+                },
+
+                saveSimulasiCustomer() {
+                    if (!this.modalCustomerName.trim()) {
+                        alert('Silakan masukkan nama pelanggan!');
+                        return;
+                    }
+                    this.sampleCustomers.unshift({
+                        name: this.modalCustomerName.trim(),
+                        phone: this.modalCustomerPhone.trim() || 'Baru'
+                    });
+                    this.modalOpen = false;
+                    alert(`Pelanggan "${this.modalCustomerName}" berhasil ditambahkan dan dipilih!`);
+                }
+            };
+        }
+    </script>
+</body>
+
+</html>
+

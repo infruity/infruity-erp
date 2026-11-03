@@ -388,29 +388,6 @@
                     </div>
                 </div>
 
-                <!-- === Pembelian === -->
-                <div>
-                    <a href="#" @click.prevent="toggleMenu('pembelian')"
-                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
-                        :class="activeMenu === 'pembelian' ? 'active shadow-lg shadow-black/10' : ''">
-                        <div class="flex items-center gap-3">
-                            <i class="ph ph-bag sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'pembelian' ? '!text-[#102f31]' : ''"></i>
-                            <span class="font-medium">Pembelian</span>
-                        </div>
-                        
-                        
-                    </a>
-                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
-                        <div class="py-1 space-y-0.5">
-                            <a href="../../003. Pembelian/001. Pengadaan/index.html"
-                                class="submenu-link active relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
-                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
-                                <span>Pengadaan</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- === Inventaris === -->
                 <div>
                     <a href="#" @click.prevent="toggleMenu('inventaris')"
@@ -420,15 +397,18 @@
                             <i class="ph ph-package sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'inventaris' ? '!text-[#102f31]' : ''"></i>
                             <span class="font-medium">Inventaris</span>
                         </div>
-                        
-                        
                     </a>
                     <div class="submenu-wrapper" x-show="!sidebarCollapsed">
                         <div class="py-1 space-y-0.5">
-                            <a href="../../004. Inventaris/001. Stok Barang/index.html"
+                            <a href="../../003. Pembelian/001. Pengadaan/index.html"
+                                class="submenu-link active relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
+                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
+                                <span>Pengadaan</span>
+                            </a>
+                            <a href="../../005. Produksi/001. Produksi Barang/index.html"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
                                 <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
-                                <span>Stok Barang</span>
+                                <span>Produksi</span>
                             </a>
                             <a href="../../004. Inventaris/002. Sortir Barang/index.html"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
@@ -461,29 +441,6 @@
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
                                 <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
                                 <span>Stok Opname</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- === Produksi === -->
-                <div>
-                    <a href="#" @click.prevent="toggleMenu('produksi')"
-                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
-                        :class="activeMenu === 'produksi' ? 'active shadow-lg shadow-black/10' : ''">
-                        <div class="flex items-center gap-3">
-                            <i class="ph ph-factory sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'produksi' ? '!text-[#102f31]' : ''"></i>
-                            <span class="font-medium">Produksi</span>
-                        </div>
-                        
-                        
-                    </a>
-                    <div class="submenu-wrapper" x-show="!sidebarCollapsed">
-                        <div class="py-1 space-y-0.5">
-                            <a href="../../005. Produksi/001. Produksi Barang/index.html"
-                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 ">
-                                <i class="ph ph-circle sidebar-icon text-lg w-5 text-center text-white/35"></i>
-                                <span>Produksi Barang</span>
                             </a>
                         </div>
                     </div>
@@ -717,7 +674,7 @@
                     <div class="hidden sm:block">
                         <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5" x-text="currentView === 'form' ? (isEditMode ? 'Edit Pengadaan' : 'Tambah Pengadaan') : 'Pengadaan'">Pengadaan</h1>
                         <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
-                            <span>Pembelian</span>
+                            <span>Inventaris</span>
                             <i class="ph ph-caret-right text-[0.55rem]"></i>
                             <span :class="currentView === 'form' ? 'cursor-pointer hover:underline hover:text-emerald-700' : ''" @click="currentView === 'form' && closeFormView()">Pengadaan</span>
                             <template x-if="currentView === 'form'">
@@ -2253,7 +2210,7 @@
                 sidebarOpen: false,
                 sidebarCollapsed: false,
                 theme: 'dark',
-                activeMenu: 'pembelian',
+                activeMenu: 'inventaris',
                 selectedBranch: 'Semua Cabang',
 
                 // Tampilan SPA: 'list' | 'form'

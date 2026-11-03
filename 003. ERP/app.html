@@ -326,28 +326,6 @@
                     </div>
                 </div>
 
-                <!-- === Pembelian === -->
-                <div>
-                    <a href="#" data-type="header" @click.prevent="toggleMenu('pembelian')"
-                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
-                        :class="activeMenu === 'pembelian' ? 'active shadow-lg shadow-black/10' : ''">
-                        <div class="flex items-center gap-3">
-                            <i class="ph ph-bag sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'pembelian' ? '!text-[#102f31]' : ''"></i>
-                            <span class="font-medium">Pembelian</span>
-                        </div>
-                        
-                    </a>
-                    <div class="submenu-wrapper">
-                        <div class="py-1 space-y-0.5">
-                            <a href="#" @click.prevent="navigateTo('003. Pembelian/001. Pengadaan/index.html', 'pembelian')"
-                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
-                                :class="activePage === '003. Pembelian/001. Pengadaan/index.html' ? 'active' : ''">
-                                <span>Pengadaan</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- === Inventaris === -->
                 <div>
                     <a href="#" data-type="header" @click.prevent="toggleMenu('inventaris')"
@@ -361,6 +339,16 @@
                     </a>
                     <div class="submenu-wrapper">
                         <div class="py-1 space-y-0.5">
+                            <a href="#" @click.prevent="navigateTo('003. Pembelian/001. Pengadaan/index.html', 'inventaris')"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
+                                :class="activePage === '003. Pembelian/001. Pengadaan/index.html' ? 'active' : ''">
+                                <span>Pengadaan</span>
+                            </a>
+                            <a href="#" @click.prevent="navigateTo('005. Produksi/001. Produksi Barang/index.html', 'inventaris')"
+                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
+                                :class="activePage === '005. Produksi/001. Produksi Barang/index.html' ? 'active' : ''">
+                                <span>Produksi</span>
+                            </a>
                             <a href="#" @click.prevent="navigateTo('004. Inventaris/002. Sortir Barang/index.html', 'inventaris')"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
                                 :class="activePage === '004. Inventaris/002. Sortir Barang/index.html' ? 'active' : ''">
@@ -393,28 +381,6 @@
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
                                 :class="activePage === '004. Inventaris/005. Stok Opname/index.html' ? 'active' : ''">
                                 <span>Stok Opname</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- === Produksi === -->
-                <div>
-                    <a href="#" data-type="header" @click.prevent="toggleMenu('produksi')"
-                        class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-sm text-white "
-                        :class="activeMenu === 'produksi' ? 'active shadow-lg shadow-black/10' : ''">
-                        <div class="flex items-center gap-3">
-                            <i class="ph ph-factory sidebar-icon text-xl w-6 text-center text-white" :class="activeMenu === 'produksi' ? '!text-[#102f31]' : ''"></i>
-                            <span class="font-medium">Produksi</span>
-                        </div>
-                        
-                    </a>
-                    <div class="submenu-wrapper">
-                        <div class="py-1 space-y-0.5">
-                            <a href="#" @click.prevent="navigateTo('005. Produksi/001. Produksi Barang/index.html', 'produksi')"
-                                class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45 cursor-pointer"
-                                :class="activePage === '005. Produksi/001. Produksi Barang/index.html' ? 'active' : ''">
-                                <span>Produksi Barang</span>
                             </a>
                         </div>
                     </div>
@@ -646,9 +612,9 @@
             if (!page) return 'dashboard';
             if (page.includes('001. Dashboard')) return 'dashboard';
             if (page.includes('002. Master')) return 'master';
-            if (page.includes('003. Pembelian')) return 'pembelian';
+            if (page.includes('003. Pembelian')) return 'inventaris';
             if (page.includes('004. Inventaris')) return 'inventaris';
-            if (page.includes('005. Produksi')) return 'produksi';
+            if (page.includes('005. Produksi')) return 'inventaris';
             if (page.includes('006. Penjualan')) return 'penjualan';
             if (page.includes('007. Keuangan')) return 'keuangan';
             if (page.includes('008. Laporan')) return 'laporan';

@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eksplorasi Rangkai Parcel (Produksi di POS) - Kasir POS | ERP Infruity</title>
+    <link rel="icon" type="image/png" href="assets/logo/Infruity Logo - 5.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+        rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf9',
+                            100: '#ccfbef',
+                            500: '#10b981',
+                            600: '#0b595b',
+                            700: '#08484a',
+                            800: '#063739',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        poppins: ['"Poppins"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'dropdown': '0 12px 32px -4px rgba(11, 89, 91, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.05)',
+                        'card': '0 4px 20px -2px rgba(0,0,0,0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .minimal-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        .minimal-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(11, 89, 91, 0.2);
+            border-radius: 9999px;
+        }
+
+        .minimal-scrollbar::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+    </style>
+</head>
+
+<body class="bg-[#f8fafc] text-gray-800 font-sans antialiased min-h-screen p-4 sm:p-8" x-data="parcelBuilderApp()">
+
+    <!-- Header Playground -->
+    <div class="max-w-4xl mx-auto mb-6 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold mb-2">
+            <i class="ph-fill ph-gift text-amber-600"></i>
+            <span>Sistem Rangkai Parcel (Produksi Langsung di POS)</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
+            Eksplorasi Alur Tambah Produk & Rangkai Parcel di POS
+        </h1>
+        <p class="text-xs sm:text-sm text-gray-500 mt-1 max-w-xl mx-auto leading-relaxed">
+            Untuk <strong>Buah</strong> dan <strong>Jus</strong> adalah item produk langsung, sedangkan <strong>Parcel</strong> menggunakan sistem <em>"tambah-tambah isi buah & kemasan"</em> (seperti modul produksi mini langsung di kasir).
+        </p>
+
+        <!-- Banner Info Konsep -->
+        <div class="mt-4 p-4 rounded-2xl bg-white border border-amber-200/80 shadow-2xs max-w-2xl mx-auto text-left flex items-start gap-3">
+            <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
+                <i class="ph-bold ph-lightbulb text-lg"></i>
+            </div>
+            <div class="text-xs text-gray-700 leading-relaxed">
+                <strong class="text-gray-900 font-bold block mb-0.5">Bagaimana Alur Parcel di Kasir:</strong>
+                Saat kasir klik <strong>+ Tambah</strong> ➔ pilih opsi <strong>🎁 Parcel</strong>, pop-up akan membuka form <strong>Rangkai Parcel</strong>: Kasir menentukan nama paket, memilih keranjang, lalu <em>menambahkan buah-buahan penyusunnya</em> (misal: Apel 1.5 kg + Jeruk 1 kg + Naga 1 kg). Total harga bahan terakumulasi otomatis dan bisa disimpan ke daftar belanja!
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- SIMULASI KANVAS CARD DAFTAR BELANJA POS                                   -->
+    <!-- ========================================================================= -->
+    <div class="max-w-2xl mx-auto bg-white rounded-2xl border border-gray-200/90 shadow-card overflow-hidden flex flex-col min-h-[340px]">
+        
+        <!-- Header Card -->
+        <div class="bg-white border-b border-gray-100 px-5 sm:px-6 py-4 flex items-center justify-between shrink-0">
+            <div>
+                <span class="text-sm font-extrabold text-gray-900 tracking-tight">Daftar Belanja</span>
+            </div>
+            <!-- Tombol Tambah Utama -->
+            <button type="button" @click="openCategoryPickerModal()"
+                class="text-xs font-bold text-[#0b595b] hover:text-[#08484a] flex items-center gap-1.5 bg-emerald-50/80 hover:bg-emerald-100/80 px-3.5 py-1.5 rounded-lg border border-emerald-200/80 transition shadow-2xs active:scale-95 cursor-pointer">
+                <span>+ Tambah</span>
+            </button>
+        </div>
+
+        <!-- Body Card: Daftar Belanja atau Empty State -->
+        <div class="flex-1 p-5 overflow-y-auto">
+            <!-- Empty State -->
+            <div x-show="cartItems.length === 0" class="h-full flex flex-col items-center justify-center text-center p-6 my-auto min-h-[180px]">
+                <h3 class="text-sm sm:text-base font-bold text-gray-800">Belum ada produk didaftar belanja</h3>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1.5">
+                    Klik tombol <button type="button" @click="openCategoryPickerModal()" class="font-semibold text-[#0b595b] hover:underline inline-flex items-center gap-0.5 cursor-pointer">+ Tambah</button> untuk mencoba alur input
+                </p>
+            </div>
+
+            <!-- List Terisi -->
+            <div x-show="cartItems.length > 0">
+                <template x-for="(item, idx) in cartItems" :key="idx">
+                    <div :class="idx === 0 ? 'pt-1 pb-3' : 'border-t border-gray-100 py-3.5'"
+                        class="flex flex-col justify-center gap-1 -mx-2 px-2.5 rounded-lg group">
+                        
+                        <!-- Baris 1: Nama Item & Total Harga -->
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <h4 class="text-sm font-bold text-gray-900 truncate" x-text="item.name"></h4>
+                                <span x-show="item.category === 'parcel'" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-200 shrink-0">Parcel</span>
+                            </div>
+                            <span class="text-xs sm:text-sm font-extrabold text-[#0b595b] shrink-0 font-poppins"
+                                x-text="'Rp ' + (item.qty * item.price).toLocaleString('id-ID')"></span>
+                        </div>
+
+                        <!-- Baris 2: Detail Harga Satuan & Qty -->
+                        <div class="flex items-center justify-between gap-2 mt-0.5">
+                            <span class="text-xs font-medium text-gray-500 font-poppins"
+                                x-text="'Rp ' + item.price.toLocaleString('id-ID') + ' / ' + item.unit"></span>
+                            <span class="text-xs font-semibold text-gray-600 shrink-0 text-right font-poppins"
+                                x-text="item.qty + ' ' + item.unit"></span>
+                        </div>
+
+                        <!-- Jika Item adalah PARCEL: Tampilkan Rincian Komposisi Isi Buahnya (Mini BOM) -->
+                        <div x-show="item.category === 'parcel' && item.subItems && item.subItems.length > 0"
+                            class="mt-2 p-2.5 bg-amber-50/50 rounded-xl border border-amber-100 text-[11px] space-y-1">
+                            <div class="font-bold text-amber-900 flex items-center justify-between">
+                                <span class="flex items-center gap-1">
+                                    <i class="ph-bold ph-basket text-xs text-amber-700"></i>
+                                    <span>Komposisi Rangkaian Isi:</span>
+                                </span>
+                                <span class="text-[10px] text-amber-700" x-text="item.subItems.length + ' komponen'"></span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 pt-1">
+                                <template x-for="(sub, sIdx) in item.subItems" :key="sIdx">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white border border-amber-200/70 text-gray-700 font-medium text-[10.5px]">
+                                        <span x-text="sub.name"></span>
+                                        <strong class="text-amber-800" x-text="'(' + sub.qty + ' ' + sub.unit + ')'"></strong>
+                                    </span>
+                                </template>
+                            </div>
+                        </div>
+
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Footer Card -->
+        <div class="p-4 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between text-xs">
+            <span class="text-gray-500 font-medium">Total Estimasi Belanja:</span>
+            <span class="text-sm font-extrabold text-[#0b595b] font-poppins"
+                x-text="'Rp ' + cartItems.reduce((acc, it) => acc + (it.qty * it.price), 0).toLocaleString('id-ID')"></span>
+        </div>
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- POP-UP 1: PILIH KATEGORI PRODUK (DIKLIK DARI TOMBOL + TAMBAH)            -->
+    <!-- ========================================================================= -->
+    <div x-show="categoryModalOpen" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+        <div @click.outside="categoryModalOpen = false" class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-auto transition-all">
+            
+            <!-- Header Modal Kategori -->
+            <div class="px-5 sm:px-6 pt-5 pb-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                <div>
+                    <h4 class="text-base font-bold text-gray-900 leading-tight">Pilih Kategori Produk</h4>
+                    <p class="text-xs text-gray-500 mt-0.5">Tentukan jenis item yang ingin ditambahkan</p>
+                </div>
+                <button type="button" @click="categoryModalOpen = false" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                    <i class="ph-bold ph-x text-sm"></i>
+                </button>
+            </div>
+
+            <!-- 3 Kartu Kategori Utama -->
+            <div class="p-5 space-y-3">
+                <!-- 1. Buah & Olahan selain jus -->
+                <button type="button" @click="selectCategoryAndOpenModal('buah')"
+                    class="w-full p-4 rounded-2xl border border-gray-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/40 text-left transition-all group flex items-center gap-4 cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.99]">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-[#0b595b] flex items-center justify-center shrink-0 group-hover:bg-[#0b595b] group-hover:text-white transition-colors">
+                        <i class="ph-fill ph-apple-logo text-2xl"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-sm font-bold text-gray-900 group-hover:text-[#0b595b] transition-colors">Buah & Olahan selain jus</div>
+                        <div class="text-xs text-gray-500 mt-0.5">Produk belum proses olahan apapun (Alpukat, Buah Naga, Pir, dll)</div>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-gray-400 group-hover:text-[#0b595b] group-hover:translate-x-0.5 transition-all text-base"></i>
+                </button>
+
+                <!-- 2. Parcel (Rangkai Parcel / Tambah-Tambah Buah) -->
+                <button type="button" @click="selectCategoryAndOpenModal('parcel')"
+                    class="w-full p-4 rounded-2xl border-2 border-amber-300 hover:border-amber-500 bg-amber-50/30 hover:bg-amber-50/70 text-left transition-all group flex items-center gap-4 cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.99]">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                        <i class="ph-fill ph-gift text-2xl"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-bold text-gray-900 group-hover:text-amber-900 transition-colors">Parcel</span>
+                            <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-200 text-amber-900">Rangkai di POS</span>
+                        </div>
+                        <div class="text-xs text-gray-600 mt-0.5">Sistem rakit/tambah-tambah isi buah, keranjang & pita langsung di kasir</div>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-amber-600 group-hover:text-amber-800 group-hover:translate-x-0.5 transition-all text-base"></i>
+                </button>
+
+                <!-- 3. Jus -->
+                <button type="button" @click="selectCategoryAndOpenModal('jus')"
+                    class="w-full p-4 rounded-2xl border border-gray-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/40 text-left transition-all group flex items-center gap-4 cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.99]">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                        <i class="ph-fill ph-brand-soda text-2xl"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-sm font-bold text-gray-900 group-hover:text-emerald-800 transition-colors">Jus</div>
+                        <div class="text-xs text-gray-500 mt-0.5">Minuman segar olahan buah (Jus Alpukat, Jeruk peras, dll)</div>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-gray-400 group-hover:text-emerald-700 group-hover:translate-x-0.5 transition-all text-base"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- POP-UP 2A: RANGKAI PARCEL (PRODUKSI LANGSUNG DI POS)                      -->
+    <!-- ========================================================================= -->
+    <div x-show="parcelBuilderModalOpen" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+        <div @click.outside="parcelBuilderModalOpen = false" class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-auto transition-all max-h-[92vh]">
+            
+            <!-- Header Rangkai Parcel -->
+            <div class="px-5 sm:px-6 pt-4 pb-3.5 border-b border-gray-100 flex items-center justify-between bg-amber-50/40 shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <button type="button" @click="parcelBuilderModalOpen = false; categoryModalOpen = true;" class="w-8 h-8 rounded-xl bg-white border border-gray-200 hover:bg-gray-100 flex items-center justify-center text-gray-600 transition cursor-pointer" title="Kembali ke Kategori">
+                        <i class="ph-bold ph-arrow-left text-xs"></i>
+                    </button>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <h4 class="text-sm sm:text-base font-bold text-gray-900 leading-tight">Rangkai Parcel Baru</h4>
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-200 text-amber-900">Produksi POS</span>
+                        </div>
+                        <p class="text-[11px] text-gray-500">Tambah-tambah komponen isi buah & kemasan</p>
+                    </div>
+                </div>
+                <button type="button" @click="parcelBuilderModalOpen = false" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                    <i class="ph-bold ph-x text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Body Rangkai Parcel -->
+            <div class="p-5 space-y-4 overflow-y-auto minimal-scrollbar">
+                
+                <!-- 1. Pilihan Harga Jual Parcel (Menentukan Nama Parcel Otomatis) -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                            Pilih Harga Jual Parcel <span class="text-red-500">*</span>
+                        </label>
+                        <!-- Badge Nama Parcel Otomatis (Realtime sesuai harga jual) -->
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs font-poppins">
+                            <i class="ph-fill ph-tag text-xs text-amber-700"></i>
+                            <span x-text="getGeneratedParcelName()"></span>
+                        </span>
+                    </div>
+
+                    <!-- Preset Button Cepat (150k, 200k, 250k, 300k, 350k, 500k) -->
+                    <div class="grid grid-cols-6 gap-1.5">
+                        <template x-for="preset in [150000, 200000, 250000, 300000, 350000, 500000]" :key="preset">
+                            <button type="button" @click="setParcelPrice(preset)"
+                                class="py-2 px-1 rounded-xl border text-center text-xs font-extrabold transition-all cursor-pointer font-poppins"
+                                :class="parcelDraft.sellingPrice === preset ? 'bg-amber-500 text-white border-amber-500 shadow-xs ring-2 ring-amber-500/30' : 'bg-white border-gray-200 text-gray-700 hover:border-amber-300 hover:bg-amber-50/50'">
+                                <span x-text="'Parcel ' + (preset / 1000) + 'k'"></span>
+                            </button>
+                        </template>
+                    </div>
+
+                    <!-- Input Nominal Custom -->
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">Rp</span>
+                        <input type="number" step="5000" x-model="parcelDraft.sellingPrice"
+                            @input="onParcelPriceInput()"
+                            placeholder="200000"
+                            class="w-full h-10 pl-9 pr-3.5 bg-gray-50/80 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl text-xs sm:text-sm font-extrabold text-gray-900 font-poppins outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition shadow-2xs">
+                    </div>
+                </div>
+
+                <!-- 2. Pilihan Kemasan (Dropdown Minimalis) -->
+                <div class="relative" x-data="{ packagingDropdownOpen: false }">
+                    <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                        Kemasan
+                    </label>
+
+                    <!-- Trigger Button Dropdown (Tanpa Icon Keranjang, Tanpa + Rp di Label, Bersih) -->
+                    <button type="button" @click="packagingDropdownOpen = !packagingDropdownOpen"
+                        class="w-full h-10 px-3.5 bg-gray-50/80 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl flex items-center justify-between text-xs outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition shadow-2xs cursor-pointer group text-left">
+                        <span class="truncate font-semibold text-gray-800" x-text="parcelDraft.packaging?.name || 'Pilih Kemasan'"></span>
+                        <i class="ph-bold ph-caret-down text-gray-400 group-hover:text-gray-600 text-xs shrink-0 transition-transform duration-200"
+                           :class="packagingDropdownOpen ? 'rotate-180 text-amber-700' : ''"></i>
+                    </button>
+
+                    <!-- Menu Dropdown Floating -->
+                    <div x-show="packagingDropdownOpen" @click.outside="packagingDropdownOpen = false" x-cloak
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                         class="absolute left-0 right-0 top-full mt-1.5 bg-white border border-gray-150 rounded-2xl shadow-xl py-1 z-30 overflow-hidden divide-y divide-gray-50">
+                        <template x-for="pack in packagingOptions" :key="pack.name">
+                            <div @click="parcelDraft.packaging = pack; packagingDropdownOpen = false; updateParcelSellingPrice()"
+                                 class="px-3.5 py-2.5 text-xs cursor-pointer transition-colors flex items-center justify-between group hover:bg-amber-50/50"
+                                 :class="parcelDraft.packaging?.name === pack.name ? 'bg-amber-50/70 text-amber-950 font-bold' : 'text-gray-700 font-medium'">
+                                <div class="min-w-0 flex-1 pr-2">
+                                    <span class="truncate block" x-text="pack.name"></span>
+                                </div>
+                                <span class="text-xs font-semibold font-poppins shrink-0"
+                                      :class="parcelDraft.packaging?.name === pack.name ? 'text-amber-800' : 'text-gray-400'"
+                                      x-text="pack.price > 0 ? 'Rp ' + pack.price.toLocaleString('id-ID') : 'Gratis / Tanpa Wadah'"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- 3. Daftar Komposisi Buah (Sistem Tambah-Tambah) -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                            Isi Buah & Komponen (<span x-text="parcelDraft.items.length"></span> Item):
+                        </label>
+                        <button type="button" @click="subItemPickerOpen = true"
+                            class="text-xs font-bold text-[#0b595b] hover:text-[#08484a] flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/80 cursor-pointer">
+                            <i class="ph-bold ph-plus text-[10px]"></i>
+                            <span>Tambah Buah</span>
+                        </button>
+                    </div>
+
+                    <!-- List Komponen Terpilih -->
+                    <div class="border border-gray-200 rounded-2xl overflow-hidden divide-y divide-gray-100 bg-gray-50/40">
+                        <template x-for="(ing, idx) in parcelDraft.items" :key="idx">
+                            <div class="p-2.5 sm:p-3 bg-white flex items-center justify-between gap-3 text-xs">
+                                <div class="min-w-0 flex-1">
+                                    <div class="font-bold text-gray-900 truncate" x-text="ing.name"></div>
+                                    <div class="text-[11px] text-gray-400 font-poppins mt-0.5">
+                                        <span x-text="'Rp ' + ing.price.toLocaleString('id-ID')"></span>
+                                        <span> x </span>
+                                        <strong class="text-gray-700" x-text="ing.qty + ' ' + ing.unit"></strong>
+                                    </div>
+                                </div>
+
+                                <!-- Stepper Qty Komponen -->
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <button type="button" @click="decrementSubItem(idx)" class="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center font-bold text-gray-600 cursor-pointer">-</button>
+                                    <span class="w-8 text-center font-bold text-gray-800 text-xs font-poppins" x-text="ing.qty"></span>
+                                    <button type="button" @click="incrementSubItem(idx)" class="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center font-bold text-gray-600 cursor-pointer">+</button>
+                                </div>
+
+                                <!-- Subtotal & Hapus -->
+                                <div class="text-right shrink-0">
+                                    <div class="font-extrabold text-[#0b595b] font-poppins text-xs" x-text="'Rp ' + (ing.qty * ing.price).toLocaleString('id-ID')"></div>
+                                    <button type="button" @click="removeSubItem(idx)" class="text-[10px] text-red-500 hover:underline cursor-pointer">Hapus</button>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="parcelDraft.items.length === 0" class="p-4 text-center text-xs text-gray-400">
+                            Belum ada buah dimasukkan. Klik tombol <strong>+ Tambah Buah</strong> di atas.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Rincian Biaya Modal & Penetapan Harga Jual -->
+                <div class="p-3.5 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-2 text-xs">
+                    <div class="flex items-center justify-between text-gray-600">
+                        <span>Total Nilai Isi Buah:</span>
+                        <span class="font-bold text-gray-800 font-poppins" x-text="'Rp ' + calculateFruitTotal().toLocaleString('id-ID')"></span>
+                    </div>
+                    <div class="flex items-center justify-between text-gray-600">
+                        <span>Biaya Kemasan:</span>
+                        <span class="font-bold text-gray-800 font-poppins" x-text="'Rp ' + (parcelDraft.packaging?.price || 0).toLocaleString('id-ID')"></span>
+                    </div>
+                    <div class="flex items-center justify-between text-gray-700 font-semibold pt-1 border-t border-amber-200/50">
+                        <span>Total Nilai Komponen:</span>
+                        <span class="font-bold text-amber-900 font-poppins" x-text="'Rp ' + calculateTotalCost().toLocaleString('id-ID')"></span>
+                    </div>
+                    <div class="pt-2 border-t border-amber-200/80 flex items-center justify-between">
+                        <div>
+                            <span class="font-bold text-amber-950 block">Harga Jual Paket Parcel:</span>
+                            <span class="text-[10px] text-amber-700 font-bold font-poppins" x-text="getGeneratedParcelName()"></span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-bold text-gray-500">Rp</span>
+                            <input type="number" step="5000" x-model="parcelDraft.sellingPrice"
+                                @input="onParcelPriceInput()"
+                                class="w-32 h-8 px-2.5 bg-white border border-amber-300 rounded-lg text-right font-extrabold text-sm text-[#0b595b] outline-none font-poppins shadow-2xs">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tombol Simpan Parcel ke Belanja -->
+                <button type="button" @click="saveParcelToCart()"
+                    class="w-full h-11 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-md shadow-[#0b595b]/20 active:scale-95 transition flex items-center justify-center cursor-pointer">
+                    Simpan Parcel ke Daftar Belanja
+                </button>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- MINI POP-UP: PEMILIH BUAH UNTUK DIMASUKKAN KE PARCEL                      -->
+    <!-- ========================================================================= -->
+    <div x-show="subItemPickerOpen" x-cloak class="fixed inset-0 z-60 overflow-y-auto flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+        <div @click.outside="subItemPickerOpen = false" class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-auto">
+            <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                <h4 class="text-sm font-bold text-gray-900">Pilih Buah untuk Parcel</h4>
+                <button type="button" @click="subItemPickerOpen = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">
+                    <i class="ph-bold ph-x text-sm"></i>
+                </button>
+            </div>
+            <div class="p-4 space-y-2 max-h-72 overflow-y-auto minimal-scrollbar">
+                <template x-for="fruit in masterFruits" :key="fruit.id">
+                    <div @click="addFruitToParcel(fruit)" class="p-2.5 rounded-xl border border-gray-100 hover:border-emerald-500 hover:bg-emerald-50/50 flex items-center justify-between cursor-pointer transition">
+                        <div>
+                            <div class="text-xs font-bold text-gray-900" x-text="fruit.name"></div>
+                            <div class="text-[10px] text-gray-400 font-poppins" x-text="'Rp ' + fruit.price.toLocaleString('id-ID') + ' / ' + fruit.unit"></div>
+                        </div>
+                        <span class="text-xs font-bold text-[#0b595b] bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200">+ Pilih</span>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- POP-UP 2B: MODAL REGULER PRODUK TUNGGAL (BUAH / JUS)                      -->
+    <!-- ========================================================================= -->
+    <div x-show="regularItemModalOpen" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+        <div @click.outside="regularItemModalOpen = false" class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-auto transition-all">
+            
+            <div class="px-5 sm:px-6 pt-4 pb-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                <div class="flex items-center gap-2">
+                    <button type="button" @click="regularItemModalOpen = false; categoryModalOpen = true;" class="w-8 h-8 rounded-xl bg-white border border-gray-200 hover:bg-gray-100 flex items-center justify-center text-gray-600 cursor-pointer">
+                        <i class="ph-bold ph-arrow-left text-xs"></i>
+                    </button>
+                    <div>
+                        <h4 class="text-sm sm:text-base font-bold text-gray-900 leading-tight" x-text="selectedCategory === 'buah' ? 'Tambah Buah & Olahan' : 'Tambah Jus'"></h4>
+                        <p class="text-[11px] text-gray-500">Pilih produk dan tentukan kuantitas</p>
+                    </div>
+                </div>
+                <button type="button" @click="regularItemModalOpen = false" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center text-gray-400 cursor-pointer">
+                    <i class="ph-bold ph-x text-sm"></i>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-3.5">
+                <!-- Radio List Produk Sesuai Kategori -->
+                <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-2xs">
+                    <div class="h-36 overflow-y-auto minimal-scrollbar">
+                        <template x-for="prod in getCategoryProducts(selectedCategory)" :key="prod.id">
+                            <label @click="selectedProduct = prod" class="flex items-center justify-between px-3.5 py-2.5 border-b border-gray-100 last:border-b-0 cursor-pointer hover:bg-gray-50/80 transition">
+                                <div class="flex items-center gap-2.5">
+                                    <input type="radio" name="regularProd" :checked="selectedProduct?.id === prod.id" class="w-4 h-4 text-emerald-600">
+                                    <span class="text-xs font-semibold text-gray-800" x-text="prod.name"></span>
+                                </div>
+                                <span class="text-xs font-bold text-[#0b595b] font-poppins" x-text="'Rp ' + prod.price.toLocaleString('id-ID') + ' / ' + prod.unit"></span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Input Qty & Subtotal -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Kuantitas</label>
+                        <input type="number" min="1" x-model="regularQty" class="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold outline-none focus:bg-white focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Harga Satuan</label>
+                        <input type="text" readonly :value="selectedProduct ? 'Rp ' + selectedProduct.price.toLocaleString('id-ID') : '-'" class="w-full h-10 px-3 bg-gray-100 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none">
+                    </div>
+                </div>
+
+                <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 flex items-center justify-between text-xs">
+                    <span class="font-semibold text-emerald-800">Total Harga</span>
+                    <span class="font-extrabold text-[#0b595b] text-sm font-poppins" x-text="'Rp ' + ((selectedProduct ? selectedProduct.price : 0) * (regularQty || 1)).toLocaleString('id-ID')"></span>
+                </div>
+
+                <button type="button" @click="saveRegularItemToCart()"
+                    class="w-full h-11 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-md shadow-[#0b595b]/20 active:scale-95 transition cursor-pointer">
+                    Tambah ke Daftar Belanja
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+
+    <script>
+        function parcelBuilderApp() {
+            return {
+                // Modals
+                categoryModalOpen: false,
+                parcelBuilderModalOpen: false,
+                regularItemModalOpen: false,
+                subItemPickerOpen: false,
+
+                selectedCategory: 'buah',
+                selectedProduct: null,
+                regularQty: 1,
+
+                // Parcel Assembly Draft
+                parcelDraft: {
+                    name: 'Parcel 200k',
+                    packaging: { name: 'Keranjang Anyaman Rotan', price: 25000 },
+                    items: [
+                        { name: 'Apel Fuji Wangishan', price: 48000, qty: 1.5, unit: 'Kg' },
+                        { name: 'Jeruk Sunkist Impor', price: 42000, qty: 1, unit: 'Kg' },
+                        { name: 'Buah Naga Merah Super', price: 24000, qty: 1, unit: 'Kg' }
+                    ],
+                    sellingPrice: 200000
+                },
+
+                packagingOptions: [
+                    { name: 'Keranjang Anyaman Rotan', price: 25000 },
+                    { name: 'Hardbox Premium Infruity', price: 35000 },
+                    { name: 'Keranjang Bambu Natural', price: 15000 },
+                    { name: 'Tanpa Kemasan / Custom', price: 0 }
+                ],
+
+                cartItems: [
+                    {
+                        name: 'Parcel 200k',
+                        category: 'parcel',
+                        price: 200000,
+                        qty: 1,
+                        unit: 'Paket',
+                        subItems: [
+                            { name: 'Keranjang Anyaman Rotan', qty: 1, unit: 'Pcs' },
+                            { name: 'Apel Fuji Wangishan', qty: 1.5, unit: 'Kg' },
+                            { name: 'Jeruk Sunkist Impor', qty: 1, unit: 'Kg' },
+                            { name: 'Buah Naga Merah Super', qty: 1, unit: 'Kg' }
+                        ]
+                    },
+                    {
+                        name: 'Jus Alpukat Kocok',
+                        category: 'jus',
+                        price: 20000,
+                        qty: 2,
+                        unit: 'Cup'
+                    }
+                ],
+
+                masterFruits: [
+                    { id: 301, name: 'Buah Naga Merah Super', price: 24000, unit: 'Kg' },
+                    { id: 302, name: 'Alpukat Mentega Super', price: 35000, unit: 'Kg' },
+                    { id: 303, name: 'Semangka Merah Non Biji', price: 12000, unit: 'Kg' },
+                    { id: 304, name: 'Melon Sky Rocket Manis', price: 20000, unit: 'Kg' },
+                    { id: 305, name: 'Jeruk Sunkist Impor', price: 42000, unit: 'Kg' },
+                    { id: 306, name: 'Apel Fuji Wangishan', price: 48000, unit: 'Kg' },
+                    { id: 307, name: 'Pir Century Madu', price: 32000, unit: 'Kg' },
+                    { id: 991, name: 'Pita & Kartu Ucapan Eksklusif', price: 10000, unit: 'Pcs' }
+                ],
+
+                masterJus: [
+                    { id: 201, name: 'Jus Alpukat Kocok', price: 20000, unit: 'Cup' },
+                    { id: 202, name: 'Jus Mangga Arumanis', price: 18000, unit: 'Cup' },
+                    { id: 203, name: 'Jeruk Peras Murni Dingin', price: 12000, unit: 'Botol' },
+                    { id: 204, name: 'Jus Buah Naga Sirsak', price: 22000, unit: 'Cup' },
+                ],
+
+                openCategoryPickerModal() {
+                    this.categoryModalOpen = true;
+                },
+
+                selectCategoryAndOpenModal(cat) {
+                    this.categoryModalOpen = false;
+                    this.selectedCategory = cat;
+
+                    if (cat === 'parcel') {
+                        // Buka Builder Rangkai Parcel Langsung di POS
+                        if (!this.parcelDraft.sellingPrice) {
+                            this.setParcelPrice(200000);
+                        } else {
+                            this.parcelDraft.name = this.getGeneratedParcelName();
+                        }
+                        this.parcelBuilderModalOpen = true;
+                    } else {
+                        // Buka Modal Pemilihan Produk Biasa (Buah / Jus)
+                        this.selectedProduct = this.getCategoryProducts(cat)[0] || null;
+                        this.regularQty = 1;
+                        this.regularItemModalOpen = true;
+                    }
+                },
+
+                getCategoryProducts(cat) {
+                    return cat === 'buah' ? this.masterFruits : this.masterJus;
+                },
+
+                calculateFruitTotal() {
+                    return this.parcelDraft.items.reduce((acc, it) => acc + (it.qty * it.price), 0);
+                },
+
+                calculateTotalCost() {
+                    const fruitCost = this.calculateFruitTotal();
+                    const packCost = this.parcelDraft.packaging?.price || 0;
+                    return fruitCost + packCost;
+                },
+
+                getGeneratedParcelName(price) {
+                    const val = Number(price !== undefined ? price : this.parcelDraft.sellingPrice);
+                    if (!val || isNaN(val) || val <= 0) return 'Parcel';
+                    if (val >= 1000) {
+                        const inK = val / 1000;
+                        const formatted = (inK % 1 === 0) ? inK : inK.toFixed(1).replace('.0', '');
+                        return `Parcel ${formatted}k`;
+                    }
+                    return `Parcel Rp ${val.toLocaleString('id-ID')}`;
+                },
+
+                setParcelPrice(preset) {
+                    this.parcelDraft.sellingPrice = preset;
+                    this.parcelDraft.name = this.getGeneratedParcelName(preset);
+                },
+
+                onParcelPriceInput() {
+                    this.parcelDraft.name = this.getGeneratedParcelName(this.parcelDraft.sellingPrice);
+                },
+
+                updateParcelSellingPrice() {
+                    // Update nama parcel mengikuti harga jual yang aktif
+                    this.parcelDraft.name = this.getGeneratedParcelName(this.parcelDraft.sellingPrice);
+                },
+
+                addFruitToParcel(fruit) {
+                    const existing = this.parcelDraft.items.find(i => i.name === fruit.name);
+                    if (existing) {
+                        existing.qty = Number((existing.qty + 1).toFixed(1));
+                    } else {
+                        this.parcelDraft.items.push({
+                            name: fruit.name,
+                            price: fruit.price,
+                            qty: 1,
+                            unit: fruit.unit
+                        });
+                    }
+                    this.updateParcelSellingPrice();
+                    this.subItemPickerOpen = false;
+                },
+
+                incrementSubItem(idx) {
+                    this.parcelDraft.items[idx].qty = Number((this.parcelDraft.items[idx].qty + 0.5).toFixed(1));
+                    this.updateParcelSellingPrice();
+                },
+
+                decrementSubItem(idx) {
+                    if (this.parcelDraft.items[idx].qty > 0.5) {
+                        this.parcelDraft.items[idx].qty = Number((this.parcelDraft.items[idx].qty - 0.5).toFixed(1));
+                    } else {
+                        this.parcelDraft.items.splice(idx, 1);
+                    }
+                    this.updateParcelSellingPrice();
+                },
+
+                removeSubItem(idx) {
+                    this.parcelDraft.items.splice(idx, 1);
+                    this.updateParcelSellingPrice();
+                },
+
+                saveParcelToCart() {
+                    const parcelName = this.getGeneratedParcelName(this.parcelDraft.sellingPrice);
+                    const subList = [];
+                    if (this.parcelDraft.packaging && this.parcelDraft.packaging.name && this.parcelDraft.packaging.name !== 'Tanpa Kemasan / Custom') {
+                        subList.push({ 
+                            name: this.parcelDraft.packaging.name, 
+                            price: this.parcelDraft.packaging.price || 0,
+                            qty: 1, 
+                            unit: 'Pcs' 
+                        });
+                    }
+                    this.parcelDraft.items.forEach(it => {
+                        subList.push({ 
+                            name: it.name, 
+                            price: it.price,
+                            qty: it.qty, 
+                            unit: it.unit 
+                        });
+                    });
+
+                    this.cartItems.unshift({
+                        name: parcelName,
+                        category: 'parcel',
+                        price: Number(this.parcelDraft.sellingPrice || this.calculateTotalCost()),
+                        qty: 1,
+                        unit: 'Paket',
+                        subItems: subList
+                    });
+
+                    this.parcelBuilderModalOpen = false;
+                },
+
+                saveRegularItemToCart() {
+                    if (!this.selectedProduct) return;
+                    this.cartItems.unshift({
+                        name: this.selectedProduct.name,
+                        category: this.selectedCategory,
+                        price: this.selectedProduct.price,
+                        qty: Number(this.regularQty || 1),
+                        unit: this.selectedProduct.unit
+                    });
+                    this.regularItemModalOpen = false;
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
