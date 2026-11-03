@@ -30,7 +30,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 
     Route::resource('wholesale', WholesaleController::class)->names('wholesale')->except('show');
     Route::get('wholesale/{id}/show', [WholesaleController::class, 'show'])->name('wholesale-show');
-    Route::get('wholesale/receive-product/{id}', [WholesaleController::class, 'receive_product'])->name('wholesale.receive_product');
+    Route::get('wholesale/receive-product/{id}', [WholesaleController::class, 'receive_product'])->name('wholesale.receive-product');
     Route::post('wholesale/save-receive', [WholesaleController::class, 'save_receive'])->name('wholesale-save-receive');
     Route::get('wholesale/show/{id}', [WholesaleController::class, 'show'])->name('wholesale.show');
     Route::post('wholesale/receive/{id}', [WholesaleController::class, 'receive_product'])->name('wholesale.receive_product');
@@ -46,6 +46,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::post('wholesale/reset', [WholesaleController::class, 'reset_transactions'])->name('wholesale.reset');
     Route::get('wholesale/table-product-data', [WholesaleController::class, 'getProductTableData'])->name('wholsale.product-table-data');
 
+    Route::get('sortir/products', [SortirController::class, 'products'])->name('sortir.products');
     Route::resource('sortir', SortirController::class)->names('sortir')->except('show');
     Route::get('sortir/show/{id}', [SortirController::class, 'show'])->name('sortir.show');
     Route::post('sortir/save-stock', [SortirController::class, 'save_stock'])->name('sortir.save-stock');
@@ -76,6 +77,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     });
 
     // Transfer - Shared (AJAX)
+    Route::get('transfer/products', [TransferController::class, 'products'])->name('transfer.products');
     Route::post('transfer/save-stock', [TransferController::class, 'save_stock'])->name('transfer.save-stock');
     Route::post('transfer/save-correction', [TransferController::class, 'saveCorrection'])->name('transfer.save-correction');
     Route::post('transfer/save-transaction', [TransferController::class, 'saveTransaction'])->name('transfer.save-transaction');
@@ -104,20 +106,20 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::get('products/get-receipt', [ProductReceiptController::class, 'getReceipt'])->name('products.get-receipt');
     Route::get('production/get-receipt/{id}', [ProductReceiptController::class, 'get_product'])->name('production.get-receipt');
     Route::get('production/get-recipe-data/{id}', [ProductReceiptController::class, 'getRecipeData'])->name('production.get-recipe-data');
-    Route::get('production/get-detail/{id}', [ProductionController::class, 'get_detail_product'])->name('production.get-receipt');
+    Route::get('production/get-detail/{id}', [ProductionController::class, 'get_detail_product'])->name('production.get-detail');
     Route::delete('production/delete-detail/{id}', [ProductionController::class, 'delete_detail'])->name('production.delete_detail');
     Route::post('production/update-product-id/{id}', [ProductionController::class, 'update_product_id'])->name('production.update_product_id');
     Route::post('production/save-ajax', [ProductionController::class, 'save_additional_ingredient'])->name('production.save-ajax');
     Route::delete('production/delete-product/{id}', [ProductionController::class, 'delete_additional_ingredient'])->name('production.delete-ajax');
     Route::get('production/edit-product/{id}', [ProductionController::class, 'edit_additional_ingredient'])->name('production.edit-ajax');
-    Route::put('production/update-product/{id}', [ProductionController::class, 'update_additional_ingredient'])->name('production.edit-ajax');
-    Route::delete('production/delete-product/{id}', [ProductionController::class, 'delete_additional_ingredient'])->name('receipt.delete-ajax');
+    Route::put('production/update-product/{id}', [ProductionController::class, 'update_additional_ingredient'])->name('production.update-ajax');
+    Route::delete('production/delete-product/{id}', [ProductionController::class, 'delete_additional_ingredient'])->name('production.delete-ajax');
 
     Route::resource('receipt', ProductReceiptController::class)->names('receipt')->except('show');
     Route::post('receipt/save-ajax', [ProductReceiptController::class, 'save_additional_ingredient'])->name('receipt.save-ajax');
     Route::delete('receipt/delete-product/{id}', [ProductReceiptController::class, 'delete_additional_ingredient'])->name('receipt.delete-ajax');
     Route::get('receipt/edit-product/{id}', [ProductReceiptController::class, 'edit_additional_ingredient'])->name('receipt.edit-ajax');
-    Route::put('receipt/update-product/{id}', [ProductReceiptController::class, 'update_additional_ingredient'])->name('receipt.edit-ajax');
+    Route::put('receipt/update-product/{id}', [ProductReceiptController::class, 'update_additional_ingredient'])->name('receipt.update-ajax');
 
     Route::resource('parcel', ProductionParcelController::class)->names('parcel')->except('show');
     Route::get('parcel/show/{id}', [ProductionParcelController::class, 'show'])->name('parcel.show');

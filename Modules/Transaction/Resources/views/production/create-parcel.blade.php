@@ -1,4 +1,5 @@
 @extends('template.root')
+@section('title', 'Produksi Parcel')
 
 @section('content')
     <form id="kt_ecommerce_edit_order_form" class="form d-flex flex-column flex-lg-row"
@@ -11,21 +12,21 @@
         <!--begin::Main column-->
         <div class="d-flex flex-column flex-lg-row-fluid gap-7 gap-lg-10">
             <!--begin::Order details-->
-            <div class="card card-flush py-4">
+            <section class="erp-editor-section py-4">
                 <!--begin::Card header-->
-                <div class="card-header">
+                <div class="erp-detail-header">
                     <div class="card-title">
-                        <h2>Production Details</h2>
+                        <h2>Detail Produksi</h2>
                     </div>
                 </div>
                 <!--end::Card header-->
                 <!--begin::Card body-->
-                <div class="card-body pt-0">
+                <div class="erp-editor-body pt-0">
                     <div class="d-flex flex-column gap-10">
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="form-label">Production ID</label>
+                            <label class="form-label">Nomor Produksi</label>
                             <!--end::Label-->
                             <!--begin::Auto-generated ID-->
                             <div class="fw-bold fs-3">#{{ isset($data) ? $data->production_number : '14364' }}</div>
@@ -35,11 +36,11 @@
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="form-label">Quantity</label>
+                            <label class="form-label">Jumlah</label>
                             <!--end::Label-->
                             <!--begin::Auto-generated ID-->
                             <input type="number" name="quantity" id="quantity" class="form-control mb-2"
-                                placeholder="Enter Quantity"
+                                placeholder="Enter Jumlah"
                                 value="{{ isset($data) ? $data->quantity : old('quantity') }}" />
                             <!--end::Input-->
                         </div>
@@ -47,18 +48,18 @@
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="form-label">Budget</label>
+                            <label class="form-label">Anggaran</label>
                             <!--end::Label-->
                             <!--begin::Auto-generated ID-->
                             <input type="text" name="budget" id="budget" class="form-control format-number mb-2"
-                                placeholder="Enter Budget" value="{{ isset($data) ? $data->budget : old('budget') }}" />
+                                placeholder="Enter Anggaran" value="{{ isset($data) ? $data->budget : old('budget') }}" />
                             <!--end::Input-->
                         </div>
                         <!--end::Input group-->
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="required form-label">Production Date</label>
+                            <label class="required form-label">Tanggal Produksi</label>
                             <!--end::Label-->
                             <!--begin::Editor-->
                             <input id="kt_ecommerce_edit_order_date" name="production_date" placeholder="Select a date"
@@ -72,7 +73,7 @@
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="form-label">Pic</label>
+                            <label class="form-label">Penanggung jawab</label>
                             <!--end::Label-->
                             <!--begin::Auto-generated ID-->
                             <select name="staff_id" id="staff_id" class="form-select mb-2">
@@ -86,29 +87,29 @@
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="form-label">Fee</label>
+                            <label class="form-label">Biaya jasa</label>
                             <!--end::Label-->
                             <!--begin::Auto-generated ID-->
                             <input type="text" name="fee" id="fee" class="form-control format-number mb-2"
-                                placeholder="Enter Fee Product" value="{{ isset($data) ? $data->fee : old('fee') }}" />
+                                placeholder="Masukkan biaya jasa" value="{{ isset($data) ? $data->fee : old('fee') }}" />
                             <!--end::Input-->
                         </div>
                         <!--end::Input group-->
                     </div>
                 </div>
                 <!--end::Card header-->
-            </div>
+            </section>
             <!--end::Order details-->
             <!--begin::Order details-->
-            <div class="card card-flush py-4">
-                <div class="card-header">
+            <section class="erp-editor-section py-4">
+                <div class="erp-detail-header">
                     <div class="card-title">
                         <h2>Detail Bahan</h2>
                     </div>
                 </div>
                 <!--begin::Card body-->
                 @if (isset($data))
-                    <div class="card-body pt-0">
+                    <div class="erp-editor-body pt-0">
                         <div class="d-flex flex-column gap-10">
                             <!--begin::Table-->
                             <div class="table table-responsive">
@@ -131,12 +132,12 @@
                                 </table>
                                 <hr>
                                 <!--begin::Total price-->
-                                <div class="fw-bold fs-4">Plan Budget:
+                                <div class="fw-bold fs-4">Anggaran:
                                     <span id="">{{ tonumber($data->budget) }}</span>
                                 </div>
                                 <!--end::Total price-->
                                 <!--begin::Total price-->
-                                <div class="fw-bold fs-4">Actual Budget:
+                                <div class="fw-bold fs-4">Actual Anggaran:
                                     <span id="totalSemuaProduk">0.00</span>
                                 </div>
                                 <!--end::Total price-->
@@ -165,7 +166,7 @@
                     </div>
                 @endif
                 <!--end::Card header-->
-            </div>
+            </section>
             <!--end::Order details-->
 
             <div class="d-flex justify-content-end">
@@ -237,7 +238,7 @@
         });
 
         $('#staff_id').select2({
-            placeholder: 'Select a staff',
+            placeholder: 'Pilih penanggung jawab',
             ajax: {
                 url: '{{ route('staff.get-staff') }}',
                 dataType: 'json',
@@ -331,7 +332,7 @@
                 let sisa = budget - total;
                 let profit = total - totalHpp;
 
-                $('#sisaBudget').text(sisa.toLocaleString('id-ID', {
+                $('#sisaAnggaran').text(sisa.toLocaleString('id-ID', {
                     style: 'currency',
                     currency: 'IDR'
                 }));

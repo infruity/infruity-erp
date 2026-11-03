@@ -1,6 +1,10 @@
 <script>
     // Variabel penanda (flag) untuk mengizinkan navigasi.
     let isNavigationAllowed = false;
+    let hasUnsavedWholesaleChanges = false;
+    window.addEventListener('wholesale-dirty-state', event => {
+        hasUnsavedWholesaleChanges = event.detail.dirty;
+    });
     const allowedPath = '/expenditure/payment/';
 
     /**
@@ -38,7 +42,7 @@
 
     // Event listener utama yang mencegah pengguna meninggalkan halaman.
     window.addEventListener('beforeunload', function(event) {
-        if (!isNavigationAllowed) {
+        if (!isNavigationAllowed && hasUnsavedWholesaleChanges) {
             event.preventDefault();
             event.returnValue = '';
         }

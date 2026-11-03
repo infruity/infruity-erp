@@ -6,6 +6,7 @@ use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Transaction\Entities\StockOpname;
+use Modules\Transaction\Entities\ProductStock;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +19,11 @@ use Exception;
 class StockOpnameController extends Controller
 {
     use \App\Traits\HasAccessControl;
+
+    private function allowedOpname($id): StockOpname
+    {
+        return StockOpname::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
+    }
 
     /**
      * Display a listing of the resource.
@@ -74,12 +80,14 @@ class StockOpnameController extends Controller
             'product_id' => 'required|exists:products,id',
             'branch_id' => 'required|exists:branch,id',
             'date' => 'required|date',
-            'real_stock' => 'required|numeric',
+            'real_stock' => 'required|numeric|min:0',
             'note' => 'nullable|string',
             'details' => 'nullable|array',
             'details.*.name' => 'required|string',
-            'details.*.qty' => 'required|numeric',
+            'details.*.qty' => 'required|numeric|min:0',
         ]);
+
+        abort_unless(in_array((int) $validated['branch_id'], array_map('intval', UserBranch::getUserBranch()), true), 403);
 
         $existing = StockOpname::where('product_id', $validated['product_id'])
             ->where('branch_id', $validated['branch_id'])
@@ -101,6 +109,7 @@ class StockOpnameController extends Controller
                 ->where('branch_id', $validated['branch_id'])
                 ->first();
             if (!$productStock) {
+                DB::rollBack();
                 return response()->json([
                     'message' => 'Stok produk tidak ditemukan.',
                 ], 404);
@@ -137,6 +146,11 @@ class StockOpnameController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+                || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException
+                || $e instanceof \Illuminate\Validation\ValidationException) {
+                throw $e;
+            }
             return response()->json([
                 'message' => 'Transaksi gagal disimpan.',
                 'data' => $stock
@@ -171,7 +185,7 @@ class StockOpnameController extends Controller
             return $denied;
         }
 
-        $stock = StockOpname::with('product.unit')->findOrFail($id);
+        $stock = StockOpname::with('product.unit')->whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
         $stock->name = $stock->product->name;
 
         // Fetch latest history note
@@ -200,16 +214,23 @@ class StockOpnameController extends Controller
             'product_id' => 'required|exists:products,id',
             'branch_id' => 'required|exists:branch,id',
             'date' => 'required|date',
-            'real_stock' => 'required|numeric',
+            'real_stock' => 'required|numeric|min:0',
             'note' => 'nullable|string',
             'details' => 'nullable|array',
             'details.*.name' => 'required|string',
-            'details.*.qty' => 'required|numeric',
+            'details.*.qty' => 'required|numeric|min:0',
         ]);
+
+        abort_unless(in_array((int) $validated['branch_id'], array_map('intval', UserBranch::getUserBranch()), true), 403);
 
         try {
             DB::beginTransaction();
-            $stock = StockOpname::findOrFail($id);
+            $stock = StockOpname::whereIn('branch_id', UserBranch::getUserBranch())->lockForUpdate()->findOrFail($id);
+            abort_if($stock->status === 'selesai', 422, 'Stock opname yang sudah selesai tidak dapat diubah.');
+            if ((int) $stock->product_id !== (int) $validated['product_id']
+                || (int) $stock->branch_id !== (int) $validated['branch_id']) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['product_id' => 'Produk dan cabang stock opname tidak dapat diubah.']);
+            }
 
             $stock->product_id = $validated['product_id'];
             $stock->date = $validated['date'];
@@ -236,6 +257,11 @@ class StockOpnameController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+                || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException
+                || $e instanceof \Illuminate\Validation\ValidationException) {
+                throw $e;
+            }
             return response()->json([
                 'message' => 'Transaksi gagal diperbarui.',
             ], 500);
@@ -260,7 +286,8 @@ class StockOpnameController extends Controller
 
         try {
             DB::beginTransaction();
-            $stock = StockOpname::findOrFail($id);
+            $stock = StockOpname::whereIn('branch_id', UserBranch::getUserBranch())->lockForUpdate()->findOrFail($id);
+            abort_if($stock->status === 'selesai', 422, 'Stock opname yang sudah selesai tidak dapat dihapus.');
             $stock->delete();
             DB::commit();
             return response()->json([
@@ -278,11 +305,13 @@ class StockOpnameController extends Controller
 
     public function export(Request $request)
     {
+        $this->authorizeAccess('stock-opname.index');
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\StockOpnameExport($request), 'stock-opname-'.date('YmdHis').'.xlsx');
     }
 
     public function preview(Request $request)
     {
+        $this->authorizeAccess('stock-opname.index');
         $userBranches = UserBranch::getUserBranch();
         $query = StockOpname::with('product.unit')
             ->whereIn('stock_opname.branch_id', $userBranches);
@@ -326,22 +355,17 @@ class StockOpnameController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('stock-opname.index');
         $userBranches = UserBranch::getUserBranch();
         $query = StockOpname::with('product.unit')
             ->leftJoin('users', 'stock_opname.created_by', '=', 'users.id_user')
             ->leftJoin('branch', 'stock_opname.branch_id', '=', 'branch.id')
             ->leftJoin('products', 'stock_opname.product_id', '=', 'products.id')
-            ->leftJoin('product_stock', function ($j) {
-                $j->on('product_stock.id', '=', 'stock_opname.product_id')
-                  ->on('product_stock.branch_id', '=', 'stock_opname.branch_id');
-            })
             ->select(
                 'stock_opname.*',
                 'users.nm_user as creator_name',
                 'branch.name as branch_name',
                 'products.name as product_name',
-                'product_stock.avg_hpp as avg_hpp_calc',
-                'product_stock.stock_available as live_stock',
                 DB::raw('(SELECT COUNT(*) FROM stock_opname_discussions WHERE stock_opname_discussions.stock_opname_id = stock_opname.id) as discussions_count'),
                 DB::raw('(SELECT COUNT(*) FROM stock_opname_history WHERE stock_opname_history.stock_opname_id = stock_opname.id) as history_count')
             )
@@ -361,7 +385,7 @@ class StockOpnameController extends Controller
 
         $query->orderBy('stock_opname.created_at', 'desc');
 
-        return DataTables::of($query)
+        $response = DataTables::of($query)
             ->filter(function ($q) use ($request) {
                 if ($request->has('search') && !empty($request->search['value'])) {
                     $search = $request->search['value'];
@@ -375,11 +399,38 @@ class StockOpnameController extends Controller
             })
             ->addIndexColumn()
             ->make(true);
+
+        // Live stock and average HPP come from the product_stock view, which rebuilds the
+        // whole ledger per query. Joining it made both the page and the count query pay
+        // that cost; read it once, for the rows on this page only.
+        $payload = $response->getData(true);
+        $rows = $payload['data'] ?? [];
+        if ($rows !== []) {
+            $stocks = ProductStock::query()
+                ->whereIn('id', array_unique(array_column($rows, 'product_id')))
+                ->whereIn('branch_id', array_unique(array_column($rows, 'branch_id')))
+                ->get(['id', 'branch_id', 'stock_available', 'avg_hpp']);
+
+            $byKey = [];
+            foreach ($stocks as $stock) {
+                $byKey[$stock->id . '|' . $stock->branch_id] ??= $stock;
+            }
+
+            foreach ($rows as $i => $row) {
+                $stock = $byKey[$row['product_id'] . '|' . $row['branch_id']] ?? null;
+                $rows[$i]['avg_hpp_calc'] = $stock?->getRawOriginal('avg_hpp');
+                $rows[$i]['live_stock'] = $stock?->getRawOriginal('stock_available');
+            }
+            $payload['data'] = $rows;
+        }
+
+        return response()->json($payload, $response->getStatusCode(), $response->headers->all());
     }
 
     public function get_history($id)
     {
-        $stockOpname = StockOpname::with('product.unit')->findOrFail($id);
+        $this->authorizeAccess('stock-opname.index');
+        $stockOpname = StockOpname::with('product.unit')->whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
         
         $history = DB::table('stock_opname_history')
             ->leftJoin('users', 'stock_opname_history.created_by', '=', 'users.id_user')
@@ -416,7 +467,8 @@ class StockOpnameController extends Controller
 
     public function get_discussion($id)
     {
-        $stockOpname = StockOpname::with('product')->findOrFail($id);
+        $this->authorizeAccess('stock-opname.index');
+        $stockOpname = StockOpname::with('product')->whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
         
         $discussions = DB::table('stock_opname_discussions')
             ->leftJoin('users', 'stock_opname_discussions.created_by', '=', 'users.id_user')
@@ -434,7 +486,8 @@ class StockOpnameController extends Controller
 
     public function post_discussion(Request $request, $id)
     {
-        $stockOpname = StockOpname::findOrFail($id);
+        $this->authorizeAccess('stock-opname.index');
+        $stockOpname = $this->allowedOpname($id);
         
         $validated = $request->validate([
             'message' => 'required|string|max:1000'
@@ -475,10 +528,11 @@ class StockOpnameController extends Controller
         try {
             DB::beginTransaction();
 
-            $stock = StockOpname::findOrFail($id);
+            $stock = StockOpname::whereIn('branch_id', UserBranch::getUserBranch())->lockForUpdate()->findOrFail($id);
+            abort_if($stock->status === 'selesai', 422, 'Stock opname yang sudah selesai tidak dapat diubah.');
 
-            $oldRealStock = (double)$stock->real_stock;
-            $adjustQty = (double)$validated['qty'];
+            $oldRealStock = (float)$stock->real_stock;
+            $adjustQty = (float)$validated['qty'];
 
             if ($validated['type'] === 'up') {
                 $newRealStock = $oldRealStock + $adjustQty;
@@ -487,13 +541,14 @@ class StockOpnameController extends Controller
             }
 
             if ($newRealStock < 0) {
+                DB::rollBack();
                 return response()->json([
                     'message' => 'Stok fisik setelah penyesuaian tidak boleh kurang dari 0.'
                 ], 422);
             }
 
             $stock->real_stock = $newRealStock;
-            $stock->difference = $newRealStock - (double)$stock->stock;
+            $stock->difference = $newRealStock - (float)$stock->stock;
             $stock->updated_by = Auth::user()->id_user;
             $stock->save();
 
@@ -512,6 +567,11 @@ class StockOpnameController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+                || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException
+                || $e instanceof \Illuminate\Validation\ValidationException) {
+                throw $e;
+            }
             return response()->json([
                 'message' => 'Gagal melakukan penyesuaian stok: ' . $e->getMessage()
             ], 500);
@@ -532,21 +592,25 @@ class StockOpnameController extends Controller
         try {
             DB::beginTransaction();
 
-            $stockOpname = StockOpname::findOrFail($id);
+            $stockOpname = StockOpname::whereIn('branch_id', UserBranch::getUserBranch())
+                ->lockForUpdate()->findOrFail($id);
 
             if ($stockOpname->status === 'selesai') {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
                     'message' => 'Stock Opname sudah difinalisasi.'
                 ], 422);
             }
 
+            \Modules\Master\Entities\Product::whereKey($stockOpname->product_id)->lockForUpdate()->firstOrFail();
             $productStock = DB::table('product_stock')
                 ->where('id', $stockOpname->product_id)
                 ->where('branch_id', $stockOpname->branch_id)
                 ->first();
 
             if (!$productStock) {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
                     'message' => 'Stok produk tidak ditemukan.'
@@ -577,6 +641,11 @@ class StockOpnameController extends Controller
             ]);
         } catch (Exception $e) {
             DB::rollback();
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+                || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException
+                || $e instanceof \Illuminate\Validation\ValidationException) {
+                throw $e;
+            }
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal melakukan finalisasi: ' . $e->getMessage()

@@ -1,4 +1,5 @@
 @extends('template.root')
+@section('title', 'Transaksi pengeluaran')
 
 @section('content')
     <style>
@@ -87,8 +88,8 @@
     </style>
 
     <!--begin::Aside column-->
-    <div class="w-100 flex-lg-row-auto me-7 me-lg-10" x-data="posApp()" x-init="init()">
-        <div class="card card-body mb-3">
+    <div class="w-100 flex-lg-row-auto" x-data="posApp()" x-init="init()">
+        <div class="erp-editor"><div class="erp-editor-main"><section class="erp-editor-section"><header><i class="ph ph-identification-card" aria-hidden="true"></i><h2>Informasi transaksi</h2></header><div class="erp-editor-body">
             <div class="d-flex flex-column gap-10 mb-3">
                 <!--begin::Input group-->
                 <div class="row">
@@ -183,41 +184,18 @@
                 </div>
                 <!--end::Input group-->
             </div>
-        </div>
-        <div>
-            <div class="card card-body mb-3">
-                <div class="mb-4 d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="fs-5 fw-bold d-flex">Produk pengeluaran</span>
-                        <span class="text-danger">Diperbarui per {{ date('d/m/Y') }}</span>
-                    </div>
-                    <div class="btn-group">
+        </div></section><section class="erp-editor-section"><header><i class="ph ph-shopping-cart" aria-hidden="true"></i><h2>Item transaksi</h2><div style="margin-left:auto"><div class="btn-group">
                         <button type="button" class="btn btn-outline btn-outline-dashed btn-outline-primary"
                             @click="openAddModal()">
                             <i class="fa fa-plus"></i>
                         </button>
-                    </div>
-                </div>
-                {{-- <button @click="openGiftModal()" x-show="isShowGiftButton" class="btn rounded-circle position-fixed"
-                    style="bottom: 60px; right: 25px; width: 60px; height: 60px; z-index: 1050; display: flex; align-items: center; justify-content: center;">
-                    <i class="ki-duotone ki-gift" style="font-size: 30px; color: green;">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                        <span class="path3"></span>
-                        <span class="path4"></span>
-                    </i>
-                </button> --}}
-                {{-- <!-- Cart --> --}}
-                @include('pos::expenditure.segment.cart')
-            </div>
-
-            <div class="card card-body">
+                    </div></div></header>@include('pos::expenditure.segment.cart')</section></div><aside class="erp-editor-summary"><h2>Ringkasan transaksi</h2>
                 {{-- Ringkasan --}}
                 @include('pos::expenditure.segment.ringkasan')
-            </div>
+            </aside></div>
 
             @include('pos::expenditure.segment.modal-product')
-        </div>
+
     </div>
     <!--end::Aside column-->
     @include('pos::expenditure.js-create')

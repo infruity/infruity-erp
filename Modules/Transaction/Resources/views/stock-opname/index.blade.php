@@ -1,8 +1,14 @@
 @extends('template.root')
+@section('title', 'Stok Opname')
 
 @section('content')
-    <div class="pos-index-page">
+    <div class="pos-index-page stock-opname-page">
         <style>
+            .stock-opname-page #transaction-table { table-layout:fixed; }
+            .stock-opname-page .so-card { min-width:0; max-width:100%; }
+            .stock-opname-page .so-card-actions { row-gap:12px; }
+            @media(max-width:767px) { .stock-opname-page .so-card { padding:20px; } }
+
             .pos-index-page .pos-index-search {
                 width: 100%;
                 max-width: 320px;
@@ -81,20 +87,20 @@
             }
 
             .stock-opname-modal .time-card {
-                border: 1px solid #dbe6ff;
+                border: 1px solid var(--erp-border);
                 border-radius: 14px;
-                background: #edf3ff;
+                background: var(--erp-primary-soft);
                 padding: 1rem;
                 margin-bottom: 1.5rem;
             }
 
             .stock-opname-modal .time-title {
-                color: #2557d6;
+                color: var(--erp-primary);
                 font-weight: 700;
             }
 
             .stock-opname-modal .time-subtitle {
-                color: #4f73ca;
+                color: var(--erp-primary);
                 font-size: 0.9rem;
             }
 
@@ -113,7 +119,7 @@
 
             .stock-opname-modal .stock-box.stock-input {
                 background: #fff;
-                border: 2px solid #2f66ef;
+                border: 2px solid var(--erp-primary);
                 color: #111827;
             }
 
@@ -253,14 +259,14 @@
             }
 
             .so-stock-box.is-active {
-                border: 1.5px solid #dbe6ff;
-                background: #f5f8ff;
+                border: 1.5px solid var(--erp-border);
+                background: var(--erp-primary-soft);
                 cursor: pointer;
             }
 
             .so-stock-box.is-active:hover {
-                border-color: #2f66ef;
-                background: #edf3ff;
+                border-color: var(--erp-primary);
+                background: var(--erp-primary-soft);
                 transform: translateY(-1px);
             }
 
@@ -294,7 +300,7 @@
             }
 
             .so-stock-label.is-primary {
-                color: #2563eb;
+                color: var(--erp-primary);
             }
 
             .so-stock-number {
@@ -304,7 +310,7 @@
             }
 
             .so-stock-number.is-primary {
-                color: #2563eb;
+                color: var(--erp-primary);
             }
 
             .so-match-section {
@@ -395,12 +401,12 @@
             }
 
             .so-btn-icon-clean.is-blue {
-                color: #0d6efd;
+                color: var(--erp-primary, #0b595b);
             }
 
             .so-btn-icon-clean.is-blue:hover {
-                background-color: #eef2ff;
-                color: #0056b3;
+                background-color: var(--erp-primary-soft);
+                color: var(--erp-primary-hover);
             }
 
             .so-btn-quick-adj {
@@ -514,8 +520,8 @@
             }
 
             .history-action-badge.is-initial {
-                background-color: #eef2ff;
-                color: #4f46e5;
+                background-color: var(--erp-info-soft);
+                color: var(--erp-info);
             }
 
             .history-action-badge.is-update {
@@ -602,8 +608,8 @@
             }
 
             .chat-message-container.is-self .chat-message-bubble {
-                background-color: #eef2ff;
-                color: #312e81;
+                background-color: var(--erp-primary-soft);
+                color: var(--erp-primary);
                 border-top-right-radius: 4px;
             }
 
@@ -627,7 +633,7 @@
             }
 
             .chat-message-container.is-self .chat-message-author {
-                color: #4f46e5;
+                color: var(--erp-primary);
             }
 
             .chat-message-time {
@@ -645,45 +651,56 @@
                 background-color: #fbfcff;
                 border-top: 1px solid #eef1f7;
             }
+
+            /* Infruity inventory theme: compact, warm-neutral, green-led. */
+            .stock-opname-page { font-family:'Plus Jakarta Sans',sans-serif; color:#1f2937; }
+            .stock-opname-page > .card { border:1px solid #f1f3f5!important; border-radius:16px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.04),0 6px 16px rgba(0,0,0,.04); }
+            .stock-opname-page .card-header { border-color:#f1f3f5; }
+            .stock-opname-page .pos-index-search .form-control { height:44px; border:1px solid #e5e7eb; border-radius:12px; background:#f9fafb; font-family:inherit; font-size:14px; }
+            .stock-opname-page .pos-index-filter-btn { min-height:42px; border-radius:12px; font-family:inherit; font-size:12px; font-weight:600; }
+            .stock-opname-page .btn-light-primary { border:1px solid #d5e8df; background:#edf7f2; color:#0b595b; }
+            .stock-opname-page .btn-light-primary:hover { background:#e1f2e9; color:#0b595b; }
+            .stock-opname-page .btn-primary { border-color:#0b595b; background:#0b595b; }
+            .stock-opname-page .btn-primary:hover { border-color:#08484a; background:#08484a; }
+            .stock-opname-page .stock-opname-add { position:fixed; right:24px; bottom:24px; z-index:1050; display:flex; width:52px; height:52px; align-items:center; justify-content:center; border:0; border-radius:17px; background:#0b595b; box-shadow:0 8px 20px rgba(11,89,91,.24); color:#fff; }
+            .stock-opname-page .stock-opname-add:hover { background:#08484a; color:#fff; }
+            .stock-opname-page .menu-sub-dropdown { overflow:hidden; border:1px solid #edf0f2; border-radius:16px; box-shadow:0 12px 32px rgba(15,23,42,.12); }
+            .stock-opname-page .stock-opname-modal .modal-content { border-radius:24px; }
+            .stock-opname-page .stock-opname-modal .modal-header { padding:12px 20px; border-color:#f1f3f5; }
+            .stock-opname-page .stock-opname-modal .modal-title { color:#1f2937; font-size:16px; letter-spacing:0; }
+            .stock-opname-page .stock-opname-modal .btn-close-soft { width:32px; height:32px; background:#f3f4f6; }
+            .stock-opname-page .stock-opname-modal .modal-body { padding:20px; background:#fff; }
+            .stock-opname-page .stock-opname-modal .time-card { border-color:#cfe8da; background:#edf7f2; }
+            .stock-opname-page .stock-opname-modal .time-title,
+            .stock-opname-page .stock-opname-modal .time-subtitle { color:#0b595b; }
+            .stock-opname-page .stock-opname-modal .stock-box.stock-input { border-color:#0b595b; box-shadow:0 0 0 3px rgba(11,89,91,.08); }
+            .stock-opname-page .so-stock-box.is-active { border-color:#cfe8da; background:#edf7f2; }
+            .stock-opname-page .so-stock-box.is-active:hover { border-color:#0b595b; background:#e1f2e9; }
+            .stock-opname-page .so-stock-label.is-primary,
+            .stock-opname-page .so-stock-number.is-primary { color:#0b595b; }
+            .stock-opname-page .so-btn-icon-clean.is-blue { color:#0b595b; }
+            .stock-opname-page .so-btn-icon-clean.is-blue:hover { background:#edf7f2; color:#08484a; }
+            .stock-opname-page .chat-message-container.is-self .chat-message-bubble { background:#edf7f2; color:#164e42; }
+            .stock-opname-page .chat-message-container.is-self .chat-message-author { color:#0b595b; }
+            .stock-opname-page #kt_stock_opname_discussion_footer { background:#f9fafb; border-color:#f1f3f5; }
+            .stock-opname-page .history-action-badge.is-initial { background:#edf7f2; color:#0b595b; }
+            .stock-opname-page .history-qty-badge { border-radius:999px; background:#edf7f2; color:#0b595b; }
+            @media (max-width:767.98px) {
+                .stock-opname-page { padding-bottom:calc(76px + env(safe-area-inset-bottom)); }
+                .stock-opname-page > .card { min-height:100%; border:0!important; border-radius:0; box-shadow:none; }
+                .stock-opname-page .card-header { gap:10px!important; padding:12px 16px!important; }
+                .stock-opname-page .pos-index-search .form-control { height:44px; font-size:14px; }
+                .stock-opname-page .pos-index-filter-toolbar { display:grid!important; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px!important; }
+                .stock-opname-page .pos-index-filter-btn { width:auto; min-width:0; min-height:40px; padding:0 8px!important; }
+                .stock-opname-page .pos-index-filter-btn i { font-size:16px!important; }
+                .stock-opname-page #active-branch-button-label { max-width:90px; }
+                .stock-opname-page .stock-opname-add { right:16px; bottom:calc(84px + env(safe-area-inset-bottom)); width:48px; height:48px; border-radius:16px; }
+                .stock-opname-page .card-body { padding:0 16px 16px!important; }
+                .stock-opname-page .stock-opname-modal .modal-dialog { margin:12px; }
+                .stock-opname-page .stock-opname-modal .modal-body { padding:16px; }
+            }
         </style>
-        <div class="card card-flush" style="border:0px">
-            <div class="card-header align-items-stretch py-3 gap-3 flex-column flex-md-row">
-                <div class="card-title flex-grow-1 w-100 mb-0">
-                    <div class="d-flex align-items-center position-relative my-1 pos-index-search">
-                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4"></i>
-                        <input type="text" data-kt-ecommerce-product-filter="search" id="search"
-                            class="form-control form-control-solid w-100 ps-12" placeholder="Cari Transaksi" />
-                    </div>
-                </div>
-                <div class="card-toolbar w-100 w-md-auto ms-md-auto">
-                    <div class="d-flex align-items-center justify-content-md-end pos-index-filter-toolbar gap-3"
-                        data-kt-user-table-toolbar="base">
-                        <button type="button" class="btn btn-light-success px-4 pos-index-filter-btn"
-                            onclick="exportExcel()">
-                            <i class="ki-duotone ki-file-down fs-2">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                            </i>
-                            <span class="d-none d-sm-inline">Export Excel</span>
-                        </button>
-                        <button type="button" class="btn btn-light-info px-4 pos-index-filter-btn"
-                            onclick="previewStock()">
-                            <i class="ki-duotone ki-eye fs-2">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                                <span class="path3"></span>
-                            </i>
-                            <span class="d-none d-sm-inline">Preview Stock</span>
-                        </button>
-                        <button type="button" class="btn btn-light-primary px-4 pos-index-filter-btn"
-                            data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                            <i class="ki-duotone ki-filter fs-2">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                            </i>
-                            <span id="active-branch-button-label">Cabang</span>
-                        </button>
-                        <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+        <x-erp.workspace title="Stok Opname" subtitle="Cocokkan stok fisik dan stok sistem."><x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" placeholder="Cari stok opname…" aria-label="Cari stok opname"></div><button class="erp-action" type="button" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
                             <div class="px-7 py-5">
                                 <div class="fs-5 text-gray-900 fw-bold">Pilihan Filter</div>
                             </div>
@@ -717,37 +734,19 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!--begin::Card body-->
-            <div class="card-body p-0">
-                <!--begin::Table-->
-                <table class="table fs-6" id="transaction-table" width="100%">
+                        </div>@if(check_access('stock-opname.create'))<button type="button" class="erp-action erp-action--primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer"><i class="ph ph-plus" aria-hidden="true"></i>Tambah stok opname</button>@endif</x-slot:toolbar><div class="erp-table-region"><table class="table fs-6" id="transaction-table" width="100%">
                     <thead class="d-none">
                         <tr>
                             <th>Transaksi</th>
                         </tr>
                     </thead>
                     <tbody class="fw-semibold text-gray-600"></tbody>
-                </table>
-                <!--end::Table-->
-            </div>
-            <!--end::Card body-->
-        </div>
+                </table></div></x-erp.workspace>
     </div>
-    <button type="button" class="btn btn-primary rounded-circle shadow-lg position-fixed"
-        style="bottom: 60px; right: 30px; width: 60px; height: 60px; z-index: 1050; display: flex; align-items: center; justify-content: center;"
-        data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer">
-        <i class="ki-duotone ki-plus fs-3x text-white">
-            <span class="path1"></span>
-            <span class="path2"></span>
-        </i>
-    </button>
+
     <div class="modal fade stock-opname-modal" id="kt_modal_add_customer" tabindex="-1" aria-hidden="true">
         <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog erp-sheet-dialog modal-lg">
             <!--begin::Modal content-->
             <div class="modal-content" style="border-radius: 20px;">
                 <!--begin::Form-->
@@ -795,7 +794,7 @@
                                 </div>
                                 <div class="col-md-6 fv-row">
                                     <label class="required form-label text-gray-800 fw-bold fs-7 mb-2">Pilih Produk</label>
-                                    <select class="form-select" style="border-color: #a3bfff;" name="product_id"
+                                    <select class="form-select" style="border-color: var(--erp-border);" name="product_id"
                                         id="product_id" data-placeholder="Pilih Produk">
                                         <option value="">Pilih Product</option>
                                     </select>
@@ -821,7 +820,7 @@
                                         <label class="form-label text-primary fw-bold mb-3 text-uppercase"
                                             style="font-size: 0.75rem; letter-spacing: 0.05em;">Stock Fisik (Audit)</label>
                                         <div class="input-group"
-                                            style="border: 1px solid #a3bfff; border-radius: 0.475rem; overflow: hidden;">
+                                            style="border: 1px solid var(--erp-border); border-radius: 0.475rem; overflow: hidden;">
                                             <input type="number" step="0.01"
                                                 class="form-control text-end fw-bolder border-0" name="real_stock"
                                                 value="0"
@@ -1003,7 +1002,7 @@
                 <div class="card-title d-flex flex-column align-items-start">
                     <h3 class="fw-bold text-gray-900 mb-1 d-flex align-items-center gap-2">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #0d6efd;">
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--erp-primary, #0b595b);">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                         </svg>
                         Ruang Diskusi
@@ -1043,7 +1042,7 @@
                     <input type="text" class="form-control form-control-solid rounded-pill px-4"
                         id="discussion-message-input" placeholder="Tulis pesan..." required autocomplete="off">
                     <button type="submit" class="btn btn-primary btn-icon rounded-circle w-40px h-40px flex-shrink-0"
-                        style="background-color: #3b82f6; border-color: #3b82f6;">
+                        style="background-color: var(--erp-primary, #0b595b); border-color: var(--erp-primary, #0b595b);">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white"
                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="22" y1="2" x2="11" y2="13" />
@@ -1092,7 +1091,7 @@
                     html: alertHtml,
                     icon: 'warning',
                     confirmButtonText: 'Mengerti',
-                    confirmButtonColor: '#f1416c',
+                    confirmButtonColor: '#dc2626',
                     allowOutsideClick: false
                 });
             }
@@ -1232,9 +1231,9 @@
             return `
                 <div class="so-card d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
                     <!-- Left: Info -->
-                    <div class="d-flex flex-column flex-grow-1" style="min-width: 280px;">
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <h4 class="so-card-title mb-0">${escapeHtml(productName)}</h4>
+                    <div class="d-flex flex-column flex-grow-1" style="min-width:0; flex:1;">
+                        <div class="d-flex align-items-start gap-2 mb-1">
+                            <h4 class="so-card-title mb-0" style="min-width:0;flex:1;overflow-wrap:anywhere">${escapeHtml(productName)}</h4>
                             ${statusHtml}
                         </div>
                         <div class="d-flex align-items-center gap-2 mb-2 flex-wrap text-muted fs-7">
@@ -1281,7 +1280,7 @@
                     <div class="so-mobile-divider d-lg-none mt-2 mb-3"></div>
 
                     <!-- Right: Match, Actions, Delete -->
-                    <div class="d-flex align-items-center justify-content-between justify-content-lg-end gap-2 gap-lg-3 flex-nowrap w-100 w-lg-auto">
+                    <div class="so-card-actions d-flex align-items-center justify-content-between justify-content-lg-end gap-2 gap-lg-3 flex-wrap w-100 w-lg-auto">
                         <!-- Value Match -->
                         <div class="so-match-section d-none d-lg-flex">
                             <span class="so-match-label">${stockMatchLabel}</span>
@@ -2027,13 +2026,13 @@
                                                     ${formattedTime}
                                                 </span>
                                             </div>
-                                            
+
                                             <div class="history-note-text ${detailsHtml ? '' : 'mb-3'}">
                                                 "${escapeHtml(item.note || '')}"
                                             </div>
-                                            
+
                                             ${detailsHtml}
-                                            
+
                                             <div class="d-flex align-items-center justify-content-between">
                                                 <div class="d-flex align-items-center gap-2">
                                                     <img src="${avatarUrl}" class="so-creator-avatar" alt="Avatar">

@@ -1,151 +1,34 @@
 @extends('template.root')
-
+@section('title', 'Deposito - CRM')
+@section('page-title', 'Deposito')
 @section('content')
-    {{-- @livewire('product-table') --}}
-    <div>
-        <div class="card card-flush">
-            <!--begin::Card header-->
-            <div class="card-header align-items-center py-5 gap-2 gap-md-5">
-                <!--begin::Card title-->
-                <div class="card-title">
-                    <!--begin::Search-->
-                    <div class="d-flex align-items-center position-relative my-1">
-                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4"></i>
-                        <input type="text" data-kt-ecommerce-product-filter="search" id="search"
-                            class="form-control form-control-solid w-250px ps-12" placeholder="Search Transaction" />
-                    </div>
-                    <!--end::Search-->
-                </div>
-                <!--end::Card title-->
-                <!--begin::Card toolbar-->
-                <div class="card-toolbar flex-row-fluid justify-content-end gap-5">
-                    <!--begin::Add product-->
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                        data-bs-target="#kt_modal_add_customer">Add Deposito</button>
-                    <!--end::Add product-->
-                </div>
-                <!--end::Card toolbar-->
+@include('crm::partials.assets')
+<x-erp.workspace title="Deposito" subtitle="Kelola deposito pelanggan dan tier yang digunakan." icon="ph-wallet">
+    <x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" placeholder="Cari deposito…" aria-label="Cari deposito"></div>
+            @if (check_access('deposito.create'))
+            <button type="button" class="erp-action erp-action--primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer" data-crm-create><i class="ph-bold ph-plus" aria-hidden="true"></i><span>Tambah Deposito</span></button>
+            @endif</x-slot:toolbar>
+    <x-erp.collection table="transaction-table">
+        <table id="transaction-table" class="table erp-crm-table" width="100%"><thead><tr><th scope="col">Pelanggan</th><th scope="col">Tanggal</th><th scope="col">Deposito</th><th scope="col">Aksi</th></tr></thead><tbody></tbody></table>
+    </x-erp.collection>
+</x-erp.workspace>
+<div class="modal fade erp-crm-drawer" id="kt_modal_add_customer" tabindex="-1" aria-labelledby="crm-form-title" aria-hidden="true">
+    <div class="modal-dialog erp-sheet-dialog"><div class="modal-content">
+        <form id="kt_modal_add_customer_form" class="erp-crm-form" action="{{ url(Request::segment(1)) }}" data-kt-redirect="#">@csrf
+            <div id="kt_modal_add_customer_header" class="erp-sheet-header">
+                <div><h2 id="crm-form-title">Tambah Deposito</h2><p>Pilih pelanggan dan tier deposito.</p></div>
+                <button type="button" id="kt_modal_add_customer_close" class="erp-action erp-crm-close" aria-label="Tutup formulir"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
             </div>
-            <!--end::Card header-->
-            <!--begin::Card body-->
-            <div class="card-body pt-0">
-                <!--begin::Table-->
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="transaction-table" width="100%">
-                    <thead>
-                        <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                            {{-- <th class="w-10px pe-2">
-                                <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                                    <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                        data-kt-check-target="#kt_ecommerce_sortir_table .form-check-input"
-                                        value="1" />
-                                </div>
-                            </th> --}}
-                            <th class="text-start min-w-100px">Name</th>
-                            <th class="text-start min-w-100px">Tanggal</th>
-                            <th class="text-start min-w-100px">Deposito</th>
-                            <th class=""></th>
-                        </tr>
-                    </thead>
-                    <tbody class="fw-semibold text-gray-600"></tbody>
-                </table>
-                <!--end::Table-->
+            <div class="erp-sheet-body"><div class="erp-crm-fields">
+                <div class="erp-crm-form-error" data-crm-form-error role="alert" tabindex="-1" hidden></div>
+<div class="erp-crm-field"><label for="crm-date">Tanggal</label><input id="crm-date" type="date" name="date" class="form-control" value="{{ date('Y-m-d') }}" required></div><div class="erp-crm-field"><label for="customer_id">Pelanggan</label><select id="customer_id" name="customer_id" class="form-select" required><option value="">Pilih pelanggan</option></select></div><div class="erp-crm-field"><label for="tier_id">Tier deposito</label><select id="tier_id" name="tier_id" class="form-select" required><option value="">Pilih tier</option></select></div><div class="erp-crm-field"><label for="crm-deposito">Nominal deposito</label><input id="crm-deposito" type="text" name="deposito" class="form-control format-number" inputmode="numeric" readonly><p class="erp-crm-help">Nominal mengikuti tier deposito yang dipilih.</p></div>
+            </div></div>
+            <div class="erp-sheet-footer">
+                <button type="button" id="kt_modal_add_customer_cancel" class="erp-action">Batal</button>
+                <button type="submit" id="kt_modal_add_customer_submit" class="erp-action erp-action--primary"><span class="indicator-label">Simpan</span><span class="indicator-progress">Menyimpan… <span class="spinner-border spinner-border-sm" aria-hidden="true"></span></span></button>
             </div>
-            <!--end::Card body-->
-        </div>
-    </div>
-    <div class="modal fade" id="kt_modal_add_customer" tabindex="-1" aria-hidden="true">
-        <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-650px">
-            <!--begin::Modal content-->
-            <div class="modal-content">
-                <!--begin::Form-->
-                <form class="form" action="{{ url(Request::segment(1)) }}" id="kt_modal_add_customer_form"
-                    data-kt-redirect="#">
-                    @csrf
-                    <!--begin::Modal header-->
-                    <div class="modal-header" id="kt_modal_add_customer_header">
-                        <!--begin::Modal title-->
-                        <h2 class="fw-bold">Tambahkan Deposito</h2>
-                        <!--end::Modal title-->
-                        <!--begin::Close-->
-                        <div id="kt_modal_add_customer_close" class="btn btn-icon btn-sm btn-active-icon-primary">
-                            <i class="ki-outline ki-cross fs-1"></i>
-                        </div>
-                        <!--end::Close-->
-                    </div>
-                    <!--end::Modal header-->
-                    <!--begin::Modal body-->
-                    <div class="modal-body py-5 px-lg-17">
-                        <!--begin::Scroll-->
-                        <div class="scroll-y me-n7 pe-7" id="kt_modal_add_customer_scroll" data-kt-scroll="true"
-                            data-kt-scroll-activate="{default: false, lg: true}" data-kt-scroll-max-height="auto"
-                            data-kt-scroll-dependencies="#kt_modal_add_customer_header"
-                            data-kt-scroll-wrappers="#kt_modal_add_customer_scroll" data-kt-scroll-offset="300px">
-                            <br>
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-5">
-                                <!--begin::Label-->
-                                <label class="fs-6 fw-semibold mb-2">Tanggal</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="date" class="form-control form-control" placeholder="" name="date"
-                                    value="{{ date('Y-m-d') }}" />
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-5">
-                                <!--begin::Label-->
-                                <label class="fs-6 fw-semibold mb-2">Customer</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <select name="customer_id" id="customer_id" class="form-control form-control"></select>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-5">
-                                <!--begin::Label-->
-                                <label class="fs-6 fw-semibold mb-2">Tier Deposito</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <select name="tier_id" id="tier_id" class="form-control form-control"></select>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-5">
-                                <!--begin::Label-->
-                                <label class="fs-6 fw-semibold mb-2">Deposito</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="text" class="form-control form-control format-number" placeholder=""
-                                    name="deposito" readonly/>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-                        </div>
-                        <!--end::Scroll-->
-                    </div>
-                    <!--end::Modal body-->
-                    <!--begin::Modal footer-->
-                    <div class="modal-footer flex-center">
-                        <!--begin::Button-->
-                        <button type="reset" id="kt_modal_add_customer_cancel" class="btn btn-light me-3">Batal</button>
-                        <!--end::Button-->
-                        <!--begin::Button-->
-                        <button type="submit" id="kt_modal_add_customer_submit" class="btn btn-primary">
-                            <span class="indicator-label">Simpan</span>
-                            <span class="indicator-progress">Please wait...
-                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                        </button>
-                        <!--end::Button-->
-                    </div>
-                    <!--end::Modal footer-->
-                </form>
-                <!--end::Form-->
-            </div>
-        </div>
-    </div>
-    @include('crm::deposito.js-deposito')
+        </form>
+    </div></div>
+</div>
 @endsection
+@include('crm::deposito.js-deposito')

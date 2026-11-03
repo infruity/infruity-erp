@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\InventorySnapshot;
 use Exception;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -113,16 +114,14 @@ class ProductionController extends Controller
         try {
             // Validasi stok bahan baku (seperti PosController saveTransaction)
             if (in_array($request->submit_type, ['draft', 'posting'])) {
+                // One stock query for all ingredients (the view rebuilds the whole ledger per call).
+                $stock = InventorySnapshot::stockAvailable(array_column((array) $request->ingredients, 'id'), $request->branch_id);
                 foreach ($request->ingredients as $ingredient) {
                     $requiredQty = (float)$ingredient['quantity'];
-                    $productName = Product::where('id', $ingredient['id'])->value('name') ?? 'Bahan #' . $ingredient['id'];
-
-                    $productStock = ProductStock::where('id', $ingredient['id'])
-                        ->where('branch_id', $request->branch_id)
-                        ->first();
-                    $currentStock = $productStock ? (float)$productStock->stock_available : 0;
+                    $currentStock = $stock[(int) $ingredient['id']] ?? 0.0;
 
                     if ($currentStock < $requiredQty) {
+                        $productName = Product::where('id', $ingredient['id'])->value('name') ?? 'Bahan #' . $ingredient['id'];
                         throw new \Exception("Stok bahan baku \"{$productName}\" tidak mencukupi. Stok tersedia: {$currentStock}, dibutuhkan: {$requiredQty}");
                     }
                 }
@@ -718,7 +717,7 @@ class ProductionController extends Controller
     public function get_data(Request $request)
     {
         try {
-            $query = Production::with(['products', 'branch', 'productionDetails', 'productionDetails.products', 'pos.customer'])
+            $query = Production::with(['products', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])
                 ->whereNotNull('product_id');
 
             if ($request->has('status_filter') && $request->status_filter !== 'all' && ! empty($request->status_filter)) {
@@ -875,6 +874,8 @@ class ProductionController extends Controller
                     return $html;
                 })
                 ->rawColumns(['name', 'action', 'status', 'production_date'])
+                // staff is eager-loaded only for the name label; keep it out of the JSON as before.
+                ->removeColumn('staff')
                 ->make(true);
 
         } catch (\Exception $e) {

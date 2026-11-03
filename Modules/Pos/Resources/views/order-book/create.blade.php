@@ -1,8 +1,9 @@
 @extends('template.root')
+@section('title', 'Pesanan')
 
 @section('content')
-    <div class="w-100 flex-lg-row-auto me-7 me-lg-10" x-data="posApp()" x-init="init()">
-        <div class="card card-body mb-3">
+    <div class="w-100 flex-lg-row-auto" x-data="posApp()" x-init="init()">
+        <div class="erp-editor"><div class="erp-editor-main"><section class="erp-editor-section"><header><i class="ph ph-note-pencil" aria-hidden="true"></i><h2>Informasi pesanan</h2></header><div class="erp-editor-body">
             <div class="d-flex flex-column gap-10 mb-3">
                 <!--begin::Input group-->
                 <div class="row">
@@ -68,33 +69,19 @@
                 </div>
                 <!--end::Input group-->
             </div>
-        </div>
-        <div>
-            <div class="card card-body mb-3">
-                <div class="mb-4 d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="fs-5 fw-bold d-flex">Masukkan Produk yang di Pesan</span>
-                        <span class="text-danger">Diperbarui per {{ date('d/m/Y') }}</span>
-                    </div>
-                </div>
-                <div>
-                    <textarea name="note" id="note" cols="30" rows="10" class="form-control"
-                        placeholder="Silahkan paste note disini">{{ $data->note ?? '' }}</textarea>
-                </div>
-            </div>
+        </div></section></div><aside class="erp-editor-summary"><h2>Rincian pesanan</h2><label for="note" class="form-label">Produk dan catatan pesanan</label><textarea name="note" id="note" rows="10" class="form-control" placeholder="Masukkan produk dan catatan pesanan">{{ $data->note ?? '' }}</textarea></aside></div>
             @include('pos::pos.segment.modal-customer')
-        </div>
-        <div class="d-flex align-items-center justify-content-between flex-nowrap gap-3 mt-1">
+        <div class="erp-editor-actions">
             <div class="flex-shrink-0 me-2">
                 <a href="{{ url('/order-book') }}"
-                    class="btn btn-sm btn-danger d-inline-flex align-items-center gap-2 px-3 py-2 shadow-sm text-nowrap">
+                    class="btn btn-sm btn-light d-inline-flex align-items-center gap-2 px-3 py-2 shadow-sm text-nowrap">
                     <i class="bi bi-arrow-left"></i>
                     <span>Kembali</span>
                 </a>
             </div>
             <div class="d-flex align-items-center gap-2 flex-nowrap ms-auto" x-data="{ loading: false }">
                 <button type="button"
-                    class="btn btn-sm btn-warning d-inline-flex align-items-center gap-2 px-3 py-2 shadow-sm text-nowrap"
+                    class="btn btn-sm btn-light d-inline-flex align-items-center gap-2 px-3 py-2 shadow-sm text-nowrap"
                     @click="loading = true; saveDraft(() => loading = false)" :disabled="loading">
                     <template x-if="!loading">
                         <span class="d-inline-flex align-items-center gap-2">
@@ -142,8 +129,7 @@
                         self.setDiscountGlobal(data.discount || 0);
                     });
 
-                    if (data.customer_id) {
-                        console.log(data);
+                    if (data?.customer_id && data.customer) {
                         let optionCustomer = new Option(data.customer.name, data.customer.id, true, true);
                         $('#customer_id').append(optionCustomer).val(data.customer.id).trigger('change');
                     }

@@ -8,6 +8,7 @@ use Illuminate\Routing\Controller;
 use Modules\Pos\Entities\PosModel;
 use Modules\Master\Entities\Staff;
 use Modules\Master\Entities\Branch;
+use Modules\Master\Entities\Customer;
 use Modules\Master\Entities\UserBranch;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
@@ -190,6 +191,23 @@ class DeliveryOrderController extends Controller
         if ($request->has('status_filter') && $request->status_filter !== 'all') {
             $query = $query->where('ongkir_status', $request->status_filter);
         }
+        $deliveryStatusFilter = $request->input('delivery_status_filter', 'all');
+        if ($deliveryStatusFilter === 'received') {
+            $query->where('ongkir_status', 'delivered');
+        } elseif ($deliveryStatusFilter === 'unreceived') {
+            $query->where(function ($statusQuery) {
+                $statusQuery->whereNull('ongkir_status')->orWhere('ongkir_status', '!=', 'delivered');
+            });
+        }
+
+        $paymentStatusFilter = $request->input('payment_status_filter', 'all');
+        if ($paymentStatusFilter === 'paid') {
+            $query->where('status', 'paid');
+        } elseif ($paymentStatusFilter === 'unpaid') {
+            $query->where(function ($statusQuery) {
+                $statusQuery->whereNull('status')->orWhere('status', '!=', 'paid');
+            });
+        }
         if ($request->has('cabang_filter') && $request->cabang_filter !== 'all') {
             $query = $query->where('branch_id', $request->cabang_filter);
         }
@@ -199,23 +217,65 @@ class DeliveryOrderController extends Controller
         $data = $query->orderBy('ongkir_status', 'asc')
         ->orderBy('created_at', 'desc');
         // dd($data);
+        $kurirCache = [];
+        $staffCache = [];
+
         return DataTables::of($data)
             ->addIndexColumn()
+            ->filterColumn('name', function ($query, $keyword) {
+                $term = trim($keyword);
+                $digits = preg_replace('/\\D+/', '', $term);
+                $phoneSearches = $digits === '' ? [] : [$digits];
+                if (strlen($digits) >= 7) {
+                    $normalizedPhone = Customer::normalizeWhatsapp($digits) ?? $digits;
+                    $phoneSearches[] = $normalizedPhone;
+                    if (strpos($normalizedPhone, '62') === 0) {
+                        $phoneSearches[] = '0' . substr($normalizedPhone, 2);
+                    }
+                }
+                $phoneSearches = array_values(array_unique($phoneSearches));
+                $like = "%{$term}%";
+
+                $query->where(function ($searchQuery) use ($like, $phoneSearches) {
+                    $searchQuery->whereHas('customer', function ($customerQuery) use ($like, $phoneSearches) {
+                        $customerQuery->where('name', 'like', $like);
+                        if ($phoneSearches !== []) {
+                            $phoneColumn = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(whatsapp, ''), '+', ''), '-', ''), ' ', ''), '(', ''), ')', ''), '.', '')";
+                            foreach ($phoneSearches as $phoneSearch) {
+                                $customerQuery->orWhereRaw($phoneColumn . ' like ?', ["%{$phoneSearch}%"]);
+                            }
+                        }
+                    })->orWhere('ongkir_address', 'like', $like);
+                });
+            })
+            ->filterColumn('courier', function ($query, $keyword) {
+                $like = '%' . trim($keyword) . '%';
+                $query->where(function ($courierQuery) use ($like) {
+                    $courierQuery->whereHas('courier', function ($kurirQuery) use ($like) {
+                        $kurirQuery->where('name', 'like', $like);
+                    })->orWhereExists(function ($staffQuery) use ($like) {
+                        $staffQuery->selectRaw('1')
+                            ->from('kurir')
+                            ->join('staff', 'staff.id', '=', 'kurir.staff_id')
+                            ->whereColumn('kurir.id', 'pos_transaction.courier_id')
+                            ->where('staff.name', 'like', $like);
+                    });
+                });
+            })
             ->addColumn('name', function ($item) {
+                $customerName = e($item->customer->name ?? 'Pelanggan Umum');
+                $customerPhone = e($item->customer->whatsapp ?? '');
+                $address = e($item->ongkir_address ?? '');
+                $orderId = e((string) $item->id);
                 $html = '<div class="d-flex align-items-center">';
                 $html .= '<div class="ms-5">';
-                if (isset($item->customer->name)) {
-                    $html .= '<a href="' . route('pos.show', $item->id) . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $item->customer->name ?? '-' . '</a>';
-                    $html .= '<br><span class="text-muted d-block fs-7">' . ($item->ongkir_address) . '</span>';
-                } else {
-                    $html .= '<a href="' . route('pos.show', $item->id) . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">Pelanggan Umum</a>';
-                    $html .= '<br><span class="text-muted d-block fs-7">' . ($item->ongkir_address) . '</span>';
-                }
+                $html .= '<a href="' . route('pos.show', $item->id) . '" data-delivery-order-id="' . $orderId . '" data-delivery-order-phone="' . $customerPhone . '" data-delivery-order-address="' . $address . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $customerName . '</a>';
+                $html .= '<br><span class="text-muted d-block fs-7">' . $address . '</span>';
                 $html .= '</div>';
                 $html .= '</div>';
                 return $html;
             })
-            ->addColumn('courier', function ($item) {
+            ->addColumn('courier', function ($item) use (&$kurirCache, &$staffCache) {
                 $courierName = '-';
                 $courierType = null;
                 $courierId = $item->courier_id;
@@ -224,12 +284,19 @@ class DeliveryOrderController extends Controller
                     $courierName = '-';
                 } else {
                     // Cek di tabel kurir untuk mendapatkan type (external atau internal)
-                    $kurir = \Modules\Master\Entities\Kurir::find($courierId);
+                    // Few couriers serve many orders; look each one up once per request.
+                    if (! array_key_exists($courierId, $kurirCache)) {
+                        $kurirCache[$courierId] = \Modules\Master\Entities\Kurir::find($courierId);
+                    }
+                    $kurir = $kurirCache[$courierId];
                     if ($kurir) {
                         $courierType = $kurir->type;
                         // Jika internal, ambil nama dari staff
                         if ($courierType === 'internal' && $kurir->staff_id) {
-                            $staff = \Modules\Master\Entities\Staff::find($kurir->staff_id);
+                            if (! array_key_exists($kurir->staff_id, $staffCache)) {
+                                $staffCache[$kurir->staff_id] = \Modules\Master\Entities\Staff::find($kurir->staff_id);
+                            }
+                            $staff = $staffCache[$kurir->staff_id];
                             $courierName = $staff ? $staff->name : 'Not found';
                         } else {
                             // External atau internal tanpa staff_id (edge case)
@@ -237,7 +304,10 @@ class DeliveryOrderController extends Controller
                         }
                     } else {
                         // Fallback: cek di tabel staff (untuk legacy data yang tidak ada di kurir)
-                        $staff = \Modules\Master\Entities\Staff::find($courierId);
+                        if (! array_key_exists($courierId, $staffCache)) {
+                            $staffCache[$courierId] = \Modules\Master\Entities\Staff::find($courierId);
+                        }
+                        $staff = $staffCache[$courierId];
                         $courierName = $staff ? $staff->name : 'Not found';
                         $courierType = $staff && $staff->is_kurir ? 'internal' : 'unknown';
                     }
@@ -254,10 +324,12 @@ class DeliveryOrderController extends Controller
                     default => 'badge-secondary'
                 };
 
+                $total = e(number_format((float) $item->total, 0, '.', ''));
+                $shippingFee = e(number_format((float) $item->ongkir, 0, '.', ''));
                 $html = '';
-                $html .= '<span class="text-muted d-block fs-5">' . ($courierName) . '</span>';
-                $html .= '<span class="badge ' . $typeClass . ' fs-8">' . $typeLabel . '</span>';
-                $html .= '<span class="text-muted d-block fs-8">Rp. ' . number_format($item->ongkir, 0, ',', '.') . '</span>';
+                $html .= '<span class="text-muted d-block fs-5" data-delivery-order-courier-name="">' . e($courierName) . '</span>';
+                $html .= '<span class="badge ' . $typeClass . ' fs-8" data-delivery-order-courier-type="' . e($typeLabel) . '">' . e($typeLabel) . '</span>';
+                $html .= '<span class="text-muted d-block fs-8" data-delivery-order-total="' . $total . '" data-delivery-order-shipping-fee="' . $shippingFee . '">Rp. ' . number_format($item->ongkir, 0, ',', '.') . '</span>';
                 return $html;
             })
             ->editColumn('ongkir', function ($item) {
@@ -293,21 +365,23 @@ class DeliveryOrderController extends Controller
                 return $html;
             })
             ->addColumn('status', function ($item) {
+                $deliveryState = $item->ongkir_status === 'delivered' ? 'received' : 'unreceived';
+                $paymentState = $item->status === 'paid' ? 'paid' : 'unpaid';
                 $html = '';
                 if ($item->ongkir_status == 'delivered') {
-                    $html .= '<span class="badge badge-light-success">Diterima</span>';
+                    $html .= '<span class="badge badge-light-success" data-delivery-order-delivery-status="' . $deliveryState . '">Diterima</span>';
                 } else if ($item->ongkir_status == 'draft') {
-                    $html .= '<span class="badge badge-light-danger">Belum Dikirm</span>';
+                    $html .= '<span class="badge badge-light-danger" data-delivery-order-delivery-status="' . $deliveryState . '">Belum Dikirm</span>';
                 } else {
-                    $html .= '<span class="badge badge-light-warning">' . $item->ongkir_status . '</span>';
+                    $html .= '<span class="badge badge-light-warning" data-delivery-order-delivery-status="' . $deliveryState . '">' . e($item->ongkir_status ?? 'Belum Diterima') . '</span>';
                 }
                 $html .= '<div class="d-flex"></div>';
                 if ($item->status == 'paid') {
-                    $html .= '<span class="badge badge-light-success">Lunas</span>';
+                    $html .= '<span class="badge badge-light-success" data-delivery-order-payment-status="' . $paymentState . '">Lunas</span>';
                 } else if ($item->status == 'draft') {
-                    $html .= '<span class="badge badge-light-danger">Belum Lunas</span>';
+                    $html .= '<span class="badge badge-light-danger" data-delivery-order-payment-status="' . $paymentState . '">Belum Lunas</span>';
                 } else {
-                    $html .= '<span class="badge badge-light-warning">' . $item->status . '</span>';
+                    $html .= '<span class="badge badge-light-warning" data-delivery-order-payment-status="' . $paymentState . '">' . e(ucfirst($item->status ?? 'Belum Lunas')) . '</span>';
                 }
                 return $html;
             })
@@ -321,7 +395,7 @@ class DeliveryOrderController extends Controller
                         <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
                 $html .= '
                             <li>
-                                <a class="dropdown-item" href="' . route('pos.show', $item->id) . '">
+                                <a class="dropdown-item" data-delivery-order-detail-trigger aria-label="Detail pengiriman" title="Detail pengiriman" href="' . route('pos.show', $item->id) . '">
                                     <i class="bi bi-eye"></i>
                                 </a>
                             </li>';

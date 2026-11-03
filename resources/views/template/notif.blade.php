@@ -1,27 +1,9 @@
-@if(Session::has('success'))
-<div class="alert alert-success">
-	<strong>Attention !!!</strong> 
-	<br>
-	<h6> <b>{{ Session::get('success') }}</b> </h6>
-</div>
+@if(session('success'))
+<div class="alert alert-success" role="status">{{ session('success') }}</div>
 @endif
-
-@if(Session::has('error'))
-<div class="alert alert-danger">
-	<strong>Attention !!!</strong> 
-	<br>
-	<b>{{  Session::get('error') }}</b>
-</div>
+@if(session('error'))
+<div class="alert alert-danger" role="alert">{{ session('error') }}</div>
 @endif
-
-@if (count($errors) > 0)
-<div class="alert alert-danger" style="margin-top: 10px">
-	<ul>
-		<strong>Attention !!!</strong> 
-		
-		@foreach ($errors->all() as $error)
-		<li>{{ $error }}</li>
-		@endforeach
-	</ul>
-</div>
+@if($errors->any())
+<div class="alert alert-danger" role="alert"><p class="fw-semibold mb-2">Data belum dapat disimpan</p><ul class="mb-0 ps-5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
 @endif

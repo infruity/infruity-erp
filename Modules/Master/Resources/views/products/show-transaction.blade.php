@@ -1,28 +1,16 @@
 @extends('template.root')
 
-@section('content')
-    <div>
-        <div class="card card-flush">
-            <!--begin::Card header-->
-            <div class="card-header align-items-center py-5 gap-2 gap-md-5">
-                <!--begin::Card title-->
-                <div class="card-title">
-                    <h3 class="fw-bold">Riwayat Transaksi HPP - {{ $product->name ?? 'Product' }}</h3>
-                </div>
-                <!--end::Card title-->
-                <!--begin::Card toolbar-->
-                <div class="card-toolbar flex-row-fluid justify-content-end gap-5">
-                    <a href="{{ url('product-stock') }}" class="btn btn-light-primary btn-sm">
-                        <i class="ki-outline ki-arrow-left fs-4"></i> Kembali
-                    </a>
-                </div>
-                <!--end::Card toolbar-->
-            </div>
-            <!--end::Card header-->
-            <!--begin::Card body-->
-            <div class="card-body pt-0">
-                <!--begin::Table-->
-                <table class="table table-bordered align-middle fs-6 gy-5 nowrap" id="product-transaction-table" width="100%">
+@section('title', 'Riwayat HPP')
+@section('page-title', 'Riwayat HPP')
+@section('page-breadcrumb')
+    <span>Inventaris</span>
+    <i class="ph ph-caret-right text-[0.55rem]"></i>
+    <a href="{{ route('product-stock') }}">Stok Barang</a>
+    <i class="ph ph-caret-right text-[0.55rem]"></i>
+    <span>Riwayat HPP</span>
+@endsection
+
+@section('content')<x-erp.workspace title="Riwayat HPP" :subtitle="$product->name"><x-slot:toolbar><label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="hpp-search" placeholder="Cari riwayat HPP…" aria-label="Cari riwayat HPP"></label><a href="{{ route('product-stock.show',$product->id) }}" class="erp-action">Pergerakan stok</a><a href="{{ route('product-transaction.show',$product->id) }}" class="erp-action erp-action--primary" aria-current="page">Pergerakan HPP</a><a href="{{ url('product-stock') }}" class="erp-action">Kembali</a></x-slot:toolbar><x-erp.collection table="product-transaction-table"><table class="table table-bordered align-middle fs-6 gy-5 nowrap" id="product-transaction-table" width="100%">
                     <thead>
                         <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
                             <th class="text-nowrap min-w-70px">Type</th>
@@ -42,75 +30,7 @@
                     </thead>
                     <tbody class="fw-semibold text-gray-600">
                     </tbody>
-                </table>
-                <!--end::Table-->
-            </div>
-            <!--end::Card body-->
-            <!--begin::Card body-->
-            <div class="card-body pt-0">
-                <!--begin::Check Balance Tables-->
-                <div class="row" id="check-balance">
-                    <!-- Left Table -->
-                    <div class="col-md-6">
-                        <table class="table table-bordered align-middle fs-6">
-                            <thead>
-                                <tr class="bg-success text-white">
-                                    <th class="fw-bold">Description</th>
-                                    <th class="fw-bold text-end">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody class="fw-semibold">
-                                <tr class="bg-light-success">
-                                    <td class="fw-bold">Grand Total</td>
-                                    <td class="text-end">Rp {{ toNumber($report->total_belanja) }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Total Belanja</td>
-                                    <td class="text-end">Rp {{ toNumber($report->total_belanja) }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- Right Table -->
-                    <div class="col-md-6">
-                        <table class="table table-bordered align-middle fs-6">
-                            <thead>
-                                <tr class="bg-success text-white">
-                                    <th class="fw-bold">Description</th>
-                                    <th class="fw-bold text-end">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody class="fw-semibold">
-                                <tr class="bg-light-success">
-                                    <td class="fw-bold">Grand Total</td>
-                                    <td class="text-end">Rp {{ tonumberround($report->total_cogs + $report->total_recovered_cogs + $report->last_asset, 0) }}</td>
-                                </tr>
-                                <tr>
-                                    <td>COGS/Var (recognized)</td>
-                                    <td class="text-end">Rp {{ tonumberround($report->total_cogs, 0) }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Recovered COGS</td>
-                                    <td class="text-end">Rp {{ tonumberround($report->total_recovered_cogs, 0) }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Lost Asset</td>
-                                    <td class="text-end">Rp {{ tonumberround($report->last_asset, 0) }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Opname (+/-)</td>
-                                    <td class="text-end">Rp -</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <!--end::Check Balance Tables-->
-            </div>
-            <!--end::Card body-->
-        </div>
-    </div>
-    <script type="text/javascript">
+                </table></x-erp.collection><section id="check-balance"><header class="erp-detail-header"><h2>Ringkasan rekonsiliasi</h2></header><dl class="erp-detail-grid"><div><dt>Grand Total</dt><dd>Rp {{ toNumber($report->total_belanja) }}</dd></div><div><dt>Total Belanja</dt><dd>Rp {{ toNumber($report->total_belanja) }}</dd></div></dl><dl class="erp-detail-grid"><div><dt>Grand Total</dt><dd>Rp {{ tonumberround($report->total_cogs + $report->total_recovered_cogs + $report->last_asset, 0) }}</dd></div><div><dt>COGS/Var (recognized)</dt><dd>Rp {{ tonumberround($report->total_cogs, 0) }}</dd></div><div><dt>Recovered COGS</dt><dd>Rp {{ tonumberround($report->total_recovered_cogs, 0) }}</dd></div><div><dt>Lost Asset</dt><dd>Rp {{ tonumberround($report->last_asset, 0) }}</dd></div><div><dt>Opname (+/-)</dt><dd>Rp -</dd></div></dl></section></x-erp.workspace><script type="text/javascript">
         var dataTable;
 
         function formatNumber(data) {
@@ -121,6 +41,7 @@
         }
 
         $(document).ready(function() {
+            $('#hpp-search').on('input', function(){ dataTable?.search(this.value).draw(); });
             dataTable = $('#product-transaction-table').DataTable({
                 pageLength: 100,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],

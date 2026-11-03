@@ -7,8 +7,44 @@
 @endsection
 
 @section('content')
-    <div x-data="{ filtersOpen: false, branchSearch: '', mobileBranch: 'all', mobileStatus: 'all' }" class="flex min-h-0 flex-1 flex-col -mx-4 md:mx-0">
-        <section class="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-none bg-white shadow-none lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm">
+    <div x-data="{
+        filtersOpen: false,
+        branchSearch: '',
+        mobileBranch: 'all',
+        mobileStatus: 'all',
+        mobileStartDate: '',
+        mobileEndDate: '',
+        toggleFilters() {
+            this.filtersOpen = !this.filtersOpen;
+            if (!this.filtersOpen) return;
+            this.mobileStatus = getWholesaleFilter('status') || 'all';
+            this.mobileBranch = getWholesaleFilter('branch') || 'all';
+            this.mobileStartDate = getWholesaleFilter('start');
+            this.mobileEndDate = getWholesaleFilter('end');
+            this.branchSearch = '';
+            filterWholesaleBranches('');
+        },
+        setMobileDateRange(period) {
+            const today = new Date();
+            const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const end = new Date(start);
+            if (period === 'week') {
+                start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+                end.setTime(start.getTime());
+                end.setDate(end.getDate() + 6);
+            }
+            const toInputDate = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            this.mobileStartDate = toInputDate(start);
+            this.mobileEndDate = toInputDate(end);
+        },
+        formatMobileDate(value) {
+            if (!value) return 'Pilih Tanggal';
+            const [year, month, day] = value.split('-').map(Number);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            return `${day} ${months[month - 1]} ${year}`;
+        }
+    }" class="flex min-h-0 flex-1 flex-col -mx-4 md:mx-0">
+        <section class="erp-surface relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-none bg-white shadow-none lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm">
             <header class="shrink-0 border-b border-gray-100 px-0 py-0 sm:px-4 sm:py-4 md:px-5">
                 <div class="mb-3 hidden items-center justify-between gap-3 md:mb-4 sm:flex">
                     <div class="min-w-0">
@@ -22,7 +58,7 @@
                     <x-erp.mobile-search class="erp-mobile-search-shell--always-visible erp-mobile-search-shell--fill erp-mobile-search-shell--flush">
                         <x-slot:input><input id="wholesale-search" type="search" placeholder="Cari cabang, nomor PO, atau bahan..." autocomplete="off" aria-label="Cari cabang, nomor PO, atau bahan" class="erp-mobile-search__input"></x-slot:input>
                         <x-slot:clear><button id="wholesale-search-clear" type="button" class="erp-mobile-search__clear hidden" aria-label="Hapus pencarian"><i class="ph-bold ph-x text-xs"></i></button></x-slot:clear>
-                        <x-slot:filter><button type="button" @click="filtersOpen = !filtersOpen; if (filtersOpen) { mobileStatus = getWholesaleFilter('status') || 'all'; mobileBranch = getWholesaleFilter('branch') || 'all'; branchSearch = ''; filterWholesaleBranches(''); }" :aria-expanded="filtersOpen" aria-label="Buka filter pengadaan" class="erp-mobile-search__filter" :class="filtersOpen ? 'is-active' : ''"><span class="icon-rounded text-xl leading-none" aria-hidden="true">tune</span><span id="wholesale-filter-dot" class="hidden absolute right-1 top-1 h-2 w-2 rounded-full bg-[#0b595b] ring-2 ring-white"></span></button></x-slot:filter>
+                        <x-slot:filter><button type="button" @click="toggleFilters()" :aria-expanded="filtersOpen" aria-label="Buka filter pengadaan" class="erp-mobile-search__filter" :class="filtersOpen ? 'is-active' : ''"><span class="icon-rounded text-xl leading-none" aria-hidden="true">tune</span><span id="wholesale-filter-dot" class="hidden absolute right-1 top-1 h-2 w-2 rounded-full bg-[#0b595b] ring-2 ring-white"></span></button></x-slot:filter>
                     </x-erp.mobile-search>
 
                     <div x-show="filtersOpen && window.matchMedia('(min-width: 768px)').matches" x-cloak @click.outside="filtersOpen = false" @keydown.escape.window="filtersOpen = false" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="translate-y-1 opacity-0 scale-95" x-transition:enter-end="translate-y-0 opacity-100 scale-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="translate-y-0 opacity-100 scale-100" x-transition:leave-end="translate-y-1 opacity-0 scale-95" class="absolute right-0 top-12 z-50 hidden w-72 rounded-2xl border border-gray-100 bg-white p-4 shadow-xl md:block">
@@ -81,47 +117,82 @@
         <template x-teleport="body">
             <div x-show="filtersOpen && window.matchMedia('(max-width: 767px)').matches" x-cloak class="fixed inset-0 z-[100] flex flex-col justify-end md:hidden" role="dialog" aria-modal="true" aria-label="Filter pengadaan">
                 <button type="button" class="absolute inset-0 bg-black/70" @click="filtersOpen = false" aria-label="Tutup filter"></button>
-                <section x-show="filtersOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full" class="relative max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl">
-                    <div class="flex justify-center pt-3 pb-1"><div class="h-1.5 w-14 rounded-full bg-gray-300"></div></div>
-                    <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-                        <div><h2 class="text-lg font-bold text-gray-900">Filter Pengadaan</h2><p class="mt-0.5 text-[11px] text-gray-400">Saring cabang dan status pengadaan.</p></div>
+                <section x-show="filtersOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full" class="relative flex max-h-[85vh] flex-col overflow-hidden rounded-t-3xl bg-white pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl">
+                    <div class="flex shrink-0 justify-center pt-3 pb-1"><div class="h-1.5 w-14 rounded-full bg-gray-300"></div></div>
+                    <div class="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-4">
+                        <div><h2 class="text-lg font-bold text-gray-900">Filter Pengadaan</h2><p class="mt-0.5 text-[11px] text-gray-400">Saring cabang tujuan, status, dan periode tanggal.</p></div>
                         <button type="button" @click="filtersOpen = false" class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600" aria-label="Tutup"><i class="ph-bold ph-x"></i></button>
                     </div>
-                    <div class="space-y-5 px-5 py-5">
-                        <div>
-                            <label for="wholesale-mobile-branch-search" class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-gray-500">Cabang Tujuan</label>
-                            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
-                                <div class="relative border-b border-gray-100">
-                                    <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400" aria-hidden="true"></i>
-                                    <input id="wholesale-mobile-branch-search" type="search" x-model="branchSearch" @input="filterWholesaleBranches(branchSearch)" placeholder="Cari cabang..." class="h-10 w-full bg-transparent pl-9 pr-3 text-xs outline-none focus:bg-gray-50">
+                    <div class="min-h-0 flex-1 overflow-y-auto overscroll-none p-5">
+                        <div class="space-y-4">
+                            <div>
+                                <div class="mb-1.5 flex items-center justify-between">
+                                    <label for="wholesale-mobile-branch-search" class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Cabang Tujuan</label>
+                                    <button type="button" x-show="mobileBranch !== 'all'" @click="mobileBranch = 'all'" class="cursor-pointer text-[10px] font-semibold text-red-500 transition-colors hover:text-red-600">Reset</button>
                                 </div>
-                                <div id="wholesale-mobile-branches" class="max-h-36 divide-y divide-gray-100 overflow-y-auto bg-gray-50/30">
-                                    @if (count($branches) > 1)
-                                        <button type="button" data-wholesale-mobile-branch="all" data-branch-search="semua cabang" @click="mobileBranch = 'all'" :class="mobileBranch === 'all' ? 'bg-emerald-50/70 font-bold text-[#0b595b]' : 'text-gray-700'" class="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-xs hover:bg-gray-50">
-                                            <span class="flex h-4 w-4 items-center justify-center rounded-full border-2" :class="mobileBranch === 'all' ? 'border-emerald-500' : 'border-gray-300'"><span class="h-2 w-2 rounded-full bg-emerald-500" x-show="mobileBranch === 'all'"></span></span>Semua cabang
-                                        </button>
-                                    @endif
-                                    @foreach ($branches as $branch)
-                                        <button type="button" data-wholesale-mobile-branch="{{ $branch->id }}" data-branch-search="{{ strtolower($branch->name) }}" @click="mobileBranch = '{{ $branch->id }}'" :class="mobileBranch === '{{ $branch->id }}' ? 'bg-emerald-50/70 font-bold text-[#0b595b]' : 'text-gray-700'" class="flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-xs hover:bg-gray-50">
-                                            <span class="flex h-4 w-4 items-center justify-center rounded-full border-2" :class="mobileBranch === '{{ $branch->id }}' ? 'border-emerald-500' : 'border-gray-300'"><span class="h-2 w-2 rounded-full bg-emerald-500" x-show="mobileBranch === '{{ $branch->id }}'"></span></span>{{ ucwords($branch->name) }}
-                                        </button>
-                                    @endforeach
-                                    <p id="wholesale-mobile-branch-empty" class="hidden py-4 text-center text-xs text-gray-400">Cabang tidak ditemukan</p>
+                                <div class="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs">
+                                    <div class="relative shrink-0 border-b border-gray-100">
+                                        <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400" aria-hidden="true"></i>
+                                        <input id="wholesale-mobile-branch-search" type="search" x-model="branchSearch" @input="filterWholesaleBranches(branchSearch)" placeholder="Cari cabang..." class="w-full bg-transparent py-2 pl-8 pr-3 text-xs outline-none transition-colors focus:bg-gray-50">
+                                    </div>
+                                    <div id="wholesale-mobile-branches" class="max-h-32 divide-y divide-gray-100/60 overflow-y-auto overscroll-none bg-gray-50/30">
+                                        @if (count($branches) > 1)
+                                            <label data-wholesale-mobile-branch="all" data-branch-search="semua cabang" class="flex cursor-pointer items-center gap-3 px-3.5 py-2 transition-colors hover:bg-gray-50">
+                                                <span class="relative flex h-4 w-4 shrink-0 items-center justify-center"><input type="radio" name="wholesaleMobileBranch" value="all" x-model="mobileBranch" class="peer h-4 w-4 cursor-pointer appearance-none rounded-full border-2 border-gray-300 transition-colors checked:border-emerald-500"><span class="absolute h-2 w-2 scale-0 rounded-full bg-emerald-500 transition-transform duration-200 peer-checked:scale-100"></span></span>
+                                                <span class="text-xs text-gray-700" :class="mobileBranch === 'all' ? 'font-bold text-gray-900' : 'font-medium'">Semua cabang</span>
+                                            </label>
+                                        @endif
+                                        @foreach ($branches as $branch)
+                                            <label data-wholesale-mobile-branch="{{ $branch->id }}" data-branch-search="{{ strtolower($branch->name) }}" class="flex cursor-pointer items-center gap-3 px-3.5 py-2 transition-colors hover:bg-gray-50">
+                                                <span class="relative flex h-4 w-4 shrink-0 items-center justify-center"><input type="radio" name="wholesaleMobileBranch" value="{{ $branch->id }}" x-model="mobileBranch" class="peer h-4 w-4 cursor-pointer appearance-none rounded-full border-2 border-gray-300 transition-colors checked:border-emerald-500"><span class="absolute h-2 w-2 scale-0 rounded-full bg-emerald-500 transition-transform duration-200 peer-checked:scale-100"></span></span>
+                                                <span class="text-xs text-gray-700" :class="mobileBranch === '{{ $branch->id }}' ? 'font-bold text-gray-900' : 'font-medium'">{{ ucwords($branch->name) }}</span>
+                                            </label>
+                                        @endforeach
+                                        <p id="wholesale-mobile-branch-empty" class="hidden py-3 text-center text-xs text-gray-400">Cabang tidak ditemukan</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div>
-                            <label class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-gray-500">Status Pengadaan</label>
-                            <div class="flex flex-wrap gap-2">
-                                @foreach (['all' => 'Semua Status', 'temp' => 'Draft', 'draft' => 'Pending', 'posting' => 'Dalam Pengiriman', 'complete' => 'Selesai'] as $value => $label)
-                                    <button type="button" @click="mobileStatus = '{{ $value }}'" :class="mobileStatus === '{{ $value }}' ? 'border-emerald-300 bg-emerald-50 text-[#0b595b] font-semibold' : 'border-gray-200 bg-white text-[#46565c] hover:border-emerald-300'" class="rounded-full border px-3 py-1.5 text-xs font-medium transition-colors">{{ $label }}</button>
-                                @endforeach
+                            <div>
+                                <div class="mb-1.5 flex items-center justify-between">
+                                    <label class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Status Pengadaan</label>
+                                    <button type="button" x-show="mobileStatus !== 'all'" @click="mobileStatus = 'all'" class="cursor-pointer text-[10px] font-semibold text-red-500 transition-colors hover:text-red-600">Reset</button>
+                                </div>
+                                <div class="mt-1 flex flex-wrap gap-2">
+                                    @foreach (['all' => 'Semua Status', 'temp' => 'Draft', 'draft' => 'Pending', 'posting' => 'Dalam Pengiriman', 'complete' => 'Selesai'] as $value => $label)
+                                        <button type="button" @click="mobileStatus = '{{ $value }}'" :aria-pressed="mobileStatus === '{{ $value }}'" :class="mobileStatus === '{{ $value }}' ? 'border-emerald-300 bg-emerald-50 text-emerald-700 font-semibold shadow-2xs' : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'" class="cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium transition-colors">{{ $label }}</button>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <div>
+                                <div class="mb-1.5 flex items-center justify-between">
+                                    <label class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Periode Tanggal</label>
+                                    <button type="button" x-show="mobileStartDate || mobileEndDate" @click="mobileStartDate = ''; mobileEndDate = ''" class="cursor-pointer text-[10px] font-semibold text-red-500 transition-colors hover:text-red-600">Reset</button>
+                                </div>
+                                <div class="flex w-full flex-col gap-2 sm:flex-row">
+                                    <label class="relative flex flex-1 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs text-gray-700 shadow-xs transition-colors focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
+                                        <span class="w-8 text-[10px] font-bold text-gray-400">DARI</span>
+                                        <span class="min-w-0 truncate text-xs font-medium" :class="mobileStartDate ? 'text-gray-800' : 'text-gray-400'" x-text="formatMobileDate(mobileStartDate)"></span>
+                                        <input id="wholesale-mobile-start-date" type="date" x-model="mobileStartDate" aria-label="Tanggal mulai pengadaan" class="absolute inset-0 h-full w-full cursor-pointer opacity-0">
+                                    </label>
+                                    <label class="relative flex flex-1 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs text-gray-700 shadow-xs transition-colors focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
+                                        <span class="w-8 text-[10px] font-bold text-gray-400">KE</span>
+                                        <span class="min-w-0 truncate text-xs font-medium" :class="mobileEndDate ? 'text-gray-800' : 'text-gray-400'" x-text="formatMobileDate(mobileEndDate)"></span>
+                                        <input id="wholesale-mobile-end-date" type="date" x-model="mobileEndDate" aria-label="Tanggal akhir pengadaan" class="absolute inset-0 h-full w-full cursor-pointer opacity-0">
+                                    </label>
+                                </div>
+                                <div class="flex flex-col gap-2 pt-2">
+                                    <label class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Pilihan Cepat</label>
+                                    <div class="flex flex-row gap-2">
+                                        <button type="button" @click="setMobileDateRange('week')" class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs font-semibold shadow-xs transition-colors active:scale-95" style="background-color:#c5f037;color:#1f2937" title="Tampilkan Minggu Ini">Minggu Ini</button>
+                                        <button type="button" @click="setMobileDateRange('today')" class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white px-2 py-2.5 text-xs font-semibold text-gray-700 shadow-xs transition-colors hover:border-gray-300 hover:bg-gray-50 active:scale-95" title="Tampilkan Hari Ini">Hari Ini</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="flex gap-3 border-t border-gray-100 px-5 pt-4">
-                        <button type="button" data-wholesale-filter-reset @click="mobileBranch = 'all'; mobileStatus = 'all'; branchSearch = ''; filterWholesaleBranches('')" class="h-11 flex-1 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Reset</button>
-                        <button type="button" @click="applyWholesaleMobileFilters(mobileStatus, mobileBranch); filtersOpen = false" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white">Terapkan</button>
+                    <div class="flex shrink-0 gap-3 border-t border-gray-100 px-5 pt-4">
+                        <button type="button" data-wholesale-filter-reset @click="mobileBranch = 'all'; mobileStatus = 'all'; mobileStartDate = ''; mobileEndDate = ''; branchSearch = ''; filterWholesaleBranches('')" class="h-11 flex-1 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Reset</button>
+                        <button type="button" @click="applyWholesaleMobileFilters(mobileStatus, mobileBranch, mobileStartDate, mobileEndDate); filtersOpen = false" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white">Terapkan</button>
                     </div>
                 </section>
             </div>
@@ -301,9 +372,11 @@
             $('#wholesale-mobile-branch-empty').toggleClass('hidden', visibleCount > 0);
         }
 
-        function applyWholesaleMobileFilters(status, branch) {
+        function applyWholesaleMobileFilters(status, branch, start, end) {
             $('[data-wholesale-filter="status"]').val(status);
             $('[data-wholesale-filter="branch"]').val(branch);
+            $('[data-wholesale-filter="start"]').val(start || '');
+            $('[data-wholesale-filter="end"]').val(end || '');
             updateWholesaleFilterSummary();
             wholesaleDataTable.draw();
             if (branch) showStockAlert(branch);

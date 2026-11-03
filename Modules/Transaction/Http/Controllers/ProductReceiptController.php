@@ -8,6 +8,7 @@ use Illuminate\Routing\Controller;
 use Modules\Transaction\Entities\ProductReceipt;
 use Modules\Transaction\Entities\Receipt;
 use Modules\Master\Entities\Product;
+use Modules\Master\Entities\ProductCategory;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -38,10 +39,30 @@ class ProductReceiptController extends Controller
         $type = in_array($request->query('type'), ['product', 'kemasan'], true)
             ? $request->query('type')
             : 'all';
+        $recipeProductIds = Receipt::query()->select('product_id')->distinct();
+        $categoryOptions = ProductCategory::query()
+            ->whereIn('id', Product::query()
+                ->whereIn('id', $recipeProductIds)
+                ->whereNotNull('category_id')
+                ->select('category_id')
+                ->distinct())
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn ($category) => [
+                'value' => (string) $category->id,
+                'label' => $category->name,
+            ])
+            ->values()
+            ->all();
+        $category = (string) $request->query('category', 'all');
+        if ($category !== 'all' && !collect($categoryOptions)->contains('value', $category)) {
+            $category = 'all';
+        }
         $receipts = Receipt::with([
             'products.category',
             'products.unit',
             'recipeIngredients.ingredients.unit',
+            'recipeIngredients.ingredients.category',
         ])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($matches) use ($search) {
@@ -50,6 +71,7 @@ class ProductReceiptController extends Controller
                 });
             })
             ->when($type !== 'all', fn ($query) => $query->whereHas('products', fn ($product) => $product->where('tipe', $type)))
+            ->when($category !== 'all', fn ($query) => $query->whereHas('products', fn ($product) => $product->where('category_id', $category)))
             ->latest('id')
             ->paginate(50)
             ->withQueryString();
@@ -63,20 +85,25 @@ class ProductReceiptController extends Controller
             ]);
         }
 
-        return view('transaction::receipt.index', compact('receipts', 'search', 'type'));
+        return view('transaction::receipt.index', compact('receipts', 'search', 'type', 'category', 'categoryOptions'));
     }
 
     /**
      * Show the form for creating a new resource.
      * @return Renderable
      */
-    public function create()
+    public function create(Request $request)
     {
         if ($denied = $this->requireAccess('product-receipt.create')) {
             return $denied;
         }
 
-        return view('transaction::receipt.create');
+        $indexView = $this->index($request);
+        if ($indexView instanceof \Illuminate\View\View) {
+            return $indexView->with('showCreateForm', true);
+        }
+
+        return $indexView;
     }
 
     /**

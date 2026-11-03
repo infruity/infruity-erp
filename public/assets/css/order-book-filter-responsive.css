@@ -1,0 +1,50 @@
+/* Order Book only: full-width mobile sheet, compact tablet dialog, capped desktop. */
+#order-book-filter-sheet {
+    --order-book-filter-gutter:clamp(12px, 4vw, 20px);
+    --order-book-filter-spacing:16px;
+    padding:0;
+}
+#order-book-filter-sheet > section {
+    width:100%;
+    max-width:100%;
+    min-height:0;
+    max-height:calc(100vh - 12px);
+    max-height:calc(100dvh - max(12px, env(safe-area-inset-top)));
+}
+#order-book-filter-sheet > section > div.min-h-0.flex-1 {
+    min-width:0;
+    min-height:0;
+    flex:0 1 auto;
+    padding:var(--order-book-filter-gutter);
+    overflow-x:hidden;
+    overflow-y:auto;
+}
+#order-book-filter-sheet > section > header,
+#order-book-filter-sheet > section > footer {
+    flex-shrink:0;
+    padding-inline:var(--order-book-filter-gutter);
+}
+#order-book-filter-sheet > section > footer > button,
+#order-book-filter-sheet [aria-label="Tanggal mulai"],
+#order-book-filter-sheet [aria-label="Tanggal akhir"] { min-width:0; }
+#order-book-filter-sheet [x-show="!calOpen"] > section + section { margin-top:var(--order-book-filter-spacing); }
+#order-book-filter-sheet [x-show="calendarView === 'date'"] :is(button, span) { max-width:100%; }
+@media (min-width:480px) {
+    #order-book-filter-sheet [x-show="!calOpen"] > section > .w-full { flex-direction:row; }
+}
+@media (min-width:640px) {
+    #order-book-filter-sheet { padding:16px; }
+    #order-book-filter-sheet > section {
+        max-width:clamp(384px, 50vw, 512px);
+        max-height:calc(100vh - 32px);
+        max-height:calc(100dvh - 32px);
+    }
+}
+@media (max-height:600px) {
+    #order-book-filter-sheet {
+        --order-book-filter-gutter:12px;
+        --order-book-filter-spacing:12px;
+    }
+    #order-book-filter-sheet > section > header,
+    #order-book-filter-sheet > section > footer { padding-block:12px; }
+}

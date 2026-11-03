@@ -24,7 +24,7 @@ class RoleRequest extends FormRequest
     public function rules()
     {
         return [
-            'nm_role' => ['required', 'string', 'min:4', 'max:50', 'regex:/^[a-zA-Z\s]+$/', 'unique:role,nm_role'],
+            'nm_role' => ['required', 'string', 'min:4', 'max:50', 'regex:/^[a-zA-Z0-9 -]+$/', 'unique:role,nm_role'],
             'description' => ['nullable', 'string', 'max:255'],
         ];
     }

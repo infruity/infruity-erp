@@ -1,0 +1,25 @@
+.erp-crm-form { display:flex; min-height:0; flex:1; flex-direction:column; }
+.erp-crm-fields { display:grid; gap:20px; }
+.erp-crm-field > label { display:block; margin-bottom:8px; color:#4b5563; font-size:12px; font-weight:600; }
+.erp-crm-help { margin:8px 0 0; color:var(--erp-muted); font-size:11px; line-height:1.5; }
+.erp-crm-form-error { padding:12px 16px; border:1px solid #fecaca; border-radius:12px; background:var(--erp-danger-soft); color:var(--erp-danger); font-size:13px; line-height:1.5; }
+.erp-crm-form-error[hidden] { display:none; }
+.erp-crm-upload { display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
+.erp-crm-upload .image-input-wrapper { width:64px; height:64px; border:1px solid var(--erp-border); border-radius:16px; background-size:cover; }
+.erp-crm-drawer .modal-content { display:flex; min-height:0; }
+.erp-crm-drawer .indicator-progress { display:none; }
+.erp-crm-drawer .erp-sheet-dialog { margin-left:auto; margin-right:24px; width:min(480px,100%); height:calc(100dvh - 48px); }
+.erp-crm-drawer .erp-sheet-dialog .modal-content { height:100%; }
+#tier-benefit-content { display:flex; min-height:0; flex:1; }
+#tier-benefit-content .accordion-content,#tier-benefit-content .accordion-form { display:flex; min-height:0; flex:1; flex-direction:column; }
+#tier-benefit-content .card { border:0; box-shadow:none; min-height:0; flex:1; }
+#tier-benefit-content .card-body { overflow-y:auto; min-height:0; }
+@media(max-width:767px) { .erp-crm-drawer .erp-sheet-dialog { margin:0; width:100%; height:auto; max-height:90dvh; } .erp-crm-drawer .modal-content { height:auto; } }
+.erp-crm-settings { padding:24px; }
+.erp-crm-settings-grid { display:grid; grid-template-columns:1fr 1fr; gap:32px; }
+.erp-crm-section { min-width:0; }
+.erp-crm-section h2 { margin:0 0 8px; font-size:15px; font-weight:700; }
+.erp-crm-section > p { margin:0 0 24px; color:var(--erp-muted); font-size:12px; line-height:1.5; }
+.erp-crm-settings-actions { display:flex; justify-content:flex-end; gap:12px; border-top:1px solid var(--erp-border-subtle); margin-top:28px; padding-top:20px; }
+.erp-crm-settings .indicator-progress { display:none; }
+@media(max-width:767px) { .erp-crm-settings { padding:20px; } .erp-crm-settings-grid { grid-template-columns:1fr; gap:32px; } .erp-crm-settings-actions > * { flex:1; } }

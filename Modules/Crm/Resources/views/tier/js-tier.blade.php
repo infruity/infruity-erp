@@ -417,18 +417,19 @@
             let tr = $(this);
             let row = dataTable.row(tr);
 
-            if (row.child.isShown()) {
-                row.child.hide();
-                tr.removeClass('shown');
-            } else {
-                console.log(row.data());
-                row.child(format(row.data())).show();
-                tr.addClass('shown');
-
+            if (!row.data()) return;
+            const container = document.getElementById('tier-benefit-content');
+            container.innerHTML = format(row.data());
+            const close = document.createElement('button');
+            close.type = 'button'; close.className = 'erp-action'; close.textContent = 'Tutup';
+            close.addEventListener('click', () => bootstrap.Modal.getInstance(document.getElementById('tier-benefit-modal')).hide());
+            container.querySelector('.card-header').append(close);
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('tier-benefit-modal')).show();
                 // Aktifkan select2 setelah konten ditambahkan ke DOM
-                let select = tr.next().find('.select-product');
+                let select = $('#tier-benefit-content .select-product');
 
                 select.select2({
+                    dropdownParent: $('#tier-benefit-modal'),
                     ajax: {
                         url: '/ajax/listProduct',
                         dataType: 'json',
@@ -463,11 +464,10 @@
                 select.trigger('change');
 
                 bindFormatNumber();
-            }
         });
 
         // Submit form di dalam accordion
-        $('#transaction-table tbody').on('submit', '.accordion-form', function(e) {
+        $('#tier-benefit-content').on('submit', '.accordion-form', function(e) {
             e.preventDefault();
             let form = $(this);
             let id = form.data('id');
@@ -481,12 +481,13 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function() {
-                    alert('Data berhasil disimpan!');
+                    bootstrap.Modal.getInstance(document.getElementById('tier-benefit-modal'))?.hide();
+                    Swal.fire({ icon:'success', title:'Benefit disimpan', confirmButtonText:'Selesai' });
                     if (typeof dataTable !== 'undefined') dataTable.ajax.reload(
                         null, false);
                 },
                 error: function() {
-                    alert('Gagal menyimpan!');
+                    Swal.fire({ icon:'error', title:'Benefit belum tersimpan', text:'Periksa koneksi dan coba lagi.', confirmButtonText:'Tutup' });
                 }
             });
         });

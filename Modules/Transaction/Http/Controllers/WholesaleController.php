@@ -886,7 +886,7 @@ class WholesaleController extends Controller
             'branch_id'      => 'required|exists:branch,id',
             'date'           => 'required|date',
             'invoice_number' => 'nullable',
-            'items'          => 'required|array',
+            'items'          => ['present', 'array', 'min:' . ($request->input('status') === 'temp' ? 0 : 1)],
             'total'          => 'required|numeric',
             'subtotal'       => 'required|numeric',
             'status'         => 'nullable|in:temp,draft,posting',

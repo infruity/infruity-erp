@@ -11,14 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class FCMController extends Controller
 {
-    protected $fcm;
-
-    public function __construct(FcmService $fcm)
-    {
-        $this->fcm = $fcm;
-    }
-
-    public function testNotification()
+    public function testNotification(FcmService $fcm)
     {
         // Ambil semua token yang tidak null
         $tokens = UserDevice::whereNotNull('fcm_token')
@@ -35,7 +28,7 @@ class FCMController extends Controller
         }
 
         try {
-            $this->fcm->sendNotification(
+            $fcm->sendNotification(
                 $tokens,
                 'Halo dari Infruity 🍉',
                 'Tes notifikasi via Web Laravel (database user_devices)'

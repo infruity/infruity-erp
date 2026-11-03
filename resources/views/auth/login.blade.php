@@ -10,12 +10,10 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,700&display=swap"
-        rel="stylesheet">
+
 
     <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -54,12 +52,15 @@
             background: linear-gradient(135deg, rgba(15, 92, 69, 0.85) 0%, rgba(0, 0, 0, 0.6) 100%);
         }
     </style>
+<link rel="stylesheet" href="{{ asset('assets/css/erp-theme.css') }}?v={{ filemtime(public_path('assets/css/erp-theme.css')) }}">
+<link rel="stylesheet" href="{{ asset('assets/fonts/infruity/fonts.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/plugins/phosphor/phosphor.css') }}">
 </head>
 
-<body class="font-sans bg-cream text-gray-800 antialiased h-screen flex overflow-hidden">
+<body class="erp-ui erp-auth font-sans bg-cream text-gray-800 antialiased min-h-[100dvh] flex overflow-x-hidden">
 
     <!-- Left Side: Image and Branding -->
-    <div class="hidden lg:flex lg:w-3/5 relative bg-primary items-center justify-start overflow-hidden">
+    <div class="hidden lg:flex lg:w-3/5 min-h-[100dvh] relative bg-primary items-center justify-start overflow-hidden">
         <!-- Background Image -->
         <img src="{{ asset('infruity-ui/002. Login ERP/001. Aset/Login 3.png') }}" alt="Farm Background"
             class="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-overlay">
@@ -118,10 +119,10 @@
 
     <!-- Right Side: Login Form -->
     <div
-        class="w-full lg:w-2/5 flex flex-col justify-center items-center p-8 sm:p-12 md:p-16 relative bg-white lg:bg-cream">
+        class="w-full lg:w-2/5 min-h-[100dvh] flex flex-col justify-center items-center p-8 sm:p-12 md:p-16 relative bg-white lg:bg-cream">
 
         <!-- Mobile Logo (Visible only on small screens) -->
-        <div class="lg:hidden absolute top-8 left-1/2 transform -translate-x-1/2">
+        <div class="lg:hidden shrink-0 mb-10">
             <img src="{{ asset('infruity-ui/001. Landing Page/000. Logo/INFRUITY emas hijau.png') }}" alt="Infruity Logo" class="h-10">
         </div>
 
@@ -204,12 +205,15 @@
                     </button>
 
                     <!-- Guest Button -->
-                    <button type="button" onclick="window.location.href='{{ url('infruity-ui/003. ERP/app.html') }}'"
+                    <button type="submit" form="guest-login-form"
                         class="flex-none flex items-center justify-center py-4 px-6 border-2 border-primary rounded-2xl text-sm font-bold tracking-wide text-primary bg-transparent hover:bg-primary/5 transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                         title="Masuk sebagai Guest">
                         Guest
                     </button>
                 </div>
+            </form>
+            <form id="guest-login-form" action="{{ route('login.guest') }}" method="POST">
+                @csrf
             </form>
 
             <!-- Footer Text -->

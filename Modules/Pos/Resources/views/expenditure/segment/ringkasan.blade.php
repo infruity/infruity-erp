@@ -71,39 +71,8 @@
             </div>
         </div> --}}
     </div>
-    <div x-data="{ showActions: false }" class="position-fixed d-flex flex-column-reverse align-items-center"
-        style="bottom: 70px; right: 30px; z-index: 1050; gap: 10px;">
-
-        <!-- Tombol utama (floating) -->
-        <button class="btn btn-primary rounded-circle shadow-lg" style="width: 50px; height: 50px;"
-            @click="showActions = !showActions">
-            <i class="bi bi-three-dots-vertical"></i>
-        </button>
-
-        <!-- Tombol tambahan (floating) -->
-        <template x-if="showActions">
-            <div class="d-flex flex-column align-items-center gap-2 mb-2" x-data="{ loadingDraft: false, loadingFinal: false }">
-                <!-- Tombol Simpan Draft -->
-                <button class="btn btn-sm btn-success shadow-lg d-flex align-items-center justify-content-center gap-2"
-                    :disabled="loadingDraft"
-                    @click="loadingDraft = true; saveTransaction(() => loadingDraft = false)" :disabled="loading">
-                    <span x-show="!loadingDraft">Draft</span>
-                    <span x-show="loadingDraft">
-                        <span class="spinner-border spinner-border-sm"></span> Menyimpan...
-                    </span>
-                </button>
-
-                <!-- Tombol Simpan Final -->
-                <button class="btn btn-sm btn-warning shadow-lg d-flex align-items-center justify-content-center gap-2"
-                    :disabled="loadingFinal"
-                    @click="loadingFinal = true; saveToOrderBook(() => loadingFinal = false)" :disabled="loading">
-                    <span x-show="!loadingFinal">Submit</span>
-                    <span x-show="loadingFinal">
-                        <span class="spinner-border spinner-border-sm"></span> Menyimpan...
-                    </span>
-                </button>
-            </div>
-        </template>
-
+    <div class="erp-payment-actions mt-5" x-data="{ loadingDraft:false, loadingFinal:false }">
+        <button type="button" class="erp-action erp-action--primary" :disabled="loadingDraft || loadingFinal" @click="loadingFinal = true; saveToOrderBook(() => loadingFinal = false)"><span x-show="!loadingFinal">Submit</span><span x-show="loadingFinal">Menyimpan…</span></button>
+        <button type="button" class="erp-action" :disabled="loadingDraft || loadingFinal" @click="loadingDraft = true; saveTransaction(() => loadingDraft = false)"><span x-show="!loadingDraft">Simpan Draft</span><span x-show="loadingDraft">Menyimpan…</span></button>
     </div>
 </div>

@@ -10,7 +10,7 @@ use Modules\Permohonan\Entities\Permohonan;
 use Modules\Permohonan\Entities\PenguranganIpt;
 use Auth;
 use Illuminate\Support\Facades\Validator;
-use App\User;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class DashboardController extends Controller
@@ -93,6 +93,7 @@ class DashboardController extends Controller
                 'required',
                 'string',
                 'min:12',
+                'confirmed',
                 'regex:/[A-Z]/', // Harus ada huruf besar
                 'regex:/[a-z]/', // Harus ada huruf kecil
                 'regex:/[0-9]/', // Harus ada angka
@@ -102,7 +103,7 @@ class DashboardController extends Controller
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput();
+                ->withInput($request->except('old_password', 'password', 'password_confirmation'));
         }
 
         if (
@@ -129,59 +130,12 @@ class DashboardController extends Controller
 
     public function forgot_password()
     {
-        $data = [];
-        return view('forgot-password', $data);
+        return redirect('auth/login')->with('error', 'Pemulihan kata sandi mandiri sementara tidak tersedia. Hubungi administrator untuk bantuan.');
     }
 
     public function forgot_password_check(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $data = [];
-        $user = User::where('username', $request->email)->first();
-        $data['user'] = isset($user) ? $user : null;
-
-        return view('forgot-password', $data);
-    }
-
-    public function forgot_password_save(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'id_user' => 'required',
-            'password' => [
-                'required',
-                'string',
-                'min:12',
-                'regex:/[A-Z]/', // Harus ada huruf besar
-                'regex:/[a-z]/', // Harus ada huruf kecil
-                'regex:/[0-9]/', // Harus ada angka
-                'regex:/[!@#$%^&*()_+\-]/', // Harus ada karakter spesial
-            ],
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-        $userId = decrypt($request->id_user);
-        try {
-            DB::beginTransaction();
-            $user = User::findOrFail($userId);
-            $user->password = Hash::make($request->password);
-            $user->save();
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
-            return redirect()->back()->with('error', 'Password tidak bisa diganti, Hubungi Administrator')->withInput();
-        }
-        return redirect('auth/login')->with('success', 'Password Berhasil di Ganti oleh ' . $user->nm_user);
+        return $this->forgot_password();
     }
 
     public function generateQrCode()

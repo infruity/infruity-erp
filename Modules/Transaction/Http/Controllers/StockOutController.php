@@ -60,22 +60,26 @@ class StockOutController extends Controller
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
             'date' => 'required|date',
-            'quantity' => 'required|numeric',
+            'quantity' => 'required|numeric|gt:0',
             'type' => 'required|exists:stock_out_type,id',
         ]);
 
         // Simpan data ke database
         try {
             DB::beginTransaction();
+            \Modules\Master\Entities\Product::whereKey($validated['product_id'])->lockForUpdate()->firstOrFail();
             $productStock = DB::table('product_stock')
                 ->where('id', $validated['product_id'])
+                ->where('branch_id', 0)
                 ->first();
             if (!$productStock) {
+                DB::rollBack();
                 return response()->json([
                     'message' => 'Stok produk tidak ditemukan.',
                 ], 404);
             }
             if ($validated['quantity'] > $productStock->stock_available) {
+                DB::rollBack();
                 return response()->json([
                    'message' => 'Jumlah stok tidak mencukupi.',
                 ], 404);
@@ -146,28 +150,34 @@ class StockOutController extends Controller
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
             'date' => 'required|date',
-            'quantity' => 'required|numeric',
+            'quantity' => 'required|numeric|gt:0',
             'type' => 'required|exists:stock_out_type,id',
         ]);
 
         // Simpan data ke database
         try {
             DB::beginTransaction();
+            $stock = StockOutModel::lockForUpdate()->findOrFail($id);
+            \Modules\Master\Entities\Product::whereKey($validated['product_id'])->lockForUpdate()->firstOrFail();
             $productStock = DB::table('product_stock')
                 ->where('id', $validated['product_id'])
+                ->where('branch_id', 0)
                 ->first();
             if (!$productStock) {
+                DB::rollBack();
                 return response()->json([
                     'message' => 'Stok produk tidak ditemukan.',
                 ], 404);
             }
-            if ($validated['quantity'] > $productStock->stock_available) {
+            $additionalQuantity = (float) $validated['quantity']
+                - ((int) $stock->product_id === (int) $validated['product_id'] ? (float) $stock->quantity : 0);
+            if ($additionalQuantity > (float) $productStock->stock_available) {
+                DB::rollBack();
                 return response()->json([
                    'message' => 'Jumlah stok tidak mencukupi.',
                 ], 404);
             }
             $avg_price = $productStock->hpp;
-            $stock = StockOutModel::findOrFail($id);
             $stock->product_id = $validated['product_id'];
             $stock->date = $validated['date'];
             $stock->type_id = $validated['type'];
@@ -221,6 +231,7 @@ class StockOutController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('stock-out.index');
         $query = StockOutModel::with('product', 'type');
         if ($request->has('stock_filter')) {
             if ($request->stock_filter != 'all') {

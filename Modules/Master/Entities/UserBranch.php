@@ -5,6 +5,7 @@ namespace Modules\Master\Entities;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Master\Entities\Branch;
+use App\Models\RoleMenu;
 
 class UserBranch extends Model
 {
@@ -23,11 +24,19 @@ class UserBranch extends Model
 
     public static function getUserBranch()
     {
-        // if (session('role')['id_role'] == 1) {
-        //     return Branch::pluck('id')->toArray();
-        // }
+        $user = auth()->user();
+        if (! $user) {
+            return [];
+        }
 
-        return self::where('user_id', auth()->user()->id_user)
+        if (RoleMenu::currentRoleId() === 1) {
+            return Branch::query()
+                ->withoutGlobalScope('userBranch')
+                ->pluck('id')
+                ->toArray();
+        }
+
+        return self::where('user_id', $user->id_user)
             ->pluck('branch_id')
             ->toArray();
     }

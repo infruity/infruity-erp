@@ -29,16 +29,7 @@ class ProductCategoryController extends Controller
      */
     public function index()
     {
-        if ($denied = $this->requireAccess('category.index')) {
-            return $denied;
-        }
-
-        $categories = ProductCategory::query()
-            ->select(['id', 'name', 'description'])
-            ->orderBy('name')
-            ->get();
-
-        return view('master::category.index', compact('categories'));
+        return redirect()->route('products.index');
     }
 
     /**

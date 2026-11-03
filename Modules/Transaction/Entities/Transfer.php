@@ -34,12 +34,13 @@ class Transfer extends Model
 
     public function branch()
     {
-        return $this->belongsTo(Branch::class, 'branch_id', 'id');
+        // Access is scoped on the transfer; both branch names remain visible on its document.
+        return $this->belongsTo(Branch::class, 'branch_id', 'id')->withoutGlobalScope('userBranch');
     }
 
     public function branchDestination()
     {
-        return $this->belongsTo(Branch::class, 'branch_destination_id', 'id');
+        return $this->belongsTo(Branch::class, 'branch_destination_id', 'id')->withoutGlobalScope('userBranch');
     }
 
     public function createdBy()

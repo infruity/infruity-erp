@@ -167,7 +167,7 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: #3b82f6;
+            color: var(--erp-info);
             margin-bottom: 6px;
         }
 
@@ -537,36 +537,23 @@
             }
         }
     </style>
-</head>
+<link rel="stylesheet" href="{{ asset('assets/css/erp-theme.css') }}?v={{ filemtime(public_path('assets/css/erp-theme.css')) }}">
+<link rel="stylesheet" href="{{ asset('assets/fonts/infruity/fonts.css') }}"><link rel="stylesheet" href="{{ asset('assets/plugins/phosphor/phosphor.css') }}"><style>.erp-invoice-header { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:end; gap:24px; padding:28px 24px; border-bottom:1px solid var(--erp-border); background:white; color:var(--erp-text); }.erp-invoice-header h1 { margin:12px 0 6px; font-size:24px; color:var(--erp-primary); }.erp-invoice-header p { margin:0; font-size:12px; color:var(--erp-muted); }.erp-invoice-header > div:last-child { display:flex; flex-direction:column; gap:6px; font-size:12px; overflow-wrap:anywhere; }.erp-invoice-status { display:inline-flex; padding:5px 10px; border-radius:999px; background:var(--erp-primary-soft); color:var(--erp-primary); font-size:11px; font-weight:600; }</style></head>
 
-<body>
+<body class="erp-ui">
     <div class="page-wrapper">
         <div class="card">
-            <div class="receipt-header">
-                <div class="status-badge">
-                    {{ ucfirst($data->status ?? 'Paid') }}
-                </div>
-                <div class="store-name">
-                    {{ $setting->brand_name ?? 'in!fruity' }}
-                </div>
-                <div class="store-tagline">
-                    {{ $setting->brand_address ?? 'Fresh & Healthy Beverages' }}
-                </div>
-                <div class="invoice-title">Invoice</div>
-                <div class="invoice-number">
-                    #{{ $data->invoice_number ?? 'INV-' . str_pad($data->id, 6, '0', STR_PAD_LEFT) }}
-                </div>
-            </div>
+            <header class="erp-invoice-header"><div><span class="erp-invoice-status">{{ ucfirst($data->status ?? '') }}</span><h1>{{ $setting->brand_name ?? 'Infruity' }}</h1>@if($setting?->brand_address)<p>{{ $setting->brand_address }}</p>@endif</div><div><span>Invoice</span><strong>#{{ $data->invoice_number ?? $data->id }}</strong></div></header>
 
             <div class="body-content">
                 <div class="info-grid">
                     <div class="info-item">
                         <div class="label">Tanggal</div>
-                        <div class="value">{{ $data->created_at->format('d M Y') }}</div>
+                        <div class="value">{{ ($data->created_at?->format('d M Y') ?? '—') }}</div>
                     </div>
                     <div class="info-item">
                         <div class="label">Waktu</div>
-                        <div class="value">{{ $data->created_at->format('H:i') }} WIB</div>
+                        <div class="value">{{ ($data->created_at?->format('H:i') ?? '—') }} WIB</div>
                     </div>
                     <div class="info-item">
                         <div class="label">Kasir</div>

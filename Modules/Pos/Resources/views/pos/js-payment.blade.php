@@ -1,4 +1,5 @@
 @section('script')
+    <script src="{{ asset('assets/js/pos-payment-attempt.js') }}?v={{ filemtime(public_path('assets/js/pos-payment-attempt.js')) }}"></script>
     <script type="text/javascript">
         $('#payment_id').select2({
             placeholder: 'Pilih Pembayaran',
@@ -61,9 +62,21 @@
                 paymentDifference: 0,
                 loading: false,
                 paymentMethods: [],
+                paymentAttempt: null,
+                retryPending: false,
 
                 async init() {
-                    this.totalPayment = this.totalDue;
+                    this.paymentAttempt = createPaymentAttempt({
+                        storage: window.sessionStorage,
+                        storageKey: 'infruity-payment-{{ auth()->id() }}-{{ $data->id }}',
+                        uuid: () => crypto.randomUUID(),
+                        send: (payload, key) => fetch("{{ route('pos.savePayment') }}", {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Idempotency-Key': key },
+                            body: JSON.stringify(payload),
+                        }),
+                    });
                     this.paymentDifference = 0;
 
                     try {
@@ -78,9 +91,13 @@
                         this.payments[0].amount = this.totalDue;
                     }
 
-                    this.payments.forEach((p, i) => {
-                        this.formatAmount(i);
-                    });
+                    if (this.paymentAttempt.pending) {
+                        const pending = this.paymentAttempt.pending;
+                        this.payments = pending.payments;
+                        document.querySelector('[name="date"]').value = pending.date;
+                        this.retryPending = true;
+                    }
+                    this.payments.forEach((p, i) => this.formatAmount(i));
                 },
 
                 payments: [{
@@ -176,7 +193,12 @@
                 },
 
                 submitPayment() {
-                    // this.loading = true; // mulai loading
+                    if (this.loading) return;
+                    this.loading = true;
+                    if (this.paymentAttempt?.pending) {
+                        this.doSavePayment(this.paymentAttempt.pending);
+                        return;
+                    }
 
                     const payload = {
                         date: document.querySelector('[name="date"]').value,
@@ -188,7 +210,7 @@
                         transaction_id: '{{ $data->id ?? '' }}'
                     };
 
-                    console.log(payload);
+
                     for (let p of this.payments) {
                         if (!p.payment_id || !p.payment_name) {
                             Swal.fire('Perhatian', 'Harus pilih metode pembayaran', 'warning');
@@ -233,36 +255,17 @@
                     this.doSavePayment(payload);
                 },
 
-                doSavePayment(payload) {
-
-                    fetch("{{ route('pos.savePayment') }}", {
-                            method: "POST",
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json',
-                            },
-                            body: JSON.stringify(payload)
-                        })
-                        .then(res => res.json())
-                        .then(res => {
-                            if (res.success) {
-                                console.log(res);
-                                window.location.href = '/pos/payment-notification/' + res.payment
-                                    .id; // redirect jika perlu
-                            } else {
-                                let errorMsg = res.error ? res.error : res.message;
-                                Swal.fire("Gagal", errorMsg, "error");
-                            }
-                        })
-                        .catch(err => {
-                            Swal.fire("Error", "Terjadi kesalahan menyimpan pembayaran.", "error");
-                            console.error(err);
-                        })
-                        .finally(() => {
-                            this.loading =
-                                false; // pastikan loading dihentikan di akhir proses, baik sukses maupun error
-                        });
+                async doSavePayment(payload) {
+                    try {
+                        const response = await this.paymentAttempt.submit(payload);
+                        if (response.ignored) return;
+                        this.retryPending = false;
+                        window.location.href = '/pos/payment-notification/' + response.result.payment.id;
+                    } catch (error) {
+                        this.retryPending = !!this.paymentAttempt.pending;
+                        this.loading = false;
+                        Swal.fire('Pembayaran belum selesai', error.message || 'Periksa koneksi dan coba ulang pembayaran yang sama.', 'error');
+                    }
                 },
 
                 transaction_id: {{ $data->id ?? 'null' }},

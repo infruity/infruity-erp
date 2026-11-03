@@ -2405,8 +2405,7 @@
                         id = 'jus' + item.product_id + '_' + key;
                     }
                     let productName = item.type == 'parcel' ? item.product.description : item.product.name;
-                    let total = item.type == 'parcel' ? this.sanitizeNumber(Number(item.subtotal || 0)) * item
-                        .quantity : this.sanitizeNumber(Number(item.subtotal || 0));
+                    let total = this.sanitizeNumber(Number(item.subtotal || 0));
                     const obj = {
                         key: key,
                         id: id,

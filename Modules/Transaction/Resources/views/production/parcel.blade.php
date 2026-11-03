@@ -1,68 +1,27 @@
 @extends('template.root')
-
+@section('title', 'Produksi Parcel')
 @section('content')
-    {{-- @livewire('product-table') --}}
-    <div>
-        <div class="card card-flush">
-            <!--begin::Card header-->
-            <div class="card-header align-items-center py-5 gap-2 gap-md-5">
-                <!--begin::Card title-->
-                <div class="card-title">
-                    <!--begin::Search-->
-                    <div class="d-flex align-items-center position-relative my-1">
-                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4"></i>
-                        <input type="text" data-kt-ecommerce-product-filter="search" id="search"
-                            class="form-control form-control-solid w-250px ps-12" placeholder="Search Parcel" />
-                    </div>
-                    <!--end::Search-->
-                </div>
-                <!--end::Card title-->
-                <!--begin::Card toolbar-->
-                <div class="card-toolbar flex-row-fluid justify-content-end gap-5">
-                    <div class="w-100 mw-150px">
-                        <!--begin::Select2-->
-                        <select class="form-select form-select-solid" data-control="select2" data-hide-search="true"
-                            data-placeholder="Status" data-kt-ecommerce-product-filter="status">
-                            <option></option>
-                            <option value="all">All</option>
-                            <option value='processing'>Processing</option>
-                            <option value='complete'>Complete</option>
-                        </select>
-                        <!--end::Select2-->
-                    </div>
-                    <!--begin::Add wholesale-->
-                    <a href="{{ url(path: 'parcel/create') }}" class="btn btn-primary">Add Parcel</a>
-                    <!--end::Add wholesale-->
-                </div>
-                <!--end::Card toolbar-->
-            </div>
-            <!--end::Card header-->
-            <!--begin::Card body-->
-            <div class="card-body pt-0">
-                <!--begin::Table-->
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="parcel-table" width="100%">
+    <link rel="stylesheet" href="{{ asset('assets/css/erp-operations.css') }}?v={{ filemtime(public_path('assets/css/erp-operations.css')) }}">
+    <x-erp.workspace title="Produksi Parcel" subtitle="Pantau proses perakitan parcel." icon="gift">
+        <x-slot:toolbar>
+            <label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-kt-ecommerce-product-filter="search" id="search" aria-label="Cari parcel" placeholder="Cari parcel..."></label>
+            <div class="erp-operations-toolbar-actions"><label class="erp-operations-inline-select"><span class="visually-hidden">Status parcel</span><select class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Status" data-kt-ecommerce-product-filter="status"><option></option><option value="all">Semua Status</option><option value="processing">Diproses</option><option value="complete">Selesai</option></select></label><a href="{{ url('parcel/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Parcel</a></div>
+        </x-slot:toolbar>
+        <div class="erp-operations-collection" data-erp-collection="parcel-table" data-erp-empty="Belum ada produksi parcel" data-erp-empty-description="Data yang tersimpan akan muncul di sini.">
+            <table class="table erp-operations-table align-middle" id="parcel-table" width="100%">
                     <thead>
-                        <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                            {{-- <th class="w-10px pe-2">
-                                <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                                    <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                        data-kt-check-target="#kt_ecommerce_parcel_table .form-check-input"
-                                        value="1" />
-                                </div>
-                            </th> --}}
-                            <th class="text-start min-w-100px">Name</th>
+                        <tr class="text-start">
+
+                            <th class="text-start min-w-100px">Nama</th>
                             <th class="text-center min-w-100px">Status</th>
-                            <th class="text-center min-w-100px">Prod Date</th>
+                            <th class="text-center min-w-100px">Tanggal Produksi</th>
                             <th class="text-end min-w-50px"></th>
                         </tr>
                     </thead>
-                    <tbody class="fw-semibold text-gray-600"></tbody>
+                    <tbody class=""></tbody>
                 </table>
-                <!--end::Table-->
-            </div>
-            <!--end::Card body-->
         </div>
-    </div>
+    </x-erp.workspace>
 @section('script')
     <script type="text/javascript">
         var dataTable;

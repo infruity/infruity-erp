@@ -1,15 +1,5 @@
  <!--begin::Header-->
- <style>
-     @media (max-width: 768px) {
-         #kt_header {
-             position: sticky;
-             top: 0;
-             z-index: 105;
-             background-color: #fff;
-         }
-     }
- </style>
- <div id="kt_header" class="header align-items-stretch">
+ <div id="kt_header" class="header align-items-stretch d-none d-md-flex">
      <!--begin::Brand-->
      <div class="header-brand">
          <!--begin::Logo-->
@@ -49,3 +39,4 @@
      @endif --}}
  </div>
  <!--end::Header-->
+ <x-erp.topbar mobile-only />

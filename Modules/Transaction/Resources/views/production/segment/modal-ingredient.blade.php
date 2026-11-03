@@ -1,8 +1,8 @@
 <!-- Modal Add Ingredient -->
 <div class="modal fade" id="modal-add-ingredient" tabindex="-1" aria-labelledby="modalAddIngredientLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog erp-sheet-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="erp-sheet-header">
                 <h5 class="modal-title" id="modalAddIngredientLabel">
                     <i class="ki-duotone ki-plus fs-2 text-primary me-2">
                         <span class="path1"></span>
@@ -12,7 +12,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="erp-sheet-body">
                 <!-- Search Input -->
                 <div class="mb-4">
                     <label class="form-label">Cari Bahan Baku:</label>
@@ -57,7 +57,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="erp-sheet-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Tutup</button>
             </div>
         </div>
@@ -66,9 +66,9 @@
 
 <!-- Modal Input Quantity -->
 <div class="modal fade" id="modal-input-quantity" tabindex="-1" aria-labelledby="modalInputQuantityLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog erp-sheet-dialog">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="erp-sheet-header">
                 <h5 class="modal-title" id="modalInputQuantityLabel">
                     <i class="ki-duotone ki-calculator fs-2 text-primary me-2">
                         <span class="path1"></span>
@@ -78,7 +78,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="erp-sheet-body">
                 <!-- Selected Ingredient Info -->
                 <div class="card card-flush bg-light-primary mb-4" x-show="selectedIngredient">
                     <div class="card-body py-3">
@@ -126,7 +126,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="erp-sheet-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-primary" @click="addIngredientToCart()" 
                     :disabled="!ingredientQuantity || ingredientQuantity <= 0">
@@ -143,9 +143,9 @@
 
 <!-- Modal Edit Ingredient Quantity -->
 <div class="modal fade" id="modal-edit-ingredient" tabindex="-1" aria-labelledby="modalEditIngredientLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog erp-sheet-dialog">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="erp-sheet-header">
                 <h5 class="modal-title" id="modalEditIngredientLabel">
                     <i class="ki-duotone ki-pencil fs-2 text-warning me-2">
                         <span class="path1"></span>
@@ -155,7 +155,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="erp-sheet-body">
                 <!-- Selected Ingredient Info -->
                 <div class="card card-flush bg-light-warning mb-4" x-show="editingIngredient">
                     <div class="card-body py-3">
@@ -217,7 +217,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="erp-sheet-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-danger me-2" @click="removeIngredientFromEdit()" 
                     title="Hapus bahan ini">

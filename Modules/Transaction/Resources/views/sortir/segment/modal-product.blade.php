@@ -1,94 +1,26 @@
-{{-- Modal Add Product --}}
-<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true" x-show="showAddModal"
-    style="display: none;">
-    <div class="modal-dialog modal-fullscreen-sm-down">
-        <div class="modal-content" x-data>
-            <div class="modal-header" style="background-color: #ff000d; color: #fff;">
-                <h5 class="modal-title" style="color: #fff">Tambah Produk</h5>
-                <button type="button" class="btn-close" @click="closeAddModal()"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Select Produk -->
-                <div class="mb-3">
-                    <label class="form-label">Nama Produk</label>
-                    <select id="select_product" class="form-select"></select>
-                </div>
-
-                <!-- Satuan -->
-                <div class="row">
-                    <div class="col-3 mb-3">
-                        <label class="form-label">Satuan</label>
-                        <input type="text" class="form-control" x-model="addProduct.unit" readonly>
-                    </div>
-
-                    <!-- Harga -->
-                    <div class="col-9 mb-3">
-                        <label class="form-label">Hpp</label>
-                        <input type="text" class="form-control" x-model="formattedAddPrice"
-                            @input="updateAddPriceFromFormatted" readonly>
-                    </div>
-                </div>
-
-                <!-- Quantity -->
-                <div class="mb-3">
-                    <label class="form-label">Quantity</label>
-                    <input type="number" class="form-control" step="0.01" min="0" x-model="addProduct.qty"
-                        @input="updateAddTotalFromQty">
-                </div>
-                <!-- Jumlah Harga -->
-                <div class="mb-3">
-                    <label class="form-label">Jml Hpp terbuang</label>
-                    <input type="text" class="form-control" inputmode="numeric" x-model="addProduct.formattedAddTotalInput"
-                        @input="updateQtyFromAddTotal">
+<dialog class="sortir-modal" id="sortirItemModal" aria-labelledby="sortir-modal-title" x-ref="itemModal" @click.self="closeModal()" @cancel="onModalClosed()" @close="onModalClosed()">
+    <div class="modal-dialog"><form class="modal-content" @submit.prevent="saveModalItem()">
+        <div class="modal-header"><div><h2 id="sortir-modal-title" x-text="editingId === null ? 'Tambah Item Sortir' : 'Edit Item Sortir'"></h2><p x-text="editingId === null ? 'Pilih produk dan tentukan detail sortir' : 'Perbarui detail item sortir'"></p></div><button type="button" class="sortir-close" @click="closeModal()" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
+        <div class="modal-body">
+            <label class="sortir-modal-label" for="sortir-product-search">Pilih Produk / Bahan <span class="sortir-required">*</span></label>
+            <div class="sortir-product-picker">
+                <div class="sortir-search-wrap"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i><input id="sortir-product-search" class="sortir-product-search" type="search" x-model="productSearch" @input.debounce.250ms="loadProducts()" placeholder="Cari produk / bahan..." autocomplete="off"></div>
+                <div class="sortir-product-options" aria-label="Pilihan produk">
+                    <div class="sortir-products-state" x-show="loadingProducts" role="status">Memuat produk...</div>
+                    <div class="sortir-products-state" x-show="!loadingProducts && productsError" x-cloak><span x-text="productsError"></span><button type="button" @click="loadProducts()">Coba lagi</button></div>
+                    <div class="sortir-products-state" x-show="!loadingProducts && !productsError && !products.length" x-cloak>Produk tidak ditemukan di cabang ini.</div>
+                    <template x-for="product in products" :key="product.id"><label class="sortir-product-option" x-show="!loadingProducts && !productsError" :class="String(modalItem.id) === String(product.id) ? 'is-selected' : ''">
+                        <input type="radio" name="sortir_product" :value="product.id" :checked="String(modalItem.id) === String(product.id)" @change="selectProduct(product)">
+                        <span x-text="product.name + (product.unit?.abbreviation ? ' (' + product.unit.abbreviation + ')' : '')"></span>
+                    </label></template>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" @click="closeAddModal()">Tutup</button>
-                <button class="btn btn-primary" @click="saveAddToCart()">Simpan</button>
-            </div>
+            <p class="sortir-stock" x-show="modalItem.id && modalItem.stock !== null" x-text="'Stok tersedia: ' + number(modalItem.stock) + ' ' + modalItem.unit"></p>
+            <div class="sortir-modal-fields"><div><label for="sortir-qty" class="sortir-modal-label">Kuantitas <span x-text="modalItem.unit ? '(' + modalItem.unit + ')' : ''"></span></label><input id="sortir-qty" class="sortir-modal-input" type="text" inputmode="decimal" :value="qtyInput" @input="updateQuantity($event)" placeholder="0" autocomplete="off"></div>
+                <div><label for="sortir-price" class="sortir-modal-label">HPP / Satuan</label><input id="sortir-price" class="sortir-modal-input" type="text" inputmode="decimal" :value="number(modalItem.price)" @input="updatePrice($event)" placeholder="0" autocomplete="off"></div></div>
+            <div class="sortir-modal-total"><span>Total HPP / Modal</span><strong x-text="rupiah(modalItem.qty * modalItem.price)"></strong></div>
+            <p class="sortir-error" x-show="modalError" x-text="modalError" role="alert" x-cloak></p>
         </div>
-    </div>
-</div>
-{{-- Modal Edit --}}
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true"
-    x-show="editModal" style="display: none;">
-    <div class="modal-dialog modal-fullscreen-sm-down">
-        <div class="modal-content" x-data>
-            <div class="modal-header" style="background-color: #ff000d; color: #fff;">
-                <span class="fs-4 text-white fw-bold" x-text="editTitle"></span>
-            </div>
-            <div class="modal-body">
-                <div x-show="editItem">
-                    <div class="mb-3">
-                        <label class="form-label">Nama Product</label>
-                        <input type="text" class="form-control" x-model="editProductName" readonly>
-                    </div>
-                    <!-- Input Qty -->
-                    <div class="row mb-3">
-                        <div class="col-4">
-                            <label class="form-label">Satuan</label>
-                            <input type="text" class="form-control" step="0.01" min="0"
-                                x-model="editProductUnit" readonly>
-                        </div>
-                        <div class="col-8">
-                            <label class="form-label">Quantity</label>
-                            <input type="number" class="form-control" step="0.01" min="0" x-model="editQty"
-                                @input="updateTotalFromEditQty">
-                        </div>
-                    </div>
-                    <!-- Input Mode Harga -->
-                    <div class="mb-3">
-                        <label class="form-label">Jml Hpp terbuang</label>
-                        <input type="text" class="form-control" x-model="editTotalFormatted"
-                            @input="updateEditTotalFormatted" inputmode="numeric">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-danger me-auto" @click="deleteFromCart()">Hapus Produk</button>
-                <button class="btn btn-secondary" @click="closeEditModal()">Batal</button>
-                <button class="btn btn-primary" @click="saveEditToCart()">Simpan</button>
-            </div>
-        </div>
-    </div>
-</div>
+        <div class="modal-footer"><button type="button" class="sortir-action sortir-action-danger" x-show="editingId !== null" @click="deleteModalItem()" x-cloak><i class="ph ph-trash" aria-hidden="true"></i>&nbsp; Hapus Item</button><button type="submit" class="sortir-action sortir-action-primary"><span x-text="editingId === null ? 'Tambah Item' : 'Simpan Perubahan'"></span></button></div>
+    </form></div>
+</dialog>

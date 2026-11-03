@@ -58,9 +58,27 @@ return [
             'prefix_indexes' => true,
             'strict' => false,
             'engine' => null,
+            // PHP 8.5 deprecates the PDO::MYSQL_* constants; Pdo\Mysql::ATTR_* is the
+            // supported form and exists since PHP 8.4 (the minimum for this app).
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                Pdo\Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                Pdo\Mysql::ATTR_INIT_COMMAND => 'SET SESSION cte_max_recursion_depth = ' . max(1000, (int) env('DB_CTE_MAX_RECURSION_DEPTH', 10000)),
             ]) : [],
+        ],
+
+        'guest' => [
+            'driver' => 'mysql',
+            'host' => env('GUEST_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('GUEST_DB_PORT', env('DB_PORT', '3306')),
+            'database' => env('GUEST_DB_DATABASE'),
+            'username' => env('GUEST_DB_USERNAME', env('DB_USERNAME', 'forge')),
+            'password' => env('GUEST_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('GUEST_DB_SOCKET', env('DB_SOCKET', '')),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => false,
+            'engine' => null,
         ],
 
         'pgsql' => [

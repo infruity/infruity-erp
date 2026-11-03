@@ -2,6 +2,8 @@
 namespace Modules\Master\Http\Controllers;
 
 use Exception;
+use App\User;
+use App\Models\Role;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -9,7 +11,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Modules\Master\Entities\Department;
+use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
+use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\Position;
 use Modules\Master\Entities\Staff;
 use Yajra\DataTables\Facades\DataTables;
@@ -28,7 +32,17 @@ class StaffController extends Controller
             return $denied;
         }
 
-        return view('master::staff.index', ['records' => Staff::query()->with(['department:id,name', 'position:id,name'])->select('id', 'name', 'nickname', 'contact', 'email', 'department_id', 'position_id', 'status')->orderByDesc('id')->get()]);
+        $records = $this->staffListRecords();
+
+        return view('master::staff.index', array_merge(
+            $this->staffFormData(),
+            [
+                'records' => $records,
+                'initialCreateOpen' => request()->boolean('create'),
+                'initialEditOpen' => false,
+                'initialEditReturnUrl' => route('staff.index'),
+            ]
+        ));
     }
 
     /**
@@ -41,11 +55,7 @@ class StaffController extends Controller
             return $denied;
         }
 
-        $data['page_plugin_js'] = [
-            'assets/plugins/custom/formrepeater/formrepeater.bundle.js',
-        ];
-        $data['data'] = null;
-        return view('master::staff.create', $data);
+        return redirect()->route('staff.index', ['create' => 1]);
     }
 
     /**
@@ -59,61 +69,39 @@ class StaffController extends Controller
             return $denied;
         }
 
-        // dd($request->all());
-        $validator = Validator::make($request->all(), [
-            'staff_name'  => 'required',
-            'nickname'    => 'required',
-            'date_in'     => 'nullable|date|date_format:Y-m-d',
-            'gender'      => 'nullable|in:male,female',
-            'nik'         => 'nullable',
-            'contact'     => [
-                'nullable',
-                'numeric',
-                'digits_between:10,15',
-                'regex:/^(?:\+62|62|08)[0-9]{8,13}$/',
-            ],
-            'email'       => 'nullable|email',
-            // 'department' => 'required|exists:department,id',
-            // 'position' => 'required|exists:position,id',
-            'description' => 'nullable|string|max:1000',
-            'avatar'      => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+        $rules = [
+            'staff_name' => ['required', 'string', 'max:255'],
+            'date_in' => ['nullable', 'date_format:Y-m-d'],
+            'position' => ['required', 'integer', 'exists:position,id'],
+            'branch_id' => ['required', 'integer', Rule::in($this->availableBranchIds())],
+            'role_ids' => ['required', 'array', 'min:1'],
+            'role_ids.*' => ['required', 'integer', 'distinct', 'exists:role,id_role'],
+        ];
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return redirect()->back()
+            return redirect()->route('staff.index', ['create' => 1])
                 ->withErrors($validator)
-                ->withInput();
+                ->withInput($request->except(['account_password', 'password']));
         }
 
         try {
             DB::beginTransaction();
-            $staff                = new Staff();
-            $staff->name          = $request->staff_name;
-            $staff->nickname      = $request->nickname;
-            $staff->date_in       = $request->date_in;
-            $staff->gender        = $request->gender;
-            $staff->nik           = $request->nik;
-            $staff->contact       = $request->contact;
-            $staff->email         = $request->email;
-            $staff->department_id = $request->department;
-            $staff->position_id   = $request->position;
-            $staff->description   = $request->description;
-            $staff->status        = $request->status ?? 'aktif';
-            $staff->created_by    = Auth::user()->id_user;
-
-            if ($request->hasFile('avatar')) {
-                $file         = $request->file('avatar');
-                $filename     = time() . '_' . $file->getClientOriginalName();
-                $path         = $file->storeAs('staff', $filename, 'public');
-                $staff->image = $path;
-            }
-
+            $staff = new Staff();
+            $staff->name = $request->staff_name;
+            $staff->date_in = $request->date_in;
+            $staff->position_id = $request->position;
+            $staff->branch_id = $request->branch_id;
+            $staff->status = 'aktif';
+            $staff->created_by = Auth::user()->id_user;
             $staff->save();
+            $this->syncPendingRoles($staff->id, $request->input('role_ids', []));
 
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            return redirect()->back()->withInput($request->all())
+            return redirect()->route('staff.index', ['create' => 1])
+                ->withInput($request->except(['account_password', 'password']))
                 ->with('error', 'Pembuatan Staff gagal' . $e->getMessage());
         }
 
@@ -140,19 +128,30 @@ class StaffController extends Controller
      * @param int $id
      * @return Renderable
      */
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
         if ($denied = $this->requireAccess('staff.edit')) {
             return $denied;
         }
 
-        $data['page_plugin_js'] = [
-            'assets/plugins/custom/formrepeater/formrepeater.bundle.js',
-        ];
-        $data['data']       = Staff::findOrFail($id);
-        $data['department'] = Department::where('id', $data['data']->department_id)->first();
-        $data['position']   = Position::where('id', $data['data']->position_id)->first();
-        return view('master::staff.create', $data);
+        $editingStaff = Staff::with(['account', 'pendingRoles'])->findOrFail($id);
+        $formData = array_merge(['data' => $editingStaff], $this->staffFormData());
+
+        if ($request->boolean('overlay')) {
+            return view('master::staff.edit-form', $formData);
+        }
+
+        $records = check_access('staff.index')
+            ? $this->staffListRecords()
+            : $this->staffListRecords((int) $editingStaff->id);
+
+        return view('master::staff.index', array_merge($this->staffFormData(), [
+            'records' => $records,
+            'initialCreateOpen' => false,
+            'initialEditOpen' => true,
+            'initialEditReturnUrl' => route('staff.index'),
+            'editingStaff' => $editingStaff,
+        ]));
     }
 
     /**
@@ -167,71 +166,48 @@ class StaffController extends Controller
             return $denied;
         }
 
-        $validator = Validator::make($request->all(), [
-            'staff_name'  => 'required',
-            'nickname'    => 'required',
-            'date_in'     => 'nullable|date|date_format:Y-m-d',
-            'gender'      => 'nullable|in:male,female',
-            'nik'         => 'nullable',
-            'contact'     => [
-                'nullable',
-                'numeric',
-                'digits_between:10,15',
-                'regex:/^(?:\+62|62|08)[0-9]{8,13}$/',
-            ],
-            'email'       => 'nullable|email',
-            // 'department' => 'nullable|exists:department,id',
-            // 'position' => 'nullable|exists:position,id',
-            'description' => 'nullable|string|max:1000',
-            'avatar'      => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+        $rules = [
+            'staff_name' => ['required', 'string', 'max:255'],
+            'date_in' => ['nullable', 'date_format:Y-m-d'],
+            'position' => ['required', 'integer', 'exists:position,id'],
+            'branch_id' => ['required', 'integer', Rule::in($this->availableBranchIds())],
+            'role_ids' => ['required', 'array', 'min:1'],
+            'role_ids.*' => ['required', 'integer', 'distinct', 'exists:role,id_role'],
+        ];
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput();
+                ->withInput($request->except(['account_password', 'password']));
         }
 
         try {
             DB::beginTransaction();
-            $staff                = Staff::findOrFail($id);
-            $staff->name          = $request->staff_name;
-            $staff->nickname      = $request->nickname;
-            $staff->date_in       = $request->date_in;
-            $staff->gender        = $request->gender;
-            $staff->nik           = $request->nik;
-            $staff->contact       = $request->contact;
-            $staff->email         = $request->email;
-            $staff->department_id = $request->department;
-            $staff->position_id   = $request->position;
-            $staff->description   = strip_tags($request->description ?? '');
-            $staff->status        = $request->status ?? 'aktif';
-            $staff->updated_by    = Auth::user()->id_user;
-
-            if ($request->hasFile('avatar')) {
-                // Hapus foto lama jika ada
-                if ($staff->image) {
-                    Storage::disk('public')->delete($staff->image);
-                }
-                $file         = $request->file('avatar');
-                $filename     = time() . '_' . $file->getClientOriginalName();
-                $path         = $file->storeAs('staff', $filename, 'public');
-                $staff->image = $path;
-            }
-
-            if ($request->avatar_remove == '1') {
-                if ($staff->image) {
-                    Storage::disk('public')->delete($staff->image);
-                }
-                $staff->image = null;
-            }
-
+            $staff = Staff::findOrFail($id);
+            $staff->name = $request->staff_name;
+            $staff->date_in = $request->date_in;
+            $staff->position_id = $request->position;
+            $staff->branch_id = $request->branch_id;
+            $staff->updated_by = Auth::user()->id_user;
             $staff->save();
+            $this->syncPendingRoles($staff->id, $request->input('role_ids', []));
+
+            $accountId = User::withoutGlobalScope('is_aktif')
+                ->where('staff_id', $staff->id)
+                ->value('id_user');
+            if ($accountId) {
+                User::withoutGlobalScope('is_aktif')
+                    ->where('id_user', $accountId)
+                    ->update(['nm_user' => $staff->name]);
+                $this->syncAccountRoles((int) $accountId, $request->input('role_ids', []));
+                $this->syncAccountBranch((int) $accountId, (int) $staff->branch_id);
+            }
 
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            return redirect()->back()->withInput($request->all())
+            return redirect()->back()->withInput($request->except(['account_password', 'password']))
                 ->with('error', 'Update Staff gagal' . $e->getMessage());
         }
 
@@ -272,6 +248,8 @@ class StaffController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('staff.index');
+
         // eager load relations supaya lebih efisien
         $data = Staff::with(['position', 'department'])
             ->orderBy('name', 'asc');
@@ -355,6 +333,84 @@ class StaffController extends Controller
             ->rawColumns(['name', 'action', 'position'])
             ->make(true);
     }
+
+    private function syncPendingRoles(int $staffId, array $roleIds): void
+    {
+        $roleIds = array_values(array_unique(array_map('intval', $roleIds)));
+        DB::table('staff_role')->where('staff_id', $staffId)->delete();
+
+        $now = now();
+        DB::table('staff_role')->insert(array_map(fn ($roleId) => [
+            'staff_id' => $staffId,
+            'id_role' => $roleId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $roleIds));
+    }
+
+    private function syncAccountRoles(int $userId, array $roleIds): void
+    {
+        $roleIds = array_values(array_unique(array_map('intval', $roleIds)));
+        DB::table('role_user')->where('id_user', $userId)->delete();
+
+        $now = now();
+        DB::table('role_user')->insert(array_map(fn ($roleId) => [
+            'id_user' => $userId,
+            'id_role' => $roleId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $roleIds));
+    }
+
+    private function syncAccountBranch(int $userId, int $branchId): void
+    {
+        DB::table('user_branch')->where('user_id', $userId)->delete();
+        DB::table('user_branch')->insert(['user_id' => $userId, 'branch_id' => $branchId]);
+    }
+
+    private function staffListRecords(?int $onlyId = null)
+    {
+        $query = Staff::query()
+            ->with(['department:id,name', 'position:id,name', 'branch:id,name'])
+            ->select('id', 'name', 'department_id', 'position_id', 'branch_id', 'status', 'date_in')
+            ->orderByDesc('id');
+
+        if ($onlyId !== null) {
+            $query->whereKey($onlyId);
+        }
+
+        return $query->get()->each(function ($staff) {
+            $staff->position_label = $staff->position?->name ?: 'Belum diatur';
+            $staff->branch_label = $staff->branch?->name ?: 'Belum diatur';
+
+            if (!$staff->date_in) {
+                $staff->tenure_label = 'Belum diatur';
+                return;
+            }
+
+            $tenure = Carbon::parse($staff->date_in)->diff(Carbon::now());
+            $parts = [];
+            if ($tenure->y > 0) $parts[] = $tenure->y . ' Thn';
+            if ($tenure->m > 0) $parts[] = $tenure->m . ' Bln';
+            $staff->tenure_label = $parts ? implode(' ', $parts) : 'Baru bergabung';
+        });
+    }
+
+    private function staffFormData(): array
+    {
+        return [
+            'positions' => Position::orderBy('name')->get(['id', 'name']),
+            'branches' => Branch::orderBy('name')->get(['id', 'name']),
+            'roles' => Role::orderBy('nm_role')->get(['id_role', 'nm_role']),
+            'initialCreateOpen' => false,
+        ];
+    }
+
+    private function availableBranchIds(): array
+    {
+        return Branch::query()->pluck('id')->map(fn ($id) => (int) $id)->all();
+    }
+
 
     public function getStaff(Request $request)
     {

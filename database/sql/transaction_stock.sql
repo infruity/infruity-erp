@@ -1,6 +1,6 @@
-DROP VIEW IF EXISTS transaction_stock;
-CREATE VIEW transaction_stock AS
-WITH base AS (
+-- Raw stock ledger rows (no running balance). Aggregations such as
+-- product_stock should read from this view: it skips the window-function sort.
+CREATE OR REPLACE VIEW transaction_stock_base AS
 	-- 	STOCK IN
 	SELECT
 		0 AS branch_id,
@@ -159,10 +159,13 @@ WITH base AS (
 	UNION ALL
 
 	-- TRANSFER (ASAL)
+	-- Transfer dengan sent_quantity: stok asal keluar sejak dikirim (pending/proses)
+	-- sejumlah yang dikirim, selisih terima = susut. Transfer lama (tanpa
+	-- sent_quantity) tetap keluar saat selesai sejumlah yang diterima.
 	SELECT
 		transfer.branch_id,
 		transfer_detail.product_id,
-		- transfer_detail.quantity,
+		- COALESCE(transfer_detail.sent_quantity, transfer_detail.quantity),
 		transfer_detail.price,
 		transfer.created_at,
 		'mengirim' AS reff,
@@ -173,6 +176,7 @@ WITH base AS (
 	JOIN transfer_detail ON transfer_detail.transfer_id = transfer.id
 	LEFT JOIN users u10 ON u10.id_user = transfer.created_by
 	WHERE transfer.`status` = 'selesai'
+		OR (transfer.`status` IN ('pending', 'proses') AND transfer_detail.sent_quantity IS NOT NULL)
 
 	UNION ALL
 
@@ -230,6 +234,12 @@ WITH base AS (
 	WHERE pos_transaction_detail.deleted_at IS NULL
 		AND pos_transaction.`status` IN ('paid', 'debt')
 		AND pos_transaction.deleted_at IS NULL
+;
+
+DROP VIEW IF EXISTS transaction_stock;
+CREATE VIEW transaction_stock AS
+WITH base AS (
+    SELECT * FROM transaction_stock_base
 )
 SELECT *,
 	COALESCE(SUM(quantity) OVER (

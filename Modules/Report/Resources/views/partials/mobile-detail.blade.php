@@ -87,9 +87,9 @@
     </div>
 
     <template x-teleport="body">
-        <div x-show="filterOpen" x-cloak>
+        <div x-show="filterOpen" x-cloak data-erp-modal>
             <div class="report-mobile-backdrop" @click="calendarOpen = false; filterOpen = false"></div>
-            <div class="report-mobile-sheet" role="dialog" aria-modal="true" aria-label="Filter Laporan" @keydown.escape.window="calendarOpen = false; filterOpen = false">
+            <div class="report-mobile-sheet report-mobile-sheet--filter" :class="config.type === 'asset' ? 'report-mobile-sheet--asset' : ''" role="dialog" aria-modal="true" aria-label="Filter Laporan" @keydown.escape.window="calendarOpen = false; filterOpen = false">
                 <button type="button" class="report-mobile-sheet__handle" @click="calendarOpen = false; filterOpen = false" aria-label="Tutup filter"></button>
                 <div class="report-mobile-sheet__head"><div><h2>Filter Laporan</h2><p>Sesuaikan parameter data laporan</p></div><button type="button" class="report-mobile-sheet__close" @click="calendarOpen = false; filterOpen = false" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
                 <div class="report-mobile-sheet__body">
@@ -109,20 +109,14 @@
                             </div>
                         </div>
                         <div class="report-mobile-field">
-                            <div class="report-mobile-field__heading"><span class="report-mobile-field__label">Cabang</span><button x-show="draftBranch !== 'all'" type="button" @click="draftBranch = 'all'; branchSearchQuery = ''; applyDraftLive()" class="report-mobile-field__reset">Reset</button></div>
-                            <div class="report-mobile-branch-picker">
-                                <label class="report-mobile-branch-search">
-                                    <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-                                    <input type="search" x-model="branchSearchQuery" placeholder="Cari cabang..." autocomplete="off" aria-label="Cari cabang">
-                                </label>
-                                <div class="report-mobile-branch-options" role="radiogroup" aria-label="Pilih cabang">
-                                    <template x-for="branch in config.branches.filter(item => item.name.toLocaleLowerCase('id-ID').includes(branchSearchQuery.trim().toLocaleLowerCase('id-ID')))" :key="branch.id">
-                                        <label class="report-mobile-branch-option">
-                                            <input type="radio" name="report-mobile-branch" :value="String(branch.id)" x-model="draftBranch" @change="applyDraftLive()">
-                                            <span x-text="branch.name"></span>
-                                        </label>
+                            <div class="report-mobile-field__heading"><span class="report-mobile-field__label">Cabang</span><button x-show="draftBranch !== 'all'" type="button" @click="draftBranch = 'all'; applyDraftLive()" class="report-mobile-field__reset">Reset</button></div>
+                            <div class="report-mobile-select" x-data="{open:false}" x-effect="if (!filterOpen) open = false" @click.outside="open = false" @keydown.escape="if (open) { $event.preventDefault(); $event.stopPropagation(); open = false; $refs.branchTrigger.focus() }">
+                                <button x-ref="branchTrigger" type="button" class="report-mobile-select__trigger" @click="open = !open" :aria-expanded="open" aria-haspopup="listbox" aria-label="Cabang"><span x-text="draftBranchName()"></span><i class="ph-bold ph-caret-down" :class="open ? 'is-open' : ''" aria-hidden="true"></i></button>
+                                <div x-show="open" x-cloak class="report-mobile-select__menu" role="listbox" aria-label="Pilih cabang">
+                                    <button type="button" role="option" :aria-selected="draftBranch === 'all'" :class="draftBranch === 'all' ? 'is-selected' : ''" @click="draftBranch = 'all'; open = false; applyDraftLive(); $refs.branchTrigger.focus()"><span>Semua Cabang</span><i x-show="draftBranch === 'all'" class="ph-fill ph-circle" aria-hidden="true"></i></button>
+                                    <template x-for="branchOption in config.branches" :key="branchOption.id">
+                                        <button type="button" role="option" :aria-selected="String(draftBranch) === String(branchOption.id)" :class="String(draftBranch) === String(branchOption.id) ? 'is-selected' : ''" @click="draftBranch = String(branchOption.id); open = false; applyDraftLive(); $refs.branchTrigger.focus()"><span x-text="branchOption.name"></span><i x-show="String(draftBranch) === String(branchOption.id)" class="ph-fill ph-circle" aria-hidden="true"></i></button>
                                     </template>
-                                    <p x-show="config.branches.filter(item => item.name.toLocaleLowerCase('id-ID').includes(branchSearchQuery.trim().toLocaleLowerCase('id-ID'))).length === 0" class="report-mobile-branch-empty">Cabang tidak ditemukan</p>
                                 </div>
                             </div>
                         </div>
@@ -132,7 +126,7 @@
                                 <button type="button" class="report-mobile-select__trigger" @click="open = !open" :aria-expanded="open" aria-haspopup="listbox" aria-label="Kurir"><span x-text="draftCourierName()"></span><i class="ph-bold ph-caret-down" :class="open ? 'is-open' : ''" aria-hidden="true"></i></button>
                                 <div x-show="open" x-cloak class="report-mobile-select__menu" role="listbox" aria-label="Pilih kurir">
                                     <button type="button" role="option" :aria-selected="draftCourier === 'all'" :class="draftCourier === 'all' ? 'is-selected' : ''" @click="draftCourier = 'all'; open = false; applyDraftLive()"><span>Semua Kurir</span><i x-show="draftCourier === 'all'" class="ph-fill ph-circle" aria-hidden="true"></i></button>
-                                    <template x-for="courier in config.couriers" :key="courier.id"><button type="button" role="option" :aria-selected="String(draftCourier) === String(courier.id)" :class="String(draftCourier) === String(courier.id) ? 'is-selected' : ''" @click="draftCourier = String(courier.id); open = false; applyDraftLive()"><span x-text="courier.name"></span><i x-show="String(draftCourier) === String(courier.id)" class="ph-fill ph-circle" aria-hidden="true"></i></button></template>
+                                    <template x-for="courierOption in config.couriers" :key="courierOption.id"><button type="button" role="option" :aria-selected="String(draftCourier) === String(courierOption.id)" :class="String(draftCourier) === String(courierOption.id) ? 'is-selected' : ''" @click="draftCourier = String(courierOption.id); open = false; applyDraftLive()"><span x-text="courierOption.name"></span><i x-show="String(draftCourier) === String(courierOption.id)" class="ph-fill ph-circle" aria-hidden="true"></i></button></template>
                                     <button type="button" role="option" :aria-selected="draftCourier === 'null'" :class="draftCourier === 'null' ? 'is-selected' : ''" @click="draftCourier = 'null'; open = false; applyDraftLive()"><span>Tanpa Kurir / Lainnya</span><i x-show="draftCourier === 'null'" class="ph-fill ph-circle" aria-hidden="true"></i></button>
                                 </div>
                             </div>
@@ -196,7 +190,7 @@
     </template>
 
     <template x-teleport="body">
-        <div x-show="historyOpen" x-cloak>
+        <div x-show="historyOpen" x-cloak data-erp-modal>
             <div class="report-mobile-backdrop" @click="historyOpen = false"></div>
             <div class="report-mobile-sheet report-mobile-sheet--history" :class="config.type === 'adjusted' ? 'report-mobile-sheet--history-adjusted' : ''" role="dialog" aria-modal="true" :aria-label="config.type === 'adjusted' ? 'Detail Rekonsiliasi' : (config.type === 'shipping' ? 'Riwayat Pengiriman' : 'Riwayat Transaksi')" @keydown.escape.window="historyOpen = false">
                 <div class="report-mobile-sheet__handle"></div>
@@ -238,6 +232,7 @@
                     </div>
                 </div>
                 <div class="report-mobile-sheet__body report-mobile-history-body">
+                    <div x-show="historyError" x-cloak role="alert" class="report-mobile-empty"><h2>Gagal memuat riwayat</h2><p x-text="historyError"></p><button type="button" class="report-mobile-more" @click="openRow(historyRow)">Coba lagi</button></div>
                     <div x-show="historyLoading" role="status" style="padding:28px;text-align:center;color:#9ca3af;font-size:12px">Memuat riwayat...</div>
                     <div x-show="config.type === 'adjusted' && !historyLoading" class="report-adjusted-history">
                         <section class="report-adjusted-history__summary">
@@ -268,12 +263,12 @@
                                 <div class="report-mobile-receipt__head"><div><span class="report-mobile-receipt__eyebrow" x-text="config.type === 'shipping' ? 'No. Resi' : 'No. Nota'"></span><strong x-text="entry.invoice || entry.type || 'Transaksi'"></strong></div><div class="report-mobile-receipt__date"><strong x-text="entry.date_formatted"></strong><span x-text="entry.time_formatted"></span></div></div>
                                 <div class="report-mobile-receipt__content">
                                     <p x-show="['sales', 'profit'].includes(config.type) && groupBy !== 'date' && branch === 'all' && entry.branch_name" class="report-mobile-receipt__branch" x-text="entry.branch_name"></p>
-                                    <template x-for="line in historyDetails(entry)" :key="line.label"><div class="report-mobile-receipt__line"><span x-text="line.label"></span><strong x-text="line.value"></strong></div></template>
+                                    <template x-for="line in historyDetails(entry)" :key="line.label"><div class="report-mobile-receipt__line"><span x-text="line.label"></span><strong :class="config.type === 'sales' && line.label === 'Pembayaran' ? 'is-payment' : ''" x-text="line.value"></strong></div></template>
                                     <div class="report-mobile-receipt__total"><span x-text="historyTotalLabel(entry)"></span><strong x-text="historyAmount(entry)"></strong></div>
                                 </div>
                             </article>
                         </template>
-                        <p x-show="!historyLoading && filteredHistory.length === 0" style="padding:28px;text-align:center;color:#9ca3af;font-size:12px">Belum ada riwayat pada periode ini.</p>
+                        <p x-show="!historyLoading && !historyError && filteredHistory.length === 0" style="padding:28px;text-align:center;color:#9ca3af;font-size:12px">Belum ada riwayat pada periode ini.</p>
                     </div>
                 </div>
             </div>

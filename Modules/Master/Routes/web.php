@@ -85,7 +85,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     // Datatable
     Route::get('products/data', [ProductController::class, 'get_data'])->name('products-data');
     Route::get('products/child-data', [ProductController::class, 'get_child_data'])->name('products-child-data');
-    Route::get('products/stock-data', [ProductController::class, 'get_data_stock'])->name('product-stock-data');
+    Route::get('products/stock-data', [ProductController::class, 'get_data_stock'])->name('products.stock-data');
     Route::get('category/data', [ProductCategoryController::class, 'get_data'])->name('category-data');
     Route::get('unit/data', [ProductUnitController::class, 'get_data'])->name('unit-data');
     Route::get('location/data', [LocationController::class, 'get_data'])->name('location-data');

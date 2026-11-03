@@ -174,9 +174,9 @@ if (!function_exists('tanggalMerah')) {
 if (!function_exists('toMinutes')) {
     function toMinutes($str)
     {
-        $jam = (Double) date("H", strtotime($str)) * 60;
-        $minute = (Double) date("i", strtotime($str));
-        $second = (Double) date("s", strtotime($str)) / 60;
+        $jam = (float) date("H", strtotime($str)) * 60;
+        $minute = (float) date("i", strtotime($str));
+        $second = (float) date("s", strtotime($str)) / 60;
 
         $total = $jam + $minute + $second;
 

@@ -1,0 +1,12 @@
+.erp-operations-toolbar-actions { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+.erp-operations-filter { position:relative; }
+.erp-operations-filter summary { list-style:none; cursor:pointer; }
+.erp-operations-filter summary::-webkit-details-marker { display:none; }
+.erp-operations-filter__body { position:absolute; z-index:20; top:calc(100% + 8px); right:0; display:grid; gap:18px; width:min(320px,calc(100vw - 40px)); padding:20px; border:1px solid var(--erp-border); border-radius:16px; background:white; box-shadow:var(--erp-shadow-soft); }
+.erp-operations-filter__body > label { display:grid; gap:8px; font-size:12px; font-weight:600; color:#4b5563; }
+.erp-operations-modal .modal-content > form { display:flex; min-height:0; flex-direction:column; }
+.erp-operations-modal .modal-body { background:#f9fafb; }
+.erp-operations-modal .modal-header h2 { font-size:17px; }
+.erp-operations-modal .modal-dialog { margin-left:auto; margin-right:24px; }
+.erp-operations-editor .erp-editor-section .card { border:0; box-shadow:none; }
+@media(max-width:767px) { .erp-operations-modal .modal-dialog { position:fixed; inset:auto 0 0; width:100%; margin:0; padding:0; max-width:100%; } .erp-operations-modal .modal-content { border-radius:24px 24px 0 0; max-height:90dvh; } }

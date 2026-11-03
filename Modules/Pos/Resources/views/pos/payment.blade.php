@@ -1,111 +1,14 @@
 @extends('template.root')
-
+@section('title', 'Pembayaran')
 @section('content')
-    <!--begin::Aside column-->
-    <div class="w-100 flex-lg-row-auto mb-7 me-7 me-lg-10" x-data="posApp()" x-init="init()">
-        <div class="card card-body mb-5 bg-light-success rounded-3">
-            <div class="d-flex flex-column">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="mb-3">Pembayaran</span>
-                    <span class="fw-bolder mb-3">{{ $data->customer?->name ?? 'Pelanggan Umum' }}</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center" style="margin-top: -5px;">
-                    <span class="mb-3">Total Penjualan</span>
-                    <span class="fw-bolder mb-3">{{ toNumber(floor($data->total)) }}</span>
-                </div>
-            </div>
-        </div>
-        @if (isset($deposito) && $data->total >= $deposito->voucher)
-            <div class="card card-body mb-5 bg-light-success rounded-3">
-                <div class="d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-center" style="margin-top: -5px;">
-                        <span class="">Voucher</span>
-                        <span class="fw-bolder mb-3">-{{ toNumber($deposito->voucher ?? 0) }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center" style="margin-top: -5px;">
-                        <span class="">Sisa Voucher</span>
-                        <span class="fw-bolder mb-3">{{ $deposito->quantity ?? 0 }} (Voucher)</span>
-                    </div>
-                </div>
-            </div>
-        @endif
-        <div class="card card-body mb-3 mt-3">
-            <div class="d-flex flex-column gap-10 mb-3">
-                <div class="fv-row">
-                    <label class="required form-label">Tanggal Pembayaran</label>
-                    <input type="date" class="form-control" name="date" value="{{ date('Y-m-d') }}">
-                </div>
-            </div>
-            <template x-for="(payment, index) in payments" :key="index">
-                <div class="row align-items-end mb-2">
-                    <div class="col">
-                        <div class="fv-row">
-                            <label class="required form-label">Tipe Pembayaran</label>
-                            <select class="form-select" x-model="payment.payment_id" @change="setPaymentName(index)">
-                                <option value="">Pilih Metode</option>
-                                <template x-for="method in paymentMethods" :key="method.id">
-                                    <option :value="method.id" x-text="method.name"></option>
-                                </template>
-                            </select>
-
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="fv-row">
-                            <label class="required form-label">Jumlah Pembayaran</label>
-                            <div class="input-group">
-                                <span class="input-group-text">Rp.</span>
-                                <input type="text" class="form-control" x-model="payment.amount"
-                                    @input="formatAmount(index)">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-danger" @click="removePayment(index)">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </template>
-            <button type="button" class="btn btn-sm btn-primary mt-2" @click="addPayment()">
-                + Tambah Pembayaran
-            </button>
-            {{-- <div class="d-flex flex-column mb-2">
-                <div class="fv-row mb-2">
-                    <label class="required form-label">Jumlah Pembayaran</label>
-                    <div class="input-group">
-                        <span class="input-group-text">Rp.</span>
-                        <input type="text" class="form-control" x-model="formattedTotalPayment" @input="updatePayment">
-                    </div>
-                </div>
-                <!-- Notifikasi selisih -->
-                <div class="text-end">
-                    <small class="text-danger" x-show="paymentDifference < 0">
-                        Kurang bayar senilai Rp. <span x-text="formatRupiah(Math.abs(paymentDifference))"></span>
-                    </small>
-                    <small class="text-success" x-show="paymentDifference > 0">
-                        Uang Kembalian Rp. <span x-text="formatRupiah(paymentDifference)"></span>
-                    </small>
-                </div>
-            </div> --}}
-            <div class="text-end mt-3">
-                <span x-text="paymentStatus.status" class="text-primary"></span>
-                <template x-if="paymentStatus.selisih > 0">
-                    <span class="text-primary">(Rp <span
-                            x-text="paymentStatus.selisih.toLocaleString('id-ID')"></span>)</span>
-                </template>
-            </div>
-            {{-- <div class="d-flex flex-column">
-                <div class="fv-row mb-2">
-                    <label class="required form-label">Cabang</label>
-                    <select class="form-select" id="branch_id" name="branch_id">
-                        <option value="">Select Branch</option>
-                    </select>
-                </div>
-            </div> --}}
-        </div>
-        <div class="card-body mb-3">
-            <div class="accordion mb-4" id="accordionPembayaranSebelumnya" x-show="previousPayments.length > 0"
+<div x-data="posApp()" class="erp-editor erp-payment-editor">
+ <div class="erp-editor-main">
+ <section class="erp-editor-section"><header><i class="ph ph-credit-card" aria-hidden="true"></i><h2>Metode pembayaran</h2></header><div class="erp-editor-body">
+ <div x-show="retryPending" x-cloak role="status" class="alert alert-warning">Status percobaan sebelumnya belum dipastikan. Coba ulang mengirim pembayaran yang sama.</div>
+ <div class="mb-5"><label for="payment-date" class="form-label required">Tanggal pembayaran</label><input id="payment-date" type="date" :disabled="loading || retryPending" class="form-control" name="date" value="{{ date('Y-m-d') }}"></div>
+ <template x-for="(payment,index) in payments" :key="index"><fieldset class="erp-payment-method"><legend>Metode <span x-text="index + 1"></span></legend><div class="erp-payment-fields"><label><span class="form-label">Tipe pembayaran</span><select :disabled="loading || retryPending" class="form-select" x-model="payment.payment_id" @change="setPaymentName(index)"><option value="">Pilih metode</option><template x-for="method in paymentMethods" :key="method.id"><option :value="method.id" x-text="method.name"></option></template></select></label><label><span class="form-label">Jumlah pembayaran</span><div class="input-group"><span class="input-group-text">Rp</span><input type="text" inputmode="numeric" :disabled="loading || retryPending" class="form-control" x-model="payment.amount" @input="formatAmount(index)"></div></label><button type="button" class="erp-action erp-action--danger" @click="removePayment(index)" :disabled="loading || retryPending" aria-label="Hapus metode pembayaran"><i class="ph ph-trash" aria-hidden="true"></i></button></div></fieldset></template>
+ <button type="button" class="erp-action" @click="addPayment()" :disabled="loading || retryPending"><i class="ph ph-plus" aria-hidden="true"></i>Tambah metode</button>
+ </div></section><section class="erp-editor-section"><div class="accordion mb-4" id="accordionPembayaranSebelumnya" x-show="previousPayments.length > 0"
                 x-init="loadPreviousPayments()">
                 <div class="accordion-item border-0 shadow-sm rounded">
                     <h2 class="accordion-header" id="headingPembayaran">
@@ -144,57 +47,11 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <style>
-            @media (min-width: 992px) {
-                .payment-action-bar {
-                    left: 265px !important;
-                    /* Aside width approximate offset */
-                    width: calc(100% - 265px) !important;
-                }
-            }
-        </style>
-        <div class="payment-action-bar position-fixed bottom-0 start-0 w-100 bg-white shadow-lg p-3"
-            style="z-index: 1000;">
-            <div class="card-body mb-3">
-                <div class="row">
-                    <div class="col-9">
-                        <button type="button" class="btn btn-primary w-100" :disabled="loading"
-                            @click="submitPayment()">
-                            <template x-if="loading">
-                                <span class="spinner-border spinner-border-sm align-middle me-2"></span>
-                            </template>
-                            <template x-if="!loading">
-                                <i class="bi bi-cash-stack"></i>
-                            </template>
-                            <span x-text="loading ? 'Memproses...' : 'Bayar'"></span>
-                        </button>
-
-                    </div>
-                    <div class="col-3">
-                        <a href="{{ route('pos.printDraftPayment', $data->id) }}" class="btn btn-success w-100">
-                            <i class="fa-solid fa-print"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-9">
-                        <a href="{{ route('pos.edit', $data->id) }}" class="btn btn-warning w-100">
-                            <i class="bi bi-arrow-left"></i> Kembali / Edit Lagi
-                        </a>
-                    </div>
-                    <div class="col-3">
-                        <a href="{{ route('pos.index') }}" class="btn btn-danger w-100">
-                            <i class="fa fa-home"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!--end::Aside column-->
-    @include('pos::pos.js-payment')
+            </div></section>
+ </div><aside class="erp-editor-summary"><h2>Ringkasan pembayaran</h2><dl class="erp-payment-bill"><div><dt>Pelanggan</dt><dd>{{ $data->customer?->name ?? 'Pelanggan Umum' }}</dd></div><div><dt>Total penjualan</dt><dd>Rp {{ toNumber(floor($data->total)) }}</dd></div>
+ @if(isset($deposito) && $data->total >= $deposito->voucher)<div><dt>Voucher</dt><dd>−Rp {{ toNumber($deposito->voucher ?? 0) }}</dd></div><div><dt>Sisa voucher</dt><dd>{{ $deposito->quantity ?? 0 }}</dd></div>@endif
+ <div class="erp-payment-bill-total"><dt>Dibayar</dt><dd>Rp <span x-text="formatRupiah(totalPayment)"></span></dd></div></dl><p class="erp-payment-status" aria-live="polite"><span x-text="paymentStatus.status"></span><span x-show="paymentStatus.selisih > 0"> · Rp <span x-text="paymentStatus.selisih.toLocaleString('id-ID')"></span></span></p>
+ <div class="erp-payment-actions"><button type="button" class="erp-action erp-action--primary" :disabled="loading" :aria-busy="loading" :aria-label="loading ? 'Memproses...' : (retryPending ? 'Coba ulang pembayaran' : 'Bayar')" @click="submitPayment()"><i x-show="!loading" class="ph ph-credit-card" aria-hidden="true"></i><span x-show="loading" class="spinner-border spinner-border-sm" aria-hidden="true"></span><span x-text="loading ? 'Memproses...' : (retryPending ? 'Coba ulang pembayaran' : 'Bayar')"></span></button><a href="{{ route('pos.printDraftPayment', $data->id) }}" class="erp-action"><i class="ph ph-printer" aria-hidden="true"></i>Cetak draf</a><a href="{{ route('pos.edit', $data->id) }}" class="erp-action">Kembali / Edit Lagi</a><a href="{{ route('pos.index') }}" class="erp-action">Daftar POS</a></div></aside>
+</div>
+@include('pos::pos.js-payment')
 @endsection

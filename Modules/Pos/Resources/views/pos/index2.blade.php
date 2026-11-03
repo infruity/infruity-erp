@@ -1,87 +1,8 @@
 @extends('template.root')
+@section('title', 'Kasir / POS')
 
 @section('content')
-    {{-- @livewire('product-table') --}}
-    <div class="pos-index-page">
-        <style>
-            .pos-index-page .pos-index-search {
-                width: 100%;
-                max-width: 320px;
-            }
-
-            .pos-index-page .pos-index-search .form-control {
-                height: 44px;
-                border-radius: 12px;
-            }
-
-            .pos-index-page .pos-index-filter-btn {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 0.45rem;
-                min-height: 44px;
-                border-radius: 12px;
-                white-space: nowrap;
-            }
-
-            .pos-index-page #active-branch-button-label {
-                display: inline-block;
-                max-width: 160px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                vertical-align: middle;
-            }
-
-            @media (max-width: 767.98px) {
-                .pos-index-page .pos-index-search {
-                    max-width: 100%;
-                }
-
-                .pos-index-page .pos-index-filter-toolbar {
-                    width: 100%;
-                    justify-content: flex-start !important;
-                }
-
-                .pos-index-page .pos-index-filter-btn {
-                    width: 100%;
-                }
-            }
-
-            /* Prevent dropdown clipping when data is 1, without breaking horizontal scroll */
-            .pos-index-page .table-responsive {
-                min-height: 250px;
-            }
-        </style>
-        <div class="card card-flush">
-            <!--begin::Card header-->
-            <div class="card-header align-items-stretch py-3 gap-3 flex-column flex-md-row">
-                <!--begin::Card title-->
-                <div class="card-title flex-grow-1 w-100 mb-0">
-                    <!--begin::Search-->
-                    <div class="d-flex align-items-center position-relative my-1 pos-index-search">
-                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4"></i>
-                        <input type="text" data-kt-ecommerce-product-filter="search" id="search"
-                            class="form-control form-control-solid w-100 ps-12" placeholder="Cari Pembelian" />
-                    </div>
-                    <!--end::Search-->
-                </div>
-                <!--end::Card title-->
-                <!--begin::Card toolbar-->
-                <div class="card-toolbar w-100 w-md-auto ms-md-auto">
-                    <!--begin::Toolbar-->
-                    <div class="d-flex align-items-center justify-content-md-end pos-index-filter-toolbar"
-                        data-kt-user-table-toolbar="base">
-                        <!--begin::Filter-->
-                        <button type="button" class="btn btn-light-primary px-4 pos-index-filter-btn"
-                            data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                            <i class="ki-duotone ki-filter fs-2">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                            </i>
-                            <span id="active-branch-button-label">Cabang</span>
-                        </button>
-                        <!--begin::Menu 1-->
-                        <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+<x-erp.workspace title="Kasir / POS" subtitle="Kelola kasir / pos dan lihat rincian transaksi."><x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari kasir / pos" placeholder="Cari kasir / pos…"></div><button type="button" class="erp-action" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
                             <!--begin::Header-->
                             <div class="px-7 py-5">
                                 <div class="fs-5 text-gray-900 fw-bold">Pilihan Filter</div>
@@ -150,19 +71,7 @@
                                 <!--end::Input group-->
                             </div>
                             <!--end::Content-->
-                        </div>
-                        <!--end::Menu 1-->
-                        <!--end::Filter-->
-                    </div>
-                    <!--end::Toolbar-->
-                </div>
-                <!--end::Card toolbar-->
-            </div>
-            <!--end::Card header-->
-            <!--begin::Card body-->
-            <div class="card-body pt-0">
-                <!--begin::Table-->
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
+                        </div>@if(check_access('pos.create'))<a href="{{ url('pos/create') }}" class="erp-action erp-action--primary"><i class="ph-bold ph-plus" aria-hidden="true"></i>Tambah Kasir / POS</a>@endif</x-slot:toolbar><x-erp.collection table="pos-table"><table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
                     <thead>
                         <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
                             <th class="text-start min-w-150px">Name</th>
@@ -171,19 +80,8 @@
                         </tr>
                     </thead>
                     <tbody class="fw-semibold text-gray-600"></tbody>
-                </table>
-                <!--end::Table-->
-            </div>
-            <!--end::Card body-->
-        </div>
-    </div>
-    <a href="{{ url('pos/create') }}" class="btn btn-primary rounded-circle shadow-lg position-fixed"
-        style="bottom: 60px; right: 30px; width: 60px; height: 60px; z-index: 1050; display: flex; align-items: center; justify-content: center;">
-        <i class="ki-duotone ki-purchase fs-3x text-white">
-            <span class="path1"></span>
-            <span class="path2"></span>
-        </i>
-    </a>
+                </table></x-erp.collection></x-erp.workspace>
+
 @section('script')
     <script type="text/javascript">
         // Data stock kosong dari server
@@ -218,7 +116,7 @@
                     html: alertHtml,
                     icon: 'warning',
                     confirmButtonText: 'Mengerti',
-                    confirmButtonColor: '#f1416c',
+                    confirmButtonColor: '#b45309',
                     allowOutsideClick: false
                 });
             }

@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Role;
-use App\Models\RoleUser;
+use App\Models\RoleMenu;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Auth;
@@ -43,17 +42,22 @@ class LoginController extends Controller
                 ->withInput();
         }
         // dd($request->all());
+        $loginIdentifier = $request->input('email');
+        $loginField = filter_var($loginIdentifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
         if (Auth::attempt(array(
-            'username' => $request->email,
+            $loginField => $loginIdentifier,
             'password' => $request->password,
         ), $request->boolean('remember'))) {
-            $role_user = RoleUser::where("id_user", Auth::user()->id_user)->OrderBy("created_at", "asc")->first();
-            $notif = "User tidak terdaftar di Role Apapun";
-            if ($role_user == null) {
-                return redirect('auth/logout/' . $notif);
+            $request->session()->regenerate();
+            $role = RoleMenu::currentRole();
+            if ($role === null) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect('auth/login')->with('error', 'User tidak terdaftar di role apa pun');
             }
-            $role["role"] = Role::find($role_user->id_role)->toArray();
-            Session($role);
+            $request->session()->put('role', $role->toArray());
             return redirect('dashboard')->with('success', 'Welcome Bro ' . Auth::user()->nm_user);
         } else {
             return redirect()->back()->with('error', 'Username atau Password tidak terdaftar');

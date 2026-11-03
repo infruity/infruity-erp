@@ -1,13 +1,13 @@
 {{-- Modal Add Parcel --}}
 <div class="modal fade" id="parcelModal" tabindex="-1" aria-labelledby="parcelModalLabel" aria-hidden="true"
     x-show="showParcelModal" style="display: none;" x-data="parcelForm()" x-init="initSelect2">
-    <div class="modal-dialog modal-fullscreen-sm-down">
+    <div class="modal-dialog erp-sheet-dialog modal-fullscreen-sm-down">
         <div class="modal-content" x-data>
-            <div class="modal-header" style="background-color: #ff000d; color: #fff;">
+            <div class="erp-sheet-header" style="background-color: #ff000d; color: #fff;">
                 <h5 class="modal-title" style="color: #fff">Tambah Parcel</h5>
                 <button type="button" class="btn-close" @click="closeParcelModal()"></button>
             </div>
-            <div class="modal-body">
+            <div class="erp-sheet-body">
                 <!-- Select Produk -->
                 <div class="row">
                     <div class="col-3 mb-3">
@@ -77,7 +77,7 @@
                     </template>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="erp-sheet-footer">
                 <button class="btn btn-secondary" @click="closeParcelModal()">Tutup</button>
                 <button class="btn btn-primary" @click="saveParcelToCart()">Simpan</button>
             </div>
@@ -88,13 +88,13 @@
 {{-- Modal Edit Parcel --}}
 <div class="modal fade" id="parcelEditModal" tabindex="-1" aria-labelledby="parcelModalLabel" aria-hidden="true"
     x-show="showParcelModal" style="display: none;" x-data="parcelForm()">
-    <div class="modal-dialog modal-fullscreen-sm-down">
+    <div class="modal-dialog erp-sheet-dialog modal-fullscreen-sm-down">
         <div class="modal-content">
-            <div class="modal-header" style="background-color: #ff000d; color: #fff;">
+            <div class="erp-sheet-header" style="background-color: #ff000d; color: #fff;">
                 <h5 class="modal-title" style="color: #fff">Edit Parcel</h5>
                 <button type="button" class="btn-close" @click="closeParcelModal()"></button>
             </div>
-            <div class="modal-body">
+            <div class="erp-sheet-body">
                 <!-- Select Produk -->
                 <div class="row">
                     <div class="col-3 mb-3">
@@ -164,7 +164,7 @@
                     </template>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="erp-sheet-footer">
                 <button class="btn btn-danger me-auto" @click="deleteParcel(parcelId)">Hapus Parcel</button>
                 <button class="btn btn-secondary" @click="closeParcelEditModal()">Tutup</button>
                 <button class="btn btn-primary" @click="editParcelToCart(parcelId)">Simpan</button>

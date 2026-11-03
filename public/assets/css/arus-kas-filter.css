@@ -1,0 +1,23 @@
+@media (max-width:639.98px) {
+    .arus-kas-filter-sheet .arus-kas-filter-scroll { padding:16px; overscroll-behavior:contain; }
+    .arus-kas-filter-sheet .arus-kas-filter-scroll > section { padding-inline:4px; }
+    /* Override only the colliding Bootstrap !important utilities inside this filter. */
+    .arus-kas-filter-sheet .arus-kas-filter-scroll > section + section { margin-top:20px !important; }
+    .arus-kas-filter-sheet .arus-kas-filter-scroll h3 { margin:0 0 6px; color:#6b7280 !important; font-size:12px; font-weight:700; line-height:16px; letter-spacing:.05em; }
+    .arus-kas-filter-sheet .arus-kas-filter-scroll > section > label { height:37px; gap:8px !important; border:1px solid #e5e7eb; border-bottom-color:#f3f4f6; border-radius:8px 8px 0 0; padding:0 12px !important; }
+    .arus-kas-filter-sheet .arus-kas-filter-scroll > section > label i { font-size:12px; }
+    .arus-kas-filter-sheet .arus-kas-filter-scroll input[type="search"] { margin:0; border:0; padding:0; background:transparent; color:#374151; font-size:12px; line-height:16px; box-shadow:none; }
+    .arus-kas-filter-sheet .arus-kas-filter-scroll input[type="search"]::placeholder { color:#9ca3af; opacity:1; }
+    .arus-kas-filter-sheet .arus-kas-filter-scroll > section > label:focus-within { outline:2px solid #10b981; outline-offset:1px; }
+    .arus-kas-filter-sheet .arus-kas-radio-list { max-height:144px; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; border:1px solid #e5e7eb; border-top:0; border-radius:0 0 8px 8px; background:rgba(249,250,251,.3); }
+    .arus-kas-filter-sheet .arus-kas-radio-list::-webkit-scrollbar { display:none; }
+    .arus-kas-filter-sheet .arus-kas-radio-row { min-height:36px; gap:12px; padding:10px 14px; color:#374151; font-size:12px; font-weight:500; line-height:16px; cursor:pointer; }
+    .arus-kas-filter-sheet .arus-kas-radio-row:hover { background:#f9fafb; }
+    .arus-kas-filter-sheet .arus-kas-radio-row:has(input:checked) > span { color:#111827; font-weight:700; }
+    .arus-kas-filter-sheet .arus-kas-radio-row input[type="radio"] { -webkit-appearance:none; appearance:none; box-sizing:border-box; width:16px; height:16px; flex:none; margin:0; border:2px solid #d1d5db; border-radius:50%; padding:0; background-color:#fff; background-image:none; box-shadow:none; outline:0; cursor:pointer; }
+    .arus-kas-filter-sheet .arus-kas-radio-row input[type="radio"]:checked { border-color:#10b981; background-image:radial-gradient(circle, #10b981 0 4px, transparent 4px); }
+    .arus-kas-filter-sheet .arus-kas-radio-row input[type="radio"]:focus-visible { outline:2px solid #10b981; outline-offset:2px; }
+    .arus-kas-filter-sheet .arus-kas-filter-scroll [role="group"] { gap:8px !important; margin-top:8px; }
+    .arus-kas-filter-sheet .arus-kas-filter-scroll [role="group"] button { border:1px solid #e5e7eb; border-radius:999px; padding:6px 12px !important; background:#fff; color:#4b5563; font-size:12px; font-weight:500; line-height:16px; }
+    .arus-kas-filter-sheet .arus-kas-filter-scroll [role="group"] button[aria-pressed="true"] { border-color:#6ee7b7 !important; background:#ecfdf5; color:#047857; font-weight:600; }
+}

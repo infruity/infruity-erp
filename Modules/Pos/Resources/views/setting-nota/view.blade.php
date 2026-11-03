@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
@@ -19,7 +19,7 @@
     <link rel="shortcut icon" href="{{ asset('images/logo-infruity.png') }}" />
     <script src="https://cdn.jsdelivr.net/npm/easyqrcodejs@4.4.10/dist/easy.qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+
     <style>
         * {
             margin: 0;
@@ -474,14 +474,14 @@
             }
         }
     </style>
-</head>
+<link rel="stylesheet" href="{{ asset('assets/fonts/infruity/fonts.css') }}"><link rel="stylesheet" href="{{ asset('assets/plugins/phosphor/phosphor.css') }}"><link rel="stylesheet" href="{{ asset('assets/css/erp-theme.css') }}"></head>
 
-<body>
+<body class="erp-ui">
     <div class="container">
         <div class="receipt">
             <!-- Header -->
             <div class="header">
-                <h1 class="brand-name">{{ $setting->brand_name }}</h1>
+                <h1 class="brand-name">{{ $setting->brand_name ?? 'Infruity' }}</h1>
                 <p class="tagline">{{ $setting->brand_address }}</p>
                 <p class="tagline">{{ $setting->brand_social_media }}</p>
             </div>

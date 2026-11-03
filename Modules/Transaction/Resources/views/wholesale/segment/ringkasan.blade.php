@@ -4,12 +4,12 @@
             <span>Total Belanja</span>
             <span class="rounded-pill px-2 py-1" style="background:#d1fae5;color:#065f46;font-size:11px;" x-text="totalProduk"></span>
         </div>
-        <strong>@if (request()->routeIs('wholesale.edit')) Rp @endif<span x-text="formatRupiah(totalHargaKeseluruhan)"></span></strong>
+        <strong>Rp <span x-text="formatRupiah(totalHargaKeseluruhan)"></span></strong>
     </div>
     <div class="row mt-5 gap-2">
         <div class="col" x-data="{ loadingDraft: false }">
             <button class="btn btn-primary w-100" @click="loadingDraft = true; saveTransaction(() => loadingDraft = false)"
-                :disabled="loadingDraft">
+                :disabled="loadingDraft || isSubmitting">
                 <template x-if="!loadingDraft">
                     <span>@unless (request()->routeIs('wholesale.edit'))<i class="ph ph-floppy-disk me-2"></i>@endunless{{ request()->routeIs('wholesale.edit') ? 'Simpan Perubahan' : 'Simpan sebagai Draf' }}</span>
                 </template>
@@ -20,7 +20,7 @@
         </div>
         <div class="col" x-data="{ loadingFinal: false }">
             <button class="btn btn-success w-100" @click="loadingFinal = true; saveToOrderBook(() => loadingFinal = false)"
-                :disabled="loadingFinal">
+                :disabled="loadingFinal || isSubmitting">
                 <template x-if="!loadingFinal">
                     <span>@unless (request()->routeIs('wholesale.edit'))<i class="ph-bold ph-check me-2"></i>@endunless Selesaikan Transaksi</span>
                 </template>

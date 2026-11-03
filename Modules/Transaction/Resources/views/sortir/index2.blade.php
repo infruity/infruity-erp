@@ -1,330 +1,159 @@
-@extends('template.root')
-
+@extends('layouts.erp-tailwind')
+@section('title', 'Sortir Barang - Inventaris')
+@section('page-title', 'Sortir Barang')
+@section('dashboard-fullscreen', '1')
+@section('page-breadcrumb')
+    <span>Inventaris</span><i class="ph ph-caret-right text-[0.55rem]" aria-hidden="true"></i><span>Sortir Barang</span>
+@endsection
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/sortir-mobile.css') }}?v={{ filemtime(public_path('assets/css/sortir-mobile.css')) }}">
+@endpush
+@push('scripts')
+    <script src="{{ asset('assets/js/sortir-list.js') }}?v={{ filemtime(public_path('assets/js/sortir-list.js')) }}"></script>
+@endpush
 @section('content')
-    <div class="pos-index-page">
-        <style>
-            .pos-index-page .pos-index-search {
-                width: 100%;
-                max-width: 320px;
-            }
-
-            .pos-index-page .pos-index-search .form-control {
-                height: 44px;
-                border-radius: 12px;
-            }
-
-            .pos-index-page .pos-index-filter-btn {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 0.45rem;
-                min-height: 44px;
-                border-radius: 12px;
-                white-space: nowrap;
-            }
-
-            .pos-index-page #active-branch-button-label {
-                display: inline-block;
-                max-width: 160px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                vertical-align: middle;
-            }
-
-            @media (max-width: 767.98px) {
-                .pos-index-page .pos-index-search {
-                    max-width: 100%;
-                }
-
-                .pos-index-page .pos-index-filter-toolbar {
-                    width: 100%;
-                    justify-content: flex-start !important;
-                }
-
-                .pos-index-page .pos-index-filter-btn {
-                    width: 100%;
-                }
-            }
-        </style>
-        <div class="card card-flush">
-            <div class="card-header align-items-stretch py-3 gap-3 flex-column flex-md-row">
-                <div class="card-title flex-grow-1 w-100 mb-0">
-                    <div class="d-flex align-items-center position-relative my-1 pos-index-search">
-                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4"></i>
-                        <input type="text" data-kt-ecommerce-product-filter="search" id="search"
-                            class="form-control form-control-solid w-100 ps-12" placeholder="Cari Sortir" />
-                    </div>
-                </div>
-                <div class="card-toolbar w-100 w-md-auto ms-md-auto">
-                    <div class="d-flex align-items-center justify-content-md-end pos-index-filter-toolbar gap-3"
-                        data-kt-user-table-toolbar="base">
-                        <button type="button" class="btn btn-light-primary px-4 pos-index-filter-btn"
-                            data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                            <i class="ki-duotone ki-filter fs-2">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                            </i>
-                            <span id="active-branch-button-label">Cabang</span>
-                        </button>
-                        <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                            <div class="px-7 py-5">
-                                <div class="fs-5 text-gray-900 fw-bold">Pilihan Filter</div>
+    @php
+        $sortirFilterBranches = $branches->map(function ($branch) {
+            return ['id' => (string) $branch->id, 'name' => ucwords((string) $branch->name)];
+        })->values();
+    @endphp
+    <section class="sortir-list-page" x-data="sortirList({ endpoint: @js(route('sortir-data')), csrf: @js(csrf_token()), timezone: @js(config('app.timezone')), branches: @js($sortirFilterBranches) })" aria-label="Daftar Sortir Barang">
+        <div class="sortir-toolbar">
+            <div class="sortir-search">
+                <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+                <input id="sortir-search" type="search" x-model="search" @input.debounce.300ms="load()" placeholder="Cari cabang, nomor sortir, atau barang..." aria-label="Cari transaksi sortir" autocomplete="off">
+                <button type="button" x-show="search" x-cloak @click="clearSearch()" class="sortir-icon-button" aria-label="Hapus pencarian"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
+                <span class="sortir-search-divider" aria-hidden="true"></span>
+                <button type="button" @click="openFilter($event)" class="sortir-icon-button" :class="activeFilters || filterOpen ? 'is-active' : ''" :aria-expanded="filterOpen" aria-label="Filter sortir barang"><span class="icon-rounded" aria-hidden="true">tune</span></button>
+            </div>
+            @if (check_access('sortir.create'))
+                <a class="sortir-list-create" href="{{ route('sortir.create') }}"><i class="ph-bold ph-plus" aria-hidden="true"></i>Tambah Sortir</a>
+            @endif
+        </div>
+        <div class="sortir-list-scroll" :aria-busy="loading">
+            <div class="sortir-list-head" x-show="rows.length"><span>Cabang &amp; Waktu</span><span>Nomor Sortir / Petugas</span><span style="text-align:right">Status / Nominal</span></div>
+            <template x-for="row in rows" :key="row.id">
+                <button type="button" class="sortir-row" @click="openDetail(row, $event)" :aria-label="'Detail sortir ' + row.invoice_number">
+                    <span class="sortir-row-branch">
+                        <span class="sortir-branch-avatar" :style="branchTheme(row.branch_name)" x-text="initials(row.branch_name)"></span>
+                        <span class="sortir-branch-copy"><strong class="sortir-branch-name" x-text="row.branch_name || 'Tanpa cabang'"></strong><span class="sortir-row-date" x-text="dateLabel(row.created_at || row.date)"></span></span>
+                    </span>
+                    <span class="sortir-desktop-meta"><span x-text="row.invoice_number"></span><br><small x-text="row.staff_name || '—'"></small></span>
+                    <span class="sortir-row-amount"><span class="sortir-row-status" :class="['paid','debt'].includes(row.status) ? 'is-final' : ''" x-text="statusLabel(row.status)"></span><strong class="sortir-row-total" x-text="money(row.total)"></strong></span>
+                </button>
+            </template>
+            <div class="sortir-list-state" x-show="loading && !rows.length" role="status"><i class="ph ph-circle-notch" aria-hidden="true"></i><p>Memuat transaksi sortir...</p></div>
+            <div class="sortir-list-state" x-show="error" x-cloak role="alert"><h2>Daftar sortir belum dapat dimuat</h2><p x-text="error"></p><button type="button" class="sortir-text-button" @click="load(rows.length > 0)">Coba lagi</button></div>
+            <div class="sortir-list-state" x-show="!loading && !error && !rows.length" x-cloak>
+                <i class="ph-duotone ph-receipt" aria-hidden="true"></i>
+                <h2 x-text="search || activeFilters ? 'Transaksi tidak ditemukan' : 'Belum ada sortir barang'"></h2>
+                <p x-show="search || activeFilters">Coba kata pencarian lain atau sesuaikan filter.</p>
+                @if (check_access('sortir.create'))
+                    <p x-show="!search && !activeFilters">Klik tombol <a href="{{ route('sortir.create') }}" class="sortir-text-button" aria-label="Tambah sortir barang">+</a> untuk menambahkan<br>transaksi sortir baru.</p>
+                @endif
+                <button type="button" class="sortir-text-button" x-show="search || activeFilters" @click="search = ''; resetFilters()">Reset pencarian &amp; filter</button>
+            </div>
+            <div class="sortir-load-more" x-show="hasMore && rows.length && !error" x-cloak>
+                <x-erp.load-more @click="load(true)" loading="loading">
+                    <span x-text="loading ? 'Memuat...' : 'Muat ' + Math.min(20, filtered - rows.length) + ' Transaksi Lagi'"></span>
+                </x-erp.load-more>
+            </div>
+            <p class="sortir-list-count" x-show="rows.length && !hasMore" x-cloak x-text="rows.length + ' dari ' + filtered + ' transaksi sortir'"></p>
+        </div>
+        <template x-teleport="body">
+            <div x-show="filterOpen" x-cloak class="sortir-overlay is-filter" @click.self="closeFilter()" @keydown.escape.window="if (filterOpen) closeFilter()" @keydown.tab="trapFocus($event)">
+                <section class="sortir-dialog is-filter-dialog" id="sortir-filter-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="sortir-filter-title">
+                    <div class="sortir-dialog-head"><h2 id="sortir-filter-title">Filter Sortir Barang</h2><button type="button" class="sortir-icon-button" @click="closeFilter()" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
+                    <div class="sortir-filter-body">
+                        <div class="sortir-filter-section">
+                            <div class="sortir-filter-section-head">
+                                <span id="sortir-filter-branch-label" class="sortir-filter-label">Cabang Tujuan</span>
+                                <button type="button" class="sortir-filter-reset" x-show="pending.branch !== 'all' || branchSearch.trim()" x-cloak @click="resetPendingFilter('branch')">Reset</button>
                             </div>
-                            <div class="separator border-gray-200"></div>
-                            <div class="px-7 py-2" data-kt-user-table-filter="form">
-                                <div>
-                                    <label class="form-label fs-6 fw-semibold">Status:</label>
-                                    @php
-                                        $category = [
-                                            'all' => 'All',
-                                            'draft' => 'Draft',
-                                            'paid' => 'Final',
-                                        ];
-                                    @endphp
-                                    <select class="form-select form-select-solid" data-control="select2"
-                                        data-hide-search="true" data-placeholder="Status"
-                                        data-kt-ecommerce-product-filter="status">
-                                        <option value="all">All</option>
-                                        @foreach ($category as $key => $value)
-                                            <option value="{{ $key }}">{{ ucwords($value) }}</option>
-                                        @endforeach
-                                    </select>
+                            <div class="sortir-branch-picker">
+                                <label class="sortir-branch-search" for="sortir-filter-branch-search">
+                                    <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+                                    <input id="sortir-filter-branch-search" type="search" x-model.debounce.150ms="branchSearch" placeholder="Cari cabang..." autocomplete="off" aria-label="Cari cabang tujuan">
+                                </label>
+                                <div class="sortir-branch-options" role="radiogroup" aria-labelledby="sortir-filter-branch-label">
+                                    <label class="sortir-branch-option" x-show="showAllBranchOption">
+                                        <input type="radio" name="sortirBranchFilter" value="all" x-model="pending.branch">
+                                        <span class="sortir-branch-radio" aria-hidden="true"></span>
+                                        <span>Semua Cabang</span>
+                                    </label>
+                                    <template x-for="branch in visibleBranches" :key="branch.id">
+                                        <label class="sortir-branch-option">
+                                            <input type="radio" name="sortirBranchFilter" :value="String(branch.id)" x-model="pending.branch">
+                                            <span class="sortir-branch-radio" aria-hidden="true"></span>
+                                            <span x-text="branch.name"></span>
+                                        </label>
+                                    </template>
+                                    <p class="sortir-branch-empty" x-show="visibleBranches.length === 0 && !showAllBranchOption" x-cloak>Cabang tidak ditemukan</p>
                                 </div>
                             </div>
-                            <div class="px-7 py-2" data-kt-user-table-filter="form">
-                                <div>
-                                    <label class="form-label fs-6 fw-semibold">Cabang:</label>
-                                    <select class="form-select form-select-solid" data-control="select2"
-                                        data-hide-search="true" data-placeholder="Cabang"
-                                        data-kt-ecommerce-product-filter="cabang">
-                                        @if (count($branches) > 1)
-                                            <option value="all">All</option>
-                                        @endif
-                                        @foreach ($branches as $branch)
-                                            <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                        </div>
+                        <div class="sortir-filter-section">
+                            <div class="sortir-filter-section-head">
+                                <span class="sortir-filter-label">Status Sortir</span>
+                                <button type="button" class="sortir-filter-reset" x-show="pending.status !== 'all'" x-cloak @click="resetPendingFilter('status')">Reset</button>
                             </div>
-                            <div class="px-7 py-5" data-kt-user-table-filter="form">
-                                <div class="input-group mw-350px">
-                                    <input class="form-control form-control-solid rounded rounded-end-0"
-                                        placeholder="Pick date range" id="kt_ecommerce_sales_flatpickr" />
-                                    <button class="btn btn-icon btn-light" id="kt_ecommerce_sales_flatpickr_clear">
-                                        <i class="ki-duotone ki-cross fs-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                        </i>
-                                    </button>
+                            <div class="sortir-filter-chips" role="group" aria-label="Status sortir">
+                                <template x-for="status in [{value:'all',label:'Semua Status'},{value:'draft',label:'Draf'},{value:'paid',label:'Selesai'}]" :key="status.value"><button type="button" @click="pending.status = status.value" :class="pending.status === status.value ? 'is-active' : ''" :aria-pressed="pending.status === status.value" x-text="status.label"></button></template>
+                            </div>
+                        </div>
+                        <div class="sortir-filter-section">
+                            <div class="sortir-filter-section-head">
+                                <span class="sortir-filter-label">Periode Tanggal</span>
+                                <button type="button" class="sortir-filter-reset" x-show="pending.start || pending.end" x-cloak @click="resetPendingFilter('date')">Reset</button>
+                            </div>
+                            <div class="sortir-filter-dates">
+                                <label class="sortir-filter-date-card" for="sortir-date-start">
+                                    <span class="sortir-filter-date-key">DARI</span>
+                                    <span class="sortir-filter-date-value" :class="pending.start ? 'is-selected' : ''" x-text="formatFilterDate(pending.start)"></span>
+                                    <i class="ph-bold ph-calendar-blank" aria-hidden="true"></i>
+                                    <input id="sortir-date-start" type="date" x-model="pending.start" aria-label="Dari tanggal">
+                                </label>
+                                <label class="sortir-filter-date-card" for="sortir-date-end">
+                                    <span class="sortir-filter-date-key">KE</span>
+                                    <span class="sortir-filter-date-value" :class="pending.end ? 'is-selected' : ''" x-text="formatFilterDate(pending.end)"></span>
+                                    <i class="ph-bold ph-calendar-blank" aria-hidden="true"></i>
+                                    <input id="sortir-date-end" type="date" x-model="pending.end" :min="pending.start" aria-label="Sampai tanggal">
+                                </label>
+                            </div>
+                            <p class="sortir-filter-error" x-show="pendingDateError" x-text="pendingDateError" role="alert"></p>
+                            <div class="sortir-filter-quick">
+                                <span class="sortir-filter-label">Pilihan Cepat</span>
+                                <div class="sortir-filter-quick-actions">
+                                    <button type="button" class="is-week" @click="setPendingDateRange('week')">Minggu Ini</button>
+                                    <button type="button" @click="setPendingDateRange('today')">Hari Ini</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                    <div class="sortir-filter-foot"><button type="button" @click="resetFilters()">Reset</button><button type="button" @click="applyFilter()" :disabled="!!pendingDateError">Terapkan Filter</button></div>
+                </section>
             </div>
-            <!--begin::Card body-->
-            <div class="card-body pt-0">
-                <!--begin::Table-->
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
-                    <thead>
-                        <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                            <th class="text-start min-w-150px">Name</th>
-                            <th class="text-start min-w-150px">Date</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody class="fw-semibold text-gray-600"></tbody>
-                </table>
-                <!--end::Table-->
+        </template>
+        <template x-teleport="body">
+            <div x-show="selected" x-cloak class="sortir-overlay" @click.self="closeDetail()" @keydown.escape.window="if (selected) closeDetail()" @keydown.tab="trapFocus($event)">
+                <section class="sortir-dialog" id="sortir-detail-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="sortir-detail-title">
+                    <div class="sortir-dialog-head"><h2 id="sortir-detail-title">Detail Sortir Barang</h2><button type="button" class="sortir-icon-button" @click="closeDetail()" :disabled="deleting" aria-label="Tutup detail sortir"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
+                    <template x-if="selected">
+                        <div>
+                            <div class="sortir-detail-body">
+                                <div class="sortir-detail-fact"><i class="ph-duotone ph-receipt" aria-hidden="true"></i><div><strong x-text="selected.invoice_number"></strong><small x-text="selected.branch_name"></small></div></div>
+                                <div class="sortir-detail-fact"><i class="ph-duotone ph-coins" aria-hidden="true"></i><div><strong x-text="money(selected.total)"></strong><small x-text="'Total Sortir (' + (selected.items?.length || 0) + ' Barang)'"></small></div></div>
+                                <div class="sortir-detail-fact"><i class="ph-duotone ph-clock" aria-hidden="true"></i><div><strong x-text="selected.staff_name || 'Petugas'"></strong><small x-text="dateLabel(selected.created_at || selected.date)"></small><small x-text="statusLabel(selected.status)"></small></div></div>
+                                <a x-show="selected.can_show" :href="selected.show_url" class="sortir-detail-link">Lihat rincian barang &amp; cetak</a>
+                            </div>
+                            <div class="sortir-detail-actions" x-show="selected.can_edit || selected.can_delete">
+                                <a x-show="selected.can_edit" :href="selected.edit_url"><i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>Edit</a>
+                                <button type="button" x-show="selected.can_delete" class="sortir-danger" @click="deleteSelected()" :disabled="deleting"><i class="ph-bold ph-trash" aria-hidden="true"></i><span x-text="deleting ? 'Menghapus...' : 'Hapus'"></span></button>
+                            </div>
+                        </div>
+                    </template>
+                </section>
             </div>
-            <!--end::Card body-->
-        </div>
-    </div>
-    <a href="{{ url('sortir/create') }}" class="btn btn-primary rounded-circle shadow-lg position-fixed"
-        style="bottom: 60px; right: 30px; width: 60px; height: 60px; z-index: 1050; display: flex; align-items: center; justify-content: center;">
-        <i class="ki-duotone ki-purchase fs-3x text-white">
-            <span class="path1"></span>
-            <span class="path2"></span>
-        </i>
-    </a>
-@section('script')
-    <script type="text/javascript">
-        // Data stock kosong dari server
-        const emptyStockData = @json($emptyStockData ?? []);
-
-        function showStockAlert(selectedBranchId) {
-            let filteredProducts = emptyStockData;
-            if (selectedBranchId && selectedBranchId !== 'all') {
-                filteredProducts = emptyStockData.filter(p => p.branch_id == selectedBranchId);
-            }
-
-            if (filteredProducts.length > 0) {
-                const count = filteredProducts.length;
-                const badges = filteredProducts.slice(0, 10).map(p => {
-                    return `<span class="badge badge-light-danger me-1 mb-1">${p.name} (${p.branch_name})</span>`;
-                }).join('');
-
-                const remainingHtml = count > 10 ?
-                    `<br><small>...dan ${count - 10} produk lainnya</small>` :
-                    '';
-
-                const scopeText = selectedBranchId === 'all' ? 'pada seluruh cabang' : 'pada cabang ini';
-                const alertHtml = `Terdapat <strong>${count}</strong> produk dengan stok kosong ${scopeText}.<br><br>` +
-                    `<div style="text-align: left; max-height: 200px; overflow-y: auto;">` +
-                    badges +
-                    remainingHtml +
-                    `</div>`;
-
-                Swal.fire({
-                    title: 'Peringatan Stok Minus!',
-                    html: alertHtml,
-                    icon: 'warning',
-                    confirmButtonText: 'Mengerti',
-                    confirmButtonColor: '#f1416c',
-                    allowOutsideClick: false
-                });
-            }
-        }
-
-        var dataTable;
-        $(document).ready(function() {
-            const $branchFilter = $('[data-kt-ecommerce-product-filter="cabang"]');
-            const $activeBranchButtonLabel = $('#active-branch-button-label');
-
-            function updateActiveFilterInfo() {
-                const selectedBranch = $branchFilter.find('option:selected').text().trim() || 'Semua cabang';
-                $activeBranchButtonLabel.text(selectedBranch);
-            }
-
-            dataTable = $('#pos-table').DataTable({
-                pageLength: 100,
-                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-                processing: true,
-                serverSide: true,
-                fixedColumns: {
-                    leftColumns: 0,
-                    rightColumns: 1
-                },
-                columnDefs: [{
-                    orderable: false,
-                    targets: -1 // Disable sorting for action column
-                }, ],
-                ajax: {
-                    url: "{{ route('sortir-data') }}",
-                    data: function(d) {
-                        d.url = "{{ request()->segment(1) }}";
-                        d.status_filter = $('[data-kt-ecommerce-product-filter="status"]').val();
-                        d.cabang_filter = $('[data-kt-ecommerce-product-filter="cabang"]').val();
-                        var range = $('#kt_ecommerce_sales_flatpickr').val();
-                        if (range) {
-                            var dates = range.split(' to ');
-                            d.start_date = dates[0];
-                            d.end_date = dates[1] ?? dates[0];
-                        }
-                    }
-                },
-                order: [
-                    [2, 'desc'],
-                ],
-                columns: [{
-                        data: 'name',
-                        name: 'name'
-                    },
-                    {
-                        data: 'date',
-                        name: 'date',
-                        className: 'text-center'
-                    },
-                    {
-                        data: 'action',
-                        name: 'action'
-                    },
-                ]
-            });
-            $('#search').on('keyup', function() {
-                dataTable.search(this.value).draw();
-            });
-
-            $('[data-kt-ecommerce-product-filter="status"]').on('change', function() {
-                updateActiveFilterInfo();
-                dataTable.draw();
-            });
-
-            $('[data-kt-ecommerce-product-filter="cabang"]').on('change', function() {
-                updateActiveFilterInfo();
-                dataTable.draw();
-                showStockAlert($(this).val());
-            });
-
-            $("#kt_ecommerce_sales_flatpickr").flatpickr({
-                altInput: !0,
-                altFormat: "d/m/Y",
-                dateFormat: "Y-m-d",
-                mode: "range",
-                onChange: function(e, t, n) {
-                    updateActiveFilterInfo();
-                    dataTable.draw();
-                }
-            });
-
-            updateActiveFilterInfo();
-            showStockAlert($('[data-kt-ecommerce-product-filter="cabang"]').val());
-        });
-
-        function reloadDataTable() {
-            // Pastikan dataTable sudah terinisialisasi sebelumnya
-            if (typeof dataTable !== 'undefined') {
-                dataTable.ajax.reload(null, false); // 'false' untuk tidak mereset ke halaman pertama
-            } else {
-                console.error('DataTable tidak terinisialisasi.');
-            }
-        }
-
-        function deleteProduct(id) {
-            Swal.fire({
-                title: 'Apakah Anda yakin?',
-                text: 'Data yang dihapus tidak bisa dikembalikan!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal',
-                customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
-                },
-                buttonsStyling: false
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: `/sortir/${id}`, // Ganti dengan URL yang sesuai
-                        type: 'DELETE',
-                        data: {
-                            _token: $('meta[name="csrf-token"]').attr('content')
-                        },
-                        success: function(response) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: response.message || 'Data berhasil dihapus.',
-                                showConfirmButton: false,
-                                timer: 1500
-                            });
-
-                            // Reload DataTable setelah berhasil menghapus data
-                            reloadDataTable();
-                        },
-                        error: function(xhr) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: xhr.responseJSON?.message ||
-                                    'Terjadi kesalahan saat menghapus data.'
-                            });
-                        }
-                    });
-                }
-            });
-        }
-    </script>
-@endsection
+        </template>
+    </section>
 @endsection

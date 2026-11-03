@@ -32,15 +32,33 @@ class P_role extends Controller
             return $denied;
         }
 
-        $search = trim((string) $request->query('q', ''));
-        $data['data'] = Role::withCount('roleMenu')
-            ->when($search !== '', fn ($query) => $query->where('nm_role', 'like', '%' . $search . '%'))
-            ->orderBy('nm_role')
-            ->paginate(30)
-            ->withQueryString();
-        $data['search'] = $search;
+        return view("admin.role.index", $this->roleIndexViewData($request));
+    }
 
-        return view("admin.role.index", $data);
+    private function roleIndexViewData(Request $request): array
+    {
+        $search = trim((string) $request->query('q', ''));
+        $roles = Role::query()
+            ->withCount('roleMenu')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($roles) use ($search) {
+                    $roles->where('nm_role', 'like', '%' . $search . '%')
+                        ->orWhere('description', 'like', '%' . $search . '%');
+
+                    if (ctype_digit($search)) {
+                        $roles->orWhere('id_role', (int) $search);
+                    }
+                });
+            })
+            ->orderBy('nm_role')
+            ->paginate(50)
+            ->withQueryString();
+
+        return [
+            'roles' => $roles,
+            'canShowRoles' => RoleMenu::checkAccess('role.show'),
+            'search' => $search,
+        ];
     }
 
     /**
@@ -98,21 +116,26 @@ class P_role extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         if ($denied = $this->requireAccess('role.show')) {
             return $denied;
         }
+        if ($denied = $this->requireAccess('role.index')) {
+            return $denied;
+        }
 
         $role = Role::with('roleMenu')->findOrFail($id);
+        $data = $this->roleIndexViewData($request);
+        $data['role'] = $role;
+        $data['permissions'] = config('constant.permissions', []);
+        $data['rolePermissions'] = $role->roleMenu->pluck('permission')->all();
 
-        // ambil semua nama route
-        $permissions = config('constant.permissions');
+        if ($request->header('X-Role-Modal') === 'true') {
+            return view('admin.role.detail-fragment', $data);
+        }
 
-        // ambil permission role yang aktif
-        $rolePermissions = $role->roleMenu->pluck('permission')->toArray();
-
-        return view('admin.role.edit', compact('role', 'permissions', 'rolePermissions'));
+        return view('admin.role.index', $data);
     }
 
     /**
@@ -248,6 +271,7 @@ class P_role extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('role.index');
         if (class_exists(\Debugbar::class)) {
             \Debugbar::disable();
         }

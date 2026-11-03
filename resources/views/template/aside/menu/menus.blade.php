@@ -33,21 +33,6 @@
     </div>
     <!--end:Menu item-->
 @endif
-@if (check_access('category.index'))
-    <!--begin:Menu item-->
-    <div class="menu-item">
-        <!--begin:Menu link-->
-        <a class="menu-link {{ Request::segment(1) == 'category' ? 'active' : '' }}" href="{{ url('category') }}">
-            <span class="menu-icon">
-                <i class="ki-duotone ki-duotone ki-chart fs-2">
-                    <span class="path1"></span>
-                </i>
-            </span>
-            <span class="menu-title">Kategori</span>
-        </a>
-        <!--end:Menu link-->
-    </div>
-@endif
 @if (check_access('unit.index'))
     <div class="menu-item">
         <!--begin:Menu link-->

@@ -1,326 +1,107 @@
 @extends('template.root')
+@section('title', 'Nota & Cetak')
+@section('page-title', 'Nota & Cetak')
 
 @section('content')
-    <form id="add_product_form" class="form d-flex flex-column flex-lg-row"
-        action="{{ isset($data) ? url(Request::segment(1) . '/' . $data->id) : url(Request::segment(1)) }}" method="POST"
-        enctype="multipart/form-data" data-kt-redirect="">
-        @if (isset($data))
-            @method('PUT')
-        @endif
+<link rel="stylesheet" href="{{ asset('assets/css/erp-nota-settings.css') }}?v={{ filemtime(public_path('assets/css/erp-nota-settings.css')) }}">
+<x-erp.workspace title="Nota & Cetak" subtitle="Atur identitas toko dan informasi yang tampil pada struk." icon="ph-receipt">
+    <x-slot:toolbar>
+        <label class="nota-branch-picker" for="nota-branch">Cabang
+            <select id="nota-branch" onchange="window.location.href='{{ url('setting-nota') }}?cabang_filter='+encodeURIComponent(this.value)">
+                @foreach ($branches as $branch)
+                    <option value="{{ $branch->id }}" @selected((string) $selected_branch === (string) $branch->id)>{{ $branch->name }}</option>
+                @endforeach
+            </select>
+        </label>
+        <a href="{{ url('setting-nota/view-receipt') }}?cabang_filter={{ $selected_branch }}" class="erp-action"><i class="ph ph-eye" aria-hidden="true"></i>Pratinjau struk</a>
+    </x-slot:toolbar>
+    <form id="add_product_form" class="nota-settings" action="{{ isset($data) ? url(Request::segment(1) . '/' . $data->id) : url(Request::segment(1)) }}" method="POST" enctype="multipart/form-data">
+        @if (isset($data)) @method('PUT') @endif
         @csrf
-        <!--begin::Main column-->
-        <div class="d-flex flex-column flex-lg-row-fluid gap-7 gap-lg-10">
-            <div class="card card-flush py-4 mb-5">
-                <div class="card-header">
-                    <div class="card-title">
-                        <h2>Pilih Cabang</h2>
-                    </div>
-                </div>
-                <div class="card-body pt-0">
-                    <select name="branch_id" class="form-select mb-2" onchange="window.location.href='{{ url('setting-nota') }}?cabang_filter='+this.value">
-                        @foreach ($branches as $branch)
-                            <option value="{{ $branch->id }}" {{ $selected_branch == $branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+        <input type="hidden" name="branch_id" value="{{ old('branch_id', $selected_branch) }}">
+        <input type="hidden" name="header" value="{{ old('header', $data->header ?? '') }}">
+        <input type="hidden" name="footer" value="{{ old('footer', $data->footer ?? '') }}">
+        <aside class="nota-settings__identity" id="logo_upload_container">
+            <h2>Logo toko</h2>
+            <p>Logo yang akan digunakan pada struk.</p>
+            <div class="nota-logo-preview">
+                <img id="nota-logo-preview" src="{{ isset($data) && $data->logo ? asset('storage/' . $data->logo) : asset('assets/media/svg/files/blank-image.svg') }}" alt="Pratinjau logo toko">
             </div>
-
-            <div class="text-end">
-                <a href="{{ url('setting-nota/view-receipt') }}?cabang_filter={{ $selected_branch }}" class="btn btn-success"><i class="fa fa-eye"></i>Preview
-                    Struk</a>
-            </div>
-            <!--begin::Thumbnail settings-->
-            <div id="logo_upload_container" class="card card-flush py-4">
-                <!--begin::Card header-->
-                <div class="card-header">
-                    <!--begin::Card title-->
-                    <div class="card-title">
-                        <h2>Logo</h2>
-                    </div>
-                    <!--end::Card title-->
+            <label class="erp-action" for="nota-logo"><i class="ph ph-upload-simple" aria-hidden="true"></i>Pilih logo</label>
+            <input id="nota-logo" name="avatar" type="file" accept="image/png,image/jpeg" class="visually-hidden" aria-describedby="nota-logo-help">
+            <button id="nota-logo-cancel" type="button" class="nota-text-action" hidden>Batalkan pilihan</button>
+            <p id="nota-logo-help">Gunakan gambar PNG atau JPG.</p>
+            <p id="nota-logo-filename" aria-live="polite"></p>
+            @error('avatar')<p class="nota-field-error" role="alert">{{ $message }}</p>@enderror
+        </aside>
+        <div class="nota-settings__fields">
+            @if ($errors->any() || session('error'))
+                <div class="nota-form-error" role="alert" tabindex="-1">
+                    <strong>Pengaturan belum tersimpan</strong>
+                    <p>{{ session('error') ?: $errors->first() }}</p>
                 </div>
-                <!--end::Card header-->
-                <!--begin::Card body-->
-                <div class="card-body text-center pt-0">
-                    <!--begin::Image input-->
-                    <!--begin::Image input placeholder-->
-                    <style>
-                        .image-input-placeholder {
-                            background-image: url({{ isset($data) && isset($data->logo) ? asset('storage/' . $data->logo) : asset('assets/media/svg/files/blank-image.svg') }});
-                        }
-
-                        [data-bs-theme="dark"] .image-input-placeholder {
-                            background-image: url({{ isset($data) && isset($data->logo) ? asset('storage/' . $data->logo) : asset('assets/media/svg/files/blank-image-dark.svg') }});
-                        }
-                    </style>
-                    <!--end::Image input placeholder-->
-                    <div class="image-input image-input-empty image-input-outline image-input-placeholder mb-3"
-                        data-kt-image-input="true">
-                        <!--begin::Preview existing avatar-->
-                        <div class="image-input-wrapper w-150px h-150px"></div>
-                        <!--end::Preview existing avatar-->
-                        <!--begin::Label-->
-                        <label class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                            data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Change avatar">
-                            <i class="ki-outline ki-pencil fs-7"></i>
-                            <!--begin::Inputs-->
-                            <input type="file" name="avatar" accept=".png, .jpg, .jpeg" />
-                            <input type="hidden" name="avatar_remove" />
-                            <!--end::Inputs-->
-                        </label>
-                        <!--end::Label-->
-                        <!--begin::Cancel-->
-                        <span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                            data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Cancel avatar">
-                            <i class="ki-outline ki-cross fs-2"></i>
-                        </span>
-                        <!--end::Cancel-->
-                        <!--begin::Remove-->
-                        <span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                            data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Remove avatar">
-                            <i class="ki-outline ki-cross fs-2"></i>
-                        </span>
-                        <!--end::Remove-->
-                    </div>
-                    <!--end::Image input-->
-                    <!--begin::Description-->
-                    <div class="text-muted fs-7">Set the product thumbnail image. Only *.png, *.jpg and *.jpeg image files
-                        are accepted</div>
-                    <!--end::Description-->
+            @endif
+            @if (session('success'))<p class="nota-form-success" role="status">{{ session('success') }}</p>@endif
+            <section class="nota-settings__section" aria-labelledby="nota-brand-title">
+                <h2 id="nota-brand-title">Identitas toko</h2>
+                <p>Informasi ini tampil pada bagian atas dan bawah struk.</p>
+                <div class="nota-field-grid">
+                    <div class="nota-field"><label for="nota-brand">Nama toko</label><input id="nota-brand" name="brand_name" type="text" value="{{ old('brand_name', $data->brand_name ?? '') }}" placeholder="Contoh: Infruity" autocomplete="organization">@error('brand_name')<p class="nota-field-error">{{ $message }}</p>@enderror</div>
+                    <div class="nota-field"><label for="nota-phone">Nomor telepon</label><input id="nota-phone" name="brand_phone" type="tel" inputmode="tel" value="{{ old('brand_phone', $data->brand_phone ?? '') }}" placeholder="Contoh: 081234567890" autocomplete="tel">@error('brand_phone')<p class="nota-field-error">{{ $message }}</p>@enderror</div>
+                    <div class="nota-field nota-field--full"><label for="nota-address">Alamat toko</label><input id="nota-address" name="brand_address" type="text" value="{{ old('brand_address', $data->brand_address ?? '') }}" placeholder="Jalan, nomor, dan kota" autocomplete="street-address">@error('brand_address')<p class="nota-field-error">{{ $message }}</p>@enderror</div>
+                    <div class="nota-field nota-field--full"><label for="nota-social">Media sosial</label><input id="nota-social" name="brand_social_media" type="text" value="{{ old('brand_social_media', $data->brand_social_media ?? '') }}" placeholder="Contoh: @infruity">@error('brand_social_media')<p class="nota-field-error">{{ $message }}</p>@enderror</div>
                 </div>
-                <!--end::Card body-->
-            </div>
-            <!--end::Thumbnail settings-->
-            <div class="card card-flush py-4">
-                <!--begin::Card body-->
-                <div class="card-body pt-0">
-                    <!--begin::Billing address-->
-                    <div class="d-flex flex-column gap-5 gap-md-7">
-                        <!--begin::Input group-->
-                        <div>
-                            <!--begin::Label-->
-                            <label class="form-label">Header</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <input type="text" class="form-control mb-2" name="brand_name" placeholder="Ex : in!fruity"
-                                value="{{ $data->brand_name ?? old('brand_name') }}">
-                            <!--end::Editor-->
-                        </div>
-                        <!--end::Input group-->
-                        <!--begin::Input group-->
-                        <div>
-                            <!--begin::Label-->
-                            <label class="form-label">Alamat</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <input type="text" class="form-control mb-2" name="brand_address"
-                                placeholder="Ex : Jl. Raya No. 1, Jakarta"
-                                value="{{ $data->brand_address ?? old('brand_address') }}">
-                            <!--end::Editor-->
-                        </div>
-                        <!--end::Input group-->
-                        <!--begin::Input group-->
-                        <div>
-                            <!--begin::Label-->
-                            <label class="form-label">Social Media</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <input type="text" class="form-control mb-2" name="brand_social_media"
-                                placeholder="Ex : @infruity"
-                                value="{{ $data->brand_social_media ?? old('brand_social_media') }}">
-                            <!--end::Editor-->
-                        </div>
-                        <!--end::Input group-->
-                        <!--begin::Input group-->
-                        <div>
-                            <!--begin::Label-->
-                            <label class="form-label">No. Telepon</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <input type="text" class="form-control mb-2" name="brand_phone"
-                                placeholder="Ex : (021) 12345678"
-                                value="{{ $data->brand_phone ?? old('brand_phone') }}">
-                            <!--end::Editor-->
-                        </div>
-                        <!--end::Input group-->
-                        <!--begin::Input group-->
-                        <div>
-                            <!--begin::Label-->
-                            <label class="form-label">Header Pesan</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <input type="text" class="form-control mb-2" name="brand_greeting"
-                                placeholder="Ex : Selamat datang di Infruity"
-                                value="{{ $data->brand_greeting ?? old('brand_greeting') }}">
-                            <!--end::Editor-->
-                        </div>
-                        <!--end::Input group-->
-                        <!--begin::Input group-->
-                        <div>
-                            <!--begin::Label-->
-                            <label class="form-label">Catatan</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <input type="text" class="form-control mb-2" name="note"
-                                placeholder="Ex : Selamat datang di Infruity"
-                                value="{{ $data->note ?? old('note') }}">
-                            <!--end::Editor-->
-                        </div>
-                        <!--end::Input group-->
-                        <!--end::Input group-->
-                        <div class="fv-row">
-                            <label class="form-label d-flex justify-content-between">
-                                <span>Tampil Nama Kasir?</span>
-                                <div class="form-check form-switch form-check-custom form-check-solid">
-                                    <input class="form-check-input" type="checkbox" name="is_using_cashier" value="1"
-                                        {{ isset($data) && $data->is_using_cashier ? 'checked' : '' }}>
-                                </div>
-                            </label>
-                        </div>
-                        <!--begin::Input group-->
-                        <div class="fv-row">
-                            <label class="form-label d-flex justify-content-between">
-                                <span>Tampil Nama Pelanggan?</span>
-                                <div class="form-check form-switch form-check-custom form-check-solid">
-                                    <input class="form-check-input" type="checkbox" name="is_using_customer" value="1"
-                                        {{ isset($data) && $data->is_using_customer ? 'checked' : '' }}>
-                                </div>
-                            </label>
-                        </div>
-
-                        <div class="fv-row">
-                            <label class="form-label d-flex justify-content-between">
-                                <span>Tampil Tanggal Transaksi?</span>
-                                <div class="form-check form-switch form-check-custom form-check-solid">
-                                    <input class="form-check-input" type="checkbox" name="is_using_date" value="1"
-                                        {{ isset($data) && $data->is_using_date ? 'checked' : '' }}>
-                                </div>
-                            </label>
-                        </div>
-
-                        <div class="fv-row">
-                            <label class="form-label d-flex justify-content-between">
-                                <span>Tampil Nomor Faktur?</span>
-                                <div class="form-check form-switch form-check-custom form-check-solid">
-                                    <input class="form-check-input" type="checkbox" name="is_using_invoice_number"
-                                        value="1"
-                                        {{ isset($data) && $data->is_using_invoice_number ? 'checked' : '' }}>
-                                </div>
-                            </label>
-                        </div>
-                        <!--end::Input group-->
-                        {{-- <!--begin::Input group-->
-                        <div>
-                            <!--begin::Label-->
-                            <label class="form-label">Header</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <div id="header_editor" name="header_editor" class="min-h-150px mb-2"></div>
-                            <!--end::Editor-->
-                            <!--begin::Description-->
-                            <div class="text-muted fs-7">Set a header nota.</div>
-                            <input type="hidden" name="header" id="header_input">
-                            <!--end::Description-->
-                        </div>
-                        <!--end::Input group--> --}}
-                        {{-- <!--begin::Input group-->
-                        <div>
-                            <!--begin::Label-->
-                            <label class="form-label">Footer</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <div id="footer_editor" name="footer_editor" class="min-h-150px mb-2"></div>
-                            <!--end::Editor-->
-                            <!--begin::Description-->
-                            <div class="text-muted fs-7">Set a footer nota.</div>
-                            <input type="hidden" name="footer" id="footer_input">
-                            <!--end::Description-->
-                        </div>
-                        <!--end::Input group--> --}}
-                    </div>
-                    <!--end::Billing address-->
+            </section>
+            <section class="nota-settings__section" aria-labelledby="nota-message-title">
+                <h2 id="nota-message-title">Pesan pada struk</h2>
+                <div class="nota-field-grid">
+                    <div class="nota-field nota-field--full"><label for="nota-greeting">Pesan sapaan</label><input id="nota-greeting" name="brand_greeting" type="text" value="{{ old('brand_greeting', $data->brand_greeting ?? '') }}" placeholder="Contoh: Terima kasih sudah berbelanja">@error('brand_greeting')<p class="nota-field-error">{{ $message }}</p>@enderror</div>
+                    <div class="nota-field nota-field--full"><label for="nota-note">Catatan</label><textarea id="nota-note" name="note" rows="3" placeholder="Informasi tambahan untuk pelanggan">{{ old('note', $data->note ?? '') }}</textarea>@error('note')<p class="nota-field-error">{{ $message }}</p>@enderror</div>
                 </div>
-                <!--end::Card body-->
-            </div>
-            <!--end::Order details-->
-            <div class="d-flex justify-content-end">
-                <!--begin::Button-->
-                <a href="{{ url(Request::segment(1)) }}" id="kt_ecommerce_edit_order_cancel"
-                    class="btn btn-light me-5">Cancel</a>
-                <!--end::Button-->
-                <!--begin::Button-->
-                <button type="submit" id="kt_ecommerce_edit_order_submit" class="btn btn-primary">
-                    <span class="indicator-label">Save Changes</span>
-                    <span class="indicator-progress">Please wait...
-                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                </button>
-                <!--end::Button-->
-            </div>
+            </section>
+            <section class="nota-settings__section" aria-labelledby="nota-display-title">
+                <h2 id="nota-display-title">Informasi transaksi</h2>
+                <p>Pilih informasi yang ingin ditampilkan pada struk.</p>
+                @foreach (['is_using_cashier' => 'Nama kasir', 'is_using_customer' => 'Nama pelanggan', 'is_using_date' => 'Tanggal transaksi', 'is_using_invoice_number' => 'Nomor faktur'] as $field => $label)
+                    <label class="nota-switch" for="nota-{{ $field }}"><span>{{ $label }}</span><input id="nota-{{ $field }}" name="{{ $field }}" type="checkbox" value="1" @checked(old($field, $data->{$field} ?? false))><span class="nota-switch__track" aria-hidden="true"></span></label>
+                @endforeach
+            </section>
         </div>
-        <!--end::Main column-->
+        <footer class="nota-settings__footer">
+            <a href="{{ url(Request::segment(1)) }}" id="kt_ecommerce_edit_order_cancel" class="erp-action">Batal</a>
+            @if (check_access(isset($data) ? 'setting-nota.update' : 'setting-nota.store'))
+                <button type="submit" id="kt_ecommerce_edit_order_submit" class="erp-action erp-action--primary"><i class="ph ph-check" aria-hidden="true"></i><span>Simpan perubahan</span></button>
+            @endif
+        </footer>
     </form>
-@section('script')
-    <script>
-        $(document).ready(function() {
-            // Initialize Select2 for province
-            const headerEditor = document.getElementById('header_editor');
-            const footerEditor = document.getElementById('footer_editor');
-
-            if (headerEditor) {
-                header = new Quill(headerEditor, {
-                    modules: {
-                        toolbar: [
-                            [{
-                                header: [1, 2, false]
-                            }],
-                            ['bold', 'italic', 'underline'],
-                            ['image', 'code-block']
-                        ]
-                    },
-                    placeholder: "Type your text here...",
-                    theme: "snow"
-                });
-            }
-
-            if (footerEditor) {
-                footer = new Quill(footerEditor, {
-                    modules: {
-                        toolbar: [
-                            [{
-                                header: [1, 2, false]
-                            }],
-                            ['bold', 'italic', 'underline'],
-                            ['image', 'code-block']
-                        ]
-                    },
-                    placeholder: "Type your text here...",
-                    theme: "snow"
-                });
-            }
-
-            // header.root.innerHTML = `{!! $data->header ?? old('description') !!}`; // Set konten awal
-            footer.root.innerHTML = `{!! $data->footer ?? old('description') !!}`; // Set konten awal
-
-            document.getElementById('add_product_form').addEventListener('submit', function() {
-                // const headerData = document.getElementById('header_input');
-                const footerData = document.getElementById('footer_input');
-                // headerData.value = header.root.innerHTML; // Ambil konten HTML
-                footerData.value = footer.root.innerHTML; // Ambil konten HTML
-            });
-
-            $('input[name="logo_option"]').on('change', function() {
-                const selectedValue = $(this).val();
-                console.log(selectedValue);
-                if (selectedValue == '1') {
-                    $('#logo_upload_container').show();
-                } else {
-                    $('#logo_upload_container').hide();
-                }
-            });
-
-            // Trigger langsung saat page load agar sesuai kondisi awal
-            $('input[name="logo_option"]:checked').trigger('change');
-        });
-    </script>
+</x-erp.workspace>
 @endsection
+
+@section('script')
+<script>
+(() => {
+    const form = document.getElementById('add_product_form');
+    const input = document.getElementById('nota-logo');
+    const preview = document.getElementById('nota-logo-preview');
+    const cancel = document.getElementById('nota-logo-cancel');
+    const filename = document.getElementById('nota-logo-filename');
+    const initial = preview.src;
+    let previewUrl;
+    const clearPreview = () => { if (previewUrl) URL.revokeObjectURL(previewUrl); previewUrl = null; };
+    input.addEventListener('change', () => {
+        clearPreview();
+        const file = input.files[0];
+        preview.src = file ? (previewUrl = URL.createObjectURL(file)) : initial;
+        filename.textContent = file ? file.name : '';
+        cancel.hidden = !file;
+    });
+    cancel.addEventListener('click', () => { input.value = ''; input.dispatchEvent(new Event('change')); input.focus(); });
+    form.addEventListener('submit', () => {
+        const button = form.querySelector('button[type="submit"]');
+        if (button) { button.disabled = true; button.setAttribute('aria-busy', 'true'); button.querySelector('span').textContent = 'Menyimpan…'; }
+    });
+    const error = form.querySelector('.nota-form-error');
+    if (error) error.focus();
+})();
+</script>
 @endsection

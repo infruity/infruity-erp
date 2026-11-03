@@ -3,6 +3,7 @@
 namespace Modules\Transaction\Http\Controllers;
 
 use Exception;
+use App\Models\RoleMenu;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\Product;
 use Modules\Master\Entities\UserBranch;
@@ -37,15 +39,8 @@ class SortirController extends Controller
         $userBranches = UserBranch::getUserBranch();
         $data['branches'] = Branch::whereIn('id', $userBranches)->get();
 
-        $emptyStockProducts = DB::table('product_stock')
-            ->join('branch', 'product_stock.branch_id', '=', 'branch.id')
-            ->select('product_stock.*', 'branch.name as branch_name')
-            ->whereIn('product_stock.branch_id', $userBranches)
-            ->where('stock_available', '<', 0)
-            ->whereNull('is_variant')
-            ->get();
-
-        $data['emptyStockData'] = $emptyStockProducts;
+        // The sortir page has no negative-stock warning, so it does not query the
+        // product_stock view (~100 ms per page load).
 
         return view('transaction::sortir.index2', $data);
     }
@@ -64,6 +59,7 @@ class SortirController extends Controller
         $data['data']           = null;
         $data['detail']         = null;
         $data['invoice_number'] = Sortir::getOrderNumber();
+        $data['branches'] = $this->branches();
         return view('transaction::sortir.create', $data);
     }
 
@@ -92,7 +88,7 @@ class SortirController extends Controller
             return $denied;
         }
 
-        $data['data']           = Sortir::with('branch', 'createdBy')->findOrFail($id);
+        $data['data']           = $this->accessibleSortir($id);
         $data['detail']         = SortirDetail::with('product', 'product.unit')->where('sortir_id', $id)->get();
         $data['invoice_number'] = $data['data']->invoice_number;
         return view('transaction::sortir.show', $data);
@@ -110,9 +106,11 @@ class SortirController extends Controller
         }
 
         $data['alpinejs']       = true;
-        $data['data']           = Sortir::with('branch', 'createdBy')->findOrFail($id);
+        $data['data']           = $this->accessibleSortir($id);
+        abort_unless($this->canEdit($data['data']), 409, 'Transaksi final sudah tidak dapat diubah.');
         $data['detail']         = SortirDetail::with('product', 'product.unit')->where('sortir_id', $id)->get();
         $data['invoice_number'] = $data['data']->invoice_number;
+        $data['branches'] = $this->branches();
         return view('transaction::sortir.create', $data);
     }
 
@@ -142,123 +140,158 @@ class SortirController extends Controller
             return $denied;
         }
 
-        try {
-            DB::beginTransaction();
-            $pos = Sortir::findOrFail($id);
-            $pos->delete();
+        return DB::transaction(function () use ($id) {
+            $pos = $this->accessibleSortir($id, true);
+            abort_unless($this->canDelete($pos), 403, 'Transaksi final hanya dapat dihapus oleh admin.');
             SortirDetail::where('sortir_id', $id)->delete();
-            DB::commit();
-            return response()->json([
-                'success' => true,
-                'message' => 'Data berhasil dihapus.',
-            ]);
-        } catch (\Exception $e) {
-            DB::rollback();
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menghapus data: ' . $e->getMessage(),
-            ], 500);
-        }
+            $pos->delete();
+
+            return response()->json(['success' => true, 'message' => 'Data berhasil dihapus.']);
+        });
     }
 
     public function saveTransaction(Request $request)
     {
-        if ($denied = $this->requireAccess('sortir.save-transaction')) {
-            return $denied;
-        }
-
+        $this->authorizeAccess('sortir.save-transaction');
         $data = $request->validate([
-            'branch_id'      => 'required|exists:branch,id',
-            'date'           => 'required|date',
-            'invoice_number' => 'nullable',
-            'items'          => 'required|array',
-            'total'          => 'required|numeric',
-            'subtotal'       => 'required|numeric',
-            'status'         => 'nullable|in:draft,paid,debt,temp,pending',
+            'branch_id' => ['required', 'integer', 'exists:branch,id'],
+            'date' => ['required', 'date_format:Y-m-d'],
+            'invoice_number' => ['nullable', 'string', 'max:100'],
+            'sortir_id' => ['nullable', 'integer', 'min:1'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.id' => ['required', 'integer', 'distinct', 'exists:products,id'],
+            'items.*.qty' => ['required', 'numeric', 'min:0.01', 'max:99999999.99', 'decimal:0,2'],
+            'items.*.price' => ['required', 'numeric', 'min:0', 'max:9999999999999.99', 'decimal:0,2'],
+            'items.*.discount' => ['nullable', 'numeric', 'min:0', 'max:9999999999999.99', 'decimal:0,2'],
+            'status' => ['required', 'in:draft,paid'],
         ]);
+        $this->authorizeBranch($data['branch_id']);
 
-        try {
-            DB::beginTransaction();
-
-            $userId = Auth::id();
-
-            // =========================
-            // HEADER (UPDATE / CREATE)
-            // =========================
-            $pos = Sortir::updateOrCreate(
-                ['invoice_number' => $data['invoice_number']],
-                [
-                    'uuid'       => Str::uuid(),
-                    'branch_id'  => $data['branch_id'],
-                    'date'       => $data['date'],
-                    'total'      => $data['total'],
-                    'status'     => $data['status'] ?? 'draft',
-                    'created_by' => $userId,
-                ]
-            );
-
-            // Jika invoice baru (null), generate nomor
-            if (empty($pos->invoice_number)) {
+        return DB::transaction(function () use ($data) {
+            if (empty($data['sortir_id'])) {
+                // Use one common row to serialize monthly numbering across branches.
+                Branch::withoutGlobalScope('userBranch')->orderBy('id')->lockForUpdate()->firstOrFail();
+            }
+            // Serialize finalizations for this branch, then lock an existing draft.
+            Branch::withoutGlobalScope('userBranch')->whereKey($data['branch_id'])->lockForUpdate()->firstOrFail();
+            $pos = ! empty($data['sortir_id'])
+                ? $this->accessibleSortir($data['sortir_id'], true)
+                : null;
+            if ($pos) {
+                $this->authorizeBranch($pos->branch_id);
+                abort_unless($this->hasAccess('sortir.edit') && $this->canEdit($pos), 409,
+                    'Transaksi ini sudah tidak dapat diubah.');
+                abort_if(in_array($pos->status, ['paid', 'debt']) && $data['status'] !== 'paid', 409,
+                    'Transaksi final tidak dapat dikembalikan menjadi draf.');
+            } else {
+                $this->authorizeAccess('sortir.create');
+                $pos = new Sortir();
+                $pos->uuid = (string) Str::uuid();
                 $pos->invoice_number = Sortir::getOrderNumber();
+                $pos->created_by = Auth::id();
             }
-            $pos->created_at = now();
-            $pos->save();
 
-            $transaksiId = $pos->id;
-
-            // =========================
-            // DETAIL ITEM
-            // =========================
-            $existingProductIds = [];
-
-            foreach ($data['items'] as $item) {
-
-                if (!is_numeric($item['id'])) {
-                    continue;
+            $oldQuantities = $pos->exists && in_array($pos->status, ['paid', 'debt'])
+                && (int) $pos->branch_id === (int) $data['branch_id']
+                ? $pos->detail()->pluck('quantity', 'product_id') : collect();
+            $productIds = array_column($data['items'], 'id');
+            // Product row locks also serialize overlapping products in this flow.
+            Product::whereIn('id', $productIds)->orderBy('id')->lockForUpdate()->get();
+            $stock = DB::table('product_stock')->where('branch_id', $data['branch_id'])
+                ->whereIn('id', $productIds)->get()->keyBy('id');
+            $total = 0;
+            $items = [];
+            foreach ($data['items'] as $index => $item) {
+                $quantity = (float) $item['qty'];
+                $gross = round($quantity * (float) $item['price'], 2);
+                $discount = (float) ($item['discount'] ?? 0);
+                if ($discount > $gross) {
+                    throw ValidationException::withMessages(["items.$index.discount" => 'Diskon melebihi nilai item.']);
                 }
-
-                $existingProductIds[] = $item['id'];
-
-                SortirDetail::updateOrCreate(
-                    [
-                        'sortir_id'  => $transaksiId,
-                        'product_id' => $item['id'],
-                    ],
-                    [
-                        'price'    => $item['price'],
-                        'quantity' => $item['qty'],
-                        'discount' => $item['discount'] ?? 0,
-                        'subtotal' => $item['total_input'],
-                        'created_by' => $userId,
-                    ]
-                );
+                $available = (float) ($stock->get($item['id'])->stock_available ?? 0)
+                    + (float) ($oldQuantities[$item['id']] ?? 0);
+                if ($data['status'] === 'paid' && $quantity > $available + 0.00001) {
+                    throw ValidationException::withMessages(["items.$index.qty" =>
+                        'Jumlah sortir melebihi stok tersedia (' . $available . ').']);
+                }
+                $subtotal = round($gross - $discount, 2);
+                $total += $subtotal;
+                $items[] = ['product_id' => $item['id'], 'quantity' => $quantity,
+                    'price' => $item['price'], 'discount' => $discount, 'subtotal' => $subtotal];
             }
+            if ($total > 9999999999999.99) {
+                throw ValidationException::withMessages(['items' => 'Total nilai sortir melebihi batas.']);
+            }
+            $pos->fill(['branch_id' => $data['branch_id'], 'date' => $data['date'],
+                'total' => round($total, 2), 'status' => $data['status']]);
+            $pos->save();
+            foreach ($items as $item) {
+                SortirDetail::updateOrCreate(['sortir_id' => $pos->id, 'product_id' => $item['product_id']],
+                    $item + ['created_by' => $pos->created_by]);
+            }
+            $pos->detail()->whereNotIn('product_id', $productIds)->delete();
 
-            // =========================
-            // HAPUS ITEM YANG DIHAPUS DI UI
-            // =========================
-            SortirDetail::where('sortir_id', $transaksiId)
-                ->whereNotIn('product_id', $existingProductIds)
-                ->delete();
+            return response()->json(['success' => true, 'message' => 'Sortir berhasil disimpan.',
+                'transaksi_id' => $pos->id, 'invoice_number' => $pos->invoice_number,
+                'status' => $pos->status]);
+        });
+    }
 
-            DB::commit();
-            DB::disconnect();
-
-            return response()->json([
-                'success'      => true,
-                'message'      => 'Transaksi berhasil disimpan',
-                'transaksi_id' => $transaksiId,
-            ]);
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            DB::disconnect();
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menyimpan transaksi',
-                'error'   => $e->getMessage(),
-            ], 500);
+    public function products(Request $request)
+    {
+        abort_unless($this->hasAccess('sortir.create') || $this->hasAccess('sortir.edit'), 403);
+        $data = $request->validate(['branch_id' => ['required', 'integer', 'exists:branch,id'],
+            'term' => ['nullable', 'string', 'max:200'], 'sortir_id' => ['nullable', 'integer']]);
+        $this->authorizeBranch($data['branch_id']);
+        $ownQuantities = collect();
+        if (! empty($data['sortir_id'])) {
+            $sortir = $this->accessibleSortir($data['sortir_id']);
+            if (in_array($sortir->status, ['paid', 'debt']) && (int) $sortir->branch_id === (int) $data['branch_id']) {
+                $ownQuantities = $sortir->detail()->pluck('quantity', 'product_id');
+            }
         }
+        $products = Product::with('unit')->where('tipe', '!=', 'parcel')->whereNull('is_variant')
+            ->when(! empty($data['term']), fn ($q) => $q->where('name', 'like', '%' . $data['term'] . '%'))
+            ->orderBy('name')->get();
+        $stock = DB::table('product_stock')->where('branch_id', $data['branch_id'])
+            ->whereIn('id', $products->pluck('id'))->get()->keyBy('id');
+
+        return response()->json($products->map(function ($product) use ($stock, $ownQuantities) {
+            $productStock = $stock->get($product->id);
+            return ['id' => $product->id, 'name' => $product->name,
+                'unit' => ['abbreviation' => $product->unit->abbreviation ?? ''],
+                'hpp' => (float) ($productStock->avg_hpp ?? $product->hpp ?? 0),
+                'stock_available' => (float) ($productStock->stock_available ?? 0)
+                    + (float) ($ownQuantities[$product->id] ?? 0)];
+        })->values());
+    }
+
+    private function branches()
+    {
+        return Branch::withoutGlobalScope('userBranch')->whereIn('id', UserBranch::getUserBranch())->get(['id', 'name']);
+    }
+
+    private function authorizeBranch($branchId): void
+    {
+        abort_unless(in_array((int) $branchId, array_map('intval', UserBranch::getUserBranch()), true), 403);
+    }
+
+    private function accessibleSortir($id, bool $lock = false): Sortir
+    {
+        $query = Sortir::with(['createdBy', 'branch' => fn ($q) => $q->withoutGlobalScope('userBranch')])
+            ->whereIn('branch_id', UserBranch::getUserBranch());
+        return ($lock ? $query->lockForUpdate() : $query)->findOrFail($id);
+    }
+
+    private function canEdit(Sortir $sortir): bool
+    {
+        return in_array($sortir->status, ['temp', 'draft', 'pending'])
+            || ($sortir->updated_at && $sortir->updated_at->gte(now()->subMinutes(30)));
+    }
+
+    private function canDelete(Sortir $sortir): bool
+    {
+        return ! in_array($sortir->status, ['paid', 'debt']) || RoleMenu::currentRoleId() === 1;
     }
 
     public function save_stock(Request $request)
@@ -406,88 +439,95 @@ class SortirController extends Controller
 
     public function get_data(Request $request)
     {
-        $query = Sortir::with('createdBy')->whereIn('branch_id', UserBranch::getUserBranch());
-        if ($request->has('status_filter') && $request->status_filter !== 'all') {
-            $query = $query->where('status', $request->status_filter);
+        $this->authorizeAccess('sortir.index');
+        $request->validate([
+            'status_filter' => ['nullable', 'in:all,draft,temp,pending,paid,debt,canceled'],
+            'cabang_filter' => ['nullable', 'regex:/^(all|[0-9]+)$/'],
+            'start_date' => ['nullable', 'date_format:Y-m-d'],
+            'end_date' => ['nullable', 'date_format:Y-m-d',
+                ...($request->filled('start_date') ? ['after_or_equal:start_date'] : [])],
+        ]);
+        $query = Sortir::with(['createdBy', 'detail.product.unit',
+            'branch' => fn ($q) => $q->withoutGlobalScope('userBranch')])
+            ->whereIn('branch_id', UserBranch::getUserBranch());
+        $recordsTotal = (clone $query)->count();
+        if ($request->filled('status_filter') && $request->status_filter !== 'all') {
+            $statuses = ['draft' => ['draft', 'temp', 'pending'], 'paid' => ['paid', 'debt']];
+            $query->whereIn('status', $statuses[$request->status_filter] ?? [$request->status_filter]);
         }
-        if ($request->start_date && $request->end_date) {
-            $query->whereBetween('date', [$request->start_date, $request->end_date]);
+        if ($request->filled('start_date')) {
+            $query->whereDate('date', '>=', $request->start_date);
         }
-        if ($request->has('cabang_filter') && $request->cabang_filter !== 'all') {
+        if ($request->filled('end_date')) {
+            $query->whereDate('date', '<=', $request->end_date);
+        }
+        if ($request->filled('cabang_filter') && $request->cabang_filter !== 'all') {
             $query->where('branch_id', $request->cabang_filter);
         }
-        $data = $query->orderBy('id', 'DESC');
-        // dd($data);
-        return DataTables::of($data)
-            ->filter(function ($query) use ($request) {
-                $search = trim($request->input('search.value'));
+        $search = trim((string) (is_array($request->input('search'))
+            ? $request->input('search.value', '') : $request->input('search', '')));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                    ->orWhereHas('createdBy', fn ($sub) => $sub->where('nm_user', 'like', "%{$search}%"))
+                    ->orWhereHas('branch', fn ($sub) => $sub->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('detail.product', fn ($sub) => $sub->where('name', 'like', "%{$search}%"));
+            });
+        }
+        $query->orderByDesc('id');
+        if ($request->boolean('mobile')) {
+            $recordsFiltered = (clone $query)->count();
+            $canEdit = $this->hasAccess('sortir.edit');
+            $canDelete = $this->hasAccess('sortir.destroy');
+            $canShow = $this->hasAccess('sortir.show');
+            $data = $query->skip(max(0, (int) $request->input('start', 0)))
+                ->take(max(1, min(100, (int) $request->input('length', 20))))->get()
+                ->map(function ($item) use ($canEdit, $canDelete, $canShow) {
+                    return ['id' => $item->id, 'invoice_number' => $item->invoice_number,
+                        'date' => $item->date, 'created_at' => $item->created_at?->toIso8601String(),
+                        'status' => $item->status, 'total' => (float) $item->total,
+                        'branch_name' => $item->branch->name ?? '-',
+                        'staff_name' => $item->createdBy->nm_user ?? '-',
+                        'items' => $item->detail->map(fn ($detail) => [
+                            'product_id' => $detail->product_id, 'name' => $detail->product->name ?? 'Produk dihapus',
+                            'unit' => $detail->product->unit->abbreviation ?? '',
+                            'quantity' => (float) $detail->quantity, 'price' => (float) $detail->price,
+                            'subtotal' => (float) $detail->subtotal])->values(),
+                        'can_edit' => $canEdit && $this->canEdit($item),
+                        'can_delete' => $canDelete && $this->canDelete($item),
+                        'can_show' => $canShow,
+                        'show_url' => route('sortir.show', $item->id),
+                        'edit_url' => route('sortir.edit', $item->id),
+                        'delete_url' => route('sortir.destroy', $item->id)];
+                });
+            return response()->json(compact('data', 'recordsTotal', 'recordsFiltered'));
+        }
 
-                if (! empty($search)) {
-                    $query->where(function ($q) use ($search) {
-                        $q->where('invoice_number', 'LIKE', "%{$search}%")
-                            ->orWhereHas('createdBy', function ($sub) use ($search) {
-                                $sub->where('nm_user', 'LIKE', "%{$search}%");
-                            });
-                    });
-                }
-            }, true)
+        return DataTables::of($query)
             ->addIndexColumn()
             ->addColumn('name', function ($item) {
-                $html = '<div class="d-flex align-items-center">';
-                $html .= '<div class="ms-5">';
-                $html .= '<a href="' . route('sortir.edit', $item->id) . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $item->invoice_number . '</a>';
-                $html .= '<br><span class="text-muted d-block fs-7">Hpp: Rp' . tonumberround($item->total) . '</span>';
-                $html .= '<span class="badge badge-light-danger">' . ucwords(strtolower($item->createdBy->nm_user)) . '</span>';
-                return $html;
+                return '<a href="' . route('sortir.show', $item->id) . '" class="text-gray-800 fw-bold">'
+                    . e($item->invoice_number) . '</a><br><span class="text-muted">Hpp: Rp'
+                    . tonumberround($item->total) . '</span><br><span class="badge badge-light-danger">'
+                    . e($item->createdBy->nm_user ?? '-') . '</span>';
             })
             ->addColumn('date', function ($item) {
-                $html = '<span class="text-muted d-block fs-8">' . date('d M Y H:i', strtotime($item->created_at)) . '</span>';
-                if ($item->status == 'paid') {
-                    $html .= '<span class="badge badge-light-success">Final</span>';
-                } else if ($item->status == 'draft') {
-                    $html .= '<span class="badge badge-light-danger">Draft</span>';
-                } else {
-                    $html .= '<span class="badge badge-light-warning">' . $item->status . '</span>';
-                }
-                return $html;
+                return '<span class="text-muted">' . e($item->created_at?->format('d M Y H:i'))
+                    . '</span><br><span class="badge badge-light-'
+                    . (in_array($item->status, ['paid', 'debt']) ? 'success' : 'warning') . '">'
+                    . (in_array($item->status, ['paid', 'debt']) ? 'Final' : 'Draf') . '</span>';
             })
             ->addColumn('action', function ($item) {
-                $html = '';
-                $html .= '
-                    <div class="dropstart">
-                        <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
-                $isRecent = false;
-                $timeRef = isset($item->updated_at) ? $item->updated_at : (isset($item->created_at) ? $item->created_at : null);
-                if ($timeRef && \Carbon\Carbon::parse($timeRef)->diffInMinutes(now()) <= 30) {
-                    $isRecent = true;
+                $html = '<a href="' . route('sortir.show', $item->id) . '" class="btn btn-sm btn-light">Detail</a>';
+                if ($this->hasAccess('sortir.edit') && $this->canEdit($item)) {
+                    $html .= '<a href="' . route('sortir.edit', $item->id) . '" class="btn btn-sm btn-light">Edit</a>';
                 }
-
-                if (in_array($item->status, ['temp', 'draft']) || $isRecent) {
-                    $html .= '
-                            <li>
-                                <a class="dropdown-item" href="' . route('sortir.edit', $item->id) . '">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                            </li>';
+                if ($this->hasAccess('sortir.destroy') && $this->canDelete($item)) {
+                    $html .= '<button type="button" class="btn btn-sm btn-light-danger" onclick="deleteProduct('
+                        . $item->id . ')">Hapus</button>';
                 }
-                if (! in_array($item->status, ['paid', 'debt']) || Session('role')['id_role'] == 1) {
-                    $html .= '
-                            <li>
-                                <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $item->id . ')">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </li>';
-                }
-                $html .= '
-                        </ul>
-                    </div>
-                    ';
                 return $html;
             })
-            ->rawColumns(['name', 'action', 'date'])
-            ->make(true);
+            ->rawColumns(['name', 'action', 'date'])->make(true);
     }
 }

@@ -312,8 +312,8 @@
                     text: "Apakah Anda yakin ingin menghapus " + item.name + " dari keranjang?",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
+                    confirmButtonColor: '#dc2626',
+                    cancelButtonColor: '#4b5563',
                     confirmButtonText: 'Ya, Hapus!',
                     cancelButtonText: 'Batal'
                 }).then((result) => {
@@ -742,6 +742,9 @@
                     items: this.cart,
                     subtotal: this.subtotal,
                     total: this.totalHargaKeseluruhan,
+                    discount: this.diskonGlobal,
+                    ongkir: this.ongkirGlobal,
+                    discount_ongkir: this.diskonOngkir,
                     status: 'draft',
                     type: type,
                 };

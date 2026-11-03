@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\UserBranch;
 use Yajra\DataTables\Facades\DataTables;
@@ -26,7 +28,16 @@ class BranchController extends Controller
             return $denied;
         }
 
-        return view('master::branch.index', ['records' => Branch::query()->select('id', 'name', 'code', 'address')->orderByDesc('id')->get()]);
+        $records = Branch::query()
+            ->leftJoin('reg_provinces as provinces', 'branch.province', '=', 'provinces.id')
+            ->leftJoin('reg_regencies as cities', 'branch.city', '=', 'cities.id')
+            ->leftJoin('reg_districts as districts', 'branch.district', '=', 'districts.id')
+            ->leftJoin('reg_villages as villages', 'branch.village', '=', 'villages.id')
+            ->select('branch.id', 'branch.name', 'branch.code', 'branch.address', 'branch.province', 'branch.city', 'branch.district', 'branch.village', 'branch.map_link', 'provinces.name as province_name', 'cities.name as city_name', 'districts.name as district_name', 'villages.name as village_name')
+            ->orderByDesc('branch.id')
+            ->get();
+
+        return view('master::branch.index', ['records' => $records]);
     }
 
     /**
@@ -54,18 +65,27 @@ class BranchController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:branch,name',
-            'code' => 'required|string|max:255|unique:branch,code',
-            'address' => 'nullable|string|max:1000',
+            'address' => 'required|string|max:1000',
+            'province' => ['required', 'string', 'exists:reg_provinces,id'],
+            'city' => ['required', 'string', Rule::exists('reg_regencies', 'id')->where(fn ($query) => $query->where('province_id', $request->input('province')))],
+            'district' => ['required', 'string', Rule::exists('reg_districts', 'id')->where(fn ($query) => $query->where('regency_id', $request->input('city')))],
+            'village' => ['required', 'string', Rule::exists('reg_villages', 'id')->where(fn ($query) => $query->where('district_id', $request->input('district')))],
+            'map_link' => 'nullable|url|max:2048',
         ]);
 
         // Simpan data ke database
         try {
             DB::beginTransaction();
             $branch = new Branch();
-            $branch->name = $validated['name'];
-            $branch->code = $validated['code'];
-            $branch->address = $validated['address'] ?? null;
+            $identity = $this->generateBranchIdentity($validated);
+            $branch->name = $identity['name'];
+            $branch->code = $identity['code'];
+            $branch->address = $validated['address'];
+            $branch->province = $validated['province'];
+            $branch->city = $validated['city'];
+            $branch->district = $validated['district'];
+            $branch->village = $validated['village'];
+            $branch->map_link = $validated['map_link'] ?? null;
             $branch->save();
             DB::commit();
         } catch (Exception $e) {
@@ -121,18 +141,24 @@ class BranchController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:branch,name,' . $id,
-            'code' => 'required|string|max:255|unique:branch,code,' . $id,
-            'address' => 'nullable|string|max:1000',
+            'address' => 'required|string|max:1000',
+            'province' => ['required', 'string', 'exists:reg_provinces,id'],
+            'city' => ['required', 'string', Rule::exists('reg_regencies', 'id')->where(fn ($query) => $query->where('province_id', $request->input('province')))],
+            'district' => ['required', 'string', Rule::exists('reg_districts', 'id')->where(fn ($query) => $query->where('regency_id', $request->input('city')))],
+            'village' => ['required', 'string', Rule::exists('reg_villages', 'id')->where(fn ($query) => $query->where('district_id', $request->input('district')))],
+            'map_link' => 'nullable|url|max:2048',
         ]);
 
         // Simpan data ke database
         try {
             DB::beginTransaction();
             $branch = Branch::findOrFail($id);
-            $branch->name = $validated['name'];
-            $branch->code = $validated['code'];
-            $branch->address = $validated['address'] ?? null;
+            $branch->address = $validated['address'];
+            $branch->province = $validated['province'];
+            $branch->city = $validated['city'];
+            $branch->district = $validated['district'];
+            $branch->village = $validated['village'];
+            $branch->map_link = $validated['map_link'] ?? null;
             $branch->save();
             DB::commit();
         } catch (Exception $e) {
@@ -177,6 +203,36 @@ class BranchController extends Controller
                 'message' => 'Gagal menghapus data: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function generateBranchIdentity(array $validated): array
+    {
+        $cityName = DB::table('reg_regencies')->where('id', $validated['city'])->value('name');
+        $districtName = DB::table('reg_districts')->where('id', $validated['district'])->value('name');
+        $villageName = DB::table('reg_villages')->where('id', $validated['village'])->value('name');
+
+        $cityName = preg_replace('/^(?:KABUPATEN|KAB\\.?|KOTA)\\s+/iu', '', (string) $cityName);
+        $nameBase = collect([$cityName, $districtName, $villageName])
+            ->map(fn ($name) => Str::title(mb_strtolower(trim((string) $name))))
+            ->implode(' / ');
+
+        $nameSequence = 1;
+        do {
+            $name = $nameBase . ' - ' . str_pad((string) $nameSequence++, 3, '0', STR_PAD_LEFT);
+        } while (DB::table('branch')->where('name', $name)->exists());
+
+        $lastCodeNumber = DB::table('branch')
+            ->where('code', 'like', 'CBG-%')
+            ->pluck('code')
+            ->map(fn ($code) => preg_match('/^CBG-(\\d+)$/i', (string) $code, $matches) ? (int) $matches[1] : 0)
+            ->max() ?? 0;
+
+        $codeNumber = $lastCodeNumber + 1;
+        do {
+            $code = 'CBG-' . str_pad((string) $codeNumber++, 4, '0', STR_PAD_LEFT);
+        } while (DB::table('branch')->where('code', $code)->exists());
+
+        return ['name' => $name, 'code' => $code];
     }
 
     public function getBranch(Request $request)
