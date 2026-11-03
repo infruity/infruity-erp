@@ -105,20 +105,22 @@ class PosController extends Controller
             $data['detail']         = $draft->details;
             $data['invoice_number'] = $draft->invoice_number;
         } else {
-            $invoiceNumber = PosModel::getOrderNumber();
+            $draft = PosModel::reserveInvoiceNumber(function (string $invoiceNumber) {
+                $draft = new PosModel();
+                $draft->uuid = Str::uuid();
+                $draft->invoice_number = $invoiceNumber;
+                $draft->created_by = Auth::id();
+                $draft->status = 'temp';
+                $draft->date = date('Y-m-d');
+                $draft->total = 0;
+                $draft->save();
 
-            $draft = new PosModel();
-            $draft->uuid = Str::uuid();
-            $draft->invoice_number = $invoiceNumber;
-            $draft->created_by = Auth::id();
-            $draft->status = 'temp';
-            $draft->date = date('Y-m-d');
-            $draft->total = 0;
-            $draft->save();
+                return $draft;
+            });
 
             $data['data']           = $draft;
             $data['detail']         = [];
-            $data['invoice_number'] = $invoiceNumber;
+            $data['invoice_number'] = $draft->invoice_number;
         }
 
         return view('pos::pos.create2', $data);
@@ -856,6 +858,13 @@ class PosController extends Controller
                 $originalStatus = $pos->status;
 
             } else {
+                // The form's draft is gone; never give a new sale the number of
+                // another (also deleted) note. ORD numbers follow their order book.
+                if (! empty($invoiceNumber) && str_starts_with($invoiceNumber, 'INV')
+                    && PosModel::invoiceNumberTaken($invoiceNumber)) {
+                    throw ValidationException::withMessages(['invoice_number' => 'Nomor nota sudah dipakai transaksi lain. Muat ulang halaman untuk mendapat nomor baru.']);
+                }
+
                 $pos            = new PosModel();
                 $pos->uuid      = Str::uuid();
                 $pos->created_by = $userId;
