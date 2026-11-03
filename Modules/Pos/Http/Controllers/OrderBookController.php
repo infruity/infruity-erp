@@ -409,7 +409,11 @@ class OrderBookController extends Controller
     {
         $query = OrderBook::with('customer', 'pos')->whereIn('branch_id', UserBranch::getUserBranch());
         if ($request->has('status_filter') && $request->status_filter !== 'all') {
-            $query = $query->where('status', $request->status_filter);
+            if ($request->status_filter === 'process') {
+                $query = $query->whereIn('status', ['process', 'posting']);
+            } else {
+                $query = $query->where('status', $request->status_filter);
+            }
         }
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('date', [$request->start_date, $request->end_date]);

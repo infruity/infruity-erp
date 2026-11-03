@@ -1,8 +1,10 @@
 @extends('template.root')
+@section('title', 'Riwayat Pembayaran')
 @section('content')
+<x-erp.workspace title="Riwayat Pembayaran" subtitle="Rincian pembayaran yang telah tercatat.">
     @foreach ($listPayment as $data)
-        <div class="container d-flex flex-column justify-content-center align-items-center text-center mb-3">
-            <div class="card shadow p-4 rounded-4">
+        <div class="erp-payment-history-record">
+            <div class="erp-payment-history-content">
                 <div class="text-success mb-3">
                     <i class="bi bi-check-circle-fill" style="font-size: 4rem;"></i>
                 </div>
@@ -70,7 +72,8 @@
             </div>
         </div>
     @endforeach
-    <a href="{{ route('pos.index') }}" class="btn btn-warning rounded-pill w-100 mb-2">
+    <a href="{{ route('pos.index') }}" class="erp-action">
         <i class="bi bi-arrow-left"></i> Kembali
     </a>
+</x-erp.workspace>
 @endsection

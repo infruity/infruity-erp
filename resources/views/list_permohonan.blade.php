@@ -1,26 +1,7 @@
 @extends('template.root')
-@section('page-name', Request::segment(1))
-@section('title-page', 'List Permohonan Saya')
-@section('add-page')
-    <a href="{{ url('dashboard') }}" class="btn btn-md btn-primary">
-        <i class="fa fa-plus"></i> Buat Permohonan
-    </a>
-@endsection
+@section('title', 'Permohonan Saya')
 @section('content')
-    <div class="row">
-        @foreach ($data as $item)
-            <div class="col-12">
-                <div class="card widget-1">
-                    <div class="card-header {{ $item->type == 'permohonan-sk' ? 'bg-light-primary' : 'bg-light-success' }}">
-                        <div class="header-top">
-                            <h5>{{ $item->type == 'permohonan-sk' ? 'Permohonan Surat Keterangan' : 'Permohonan Pengurangan IPT' }}
-                            </h5>
-                            <div class="card-header-right-icon">
-                                <div class="dropdown icon-dropdown">
-                                    <button class="btn dropdown-toggle" id="activityButton" type="button"
-                                        data-bs-toggle="dropdown" aria-expanded="false"><i
-                                            class="icon-more-alt"></i></button>
-                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="activityButton">
+<x-erp.workspace title="Permohonan Saya" subtitle="Tinjau status dan riwayat permohonan."><x-slot:toolbar><a href="{{ url('dashboard') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Buat Permohonan</a></x-slot:toolbar><div class="erp-application-list">@forelse($data as $item)<article class="erp-application-record"><header><div><h2>{{ $item->type == 'permohonan-sk' ? 'Permohonan Surat Keterangan' : 'Permohonan Pengurangan IPT' }}</h2><p>{{ $item->no_permohonan }}</p></div><details><summary class="erp-action">Aksi</summary><div class="erp-application-actions" aria-labelledby="activityButton">
                                         <a class="dropdown-item"
                                             href="{{ $item->type == 'permohonan-sk' ? url('permohonan') . '/' . $item->id . '/detail' : url('ipt-pengurangan') . '/' . $item->id . '/detail' }}"><i
                                                 class="fa-solid fa-eye"></i> Show</a>
@@ -66,45 +47,5 @@
                                                     Cetak Surat </a>
                                             </li>
                                         @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <a
-                        href="{{ $item->type == 'permohonan-sk' ? url('permohonan') . '/' . $item->id . '/detail' : url('ipt-pengurangan') . '/' . $item->id . '/detail' }}">
-                        <div class="card-body">
-                            <div class="widget-content">
-                                <div class="widget-round success">
-                                    <div class="bg-round">
-                                        <svg class="fill-success">
-                                            <use href="{{ asset('cuba/svg/icon-sprite.svg#c-invoice') }}"> </use>
-                                        </svg>
-                                        <svg class="half-circle svg-fill">
-                                            <use href="{{ asset('cuba/svg/icon-sprite.svg#halfcircle') }}"></use>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h6>{{ $item->no_permohonan }}</h6>
-                                    <span class="f-light">{{ dateindo($item->tanggal_pengajuan) }}</span>
-                                    <br>
-                                    <span
-                                        class="f-light">{{ $item->type == 'permohonan-sk' ? 'Jenis Permohonan' : 'Jenis Pengurangan' }}
-                                        : {{ ucwords(strtolower($item->nm_layanan)) }}</span>
-                                    <br>
-                                    <span class="f-light">Status saat ini : </span> <span
-                                        class="badge badge-light-{{ $item->class_color }}">{{ ucwords(strtolower($item->nama_status)) }}</span>
-                                    <br>
-                                    <span class="f-light">Step Selanjutnya : </span> <span
-                                        class="badge badge-light-{{ $item->next_status_class_color }}">{{ ucwords(strtolower($item->next_status_name)) }}</span>
-                                </div>
-                            </div>
-                            <div class="font-success f-w-500"><span class="txt-success"></span></div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        @endforeach
-    </div>
+                                    </div></details></header><dl class="erp-detail-grid"><div><dt>Jenis layanan</dt><dd>{{ ucwords(strtolower($item->nm_layanan)) }}</dd></div><div><dt>Status saat ini</dt><dd><span class="badge badge-light-{{ $item->class_color }}">{{ ucwords(strtolower($item->nama_status)) }}</span></dd></div><div><dt>Langkah selanjutnya</dt><dd><span class="badge badge-light-{{ $item->next_status_class_color }}">{{ ucwords(strtolower($item->next_status_name)) }}</span></dd></div></dl></article>@empty<div class="erp-record-empty"><i class="ph ph-files" aria-hidden="true"></i><p>Belum ada permohonan.</p></div>@endforelse</div><x-slot:footer>{{ $data->links() }}</x-slot:footer></x-erp.workspace>
 @endsection

@@ -77,15 +77,19 @@ class DepositoController extends Controller
             'customer_id' => 'required|exists:customer,id',
             'tier_id' => 'required|exists:crm_tier,id',
             'date' => 'required|date',
-            'deposito' => 'required',
+            'deposito' => ['required', 'regex:/^[0-9][0-9.,]*$/'],
         ]);
+
+        $pointSchedule = PointSchedule::first();
+        if (! $pointSchedule) {
+            return response()->json(['message' => 'Jadwal poin belum diatur.'], 422);
+        }
 
         // Simpan data ke database
         try {
             DB::beginTransaction();
 
             $tier = Tier::findOrFail($validated['tier_id']);
-            $pointSchedule = PointSchedule::first();
             // dd($tier, $pointSchedule);
 
             $deposito = new Deposito();
@@ -95,7 +99,9 @@ class DepositoController extends Controller
             $deposito->start_period = $pointSchedule->start_date;
             $deposito->end_period = $pointSchedule->end_date;
             $deposito->voucher = $tier->voucher;
-            $deposito->voucher_qty = $tier->deposito / $tier->voucher;
+            $deposito->voucher_qty = (int) $tier->voucher > 0
+                ? intdiv((int) $tier->deposito, (int) $tier->voucher)
+                : 0;
             $deposito->exp = $tier->exp;
             $deposito->deposito = preg_replace('/[^0-9]/', '', $validated['deposito']);
             $deposito->save();
@@ -105,7 +111,7 @@ class DepositoController extends Controller
             DB::rollback();
             return response()->json([
                 'message' => 'Deposito gagal disimpan.' . $e->getMessage(),
-                'data' => $deposito
+                'data' => null
             ], 404);
         }
 
@@ -161,7 +167,7 @@ class DepositoController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customer,id',
             'date' => 'required|date',
-            'deposito' => 'required',
+            'deposito' => ['required', 'regex:/^[0-9][0-9.,]*$/'],
         ]);
 
         // Simpan data ke database
@@ -169,7 +175,7 @@ class DepositoController extends Controller
             DB::beginTransaction();
             $deposito = Deposito::findOrFail($id);
             $deposito->customer_id = $validated['customer_id'];
-            $deposito->date = $validated['date'];
+            $deposito->deposito_date = $validated['date'];
             $deposito->deposito = preg_replace('/[^0-9]/', '', $validated['deposito']);
             $deposito->save();
             DB::commit();
@@ -177,7 +183,7 @@ class DepositoController extends Controller
             DB::rollback();
             return response()->json([
                 'message' => 'Deposito gagal disimpan.' . $e->getMessage(),
-                'data' => $deposito
+                'data' => null
             ], 404);
         }
 
@@ -219,11 +225,14 @@ class DepositoController extends Controller
 
     public function get_data(Request $request)
     {
+        if ($denied = $this->requireAccess('deposito.index')) {
+            return $denied;
+        }
         $data = Deposito::all();
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('name', function ($row) {
-                return $row->customer->name;
+                return e($row->customer->name ?? '-');
             })
             ->addColumn('date', function ($row) {
                 return '<span class="badge badge-light-success">' . date('d M Y', strtotime($row->deposito_date)) . '</span>';
@@ -257,6 +266,9 @@ class DepositoController extends Controller
     }
     public function customer_deposito_get_data(Request $request)
     {
+        if ($denied = $this->requireAccess('customer-deposito.index')) {
+            return $denied;
+        }
         $data = CustomerDeposito::with('customer')->select(
             'customer_id',
             DB::raw('SUM(deposito) as deposito'),
@@ -270,7 +282,7 @@ class DepositoController extends Controller
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('name', function ($row) {
-                return $row->customer->name;
+                return e($row->customer->name ?? '-');
             })
             ->addColumn('deposito', function ($row) {
                 $html = '<span class="badge badge-light-success">';

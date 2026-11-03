@@ -133,10 +133,15 @@ DB_PORT=3306
 DB_DATABASE=infruity
 DB_USERNAME=root
 DB_PASSWORD=
+GUEST_DB_DATABASE=infruity_guest_local
 
 QUEUE_CONNECTION=sync
 SESSION_DRIVER=file
 ```
+
+Tombol **Guest** menggunakan halaman Laravel yang sama dengan login biasa, tetapi seluruh query aplikasi Guest memakai database MySQL terpisah. Nama `GUEST_DB_DATABASE` wajib berbeda dari `DB_DATABASE`. Jika server Guest memakai kredensial berbeda, atur juga `GUEST_DB_HOST`, `GUEST_DB_PORT`, `GUEST_DB_USERNAME`, dan `GUEST_DB_PASSWORD`.
+
+Setelah database utama siap, jalankan `php artisan guest:prepare` satu kali. Perintah ini membuat struktur tabel dan view pada database Guest serta akun demo, tanpa menyalin data bisnis dari database utama. Gunakan `SESSION_DRIVER=file` atau penyimpanan sesi non-database agar sesi Guest tidak ditulis ke database utama.
 
 Jika menggunakan fitur notifikasi push (Firebase/Web Push), siapkan juga kredensial VAPID dan Firebase Service Account sesuai konfigurasi yang digunakan pada `app/Services/FcmService.php`.
 

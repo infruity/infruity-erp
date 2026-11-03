@@ -14,12 +14,15 @@
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
+
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+<link rel="stylesheet" href="{{ asset('assets/css/erp-theme.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/fonts/infruity/fonts.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/plugins/phosphor/phosphor.css') }}">
 </head>
-<body>
+<body class="erp-ui erp-legacy">
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">

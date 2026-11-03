@@ -1,0 +1,32 @@
+/* Scoped pixel sizing avoids the legacy root font and Bootstrap utilities. */
+#order-book-detail-dialog { z-index:1200; padding:16px; color:#1f2937; font-family:var(--erp-font, "Plus Jakarta Sans", sans-serif); font-size:14px; line-height:20px; }
+#order-book-detail-dialog, #order-book-detail-dialog * { box-sizing:border-box; }
+#order-book-detail-dialog > section { width:100%; max-width:384px; max-height:calc(100dvh - 32px); border:0; border-radius:16px; background:#fff; }
+#order-book-detail-dialog > section > div:first-child { min-height:0; padding:20px 20px 16px; overscroll-behavior:contain; }
+#order-book-detail-dialog > section > div:first-child > div:first-child { margin-bottom:20px; gap:12px; }
+#order-book-detail-dialog h2 { margin:0; color:#1f2937; font-size:18px; font-weight:700; line-height:28px; }
+#order-book-detail-dialog button[aria-label="Tutup detail"] { width:28px; height:28px; flex:none; border:0; padding:0; color:#6b7280; font-size:14px; }
+#order-book-detail-dialog > section > div:last-child { flex-shrink:0; border-top:1px solid #f3f4f6; }
+#order-book-detail-dialog .order-book-detail__fields { display:flex; flex-direction:column; gap:14px; }
+#order-book-detail-dialog .order-book-detail__field { display:flex; align-items:center; gap:12px; }
+#order-book-detail-dialog .order-book-detail__icon { display:flex; width:40px; height:40px; flex:none; align-items:center; justify-content:center; border:1px solid rgb(167 243 208 / .8); border-radius:12px; background:#ecfdf5; color:#0b595b; box-shadow:0 1px 2px rgb(0 0 0 / .05); }
+#order-book-detail-dialog .order-book-detail__icon i { font-size:18px; line-height:1; }
+#order-book-detail-dialog .order-book-detail__value { min-width:0; flex:1; overflow-wrap:anywhere; }
+#order-book-detail-dialog .order-book-detail__primary { color:#1f2937; font-size:14px; font-weight:700; line-height:19.25px; }
+#order-book-detail-dialog .order-book-detail__secondary { display:block; margin-top:2px; color:#9ca3af; font-size:11px; font-weight:500; line-height:16.5px; }
+#order-book-detail-dialog .order-book-detail__phone { display:inline-block; margin-top:2px; border-bottom:1px dashed #d1d5db; padding-bottom:2px; color:#1f2937; font-size:12px; font-weight:600; line-height:16px; text-decoration:none; }
+#order-book-detail-dialog .order-book-detail__muted { color:#9ca3af; font-weight:400; }
+#order-book-detail-dialog .order-book-detail__footer { width:100%; padding:12px 16px 16px; }
+#order-book-detail-dialog .order-book-detail__locked { display:block; margin-bottom:8px; color:#6b7280; font-size:11px; }
+#order-book-detail-dialog .order-book-detail__actions { display:flex; flex-wrap:wrap; gap:10px; }
+#order-book-detail-dialog .order-book-detail__action { display:flex; min-width:0; min-height:44px; flex:1 1 auto; align-items:center; justify-content:center; border:1px solid #e5e7eb; border-radius:12px; padding:10px 12px; background:#fff; color:#374151; font:600 13px/20px var(--erp-font, sans-serif); text-align:center; text-decoration:none; cursor:pointer; }
+#order-book-detail-dialog .order-book-detail__action--delete { flex:0 1 auto; border-color:#fecaca; color:#dc2626; }
+#order-book-detail-dialog .order-book-detail__action--primary { border-color:#0b595b; background:#0b595b; color:#fff; font-weight:700; box-shadow:0 4px 6px rgb(11 89 91 / .2); }
+#order-book-detail-dialog .order-book-detail__action--pending { border-color:#f97316; background:#f97316; box-shadow:0 4px 6px rgb(249 115 22 / .2); }
+#order-book-detail-dialog :is(button,a):focus-visible { outline:2px solid #10b981; outline-offset:3px; }
+@media (min-width:640px) {
+    #order-book-detail-dialog > section > div:first-child { padding:22px 24px 20px; }
+    #order-book-detail-dialog > section > div:first-child > div:first-child { margin-bottom:24px; }
+    #order-book-detail-dialog .order-book-detail__footer { padding:14px 20px 20px; }
+    #order-book-detail-dialog .order-book-detail__action { min-height:48px; font-size:14px; }
+}

@@ -1,6 +1,9 @@
 <?php
 namespace Modules\Pos\Http\Controllers;
 
+use Illuminate\Support\Facades\Schema;
+use Modules\Pos\Services\PaymentSubmission;
+
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -8,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Modules\Crm\Entities\CustomerDeposito;
 use Modules\Crm\Entities\CustomerTier;
 use Modules\Crm\Entities\Deposito;
@@ -195,7 +199,7 @@ class PosController extends Controller
             return $denied;
         }
 
-        $data['data']         = PosModel::with(['customer', 'paymentDetails'])->findOrFail($id);
+        $data['data']         = PosModel::with(['customer', 'paymentDetails'])->whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
         $data['detail']       = PosDetailModel::with('product')->where('pos_id', $id)->get();
         $data['parcelDetail'] = ProductionParcelDetail::with('product')->where('pos_id', $id)->get();
         $data['setting']      = SettingNota::where('branch_id', $data['data']->branch_id)->first() ?? SettingNota::first();
@@ -215,7 +219,8 @@ class PosController extends Controller
         }
 
         $data['alpinejs']       = true;
-        $data['data']           = PosModel::with('customer', 'customer.customerTier', 'courier', 'branch', 'branch_proses', 'user', 'productions', 'productions.productionDetails', 'productions.productionDetails.products', 'productions.productionDetails.products.get_stock')->findOrFail($id);
+        $data['data']           = PosModel::with('customer', 'customer.customerTier', 'courier', 'branch', 'branch_proses', 'user', 'productions', 'productions.productionDetails', 'productions.productionDetails.products', 'productions.productionDetails.products.get_stock')
+            ->whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
 
         $isRecent = false;
         if ($data['data']->updated_at && $data['data']->updated_at->diffInMinutes(now()) <= 30) {
@@ -276,7 +281,13 @@ class PosController extends Controller
 
         try {
             DB::beginTransaction();
-            $pos = PosModel::findOrFail($id);
+            $pos = PosModel::whereIn('branch_id', UserBranch::getUserBranch())
+                ->where('created_by', Auth::id())
+                ->whereIn('status', ['temp', 'draft', 'pending'])
+                ->lockForUpdate()->findOrFail($id);
+            if (Payment::where('pos_id', $id)->exists()) {
+                throw ValidationException::withMessages(['transaction_id' => 'Transaksi yang memiliki pembayaran tidak dapat dihapus.']);
+            }
 
             // Hapus production parcel details
             ProductionParcelDetail::where('pos_id', $id)->delete();
@@ -300,6 +311,10 @@ class PosController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollback();
+            if ($e instanceof ValidationException
+                || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                throw $e;
+            }
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menghapus data: ' . $e->getMessage(),
@@ -313,45 +328,93 @@ class PosController extends Controller
             return $denied;
         }
 
-        // dd($request->all());
+        if (! Schema::hasTable('pos_payment_submissions')) {
+            return response()->json(['success' => false, 'message' => 'Pembayaran belum tersedia. Hubungi administrator untuk menyelesaikan pembaruan sistem.'], 503);
+        }
+        $request->merge(['idempotency_key' => $request->header('Idempotency-Key', $request->input('idempotency_key'))]);
         $data = $request->validate([
+            'idempotency_key' => 'required|uuid',
             'date'           => 'required|date',
             'transaction_id' => 'required|exists:pos_transaction,id',
             // 'branch_id' => 'required|exists:branch,id',
             // 'account_id' => 'required|exists:account,id',
             // 'payment_id' => 'required|exists:payment_method,id',
-            'payments'       => 'required|array',
+            'payments'       => 'required|array|min:1',
+            'payments.*.payment_id' => 'required|integer|exists:payment_method,id',
+            'payments.*.amount' => ['required', 'regex:/^\d+(?:\.\d{3})*$/'],
             'total_payment'  => 'required|numeric|min:0',
-            'customer_id'    => 'nullable',
+            'customer_id'    => 'nullable|integer|exists:customer,id',
         ]);
+
+        $paymentAmounts = collect($data['payments'])->map(fn ($item) => (float) str_replace('.', '', (string) $item['amount']));
+        if ($paymentAmounts->contains(fn ($amount) => $amount <= 0) || abs($paymentAmounts->sum() - (float) $data['total_payment']) > 0.01) {
+            throw ValidationException::withMessages(['payments' => 'Jumlah rincian pembayaran harus positif dan sama dengan total pembayaran.']);
+        }
+
+        $fingerprint = PaymentSubmission::fingerprint($data);
 
         try {
             DB::beginTransaction();
 
-            // Simpan ke tabel pembayaran
-            $paymentNames   = collect($data['payments'])->pluck('payment_name')->toArray();
+            $posForVoucher = PosModel::whereKey($data['transaction_id'])
+                ->whereIn('branch_id', UserBranch::getUserBranch())
+                ->lockForUpdate()->firstOrFail();
+            // Check authorization before replay; a completed request stays replayable
+            // even when the original attempt made the invoice fully paid.
+            $replay = PaymentSubmission::replay((int) $posForVoucher->id, $data['idempotency_key'], (int) Auth::id(), $fingerprint);
+            if ($replay !== null) {
+                DB::commit();
+                return response()->json($replay)->header('Idempotency-Replayed', 'true');
+            }
+            if (! in_array($posForVoucher->status, ['draft', 'temp', 'pending', 'debt'], true)) {
+                throw ValidationException::withMessages(['transaction_id' => 'Transaksi ini tidak dapat dibayar lagi.']);
+            }
+            if ($posForVoucher->customer_id && ! empty($data['customer_id']) && (int) $data['customer_id'] !== (int) $posForVoucher->customer_id) {
+                throw ValidationException::withMessages(['customer_id' => 'Pelanggan tidak sesuai dengan transaksi.']);
+            }
+
+            $methods = DB::table('payment_method')->whereIn('id', collect($data['payments'])->pluck('payment_id'))
+                ->pluck('name', 'id');
+            $paymentNames   = collect($data['payments'])->map(fn ($item) => $methods[$item['payment_id']])->toArray();
             $paymentIds     = collect($data['payments'])->pluck('payment_id')->toArray();
-            $paymentAmounts = collect($data['payments'])->map(function ($item) {
-                return (float) preg_replace('/[^\d]/', '', $item['amount']);
-            })->toArray();
+            $paymentAmounts = $paymentAmounts->toArray();
+
+            $existingPaid = (float) Payment::where('pos_id', $posForVoucher->id)->sum('total')
+                - (float) Payment::where('pos_id', $posForVoucher->id)->sum('return');
+            $voucher = (float) ($posForVoucher->voucher ?? 0);
+            $deposito = null;
+            if (! $posForVoucher->deposito_id && $posForVoucher->customer_id) {
+                $deposito = Deposito::where('customer_id', $posForVoucher->customer_id)->lockForUpdate()->first();
+                if ($deposito && $deposito->voucher_qty > 0) {
+                    $voucher = min((float) $deposito->voucher, (float) $posForVoucher->total);
+                }
+            }
+            $due = max(0, (float) $posForVoucher->total - $voucher - $existingPaid);
+            $amount = array_sum($paymentAmounts);
+            if ($amount <= 0 || $due <= 0) {
+                throw ValidationException::withMessages(['payments' => 'Tidak ada sisa tagihan yang dapat dibayar.']);
+            }
+            $change = max(0, $amount - $due);
+            if ($change > 0 && collect($paymentNames)->contains(fn ($name) => strtolower($name) !== 'cash')) {
+                throw ValidationException::withMessages(['payments' => 'Kembalian hanya dapat diberikan untuk pembayaran tunai.']);
+            }
 
             $payment = new Payment([
                 'uuid'              => Str::uuid(),
                 'date'              => $data['date'],
                 'nota_number'       => date('YmdHis') . Str::random(4),
                 'pos_id'            => $data['transaction_id'],
+                'branch_id'         => $posForVoucher->branch_id,
                 // 'branch_id' => $data['branch_id'],
                 // 'account_id' => $data['account_id'],
                 'payment_method'    => json_encode($paymentNames),
                 'payment_method_id' => json_encode($paymentIds),
                 'payment_amount'    => json_encode($paymentAmounts),
-                'total'             => array_sum($paymentAmounts),
+                'total'             => $amount,
                 'created_by'        => Auth::id(),
             ]);
             // dd($payment);
             $payment->save();
-
-            $posForVoucher = PosModel::findOrFail($data['transaction_id']);
 
             // Pengecekan stok seperti pada saveTransaction (hanya untuk transaksi yang belum terpotong stoknya)
             if (in_array($posForVoucher->status, ['draft', 'temp', 'pending'])) {
@@ -435,39 +498,19 @@ class PosController extends Controller
                 }
             }
 
-            if (empty($posForVoucher->deposito_id) && empty($posForVoucher->voucher)) {
-                $deposito = Deposito::where('customer_id', $data['customer_id'])->first();
-                $voucher  = $deposito?->voucher ?? 0;
-                
-                if ($deposito && $voucher > 0 && $deposito->voucher_qty > 0) {
-                    PosModel::where("id", $data['transaction_id'])->update([
-                        'voucher'     => $voucher,
-                        'voucher_qty' => 1,
-                        'deposito_id' => $deposito->id,
-                    ]);
+            if ($deposito && $voucher > 0 && $deposito->voucher_qty > 0) {
+                    $posForVoucher->voucher = $voucher;
+                    $posForVoucher->voucher_qty = 1;
+                    $posForVoucher->deposito_id = $deposito->id;
                     $deposito->decrement('voucher_qty');
-                }
             }
 
-            $totalPayment = Payment::where('pos_id', $data['transaction_id'])
-                ->sum('total');
-
-            $pos       = PosModel::findOrFail($data['transaction_id']);
-            $total     = $pos->total - $pos->voucher;
-            $pos->paid = $totalPayment;
-            if ($totalPayment > $total) {
-                $lastPayment         = Payment::findOrFail($payment->id);
-                $lastPayment->return = ($totalPayment - $total);
-                $lastPayment->save();
-            } else {
-                $lastPayment            = Payment::findOrFail($payment->id);
-                $lastPayment->remaining = ($total - $totalPayment);
-                $lastPayment->save();
-            }
-            $status = 'debt';
-            if ($totalPayment >= $total) {
-                $status = 'paid';
-            }
+            $pos = $posForVoucher;
+            $pos->paid = $existingPaid + $amount - $change;
+            $payment->return = $change;
+            $payment->remaining = max(0, (float) $pos->total - (float) $pos->voucher - (float) $pos->paid);
+            $payment->save();
+            $status = $payment->remaining <= 0.01 ? 'paid' : 'debt';
             // $pos->ongkir_status = 'delivered';
             $pos->status = $status;
             $pos->save();
@@ -478,15 +521,24 @@ class PosController extends Controller
                     ->update(['status' => 'complete']);
             }
 
-            DB::commit();
-            return response()->json([
+            $response = [
                 'success' => true,
                 'message' => 'Transaksi berhasil disimpan',
-                'payment' => $payment,
-                'pos'     => $pos,
-            ]);
+                'payment' => $payment->toArray(),
+                'pos' => $pos->toArray(),
+            ];
+            PaymentSubmission::remember((int) $pos->id, $data['idempotency_key'], (int) Auth::id(), $fingerprint, (int) $payment->id, $response);
+            DB::commit();
+            return response()->json($response);
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
             DB::rollback();
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+                || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                throw $e;
+            }
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan transaksi',
@@ -501,6 +553,7 @@ class PosController extends Controller
             return $denied;
         }
 
+        PosModel::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
         $payments = Payment::with('paymentMethod')->where('pos_id', $id)
             ->orderBy('date', 'asc')
             ->get();
@@ -514,7 +567,7 @@ class PosController extends Controller
             return $denied;
         }
 
-        $data['data']    = PosModel::with('customer')->findOrFail($id);
+        $data['data']    = PosModel::with('customer')->whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
         $data['detail']  = PosDetailModel::with('product')->where('pos_id', $id)->get();
         $data['setting'] = SettingNota::where('branch_id', $data['data']->branch_id)->first() ?? SettingNota::first();
         // dd($data);
@@ -530,7 +583,7 @@ class PosController extends Controller
         // dd($request->all());
         $data = $request->validate([
             // 'customer_id' => 'nullable|exists:customer,id',
-            'customer_id'       => 'nullable',
+            'customer_id'       => 'nullable|integer|exists:customer,id',
             'date'              => 'required|date',
             'invoice_number'    => 'nullable',
             'items'             => 'required|array',
@@ -540,21 +593,26 @@ class PosController extends Controller
             'items.*.discount'  => 'nullable|numeric|min:0',
             'items.*.total_input' => 'nullable|numeric|min:0',
             'parcel'            => 'nullable|array',
+            'parcel.*.qty'      => 'required|numeric|gt:0',
+            'parcel.*.data'     => 'required|array|min:1',
+            'parcel.*.data.*.product' => 'required|integer|exists:products,id',
+            'parcel.*.data.*.qty' => 'required|numeric|gt:0',
             'jus'               => 'nullable|array',
-            'jus.*.productId'   => 'nullable',
-            'jus.*.qty'         => 'nullable|numeric|min:0',
+            'jus.*.productId'   => 'required|integer|exists:products,id',
+            'jus.*.qty'         => 'required|numeric|gt:0',
             'jus.*.price'       => 'nullable|numeric|min:0',
-            'jus.*.hpp'         => 'nullable|numeric|min:0',
             'jus.*.discount'    => 'nullable|numeric|min:0',
             'jus.*.total_input' => 'nullable|numeric|min:0',
             'jus.*.product_receipt_id' => 'nullable|array',
+            'jus.*.product_receipt_id.*' => 'integer|exists:products,id',
             'jus.*.product_receipt_qty' => 'nullable|array',
+            'jus.*.product_receipt_qty.*' => 'numeric|gt:0',
             'subtotal'          => 'required|numeric|min:0',
             'discount'          => 'nullable|numeric|min:0',
             'ongkir'            => 'required|numeric|min:0',
             'discount_ongkir'   => 'required|numeric|min:0',
             'total'             => 'required|numeric|min:0',
-            'status'            => 'nullable|in:draft,paid,debt,temp,pending',
+            'status'            => 'nullable|in:draft,temp,pending',
             'process_status'    => 'nullable|in:none,pending,done',
             'ongkir_date'       => 'nullable|date',
             'ongkir_time'       => 'nullable',
@@ -563,9 +621,33 @@ class PosController extends Controller
             'courier_type'      => 'nullable',
             'ongkir_address'    => 'nullable',
             'kemasan_price'     => 'nullable|numeric|min:0',
-            'branch_id'         => 'nullable',
-            'branch_process_id' => 'nullable',
+            'branch_id'         => 'required|integer|exists:branch,id',
+            'branch_process_id' => 'nullable|integer|exists:branch,id',
         ]);
+
+        $allowedBranches = UserBranch::getUserBranch();
+        if (! in_array((int) $data['branch_id'], array_map('intval', $allowedBranches), true)
+            || (! empty($data['branch_process_id']) && ! in_array((int) $data['branch_process_id'], array_map('intval', $allowedBranches), true))) {
+            abort(403, 'Cabang transaksi tidak diizinkan.');
+        }
+
+        // Harga khusus tetap mengikuti input kasir; angka header selalu berasal dari rincian.
+        $calculatedSubtotal = collect($data['items'])->sum(function ($item) {
+            return (float) ($item['total_input'] ?? (((float) ($item['price'] ?? 0) * (float) ($item['qty'] ?? 0)) - (float) ($item['discount'] ?? 0)));
+        });
+        $globalDiscount = (float) ($data['discount'] ?? 0);
+        $discountAmount = $globalDiscount > 0 && $globalDiscount <= 100
+            ? $calculatedSubtotal * $globalDiscount / 100 : $globalDiscount;
+        $shipping = (float) $data['ongkir'];
+        $shippingDiscount = (float) $data['discount_ongkir'];
+        $shippingDiscountAmount = $shippingDiscount > 0 && $shippingDiscount <= 100
+            ? $shipping * $shippingDiscount / 100 : $shippingDiscount;
+        if ($discountAmount > $calculatedSubtotal || $shippingDiscountAmount > $shipping
+            || abs($calculatedSubtotal - (float) $data['subtotal']) > 0.01) {
+            throw ValidationException::withMessages(['subtotal' => 'Rincian dan diskon transaksi tidak sesuai.']);
+        }
+        $data['subtotal'] = $calculatedSubtotal;
+        $data['total'] = max(0, $calculatedSubtotal - $discountAmount + $shipping - $shippingDiscountAmount);
 
         try {
             $userId     = Auth::id();
@@ -746,17 +828,19 @@ class PosController extends Controller
             }
 
             if ($pos) {
+                if ((int) $pos->created_by !== (int) $userId
+                    || ($pos->branch_id !== null && (int) $pos->branch_id !== (int) $data['branch_id'])
+                    || ($pos->branch_id !== null && ! in_array((int) $pos->branch_id, array_map('intval', $allowedBranches), true))) {
+                    abort(403, 'Transaksi ini tidak dapat diubah.');
+                }
                 $isRecent = false;
                 if ($pos->updated_at && $pos->updated_at->diffInMinutes(now()) <= 30) {
                     $isRecent = true;
                 }
 
-                if ($pos->status === 'paid') {
-                    throw new \Exception('Transaksi yang sudah dibayar tidak dapat diubah.');
-                }
-                
-                if ($pos->status === 'debt' && !$isRecent) {
-                    throw new \Exception('Transaksi piutang yang melebihi 30 menit tidak dapat diubah.');
+                if (! in_array($pos->status, ['temp', 'draft', 'pending'], true)
+                    || Payment::where('pos_id', $pos->id)->exists()) {
+                    throw ValidationException::withMessages(['invoice_number' => 'Transaksi yang sudah dibayar tidak dapat diubah.']);
                 }
 
                 $this->clearExistingPosRelations($pos->id);
@@ -871,12 +955,25 @@ class PosController extends Controller
                 }
             }
 
+            $movingHpp = static function (int $productId): float {
+                $current = ProductHppRunning::where('product_id', $productId)
+                    ->orderByDesc('created_at')->value('hpp_berjalan');
+                return (float) ($current ?? Product::whereKey($productId)->value('hpp') ?? 0);
+            };
+
             if (isset($data['parcel'])) {
                 foreach ($data['parcel'] as $key => $value) {
                     $parcel         = $value;
                     $kemasanProduct = null;
                     if (! empty($parcel['kemasan'])) {
                         $kemasanProduct = Product::where('name', $parcel['kemasan'])->first();
+                    }
+                    $parcelHpp = collect($value['data'])->sum(function ($item) use ($movingHpp) {
+                        return (float) $item['qty'] * $movingHpp((int) $item['product']);
+                    });
+                    $kemasanId = (int) ($parcel['kemasanId'] ?? $kemasanProduct->id ?? 0);
+                    if ($kemasanId) {
+                        $parcelHpp += $movingHpp($kemasanId);
                     }
                     $productNameBase    = 'Parcel ' . $value['kemasan'] . '-' . formatRibuanToK(preg_replace('/[^0-9]/', '', $parcel['budget']));
                     $productPrice       = preg_replace('/[^0-9]/', '', $parcel['budget']);
@@ -889,17 +986,15 @@ class PosController extends Controller
                             'price'        => $productPrice,
                             'product_unit' => 3,
                             'status'       => 'no-receipt',
-                            'hpp'          => preg_replace('/[^0-9]/', '', $parcel['hpp']),
+                            'hpp'          => $parcelHpp,
                             'fee'          => preg_replace('/[^0-9]/', '', $parcel['fee']),
                             'created_by'   => $userId,
                         ]
                     );
 
-                    $parcelSubtotal = $product->price;
+                    $parcelSubtotal = (float) $product->price * (float) $parcel['qty'];
                     $parcelProrate  = $data['subtotal'] > 0 ? ($parcelSubtotal / $data['subtotal']) : 0;
                     $parcelDiscount = $parcelProrate * $globalDiscountNominal;
-
-                    $parcelHpp = preg_replace('/[^0-9]/', '', $parcel['hpp']);
 
                     PosDetailModel::insert([
                         'pos_id'        => $transaksiId,
@@ -912,6 +1007,7 @@ class PosController extends Controller
                         'subtotal'      => $parcelSubtotal,
                         'kemasan_price' => isset($parcel['kemasanPrice']) ? preg_replace('/[^0-9]/', '', $parcel['kemasanPrice']) : ($kemasanProduct->price ?? 0),
                         'hpp'           => $parcelHpp,
+                        'subtotal_hpp'  => $parcelHpp * (float) $parcel['qty'],
                         'exp'           => $product->price - $parcelHpp,
                         'exp_value'     => ($product->price - $parcelHpp) * $settingExp->value_exp,
                         'created_at'    => now(),
@@ -969,6 +1065,20 @@ class PosController extends Controller
                     // Update remaining stock
                     $remainingStockJus[$productId] -= $consumeStockQty;
 
+                    $recipeHpp = 0;
+                    if ($productionQty > 0) {
+                        if (empty($value['product_receipt_id'])) {
+                            throw ValidationException::withMessages(['jus' => 'Resep jus diperlukan ketika stok produk jadi tidak mencukupi.']);
+                        }
+                        foreach ($value['product_receipt_id'] as $receiptKey => $receiptProductId) {
+                            $recipeHpp += (float) ($value['product_receipt_qty'][$receiptKey] ?? 0)
+                                * $movingHpp((int) $receiptProductId);
+                        }
+                    }
+                    $jusHpp = $qtyToProcess > 0
+                        ? (($consumeStockQty * $movingHpp((int) $productId)) + ($productionQty * $recipeHpp)) / $qtyToProcess
+                        : 0;
+
                     if ($productionQty > 0) {
                         $production = new Production([
                             'production_number' => Production::getOrderNumber(),
@@ -1006,9 +1116,9 @@ class PosController extends Controller
                         'discount'   => $value['discount'],
                         'diskon_global' => $jusDiscount,
                         'subtotal'   => $jusSubtotal,
-                        'hpp'        => $value['hpp'],
-                        'exp'        => $value['price'] - $value['hpp'],
-                        'exp_value'  => ($value['price'] - $value['hpp']) * $settingExp->value_exp,
+                        'hpp'        => $jusHpp,
+                        'exp'        => $value['price'] - $jusHpp,
+                        'exp_value'  => ($value['price'] - $jusHpp) * $settingExp->value_exp,
                         'created_at' => now(),
                         'updated_at' => now(),
                         'type'       => 'jus',
@@ -1069,9 +1179,14 @@ class PosController extends Controller
 
         $duplicates = PosModel::where('invoice_number', $invoiceNumber)
             ->where('id', '!=', $keepPosId)
+            ->where('created_by', $userId)
+            ->where('status', 'temp')
             ->get();
 
         foreach ($duplicates as $duplicate) {
+            if (Payment::where('pos_id', $duplicate->id)->exists()) {
+                continue;
+            }
             $this->clearExistingPosRelations($duplicate->id);
             $duplicate->forceDelete();
         }
@@ -1084,7 +1199,7 @@ class PosController extends Controller
         }
 
         $data['alpinejs'] = true;
-        $data['data']     = PosModel::with('customer')->findOrFail($id);
+        $data['data']     = PosModel::with('customer')->whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
 
         if ($data['data']->status === 'paid') {
             return redirect()->route('pos.index')->with('error', 'Transaksi yang sudah dibayar (paid) tidak dapat diakses untuk pembayaran lagi.');
@@ -1105,7 +1220,7 @@ class PosController extends Controller
 
         // $data['data'] = PosModel::with('customer', 'user')->findOrFail($id);
         $data['listPayment'] = Payment::with('paymentMethod', 'pos')->where('pos_id', $id)->get();
-        $pos = PosModel::find($id);
+        $pos = PosModel::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
         $data['setting']     = SettingNota::where('branch_id', $pos->branch_id)->first() ?? SettingNota::first();
         $data['detail']      = PosDetailModel::with('product')->where('pos_id', $id)->get();
         return view('pos::pos.print-list-payment', $data);
@@ -1117,7 +1232,7 @@ class PosController extends Controller
             return $denied;
         }
 
-        $data['data']        = PosModel::with('customer', 'user')->findOrFail($id);
+        $data['data']        = PosModel::with('customer', 'user')->whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
         $data['listPayment'] = Payment::with('paymentMethod', 'pos')->where('pos_id', $id)->get();
         $data['setting']     = SettingNota::where('branch_id', $data['data']->branch_id)->first() ?? SettingNota::first();
         $data['detail']      = PosDetailModel::with('product')->where('pos_id', $id)->get();
@@ -1234,6 +1349,7 @@ class PosController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('pos.index');
         $userId = auth()->id();
         $query  = PosModel::with('customer', 'paymentDetails', 'details', 'branch', 'user')
             ->whereIn('branch_id', UserBranch::getUserBranch());

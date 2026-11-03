@@ -183,10 +183,6 @@
                     <div class="text-muted fs-7 mb-7">Tambah produk ke unit.</div>
                     <!--end::Description-->
                     <!--end::Input group-->
-                    <!--begin::Button-->
-                    <a href="{{ url('category') }}" class="btn btn-light-primary btn-sm mb-10">
-                        <i class="ki-outline ki-plus fs-2"></i>Tambah kategori baru</a>
-                    <!--end::Button-->
                 </div>
                 <!--end::Card body-->
             </div>

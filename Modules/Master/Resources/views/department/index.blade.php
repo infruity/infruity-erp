@@ -1,63 +1,30 @@
 @extends('template.root')
-
+@section('title', 'Departemen')
 @section('content')
-    {{-- @livewire('product-table') --}}
-    <div>
-        <div class="card card-flush">
-            <!--begin::Card header-->
-            <div class="card-header align-items-center py-3 gap-2 flex-wrap flex-md-nowrap">
-                <!--begin::Card title-->
-                <div class="card-title">
-                    <!--begin::Search-->
-                    <div class="d-flex align-items-center position-relative my-1">
-                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4"></i>
-                        <input type="text" data-kt-ecommerce-product-filter="search" id="search"
-                            class="form-control form-control-solid w-200px w-md-250px ps-12" placeholder="Cari Department" />
-                    </div>
-                    <!--end::Search-->
-                </div>
-                <!--end::Card title-->
-                <!--begin::Card toolbar-->
-                <div class="card-toolbar ms-auto">
-                    <!--begin::Add product-->
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                        data-bs-target="#kt_modal_add_customer">
-                        <i class="fa fa-plus"></i>
-                    </button>
-                    <!--end::Add product-->
-                </div>
-                <!--end::Card toolbar-->
-            </div>
-            <!--end::Card header-->
-            <!--begin::Card body-->
-            <div class="card-body pt-0">
-                <!--begin::Table-->
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="department-table">
+    <link rel="stylesheet" href="{{ asset('assets/css/erp-operations.css') }}?v={{ filemtime(public_path('assets/css/erp-operations.css')) }}">
+    <x-erp.workspace title="Departemen" subtitle="Kelola departemen dan penempatan tim." icon="users-three">
+        <x-slot:toolbar>
+            <label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-kt-ecommerce-product-filter="search" id="search" aria-label="Cari departemen" placeholder="Cari departemen..."></label>
+            <div class="erp-operations-toolbar-actions"><button type="button" class="erp-action erp-action--primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Departemen</button></div>
+        </x-slot:toolbar>
+        <div class="erp-operations-collection" data-erp-collection="department-table" data-erp-empty="Belum ada departemen" data-erp-empty-description="Data yang tersimpan akan muncul di sini.">
+            <table class="table erp-operations-table align-middle" id="department-table">
                     <thead>
-                        <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                            {{-- <th class="w-10px pe-2">
-                                <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                                    <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                        data-kt-check-target="#kt_ecommerce_products_table .form-check-input"
-                                        value="1" />
-                                </div>
-                            </th> --}}
-                            <th>Name</th>
-                            <th>Code</th>
-                            <th>Description</th>
-                            <th class="text-end">Actions</th>
+                        <tr class="text-start">
+
+                            <th>Nama</th>
+                            <th>Kode</th>
+                            <th>Deskripsi</th>
+                            <th class="text-end">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="fw-semibold text-gray-600"></tbody>
+                    <tbody class=""></tbody>
                 </table>
-                <!--end::Table-->
-            </div>
-            <!--end::Card body-->
         </div>
-    </div>
-    <div class="modal fade" id="kt_modal_add_customer" tabindex="-1" aria-hidden="true">
+    </x-erp.workspace>
+    <div class="modal fade erp-operations-modal" id="kt_modal_add_customer" tabindex="-1" aria-hidden="true">
         <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-dialog erp-sheet-dialog">
             <!--begin::Modal content-->
             <div class="modal-content">
                 <!--begin::Form-->
@@ -65,19 +32,17 @@
                     data-kt-redirect="#">
                     @csrf
                     <!--begin::Modal header-->
-                    <div class="modal-header" id="kt_modal_add_customer_header">
+                    <div class="erp-sheet-header" id="kt_modal_add_customer_header">
                         <!--begin::Modal title-->
-                        <h2 class="fw-bold">Add a Department</h2>
+                        <h2 class="fw-bold">Tambah Departemen</h2>
                         <!--end::Modal title-->
                         <!--begin::Close-->
-                        <div id="kt_modal_add_customer_close" class="btn btn-icon btn-sm btn-active-icon-primary">
-                            <i class="ki-outline ki-cross fs-1"></i>
-                        </div>
+                        <button type="button" id="kt_modal_add_customer_close" class="erp-action erp-operations-close" aria-label="Tutup"><i class="ph ph-x" aria-hidden="true"></i></button>
                         <!--end::Close-->
                     </div>
                     <!--end::Modal header-->
                     <!--begin::Modal body-->
-                    <div class="modal-body py-10 px-lg-17">
+                    <div class="erp-sheet-body erp-operations-fields">
                         <!--begin::Scroll-->
                         <div class="scroll-y me-n7 pe-7" id="kt_modal_add_customer_scroll" data-kt-scroll="true"
                             data-kt-scroll-activate="{default: false, lg: true}" data-kt-scroll-max-height="auto"
@@ -110,14 +75,14 @@
                     </div>
                     <!--end::Modal body-->
                     <!--begin::Modal footer-->
-                    <div class="modal-footer flex-center">
+                    <div class="erp-sheet-footer erp-operations-actions">
                         <!--begin::Button-->
                         <button type="reset" id="kt_modal_add_customer_cancel" class="btn btn-light me-3">Batal</button>
                         <!--end::Button-->
                         <!--begin::Button-->
                         <button type="submit" id="kt_modal_add_customer_submit" class="btn btn-primary">
                             <span class="indicator-label">Simpan</span>
-                            <span class="indicator-progress">Please wait...
+                            <span class="indicator-progress">Menyimpan...
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                         </button>
                         <!--end::Button-->

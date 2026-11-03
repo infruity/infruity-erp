@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\UserRequest;
+use Illuminate\Http\Request;
 use App\Models\RoleUser;
 use App\Models\User;
 use DB;
@@ -23,31 +23,11 @@ class RegisterController extends Controller
 
     public function showRegister()
     {
-        return view('auth.register');
+        return redirect('auth/login')->with('error', 'Pendaftaran mandiri tidak tersedia. Hubungi administrator untuk membuat akun.');
     }
 
-    protected function create(UserRequest $request)
+    public function create(Request $request)
     {
-        try {
-            // save to user
-            DB::beginTransaction();
-            $user = new User();
-            $user->username = $request->email;
-            $user->email = $request->email;
-            $user->nm_user = $request->full_name;
-            $user->password = Hash::make($request->password);
-            $user->save();
-            // add roles
-            $role = new RoleUser();
-            $role->id_user = DB::getPdo()->lastInsertId();
-            $role->id_role = $request->id_role ?? 99;
-            $role->save();
-
-            DB::commit();
-        } catch (Exception $e) {
-            return redirect()->back()->with('error', 'User Gagal Register');
-        }
-
-        return redirect('auth/login')->with('success', 'User Sukses Register');
+        abort(403, 'Pendaftaran mandiri tidak tersedia.');
     }
 }

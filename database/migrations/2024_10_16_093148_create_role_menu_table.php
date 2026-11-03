@@ -43,21 +43,8 @@ return new class extends Migration {
             $table->softDeletes();
         });
 
-        $roles = DB::table('role')->get();
-        $permission = config('constant.permissions');
-        $data = [];
-        foreach ($roles as $key => $role) {
-            foreach ($permission as $prefix => $routes) {
-                foreach ($routes['actions'] as $key => $route) {
-                    $method = $prefix . '.' . $key;
-                    $data[] = [
-                        'id_role' => $role->id_role,
-                        'permission' => $method,
-                    ];
-                }
-            }
-        }
-        DB::table('role_menu')->insert($data);
+        // New roles begin without grants. Administrator access is handled by
+        // RoleMenu::checkAccess; other grants must be assigned explicitly.
     }
 
     /**

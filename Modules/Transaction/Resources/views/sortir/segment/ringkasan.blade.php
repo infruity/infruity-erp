@@ -1,47 +1,11 @@
-<div class="mt-4 border-top pt-3">
-    <div class="d-flex justify-content-between">
-        <div>
-            <span>Total</span> <span x-text="totalProduk"></span>
-        </div>
-        <div class="fw-bold">
-            <span>Rp</span>
-            <span x-text="formatRupiah(totalHargaKeseluruhan)"></span>
+<footer class="sortir-summary">
+    <div class="sortir-summary-inner">
+        <div class="sortir-summary-total"><div><h2>Total HPP / Modal</h2><span class="sortir-count" x-text="cart.length"></span></div><strong x-text="rupiah(total)"></strong></div>
+        <p class="sortir-error" x-show="saveError" x-text="saveError" role="alert" x-cloak></p>
+        <div class="sortir-summary-actions">
+            <a x-show="isFinal" class="sortir-action" href="{{ route('sortir.index') }}" x-cloak>Kembali</a>
+            <button x-show="!isFinal" type="button" class="sortir-action" @click="saveTransaction('draft')" :disabled="saving || !branchId"><span x-text="saving && savingStatus === 'draft' ? 'Menyimpan...' : (transactionId ? 'Simpan Perubahan' : 'Simpan sebagai Draf')"></span></button>
+            <button type="button" class="sortir-action sortir-action-primary" @click="confirmComplete()" :disabled="saving || !branchId || cart.length === 0"><span x-text="saving && savingStatus === 'paid' ? 'Menyimpan...' : (isFinal ? 'Simpan Perubahan' : 'Selesaikan Transaksi')"></span></button>
         </div>
     </div>
-    
-    <div x-data="{ showActions: false }" class="position-fixed d-flex flex-column-reverse align-items-center"
-        style="bottom: 70px; right: 30px; z-index: 1050; gap: 10px;">
-
-        <!-- Tombol utama (floating) -->
-        <button class="btn btn-primary rounded-circle shadow-lg" style="width: 50px; height: 50px;"
-            @click="showActions = !showActions">
-            <i class="bi bi-three-dots-vertical"></i>
-        </button>
-
-        <!-- Tombol tambahan (floating) -->
-        <template x-if="showActions">
-            <div class="d-flex flex-column align-items-center gap-2 mb-2" x-data="{ loadingDraft: false, loadingFinal: false }">
-                <!-- Tombol Simpan Draft -->
-                <button class="btn btn-sm btn-success shadow-lg d-flex align-items-center justify-content-center gap-2"
-                    :disabled="loadingDraft"
-                    @click="loadingDraft = true; saveTransaction(() => loadingDraft = false)" :disabled="loading">
-                    <span x-show="!loadingDraft">Draft</span>
-                    <span x-show="loadingDraft">
-                        <span class="spinner-border spinner-border-sm"></span> Menyimpan...
-                    </span>
-                </button>
-
-                <!-- Tombol Simpan Final -->
-                <button class="btn btn-sm btn-warning shadow-lg d-flex align-items-center justify-content-center gap-2"
-                    :disabled="loadingFinal"
-                    @click="loadingFinal = true; saveToOrderBook(() => loadingFinal = false)" :disabled="loading">
-                    <span x-show="!loadingFinal">Submit</span>
-                    <span x-show="loadingFinal">
-                        <span class="spinner-border spinner-border-sm"></span> Menyimpan...
-                    </span>
-                </button>
-            </div>
-        </template>
-
-    </div>
-</div>
+</footer>

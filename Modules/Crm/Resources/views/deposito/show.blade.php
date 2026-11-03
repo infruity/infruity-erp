@@ -1,57 +1,16 @@
 @extends('template.root')
-
+@section('title', 'Riwayat Deposito - CRM')
+@section('page-title', 'Riwayat Deposito')
 @section('content')
-    {{-- @livewire('product-table') --}}
-    <div>
-        <div class="card card-flush">
-            <!--begin::Card header-->
-            <div class="card-header align-items-center py-5 gap-2 gap-md-5">
-                <!--begin::Card title-->
-                <div class="card-title">
-                    <!--begin::Search-->
-                    <div class="d-flex align-items-center position-relative my-1">
-                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4"></i>
-                        <input type="text" data-kt-ecommerce-product-filter="search" id="search"
-                            class="form-control form-control-solid w-250px ps-12" placeholder="Search Transaction" />
-                    </div>
-                    <!--end::Search-->
-                </div>
-                <!--end::Card title-->
-            </div>
-            <!--end::Card header-->
-            <!--begin::Card body-->
-            <div class="card-body pt-0">
-                <!--begin::Table-->
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="transaction-table" width="100%">
-                    <thead>
-                        <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                            {{-- <th class="w-10px pe-2">
-                                <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                                    <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                        data-kt-check-target="#kt_ecommerce_sortir_table .form-check-input"
-                                        value="1" />
-                                </div>
-                            </th> --}}
-                            <th class="text-start min-w-100px">Name</th>
-                            <th class="text-start min-w-100px">Date</th>
-                            <th class="text-start min-w-100px">Nominal</th>
-                            <th class="text-start min-w-100px">Voucher</th>
-                        </tr>
-                    </thead>
-                    <tbody class="fw-semibold text-gray-600"></tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="2" style="text-align:right">Total:</th>
-                            <th><span id="total_remaining" class="badge"></span></th>
-                            <th><span id="total_voucher" class="badge"></span></th>
-                        </tr>
-                    </tfoot>
-                </table>
-                <!--end::Table-->
-            </div>
-            <!--end::Card body-->
-        </div>
-    </div>
+@include('crm::partials.assets')
+<x-erp.workspace title="Riwayat Deposito" subtitle="Riwayat transaksi deposito dan penggunaan voucher pelanggan." icon="ph-clock-counter-clockwise">
+    <x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" placeholder="Cari riwayat deposito…" aria-label="Cari riwayat deposito"></div>
+            </x-slot:toolbar>
+    <x-erp.collection table="transaction-table">
+        <table id="transaction-table" class="table erp-crm-table" width="100%"><thead><tr><th scope="col">Pelanggan</th><th scope="col">Tanggal</th><th scope="col">Nominal</th><th scope="col">Voucher</th></tr></thead><tbody></tbody><tfoot><tr><th colspan="2">Total</th><th><span id="total_remaining" class="badge"></span></th><th><span id="total_voucher" class="badge"></span></th></tr></tfoot></table>
+    </x-erp.collection>
+</x-erp.workspace>
+@endsection
 @section('script')
     <script type="text/javascript">
         var dataTable;
@@ -143,5 +102,4 @@
             });
         });
     </script>
-@endsection
 @endsection

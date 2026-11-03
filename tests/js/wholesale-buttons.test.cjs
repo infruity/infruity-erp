@@ -31,7 +31,7 @@ function setup() {
 }
 function add(app) {
     app.resetAddForm();
-    app.selectAddProduct({id:11,name:'Buah',unit:{abbreviation:'Kg'},price:10000,last_sell_price:12500});
+    app.selectAddProduct({id:11,name:'Buah',unit:{abbreviation:'Kg'},price:10000,last_price:10000,last_sell_price:12500});
     app.addProduct.qty=2.5; app.saveAddToCart();
 }
 test('add, reset, edit price/quantity including zero, delete item and totals',()=>{
@@ -49,7 +49,7 @@ test('add, reset, edit price/quantity including zero, delete item and totals',()
 });
 test('missing product and quantity do not add; margin is calculated',()=>{
     const {app}=setup();app.resetAddForm();app.saveAddToCart();assert.equal(app.cart.length,0);
-    app.selectAddProduct({id:1,name:'Buah',unit:null,price:10000,last_sell_price:12500});
+    app.selectAddProduct({id:1,name:'Buah',unit:null,price:10000,last_price:10000,last_sell_price:12500});
     assert.equal(app.addProduct_HPPPercent,'20.00');app.saveAddToCart();assert.equal(app.cart.length,0);
 });
 test('search ignores older results and supports failure/retry',()=>{
@@ -125,4 +125,15 @@ test('dirty tracking clears only after autosave of the current revision',async()
     await new Promise(setImmediate);t.app.markWholesaleDirty();
     finish({ok:true,json:async()=>({success:true,invoice_number:'TEST-PO'})});await pending;await t.app.autoSaveRequest;
     assert.equal(t.dirtyEvents.at(-1),true);
+});
+
+test('purchase price defaults to zero for new products and preserves the latest purchase price',()=>{
+    const {app}=setup();
+    for (const [lastPrice,expected] of [[undefined,0],[null,0],[0,0],[18000,18000]]) {
+        app.resetAddForm();
+        app.selectAddProduct({id:1,name:'Buah',unit:{abbreviation:'Kg'},price:50000,last_price:lastPrice});
+        assert.equal(app.addProduct.price,expected);
+        app.addProduct.qty=2;app.updateAddTotalFromQty();
+        assert.equal(app.addProduct.total,expected*2);
+    }
 });

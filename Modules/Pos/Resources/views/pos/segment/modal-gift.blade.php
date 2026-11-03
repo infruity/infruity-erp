@@ -1,13 +1,13 @@
 {{-- Modal Add Gift --}}
 <div class="modal fade" id="giftModal" tabindex="-1" aria-labelledby="giftModalLabel" aria-hidden="true"
     x-show="showGiftModal" style="display: none;">
-    <div class="modal-dialog modal-fullscreen-sm-down">
+    <div class="modal-dialog erp-sheet-dialog modal-fullscreen-sm-down">
         <div class="modal-content" x-data>
-            <div class="modal-header" style="background-color: #ff000d; color: #fff;">
+            <div class="erp-sheet-header" style="background-color: #ff000d; color: #fff;">
                 <h5 class="modal-title" style="color: #fff">Tambah Hadiah</h5>
                 <button type="button" class="btn-close" @click="closeGiftModal()"></button>
             </div>
-            <div class="modal-body">
+            <div class="erp-sheet-body">
                 <!-- Select Produk -->
                 <div class="mb-3">
                     <label class="form-label">Nama Produk</label>
@@ -35,7 +35,7 @@
                     <input type="number" class="form-control" step="0.01" min="0" x-model="addProduct.qty">
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="erp-sheet-footer">
                 <button class="btn btn-secondary" @click="closeGiftModal()">Tutup</button>
                 <button class="btn btn-primary" @click="saveGiftToCart()">Simpan</button>
             </div>

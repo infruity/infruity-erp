@@ -6,6 +6,7 @@ use Modules\Pos\Http\Controllers\DeliveryOrderController;
 use Modules\Master\Http\Controllers\CustomerController;
 use Modules\Pos\Http\Controllers\OtherBookController;
 use Modules\Pos\Http\Controllers\ExpenditureController;
+use Modules\Pos\Http\Controllers\ArusKasController;
 use Modules\Pos\Http\Controllers\OrderBookController;
 
 
@@ -26,7 +27,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::post('pos/submitTransaction', [PosController::class, 'store'])->name('pos-submit');
     Route::post('pos/{id}/payment', [PosController::class, 'savePayment'])->name('receipt.payment');
     Route::get('pos/{id}/receipt', [PosController::class, 'showReceipt'])->name('pos.receipt');
-    Route::post('pos/save-transaction', [PosController::class, 'saveTransaction'])->name('pos.receipt');
+    Route::post('pos/save-transaction', [PosController::class, 'saveTransaction'])->name('pos.save-transaction');
     Route::post('/pos/customers', [CustomerController::class, 'storeCustomer']);
     Route::get('pos/payment/{id}', [PosController::class, 'payment'])->name('pos.payment');
     Route::post('pos/savePayment', [PosController::class, 'savePayment'])->name('pos.savePayment');
@@ -51,6 +52,14 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::resource('expenditure', ExpenditureController::class)->names('expenditure')->except('show');
     Route::post('expenditure/save-transaction', [ExpenditureController::class, 'saveTransaction'])->name('expenditure.save-transaction');
     Route::get('expenditure/show/{id}', [ExpenditureController::class, 'show'])->name('expenditure.show');
+
+    Route::get('arus-kas', [ArusKasController::class, 'index'])->name('arus-kas.index');
+    Route::get('arus-kas/create', [ArusKasController::class, 'create'])->name('arus-kas.create');
+    Route::post('arus-kas', [ArusKasController::class, 'store'])->name('arus-kas.store');
+    Route::get('arus-kas/{id}/edit', [ArusKasController::class, 'edit'])->name('arus-kas.edit');
+    Route::put('arus-kas/{id}', [ArusKasController::class, 'update'])->name('arus-kas.update');
+    Route::delete('arus-kas/{id}', [ArusKasController::class, 'destroy'])->name('arus-kas.destroy');
+    Route::patch('arus-kas/{id}/status', [ArusKasController::class, 'updateStatus'])->name('arus-kas.status');
 });
 Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::get('pos/data', [PosController::class, 'get_data'])->name('pos-data');

@@ -44,33 +44,15 @@ class P_rolemenu extends Controller
 
     }
 
-    public function store(UserRequest $request)
+    public function store(Request $request)
     {
         if ($denied = $this->requireAccess('role-menu.store')) {
             return $denied;
         }
 
-        try {
-            DB::beginTransaction();
-            $user = new User();
-            $user->username = $request->email;
-            $user->email = $request->email;
-            $user->nm_user = $request->full_name;
-            $user->password = Hash::make($request->password);
-            $user->save();
-            // add roles
-            $role = new RoleUser();
-            $role->id_user = DB::getPdo()->lastInsertId();
-            $role->id_role = $request->id_role ?? 99;
-            $role->save();
-
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
-            return redirect()->back()->with('error', 'Data User Gagal Disimpan' . $e->getMessage())->withInput($request->all());
-        }
-
-        return redirect('user')->with('success', 'Data User Disimpan');
+        // User creation belongs to UserController. This legacy role-menu action
+        // must never create accounts or assign roles from an unvalidated form.
+        abort(404);
     }
 
     public function show($id)

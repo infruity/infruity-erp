@@ -1,4 +1,5 @@
 @extends('template.root')
+@section('title', 'Produksi Barang')
 
 @section('content')
     <style>
@@ -93,8 +94,8 @@
         }
 
         .ingredient-item:hover {
-            border-color: #ffc700;
-            box-shadow: 0 4px 8px rgba(255, 199, 0, 0.2);
+            border-color: var(--erp-primary);
+            box-shadow: 0 4px 8px rgba(11, 89, 91, 0.12);
             transform: translateY(-2px);
         }
 
@@ -108,9 +109,9 @@
     </style>
 
     <!--begin::Main column-->
-    <div class="w-100 flex-lg-row-auto me-7 me-lg-10" x-data="productionApp()" x-init="init()">
+    <div class="w-100 flex-lg-row-auto" x-data="productionApp()" x-init="init()">
         <!-- Header Information Card -->
-        <div class="card card-body mb-3">
+        <div class="erp-editor erp-operations-editor"><div class="erp-editor-main"><section class="erp-editor-section"><header><i class="ph ph-factory" aria-hidden="true"></i><h2>Informasi produksi</h2></header><div class="erp-editor-body">
             <div class="d-flex flex-column gap-10 mb-3">
                 <!--begin::Input group-->
                 <div class="row">
@@ -168,7 +169,7 @@
                             <label class="form-label">Harga Jual</label>
                             <!--end::Label-->
                             <!--begin::Select-->
-                            <input type="text" name="sell_price" id="sell_price" class="form-control format-number"
+                            <input type="text" inputmode="numeric" name="sell_price" id="sell_price" class="form-control format-number"
                                 placeholder="Masukkan Jumlah" x-model="sellPrice"
                                 value="{{ isset($edit_sell_price) ? number_format($edit_sell_price, 0, ',', '.') : '' }}" />
                             <input type="hidden" name="production_number" id="production_number" class="form-control"
@@ -197,7 +198,7 @@
                             <label class="required form-label">Jumlah Produksi</label>
                             <!--end::Label-->
                             <!--begin::Input-->
-                            <input type="number" name="quantity" id="quantity" class="form-control"
+                            <input type="number" inputmode="decimal" name="quantity" id="quantity" class="form-control"
                                 placeholder="Masukkan Jumlah" step="0.01" x-model="productionQuantity"
                                 value="{{ isset($data) ? $data->quantity : '' }}" />
                             <!--end::Input-->
@@ -209,7 +210,7 @@
                             <label class="form-label">Biaya Jasa Produksi per Unit</label>
                             <!--end::Label-->
                             <!--begin::Input-->
-                            <input type="text" name="service_cost" id="service_cost" class="form-control format-number"
+                            <input type="text" inputmode="numeric" name="service_cost" id="service_cost" class="form-control format-number"
                                 placeholder="Masukkan Biaya Jasa" x-model="serviceCost"
                                 value="{{ isset($edit_service_cost) ? number_format($edit_service_cost, 0, ',', '.') : '' }}" />
                             <!--end::Input-->
@@ -218,10 +219,7 @@
                 </div>
                 <!--end::Input group-->
             </div>
-        </div>
-
-        <!-- Ingredients Selection Card -->
-        <div class="card card-body mb-3">
+        </div></section><section class="erp-editor-section"><header><i class="ph ph-package" aria-hidden="true"></i><h2>Bahan produksi</h2></header><div class="erp-editor-body">
             <div class="mb-4 d-flex justify-content-between align-items-center">
                 <div>
                     <span class="fs-5 fw-bold d-flex">Bahan Baku yang Digunakan</span>
@@ -237,7 +235,7 @@
                 </div>
                 <div>
                     <button type="button" class="btn btn-outline btn-outline-dashed btn-outline-primary"
-                        @click="openAddIngredientModal()">
+                        @click="openAddIngredientModal()" aria-label="Tambah bahan produksi">
                         <i class="fa fa-plus"></i>
                     </button>
                 </div>
@@ -248,7 +246,7 @@
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <button class="dropdown-item" type="button" @click="openAddIngredientModal()">
+                            <button class="dropdown-item" type="button" @click="openAddIngredientModal()" aria-label="Tambah bahan produksi">
                                 <i class="ki-duotone ki-purchase text-success me-2 fs-5"></i> Tambah Bahan
                             </button>
                         </li>
@@ -258,12 +256,9 @@
 
             <!-- Ingredients Cart -->
             @include('transaction::production.segment.ingredients-cart')
-        </div>
-
-        <!-- Summary Card -->
-        <div class="card card-body">
+        </div></section></div><aside class="erp-editor-summary"><h2>Ringkasan produksi</h2>
             @include('transaction::production.segment.summary')
-        </div>
+        </aside></div>
 
         <!-- Modals -->
         @include('transaction::production.segment.modal-ingredient')

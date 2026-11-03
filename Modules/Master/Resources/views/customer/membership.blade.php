@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
@@ -14,7 +14,7 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--erp-canvas);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -24,14 +24,15 @@
 
         .cards-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
             gap: 30px;
             max-width: 1200px;
             width: 100%;
         }
 
         .card {
-            width: 380px;
+            width: 100%;
+            max-width: 380px;
             height: 240px;
             border-radius: 20px;
             position: relative;
@@ -253,7 +254,8 @@
 
             .card {
                 width: 100%;
-                max-width: 380px;
+                max-width: 100%;
+            max-width: 380px;
                 margin: 0 auto;
             }
         }
@@ -335,9 +337,10 @@
             left: 100%;
         }
     </style>
+<link rel="stylesheet" href="{{ asset('assets/css/erp-theme.css') }}?v={{ filemtime(public_path('assets/css/erp-theme.css')) }}">
 </head>
 
-<body>
+<body class="erp-ui">
     <div class="cards-container">
         <!-- Bronze Card -->
         <div class="card bronze">

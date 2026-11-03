@@ -1,7 +1,8 @@
 @extends('template.root')
+@section('title', 'Proses Pengadaan')
 
 @section('content')
-    <form id="kt_ecommerce_edit_order_form" class="form d-flex flex-column flex-lg-row"
+    <form id="kt_ecommerce_edit_order_form" class="form erp-editor"
         action="{{ isset($data) ? url(Request::segment(1) . '/' . $data->id) : url(Request::segment(1)) }}" method="POST"
         enctype="multipart/form-data" data-kt-redirect="">
         @if (isset($data))
@@ -9,23 +10,23 @@
         @endif
         @csrf
         <!--begin::Aside column-->
-        <div class="w-100 flex-lg-row-auto w-lg-300px mb-7 me-7 me-lg-10">
+        <div class="erp-editor-summary">
             <!--begin::Order details-->
-            <div class="card card-flush py-4">
+            <div class="erp-editor-section">
                 <!--begin::Card header-->
-                <div class="card-header">
+                <div class="erp-detail-header">
                     <div class="card-title">
-                        <h2>Order Details</h2>
+                        <h2>Informasi pengadaan</h2>
                     </div>
                 </div>
                 <!--end::Card header-->
                 <!--begin::Card body-->
-                <div class="card-body pt-0">
+                <div class="erp-editor-body">
                     <div class="d-flex flex-column gap-10">
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="form-label">Order ID</label>
+                            <label class="form-label">Nomor Pengadaan</label>
                             <!--end::Label-->
                             <!--begin::Auto-generated ID-->
                             <div class="fw-bold fs-3">#{{ isset($data) ? $data->order_number : '14364' }}</div>
@@ -35,7 +36,7 @@
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="required form-label">Order Date</label>
+                            <label class="required form-label">Tanggal Pengadaan</label>
                             <!--end::Label-->
                             <!--begin::Editor-->
                             <div class="fw-bold fs-3">{{ isset($data) ? dateindo($data->order_date) : '14364' }}</div>
@@ -71,24 +72,24 @@
         </div>
         <!--end::Aside column-->
         <!--begin::Main column-->
-        <div class="d-flex flex-column flex-lg-row-fluid gap-7 gap-lg-10">
+        <div class="erp-editor-main">
             <!--begin::Order details-->
-            <div class="card card-flush py-4">
+            <div class="erp-editor-section">
                 <!--begin::Card header-->
-                <div class="card-header">
+                <div class="erp-detail-header">
                     <div class="card-title">
-                        <h2>Select Products</h2>
+                        <h2>Daftar Produk</h2>
                     </div>
                 </div>
                 <!--end::Card header-->
                 <!--begin::Card body-->
-                <div class="card-body pt-0">
+                <div class="erp-editor-body">
                     <div class="d-flex flex-column gap-10">
                         <!--begin::Input group-->
                         <div>
                             <!--begin::Selected products-->
                             <div class="table table-responsive">
-                                <table class="table align-middle table-row-dashed fs-6 gy-3 mb-5"
+                                <label class="erp-process-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-kt-ecommerce-edit-order-filter="search" placeholder="Cari produk pengadaan…" aria-label="Cari produk pengadaan"></label><x-erp.collection table="kt_ecommerce_edit_order_selected_products_table"><table class="table align-middle table-row-dashed fs-6 gy-3 mb-5"
                                     id="kt_ecommerce_edit_order_selected_products_table">
                                     <thead>
                                         <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
@@ -105,7 +106,7 @@
                                                 checkbox.</td>
                                         </tr>
                                     </tbody>
-                                </table>
+                                </table></x-erp.collection>
                             </div>
 
                             <!-- Tempat hidden input -->
@@ -127,16 +128,16 @@
             </div>
             <!--end::Order details-->
 
-            <div class="d-flex justify-content-end">
+            <div class="erp-editor-actions">
                 <!--begin::Button-->
                 <a href="{{ url(Request::segment(1)) }}" id="kt_ecommerce_edit_order_cancel"
-                    class="btn btn-light me-5">Cancel</a>
+                    class="erp-action">Cancel</a>
                 <!--end::Button-->
                 <!--begin::Button-->
                 @if ($data->status != 'complete')
-                    <button type="button" id="kt_ecommerce_edit_order_submit" class="btn btn-primary"
+                    <button type="button" id="kt_ecommerce_edit_order_submit" class="erp-action erp-action--primary"
                         onclick="setSelesai({{ $data->id }})">
-                        <span class="indicator-label">Selesaikan Wholsale</span>
+                        <span class="indicator-label">Selesaikan Pengadaan</span>
                         <span class="indicator-progress">Please wait...
                             <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                     </button>
@@ -216,9 +217,9 @@
                 allowClear: true
             });
 
-            document.querySelector('[data-kt-ecommerce-edit-order-filter="search"]').addEventListener("keyup",
+            document.querySelector('[data-kt-ecommerce-edit-order-filter="search"]')?.addEventListener("keyup",
                 function(e) {
-                    table.search(e.target.value).draw();
+                    tableSelectedProduct.search(e.target.value).draw();
                 });
 
             // Checkbox change event

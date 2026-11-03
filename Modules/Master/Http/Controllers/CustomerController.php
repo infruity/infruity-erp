@@ -426,6 +426,8 @@ class CustomerController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('customers.index');
+
         $query = Customer::query()->orderBy('name', 'asc');
 
         // Handle search from custom parameter 'q'
@@ -442,9 +444,9 @@ class CustomerController extends Controller
             ->addColumn('name', function ($item) {
                 return '<div class="d-flex align-items-center">
                             <div class="ms-5">
-                                <a href="javascript:void(0)" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $item->name . '</a><br>
-                                <span class="fs-7">' . $item->code . '</span><br>
-                                <span class="badge badge-light-success fs-7">' . $item->whatsapp . '</span>
+                                <a href="javascript:void(0)" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . e($item->name) . '</a><br>
+                                <span class="fs-7">' . e($item->code) . '</span><br>
+                                <span class="badge badge-light-success fs-7">' . e($item->whatsapp) . '</span>
                             </div>
                         </div>';
             })

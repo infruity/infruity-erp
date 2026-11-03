@@ -1,17 +1,5 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        $("#add_product_form").submit(function() {
-            const overlaySubmit = document.getElementById('product-create-submit');
-            if (overlaySubmit) {
-                overlaySubmit.disabled = true;
-                overlaySubmit.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memuat...';
-            }
-            $(this).find(":submit").attr('disabled', 'disabled');
-            $(this).find(":submit").html(
-                `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memuat...`
-            );
-        });
-
         $(document).ready(function() {
             if (typeof bindFormatNumber === 'function') {
                 bindFormatNumber();
@@ -19,7 +7,7 @@
             const path = window.location.pathname;
             if (/products\/\d+\/show/.test(path)) {
                 // Disable semua input/select/textarea kecuali yang punya class 'variant'
-                document.querySelectorAll('input, select, textarea, button').forEach(function(el) {
+                document.querySelectorAll('#add_product_form input, #add_product_form select, #add_product_form textarea, #add_product_form button').forEach(function(el) {
                     if (!el.classList.contains('variant')) {
                         el.disabled = true;
                     }
@@ -260,11 +248,11 @@
 
             return {
                 branches,
-                priceRules: [{
-                    id: Date.now(),
-                    price: root.dataset.initialPrice || '',
-                    branches: ['all']
-                }],
+                priceRules: (() => {
+                    let initial = [];
+                    try { initial = JSON.parse(root.dataset.initialRules || '[]'); } catch (_) {}
+                    return initial.length ? initial.map((rule, index) => ({id:Date.now()+index,price:rule.price,branches:rule.branches.map(String)})) : [{id:Date.now(),price:root.dataset.initialPrice || '',branches:['all']}];
+                })(),
                 addPriceRule() {
                     this.priceRules.push({ id: Date.now() + Math.random(), price: '', branches: [] });
                 },
@@ -533,6 +521,7 @@
                         data: {
                             product_name: $('#variant_name').val(),
                             price: $('#variant_price').val(),
+                            parent_id: productId,
                             _token: $('meta[name="csrf-token"]').attr('content')
                         },
                         success: function() {
@@ -563,6 +552,7 @@
                                 url: '/products/variants/' + id,
                                 type: 'DELETE',
                                 data: {
+                                    parent_id: productId,
                                     _token: $('meta[name="csrf-token"]').attr('content')
                                 },
                                 success: function() {
@@ -590,7 +580,7 @@
                         <input type="text" name="price[]" class="form-control format-number mb-2" placeholder="Harga produk" />
                     </td>
                     <td class="text-end">
-                        <button type="button" class="btn btn-icon btn-danger save_variant">
+                        <button type="button" class="btn btn-icon btn-primary save_variant">
                             <i class="ki-outline ki-check fs-2"></i>
                         </button>
                         <button type="button" class="btn btn-icon btn-danger remove_variant">

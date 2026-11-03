@@ -1,8 +1,8 @@
 <!-- Modal Load from Recipe -->
 <div class="modal fade" id="modal-load-recipe" tabindex="-1" aria-labelledby="modalLoadRecipeLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog erp-sheet-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="erp-sheet-header">
                 <h5 class="modal-title" id="modalLoadRecipeLabel">
                     <i class="ki-duotone ki-book fs-2 text-primary me-2">
                         <span class="path1"></span>
@@ -14,7 +14,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="erp-sheet-body">
                 <!-- Recipe Selection -->
                 <div class="mb-4">
                     <label class="form-label">Pilih Resep:</label>
@@ -140,7 +140,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="erp-sheet-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-primary" @click="loadRecipeToProduction()" 
                     :disabled="!selectedRecipe || !recipeMultiplier || recipeMultiplier <= 0">

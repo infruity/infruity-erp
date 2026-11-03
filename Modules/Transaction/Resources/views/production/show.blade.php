@@ -1,13 +1,14 @@
 @extends('template.root')
+@section('title', 'Detail Produksi')
 
 @section('content')
 <div class="d-flex flex-column flex-lg-row">
     <!--begin::Content-->
     <div class="flex-lg-row-fluid me-lg-15 order-2 order-lg-1 mb-10 mb-lg-0">
         <!--begin::Card-->
-        <div class="card card-flush pb-0" id="kt_profile_details_view">
+        <section class="erp-editor-section pb-0" id="kt_profile_details_view">
             <!--begin::Card header-->
-            <div class="card-header collapsible cursor-pointer rotate" data-bs-toggle="collapse" data-bs-target="#kt_customer_view_details" aria-expanded="true" aria-controls="kt_customer_view_details">
+            <div class="erp-detail-header collapsible cursor-pointer rotate" data-bs-toggle="collapse" data-bs-target="#kt_customer_view_details" aria-expanded="true" aria-controls="kt_customer_view_details">
                 <!--begin::Card title-->
                 <div class="card-title m-0">
                     <h3 class="fw-bold m-0">Detail Produksi #{{ $data->production_number }}</h3>
@@ -60,7 +61,7 @@
             <!--end::Card header-->
             
             <!--begin::Card body-->
-            <div class="card-body p-9" id="kt_customer_view_details">
+            <div class="erp-editor-body p-9" id="kt_customer_view_details">
                 <!--begin::Row-->
                 <div class="row mb-7">
                     <!--begin::Label-->
@@ -107,7 +108,7 @@
                     <!--end::Label-->
                     <!--begin::Col-->
                     <div class="col-lg-8 fv-row">
-                        <span class="fw-bold fs-6 text-gray-800">{{ dateindo($data->production_date) }} {{ $data->created_at->format('H:i') }} WIB</span>
+                        <span class="fw-bold fs-6 text-gray-800">{{ dateindo($data->production_date) }} {{ ($data->created_at?->format('H:i') ?? '—') }} WIB</span>
                     </div>
                     <!--end::Col-->
                 </div>
@@ -171,13 +172,13 @@
                 @endif
             </div>
             <!--end::Card body-->
-        </div>
+        </section>
         <!--end::Card-->
         
         <!--begin::Card-->
-        <div class="card card-flush mt-6">
+        <section class="erp-editor-section mt-6">
             <!--begin::Card header-->
-            <div class="card-header">
+            <div class="erp-detail-header">
                 <!--begin::Card title-->
                 <div class="card-title">
                     <h2>Bahan Baku yang Digunakan</h2>
@@ -187,7 +188,7 @@
             <!--end::Card header-->
             
             <!--begin::Card body-->
-            <div class="card-body pt-0">
+            <div class="erp-editor-body pt-0">
                 <!--begin::Table-->
                 <div class="table-responsive">
                     <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_ingredients">
@@ -250,7 +251,7 @@
                 <!--end::Table-->
             </div>
             <!--end::Card body-->
-        </div>
+        </section>
         <!--end::Card-->
     </div>
     <!--end::Content-->
@@ -258,9 +259,9 @@
     <!--begin::Sidebar-->
     <div class="flex-column flex-lg-row-auto w-lg-250px w-xl-300px mb-10 order-1 order-lg-2">
         <!--begin::Card-->
-        <div class="card card-flush mb-6 mb-xl-9">
+        <section class="erp-editor-section mb-6 mb-xl-9">
             <!--begin::Card header-->
-            <div class="card-header mt-6">
+            <div class="erp-detail-header mt-6">
                 <!--begin::Card title-->
                 <div class="card-title flex-column">
                     <h2 class="mb-1">Ringkasan Biaya</h2>
@@ -271,7 +272,7 @@
             <!--end::Card header-->
             
             <!--begin::Card body-->
-            <div class="card-body p-9 pt-4">
+            <div class="erp-editor-body p-9 pt-4">
                 <!--begin::Separator-->
                 <div class="separator separator-dashed mb-7"></div>
                 <!--end::Separator-->
@@ -302,13 +303,13 @@
                 <!--end::Item-->
             </div>
             <!--end::Card body-->
-        </div>
+        </section>
         <!--end::Card-->
         
         <!--begin::Card-->
-        <div class="card card-flush mb-6 mb-xl-9">
+        <section class="erp-editor-section mb-6 mb-xl-9">
             <!--begin::Card header-->
-            <div class="card-header mt-6">
+            <div class="erp-detail-header mt-6">
                 <!--begin::Card title-->
                 <div class="card-title flex-column">
                     <h2 class="mb-1">Informasi Tambahan</h2>
@@ -318,7 +319,7 @@
             <!--end::Card header-->
             
             <!--begin::Card body-->
-            <div class="card-body p-9 pt-4">
+            <div class="erp-editor-body p-9 pt-4">
                 <!--begin::Item-->
                 <div class="d-flex flex-stack mb-3">
                     <div class="text-gray-700 fw-semibold fs-6 me-2">Dibuat oleh:</div>
@@ -329,7 +330,7 @@
                 <!--begin::Item-->
                 <div class="d-flex flex-stack mb-3">
                     <div class="text-gray-700 fw-semibold fs-6 me-2">Tanggal dibuat:</div>
-                    <div class="text-gray-900 fw-bold fs-6">{{ $data->created_at->format('d/m/Y H:i') }}</div>
+                    <div class="text-gray-900 fw-bold fs-6">{{ ($data->created_at?->format('d/m/Y H:i') ?? '—') }}</div>
                 </div>
                 <!--end::Item-->
                 
@@ -337,7 +338,7 @@
                 <!--begin::Item-->
                 <div class="d-flex flex-stack mb-3">
                     <div class="text-gray-700 fw-semibold fs-6 me-2">Terakhir diupdate:</div>
-                    <div class="text-gray-900 fw-bold fs-6">{{ $data->updated_at->format('d/m/Y H:i') }}</div>
+                    <div class="text-gray-900 fw-bold fs-6">{{ ($data->updated_at?->format('d/m/Y H:i') ?? '—') }}</div>
                 </div>
                 <!--end::Item-->
                 @endif
@@ -350,7 +351,7 @@
                 <!--end::Item-->
             </div>
             <!--end::Card body-->
-        </div>
+        </section>
         <!--end::Card-->
     </div>
     <!--end::Sidebar-->

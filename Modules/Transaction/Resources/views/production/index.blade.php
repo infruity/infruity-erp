@@ -1,188 +1,27 @@
 @extends('template.root')
-
+@section('title', 'Produksi Barang')
 @section('content')
-    {{-- @livewire('product-table') --}}
-    <div class="pos-index-page">
-        <style>
-            .pos-index-page .pos-index-search {
-                width: 100%;
-                max-width: 320px;
-            }
-
-            .pos-index-page .pos-index-search .form-control {
-                height: 44px;
-                border-radius: 12px;
-            }
-
-            .pos-index-page .pos-index-filter-btn {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 0.45rem;
-                min-height: 44px;
-                border-radius: 12px;
-                white-space: nowrap;
-            }
-
-            .pos-index-page #active-branch-button-label {
-                display: inline-block;
-                max-width: 160px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                vertical-align: middle;
-            }
-
-            @media (max-width: 767.98px) {
-                .pos-index-page .pos-index-search {
-                    max-width: 100%;
-                }
-
-                .pos-index-page .pos-index-filter-toolbar {
-                    width: 100%;
-                    justify-content: flex-start !important;
-                }
-
-                .pos-index-page .pos-index-filter-btn {
-                    width: 100%;
-                }
-            }
-        </style>
-        <div class="card card-flush">
-            <!--begin::Card header-->
-            <div class="card-header align-items-stretch py-3 gap-3 flex-column flex-md-row">
-                <!--begin::Card title-->
-                <div class="card-title flex-grow-1 w-100 mb-0">
-                    <!--begin::Search-->
-                    <div class="d-flex align-items-center position-relative my-1 pos-index-search">
-                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4"></i>
-                        <input type="text" data-kt-ecommerce-product-filter="search" id="search"
-                            class="form-control form-control-solid w-100 ps-12" placeholder="Cari Produksi" />
-                    </div>
-                    <!--end::Search-->
-                </div>
-                <!--end::Card title-->
-                <!--begin::Card toolbar-->
-                <div class="card-toolbar w-100 w-md-auto ms-md-auto">
-                    <!--begin::Toolbar-->
-                    <div class="d-flex align-items-center justify-content-md-end pos-index-filter-toolbar"
-                        data-kt-user-table-toolbar="base">
-                        <!--begin::Filter-->
-                        <button type="button" class="btn btn-light-primary px-4 pos-index-filter-btn"
-                            data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                            <i class="ki-duotone ki-filter fs-2">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                            </i>
-                            <span id="active-branch-button-label">Cabang</span>
-                        </button>
-                        <!--begin::Menu 1-->
-                        <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                            <!--begin::Header-->
-                            <div class="px-7 py-5">
-                                <div class="fs-5 text-gray-900 fw-bold">Pilihan Filter</div>
-                            </div>
-                            <!--end::Header-->
-                            <!--begin::Separator-->
-                            <div class="separator border-gray-200"></div>
-                            <!--end::Separator-->
-                            <!--begin::Content-->
-                            <div class="px-7 py-2" data-kt-user-table-filter="form">
-                                <!--begin::Input group-->
-                                <div>
-                                    <label class="form-label fs-6 fw-semibold">Status:</label>
-                                    @php
-                                        $category = ['temp', 'draft', 'posting', 'complete'];
-                                    @endphp
-                                    <select class="form-select form-select-solid" data-control="select2"
-                                        data-hide-search="true" data-placeholder="Status"
-                                        data-kt-ecommerce-product-filter="status">
-                                        <option value="all">All</option>
-                                        @foreach ($category as $category)
-                                            <option value="{{ $category }}">{{ ucwords($category) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <!--end::Input group-->
-                            </div>
-                            <!--end::Content-->
-                            <!--begin::Content-->
-                            <div class="px-7 py-2" data-kt-user-table-filter="form">
-                                <!--begin::Input group-->
-                                <div>
-                                    <label class="form-label fs-6 fw-semibold">Cabang:</label>
-                                    <select class="form-select form-select-solid" data-control="select2"
-                                        data-hide-search="true" data-placeholder="Cabang"
-                                        data-kt-ecommerce-product-filter="cabang">
-                                        @if (count($branches) > 1)
-                                            <option value="all">All</option>
-                                        @endif
-                                        @foreach ($branches as $branch)
-                                            <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <!--end::Input group-->
-                            </div>
-                            <!--end::Content-->
-                            <!--begin::Content-->
-                            <div class="px-7 py-5" data-kt-user-table-filter="form">
-                                <!--begin::Input group-->
-                                <div class="input-group mw-350px">
-                                    <input class="form-control form-control-solid rounded rounded-end-0"
-                                        placeholder="Pilih range tanggal" id="kt_ecommerce_sales_flatpickr" />
-                                    <button class="btn btn-icon btn-light" id="kt_ecommerce_sales_flatpickr_clear">
-                                        <i class="ki-duotone ki-cross fs-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                        </i>
-                                    </button>
-                                </div>
-                                <!--end::Input group-->
-                            </div>
-                            <!--end::Content-->
-                        </div>
-                        <!--end::Menu 1-->
-                        <!--end::Filter-->
-                    </div>
-                    <!--end::Toolbar-->
-                </div>
-                <!--end::Card toolbar-->
-            </div>
-            <!--end::Card header-->
-            <!--begin::Card body-->
-            <div class="card-body pt-0">
-                <!--begin::Table-->
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="production-table" width="100%">
+    <link rel="stylesheet" href="{{ asset('assets/css/erp-operations.css') }}?v={{ filemtime(public_path('assets/css/erp-operations.css')) }}">
+    <x-erp.workspace title="Produksi Barang" subtitle="Pantau produksi, bahan baku dan status pengerjaan." icon="cooking-pot">
+        <x-slot:toolbar>
+            <label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-kt-ecommerce-product-filter="search" id="search" aria-label="Cari produksi" placeholder="Cari produksi..."></label>
+            <div class="erp-operations-toolbar-actions"><details class="erp-operations-filter"><summary class="erp-action"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></summary><div class="erp-operations-filter__body"><label for="production-status-filter">Status<select id="production-status-filter" class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Status" data-kt-ecommerce-product-filter="status"><option value="all">Semua Status</option>@foreach (['temp', 'draft', 'posting', 'complete'] as $statusOption)<option value="{{ $statusOption }}">{{ ucwords($statusOption) }}</option>@endforeach</select></label><label for="production-branch-filter">Cabang<select id="production-branch-filter" class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Cabang" data-kt-ecommerce-product-filter="cabang">@if(count($branches) > 1)<option value="all">Semua Cabang</option>@endif @foreach ($branches as $branch)<option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>@endforeach</select></label><label for="kt_ecommerce_sales_flatpickr">Rentang tanggal<div class="input-group"><input class="form-control" placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr"><button type="button" class="erp-action" id="kt_ecommerce_sales_flatpickr_clear" aria-label="Hapus rentang tanggal"><i class="ph ph-x" aria-hidden="true"></i></button></div></label></div></details><a href="{{ url('production/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Produksi</a></div>
+        </x-slot:toolbar>
+        <div class="erp-operations-collection" data-erp-collection="production-table" data-erp-empty="Belum ada produksi barang" data-erp-empty-description="Data yang tersimpan akan muncul di sini.">
+            <table class="table erp-operations-table align-middle" id="production-table" width="100%">
                     <thead>
-                        <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                            {{-- <th class="w-10px pe-2">
-                 <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                     <input class="form-check-input" type="checkbox" data-kt-check="true"
-                         data-kt-check-target="#kt_ecommerce_production_table .form-check-input"
-                         value="1" />
-                 </div>
-             </th> --}}
-                            <th class="text-start min-w-100px">Name</th>
+                        <tr class="text-start">
+
+                            <th class="text-start min-w-100px">Nama</th>
                             <th class="text-center min-w-100px">Status</th>
-                            <th class="text-center min-w-100px">Prod Date</th>
-                            <th class="text-end min-w-70px" style="position: relative; z-index: 1;">Actions</th>
+                            <th class="text-center min-w-100px">Tanggal Produksi</th>
+                            <th class="text-end min-w-70px" style="position: relative; z-index: 1;">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="fw-semibold text-gray-600"></tbody>
+                    <tbody class=""></tbody>
                 </table>
-                <!--end::Table-->
-            </div>
-            <!--end::Card body-->
         </div>
-
-        <a href="{{ url('production/create') }}" class="btn btn-primary rounded-circle shadow-lg position-fixed"
-            style="bottom: 60px; right: 30px; width: 60px; height: 60px; z-index: 1050; display: flex; align-items: center; justify-content: center;">
-            <i class="ki-duotone ki-purchase fs-3x text-white">
-                <span class="path1"></span>
-                <span class="path2"></span>
-            </i>
-        </a>
-    </div>
+    </x-erp.workspace>
 @section('script')
     <script type="text/javascript">
         var dataTable;

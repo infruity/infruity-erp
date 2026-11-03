@@ -18,7 +18,7 @@
     {{-- <link rel="canonical" href="https://preview.keenthemes.com/metronic8" /> --}}
     <link rel="shortcut icon" href="{{ asset('assets/media/logos/logo-infruity.png') }}" />
     <!--begin::Fonts(mandatory for all pages)-->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
+
     <!--end::Fonts-->
     <!--begin::Vendor Stylesheets(used for this page only)-->
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}">
@@ -33,6 +33,10 @@
     <script>
         // Frame-busting to prevent site from being loaded within a frame without permission (click-jacking) if (window.top != window.self) { window.top.location.replace(window.self.location.href); }
     </script>
+<link rel="stylesheet" href="{{ asset('assets/fonts/infruity/fonts.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/plugins/phosphor/phosphor.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/css/erp-workspace.css') }}?v={{ filemtime(public_path('assets/css/erp-workspace.css')) }}">
+<script defer src="{{ asset('assets/js/erp-collections.js') }}?v={{ filemtime(public_path('assets/js/erp-collections.js')) }}"></script>
 </head>
 <!--end::Head-->
 <!--begin::Body-->

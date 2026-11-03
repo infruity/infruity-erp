@@ -59,20 +59,6 @@
                 listDatatable.search(this.value).draw();
             });
 
-            // const table = $('#kt_ecommerce_edit_order_product_table').DataTable({
-                pageLength: 100,
-                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-            //     order: [],
-            //     scrollY: "400px",
-            //     scrollCollapse: true,
-            //     paging: false,
-            //     info: false,
-            //     columnDefs: [{
-            //         orderable: false,
-            //         targets: 0
-            //     }]
-            // });
-
             var url = `{{ url('parcel/get-product/${parcelId}') }}`;
             console.log(url);
             tableSelectedProduct = $('#kt_ecommerce_edit_order_selected_products_table').DataTable({
@@ -221,8 +207,8 @@
             });
 
             tableSelectedProduct.on('draw', function() {
-                let budget = {{ $data->budget }};
-                let fee = {{ $data->fee * $data->quantity }};
+                let budget = @json((float) ($data->budget ?? 0));
+                let fee = @json((float) ($data->fee ?? 0) * (float) ($data->quantity ?? 0));
                 let total = tableSelectedProduct.column(2, {
                     page: 'current'
                 }).data().reduce(function(a, b) {

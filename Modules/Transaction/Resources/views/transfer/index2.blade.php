@@ -1,272 +1,123 @@
-@extends('template.root')
-
-@section('content')
-    {{-- @livewire('product-table') --}}
-    <div>
-        <div class="card card-flush">
-            <!--begin::Card header-->
-            <div class="card-header align-items-center py-3 gap-2 flex-wrap flex-md-nowrap">
-                <!--begin::Card title-->
-                <div class="card-title">
-                    <!--begin::Search-->
-                    <div class="d-flex align-items-center position-relative my-1">
-                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4"></i>
-                        <input type="text" data-kt-ecommerce-product-filter="search" id="search"
-                            class="form-control form-control-solid w-200px w-md-250px ps-12" placeholder="Cari Transfer" />
-                    </div>
-                    <!--end::Search-->
-                </div>
-                <!--end::Card title-->
-                <!--begin::Card toolbar-->
-                <div class="card-toolbar ms-auto">
-                    <div class="card-toolbar">
-                        <!--begin::Toolbar-->
-                        <div class="d-flex justify-content-end" data-kt-user-table-toolbar="base">
-                            <!--begin::Filter-->
-                            <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
-                                data-kt-menu-placement="bottom-end">
-                                <i class="ki-duotone ki-filter fs-2">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                </i></button>
-                            <!--begin::Menu 1-->
-                            <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                                <!--begin::Header-->
-                                <div class="px-7 py-5">
-                                    <div class="fs-5 text-gray-900 fw-bold">Pilihan Filter</div>
-                                </div>
-                                <!--end::Header-->
-                                <!--begin::Separator-->
-                                <div class="separator border-gray-200"></div>
-                                <!--end::Separator-->
-                                <!--begin::Content-->
-                                <div class="px-7 py-2" data-kt-user-table-filter="form">
-                                    <!--begin::Input group-->
-                                    <div>
-                                        <label class="form-label fs-6 fw-semibold">Status:</label>
-                                        @php
-                                            $category = [
-                                                'all' => 'All',
-                                                'draft' => 'Draft',
-                                                'paid' => 'Final',
-                                            ];
-                                        @endphp
-                                        <select class="form-select form-select-solid" data-control="select2"
-                                            data-hide-search="true" data-placeholder="Status"
-                                            data-kt-ecommerce-product-filter="status">
-                                            <option value="all">All</option>
-                                            @foreach ($category as $key => $value)
-                                                <option value="{{ $key }}">{{ ucwords($value) }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <!--end::Input group-->
-                                </div>
-                                <!--end::Content-->
-                                <div class="px-7 py-2" data-kt-user-table-filter="form">
-                                    <!--begin::Input group-->
-                                    <div>
-                                        <label class="form-label fs-6 fw-semibold">Cabang:</label>
-                                        <select class="form-select form-select-solid" data-control="select2"
-                                            data-hide-search="true" data-placeholder="Cabang"
-                                            data-kt-ecommerce-product-filter="cabang">
-                                            @if (count($branches) > 1)
-                                                <option value="all">All</option>
-                                            @endif
-                                            @foreach ($branches as $branch)
-                                                <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <!--end::Input group-->
-                                </div>
-                                <!--begin::Separator-->
-                                <div class="separator border-gray-200"></div>
-                                <!--end::Separator-->
-                                <!--begin::Content-->
-                                <div class="px-7 py-5" data-kt-user-table-filter="form">
-                                    <!--begin::Input group-->
-                                    <div class="input-group mw-350px">
-                                        <input class="form-control form-control-solid rounded rounded-end-0"
-                                            placeholder="Pick date range" id="kt_ecommerce_sales_flatpickr" />
-                                        <button class="btn btn-icon btn-light" id="kt_ecommerce_sales_flatpickr_clear">
-                                            <i class="ki-duotone ki-cross fs-2">
-                                                <span class="path1"></span>
-                                                <span class="path2"></span>
-                                            </i>
-                                        </button>
-                                    </div>
-                                    <!--end::Input group-->
-                                </div>
-                                <!--end::Content-->
-                            </div>
-                            <!--end::Menu 1-->
-                            <!--end::Filter-->
-                        </div>
-                        <!--end::Toolbar-->
-                    </div>
-                </div>
-                <!--end::Card toolbar-->
-            </div>
-            <!--end::Card header-->
-            <!--begin::Card body-->
-            <div class="card-body pt-0">
-                <!--begin::Table-->
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
-                    <thead>
-                        <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                            <th class="text-start min-w-150px">Name</th>
-                            <th class="text-start min-w-150px">Date</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody class="fw-semibold text-gray-600"></tbody>
-                </table>
-                <!--end::Table-->
-            </div>
-            <!--end::Card body-->
-        </div>
-    </div>
-    @if (request()->segment(1) != 'transfer-penerima')
-        <a href="{{ url(request()->segment(1) . '/create') }}"
-            class="btn btn-primary rounded-circle shadow-lg position-fixed"
-            style="bottom: 60px; right: 30px; width: 60px; height: 60px; z-index: 1050; display: flex; align-items: center; justify-content: center;">
-            <i class="fa fa-plus text-white"></i>
-        </a>
-    @endif
+@extends('layouts.erp-tailwind')
+@php
+    $receiving = request()->segment(1) === 'transfer-penerima';
+    $filterBranches = $branches->map(fn ($branch) => ['id' => (string) $branch->id, 'name' => ucwords($branch->name)])->values();
+    $side = $receiving ? 'transfer-penerima' : 'transfer-pengirim';
+    $pageTitle = $receiving ? 'Pindah Stok - Menerima' : 'Pindah Stok - Mengirim';
+    $statuses = [['value' => 'all', 'label' => 'Semua Status']];
+    if (!$receiving) $statuses[] = ['value' => 'draft', 'label' => 'Draf'];
+    $statuses = array_merge($statuses, [['value' => 'pending', 'label' => 'Dalam Perjalanan'], ['value' => 'proses', 'label' => 'Sedang Diperiksa'], ['value' => 'selesai', 'label' => 'Sudah Diterima']]);
+@endphp
+@section('title', $pageTitle . ' - Inventaris')
+@section('page-title', $pageTitle)
+@section('dashboard-fullscreen', '1')
+@section('page-breadcrumb')
+    <span>Inventaris</span><i class="ph ph-caret-right text-[0.55rem]" aria-hidden="true"></i><span>{{ $pageTitle }}</span>
 @endsection
-
-@section('script')
-    <script type="text/javascript">
-        var dataTable;
-        $(document).ready(function() {
-            dataTable = $('#pos-table').DataTable({
-                pageLength: 100,
-                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-                processing: true,
-                serverSide: true,
-                fixedColumns: {
-                    leftColumns: 0,
-                    rightColumns: 1
-                },
-                columnDefs: [{
-                    orderable: false,
-                    targets: -1 // Disable sorting for action column
-                }, ],
-                ajax: {
-                    url: "{{ route('transfer-data') }}",
-                    data: function(d) {
-                        d.url = "{{ request()->segment(1) }}";
-                        d.status_filter = $('[data-kt-ecommerce-product-filter="status"]').val();
-                        d.cabang_filter = $('[data-kt-ecommerce-product-filter="cabang"]').val();
-                        var range = $('#kt_ecommerce_sales_flatpickr').val();
-                        if (range) {
-                            var dates = range.split(' to ');
-                            d.start_date = dates[0];
-                            d.end_date = dates[1] ?? dates[0]; // jika hanya pilih 1 tanggal
-                        }
-                    },
-                    error: function(xhr, error, thrown) {
-                        console.error('DataTable AJAX Error:', xhr.responseText);
-                        alert('Error loading data: ' + thrown);
-                    }
-                },
-                order: [
-                    [1, 'desc'], // Sort by date column DESC
-                ],
-                columns: [{
-                        data: 'name',
-                        name: 'name'
-                    },
-                    {
-                        data: 'date',
-                        name: 'date',
-                        className: 'text-center'
-                    },
-                    {
-                        data: 'action',
-                        name: 'action'
-                    },
-                ]
-            });
-
-            // Search manual lewat input
-            $('#search').on('keyup', function() {
-                dataTable.search(this.value).draw();
-            });
-
-            $('[data-kt-ecommerce-product-filter="status"]').on('change', function() {
-                dataTable.draw(); // trigger fetch ulang dari server
-            });
-
-            $('[data-kt-ecommerce-product-filter="cabang"]').on('change', function() {
-                dataTable.draw(); // trigger fetch ulang dari server
-            });
-
-            $("#kt_ecommerce_sales_flatpickr").flatpickr({
-                altInput: !0,
-                altFormat: "d/m/Y",
-                dateFormat: "Y-m-d",
-                mode: "range",
-                onChange: function(e, t, n) {
-                    dataTable.draw();
-                }
-            });
-        });
-
-        function reloadDataTable() {
-            // Pastikan dataTable sudah terinisialisasi sebelumnya
-            if (typeof dataTable !== 'undefined') {
-                dataTable.ajax.reload(null, false); // 'false' untuk tidak mereset ke halaman pertama
-            } else {
-                console.error('DataTable tidak terinisialisasi.');
-            }
-        }
-
-        function deleteProduct(id) {
-            Swal.fire({
-                title: 'Apakah Anda yakin?',
-                text: 'Data yang dihapus tidak bisa dikembalikan!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal',
-                customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
-                },
-                buttonsStyling: false
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: "{{ url(request()->segment(1) . '/delete') }}/" + id,
-                        type: 'DELETE',
-                        data: {
-                            _token: $('meta[name="csrf-token"]').attr('content')
-                        },
-                        success: function(response) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: response.message || 'Data berhasil dihapus.',
-                                showConfirmButton: false,
-                                timer: 1500
-                            });
-
-                            // Reload DataTable setelah berhasil menghapus data
-                            reloadDataTable();
-                        },
-                        error: function(xhr) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: xhr.responseJSON?.message ||
-                                    'Terjadi kesalahan saat menghapus data.'
-                            });
-                        }
-                    });
-                }
-            });
-        }
-    </script>
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/css/transfer-mobile.css') }}?v={{ filemtime(public_path('assets/css/transfer-mobile.css')) }}">
+@endpush
+@push('scripts')
+    <script src="{{ asset('assets/js/transfer-list.js') }}?v={{ filemtime(public_path('assets/js/transfer-list.js')) }}"></script>
+@endpush
+@section('content')
+    <section class="transfer-list-page" x-data="transferList({ endpoint: @js(route('transfer-data')), csrf: @js(csrf_token()), timezone: @js(config('app.timezone')), side: @js($side), receiving: @js($receiving), branches: @js($filterBranches) })" aria-label="Daftar Pindah Stok">
+        <div class="transfer-toolbar">
+            <div class="transfer-search">
+                <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+                <input id="transfer-search" type="search" x-model="search" @input.debounce.300ms="load()" placeholder="Cari cabang, nomor pengiriman, atau barang..." aria-label="Cari transfer stok" autocomplete="off">
+                <button type="button" x-show="search" x-cloak @click="clearSearch()" class="transfer-icon-button" aria-label="Hapus pencarian"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
+                <span class="transfer-search-divider" aria-hidden="true"></span>
+                <button type="button" @click="openFilter($event)" class="transfer-icon-button" :class="activeFilters || filterOpen ? 'is-active' : ''" :aria-expanded="filterOpen" aria-label="Filter pindah stok"><span class="icon-rounded" aria-hidden="true">tune</span></button>
+            </div>
+            @if (check_access('transfer-pengirim.create'))
+                <a class="transfer-list-create" href="{{ route('transfer-pengirim.create') }}"><i class="ph-bold ph-plus" aria-hidden="true"></i>Kirim Stok Baru</a>
+            @endif
+        </div>
+        <div class="transfer-list-scroll" :aria-busy="loading">
+            <div class="transfer-list-head" x-show="rows.length"><span>Cabang &amp; Waktu</span><span>Pengirim / Produk</span><span style="text-align:right">Status / Nomor Pengiriman</span></div>
+            <template x-for="row in rows" :key="row.id">
+                <button type="button" class="transfer-row" @click="openDetail(row, $event)" :aria-label="'Detail transfer ' + row.invoice_number">
+                    <span class="transfer-row-branch">
+                        <span class="transfer-branch-avatar" :style="branchTheme(branchName(row))" x-text="initials(branchName(row))"></span>
+                        <span class="transfer-branch-copy"><strong class="transfer-branch-name" x-text="branchName(row)"></strong><span class="transfer-row-date" x-text="dateLabel(row.created_at || row.date)"></span></span>
+                    </span>
+                    <span class="transfer-desktop-meta"><span x-text="row.staff_name || '—'"></span><br><small x-text="row.items.length + ' produk'"></small></span>
+                    <span class="transfer-row-amount"><span class="transfer-row-status" :class="row.status === 'selesai' ? 'is-final' : (row.status === 'pending' ? 'is-pending' : '')" x-text="statusLabel(row.status)"></span><strong class="transfer-row-total" x-text="row.invoice_number"></strong></span>
+                </button>
+            </template>
+            <div class="transfer-list-state" x-show="loading && !rows.length" role="status"><i class="ph ph-circle-notch" aria-hidden="true"></i><p>Memuat transfer stok...</p></div>
+            <div class="transfer-list-state" x-show="error" x-cloak role="alert"><h2>Daftar transfer belum dapat dimuat</h2><p x-text="error"></p><button type="button" class="transfer-text-button" @click="load(rows.length > 0)">Coba lagi</button></div>
+            <div class="transfer-list-state" x-show="!loading && !error && !rows.length" x-cloak>
+                <i class="ph-duotone ph-receipt" aria-hidden="true"></i>
+                <h2 x-text="search || activeFilters ? 'Transaksi tidak ditemukan' : @js($receiving ? 'Belum ada barang masuk' : 'Belum ada pengiriman')"></h2>
+                <p x-show="search || activeFilters">Coba kata pencarian lain atau sesuaikan filter.</p>
+                @if (!$receiving && check_access('transfer-pengirim.create'))
+                    <p x-show="!search && !activeFilters">Klik tombol <a href="{{ route('transfer-pengirim.create') }}" class="transfer-text-button" aria-label="Tambah pindah stok">+</a> untuk menambahkan<br>transfer stok baru.</p>
+                @endif
+                @if ($receiving)<p x-show="!search && !activeFilters">Pengiriman ke cabang Anda akan tampil di sini untuk diperiksa dan diterima.</p>@endif
+                <button type="button" class="transfer-text-button" x-show="search || activeFilters" @click="search = ''; resetFilters()">Reset pencarian &amp; filter</button>
+            </div>
+            <div class="transfer-load-more" x-show="hasMore && rows.length && !error" x-cloak>
+                <x-erp.load-more @click="load(true)" loading="loading">
+                    <span x-text="loading ? 'Memuat...' : 'Muat ' + Math.min(20, filtered - rows.length) + ' Transaksi Lagi'"></span>
+                </x-erp.load-more>
+            </div>
+            <p class="transfer-list-count" x-show="rows.length && !hasMore" x-cloak x-text="rows.length + ' dari ' + filtered + ' transfer stok'"></p>
+        </div>
+        <template x-teleport="body">
+            <div x-show="filterOpen" x-cloak class="transfer-overlay is-filter" @click.self="closeFilter()" @keydown.escape.window="if (filterOpen) closeFilter()" @keydown.tab="trapFocus($event)">
+                <section class="transfer-dialog transfer-filter-dialog" id="transfer-filter-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="transfer-filter-title" aria-describedby="transfer-filter-description">
+                    <button type="button" class="transfer-filter-handle" @click="closeFilter()" aria-label="Tutup filter"></button>
+                    <div class="transfer-dialog-head"><div><h2 id="transfer-filter-title">Filter Pindah Stok</h2><p id="transfer-filter-description">Saring cabang dan status {{ $receiving ? 'penerimaan' : 'pengiriman' }}</p></div><button type="button" class="transfer-icon-button" @click="closeFilter()" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
+                    <div class="transfer-filter-body">
+                        <div class="transfer-filter-section">
+                            <div class="transfer-filter-section-head">
+                                <span class="transfer-filter-label" id="transfer-filter-branch-label">{{ $receiving ? 'Cabang Penerima' : 'Cabang Pengirim' }}</span>
+                                <button type="button" class="transfer-filter-reset" x-show="pending.branch !== 'all'" x-cloak @click="resetPendingFilter('branch')">Reset</button>
+                            </div>
+                            <div class="transfer-filter-branch-picker">
+                                <label class="transfer-filter-branch-search"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i><input type="search" x-model="branchSearchQuery" placeholder="Cari cabang..." aria-label="Cari cabang" autocomplete="off"></label>
+                                <div class="transfer-filter-branch-options" role="radiogroup" aria-labelledby="transfer-filter-branch-label">
+                                    <template x-for="branchOption in filteredBranches" :key="branchOption.id">
+                                        <label class="transfer-filter-branch-option"><input type="radio" name="transfer-filter-branch" :value="branchOption.id" x-model="pending.branch"><span x-text="branchOption.name"></span></label>
+                                    </template>
+                                    <p x-show="!filteredBranches.length" x-cloak class="transfer-filter-branch-empty" role="status">Cabang tidak ditemukan</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="transfer-filter-section">
+                            <div class="transfer-filter-section-head">
+                                <span class="transfer-filter-label">Status {{ $receiving ? 'Penerimaan' : 'Pengiriman' }}</span>
+                                <button type="button" class="transfer-filter-reset" x-show="pending.status !== 'all'" x-cloak @click="resetPendingFilter('status')">Reset</button>
+                            </div>
+                            <div class="transfer-filter-chips" role="group" aria-label="Status transfer">
+                                <template x-for="status in @js($statuses)" :key="status.value"><button type="button" @click="pending.status = status.value" :class="pending.status === status.value ? 'is-active' : ''" :aria-pressed="pending.status === status.value" x-text="status.label"></button></template>
+                            </div>
+                        </div>
+                        <div class="transfer-filter-section">
+                            <div class="transfer-filter-section-head">
+                                <span class="transfer-filter-label">Periode Tanggal</span>
+                                <button type="button" class="transfer-filter-reset" x-show="pending.start || pending.end" x-cloak @click="resetPendingFilter('date')">Reset</button>
+                            </div>
+                            <div class="transfer-filter-date-cards">
+                                <label class="transfer-filter-date-card" for="transfer-date-start"><span class="transfer-filter-date-label">DARI</span><input id="transfer-date-start" type="date" x-model="pending.start" aria-label="Dari tanggal"></label>
+                                <label class="transfer-filter-date-card" for="transfer-date-end"><span class="transfer-filter-date-label">KE</span><input id="transfer-date-end" type="date" x-model="pending.end" :min="pending.start" aria-label="Sampai tanggal"></label>
+                            </div>
+                            <div class="transfer-filter-quick">
+                                <span class="transfer-filter-label">Pilihan Cepat</span>
+                                <div class="transfer-filter-quick-actions" role="group" aria-label="Pilihan cepat tanggal">
+                                    <button type="button" class="is-week" @click="setPendingDateRange('week')">Minggu Ini</button>
+                                    <button type="button" @click="setPendingDateRange('today')">Hari Ini</button>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="transfer-filter-error" x-show="pendingDateError" x-cloak x-text="pendingDateError" role="alert"></p>
+                    </div>
+                    <div class="transfer-filter-foot"><button type="button" @click="resetFilters()">Reset</button><button type="button" @click="applyFilter()" :disabled="!!pendingDateError">Terapkan</button></div>
+                </section>
+            </div>
+        </template>
+        @include('transaction::transfer.segment.detail-dialog')
+    </section>
 @endsection

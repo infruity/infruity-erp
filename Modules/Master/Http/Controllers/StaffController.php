@@ -248,6 +248,8 @@ class StaffController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('staff.index');
+
         // eager load relations supaya lebih efisien
         $data = Staff::with(['position', 'department'])
             ->orderBy('name', 'asc');

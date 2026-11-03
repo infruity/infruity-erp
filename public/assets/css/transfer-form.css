@@ -1,0 +1,128 @@
+
+    [x-cloak] { display:none!important; }
+    body:has(.transfer-form) main { padding:0!important; overflow:hidden; }
+    body:has(.transfer-form) main > .animate-fade-in-up { padding:0!important; animation:none!important; }
+
+
+    body:has(.transfer-form) .erp-mobile-nav { display:none!important; }
+    .transfer-form { --transfer-teal:#0b595b; display:flex; flex:1; min-height:0; flex-direction:column; color:#1f2937; font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; }
+    .transfer-form *, .transfer-form *::before, .transfer-form *::after { box-sizing:border-box; }
+    .transfer-form button, .transfer-form input { font:inherit; }
+    .transfer-form button { cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    .transfer-form button:disabled { opacity:.55; cursor:default; }
+    .transfer-form button:focus-visible, .transfer-form input:not(.transfer-product-search):focus-visible { outline:2px solid #0b595b; outline-offset:2px; }
+    .transfer-canvas { width:100%; max-width:944px; margin:0 auto; padding:20px 16px 24px; display:flex; flex:1; min-height:0; flex-direction:column; gap:24px; overflow-y:auto; }
+    .transfer-branch-card, .transfer-items-card { background:#fff; border:1px solid rgba(229,231,235,.9); border-radius:16px; box-shadow:0 2px 10px rgba(0,0,0,.02); }
+    .transfer-branch-card { flex:none; padding:16px; position:relative; z-index:3; }
+    .transfer-field-label { display:block; font-size:12px; color:#374151; font-weight:700; margin-bottom:7px; }
+    .transfer-required { color:#ef4444; margin-left:3px; }
+    .transfer-branch-picker { position:relative; }
+    .transfer-branch-trigger { display:flex; justify-content:space-between; gap:12px; align-items:center; width:100%; min-height:44px; border:1px solid #e5e7eb; border-radius:12px; background:#f9fafb; padding:10px 16px; text-align:left; color:#1f2937; font-size:14px!important; font-weight:600!important; }
+    .transfer-branch-trigger:disabled { opacity:1!important; }
+    .transfer-branch-trigger span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .transfer-branch-trigger i { color:#6b7280; font-size:16px; transition:transform .18s; }
+    .transfer-branch-trigger i.is-open { transform:rotate(180deg); }
+    .transfer-branch-menu { position:absolute; top:calc(100% + 6px); left:0; width:100%; max-height:224px; overflow-y:auto; background:#fff; border:1px solid #f3f4f6; border-radius:12px; padding:4px 0; box-shadow:0 10px 20px rgba(0,0,0,.1); z-index:10; }
+    .transfer-branch-menu button { display:flex; justify-content:space-between; align-items:center; gap:12px; width:100%; min-height:44px; border:0; background:#fff; padding:10px 14px; text-align:left; color:#374151; }
+    .transfer-branch-menu button:hover, .transfer-branch-menu button.is-selected { background:#f9fafb; }
+    .transfer-branch-menu button.is-selected { color:#059669; font-weight:600; }
+    .transfer-branch-dot { width:7px; height:7px; border-radius:50%; background:#10b981; flex:none; }
+    .transfer-metadata { margin-top:12px; font-size:11px; }
+    .transfer-metadata summary { display:flex; align-items:center; gap:8px; cursor:pointer; color:#6b7280; list-style:none; min-height:24px; }
+    .transfer-metadata summary::-webkit-details-marker { display:none; }
+    .transfer-metadata summary span { margin-left:auto; color:#6b7280; font-size:10px; }
+    .transfer-metadata-fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding-top:10px; }
+    .transfer-metadata-fields label { display:block; margin-bottom:6px; color:#6b7280; }
+    .transfer-metadata-fields input { width:100%; min-width:0; padding:9px; min-height:40px; border:1px solid #e5e7eb; border-radius:10px; background:#f9fafb; color:#374151; }
+    .transfer-items-card { display:flex; flex:1; min-height:280px; flex-direction:column; overflow:hidden; }
+    .transfer-items-header { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:16px 20px; border-bottom:1px solid #f3f4f6; flex:none; }
+    .transfer-items-header h1 { margin:0; font-size:14px; font-weight:800; color:#111827; }
+    .transfer-add-button { border:1px solid #a7f3d0; border-radius:8px; background:#ecfdf5; color:#0b595b; padding:8px 12px; font-size:12px!important; font-weight:700!important; min-height:36px; white-space:nowrap; }
+    .transfer-items-body { padding:16px; overflow-y:auto; min-height:0; flex:1; display:flex; flex-direction:column; }
+    .transfer-empty { display:flex; flex:1; min-height:180px; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:24px 8px; }
+    .transfer-empty h2 { font-size:14px; font-weight:700; margin:0; line-height:1.5; }
+    .transfer-empty p { font-size:12px; line-height:1.7; color:#6b7280; margin:6px 0 0; }
+    .transfer-empty button { background:none; padding:0; border:0; color:#0b595b; font-weight:600; }
+    .transfer-cart-item { width:100%; display:flex; flex-direction:column; gap:7px; border:0; border-bottom:1px solid #f3f4f6; border-radius:8px; background:#fff; text-align:left; padding:13px 8px; }
+    .transfer-cart-item:hover { background:#f9fafb; }
+    .transfer-cart-item:last-child { border-bottom:0; }
+    .transfer-cart-line { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+    .transfer-cart-line strong { color:#111827; font-size:14px; overflow-wrap:anywhere; }
+    .transfer-cart-line b { flex:none; color:#0b595b; font-size:13px; }
+    .transfer-cart-line small { color:#6b7280; font-size:12px; }
+    .transfer-cart-line small:last-child { flex:none; font-weight:600; }
+    .transfer-summary { flex:none; background:#fff; border-top:1px solid #f3f4f6; padding:14px 16px calc(16px + env(safe-area-inset-bottom, 0px)); box-shadow:0 -4px 20px rgba(0,0,0,.03); }
+    .transfer-summary-inner { max-width:896px; width:100%; margin:auto; }
+    .transfer-summary-total { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:14px; border-bottom:1px solid #f3f4f6; }
+    .transfer-summary-total > div { display:flex; align-items:center; gap:8px; }
+    .transfer-summary-total h2 { margin:0; font-size:16px; font-weight:800; color:#111827; line-height:1.4; }
+    .transfer-count { border-radius:20px; background:#d1fae5; color:#065f46; font-size:12px; font-weight:800; padding:3px 9px; }
+    .transfer-summary-total strong { color:#0b595b; font-size:17px; font-weight:800; white-space:nowrap; }
+    .transfer-summary-actions { display:flex; gap:12px; padding-top:14px; }
+    .transfer-action { display:flex; align-items:center; justify-content:center; flex:1; min-height:44px; border:1px solid #e5e7eb; border-radius:12px; padding:10px 12px; font-size:12px!important; font-weight:700!important; background:#fff; color:#1f2937; text-align:center; text-decoration:none; }
+    .transfer-action-primary { color:#fff; border-color:#0b595b; background:#0b595b; box-shadow:0 4px 10px rgba(11,89,91,.15); }
+    .transfer-action-primary:hover { color:#fff; background:#08484a; }
+    .transfer-action-danger { color:#dc2626; background:#fef2f2; border-color:#fecaca; flex:0 0 auto; }
+    .transfer-error { font-size:12px; line-height:1.6; color:#b91c1c; margin:10px 0 0; }
+    dialog.transfer-modal { position:fixed; inset:0; width:calc(100% - 32px); max-width:512px; max-height:calc(100dvh - 32px); margin:auto; border:0; padding:0; background:transparent; overflow:visible; color:#1f2937; }
+    dialog.transfer-modal::backdrop { background:rgba(0,0,0,.4); }
+    .transfer-modal .modal-dialog { width:100%; margin:0; display:flex; align-items:center; }
+    .transfer-modal .modal-content { width:100%; margin:0; border:1px solid #e5e7eb; border-radius:24px; background:#fff; box-shadow:0 20px 45px rgba(0,0,0,.2); max-height:calc(100dvh - 32px); overflow:hidden; display:flex; flex-direction:column; }
+    .transfer-modal .modal-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:20px 20px 16px; border-bottom:1px solid #f3f4f6; background:#f9fafb; flex:none; }
+    .transfer-modal .modal-header h2 { margin:0; color:#111827; font-size:17px; line-height:1.4; font-weight:700; }
+    .transfer-modal .modal-header p { color:#6b7280; margin:4px 0 0; font-size:12px; line-height:1.5; }
+    .transfer-close { width:36px; height:36px; flex:none; border:0; border-radius:50%; color:#6b7280; background:#fff; font-size:17px!important; }
+    .transfer-modal .modal-body { overflow-y:auto; padding:18px 16px; }
+    .transfer-modal-label { display:block; margin:0 0 7px; color:#6b7280; font-size:11px; font-weight:700; letter-spacing:.025em; text-transform:uppercase; }
+    .transfer-product-picker { overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
+    .transfer-search-wrap { display:flex; align-items:center; padding-left:12px; border-bottom:1px solid #f3f4f6; }
+    .transfer-search-wrap i { font-size:14px; color:#6b7280; flex:none; }
+    .transfer-product-search, .transfer-product-search:focus, .transfer-product-search:active, .transfer-product-search:focus-visible { appearance:none; width:100%; padding:12px 10px!important; font-size:13px!important; border:0!important; outline:0!important; box-shadow:none!important; background:transparent!important; color:#1f2937; min-width:0; }
+    .transfer-product-search::placeholder { color:#6b7280; }
+    .transfer-product-options { height:132px; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:#d1d5db transparent; }
+    .transfer-product-option { display:flex; align-items:center; gap:12px; padding:10px 14px; min-height:44px; border-bottom:1px solid #f3f4f6; cursor:pointer; margin:0; }
+    .transfer-product-option:hover, .transfer-product-option.is-selected { background:#f9fafb; }
+    .transfer-product-option:last-child { border:0; }
+    .transfer-product-option input[type=radio] { appearance:none; width:12px; height:12px; min-width:12px; border:1.5px solid #9ca3af; border-radius:50%; margin:0; padding:0; background:#fff; flex:none; cursor:pointer; }
+    .transfer-product-option input[type=radio]:checked { border:3.5px solid #10b981; }
+    .transfer-product-option span { font-size:12px; color:#1f2937; line-height:1.5; }
+    .transfer-products-state { min-height:130px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:8px; text-align:center; color:#6b7280; font-size:12px; padding:16px; }
+    .transfer-products-state button { border:0; background:none; color:#0b595b; text-decoration:underline; }
+    .transfer-modal-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-top:18px; }
+    .transfer-modal-input { width:100%; min-width:0; height:44px; padding:10px 14px; border:1px solid #e5e7eb; border-radius:12px; background:#f9fafb; color:#1f2937; font-size:14px!important; font-weight:600!important; }
+    .transfer-stock { color:#6b7280; font-size:11px; margin:7px 0 0; }
+    .transfer-modal-total { display:flex; justify-content:space-between; align-items:center; gap:12px; background:#f0fdf8; border:1px solid #a7f3d0; border-radius:12px; padding:14px 12px; color:#065f46; font-size:12px; font-weight:600; margin-top:16px; }
+    .transfer-modal-total strong { font-size:15px; color:#0b595b; }
+    .transfer-modal .modal-footer { display:flex; flex-wrap:nowrap; gap:12px; padding:16px; border-top:1px solid #f3f4f6; background:#f9fafb; flex:none; }
+    .transfer-modal .modal-footer > * { margin:0; }
+    @media(min-width:640px) { .transfer-canvas { padding:24px; } .transfer-branch-card { padding:20px; } .transfer-items-header { padding:16px 24px; } .transfer-items-body { padding:20px 24px; } .transfer-summary { padding:16px 24px 20px; } .transfer-summary-total h2, .transfer-summary-total strong { font-size:18px; } .transfer-action { font-size:13px!important; } .transfer-modal .modal-body { padding:20px; } }
+    @media(max-width:359px) { .transfer-canvas { padding:16px 12px; gap:16px; } .transfer-summary { padding-left:12px; padding-right:12px; } .transfer-summary-total h2 { font-size:14px; } .transfer-summary-actions { gap:8px; } .transfer-action { padding:10px 7px; font-size:11px!important; } .transfer-items-header { padding:14px; } }
+    @media(prefers-reduced-motion:reduce) { .transfer-form *, .transfer-modal * { transition:none!important; } }
+
+
+body:has(.transfer-form) main { overflow:hidden; }
+.transfer-form .transfer-summary-actions { padding-top:0; }
+.transfer-form .transfer-summary { box-shadow:0 -4px 20px rgba(0,0,0,.03); }
+.transfer-form .transfer-modal-fields { margin-top:16px; }
+.transfer-form .transfer-cart-line { width:100%; }
+.transfer-form .transfer-cart-line strong { font-size:13px; }
+.transfer-form .transfer-cart-item { gap:6px; }
+.transfer-form .transfer-cart-item:disabled { opacity:1; cursor:default; }
+.transfer-form .transfer-product-option input[type=radio] { width:14px; min-width:14px; height:14px; }
+.transfer-form .transfer-modal-input[readonly] { background:#f3f4f6; color:#6b7280; }
+.transfer-form .transfer-product-summary { font-size:13px; font-weight:700; padding:12px 0 0; }
+.transfer-form .transfer-unit-field { position:relative; }
+.transfer-form .transfer-unit-field input { padding-right:48px; }
+.transfer-form .transfer-unit-field span { position:absolute; right:14px; top:14px; color:#6b7280; font-size:12px; }
+.transfer-form .transfer-quantity-full { margin-top:16px; }
+.transfer-form .transfer-modal-note { margin-top:16px; }
+.transfer-form .transfer-status { color:#047857; font-size:10px; font-weight:700; white-space:nowrap; }
+.transfer-form .transfer-card-label { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.transfer-form .transfer-card-label small { font-size:11px; color:#111827; }
+.transfer-form .transfer-shortage { color:#b45309; }
+.transfer-form .transfer-confirm-body { padding:24px; font-size:13px; line-height:1.7; }
+.transfer-form .transfer-confirm-body strong { color:#111827; }
+.transfer-form .transfer-confirm-body p { margin:10px 0 0; color:#6b7280; }
+.transfer-form .transfer-error { margin:0 0 12px; }
+
+.transfer-form .transfer-action-primary:disabled { opacity:1; border-color:#e5e7eb; background:#e5e7eb; color:#6b7280; box-shadow:none; cursor:not-allowed; }

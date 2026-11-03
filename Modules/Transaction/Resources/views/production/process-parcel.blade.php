@@ -1,4 +1,5 @@
 @extends('template.root')
+@section('title', 'Proses Parcel')
 
 @section('content')
     <form id="kt_ecommerce_edit_order_form" class="form d-flex flex-column flex-lg-row"
@@ -11,21 +12,21 @@
         <!--begin::Aside column-->
         <div class="w-100 flex-lg-row-auto w-lg-300px mb-7 me-7 me-lg-10">
             <!--begin::Order details-->
-            <div class="card card-flush py-4">
+            <section class="erp-editor-section py-4">
                 <!--begin::Card header-->
-                <div class="card-header">
+                <div class="erp-detail-header">
                     <div class="card-title">
-                        <h2>Parcel Details</h2>
+                        <h2>Detail Parcel</h2>
                     </div>
                 </div>
                 <!--end::Card header-->
                 <!--begin::Card body-->
-                <div class="card-body pt-0">
+                <div class="erp-editor-body pt-0">
                     <div class="d-flex flex-column gap-10">
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="form-label">Order ID</label>
+                            <label class="form-label">Nomor Pesanan</label>
                             <!--end::Label-->
                             <!--begin::Auto-generated ID-->
                             <div class="fw-bold fs-3">
@@ -38,7 +39,7 @@
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="required form-label">Order Date</label>
+                            <label class="required form-label">Tanggal Pesanan</label>
                             <!--end::Label-->
                             <!--begin::Editor-->
                             <div class="fw-bold fs-3">{{ isset($data) ? dateindo($data->production_date) : '14364' }}</div>
@@ -48,11 +49,11 @@
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="required form-label">Plan Budget</label>
+                            <label class="required form-label">Anggaran</label>
                             <!--end::Label-->
                             <!--begin::Editor-->
                             <div class="fw-bold fs-3">
-                                <span id="sisaBudget"></span>
+                                <span id="sisaAnggaran"></span>
                             </div>
                             <!--end::Editor-->
                         </div>
@@ -60,26 +61,26 @@
                     </div>
                 </div>
                 <!--end::Card header-->
-            </div>
+            </section>
             <!--end::Order details-->
         </div>
         <!--end::Aside column-->
         <!--begin::Main column-->
         <div class="d-flex flex-column flex-lg-row-fluid gap-7 gap-lg-10">
             <!--begin::Order details-->
-            <div class="card card-flush py-4">
-                <div class="card-header">
+            <section class="erp-editor-section py-4">
+                <div class="erp-detail-header">
                     <div class="card-title">
-                        <h2>Add Products</h2>
+                        <h2>Tambah Produk</h2>
                     </div>
                 </div>
                 <!--begin::Card body-->
-                <div class="card-body pt-0">
+                <div class="erp-editor-body pt-0">
                     <div class="d-flex flex-column gap-10">
                         <!--begin::Input group-->
                         <div class="fv-row mb-2">
                             <!--begin::Label-->
-                            <label class="fs-6 fw-semibold mb-2">Type Perhitungan
+                            <label class="fs-6 fw-semibold mb-2">Jenis Perhitungan
                                 <span class="ms-1" data-bs-toggle="tooltip"
                                     title="Pilih tipe perhitungan yang akan digunakan">
                                     <i class="ki-duotone ki-information-5 text-gray-500 fs-6">
@@ -107,7 +108,7 @@
                                         <!--end::Radio-->
                                         <!--begin::Info-->
                                         <span class="ms-5">
-                                            <span class="fs-4 fw-bold text-gray-800 d-block">Weight to Price</span>
+                                            <span class="fs-4 fw-bold text-gray-800 d-block">Berat ke Harga</span>
                                         </span>
                                         <!--end::Info-->
                                     </label>
@@ -129,7 +130,7 @@
                                         <!--end::Radio-->
                                         <!--begin::Info-->
                                         <span class="ms-5">
-                                            <span class="fs-4 fw-bold text-gray-800 d-block">Price to Weight</span>
+                                            <span class="fs-4 fw-bold text-gray-800 d-block">Harga ke Berat</span>
                                         </span>
                                         <!--end::Info-->
                                     </label>
@@ -148,7 +149,7 @@
                             </i>
                             <input type="text" data-kt-ecommerce-edit-order-filter="search"
                                 class="form-control form-control-solid w-100 w-lg-50 ps-12" id="search"
-                                placeholder="Search Products" />
+                                placeholder="Cari produk" />
                         </div>
                         <!--end::Search products-->
                         <!--begin::Table-->
@@ -169,19 +170,19 @@
                     </div>
                 </div>
                 <!--end::Card header-->
-            </div>
+            </section>
             <!--end::Order details-->
             <!--begin::Order details-->
-            <div class="card card-flush py-4">
+            <section class="erp-editor-section py-4">
                 <!--begin::Card header-->
-                <div class="card-header">
+                <div class="erp-detail-header">
                     <div class="card-title">
                         <h2>Preview Products</h2>
                     </div>
                 </div>
                 <!--end::Card header-->
                 <!--begin::Card body-->
-                <div class="card-body pt-0">
+                <div class="erp-editor-body pt-0">
                     <div class="d-flex flex-column gap-10">
                         <!--begin::Input group-->
                         <div>
@@ -215,17 +216,17 @@
                             <!--begin::Selected products-->
                             <table class="table table-sm fw-bold fs-4">
                                 <tr>
-                                    <td>Plan Budget</td>
+                                    <td>Anggaran</td>
                                     <td>:</td>
                                     <td><span id="">Rp {{ tonumber($data->budget) }}</span></td>
                                 </tr>
                                 <tr>
-                                    <td>Actual Budget</td>
+                                    <td>Actual Anggaran</td>
                                     <td>:</td>
                                     <td><span id="totalSemuaProduk">0.00</span></td>
                                 </tr>
                                 <tr>
-                                    <td>Fee</td>
+                                    <td>Biaya jasa</td>
                                     <td>:</td>
                                     <td><span id="totalFee">Rp {{ toNumber($data->quantity * $data->fee) }}</span></td>
                                 </tr>
@@ -235,9 +236,9 @@
                                     <td><span id="totalHpp">0.00</span></td>
                                 </tr>
                                 <tr>
-                                    <td>Total Actual Budget</td>
+                                    <td>Total Actual Anggaran</td>
                                     <td>:</td>
-                                    <td><span id="totalActualBudget">0.00</span></td>
+                                    <td><span id="totalActualAnggaran">0.00</span></td>
                                 </tr>
                                 <tr>
                                     <td>Profit</td>
@@ -253,9 +254,9 @@
                     </div>
                 </div>
                 <!--end::Card header-->
-            </div>
+            </section>
             <!--end::Order details-->
-            <!-- Modal for Quantity Input -->
+            <!-- Modal for Jumlah Input -->
             <div class="modal fade" id="modalInputQty" tabindex="-1" aria-labelledby="modalInputQtyLabel"
                 aria-hidden="true">
                 <div class="modal-dialog">
@@ -269,8 +270,8 @@
                             <input type="hidden" id="inputProductId">
                             <input type="hidden" id="typeList">
                             <div class="mb-3">
-                                <label for="inputQuantity" class="form-label">Quantity</label>
-                                <input type="number" step="0.01" class="form-control" id="inputQuantity"
+                                <label for="inputJumlah" class="form-label">Jumlah</label>
+                                <input type="number" step="0.01" class="form-control" id="inputJumlah"
                                     placeholder="Enter quantity">
                             </div>
 
@@ -306,7 +307,7 @@
         </div>
         <!--end::Main column-->
     </form>
-    <!-- Modal for Quantity Input -->
+    <!-- Modal for Jumlah Input -->
     <div class="modal fade" id="kt_modal_add_customer" tabindex="-1" aria-labelledby="modalEditQtyLabel"
         aria-hidden="true">
         <div class="modal-dialog">
@@ -321,8 +322,8 @@
                         @csrf
                         <input type="hidden" name="_method" id="methodField" value="">
                         <div class="mb-3">
-                            <label for="inputQuantity" class="form-label">Quantity</label>
-                            <input type="number" class="form-control" id="inputQuantityEdit" name="qty"
+                            <label for="inputJumlah" class="form-label">Jumlah</label>
+                            <input type="number" class="form-control" id="inputJumlahEdit" name="qty"
                                 placeholder="Enter quantity" step="0.01" name="qty">
                         </div>
 
@@ -374,9 +375,9 @@
                                 placeholder="Enter price" min="0">
                         </div>
                         <div class="mb-3">
-                            <label for="inputQuantity" class="form-label">Quantity</label>
+                            <label for="inputJumlah" class="form-label">Jumlah</label>
                             <input type="number" name="qty" step="0.01" class="form-control"
-                                id="inputQuantityPrc" placeholder="Enter quantity" readonly>
+                                id="inputJumlahPrc" placeholder="Enter quantity" readonly>
                         </div>
                         <div class="mb-3">
                             <label for="inputPrice" class="form-label">Harga Jual</label>

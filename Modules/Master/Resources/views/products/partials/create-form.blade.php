@@ -120,6 +120,7 @@
         <section id="product-branch-prices" data-branch-pricing
             x-data="productBranchPricing($el)"
             data-branches="{{ ($branch ?? collect())->map(fn ($item) => ['id' => $item->id, 'name' => $item->name])->values()->toJson() }}"
+            data-initial-rules="{{ collect(old('branch.id', []))->isNotEmpty() ? collect(old('branch.id'))->map(fn ($id, $index) => ['price' => old('branch.price')[$index] ?? 0, 'branches' => [(string) $id]])->values()->toJson() : collect(isset($data) ? $data->productBranches : [])->map(fn ($price) => ['price' => $price->price, 'branches' => [(string) $price->branch_id]])->values()->toJson() }}"
             data-initial-price="{{ old('price', $data->price ?? '') }}"
             class="flex flex-col gap-3">
             <input id="product-price" type="hidden" name="price" value="{{ old('price', $data->price ?? '') }}">

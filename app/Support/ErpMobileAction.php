@@ -27,6 +27,7 @@ class ErpMobileAction
         [['pos.index'], 'pos.create', 'pos.create'],
         [['order-book.index'], 'order-book.create', 'order-book.create'],
         [['expenditure.index'], 'expenditure.create', 'expenditure.create'],
+        [['arus-kas.index'], 'arus-kas.create', 'expenditure.create'],
         [['wholesale.index'], 'wholesale.create', 'wholesale.create'],
     ];
 

@@ -88,14 +88,19 @@ class ReportController extends Controller
 
     public function hub()
     {
-        $reportPermissions = [
-            'report.total.aset', 'report.product.sales', 'report.profit.revenue',
-            'report.profit.adjusted', 'report.shipping.cost', 'report.product.buang',
-        ];
+        $reports = collect([
+            ['route' => 'product-stock', 'label' => 'Stok Barang', 'permission' => 'product-stock.index'],
+            ['route' => 'report-product-sales.index', 'label' => 'Pendapatan Penjualan', 'permission' => 'report.product.sales'],
+            ['route' => 'report-profit-revenue.index', 'label' => 'Keuntungan Penjualan', 'permission' => 'report.profit.revenue'],
+            ['route' => 'report-profit-adjusted.index', 'label' => 'Keuntungan Setelah Penyesuaian', 'permission' => 'report.profit.adjusted'],
+            ['route' => 'report-total-aset', 'label' => 'Total Aset', 'permission' => 'report.total.aset'],
+            ['route' => 'report-shipping-cost', 'label' => 'Ongkos Kirim', 'permission' => 'report.shipping.cost'],
+            ['route' => 'report-product-buang', 'label' => 'Kerugian Barang Buang', 'permission' => 'report.product.buang'],
+        ])->filter(fn ($report) => $this->hasAccess($report['permission']))->values();
 
-        abort_unless(collect($reportPermissions)->contains(fn ($permission) => $this->hasAccess($permission)), 403);
+        abort_if($reports->isEmpty(), 403);
 
-        return view('report::hub');
+        return view('report::hub', compact('reports'));
     }
 
     /**

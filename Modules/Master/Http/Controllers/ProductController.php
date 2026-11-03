@@ -158,6 +158,7 @@ class ProductController extends Controller
                 if (is_numeric($request->category_id)) {
                     $category = ProductCategory::find($request->category_id);
                     if (! $category) {
+                        DB::rollBack();
                         return redirect()->back()
                             ->withErrors('Kategori tidak ditemukan')
                             ->withInput();
@@ -196,11 +197,10 @@ class ProductController extends Controller
             if (isset($request->variant)) {
                 foreach ($request->variant['id'] as $key => $value) {
                     if (is_numeric($value)) {
-                        $variant             = Product::find($value);
-                        $variant->is_variant = 1;
-                        $variant->save();
+                        throw new \InvalidArgumentException('Varian produk baru harus dibuat dengan nama baru.');
                     } else {
                         if ($value == $product->name) {
+                            DB::rollBack();
                             return redirect()->back()
                                 ->withErrors('Nama variant tidak boleh sama dengan nama produk utama')
                                 ->withInput();
@@ -312,15 +312,78 @@ class ProductController extends Controller
 
     public function show_transaction($id)
     {
+        if ($denied = $this->requireAccess('product-stock.show')) {
+            return $denied;
+        }
+
         $data['product'] = Product::findOrFail($id);
-        $data['report']  = DB::table('report_total_belanja')->where('product_id', $id)->first();
+        $data['report'] = DB::table('report_total_belanja')->where('product_id', $id)->first()
+            ?? (object) ['total_belanja' => 0, 'total_cogs' => 0, 'total_recovered_cogs' => 0, 'last_asset' => 0];
         return view('master::products.show-transaction', $data);
     }
 
     public function get_data_transaction(Request $request)
     {
+        $this->authorizeAccess('product-stock.show');
+        $request->validate([
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'start_date' => ['nullable', 'date_format:Y-m-d'],
+            'end_date' => ['nullable', 'date_format:Y-m-d'],
+            'stock_direction' => ['nullable', 'in:all,in,out'],
+            'reference' => ['nullable', 'in:all,stock-opname,sortir,pos,production,wholesale,transfer'],
+        ]);
+
         $query = ProductHppRunning::where('product_id', $request->product_id)
             ->orderBy('created_at', 'asc');
+
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        if ($startDate && $endDate && $startDate > $endDate) {
+            [$startDate, $endDate] = [$endDate, $startDate];
+        }
+        if ($startDate) $query->whereDate('created_at', '>=', $startDate);
+        if ($endDate) $query->whereDate('created_at', '<=', $endDate);
+
+        if ($request->filled('reference') && $request->reference !== 'all') {
+            $referenceTypes = [
+                'stock-opname' => ['opname'],
+                'sortir' => ['barang_buang'],
+                'pos' => ['penjualan'],
+                'production' => ['bahan_produksi', 'produksi'],
+                'wholesale' => ['pengadaan'],
+                'transfer' => ['transfer'],
+            ];
+            $query->whereIn('trx_type', $referenceTypes[$request->reference] ?? [$request->reference]);
+        }
+
+        if ($request->filled('branch') && $request->branch !== 'all') {
+            $branchId = (int) $request->branch;
+            abort_unless(in_array($branchId, UserBranch::getUserBranch(), true), 403);
+            $branchSources = [
+                'pengadaan' => ['wholesale', 'id'],
+                'barang_buang' => ['sortir_transaction', 'id'],
+                'penjualan' => ['pos_transaction', 'id'],
+                'bahan_produksi' => ['production', 'id'],
+                'produksi' => ['production', 'id'],
+                'opname' => ['stock_opname', 'id'],
+            ];
+            $query->where(function ($branchQuery) use ($branchId, $branchSources) {
+                foreach ($branchSources as $type => [$table, $idColumn]) {
+                    $branchQuery->orWhere(function ($sourceQuery) use ($branchId, $type, $table, $idColumn) {
+                        $sourceQuery->where('trx_type', $type)->whereExists(function ($exists) use ($branchId, $table, $idColumn) {
+                            $exists->selectRaw('1')->from($table . ' as source_branch')
+                                ->whereColumn('source_branch.' . $idColumn, 'product_hpp.trx_id')
+                                ->where('source_branch.branch_id', $branchId);
+                        });
+                    });
+                }
+            });
+        }
+        if ($request->input('stock_direction') === 'in') {
+            $query->where('type', '+');
+        } elseif ($request->input('stock_direction') === 'out') {
+            $query->where('type', '-');
+        }
 
         return DataTables::of($query)
             ->addIndexColumn()
@@ -500,6 +563,7 @@ class ProductController extends Controller
                 if (is_numeric($request->category_id)) {
                     $category = ProductCategory::find($request->category_id);
                     if (! $category) {
+                        DB::rollBack();
                         return redirect()->back()
                             ->withErrors('Kategori tidak ditemukan')
                             ->withInput();
@@ -534,10 +598,14 @@ class ProductController extends Controller
             $product->tipe         = $request->tipe ?? 'product';
             $product->updated_by   = Auth::user()->id_user;
 
-            if ($request->hasFile('avatar')) {
-                $path           = $request->file('avatar')->store('products', 'public');
-                $product->image = $path;
-                $product->save();
+            // Validate every existing variant before replacing relations.
+            $variantIds = array_values(array_filter(
+                (array) $request->input('variant.id', []),
+                fn ($value) => is_numeric($value)
+            ));
+            if (count($variantIds) !== count(array_unique($variantIds)) ||
+                ProductChild::where('parent_id', $id)->whereIn('product_id', $variantIds)->distinct()->count('product_id') !== count($variantIds)) {
+                throw new \InvalidArgumentException('Daftar varian berisi produk asing atau duplikat.');
             }
 
             // Hapus semua varian yang ada
@@ -547,7 +615,12 @@ class ProductController extends Controller
             if (isset($request->variant)) {
                 foreach ($request->variant['id'] as $key => $value) {
                     if (is_numeric($value)) {
-                        $variant             = Product::find($value);
+                        $variant = Product::whereKey($value)
+                            ->where('parent_id', $id)
+                            ->first();
+                        if (! $variant) {
+                            throw new \InvalidArgumentException('Varian tidak terhubung dengan produk ini.');
+                        }
                         $variant->is_variant = 1;
                         $variantPrice = $request->variant['price'][$key] ?? 0;
                         if ($selectedBranchId) {
@@ -800,7 +873,8 @@ class ProductController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'product_name' => 'required|string|max:255',
-                'price'        => 'required|numeric',
+                'price'        => 'required|numeric|min:0',
+                'parent_id'    => 'required|integer|exists:products,id',
             ]);
             if ($validator->fails()) {
                 return response()->json([
@@ -809,7 +883,10 @@ class ProductController extends Controller
                 ], 422);
             }
             DB::beginTransaction();
-            $variant        = Product::findOrFail($id);
+            $variant = Product::whereKey($id)
+                ->where('parent_id', $request->parent_id)
+                ->whereHas('parentProduct', fn ($query) => $query->where('parent_id', $request->parent_id))
+                ->firstOrFail();
             $variant->name  = $request->product_name;
             $variant->price = $request->price;
             $variant->save();
@@ -822,18 +899,25 @@ class ProductController extends Controller
         return response()->json(['message' => 'Updated']);
     }
 
-    public function destroyVariant($id)
+    public function destroyVariant(Request $request, $id)
     {
         if ($denied = $this->requireAccess('products.destroy-variant')) {
             return $denied;
         }
 
+        $request->validate(['parent_id' => 'required|integer|exists:products,id']);
+
         try {
             DB::beginTransaction();
-            $variant = Product::findOrFail($id);
+            $variant = Product::whereKey($id)
+                ->where('parent_id', $request->parent_id)
+                ->whereHas('parentProduct', fn ($query) => $query->where('parent_id', $request->parent_id))
+                ->firstOrFail();
+            ProductChild::where('parent_id', $request->parent_id)->where('product_id', $variant->id)->delete();
             $variant->delete();
             DB::commit();
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['message' => 'Gagal menghapus variant: ' . $e->getMessage()], 500);
         }
 
@@ -1042,7 +1126,12 @@ class ProductController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('products.index');
         $branchFilter = $request->input('branch_filter');
+        if ($branchFilter && $branchFilter != 0
+            && ! in_array((int) $branchFilter, UserBranch::getUserBranch(), true)) {
+            abort(403);
+        }
         $priceOrderExpression = 'products.price';
 
         $childProductRelations = ['category', 'childProducts.product', 'creator:id_user,nm_user', 'updater:id_user,nm_user'];
@@ -1382,78 +1471,66 @@ class ProductController extends Controller
 
     public function get_data_stock(Request $request)
     {
-        $branch = $request->branch;
-
-        // Handle sorting from DataTables
-        $orderColumnIndex = 2; // default stock_available
-        $orderDirection = 'desc';
-        if ($request->has('order') && !empty($request->order)) {
-            $orderColumnIndex = $request->order[0]['column'];
-            $orderDirection = $request->order[0]['dir'];
+        $this->authorizeAccess('product-stock.index');
+        $allowedBranchIds = array_map('intval', UserBranch::getUserBranch());
+        $branch = $request->input('branch', 'all');
+        if ($branch !== 'all' && ! in_array((int) $branch, $allowedBranchIds, true)) {
+            abort(403);
         }
 
-        $columns = ['name', 'hpp', 'stock_available', 'category_id'];
-        $orderColumn = isset($columns[$orderColumnIndex]) ? $columns[$orderColumnIndex] : 'stock_available';
+        $stock = DB::table('product_stock')
+            ->whereIn('branch_id', $allowedBranchIds);
 
-        if ($branch && $branch != 'all') {
-            // Single branch query
-            $query = DB::table('product_stock')
-                ->where('branch_id', $branch)
-                ->whereNull('is_variant')
-                ->where('tipe', '!=', 'parcel')
-                ->orderBy($orderColumn, $orderDirection);
-        } else {
-            // All branches with aggregation
-            $query = DB::table('product_stock')
-                ->where('tipe', '!=', 'parcel')
-                ->whereNull('is_variant')
-                ->select(
-                    'id',
-                    'name',
-                    'sku',
-                    'limit',
-                    'hpp',
-                    'price',
-                    'tipe',
-                    'category_id',
-                    'product_unit',
-                    'unit',
-                    DB::raw('SUM(parent_stock) as parent_stock'),
-                    DB::raw('SUM(child_consumed) as child_consumed'),
-                    DB::raw('SUM(stock_available) as stock_available'),
-                    DB::raw('AVG(avg_hpp) as avg_hpp'),
-                    DB::raw('GROUP_CONCAT(DISTINCT child) as child'),
-                    'stock_status'
-                )
-                ->groupBy(
-                    'id',
-                    'name',
-                    'sku',
-                    'limit',
-                    'hpp',
-                    'price',
-                    'tipe',
-                    'category_id',
-                    'product_unit',
-                    'unit'
-                )
-                ->orderBy($orderColumn, $orderDirection);
+        if ($branch !== 'all') {
+            $stock->where('branch_id', (int) $branch);
         }
 
-        if ($request->has('stock_filter')) {
+        // Apply stock filters after aggregation, so "all branches" means the combined balance.
+        $totals = $stock->select(
+            'id',
+            DB::raw('SUM(parent_stock) AS parent_stock'),
+            DB::raw('SUM(child_consumed) AS child_consumed'),
+            DB::raw('SUM(stock_available) AS stock_available')
+        )->groupBy('id');
+        $query = DB::table('products as p')
+            ->leftJoinSub($totals, 'stock_totals', 'stock_totals.id', '=', 'p.id')
+            ->leftJoin('product_units as u', 'u.id', '=', 'p.product_unit')
+            ->whereNull('p.is_variant')
+            ->where('p.tipe', '!=', 'parcel')
+            ->select(
+                'p.id', 'p.name', 'p.sku', 'p.limit', 'p.hpp', 'p.price',
+                'p.tipe', 'p.category_id', 'p.product_unit',
+                'u.abbreviation as unit',
+                DB::raw('COALESCE(stock_totals.parent_stock, 0) AS parent_stock'),
+                DB::raw('COALESCE(stock_totals.child_consumed, 0) AS child_consumed'),
+                DB::raw('COALESCE(stock_totals.stock_available, 0) AS stock_available')
+            );
+
+        if ($allowedBranchIds === []) {
+            $query->whereRaw('1 = 0');
+        }
+
+        if ($request->filled('stock_filter')) {
             if ($request->stock_filter === 'ada') {
-                $query->where('stock_available', '>', 0);
+                $query->whereRaw('COALESCE(stock_totals.stock_available, 0) > 0');
             } elseif ($request->stock_filter === 'kosong') {
-                $query->where('stock_available', '=', 0);
+                $query->whereRaw('COALESCE(stock_totals.stock_available, 0) <= 0');
             }
         }
 
         if ($request->filled('stock_kategori') && $request->stock_kategori !== 'all') {
-            $query->where('category_id', $request->stock_kategori);
+            $query->where('p.category_id', $request->stock_kategori);
         }
 
-        $data = $query;
-        return DataTables::of($data)
+        $sortColumns = [0 => 'p.name', 1 => 'p.hpp', 2 => 'stock_available'];
+        $sortIndex = (int) $request->input('order.0.column', 2);
+        $sortDirection = $request->input('order.0.dir') === 'asc' ? 'asc' : 'desc';
+
+        return DataTables::of($query)
+            ->order(function ($query) use ($sortColumns, $sortIndex, $sortDirection) {
+                $query->orderBy($sortColumns[$sortIndex] ?? 'stock_available', $sortDirection)
+                    ->orderBy('p.id');
+            })
             ->filter(function ($query) use ($request) {
                 $search = trim((string) $request->input('search.value'));
 
@@ -1462,11 +1539,17 @@ class ProductController extends Controller
                 }
 
                 $query->where(function ($subQuery) use ($search) {
-                    $subQuery->where('name', 'like', '%' . $search . '%')
-                        ->orWhere('sku', 'like', '%' . $search . '%');
+                    $subQuery->where('p.name', 'like', '%' . $search . '%')
+                        ->orWhere('p.sku', 'like', '%' . $search . '%');
                 });
-            }, true)
+            }, false)
             ->addIndexColumn()
+            ->addColumn('stock_raw', fn ($product) => (float) $product->stock_available)
+            ->addColumn('product_name', fn ($product) => $product->name)
+            ->addColumn('hpp_raw', fn ($product) => (float) $product->hpp)
+            ->addColumn('detail_url', fn ($product) => route('product-stock.show', $product->id))
+            ->addColumn('icon', fn ($product) => ProductIcon::resolve($product)[0])
+            ->addColumn('icon_class', fn ($product) => ProductIcon::resolve($product)[1])
             ->addColumn('name', function ($product) {
                 $html = '
                     <div class="d-flex align-items-center">';
@@ -1538,11 +1621,22 @@ class ProductController extends Controller
 
     public function get_data_available(Request $request)
     {
+        abort_unless(\App\Models\RoleMenu::checkAccess('product-stock.index')
+            || \App\Models\RoleMenu::checkAccess('stock-out.index')
+            || \App\Models\RoleMenu::checkAccess('stock-opname.index'), 403);
+        $allowedBranches = UserBranch::getUserBranch();
+        if (\App\Models\RoleMenu::checkAccess('stock-out.index')) {
+            $allowedBranches[] = 0; // Central stock used by stock-out.
+        }
         if ($request->has('branch_id') && ! $request->filled('branch_id')) {
             return collect();
         }
+        if ($request->filled('branch_id') && ! in_array((int) $request->branch_id, $allowedBranches, true)) {
+            abort(403);
+        }
 
         $query = DB::table('product_stock')
+            ->whereIn('branch_id', $allowedBranches)
             ->whereNull('is_variant')
             // ->where('stock_available', '>', 0)
             ->where('name', 'like', '%' . $request->search . '%')
@@ -1557,14 +1651,22 @@ class ProductController extends Controller
 
     public function get_data_stock_show(Request $request)
     {
+        $this->authorizeAccess('product-stock.show');
+        $request->validate([
+            'start_date' => ['nullable', 'date_format:Y-m-d'],
+            'end_date' => ['nullable', 'date_format:Y-m-d'],
+        ]);
+
         $productId = is_array($request->product_id) ? ($request->product_id[0] ?? $request->product_id) : $request->product_id;
 
         $query = DB::table('transaction_stock_show AS transaction_stock')
+            ->whereIn('transaction_stock.branch_id', UserBranch::getUserBranch())
             ->join('products', 'transaction_stock.product_id', '=', 'products.id')
             ->join('product_units', 'products.product_unit', '=', 'product_units.id')
             ->select('transaction_stock.*', 'products.name', 'product_units.abbreviation as unit');
 
         if ($request->filled('branch') && $request->branch != 'all') {
+            abort_unless(in_array((int) $request->branch, UserBranch::getUserBranch(), true), 403);
             $query->where('transaction_stock.branch_id', $request->branch);
         }
 
@@ -1572,16 +1674,29 @@ class ProductController extends Controller
             $query->whereRaw("transaction_stock.url COLLATE utf8mb4_unicode_ci = ?", [$request->reference]);
         }
 
+        if ($request->filled('stock_direction') && $request->stock_direction !== 'all') {
+            $request->validate(['stock_direction' => ['in:in,out']]);
+        }
+
         $query->where(function($q) use ($productId) {
             $q->where('transaction_stock.product_id', $productId)
               ->orWhere('transaction_stock.stock_parent_id', $productId);
         });
 
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $startDate = is_array($request->start_date) ? ($request->start_date[0] ?? $request->start_date) : $request->start_date;
-            $endDate = is_array($request->end_date) ? ($request->end_date[0] ?? $request->end_date) : $request->end_date;
-            $query->whereDate('transaction_stock.date', '>=', $startDate)
-                  ->whereDate('transaction_stock.date', '<=', $endDate);
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            [$startDate, $endDate] = [$endDate, $startDate];
+        }
+
+        if ($startDate) $query->whereDate('transaction_stock.date', '>=', $startDate);
+        if ($endDate) $query->whereDate('transaction_stock.date', '<=', $endDate);
+
+        if ($request->input('stock_direction') === 'in') {
+            $query->where('transaction_stock.quantity', '>', 0);
+        } elseif ($request->input('stock_direction') === 'out') {
+            $query->where('transaction_stock.quantity', '<', 0);
         }
 
         if ($request->filled('search')) {

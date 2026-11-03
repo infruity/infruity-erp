@@ -411,7 +411,7 @@ set formattedEditSell(val) {
                 this.addProduct.id = product.id;
                 this.addProduct.name = product.name;
                 this.addProduct.unit = product.unit?.abbreviation || '';
-                this.addProduct.price = product.last_price ?? product.price ?? 0;
+                this.addProduct.price = product.last_price ?? 0;
                 this.addProduct.sell = product.last_sell_price ?? product.last_price ?? product.price ?? 0;
                 this.addProduct.hpp = product.hpp ?? 0;
                 this.addValidationError = '';
@@ -459,7 +459,7 @@ set formattedEditSell(val) {
                                     unit: item.unit,
                                     price: item.price || 0,
                                     hpp: item.hpp || 0,
-                                    last_price: item.last_price || null,
+                                    last_price: item.last_price ?? null,
                                     last_sell_price: item.last_sell_price || null,
                                 }))
                             })
@@ -469,8 +469,8 @@ set formattedEditSell(val) {
                         this.addProduct.id = data.id;
                         this.addProduct.name = data.text;
                         this.addProduct.unit = data.unit.abbreviation;
-                        // Gunakan last_price dari pengadaan sebelumnya jika ada, jika tidak gunakan price biasa
-                        this.addProduct.price = data.last_price || data.price || 0;
+                        // Harga beli berasal dari pengadaan terakhir; produk tanpa riwayat dimulai dari 0.
+                        this.addProduct.price = data.last_price ?? 0;
                         // Gunakan last_sell_price untuk harga jual nanti
                         this.addProduct.sell = data.last_sell_price || data.last_price || data.price || 0;
                         this.addProduct.hpp = data.hpp ?? 0;

@@ -271,6 +271,7 @@ class P_role extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('role.index');
         if (class_exists(\Debugbar::class)) {
             \Debugbar::disable();
         }

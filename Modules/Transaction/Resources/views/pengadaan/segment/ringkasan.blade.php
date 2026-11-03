@@ -33,7 +33,7 @@
                 </button>
 
                 <!-- Tombol Simpan Final -->
-                <button class="btn btn-sm btn-warning shadow-lg d-flex align-items-center justify-content-center gap-2"
+                <button class="btn btn-sm btn-light shadow-lg d-flex align-items-center justify-content-center gap-2"
                     :disabled="loadingFinal || isSubmitting" @click="loadingFinal = true; saveToOrderBook(() => loadingFinal = false)">
                     <span x-show="!loadingFinal">Submit</span>
                     <span x-show="loadingFinal">

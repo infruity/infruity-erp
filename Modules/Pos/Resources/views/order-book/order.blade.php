@@ -1,4 +1,5 @@
 @extends('template.root')
+@section('title', 'Proses Pesanan')
 
 @section('content')
     <style>
@@ -87,8 +88,8 @@
     </style>
 
     <!--begin::Aside column-->
-    <div class="w-100 flex-lg-row-auto me-7 me-lg-10" x-data="posApp()" x-init="init()">
-        <div class="card card-body mb-3">
+    <div class="w-100 flex-lg-row-auto" x-data="posApp()" x-init="init()">
+        <div class="erp-editor"><div class="erp-editor-main"><section class="erp-editor-section"><header><h2>Informasi pesanan</h2></header><div class="erp-editor-body">
             <div class="d-flex flex-column gap-10 mb-3">
                 <!--begin::Input group-->
                 <div class="row">
@@ -179,9 +180,7 @@
                 </div>
                 <!--end::Input group-->
             </div>
-        </div>
-        <div>
-            <div class="card card-body mb-3">
+        </div></section><section class="erp-editor-section"><div class="erp-editor-body">
                 <div class="mb-4 d-flex justify-content-between align-items-center">
                     <div>
                         <span class="fs-5 fw-bold d-flex">Produk yang dijual</span>
@@ -229,12 +228,10 @@
                 </button> --}}
                 {{-- <!-- Cart --> --}}
                 @include('pos::pos.segment.cart')
-            </div>
-
-            <div class="card card-body">
+            </div></section></div><aside class="erp-editor-summary"><h2>Ringkasan pesanan</h2>
                 {{-- Ringkasan --}}
                 @include('pos::pos.segment.ringkasan')
-            </div>
+            </aside></div>
 
             <div class="modal fade" id="orderBookModal" tabindex="-1" aria-labelledby="orderBookModalLabel"
                 aria-hidden="true">
@@ -260,7 +257,7 @@
             @include('pos::pos.segment.modal-gift')
             @include('pos::pos.segment.modal-parcel')
             @include('pos::pos.segment.modal-jus')
-        </div>
+
     </div>
     <!--end::Aside column-->
     @include('pos::pos.js-create2')

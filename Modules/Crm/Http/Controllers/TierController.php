@@ -196,7 +196,7 @@ class TierController extends Controller
 
         // dd($request->all());
         $validated = $request->validate([
-            'discount_transaction' => 'nullable|numeric',
+            'discount_transaction' => 'nullable|numeric|between:0,100',
             'free_product_id' => 'nullable|array',
             'free_product_id.*' => 'exists:products,id',
             'birthday_gift' => 'nullable|boolean',

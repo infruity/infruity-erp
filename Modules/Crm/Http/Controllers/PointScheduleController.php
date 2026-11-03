@@ -5,14 +5,11 @@ namespace Modules\Crm\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Modules\Crm\Entities\CustomerTier;
-use Modules\Crm\Entities\PointDecrement;
 use Modules\Crm\Entities\PointSchedule;
 use Modules\Crm\Entities\SettingExp;
 use Modules\Crm\Entities\PointFrequency;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Modules\Crm\Entities\Tier;
 
 class PointScheduleController extends Controller
 {
@@ -97,39 +94,31 @@ class PointScheduleController extends Controller
             return $denied;
         }
 
+        $validated = $request->validate([
+            'start_date' => ['required', 'date_format:Y-m-d'],
+            'end_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:start_date'],
+            'frequency' => ['required', 'integer', 'exists:crm_point_frequency,value'],
+            'break' => ['required', 'integer', 'in:1,2'],
+            'skala' => ['required', 'numeric', 'gt:0'],
+            'value' => ['required', 'integer', 'min:0'],
+        ]);
+
         DB::beginTransaction();
         try {
             $settingPoint = PointSchedule::findOrFail($id);
-            $settingPoint->start_date = $request->start_date;
-            $settingPoint->end_date = $request->end_date;
-            $settingPoint->frequency = $request->frequency;
-            $settingPoint->break = $request->break;
+            $settingPoint->start_date = $validated['start_date'];
+            $settingPoint->end_date = $validated['end_date'];
+            $settingPoint->frequency = $validated['frequency'];
+            $settingPoint->break = $validated['break'];
             $settingPoint->updated_by = Auth::id();
             $settingPoint->save();
 
-            $settingExp = SettingExp::findOrFail($id);
-            $settingExp->skala = $request->skala;
-            $settingExp->value = $request->value;
-            $settingExp->value_exp = $request->value * $request->skala;
+            $settingExp = SettingExp::firstOrFail();
+            $settingExp->skala = $validated['skala'];
+            $settingExp->value = $validated['value'];
+            $settingExp->value_exp = $validated['value'] * $validated['skala'];
             $settingExp->updated_by = Auth::id();
             $settingExp->save();
-
-            $customerTier = CustomerTier::where('tier_level', '>', 1)->get();
-            $tier = Tier::all()->pluck('exp', 'level')->toArray();
-
-            foreach ($customerTier as $key => $value) {
-                $customerId = $value->customer_id;
-                $tierLevel = $value->tier_level;
-                $newLevel = $tierLevel - 1;
-                $decrementPoint = $value->customer_exp - $tier[$newLevel];
-
-                PointDecrement::insert([
-                    'customer_id' => $customerId,
-                    'exp' => $decrementPoint,
-                    'created_by' => Auth::id(),
-                    'updated_by' => Auth::id(),
-                ]);
-            }
 
             DB::commit();
 
