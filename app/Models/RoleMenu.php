@@ -31,20 +31,28 @@ class RoleMenu extends Model
             return null;
         }
 
-        $assignments = RoleUser::with('role')->where('id_user', Auth::id());
         $selectedRoleId = session('role.id_role');
 
-        if (is_numeric($selectedRoleId)) {
-            $selectedRole = (clone $assignments)
-                ->where('id_role', (int) $selectedRoleId)
-                ->first()?->role;
-
-            if ($selectedRole) {
-                return $selectedRole;
-            }
+        // Called for every access check on a page; resolve it once per request.
+        $attributes = request()->attributes;
+        $cacheKey = 'current_role.' . Auth::id() . '.' . (is_numeric($selectedRoleId) ? (int) $selectedRoleId : '-');
+        if ($attributes->has($cacheKey)) {
+            return $attributes->get($cacheKey);
         }
 
-        return $assignments->orderBy('id_ru')->first()?->role;
+        $assignments = RoleUser::with('role')->where('id_user', Auth::id());
+        $role = null;
+
+        if (is_numeric($selectedRoleId)) {
+            $role = (clone $assignments)
+                ->where('id_role', (int) $selectedRoleId)
+                ->first()?->role;
+        }
+
+        $role ??= $assignments->orderBy('id_ru')->first()?->role;
+        $attributes->set($cacheKey, $role);
+
+        return $role;
     }
 
     public static function currentRoleId(): ?int
@@ -74,8 +82,38 @@ class RoleMenu extends Model
 
         $roleId = self::currentRoleId();
 
-        return $roleId === 1 || ($roleId !== null && self::where('id_role', $roleId)
-            ->where('permission', $permission)
-            ->exists());
+        if ($roleId === 1) {
+            return true;
+        }
+
+        if ($roleId === null) {
+            return false;
+        }
+
+        return isset(self::rolePermissions($roleId)[self::permissionKey((string) $permission)]);
+    }
+
+    /**
+     * All permissions of a role, loaded once per request instead of one query per check.
+     */
+    protected static function rolePermissions(int $roleId): array
+    {
+        $attributes = request()->attributes;
+        $cacheKey = 'role_permissions.' . $roleId;
+
+        if (! $attributes->has($cacheKey)) {
+            $attributes->set($cacheKey, self::where('id_role', $roleId)
+                ->pluck('permission')
+                ->mapWithKeys(fn ($name) => [self::permissionKey((string) $name) => true])
+                ->all());
+        }
+
+        return $attributes->get($cacheKey);
+    }
+
+    // MySQL compared permissions case-insensitively and ignoring trailing spaces; keep that.
+    protected static function permissionKey(string $permission): string
+    {
+        return mb_strtolower(rtrim($permission));
     }
 }

@@ -77,6 +77,8 @@ return new class extends Migration
         DB::statement("DROP VIEW IF EXISTS report_total_belanja");
         DB::statement("DROP VIEW IF EXISTS transaction_stock");
         DB::statement("DROP VIEW IF EXISTS transaction_stock_show");
+        DB::statement("DROP VIEW IF EXISTS transaction_stock_base");
+        DB::statement("DROP VIEW IF EXISTS transaction_stock_show_base");
         DB::statement("DROP VIEW IF EXISTS sortir_view");
         DB::statement("DROP VIEW IF EXISTS view_wholesale");
         DB::statement("DROP VIEW IF EXISTS vw_customer_transaction");

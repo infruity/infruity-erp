@@ -50,7 +50,7 @@
         @livewireStyles
     @endisset
     @include('partials.erp-chrome')
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.17.5/dist/cdn.min.js"></script>
     <!--end::Global Stylesheets Bundle-->
     <script>
         // Frame-busting to prevent site from being loaded within a frame without permission (click-jacking) if (window.top != window.self) { window.top.location.replace(window.self.location.href); }
@@ -238,8 +238,16 @@
 
                     // console.log('🔥 Token FCM:', token);
 
+                    // Kirim token hanya jika berubah (atau sekali sehari), bukan di setiap halaman
+                    const sentKey = 'fcm_token_sent_{{ auth()->id() }}';
+                    let sent = null;
+                    try { sent = JSON.parse(localStorage.getItem(sentKey) || 'null'); } catch (e) {}
+                    if (!token || (sent && sent.token === token && Date.now() - sent.at < 86400000)) {
+                        return;
+                    }
+
                     // Kirim token ke backend Laravel
-                    await fetch('/api/save-fcm-token', {
+                    const res = await fetch('/api/save-fcm-token', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -250,6 +258,9 @@
                             fcm_token: token
                         }),
                     });
+                    if (res.ok) {
+                        try { localStorage.setItem(sentKey, JSON.stringify({ token, at: Date.now() })); } catch (e) {}
+                    }
                 })
                 .catch((err) => {
                     // console.error('Gagal mendapatkan token FCM:', err);

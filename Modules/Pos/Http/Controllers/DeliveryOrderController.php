@@ -217,6 +217,9 @@ class DeliveryOrderController extends Controller
         $data = $query->orderBy('ongkir_status', 'asc')
         ->orderBy('created_at', 'desc');
         // dd($data);
+        $kurirCache = [];
+        $staffCache = [];
+
         return DataTables::of($data)
             ->addIndexColumn()
             ->filterColumn('name', function ($query, $keyword) {
@@ -272,7 +275,7 @@ class DeliveryOrderController extends Controller
                 $html .= '</div>';
                 return $html;
             })
-            ->addColumn('courier', function ($item) {
+            ->addColumn('courier', function ($item) use (&$kurirCache, &$staffCache) {
                 $courierName = '-';
                 $courierType = null;
                 $courierId = $item->courier_id;
@@ -281,12 +284,19 @@ class DeliveryOrderController extends Controller
                     $courierName = '-';
                 } else {
                     // Cek di tabel kurir untuk mendapatkan type (external atau internal)
-                    $kurir = \Modules\Master\Entities\Kurir::find($courierId);
+                    // Few couriers serve many orders; look each one up once per request.
+                    if (! array_key_exists($courierId, $kurirCache)) {
+                        $kurirCache[$courierId] = \Modules\Master\Entities\Kurir::find($courierId);
+                    }
+                    $kurir = $kurirCache[$courierId];
                     if ($kurir) {
                         $courierType = $kurir->type;
                         // Jika internal, ambil nama dari staff
                         if ($courierType === 'internal' && $kurir->staff_id) {
-                            $staff = \Modules\Master\Entities\Staff::find($kurir->staff_id);
+                            if (! array_key_exists($kurir->staff_id, $staffCache)) {
+                                $staffCache[$kurir->staff_id] = \Modules\Master\Entities\Staff::find($kurir->staff_id);
+                            }
+                            $staff = $staffCache[$kurir->staff_id];
                             $courierName = $staff ? $staff->name : 'Not found';
                         } else {
                             // External atau internal tanpa staff_id (edge case)
@@ -294,7 +304,10 @@ class DeliveryOrderController extends Controller
                         }
                     } else {
                         // Fallback: cek di tabel staff (untuk legacy data yang tidak ada di kurir)
-                        $staff = \Modules\Master\Entities\Staff::find($courierId);
+                        if (! array_key_exists($courierId, $staffCache)) {
+                            $staffCache[$courierId] = \Modules\Master\Entities\Staff::find($courierId);
+                        }
+                        $staff = $staffCache[$courierId];
                         $courierName = $staff ? $staff->name : 'Not found';
                         $courierType = $staff && $staff->is_kurir ? 'internal' : 'unknown';
                     }

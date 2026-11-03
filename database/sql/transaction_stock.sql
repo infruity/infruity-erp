@@ -1,6 +1,6 @@
-DROP VIEW IF EXISTS transaction_stock;
-CREATE VIEW transaction_stock AS
-WITH base AS (
+-- Raw stock ledger rows (no running balance). Aggregations such as
+-- product_stock should read from this view: it skips the window-function sort.
+CREATE OR REPLACE VIEW transaction_stock_base AS
 	-- 	STOCK IN
 	SELECT
 		0 AS branch_id,
@@ -230,6 +230,12 @@ WITH base AS (
 	WHERE pos_transaction_detail.deleted_at IS NULL
 		AND pos_transaction.`status` IN ('paid', 'debt')
 		AND pos_transaction.deleted_at IS NULL
+;
+
+DROP VIEW IF EXISTS transaction_stock;
+CREATE VIEW transaction_stock AS
+WITH base AS (
+    SELECT * FROM transaction_stock_base
 )
 SELECT *,
 	COALESCE(SUM(quantity) OVER (

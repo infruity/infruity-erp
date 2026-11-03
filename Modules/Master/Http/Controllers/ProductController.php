@@ -1033,31 +1033,33 @@ class ProductController extends Controller
 
         $query = $query->get();
 
-        $query->map(function ($product) {
-            $lastWholesale = \Modules\Transaction\Entities\WholesaleProduct::where('product_id', $product->id)
-                ->orderBy('created_at', 'desc')
-                ->first();
+        // Last purchase per product, its branch, and that branch's sell price:
+        // three queries for the whole list instead of three per product.
+        $productIds = $query->pluck('id')->unique()->values();
+        $lastWholesales = \Modules\Transaction\Entities\WholesaleProduct::with('wholesale')
+            ->whereIn('product_id', $productIds)
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->unique('product_id')
+            ->keyBy('product_id');
+        $branchPrices = \Modules\Master\Entities\ProductBranch::whereIn('product_id', $lastWholesales->keys())
+            ->get()
+            ->groupBy('product_id');
+
+        $query->map(function ($product) use ($lastWholesales, $branchPrices) {
+            $lastWholesale = $lastWholesales->get($product->id);
             $product->last_price = $lastWholesale ? (float) $lastWholesale->price : null;
-            
+
             // Ambil last_sell_price dari ProductBranch berdasarkan branch_id di transaksi pengadaan terakhir
-            if ($lastWholesale) {
-                $lastWholesaleFull = \Modules\Transaction\Entities\WholesaleProduct::with('wholesale')
-                    ->where('product_id', $product->id)
-                    ->orderBy('created_at', 'desc')
-                    ->first();
-                $branchId = $lastWholesaleFull?->wholesale?->branch_id;
-                if ($branchId) {
-                    $productBranch = \Modules\Master\Entities\ProductBranch::where('product_id', $product->id)
-                        ->where('branch_id', $branchId)
-                        ->first();
-                    $product->last_sell_price = $productBranch ? (float) $productBranch->price : null;
-                } else {
-                    $product->last_sell_price = null;
-                }
+            $branchId = $lastWholesale?->wholesale?->branch_id;
+            if ($branchId) {
+                $productBranch = $branchPrices->get($product->id)?->firstWhere('branch_id', $branchId);
+                $product->last_sell_price = $productBranch ? (float) $productBranch->price : null;
             } else {
                 $product->last_sell_price = null;
             }
-            
+
             return $product;
         });
 
@@ -1137,6 +1139,9 @@ class ProductController extends Controller
         $childProductRelations = ['category', 'childProducts.product', 'creator:id_user,nm_user', 'updater:id_user,nm_user'];
         if ($branchFilter && $branchFilter != 0) {
             $childProductRelations['childProducts.product.productBranches'] = fn($branches) => $branches->where('branch_id', $branchFilter);
+        } else {
+            // Child prices read productBranches; load them with the page instead of per product.
+            $childProductRelations[] = 'childProducts.product.productBranches:id,product_id,branch_id,price';
         }
 
         $query = Product::query()

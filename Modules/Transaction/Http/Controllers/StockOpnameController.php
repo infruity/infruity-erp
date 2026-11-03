@@ -6,6 +6,7 @@ use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Transaction\Entities\StockOpname;
+use Modules\Transaction\Entities\ProductStock;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -360,17 +361,11 @@ class StockOpnameController extends Controller
             ->leftJoin('users', 'stock_opname.created_by', '=', 'users.id_user')
             ->leftJoin('branch', 'stock_opname.branch_id', '=', 'branch.id')
             ->leftJoin('products', 'stock_opname.product_id', '=', 'products.id')
-            ->leftJoin('product_stock', function ($j) {
-                $j->on('product_stock.id', '=', 'stock_opname.product_id')
-                  ->on('product_stock.branch_id', '=', 'stock_opname.branch_id');
-            })
             ->select(
                 'stock_opname.*',
                 'users.nm_user as creator_name',
                 'branch.name as branch_name',
                 'products.name as product_name',
-                'product_stock.avg_hpp as avg_hpp_calc',
-                'product_stock.stock_available as live_stock',
                 DB::raw('(SELECT COUNT(*) FROM stock_opname_discussions WHERE stock_opname_discussions.stock_opname_id = stock_opname.id) as discussions_count'),
                 DB::raw('(SELECT COUNT(*) FROM stock_opname_history WHERE stock_opname_history.stock_opname_id = stock_opname.id) as history_count')
             )
@@ -390,7 +385,7 @@ class StockOpnameController extends Controller
 
         $query->orderBy('stock_opname.created_at', 'desc');
 
-        return DataTables::of($query)
+        $response = DataTables::of($query)
             ->filter(function ($q) use ($request) {
                 if ($request->has('search') && !empty($request->search['value'])) {
                     $search = $request->search['value'];
@@ -404,6 +399,32 @@ class StockOpnameController extends Controller
             })
             ->addIndexColumn()
             ->make(true);
+
+        // Live stock and average HPP come from the product_stock view, which rebuilds the
+        // whole ledger per query. Joining it made both the page and the count query pay
+        // that cost; read it once, for the rows on this page only.
+        $payload = $response->getData(true);
+        $rows = $payload['data'] ?? [];
+        if ($rows !== []) {
+            $stocks = ProductStock::query()
+                ->whereIn('id', array_unique(array_column($rows, 'product_id')))
+                ->whereIn('branch_id', array_unique(array_column($rows, 'branch_id')))
+                ->get(['id', 'branch_id', 'stock_available', 'avg_hpp']);
+
+            $byKey = [];
+            foreach ($stocks as $stock) {
+                $byKey[$stock->id . '|' . $stock->branch_id] ??= $stock;
+            }
+
+            foreach ($rows as $i => $row) {
+                $stock = $byKey[$row['product_id'] . '|' . $row['branch_id']] ?? null;
+                $rows[$i]['avg_hpp_calc'] = $stock?->getRawOriginal('avg_hpp');
+                $rows[$i]['live_stock'] = $stock?->getRawOriginal('stock_available');
+            }
+            $payload['data'] = $rows;
+        }
+
+        return response()->json($payload, $response->getStatusCode(), $response->headers->all());
     }
 
     public function get_history($id)

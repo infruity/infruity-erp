@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\InventorySnapshot;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -289,10 +290,14 @@ class TransferController extends Controller
             }
 
             if (($data['status'] ?? 'draft') === 'pending') {
-                foreach (collect($data['items'])->sortBy('id') as $item) {
+                $sortedItems = collect($data['items'])->sortBy('id');
+                foreach ($sortedItems as $item) {
                     \Modules\Master\Entities\Product::whereKey($item['id'])->lockForUpdate()->firstOrFail();
-                    $available = (float) DB::table('product_stock')->where('id', $item['id'])
-                        ->where('branch_id', $data['branch_id'])->value('stock_available');
+                }
+                // One stock query for all items (the view rebuilds the whole ledger per call).
+                $stock = InventorySnapshot::stockAvailable($sortedItems->pluck('id'), $data['branch_id']);
+                foreach ($sortedItems as $item) {
+                    $available = $stock[(int) $item['id']] ?? 0.0;
                     if ($available < (float) $item['qty']) {
                         throw \Illuminate\Validation\ValidationException::withMessages(['items' => 'Kuantitas pengiriman melebihi stok cabang asal.']);
                     }
@@ -511,10 +516,14 @@ class TransferController extends Controller
                     }
                 }
             }
-            foreach ($details->groupBy('product_id')->sortKeys() as $productId => $group) {
+            $groups = $details->groupBy('product_id')->sortKeys();
+            foreach ($groups as $productId => $group) {
                 \Modules\Master\Entities\Product::whereKey($productId)->lockForUpdate()->firstOrFail();
-                $available = (float) DB::table('product_stock')->where('id', $productId)
-                    ->where('branch_id', $transfer->branch_id)->value('stock_available');
+            }
+            // One stock query for all products (the view rebuilds the whole ledger per call).
+            $stock = InventorySnapshot::stockAvailable($groups->keys(), $transfer->branch_id);
+            foreach ($groups as $productId => $group) {
+                $available = $stock[(int) $productId] ?? 0.0;
                 if ($available < (float) $group->sum('quantity')) {
                     throw \Illuminate\Validation\ValidationException::withMessages(['items' => 'Stok cabang asal tidak mencukupi. Hubungi pengirim untuk memeriksa stok.']);
                 }

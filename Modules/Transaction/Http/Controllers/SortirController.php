@@ -39,15 +39,8 @@ class SortirController extends Controller
         $userBranches = UserBranch::getUserBranch();
         $data['branches'] = Branch::whereIn('id', $userBranches)->get();
 
-        $emptyStockProducts = DB::table('product_stock')
-            ->join('branch', 'product_stock.branch_id', '=', 'branch.id')
-            ->select('product_stock.*', 'branch.name as branch_name')
-            ->whereIn('product_stock.branch_id', $userBranches)
-            ->where('stock_available', '<', 0)
-            ->whereNull('is_variant')
-            ->get();
-
-        $data['emptyStockData'] = $emptyStockProducts;
+        // The sortir page has no negative-stock warning, so it does not query the
+        // product_stock view (~100 ms per page load).
 
         return view('transaction::sortir.index2', $data);
     }

@@ -5,7 +5,10 @@ WITH parent_ts AS (
         ts.product_id,
         SUM(ts.quantity) AS parent_stock,
         AVG(ts.avg_price) AS avg_hpp
-    FROM transaction_stock_show ts
+    -- Same rows as transaction_stock_show, without its running-balance window
+    -- functions (they sort the whole ledger and are not needed for a SUM).
+    FROM transaction_stock_show_base ts
+    LEFT JOIN product_child pc_ts ON pc_ts.product_id = ts.product_id
     GROUP BY
         ts.branch_id,
         ts.product_id
@@ -22,7 +25,7 @@ child_agg AS (
         ) AS child_consumed,
         GROUP_CONCAT(p.name ORDER BY p.name SEPARATOR ', ') AS child
     FROM product_child pc
-    LEFT JOIN transaction_stock ts
+    LEFT JOIN transaction_stock_base ts
         ON ts.product_id = pc.product_id
     JOIN products p
         ON p.id = pc.product_id

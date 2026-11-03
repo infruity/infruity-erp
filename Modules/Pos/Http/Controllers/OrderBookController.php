@@ -231,10 +231,10 @@ class OrderBookController extends Controller
                 ->unique()
                 ->values()
                 ->toArray();
-            $fcm = new FcmService();
             $title = "Ada Pesanan Masuk 🍉";
             $body = "List Pesanan : \n" . $data['note'] . "\n\n Semangat Bekerja!";
-            $fcm->sendNotification($tokens, $title, $body);
+            // Push is sent after the response so saving does not wait on Firebase.
+            (new FcmService())->sendAfterResponse($tokens, $title, $body);
             // dd($data);
             DB::disconnect();
             return response()->json([
@@ -407,7 +407,7 @@ class OrderBookController extends Controller
 
     public function get_data(Request $request)
     {
-        $query = OrderBook::with('customer', 'pos')->whereIn('branch_id', UserBranch::getUserBranch());
+        $query = OrderBook::with('customer', 'pos', 'branch')->whereIn('branch_id', UserBranch::getUserBranch());
         if ($request->has('status_filter') && $request->status_filter !== 'all') {
             if ($request->status_filter === 'process') {
                 $query = $query->whereIn('status', ['process', 'posting']);
@@ -563,6 +563,8 @@ class OrderBookController extends Controller
                 return $html;
             })
             ->rawColumns(['name', 'action', 'date'])
+            // branch is eager-loaded only for the badge; keep it out of the JSON as before.
+            ->removeColumn('branch')
             ->make(true);
     }
 }

@@ -3,6 +3,7 @@ namespace Modules\Pos\Http\Controllers;
 
 use Illuminate\Support\Facades\Schema;
 use Modules\Pos\Services\PaymentSubmission;
+use App\Support\InventorySnapshot;
 
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -483,12 +484,10 @@ class PosController extends Controller
                     Product::where('id', $lockId)->lockForUpdate()->first();
                 }
 
-                // Validasi stok akumulatif dari semua sumber
+                // Validasi stok akumulatif dari semua sumber (satu query untuk semua produk)
+                $stockSnapshot = InventorySnapshot::stockAvailable(array_keys($requiredStocks), $posForVoucher->branch_id);
                 foreach ($requiredStocks as $stockProductId => $requiredQty) {
-                    $productStock = ProductStock::where('id', $stockProductId)
-                        ->where('branch_id', $posForVoucher->branch_id)
-                        ->first();
-                    $currentStock = $productStock ? (float)$productStock->stock_available : 0;
+                    $currentStock = $stockSnapshot[(int) $stockProductId] ?? 0.0;
 
                     if ($currentStock < $requiredQty) {
                         $product     = Product::find($stockProductId);
@@ -716,6 +715,19 @@ class PosController extends Controller
                 Product::where('id', $lockId)->lockForUpdate()->first();
             }
 
+            // Stock of every locked product in one query (the view rebuilds the whole
+            // ledger per call). Draft/temp/pending saves are not in the stock ledger,
+            // so this snapshot stays valid for the rest of the request.
+            $stockSnapshot = InventorySnapshot::stockAvailable($allProductIdsToLock, $data['branch_id']);
+            $stockOf = function ($productId) use (&$stockSnapshot, $data): float {
+                $productId = (int) $productId;
+                if (! array_key_exists($productId, $stockSnapshot)) {
+                    $stockSnapshot += InventorySnapshot::stockAvailable([$productId], $data['branch_id']);
+                }
+
+                return $stockSnapshot[$productId];
+            };
+
             $requiredStocks = [];
 
             $addRequiredStock = function($productId, $qty) use (&$requiredStocks) {
@@ -769,8 +781,7 @@ class PosController extends Controller
                     if (!$productId) continue;
 
                     if (!isset($remainingStockJusValidation[$productId])) {
-                        $productStock = ProductStock::where('id', $productId)->where('branch_id', $data['branch_id'])->first();
-                        $remainingStockJusValidation[$productId] = $productStock ? (float)$productStock->stock_available : 0;
+                        $remainingStockJusValidation[$productId] = $stockOf($productId);
                     }
 
                     $currentStock = $remainingStockJusValidation[$productId];
@@ -805,10 +816,7 @@ class PosController extends Controller
 
             // Validasi stok akumulatif dari semua sumber
             foreach ($requiredStocks as $stockProductId => $requiredQty) {
-                $productStock = ProductStock::where('id', $stockProductId)
-                    ->where('branch_id', $data['branch_id'])
-                    ->first();
-                $currentStock = $productStock ? (float)$productStock->stock_available : 0;
+                $currentStock = $stockOf($stockProductId);
 
                 if ($currentStock < $requiredQty) {
                     $product     = Product::find($stockProductId);
@@ -891,8 +899,28 @@ class PosController extends Controller
             // Convert global discount to nominal if it is a percentage (<= 100)
             $globalDiscountInput = $data['discount'] ?? 0;
             $globalDiscountNominal = ($globalDiscountInput > 0 && $globalDiscountInput <= 100) 
-                ? ($data['subtotal'] * ($globalDiscountInput / 100)) 
+                ? ($data['subtotal'] * ($globalDiscountInput / 100))
                 : $globalDiscountInput;
+
+            // HPP of every involved product in one query (product_hpp rebuilds the whole
+            // ledger per call). Once this request writes rows into a product's HPP
+            // history, that product is read directly again so results stay identical.
+            $hppSnapshot    = InventorySnapshot::latestHpp($allProductIdsToLock);
+            $hppTouched     = [];
+            $hppDirectOnly  = false;
+            $hppIsStale     = function (int $productId) use (&$hppSnapshot, &$hppTouched, &$hppDirectOnly): bool {
+                return $hppDirectOnly || isset($hppTouched[$productId]) || ! array_key_exists($productId, $hppSnapshot);
+            };
+            $hppOf = function (int $productId) use (&$hppSnapshot, $hppIsStale) {
+                if ($hppIsStale($productId)) {
+                    return ProductHppRunning::where('product_id', $productId)
+                        ->orderBy('created_at', 'desc')
+                        ->orderBy('trx_id', 'desc')
+                        ->first();
+                }
+
+                return $hppSnapshot[$productId];
+            };
 
             foreach ($data['items'] as $item) {
                 if (is_numeric($item['id'])) {
@@ -907,10 +935,7 @@ class PosController extends Controller
 
                     // Jika product memiliki parent, gunakan parent_id untuk HPP, jika tidak gunakan product itu sendiri
                     $hppProductId = $parentId ?? $product->id;
-                    $productHpp   = ProductHppRunning::where('product_id', $hppProductId)
-                        ->orderBy('created_at', 'desc')
-                        ->orderBy('trx_id', 'desc')
-                        ->first();
+                    $productHpp   = $hppOf($hppProductId);
                     $currentStock = $productHpp ? $productHpp->qty_berjalan : 0;
                     $hppValue     = $productHpp ? ($productHpp->hpp_berjalan ?? 0) : 0;
 
@@ -930,6 +955,7 @@ class PosController extends Controller
                         'type'                 => 'product',
                         'created_by'           => $userId,
                     ]);
+                    $hppTouched[$hppProductId] = true;
 
                     if ($currentStock <= 0) {
                         $posDetail->update([
@@ -955,9 +981,10 @@ class PosController extends Controller
                 }
             }
 
-            $movingHpp = static function (int $productId): float {
-                $current = ProductHppRunning::where('product_id', $productId)
-                    ->orderByDesc('created_at')->value('hpp_berjalan');
+            $movingHpp = static function (int $productId) use (&$hppSnapshot, $hppIsStale): float {
+                $current = $hppIsStale($productId)
+                    ? ProductHppRunning::where('product_id', $productId)->orderByDesc('created_at')->value('hpp_berjalan')
+                    : $hppSnapshot[$productId]?->hpp_berjalan;
                 return (float) ($current ?? Product::whereKey($productId)->value('hpp') ?? 0);
             };
 
@@ -1015,6 +1042,10 @@ class PosController extends Controller
                         'type'          => 'parcel',
                         'created_by'    => $userId,
                     ]);
+                    $hppTouched[$product->id] = true;
+                    if ($parcelParentId = $product->getParentId()) {
+                        $hppTouched[$parcelParentId] = true;
+                    }
                     foreach ($value['data'] as $item) {
                         $parcelQtyPerSet = (float) ($item['qty'] ?? 0);
                         $parcelLinePrice = (float) ($item['price'] ?? 0);
@@ -1038,13 +1069,16 @@ class PosController extends Controller
                 }
             }
 
+            // Juice lines write production rows that change HPP history as they go;
+            // keep reading HPP directly from here on.
+            $hppDirectOnly = true;
+
             if (!empty($data['jus'])) {
                 $remainingStockJus = [];
                 foreach ($data['jus'] as $index => $value) {
                     $productId = $value['productId'];
                     if (!isset($remainingStockJus[$productId])) {
-                        $productStock = ProductStock::where('id', $productId)->where('branch_id', $data['branch_id'])->first();
-                        $remainingStockJus[$productId] = $productStock ? (float)$productStock->stock_available : 0;
+                        $remainingStockJus[$productId] = $stockOf($productId);
                     }
 
                     $currentStock = $remainingStockJus[$productId];
@@ -1351,7 +1385,8 @@ class PosController extends Controller
     {
         $this->authorizeAccess('pos.index');
         $userId = auth()->id();
-        $query  = PosModel::with('customer', 'paymentDetails', 'details', 'branch', 'user')
+        // details.product:id keeps the parcel icon check from querying products per row.
+        $query  = PosModel::with('customer', 'paymentDetails', 'details.product:id', 'branch', 'user')
             ->whereIn('branch_id', UserBranch::getUserBranch());
 
         $query->where(function ($q) use ($userId) {
