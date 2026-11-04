@@ -1,9 +1,9 @@
 @extends('layouts.erp-tailwind')
 
-@section('title', 'Pengadaan - Pembelian')
+@section('title', 'Pengadaan - Inventaris')
 @section('page-title', 'Pengadaan')
 @section('page-breadcrumb')
-    <span>Pembelian</span><i class="ph ph-caret-right text-[0.55rem]"></i><span>Pengadaan</span>
+    <span>Inventaris</span><i class="ph ph-caret-right text-[0.55rem]"></i><span>Pengadaan</span>
 @endsection
 
 @section('content')

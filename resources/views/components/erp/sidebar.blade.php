@@ -129,7 +129,7 @@
 
         @php
             $masterRoutes = ['products.*', 'receipt.*', 'product-receipt.*', 'unit.*', 'supplier.*', 'customers.*', 'branch.*', 'user.*', 'position.*', 'staff.*', 'kurir.*', 'payment-method.*', 'roles.*'];
-            $inventoryRoutes = ['sortir.*', 'transfer-pengirim.*', 'transfer-penerima.*', 'stock-opname.*'];
+            $inventoryRoutes = ['wholesale.*', 'production.*', 'production-data', 'sortir.*', 'transfer-pengirim.*', 'transfer-penerima.*', 'stock-opname.*'];
             $salesRoutes = ['pos.*', 'order-book.*', 'delivery-order', 'delivery-order.*'];
             $reportRoutes = ['reports.hub', 'report-*', 'product-stock', 'product-stock.*'];
         @endphp
@@ -155,34 +155,18 @@
         </div>
 
         <div class="erp-sidebar__group">
-            <a href="#" data-type="header" @click.prevent="if (sidebarCollapsed) sidebarCollapsed = false" class="sidebar-link {{ request()->routeIs('wholesale.*') ? 'active' : '' }}">
-                <span class="erp-sidebar__link-label"><i class="ph ph-bag sidebar-icon" aria-hidden="true"></i><span class="font-medium">Pembelian</span></span>
-            </a>
-            <div class="submenu-wrapper" x-show="!sidebarCollapsed"><div class="py-1 space-y-0.5">
-                <a href="{{ route('wholesale.index') }}" class="submenu-link {{ request()->routeIs('wholesale.*') ? 'active' : '' }}"><span>Pengadaan</span></a>
-            </div></div>
-        </div>
-
-        <div class="erp-sidebar__group">
             <a href="#" data-type="header" @click.prevent="if (sidebarCollapsed) sidebarCollapsed = false" class="sidebar-link {{ request()->routeIs(...$inventoryRoutes) ? 'active' : '' }}">
                 <span class="erp-sidebar__link-label"><i class="ph ph-package sidebar-icon" aria-hidden="true"></i><span class="font-medium">Inventaris</span></span>
             </a>
             <div class="submenu-wrapper" x-show="!sidebarCollapsed"><div class="py-1 space-y-0.5">
+                <a href="{{ route('wholesale.index') }}" class="submenu-link {{ request()->routeIs('wholesale.*') ? 'active' : '' }}"><span>Pengadaan</span></a>
+                <a href="{{ route('production.index') }}" class="submenu-link {{ request()->routeIs('production.*', 'production-data') ? 'active' : '' }}"><span>Produksi</span></a>
                 <a href="{{ route('sortir.index') }}" class="submenu-link {{ request()->routeIs('sortir.*') ? 'active' : '' }}"><span>Sortir Barang</span></a>
                 <div x-data="{ transferOpen: true }">
                     <button type="button" @click="transferOpen = !transferOpen" class="submenu-link erp-sidebar__nested-toggle" :aria-expanded="transferOpen"><span>Pindah Stok</span><i class="ph ph-caret-down chevron-rotate" :class="transferOpen ? 'open' : ''" aria-hidden="true"></i></button>
                     <div x-show="transferOpen" x-transition><a href="{{ route('transfer-pengirim.index') }}" class="submenu-link level-3 {{ request()->routeIs('transfer-pengirim.*') ? 'active' : '' }}"><span>Mengirim</span></a><a href="{{ route('transfer-penerima.index') }}" class="submenu-link level-3 {{ request()->routeIs('transfer-penerima.*') ? 'active' : '' }}"><span>Menerima</span></a></div>
                 </div>
                 <a href="{{ route('stock-opname.index') }}" class="submenu-link {{ request()->routeIs('stock-opname.*') ? 'active' : '' }}"><span>Stok Opname</span></a>
-            </div></div>
-        </div>
-
-        <div class="erp-sidebar__group">
-            <a href="#" data-type="header" @click.prevent="if (sidebarCollapsed) sidebarCollapsed = false" class="sidebar-link {{ request()->routeIs('production.*') ? 'active' : '' }}">
-                <span class="erp-sidebar__link-label"><i class="ph ph-factory sidebar-icon" aria-hidden="true"></i><span class="font-medium">Produksi</span></span>
-            </a>
-            <div class="submenu-wrapper" x-show="!sidebarCollapsed"><div class="py-1 space-y-0.5">
-                <a href="{{ route('production.index') }}" class="submenu-link {{ request()->routeIs('production.*') ? 'active' : '' }}"><span>Produksi Barang</span></a>
             </div></div>
         </div>
 

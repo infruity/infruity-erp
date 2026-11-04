@@ -1,5 +1,5 @@
 @extends('template.root')
-@section('title', 'Produksi Barang')
+@section('title', 'Produksi')
 
 @section('content')
     <style>
