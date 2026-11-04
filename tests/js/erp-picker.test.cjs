@@ -109,3 +109,31 @@ test('POS header swaps customer and branch selects for pickers and keeps the sel
     assert.match(js, /tier_id/);
     assert.match(js, /ongkir_address/);
 });
+
+test('optionItems lists a static select as picker items and skips the empty placeholder', () => {
+    const { optionItems } = picker();
+    const items = optionItems({ options: [{ value: '', text: 'Pilih' }, { value: '1', text: ' Toko GKB ' }, { value: '2', text: 'Toko GBA' }] });
+
+    assert.deepEqual(items, [{ id: '1', text: 'Toko GKB', meta: '' }, { id: '2', text: 'Toko GBA', meta: '' }]);
+});
+
+test('the picker supports a static source, extra request params and living inside a Bootstrap modal', () => {
+    const js = fs.readFileSync(asset, 'utf8');
+
+    assert.match(js, /optionItems\(select\)/);
+    assert.match(js, /options\.params/);
+    // Bootstrap traps focus inside the open modal, so the overlay must be hosted inside it.
+    assert.match(js, /closest\('\.modal'\)/);
+});
+
+test('Stok Opname form uses pickers for branch and product and keeps the select2 data contract', () => {
+    const view = read('Modules/Transaction/Resources/views/stock-opname/index.blade.php');
+
+    assert.match(view, /ErpPicker\.attach\(\s*'#branch_id'/);
+    assert.match(view, /ErpPicker\.attach\(\s*'#product_id'/);
+    assert.match(view, /route\('ajax\.stock-available'\)/);
+    // The select2:select handler still receives stock and unit price from the picker's data object.
+    assert.match(view, /stock_available:\s*item\.stock_available/);
+    assert.match(view, /unit_price:/);
+    assert.match(view, /branch_id:\s*\$\('#branch_id'\)\.val\(\)/);
+});

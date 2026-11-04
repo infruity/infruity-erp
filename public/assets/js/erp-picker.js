@@ -31,6 +31,15 @@
         });
     }
 
+    function optionItems(select) {
+        var items = [];
+        Array.prototype.forEach.call((select && select.options) || [], function (option) {
+            if (option.value === '' || option.value == null) return;
+            items.push({ id: String(option.value), text: String(option.text).trim(), meta: '' });
+        });
+        return items;
+    }
+
     function selectedLabel(select) {
         if (!select || select.value === '' || select.value == null) return '';
         var option = select.selectedOptions && select.selectedOptions[0];
@@ -151,8 +160,20 @@
         var options = active.options;
         var request = ++active.request;
         var append = page > 1;
+        if (!options.url) {
+            // Static source: the options already inside the select.
+            active.page = 1;
+            active.more = false;
+            active.items = optionItems(active.select);
+            renderList(filterItems(active.items, term), false);
+            return Promise.resolve();
+        }
         var url = options.url + (options.url.indexOf('?') === -1 ? '?' : '&') + (options.searchParam || 'search') + '=' + encodeURIComponent(term || '');
         if (options.paginate) url += '&page=' + (page || 1);
+        if (options.params) {
+            var extra = options.params() || {};
+            Object.keys(extra).forEach(function (key) { url += '&' + encodeURIComponent(key) + '=' + encodeURIComponent(extra[key] == null ? '' : extra[key]); });
+        }
         active.loading = true;
         dialog.overlay.classList.add('is-loading');
         return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' }, credentials: 'same-origin' })
@@ -190,6 +211,9 @@
         dialog.empty.textContent = options.emptyText || 'Data tidak ditemukan';
         dialog.empty.hidden = true;
         dialog.clear.hidden = !(options.clearable && select.value !== '');
+        // Bootstrap traps focus inside the open modal, so the overlay lives inside it when the select does.
+        var host = select.closest('.modal') || document.body;
+        if (dialog.overlay.parentNode !== host) host.append(dialog.overlay);
         dialog.overlay.hidden = false;
         document.documentElement.classList.add('erp-picker-open');
 
@@ -237,5 +261,5 @@
         return { sync: sync };
     }
 
-    return { normalizeItems: normalizeItems, filterItems: filterItems, selectedLabel: selectedLabel, attach: attach };
+    return { normalizeItems: normalizeItems, filterItems: filterItems, optionItems: optionItems, selectedLabel: selectedLabel, attach: attach };
 });

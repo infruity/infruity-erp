@@ -2301,6 +2301,32 @@
                 dropdownParent: $('#kt_modal_add_customer'),
             });
 
+            // Searchable pickers replace the select2 look; the selects, ids and select2 handlers stay as they are.
+            ErpPicker.attach('#branch_id', {
+                title: 'Pilih Cabang',
+                placeholder: 'Cari cabang...',
+                placeholderTrigger: 'Pilih cabang',
+                emptyText: 'Cabang tidak ditemukan'
+            });
+            ErpPicker.attach('#product_id', {
+                title: 'Pilih Produk',
+                subtitle: 'Produk yang stoknya dicocokkan',
+                placeholder: 'Cari nama produk...',
+                placeholderTrigger: 'Pilih produk',
+                emptyText: 'Produk tidak ditemukan',
+                url: '{{ route('ajax.stock-available') }}',
+                params: () => ({ branch_id: $('#branch_id').val() }),
+                map: item => ({
+                    id: item.id,
+                    text: item.name,
+                    meta: item.stock_available !== undefined ? 'Stok: ' + item.stock_available : '',
+                    data: {
+                        stock_available: item.stock_available,
+                        unit_price: item.hpp || item.price || item.cost_price || item.purchase_price || 0
+                    }
+                })
+            });
+
             $branch.off('change.stockOpname').on('change.stockOpname', function() {
                 const branchId = $(this).val();
                 const productId = $product.val();
