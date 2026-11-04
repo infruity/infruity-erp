@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..800;1,9..40,400&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,700&display=swap"
         rel="stylesheet">
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
@@ -45,7 +45,6 @@
                     fontFamily: {
                         sans: ['"Plus Jakarta Sans"', 'sans-serif'],
                         serif: ['"Poppins"', 'sans-serif'],
-                        dmsans: ['"DM Sans"', 'sans-serif'],
                     },
                     boxShadow: {
                         'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
@@ -65,6 +64,7 @@
             -webkit-appearance: none;
             margin: 0;
         }
+
         input[type="number"] {
             -moz-appearance: textfield;
             appearance: textfield;
@@ -97,8 +97,23 @@
             font-variation-settings: 'FILL' 1, 'wght' 400;
         }
 
-        .font-dmsans {
-            font-family: 'DM Sans', sans-serif !important;
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+
+        .font-sans {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+
+        .line-clamp-3 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
         }
 
         .tabular-nums {
@@ -237,15 +252,6 @@
 
         .animate-fade-in-up {
             animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-
-        /* Notification Dropdown */
-        .notif-item {
-            transition: background 0.15s ease;
-        }
-
-        .notif-item:hover {
-            background: rgba(15, 92, 69, 0.04);
         }
 
         .badge {
@@ -895,58 +901,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Right: Notification Bell -->
-                <div class="flex items-center gap-3">
-                    <div class="relative" x-data="{ notifOpen: false, hasUnread: true }">
-                        <button @click="notifOpen = !notifOpen; hasUnread = false"
-                            class="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-600 transition shrink-0 cursor-pointer">
-                            <div class="relative flex items-center justify-center">
-                                <i class="ph ph-bell text-lg"></i>
-                                <span x-show="hasUnread"
-                                    class="absolute top-[3px] right-[1.5px] w-2 h-2 bg-strawberry rounded-full border border-white"></span>
-                            </div>
-                        </button>
-
-                        <div x-show="notifOpen" @click.outside="notifOpen = false" x-cloak
-                            x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
-                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                            x-transition:leave="transition ease-in duration-150"
-                            x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                            class="absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden z-50">
-                            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                                <h4 class="font-serif font-semibold text-gray-800">Notifikasi</h4>
-                                <span class="badge bg-strawberry text-white">2 Baru</span>
-                            </div>
-                            <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
-                                <a href="#" @click.prevent="notifOpen = false"
-                                    class="notif-item flex gap-3 px-5 py-3.5">
-                                    <div
-                                        class="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
-                                        <i class="ph-fill ph-scales text-[#0b595b] text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-700 font-medium">Opname Pear Golden Selesai</p>
-                                        <p class="text-xs text-gray-400 mt-0.5">Selisih +0,52 Kg tercatat di Petiken -
-                                            001</p>
-                                    </div>
-                                </a>
-                                <a href="#" @click.prevent="notifOpen = false"
-                                    class="notif-item flex gap-3 px-5 py-3.5">
-                                    <div
-                                        class="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
-                                        <i class="ph-fill ph-clock-counter-clockwise text-amber-600 text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-700 font-medium">Koreksi Kredit Mangga Gadung</p>
-                                        <p class="text-xs text-gray-400 mt-0.5">2 riwayat revisi stok fisik tercatat</p>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </header>
 
             <!-- ================================ -->
@@ -963,7 +917,7 @@
                     <div x-show="currentView === 'list'"
                         class="bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
 
-                        <!-- Mobile Header: Frosted Glass with Hamburger, Logo & Notif -->
+                        <!-- Mobile Header: Frosted Glass with Hamburger & Logo -->
                         <div
                             class="sm:hidden px-4 py-3 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] shrink-0">
                             <button @click="toggleMobileSidebar()"
@@ -979,30 +933,7 @@
                                     class="object-contain" />
                             </div>
 
-                            <div class="relative" x-data="{ mNotifOpen: false }">
-                                <button @click="mNotifOpen = !mNotifOpen"
-                                    class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 hover:text-[#0b595b] hover:bg-emerald-50/70 active:scale-95 transition-all shrink-0 relative"
-                                    title="Notifikasi">
-                                    <i class="ph-bold ph-bell text-[21px]"></i>
-                                    <span
-                                        class="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white"></span>
-                                </button>
-                                <div x-show="mNotifOpen" x-cloak @click.outside="mNotifOpen = false"
-                                    x-transition:enter="transition ease-out duration-200"
-                                    x-transition:enter-start="opacity-0 -translate-y-2 scale-95"
-                                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                                    class="absolute right-0 top-12 w-80 max-w-[calc(100vw-32px)] bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] border border-gray-200 overflow-hidden z-50">
-                                    <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
-                                        <span class="font-bold text-[14px] text-gray-800">Notifikasi</span>
-                                        <button @click="mNotifOpen = false"
-                                            class="text-xs text-gray-400 hover:text-gray-600">Tutup</button>
-                                    </div>
-                                    <div class="p-4 text-xs text-gray-600 space-y-2">
-                                        <p class="font-semibold text-gray-800">Opname Pear Golden Selesai</p>
-                                        <p class="text-gray-500">Selisih +0,52 Kg tercatat oleh Zulki Arga Rahman.</p>
-                                    </div>
-                                </div>
-                            </div>
+                            <div class="w-9 h-9 shrink-0"></div>
                         </div>
 
                         <!-- ======================================================== -->
@@ -1079,12 +1010,12 @@
                                                     class="font-sans text-xs sm:text-sm font-bold text-gray-900 group-hover:text-[#0b595b] truncate transition-colors"
                                                     x-text="rec.product"></span>
                                             </div>
-                                            <div class="text-[10.5px] sm:text-xs text-gray-400 mt-0.5 truncate font-dmsans tabular-nums"
+                                            <div class="text-[10.5px] sm:text-xs text-gray-400 mt-0.5 truncate font-sans tabular-nums"
                                                 x-text="formatDisplayDateTime(rec.date, rec.time)"></div>
                                         </div>
 
                                         <!-- Kanan: Selisih Qty + Nilai Rp (Hanya Tampil bila Selisih != 0) -->
-                                        <div class="text-right shrink-0 font-dmsans tabular-nums">
+                                        <div class="text-right shrink-0 font-sans tabular-nums">
                                             <div class="text-xs sm:text-sm font-bold leading-snug"
                                                 :class="rec.diffQty > 0 ? 'text-emerald-700' : (rec.diffQty < 0 ? 'text-rose-700' : 'text-gray-400')">
                                                 <span x-text="formatSignedQty(rec.diffQty)"></span>
@@ -1170,88 +1101,133 @@
                         </div>
 
                         <!-- Freeze Sub-Header Produk & Table Header Bar (Persis Riwayat Pergerakan Stok) -->
-                        <div class="shrink-0 px-4 sm:px-6 pt-4 pb-3 bg-white border-b border-gray-100 space-y-2.5 z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.03)]">
+                        <div
+                            class="shrink-0 px-4 sm:px-6 pt-4 pb-3 bg-white border-b border-gray-100 space-y-2.5 z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.03)]">
                             <div class="flex items-center justify-between pb-0.5 relative">
                                 <div class="min-w-0 flex-1 pr-2">
-                                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium truncate mb-0.5 leading-tight">Riwayat Stok Opname</p>
+                                    <p
+                                        class="text-[11px] sm:text-xs text-gray-500 font-medium truncate mb-0.5 leading-tight">
+                                        Riwayat Stok Opname</p>
                                     <h2 class="text-sm sm:text-base font-extrabold text-gray-900 leading-tight truncate"
                                         x-text="historyRecord?.product"></h2>
                                 </div>
 
-                                <!-- ICON FILTER TUNE (Persis Riwayat Pergerakan Stok) -->
-                                <div class="relative shrink-0">
-                                    <button type="button" @click="openHistoryFilterModal()"
-                                        style="-webkit-tap-highlight-color: transparent; outline: none;"
-                                        class="w-7 h-7 rounded-xl flex items-center justify-center transition-all cursor-pointer select-none active:scale-95 border"
-                                        :class="(isHistoryFiltered || historyFilterOpen) 
-                                            ? 'bg-[#0b595b]/10 border-[#0b595b]/30 text-[#0b595b]' 
-                                            : 'bg-gray-100/90 hover:bg-gray-200/80 border-gray-200/80 text-gray-500 hover:text-[#0b595b]'"
-                                        title="Filter Riwayat Stok Opname">
-                                        <span class="icon-rounded" :class="(isHistoryFiltered || historyFilterOpen) ? 'is-bold' : ''" style="font-size: 18px;">tune</span>
-                                        <!-- Dot Indikator saat Filter Aktif -->
-                                        <span x-show="isHistoryFiltered"
-                                            class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-[#0b595b] ring-2 ring-white"
-                                            x-cloak></span>
+                                <!-- Kanan: 1 Action Button Tipe 2 (Murni Teks) + Filter Icon (Persis Riwayat Pergerakan Stok) -->
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <!-- 1 ACTION BUTTON TIPE 2 (MURNI TEKS - FIXED WIDTH ZERO-SHIFT) -->
+                                    <button type="button"
+                                        @click="historyTab = historyTab === 'credit' ? 'reason' : 'credit'"
+                                        class="w-[58px] py-1 rounded-xl border text-[11px] font-bold transition-all cursor-pointer select-none active:scale-95 shadow-2xs flex items-center justify-center text-center font-sans"
+                                        :class="historyTab === 'credit' 
+                                            ? 'bg-gray-100/90 hover:bg-gray-200/80 border-gray-200/80 text-[#0b595b]' 
+                                            : 'bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-800'"
+                                        :title="historyTab === 'credit' ? 'Klik untuk melihat Alasan Pergerakan' : 'Klik untuk melihat Pergerakan Kredit'">
+                                        <span x-text="historyTab === 'credit' ? 'Kredit' : 'Alasan'"></span>
                                     </button>
+
+                                    <!-- ICON FILTER TUNE (Persis Riwayat Pergerakan Stok) -->
+                                    <div class="relative shrink-0">
+                                        <button type="button" @click="openHistoryFilterModal()"
+                                            style="-webkit-tap-highlight-color: transparent; outline: none;"
+                                            class="w-7 h-7 rounded-xl flex items-center justify-center transition-all cursor-pointer select-none active:scale-95 border"
+                                            :class="(isHistoryFiltered || historyFilterOpen) 
+                                                ? 'bg-[#0b595b]/10 border-[#0b595b]/30 text-[#0b595b]' 
+                                                : 'bg-gray-100/90 hover:bg-gray-200/80 border-gray-200/80 text-gray-500 hover:text-[#0b595b]'"
+                                            :title="historyTab === 'credit' ? 'Filter Riwayat Kredit' : 'Filter Riwayat Alasan'">
+                                            <span class="icon-rounded"
+                                                :class="(isHistoryFiltered || historyFilterOpen) ? 'is-bold' : ''"
+                                                style="font-size: 18px;">tune</span>
+                                            <!-- Dot Indikator saat Filter Aktif -->
+                                            <span x-show="isHistoryFiltered"
+                                                class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-[#0b595b] ring-2 ring-white"
+                                                x-cloak></span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- TABLE HEADER BAR (SINGLE BAR - ZERO SHIFT) -->
-                            <div class="px-2.5 py-2 bg-gray-50/80 rounded-lg border border-gray-100 flex items-center justify-between text-[10.5px] font-bold uppercase tracking-wider text-gray-400">
+                            <div
+                                class="px-2.5 py-2 bg-gray-50/80 rounded-lg border border-gray-100 flex items-center justify-between text-[10.5px] font-bold uppercase tracking-wider text-gray-400">
                                 <span class="font-sans">Aktivitas</span>
-                                <div class="flex items-center gap-2 text-right font-dmsans tabular-nums shrink-0">
+                                <!-- Mode 1: Angka Pergerakan Kredit (Awal, Mutasi, Saldo) -->
+                                <div x-show="historyTab === 'credit'"
+                                    class="flex items-center gap-2 text-right font-sans tabular-nums shrink-0">
                                     <span class="w-[72px] text-right">Awal</span>
-                                    <span class="w-[76px] text-right">Mutasi</span>
+                                    <span class="w-[76px] text-right">Kredit</span>
                                     <span class="w-[64px] text-right text-[#0b595b]">Saldo</span>
+                                </div>
+                                <!-- Mode 2: Alasan Setiap Pergerakan (Posisi Menggantikan Deretan Angka) -->
+                                <div x-show="historyTab === 'reason'" class="w-[228px] text-right font-sans shrink-0">
+                                    <span class="text-gray-500 font-bold uppercase tracking-wider text-[10px]">Alasan Pergerakan</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Daftar Riwayat Transaksi (Persis Halaman Utama Riwayat Pergerakan) -->
-                        <div
-                            class="flex-1 overflow-y-auto overscroll-none px-3.5 sm:px-6 py-2 pb-10 minimal-scrollbar min-h-0 font-dmsans divide-y divide-gray-100"
+                        <div class="flex-1 overflow-y-auto overscroll-none px-3.5 sm:px-6 py-2 pb-10 minimal-scrollbar min-h-0 font-sans divide-y divide-gray-100"
                             x-show="historyRecord">
 
                             <!-- 1. Koreksi Kredit (creditHistory) -->
                             <template x-for="(rev, rIdx) in filteredCreditHistory" :key="'hrev-'+rIdx">
-                                <div class="py-2.5 px-2 rounded-lg transition-colors flex items-start justify-between gap-3 hover:bg-gray-50/70">
-                                    <!-- Kolom Kiri: 3 Baris (Aktivitas + Pill, Petugas, Waktu & Catatan) -->
-                                    <div class="flex flex-col min-w-0 flex-1 gap-1.5">
-                                        <div class="flex items-center gap-1.5 leading-tight">
-                                            <span class="text-xs sm:text-sm font-bold text-gray-900 truncate"
-                                                x-text="rev.type === 'plus' ? 'Koreksi Lebih' : 'Koreksi Kurang'"></span>
-                                            <span class="w-4 h-4 rounded flex items-center justify-center shrink-0 text-[10px]"
-                                                :class="rev.type === 'plus' ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-[#fee2e2] text-[#ef4444]'">
-                                                <i class="ph-bold" :class="rev.type === 'plus' ? 'ph-arrow-down-left' : 'ph-arrow-up-right'"></i>
-                                            </span>
+                                <div class="py-2.5 px-2 rounded-xl transition-colors hover:bg-gray-50/70">
+                                    <!-- Baris Utama: Info Aktivitas di kiri & 3 Angka di kanan (Sejajar Header Bar) -->
+                                    <div class="flex items-start justify-between gap-3">
+                                        <!-- Kolom Kiri: 3 Baris (Aktivitas + Pill, Petugas, Waktu) -->
+                                        <div class="flex flex-col min-w-0 flex-1 gap-1">
+                                            <div class="flex items-center gap-1.5 leading-tight">
+                                                <span class="text-xs sm:text-sm font-bold text-gray-900 truncate"
+                                                    x-text="rev.type === 'plus' ? 'Kredit Lebih' : 'Kredit Kurang'"></span>
+                                                <span
+                                                    class="w-4 h-4 rounded flex items-center justify-center shrink-0 text-[10px]"
+                                                    :class="rev.type === 'plus' ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-[#fee2e2] text-[#ef4444]'">
+                                                    <i class="ph-bold"
+                                                        :class="rev.type === 'plus' ? 'ph-arrow-down-left' : 'ph-arrow-up-right'"></i>
+                                                </span>
+                                            </div>
+                                            <div class="leading-tight">
+                                                <span class="text-[11px] font-medium text-gray-700 truncate block"
+                                                    x-text="rev.by || 'Petugas Gudang'"></span>
+                                            </div>
+                                            <div class="leading-tight">
+                                                <span class="text-[10.5px] text-gray-400 tabular-nums block"
+                                                    x-text="rev.date"></span>
+                                            </div>
                                         </div>
-                                        <div class="leading-tight">
-                                            <span class="text-[11px] font-medium text-gray-700 truncate block"
-                                                x-text="rev.by || 'Petugas Gudang'"></span>
-                                        </div>
-                                        <div class="leading-tight">
-                                            <span class="text-[10.5px] text-gray-400 tabular-nums block" x-text="rev.date"></span>
-                                        </div>
-                                    </div>
 
-                                    <!-- Kolom Kanan: 3 Kolom Angka (Awal, Mutasi, Saldo) -->
-                                    <div class="shrink-0 flex items-center gap-2 text-right pt-0.5 tabular-nums">
-                                        <!-- 1. Awal -->
-                                        <div class="w-[72px] text-right truncate">
-                                            <span class="text-xs font-medium text-gray-600" x-text="formatStockQty(rev.prevPhysical)"></span>
-                                            <span class="text-[10px] text-gray-400 font-normal ml-0.5" x-text="historyRecord?.unit"></span>
+                                        <!-- Kolom Kanan [Mode 1: Kredit] - 3 Kolom Angka (Awal, Mutasi, Saldo) -->
+                                        <div x-show="historyTab === 'credit'"
+                                            class="shrink-0 flex items-center gap-2 text-right pt-0.5 tabular-nums">
+                                            <!-- 1. Awal -->
+                                            <div class="w-[72px] text-right truncate">
+                                                <span class="text-xs font-medium text-gray-600"
+                                                    x-text="formatStockQty(rev.prevPhysical)"></span>
+                                                <span class="text-[10px] text-gray-400 font-normal ml-0.5"
+                                                    x-text="historyRecord?.unit"></span>
+                                            </div>
+                                            <!-- 2. Mutasi -->
+                                            <div class="w-[76px] text-right truncate"
+                                                :class="rev.type === 'plus' ? 'text-emerald-700' : 'text-rose-700'">
+                                                <span class="text-xs font-bold"
+                                                    x-text="(rev.type === 'plus' ? '+' : '-') + formatStockQty(rev.qty)"></span>
+                                                <span class="text-[10px] opacity-75 font-normal ml-0.5"
+                                                    x-text="historyRecord?.unit"></span>
+                                            </div>
+                                            <!-- 3. Saldo -->
+                                            <div class="w-[64px] text-right truncate">
+                                                <span class="text-xs font-bold text-gray-900"
+                                                    x-text="formatStockQty(rev.newPhysical)"></span>
+                                                <span class="text-[10px] text-gray-400 font-normal ml-0.5"
+                                                    x-text="historyRecord?.unit"></span>
+                                            </div>
                                         </div>
-                                        <!-- 2. Mutasi -->
-                                        <div class="w-[76px] text-right truncate"
-                                            :class="rev.type === 'plus' ? 'text-emerald-700' : 'text-rose-700'">
-                                            <span class="text-xs font-bold"
-                                                x-text="(rev.type === 'plus' ? '+' : '-') + formatStockQty(rev.qty)"></span>
-                                            <span class="text-[10px] opacity-75 font-normal ml-0.5" x-text="historyRecord?.unit"></span>
-                                        </div>
-                                        <!-- 3. Saldo -->
-                                        <div class="w-[64px] text-right truncate">
-                                            <span class="text-xs font-bold text-gray-900" x-text="formatStockQty(rev.newPhysical)"></span>
-                                            <span class="text-[10px] text-gray-400 font-normal ml-0.5" x-text="historyRecord?.unit"></span>
+
+                                        <!-- Kolom Kanan [Mode 2: Alasan] - Teks Alasan Murni Tanpa Shape (Maks 3 Baris) -->
+                                        <div x-show="historyTab === 'reason'"
+                                            class="w-[228px] shrink-0 text-right font-sans pt-0.5">
+                                            <p class="text-[11px] font-medium text-gray-600 leading-snug break-words line-clamp-3"
+                                                :title="rev.reason || 'Koreksi penyesuaian fisik opname'"
+                                                x-text="rev.reason || 'Koreksi penyesuaian fisik opname'"></p>
                                         </div>
                                     </div>
                                 </div>
@@ -1259,47 +1235,65 @@
 
                             <!-- 2. Baris Patokan Stok Awal -->
                             <div x-show="shouldShowInitialHistoryRow"
-                                class="py-2.5 px-2 rounded-lg transition-colors flex items-start justify-between gap-3 hover:bg-gray-50/70">
-                                <!-- Kolom Kiri: 3 Baris -->
-                                <div class="flex flex-col min-w-0 flex-1 gap-1.5">
-                                    <div class="flex items-center gap-1.5 leading-tight">
-                                        <span class="text-xs sm:text-sm font-bold text-gray-900 truncate">Stok Awal</span>
-                                        <span class="w-4 h-4 rounded flex items-center justify-center shrink-0 text-[10px]"
-                                            :class="getInitialDiffQty(historyRecord) > 0 ? 'bg-[#dcfce7] text-[#16a34a]' : (getInitialDiffQty(historyRecord) < 0 ? 'bg-[#fee2e2] text-[#ef4444]' : 'bg-gray-100 text-gray-500')">
-                                            <i class="ph-bold"
-                                                :class="getInitialDiffQty(historyRecord) > 0 ? 'ph-arrow-down-left' : (getInitialDiffQty(historyRecord) < 0 ? 'ph-arrow-up-right' : 'ph-equals text-[9px]')"></i>
-                                        </span>
+                                class="py-2.5 px-2 rounded-xl transition-colors hover:bg-gray-50/70">
+                                <!-- Baris Utama: Info Aktivitas di kiri & 3 Angka di kanan -->
+                                <div class="flex items-start justify-between gap-3">
+                                    <!-- Kolom Kiri: 3 Baris -->
+                                    <div class="flex flex-col min-w-0 flex-1 gap-1">
+                                        <div class="flex items-center gap-1.5 leading-tight">
+                                            <span class="text-xs sm:text-sm font-bold text-gray-900 truncate">Stok
+                                                Awal</span>
+                                            <span
+                                                class="w-4 h-4 rounded flex items-center justify-center shrink-0 text-[10px]"
+                                                :class="getInitialDiffQty(historyRecord) > 0 ? 'bg-[#dcfce7] text-[#16a34a]' : (getInitialDiffQty(historyRecord) < 0 ? 'bg-[#fee2e2] text-[#ef4444]' : 'bg-gray-100 text-gray-500')">
+                                                <i class="ph-bold"
+                                                    :class="getInitialDiffQty(historyRecord) > 0 ? 'ph-arrow-down-left' : (getInitialDiffQty(historyRecord) < 0 ? 'ph-arrow-up-right' : 'ph-equals text-[9px]')"></i>
+                                            </span>
+                                        </div>
+                                        <div class="leading-tight">
+                                            <span class="text-[11px] font-medium text-gray-700 truncate block"
+                                                x-text="historyRecord?.staff || 'Petugas Gudang'"></span>
+                                        </div>
+                                        <div class="leading-tight">
+                                            <span class="text-[10.5px] text-gray-400 tabular-nums block"
+                                                x-text="historyRecord ? formatDisplayDateTime(historyRecord.date, historyRecord.time) : ''"></span>
+                                        </div>
                                     </div>
-                                    <div class="leading-tight">
-                                        <span class="text-[11px] font-medium text-gray-700 truncate block"
-                                            x-text="historyRecord?.staff || 'Petugas Gudang'"></span>
-                                    </div>
-                                    <div class="leading-tight">
-                                        <span class="text-[10.5px] text-gray-400 tabular-nums block"
-                                            x-text="historyRecord ? formatDisplayDateTime(historyRecord.date, historyRecord.time) : ''"></span>
-                                    </div>
-                                </div>
 
-                                <!-- Kolom Kanan: 3 Kolom Angka (Awal = Sistem, Mutasi = Selisih Awal, Saldo = Fisik Awal) -->
-                                <div class="shrink-0 flex items-center gap-2 text-right pt-0.5 tabular-nums">
-                                    <!-- 1. Awal (Stok Sistem) -->
-                                    <div class="w-[72px] text-right truncate">
-                                        <span class="text-xs font-medium text-gray-600"
-                                            x-text="historyRecord ? formatStockQty(historyRecord.systemQty) : ''"></span>
-                                        <span class="text-[10px] text-gray-400 font-normal ml-0.5" x-text="historyRecord?.unit"></span>
+                                    <!-- Kolom Kanan [Mode 1: Kredit] - 3 Kolom Angka (Awal = Sistem, Mutasi = Selisih Awal, Saldo = Fisik Awal) -->
+                                    <div x-show="historyTab === 'credit'"
+                                        class="shrink-0 flex items-center gap-2 text-right pt-0.5 tabular-nums">
+                                        <!-- 1. Awal (Stok Sistem) -->
+                                        <div class="w-[72px] text-right truncate">
+                                            <span class="text-xs font-medium text-gray-600"
+                                                x-text="historyRecord ? formatStockQty(historyRecord.systemQty) : ''"></span>
+                                            <span class="text-[10px] text-gray-400 font-normal ml-0.5"
+                                                x-text="historyRecord?.unit"></span>
+                                        </div>
+                                        <!-- 2. Mutasi (Selisih Awal) -->
+                                        <div class="w-[76px] text-right truncate"
+                                            :class="getInitialDiffQty(historyRecord) > 0 ? 'text-emerald-700' : (getInitialDiffQty(historyRecord) < 0 ? 'text-rose-700' : 'text-gray-400')">
+                                            <span class="text-xs font-bold"
+                                                x-text="formatSignedQty(getInitialDiffQty(historyRecord))"></span>
+                                            <span class="text-[10px] opacity-75 font-normal ml-0.5"
+                                                x-text="historyRecord?.unit"></span>
+                                        </div>
+                                        <!-- 3. Saldo (Stok Fisik Awal) -->
+                                        <div class="w-[64px] text-right truncate">
+                                            <span class="text-xs font-bold text-gray-900"
+                                                x-text="historyRecord ? formatStockQty(getInitialPhysicalQty(historyRecord)) : ''"></span>
+                                            <span class="text-[10px] text-gray-400 font-normal ml-0.5"
+                                                x-text="historyRecord?.unit"></span>
+                                        </div>
                                     </div>
-                                    <!-- 2. Mutasi (Selisih Awal) -->
-                                    <div class="w-[76px] text-right truncate"
-                                        :class="getInitialDiffQty(historyRecord) > 0 ? 'text-emerald-700' : (getInitialDiffQty(historyRecord) < 0 ? 'text-rose-700' : 'text-gray-400')">
-                                        <span class="text-xs font-bold"
-                                            x-text="formatSignedQty(getInitialDiffQty(historyRecord))"></span>
-                                        <span class="text-[10px] opacity-75 font-normal ml-0.5" x-text="historyRecord?.unit"></span>
-                                    </div>
-                                    <!-- 3. Saldo (Stok Fisik Awal) -->
-                                    <div class="w-[64px] text-right truncate">
-                                        <span class="text-xs font-bold text-gray-900"
-                                            x-text="historyRecord ? formatStockQty(getInitialPhysicalQty(historyRecord)) : ''"></span>
-                                        <span class="text-[10px] text-gray-400 font-normal ml-0.5" x-text="historyRecord?.unit"></span>
+
+                                    <!-- Kolom Kanan [Mode 2: Alasan] - Teks Catatan Murni Tanpa Shape (Maks 3 Baris) -->
+                                    <div x-show="historyTab === 'reason'"
+                                        class="w-[228px] shrink-0 text-right font-sans pt-0.5">
+                                        <p class="text-[11px] font-medium text-gray-600 leading-snug break-words line-clamp-3"
+                                            :title="historyRecord?.notes || 'Perhitungan fisik stok opname awal oleh tim gudang'"
+                                            x-text="historyRecord?.notes || 'Perhitungan fisik stok opname awal oleh tim gudang'">
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -1328,17 +1322,20 @@
                             </button>
 
                             <div class="flex items-center justify-center flex-1">
-                                <span class="font-extrabold text-sm text-gray-900" x-text="isEditDraft ? 'Edit Draf Stok Opname' : 'Tambah Stok Opname'"></span>
+                                <span class="font-extrabold text-sm text-gray-900"
+                                    x-text="isEditDraft ? 'Edit Draf Stok Opname' : 'Tambah Stok Opname'"></span>
                             </div>
 
                             <div class="w-9 h-9 shrink-0"></div>
                         </div>
 
                         <!-- KANVAS FORM PRODUK TUNGGAL (OPSI 1: SATU KARTU TERPADU ALA SUB MODUL PENGADAAN) -->
-                        <div class="flex-1 flex flex-col space-y-6 max-w-4xl w-full mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-6 min-h-0 overflow-y-auto minimal-scrollbar">
+                        <div
+                            class="flex-1 flex flex-col space-y-6 max-w-4xl w-full mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-6 min-h-0 overflow-y-auto minimal-scrollbar">
 
                             <!-- KARTU UTAMA TUNGGAL TERPADU (FULL-HEIGHT MENGISI RUANG VERTIKAL) -->
-                            <div class="bg-white rounded-2xl border border-gray-200/90 shadow-card p-4 sm:p-6 flex-1 min-h-[380px] flex flex-col min-h-0 transition-all">
+                            <div
+                                class="bg-white rounded-2xl border border-gray-200/90 shadow-card p-4 sm:p-6 flex-1 min-h-[380px] flex flex-col min-h-0 transition-all">
 
                                 <div class="space-y-4 shrink-0">
 
@@ -1358,8 +1355,8 @@
                                                     :class="branchDropdownOpen ? 'rotate-180 text-[#0b595b]' : ''"></i>
                                             </button>
 
-                                            <div x-show="branchDropdownOpen" @click.outside="branchDropdownOpen = false" x-cloak
-                                                x-transition:enter="transition ease-out duration-100"
+                                            <div x-show="branchDropdownOpen" @click.outside="branchDropdownOpen = false"
+                                                x-cloak x-transition:enter="transition ease-out duration-100"
                                                 x-transition:enter-start="opacity-0 scale-95"
                                                 x-transition:enter-end="opacity-100 scale-100"
                                                 x-transition:leave="transition ease-in duration-75"
@@ -1371,7 +1368,8 @@
                                                         class="px-3.5 py-2.5 text-xs sm:text-[13px] cursor-pointer transition-colors flex justify-between items-center group"
                                                         :class="form.branch === branch ? 'bg-gray-50 text-emerald-600 font-semibold' : 'text-gray-700 font-medium hover:bg-gray-50'">
                                                         <span x-text="branch"></span>
-                                                        <i class="ph-fill ph-circle text-[8px] text-emerald-500" x-show="form.branch === branch"></i>
+                                                        <i class="ph-fill ph-circle text-[8px] text-emerald-500"
+                                                            x-show="form.branch === branch"></i>
                                                     </div>
                                                 </template>
                                             </div>
@@ -1389,10 +1387,8 @@
                                                 class="w-full h-11 bg-gray-50/70 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-xl px-4 flex items-center justify-between text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition cursor-pointer shadow-2xs text-left group">
                                                 <div class="truncate pr-2 flex items-center gap-2">
                                                     <template x-if="form.selectedProduct">
-                                                        <span class="text-gray-800 font-semibold truncate">
-                                                            <span x-text="form.selectedProduct.name"></span>
-                                                            <span class="text-gray-400 font-mono font-normal text-xs" x-text="'(' + form.selectedProduct.sku + ')'"></span>
-                                                        </span>
+                                                        <span class="text-gray-800 font-semibold truncate"
+                                                            x-text="form.selectedProduct.name"></span>
                                                     </template>
                                                     <template x-if="!form.selectedProduct">
                                                         <span class="text-gray-400 font-normal">Pilih Produk</span>
@@ -1402,7 +1398,8 @@
                                                     :class="productDropdownOpen ? 'rotate-180 text-[#0b595b]' : ''"></i>
                                             </button>
 
-                                            <div x-show="productDropdownOpen" @click.outside="productDropdownOpen = false" x-cloak
+                                            <div x-show="productDropdownOpen"
+                                                @click.outside="productDropdownOpen = false" x-cloak
                                                 x-transition:enter="transition ease-out duration-100"
                                                 x-transition:enter-start="opacity-0 scale-95"
                                                 x-transition:enter-end="opacity-100 scale-100"
@@ -1410,11 +1407,13 @@
                                                 x-transition:leave-start="opacity-100 scale-100"
                                                 x-transition:leave-end="opacity-0 scale-95"
                                                 class="absolute top-full mt-1.5 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-lg p-2 z-50">
-                                                
+
                                                 <!-- Search Field -->
                                                 <div class="relative mb-2">
-                                                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                                                    <input type="text" x-model="form.productSearch" placeholder="Cari nama produk atau SKU..."
+                                                    <i
+                                                        class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                                    <input type="text" x-model="form.productSearch"
+                                                        placeholder="Cari nama produk..."
                                                         class="w-full h-9 pl-9 pr-3 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-800 placeholder-gray-400 outline-none focus:border-emerald-500 focus:bg-white transition">
                                                 </div>
 
@@ -1422,14 +1421,14 @@
                                                 <div class="max-h-52 overflow-y-auto minimal-scrollbar space-y-1">
                                                     <template x-for="prod in getFilteredFormProducts()" :key="prod.sku">
                                                         <div @click="selectFormProduct(prod); productDropdownOpen = false"
-                                                            class="px-3 py-2 rounded-xl text-xs cursor-pointer transition-colors flex items-center justify-between group"
+                                                            class="px-3.5 py-2.5 rounded-xl text-xs cursor-pointer transition-colors flex items-center justify-between group"
                                                             :class="form.selectedProduct?.sku === prod.sku ? 'bg-emerald-50 text-[#0b595b] font-bold' : 'hover:bg-gray-50 text-gray-700'">
-                                                            <div>
-                                                                <div class="font-bold text-gray-900 group-hover:text-[#0b595b]" x-text="prod.name"></div>
-                                                                <div class="text-[10.5px] text-gray-400 font-mono mt-0.5" x-text="prod.sku + ' · Satuan: ' + prod.unit"></div>
-                                                            </div>
-                                                            <span class="text-xs font-semibold text-gray-500 font-dmsans tabular-nums"
-                                                                x-text="'Stok: ' + formatStockQty(getSystemQtyForBranch(prod, form.branch)) + ' ' + prod.unit"></span>
+                                                            <span
+                                                                class="font-bold text-gray-900 group-hover:text-[#0b595b] truncate pr-2"
+                                                                x-text="prod.name"></span>
+                                                            <span
+                                                                class="text-xs font-semibold text-gray-500 font-sans tabular-nums shrink-0"
+                                                                x-text="formatStockQty(getSystemQtyForBranch(prod, form.branch)) + ' ' + prod.unit"></span>
                                                         </div>
                                                     </template>
                                                 </div>
@@ -1438,19 +1437,28 @@
                                     </div>
 
                                     <!-- 3. Sub-Panel Rangkuman Stok Sistem & HPP Satuan -->
-                                    <div class="p-3.5 bg-gray-50/90 rounded-xl border border-gray-200/70 grid grid-cols-2 gap-3 text-left font-dmsans tabular-nums">
+                                    <div
+                                        class="p-3.5 bg-gray-50/90 rounded-xl border border-gray-200/70 grid grid-cols-2 gap-3 text-left font-sans tabular-nums">
                                         <div>
-                                            <p class="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider font-sans">Stok Sistem</p>
+                                            <p
+                                                class="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider font-sans">
+                                                Stok Sistem</p>
                                             <p class="text-sm sm:text-base font-extrabold text-gray-900 mt-0.5"
-                                                x-text="form.selectedProduct ? (formatStockQty(form.selectedProduct.systemQty) + ' ' + form.selectedProduct.unit) : '-'"></p>
-                                            <p class="text-[10px] text-gray-400 font-sans mt-0.5">Catatan buku saat ini</p>
+                                                x-text="form.selectedProduct ? (formatStockQty(form.selectedProduct.systemQty) + ' ' + form.selectedProduct.unit) : '-'">
+                                            </p>
+                                            <p class="text-[10px] text-gray-400 font-sans mt-0.5">Catatan buku saat ini
+                                            </p>
                                         </div>
                                         <div class="border-l border-gray-200/80 pl-3">
-                                            <p class="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider font-sans">HPP / Satuan</p>
+                                            <p
+                                                class="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider font-sans">
+                                                HPP / Satuan</p>
                                             <p class="text-sm sm:text-base font-extrabold text-[#0b595b] mt-0.5"
-                                                x-text="form.selectedProduct ? ('Rp ' + formatThousand(form.selectedProduct.hpp)) : '-'"></p>
+                                                x-text="form.selectedProduct ? ('Rp ' + formatThousand(form.selectedProduct.hpp)) : '-'">
+                                            </p>
                                             <p class="text-[10px] text-gray-400 font-sans mt-0.5"
-                                                x-text="form.selectedProduct ? ('per ' + form.selectedProduct.unit) : '-'"></p>
+                                                x-text="form.selectedProduct ? ('per ' + form.selectedProduct.unit) : '-'">
+                                            </p>
                                         </div>
                                     </div>
 
@@ -1464,17 +1472,17 @@
                                             <span class="text-[11px] text-gray-400">Hasil timbang aktual</span>
                                         </div>
                                         <div class="relative flex items-center">
-                                            <input type="number" step="any" x-model="form.physicalQtyStr"
-                                                @input="handleFormPhysicalInput($event.target.value)"
-                                                placeholder="0,00"
-                                                class="w-full h-11 bg-white border border-gray-300 focus:border-[#0b595b] focus:ring-1 focus:ring-[#0b595b] rounded-xl pl-3 pr-12 text-sm sm:text-base font-bold text-gray-900 outline-none transition shadow-2xs font-dmsans tabular-nums">
-                                            <span class="absolute right-3.5 text-xs font-bold text-gray-400 pointer-events-none"
+                                            <input type="text" inputmode="decimal" :value="form.physicalQtyStr"
+                                                @input="handleFormPhysicalInput($event)" placeholder="0,00"
+                                                class="w-full h-11 bg-white border border-gray-300 focus:border-[#0b595b] focus:ring-1 focus:ring-[#0b595b] rounded-xl pl-3 pr-12 text-sm sm:text-base font-bold text-gray-900 outline-none transition shadow-2xs font-sans tabular-nums">
+                                            <span
+                                                class="absolute right-3.5 text-xs font-bold text-gray-400 pointer-events-none"
                                                 x-text="form.selectedProduct?.unit || 'Kg'"></span>
                                         </div>
                                     </div>
 
                                     <!-- 5. Indikator Selisih (Statis & Selalu Terlihat, Anti-Jumping Layout) -->
-                                    <div class="rounded-xl p-3 sm:p-3.5 border text-xs transition-colors font-dmsans tabular-nums"
+                                    <div class="rounded-xl p-3 sm:p-3.5 border text-xs transition-colors font-sans tabular-nums"
                                         :class="{
                                             'bg-rose-50/70 border-rose-200 text-rose-900': form.physicalQtyStr !== '' && formDiffQty() < 0,
                                             'bg-emerald-50/70 border-emerald-200 text-emerald-900': form.physicalQtyStr !== '' && formDiffQty() > 0,
@@ -1489,14 +1497,15 @@
                                                 :class="form.physicalQtyStr === '' ? 'text-gray-400 font-medium' : ''"
                                                 x-text="form.physicalQtyStr !== '' ? (formatSignedQty(formDiffQty()) + ' ' + (form.selectedProduct?.unit || 'Kg')) : '0,00 Kg'"></span>
                                         </div>
-                                        <div class="flex items-center justify-between mt-1 pt-1.5 border-t"
-                                            :class="{
+                                        <div class="flex items-center justify-between mt-1 pt-1.5 border-t" :class="{
                                                 'border-rose-200/80': form.physicalQtyStr !== '' && formDiffQty() < 0,
                                                 'border-emerald-200/80': form.physicalQtyStr !== '' && formDiffQty() > 0,
                                                 'border-gray-200': form.physicalQtyStr !== '' && formDiffQty() === 0,
                                                 'border-gray-200/70': form.physicalQtyStr === ''
                                             }">
-                                            <span class="text-[11px] font-sans" :class="form.physicalQtyStr === '' ? 'text-gray-400' : 'opacity-80'">Dampak Finansial</span>
+                                            <span class="text-[11px] font-sans"
+                                                :class="form.physicalQtyStr === '' ? 'text-gray-400' : 'opacity-80'">Dampak
+                                                Finansial</span>
                                             <span class="font-extrabold text-xs sm:text-sm"
                                                 :class="form.physicalQtyStr === '' ? 'text-gray-400 font-medium' : ''"
                                                 x-text="form.physicalQtyStr !== '' ? formatSignedRupiah(formValueDiff()) : 'Rp 0'"></span>
@@ -1507,9 +1516,12 @@
 
                                 <!-- 6. Catatan Koreksi (Mengisi Whitespace Kartu) -->
                                 <div class="pt-3 flex-1 flex flex-col min-h-0">
-                                    <label class="text-xs font-bold text-gray-700 mb-1.5 block shrink-0">Catatan Koreksi</label>
-                                    <textarea x-model="form.notes"
-                                        placeholder="Tuliskan catatan koreksi..."
+                                    <label
+                                        class="text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-1.5 shrink-0">
+                                        <span>Catatan Koreksi</span>
+                                        <span class="text-red-500">*</span>
+                                    </label>
+                                    <textarea x-model="form.notes" placeholder="Tuliskan catatan koreksi..."
                                         class="w-full flex-1 min-h-[80px] bg-gray-50/60 border border-gray-200 focus:bg-white focus:border-[#0b595b] rounded-xl p-3 text-xs sm:text-sm text-gray-800 placeholder:text-gray-400 placeholder:whitespace-nowrap placeholder:truncate outline-none transition resize-none leading-relaxed"></textarea>
                                 </div>
 
@@ -1517,7 +1529,8 @@
                         </div>
 
                         <!-- BOTTOM DOCKED ACTION BAR (2 TOMBOL AKSI: DRAFT & OPNAME SELESAI) -->
-                        <div class="shrink-0 bg-white border-t border-gray-100 px-4 sm:px-6 pt-3.5 pb-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+                        <div
+                            class="shrink-0 bg-white border-t border-gray-100 px-4 sm:px-6 pt-3.5 pb-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
                             <div class="max-w-4xl w-full mx-auto flex items-center gap-3">
                                 <button type="button" @click="submitSingleOpname('Draf')"
                                     class="flex-1 h-11 px-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-800 text-xs sm:text-sm font-bold shadow-2xs transition active:scale-95 flex items-center justify-center cursor-pointer">
@@ -1605,19 +1618,7 @@
                 </div>
             </div>
 
-            <!-- ================================================================ -->
-            <!-- TOAST FEEDBACK NOTIFICATION                                      -->
-            <!-- ================================================================ -->
-            <div x-show="toast.show" x-cloak x-transition:enter="transition ease-out duration-250"
-                x-transition:enter-start="opacity-0 translate-y-3 scale-95"
-                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                x-transition:leave-end="opacity-0 translate-y-3 scale-95"
-                class="fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 z-[150] px-4 py-2.5 rounded-full bg-gray-900/95 text-white text-xs font-semibold shadow-xl flex items-center gap-2 pointer-events-none whitespace-nowrap">
-                <i class="ph-fill ph-check-circle text-[#d1f36e] text-base"></i>
-                <span x-text="toast.message"></span>
-            </div>
+
 
             <!-- ================================================================ -->
             <!-- MODAL 1: UNIFIED FILTER DRAWER & CALENDAR (ALA RIWAYAT STOK)     -->
@@ -1651,7 +1652,7 @@
                         class="bg-white shrink-0 px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
                         <div>
                             <h3 class="font-bold text-gray-800 text-base">Filter Stok Opname</h3>
-                            <p class="text-[11px] text-gray-400 mt-0.5">Sesuaikan arah selisih, cabang, status, dan
+                            <p class="text-[11px] text-gray-400 mt-0.5">Sesuaikan hasil opname, cabang, status, dan
                                 periode</p>
                         </div>
                         <button type="button" @click="filterOpen = false; setTimeout(() => calOpen = false, 150)"
@@ -1664,12 +1665,12 @@
                     <div class="flex-1 overflow-y-auto overscroll-none p-5 minimal-scrollbar space-y-4">
                         <div x-show="!calOpen" class="space-y-4">
 
-                            <!-- 1. Arah Selisih (Persis Arah Mutasi di Riwayat Pergerakan) -->
+                            <!-- 1. Hasil Opname (Semua / Lebih / Kurang / Sesuai) -->
                             <div>
                                 <div class="flex justify-between items-center mb-1.5">
                                     <label
-                                        class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Arah
-                                        Selisih</label>
+                                        class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Hasil
+                                        Opname</label>
                                     <button type="button" x-show="tempFilterDirection !== 'all'"
                                         @click="tempFilterDirection = 'all'"
                                         class="text-[10px] text-red-500 hover:text-red-600 font-semibold cursor-pointer">Reset</button>
@@ -1927,10 +1928,12 @@
                     </div>
 
                     <!-- Header -->
-                    <div class="bg-white shrink-0 px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+                    <div
+                        class="bg-white shrink-0 px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
                         <div>
                             <h3 class="font-bold text-gray-800 text-base">Filter Riwayat Stok Opname</h3>
-                            <p class="text-[11px] text-gray-400 mt-0.5">Filter berdasarkan jenis aktivitas dan arah koreksi</p>
+                            <p class="text-[11px] text-gray-400 mt-0.5">Filter berdasarkan jenis aktivitas dan arah
+                                koreksi</p>
                         </div>
                         <button type="button" @click="historyFilterOpen = false"
                             class="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full transition-colors active:scale-95 cursor-pointer">
@@ -1943,7 +1946,8 @@
                         <!-- 1. Jenis Aktivitas / Arah Koreksi -->
                         <div>
                             <div class="flex justify-between items-center mb-1.5">
-                                <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Aktivitas</label>
+                                <label
+                                    class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Aktivitas</label>
                                 <button type="button" x-show="tempHistoryFilterDirection !== 'all'"
                                     @click="tempHistoryFilterDirection = 'all'"
                                     class="text-[10px] text-red-500 hover:text-red-600 font-semibold cursor-pointer">Reset</button>
@@ -1957,18 +1961,16 @@
                                 <div @click="tempHistoryFilterDirection = 'plus'"
                                     class="py-2.5 px-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
                                     :class="tempHistoryFilterDirection === 'plus' ? 'text-emerald-700 bg-emerald-50 border border-emerald-200 font-bold' : 'text-gray-500 bg-gray-50 border border-gray-200 hover:bg-gray-100'">
-                                    <span class="w-4 h-4 rounded flex items-center justify-center shrink-0 text-[10px] bg-[#dcfce7] text-[#16a34a]">
-                                        <i class="ph-bold ph-arrow-down-left"></i>
-                                    </span>
-                                    Koreksi Lebih
+                                    <i class="ph-bold ph-arrow-down-left text-xs"
+                                        :class="tempHistoryFilterDirection === 'plus' ? 'text-emerald-600' : 'text-gray-400'"></i>
+                                    Kredit Lebih
                                 </div>
                                 <div @click="tempHistoryFilterDirection = 'minus'"
                                     class="py-2.5 px-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
                                     :class="tempHistoryFilterDirection === 'minus' ? 'text-rose-700 bg-rose-50 border border-rose-200 font-bold' : 'text-gray-500 bg-gray-50 border border-gray-200 hover:bg-gray-100'">
-                                    <span class="w-4 h-4 rounded flex items-center justify-center shrink-0 text-[10px] bg-[#fee2e2] text-[#ef4444]">
-                                        <i class="ph-bold ph-arrow-up-right"></i>
-                                    </span>
-                                    Koreksi Kurang
+                                    <i class="ph-bold ph-arrow-up-right text-xs"
+                                        :class="tempHistoryFilterDirection === 'minus' ? 'text-rose-600' : 'text-gray-400'"></i>
+                                    Kredit Kurang
                                 </div>
                                 <div @click="tempHistoryFilterDirection = 'initial'"
                                     class="py-2.5 px-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
@@ -2054,7 +2056,7 @@
                                 <span class="text-gray-400 flex items-center gap-1.5 font-medium">
                                     <i class="ph-bold ph-clock text-gray-400"></i> Waktu Dibuat
                                 </span>
-                                <span class="font-bold text-gray-800 font-dmsans tabular-nums"
+                                <span class="font-bold text-gray-800 font-sans tabular-nums"
                                     x-text="selectedRecord ? formatDisplayDateTime(selectedRecord.date, selectedRecord.time) : ''">
                                 </span>
                             </div>
@@ -2062,15 +2064,14 @@
                                 <span class="text-gray-400 flex items-center gap-1.5 font-medium">
                                     <i class="ph-bold ph-user text-gray-400"></i> Dibuat oleh
                                 </span>
-                                <span class="font-medium text-gray-700"
-                                    x-text="selectedRecord?.staff || '-'">
+                                <span class="font-medium text-gray-700" x-text="selectedRecord?.staff || '-'">
                                 </span>
                             </div>
                         </div>
 
                         <!-- Kotak Rincian Angka -->
                         <div
-                            class="rounded-2xl border border-gray-100 divide-y divide-gray-100 font-dmsans tabular-nums text-xs overflow-hidden">
+                            class="rounded-2xl border border-gray-100 divide-y divide-gray-100 font-sans tabular-nums text-xs overflow-hidden">
                             <div class="flex items-center justify-between px-3.5 py-2.5">
                                 <span class="font-sans text-gray-500">Sistem → Fisik</span>
                                 <span>
@@ -2109,7 +2110,7 @@
                                 </div>
                                 <input type="text" inputmode="decimal" :value="creditPlusStr"
                                     @input="handleInlineCreditInput('plus', $event)" placeholder="0"
-                                    class="w-full min-w-0 flex-1 h-full px-2.5 text-xs sm:text-[13px] font-dmsans font-bold text-gray-900 placeholder:text-gray-300 outline-none tabular-nums">
+                                    class="w-full min-w-0 flex-1 h-full px-2.5 text-xs sm:text-[13px] font-sans font-bold text-gray-900 placeholder:text-gray-300 outline-none tabular-nums text-center">
                                 <span
                                     class="px-2 sm:px-2.5 h-full bg-gray-50 border-l border-gray-100 flex items-center text-[10.5px] sm:text-[11px] font-semibold text-gray-500 shrink-0"
                                     x-text="selectedRecord?.unit"></span>
@@ -2124,23 +2125,20 @@
                                 </div>
                                 <input type="text" inputmode="decimal" :value="creditMinusStr"
                                     @input="handleInlineCreditInput('minus', $event)" placeholder="0"
-                                    class="w-full min-w-0 flex-1 h-full px-2.5 text-xs sm:text-[13px] font-dmsans font-bold text-gray-900 placeholder:text-gray-300 outline-none tabular-nums">
+                                    class="w-full min-w-0 flex-1 h-full px-2.5 text-xs sm:text-[13px] font-sans font-bold text-gray-900 placeholder:text-gray-300 outline-none tabular-nums text-center">
                                 <span
                                     class="px-2 sm:px-2.5 h-full bg-gray-50 border-l border-gray-100 flex items-center text-[10.5px] sm:text-[11px] font-semibold text-gray-500 shrink-0"
                                     x-text="selectedRecord?.unit"></span>
                             </div>
                         </div>
 
-                        <!-- Input Catatan Penyesuaian (Multi-baris 5 Baris) -->
-                        <div
-                            class="rounded-2xl border border-gray-200 bg-white focus-within:border-[#0b595b] focus-within:ring-2 focus-within:ring-[#0b595b]/15 overflow-hidden transition shadow-2xs">
-                            <div
-                                class="flex items-center justify-between px-3.5 py-2 bg-gray-50/80 border-b border-gray-100 text-[11px] text-gray-500 font-medium">
-                                <span class="flex items-center gap-1.5">
-                                    <i class="ph-bold ph-note-pencil text-[#0b595b]"></i>
-                                    <span class="font-semibold text-gray-700">Catatan Koreksi</span>
-                                    <span class="text-gray-400 font-normal">(opsional)</span>
-                                </span>
+                        <!-- Input Catatan Penyesuaian (Dedicated Field) -->
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                    <span>Catatan Koreksi</span>
+                                    <span class="text-red-500">*</span>
+                                </label>
                                 <button x-show="creditNoteStr" type="button" @click="creditNoteStr = ''"
                                     class="text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-0.5 cursor-pointer text-[10.5px]"
                                     title="Hapus catatan">
@@ -2148,221 +2146,45 @@
                                     <span>Hapus</span>
                                 </button>
                             </div>
-                            <textarea rows="5" x-model="creditNoteStr"
-                                placeholder="Tuliskan catatan koreksi..."
-                                class="w-full p-3 text-xs sm:text-[13px] font-sans text-gray-800 placeholder:text-gray-400 placeholder:truncate outline-none resize-none leading-relaxed block bg-white"></textarea>
+                            <textarea rows="4" x-model="creditNoteStr" placeholder="Tuliskan catatan koreksi..."
+                                class="w-full bg-gray-50/60 border border-gray-200 focus:bg-white focus:border-[#0b595b] focus:ring-1 focus:ring-[#0b595b] rounded-xl p-3 text-xs sm:text-[13px] font-sans text-gray-800 placeholder:text-gray-400 placeholder:whitespace-nowrap placeholder:truncate outline-none resize-none leading-relaxed transition shadow-2xs"></textarea>
                         </div>
 
                     </div>
 
-                    <!-- Footer Pop-up: Murni 2 Action Button (Riwayat Polosan & Selesaikan Opname) -->
-                    <div class="shrink-0 px-5 pt-2.5 pb-4 sm:pb-5 border-t border-gray-100 bg-white grid grid-cols-2 gap-2.5"
+                    <!-- Footer Pop-up: 3 Action Buttons (Riwayat Icon, Tambah Koreksi Lagi, Selesaikan Opname) -->
+                    <div class="shrink-0 px-5 pt-2.5 pb-4 sm:pb-5 border-t border-gray-100 bg-white flex items-center gap-2.5"
                         x-show="selectedRecord">
+                        <!-- Action 1: Riwayat (Action Button Icon) -->
                         <button type="button" @click="openHistoryView(selectedRecord)"
-                            class="h-11 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs sm:text-[13px] font-bold flex items-center justify-center active:scale-95 transition cursor-pointer tabular-nums">
-                            <span
-                                x-text="(selectedRecord?.creditHistory?.length || 0) > 0 ? 'Riwayat (' + selectedRecord.creditHistory.length + ')' : 'Riwayat'"></span>
+                            class="w-11 h-11 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-[#0b595b] flex items-center justify-center shrink-0 relative active:scale-95 transition cursor-pointer"
+                            :title="(selectedRecord?.creditHistory?.length || 0) > 0 ? ('Lihat Riwayat (' + selectedRecord.creditHistory.length + ')') : 'Lihat Riwayat'">
+                            <i class="ph-bold ph-clock-counter-clockwise text-[19px]"></i>
+                            <span x-show="(selectedRecord?.creditHistory?.length || 0) > 0"
+                                class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-emerald-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center tabular-nums leading-none shadow-2xs border border-white"
+                                x-text="selectedRecord?.creditHistory?.length"></span>
                         </button>
 
+                        <!-- Action 2: Tambah Koreksi Lagi -->
+                        <button type="button" @click="saveCorrectionOnly()"
+                            :disabled="creditNetDelta() === 0 && !(creditNoteStr && creditNoteStr.trim())"
+                            class="flex-1 h-11 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-800 text-xs sm:text-[13px] font-bold flex items-center justify-center shadow-2xs active:scale-95 transition cursor-pointer"
+                            :class="(creditNetDelta() === 0 && !(creditNoteStr && creditNoteStr.trim())) ? 'opacity-40 cursor-not-allowed' : ''">
+                            <span class="truncate">Tambah Koreksi</span>
+                        </button>
+
+                        <!-- Action 3: Selesaikan Aktivitas Stok Opname -->
                         <button type="button" @click="submitDetailOpname()"
                             :disabled="creditNetDelta() === 0 && !(creditNoteStr && creditNoteStr.trim()) && selectedRecord?.status === 'Selesai'"
-                            class="h-11 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs sm:text-[13px] font-bold flex items-center justify-center shadow-sm active:scale-95 transition cursor-pointer"
+                            class="flex-1 h-11 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs sm:text-[13px] font-bold flex items-center justify-center shadow-sm active:scale-95 transition cursor-pointer"
                             :class="(creditNetDelta() === 0 && !(creditNoteStr && creditNoteStr.trim()) && selectedRecord?.status === 'Selesai') ? 'opacity-45 cursor-not-allowed' : ''">
-                            <span>Selesaikan Opname</span>
+                            <span class="truncate">Selesaikan Opname</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- ================================================================ -->
-            <!-- MODAL 3: TAMBAH / EDIT ITEM PRODUK OPNAME (3-ROW RADIO BOX)      -->
-            <!-- ================================================================ -->
-            <div x-show="itemModalOpen" x-cloak @click.self="itemModalOpen = false"
-                class="fixed inset-0 z-[120] overflow-y-auto flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
 
-                <div @click.outside="itemModalOpen = false" x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                    class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-auto max-h-[92vh]">
-
-                    <!-- Modal Header -->
-                    <div
-                        class="px-5 sm:px-6 pt-4 sm:pt-5 pb-3.5 border-b border-gray-100 flex items-center justify-between shrink-0 bg-gray-50/50">
-                        <div>
-                            <h4 class="text-base font-bold text-gray-900 leading-tight"
-                                x-text="modalMode === 'add' ? 'Tambah Item Stok Opname' : 'Edit Item Stok Opname'"></h4>
-                            <p class="text-xs text-gray-500 mt-0.5">Pilih produk dan masukkan hasil perhitungan stok
-                                fisik aktual</p>
-                        </div>
-                        <button type="button" @click="itemModalOpen = false"
-                            class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
-                            <i class="ph-bold ph-x text-sm"></i>
-                        </button>
-                    </div>
-
-                    <!-- Modal Body -->
-                    <div class="p-4 sm:p-5 space-y-3.5 overflow-y-auto">
-                        <!-- Pilih Produk (3-Row Searchable Radio Box Standar Inventaris) -->
-                        <div class="space-y-1.5">
-                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                                Pilih Produk / Bahan <span class="text-red-500">*</span>
-                            </label>
-                            <div
-                                class="bg-white border border-gray-200 rounded-xl flex flex-col overflow-hidden shadow-2xs">
-                                <div class="relative border-b border-gray-100 shrink-0">
-                                    <i
-                                        class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                                    <input type="text" x-model="productSearchQuery" placeholder="Cari produk / bahan..."
-                                        class="w-full bg-transparent pl-8 pr-3 py-2.5 text-xs outline-none focus:bg-gray-50/50 transition-colors">
-                                </div>
-
-                                <div class="h-[118px] overflow-y-auto overscroll-none bg-white scrollbar-hide">
-                                    <template x-for="prod in getFilteredMasterProducts()" :key="prod.sku">
-                                        <label @click="selectModalProduct(prod)"
-                                            class="flex items-center justify-between gap-3 px-3.5 py-2.5 border-b border-gray-100 transition-colors last:border-b-0 cursor-pointer hover:bg-gray-50/80">
-                                            <div class="flex items-center gap-3 min-w-0">
-                                                <div class="relative flex items-center justify-center w-4 h-4 shrink-0">
-                                                    <input type="radio" name="opnameProductRadio" :value="prod.name"
-                                                        :checked="modalItem.name === prod.name"
-                                                        @change="selectModalProduct(prod)"
-                                                        class="peer appearance-none w-4 h-4 border-2 border-gray-300 rounded-full checked:border-emerald-500 transition-colors cursor-pointer">
-                                                    <div
-                                                        class="absolute w-2 h-2 bg-emerald-500 rounded-full scale-0 peer-checked:scale-100 transition-transform duration-200">
-                                                    </div>
-                                                </div>
-                                                <span class="text-xs text-gray-800 truncate"
-                                                    :class="modalItem.name === prod.name ? 'font-bold text-gray-900' : 'font-medium'"
-                                                    x-text="prod.name + ' (' + prod.unit + ')'"></span>
-                                            </div>
-                                            <span class="font-dmsans tabular-nums text-[11px] text-gray-400 shrink-0"
-                                                x-text="'Sistem: ' + formatStockQty(prod.systemQty) + ' ' + prod.unit"></span>
-                                        </label>
-                                    </template>
-                                    <div x-show="getFilteredMasterProducts().length === 0"
-                                        class="text-center py-6 text-xs text-gray-400">
-                                        Produk tidak ditemukan
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Baris Stok Sistem (Read-Only) & Input Stok Fisik Aktual -->
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label
-                                    class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                                    Stok Sistem <span class="text-gray-400 font-normal" x-show="modalItem.unit"
-                                        x-text="'(' + modalItem.unit + ')'"></span>
-                                </label>
-                                <div
-                                    class="w-full h-10 px-3.5 bg-gray-100/80 border border-gray-200 rounded-xl text-xs font-bold text-gray-600 flex items-center justify-between font-dmsans tabular-nums">
-                                    <span x-text="modalItem.name ? formatStockQty(modalItem.systemQty) : '-'"></span>
-                                    <span class="text-[10px] font-normal text-gray-400"
-                                        x-text="modalItem.name ? ('HPP Rp ' + formatThousand(modalItem.hpp)) : ''"></span>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label
-                                    class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                                    Stok Fisik <span class="text-red-500">*</span> <span
-                                        class="text-gray-400 font-normal" x-show="modalItem.unit"
-                                        x-text="'(' + modalItem.unit + ')'"></span>
-                                </label>
-                                <input type="text" inputmode="decimal" :value="modalQtyString"
-                                    @input="handleQtyInput($event)" placeholder="0"
-                                    class="w-full h-10 px-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:bg-white focus:border-emerald-500 transition shadow-2xs placeholder:text-gray-300 font-dmsans tabular-nums">
-                            </div>
-                        </div>
-
-                        <!-- Live Preview Selisih Stok & Nilai Selisih -->
-                        <div class="p-3 rounded-xl border flex items-center justify-between text-xs transition-colors"
-                            :class="modalPreviewDiffQty() > 0 ? 'bg-emerald-50/60 border-emerald-100' : (modalPreviewDiffQty() < 0 ? 'bg-rose-50/60 border-rose-100' : 'bg-gray-50 border-gray-200/80')">
-                            <div>
-                                <span class="font-semibold block"
-                                    :class="modalPreviewDiffQty() > 0 ? 'text-emerald-800' : (modalPreviewDiffQty() < 0 ? 'text-rose-800' : 'text-gray-600')"
-                                    x-text="modalPreviewDiffQty() > 0 ? 'Selisih Lebih (Surplus)' : (modalPreviewDiffQty() < 0 ? 'Selisih Kurang (Rugi)' : 'Stok Sesuai Sistem')"></span>
-                                <span class="font-dmsans tabular-nums text-[11px] text-gray-500"
-                                    x-text="modalItem.name ? ('Selisih: ' + formatSignedQty(modalPreviewDiffQty()) + ' ' + modalItem.unit) : 'Pilih produk terlebih dahulu'"></span>
-                            </div>
-                            <span class="font-dmsans tabular-nums font-extrabold text-sm"
-                                :class="modalPreviewDiffQty() > 0 ? 'text-emerald-700' : (modalPreviewDiffQty() < 0 ? 'text-rose-700' : 'text-gray-700')"
-                                x-text="modalItem.name ? formatSignedRupiah(modalPreviewValueDiff()) : 'Rp 0'"></span>
-                        </div>
-                    </div>
-
-                    <!-- Modal Footer -->
-                    <div class="p-4 sm:p-5 border-t border-gray-100 bg-gray-50/50 flex items-center shrink-0">
-                        <div x-show="modalMode === 'add'" class="w-full">
-                            <button type="button" @click="saveModalItem()"
-                                class="w-full h-11 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-md shadow-[#0b595b]/20 active:scale-95 transition flex items-center justify-center cursor-pointer">
-                                Tambah Item ke Daftar Opname
-                            </button>
-                        </div>
-                        <div x-show="modalMode === 'edit'" class="flex items-center justify-between gap-3 w-full">
-                            <button type="button" @click="deleteEditingItem()"
-                                class="h-11 px-4 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
-                                <i class="ph-bold ph-trash"></i> Hapus Item
-                            </button>
-                            <button type="button" @click="saveModalItem()"
-                                class="flex-1 h-11 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-md shadow-[#0b595b]/20 active:scale-95 transition flex items-center justify-center cursor-pointer">
-                                Simpan Perubahan
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ================================================================ -->
-            <!-- MODAL 4: KONFIRMASI SELESAIKAN TRANSAKSI STOK OPNAME             -->
-            <!-- ================================================================ -->
-            <div x-show="confirmModalOpen" class="fixed inset-0 z-[130] flex items-center justify-center p-4" x-cloak>
-                <div x-show="confirmModalOpen" x-transition:enter="transition-opacity ease-out duration-200"
-                    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                    x-transition:leave="transition-opacity ease-in duration-150" x-transition:leave-start="opacity-100"
-                    x-transition:leave-end="opacity-0" @click="confirmModalOpen = false"
-                    class="absolute inset-0 bg-black/50 backdrop-blur-xs"></div>
-
-                <div x-show="confirmModalOpen" x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 scale-90 translate-y-3"
-                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                    @click.outside="confirmModalOpen = false"
-                    class="relative z-10 bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-sm overflow-hidden p-6 text-center">
-
-                    <h4 class="text-base font-bold text-gray-900 mb-1.5">Selesaikan Stok Opname?</h4>
-                    <p class="text-xs text-gray-500 leading-relaxed mb-4">
-                        Stok fisik akan difinalisasi dan tercatat ke riwayat penyesuaian stok cabang.
-                    </p>
-
-                    <div class="bg-gray-50 rounded-2xl p-3.5 border border-gray-100 mb-5 text-left text-xs space-y-1.5">
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-500 font-medium">Cabang</span>
-                            <span class="font-bold text-gray-800 truncate max-w-[180px]" x-text="form.branch"></span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-500 font-medium">Jumlah Produk</span>
-                            <span class="font-bold text-gray-800" x-text="form.items.length + ' Produk'"></span>
-                        </div>
-                        <div
-                            class="flex items-center justify-between pt-1.5 border-t border-gray-200/60 font-dmsans tabular-nums">
-                            <span class="font-sans font-semibold text-gray-700">Estimasi Selisih Nilai</span>
-                            <span class="font-extrabold text-sm"
-                                :class="calculateFormNetValue() > 0 ? 'text-emerald-700' : (calculateFormNetValue() < 0 ? 'text-rose-700' : 'text-gray-800')"
-                                x-text="formatSignedRupiah(calculateFormNetValue())"></span>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-2.5">
-                        <button type="button" @click="confirmModalOpen = false"
-                            class="flex-1 h-10 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition cursor-pointer">
-                            Batal
-                        </button>
-                        <button type="button" @click="executeSubmitOpname()"
-                            class="flex-1 h-10 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-md shadow-[#0b595b]/20 active:scale-95 transition flex items-center justify-center cursor-pointer">
-                            Selesaikan
-                        </button>
-                    </div>
-                </div>
-            </div>
 
         </div> <!-- /MAIN CONTENT AREA -->
 
@@ -2440,13 +2262,14 @@
                     time: '17:08',
                     staff: 'Zulki Arga Rahman',
                     status: 'Selesai',
+                    notes: 'Perhitungan fisik awal rak pajang utama, chiller, dan gudang cold storage.',
                     creditHistory: [
                         {
                             type: 'plus',
                             qty: 0.20,
                             prevPhysical: 3.65,
                             newPhysical: 3.85,
-                            reason: 'Timbangan ulang crate bawah ditemukan tambahan buah layak jual',
+                            reason: 'Timbangan ulang crate bawah ditemukan tambahan buah pir golden layak jual sebanyak 3 butir.',
                             by: 'Dimas Pratama',
                             date: '01 Nov 2026, 17:22'
                         }
@@ -2469,13 +2292,14 @@
                     time: '17:07',
                     staff: 'Zulki Arga Rahman',
                     status: 'Selesai',
+                    notes: 'Perhitungan fisik awal oleh tim gudang dan supervisor shift pagi mencakup seluruh rak pajang utama.',
                     creditHistory: [
                         {
                             type: 'minus',
                             qty: 2.0,
                             prevPhysical: 148,
                             newPhysical: 146,
-                            reason: 'Koreksi susut bobot alami & sortir afkir sore',
+                            reason: 'Koreksi susut bobot alami suhu ruangan dan pemisahan buah sortir afkir sore di gudang penyimpanan.',
                             by: 'Zulki Arga Rahman',
                             date: '01 Nov 2026, 17:35'
                         },
@@ -2484,7 +2308,7 @@
                             qty: 1.5,
                             prevPhysical: 146.5,
                             newPhysical: 148,
-                            reason: 'Stok display chiller depan belum ikut terhitung',
+                            reason: 'Penataan ulang rak display depan toko dan pembongkaran tumpukan crate bawah gudang cold storage.',
                             by: 'Dimas Pratama',
                             date: '01 Nov 2026, 17:18'
                         }
@@ -2600,7 +2424,7 @@
         }
 
         function erpApp() {
-            const STORAGE_KEY = 'infruity_erp_stok_opname_v1';
+            const STORAGE_KEY = 'infruity_erp_stok_opname_v3';
 
             return {
                 // UI & Shell State
@@ -2679,6 +2503,7 @@
                 detailModalOpen: false,
                 selectedRecord: null,
                 historyRecord: null,
+                historyTab: 'credit', // 'credit' | 'reason' (by default pergerakan kredit, ke-2 alasan setiap pergerakan)
                 historyFilterOpen: false,
                 historyFilterDirection: 'all', // 'all' | 'plus' | 'minus' | 'initial'
                 tempHistoryFilterDirection: 'all',
@@ -2699,26 +2524,6 @@
                     physicalQty: 0,
                     notes: ''
                 },
-
-                // Add/Edit Item Modal State
-                itemModalOpen: false,
-                modalMode: 'add',
-                editingItemIndex: null,
-                productSearchQuery: '',
-                modalQtyString: '',
-                modalItem: {
-                    name: '',
-                    sku: '',
-                    unit: 'Kg',
-                    hpp: 0,
-                    systemQty: 0,
-                    physicalQty: 0
-                },
-
-                // Confirmation & Toast
-                confirmModalOpen: false,
-                toast: { show: false, message: '' },
-                toastTimer: null,
 
                 init() {
                     try {
@@ -2757,17 +2562,12 @@
                 },
 
                 showToast(msg) {
-                    this.toast.message = msg;
-                    this.toast.show = true;
-                    if (this.toastTimer) clearTimeout(this.toastTimer);
-                    this.toastTimer = setTimeout(() => {
-                        this.toast.show = false;
-                    }, 2600);
+                    // Pop-up notifikasi dinonaktifkan (zero pop-up)
                 },
 
                 // === Parent Iframe Overlay Sync ===
                 syncParentOverlay() {
-                    const anyOpen = this.filterOpen || this.detailModalOpen || this.itemModalOpen || this.confirmModalOpen || this.historyFilterOpen;
+                    const anyOpen = this.filterOpen || this.detailModalOpen || this.historyFilterOpen;
                     if (window.self !== window.top) {
                         window.parent.postMessage({ type: 'drawerOverlay', active: anyOpen }, '*');
                     }
@@ -2778,8 +2578,6 @@
                     this.calOpen = false;
                     this.historyFilterOpen = false;
                     this.detailModalOpen = false;
-                    this.itemModalOpen = false;
-                    this.confirmModalOpen = false;
                     this.creditPlusStr = '';
                     this.creditMinusStr = '';
                     this.creditPlusQty = 0;
@@ -3059,9 +2857,60 @@
                     this.showToast(wasDraft && delta === 0 && !note ? 'Draf stok opname berhasil diselesaikan' : 'Stok opname berhasil diselesaikan');
                 },
 
+                saveCorrectionOnly() {
+                    const rec = this.selectedRecord;
+                    if (!rec) return;
+
+                    const delta = this.creditNetDelta();
+                    const note = (this.creditNoteStr || '').trim();
+
+                    if (delta === 0 && !note) {
+                        this.showToast('Masukkan jumlah koreksi atau catatan terlebih dahulu');
+                        return;
+                    }
+
+                    const actualDelta = delta;
+                    const prevPhys = rec.physicalQty;
+                    const newPhys = Math.round((prevPhys + actualDelta) * 1000) / 1000;
+                    const now = new Date();
+                    const stamp = String(now.getDate()).padStart(2, '0') + ' ' +
+                        this.shortMonths[now.getMonth()] + ' ' +
+                        now.getFullYear() + ', ' +
+                        String(now.getHours()).padStart(2, '0') + ':' +
+                        String(now.getMinutes()).padStart(2, '0');
+
+                    if (!Array.isArray(rec.creditHistory)) rec.creditHistory = [];
+                    rec.creditHistory.unshift({
+                        type: delta > 0 ? 'plus' : (delta < 0 ? 'minus' : 'note'),
+                        qty: actualDelta,
+                        prevPhysical: prevPhys,
+                        newPhysical: newPhys,
+                        reason: note || 'Koreksi penyesuaian fisik',
+                        by: 'Dimas Pratama',
+                        date: stamp
+                    });
+
+                    if (delta !== 0) {
+                        rec.physicalQty = newPhys;
+                        rec.diffQty = Math.round((rec.physicalQty - rec.systemQty) * 1000) / 1000;
+                        rec.valueDiff = Math.round(rec.diffQty * rec.hpp);
+                    }
+
+                    // Reset form input koreksi agar langsung siap menambah koreksi lagi
+                    this.creditPlusStr = '';
+                    this.creditMinusStr = '';
+                    this.creditPlusQty = 0;
+                    this.creditMinusQty = 0;
+                    this.creditNoteStr = '';
+
+                    this.persistRecords();
+                    this.showToast('Koreksi berhasil ditambahkan. Silakan tambah koreksi lagi atau selesaikan opname');
+                },
+
                 openHistoryView(rec) {
                     if (!rec) return;
                     this.historyRecord = rec;
+                    this.historyTab = 'credit'; // by default menampilkan pergerakan kredit
                     this.historyFilterOpen = false;
                     this.historyFilterDirection = 'all';
                     this.tempHistoryFilterDirection = 'all';
@@ -3143,15 +2992,10 @@
                     this.isEditDraft = false;
                     this.editingBatchId = null;
                     const branch = this.selectedBranch !== 'Semua Cabang' ? this.selectedBranch : 'Gresik / Driyorejo - 001';
-                    const firstProd = this.masterProducts[0];
-                    const sysQty = this.getSystemQtyForBranch(firstProd, branch);
                     this.form = {
                         branch: branch,
                         productSearch: '',
-                        selectedProduct: {
-                            ...firstProd,
-                            systemQty: sysQty
-                        },
+                        selectedProduct: null,
                         physicalQtyStr: '',
                         physicalQty: 0,
                         notes: ''
@@ -3210,20 +3054,70 @@
                     return { display, numeric };
                 },
 
-                handleFormPhysicalInput(rawVal) {
-                    if (rawVal === '' || rawVal === undefined || rawVal === null) {
+                handleFormPhysicalInput(event) {
+                    const rawVal = typeof event === 'object' && event !== null && event.target ? event.target.value : event;
+                    const prev = this.form.physicalQtyStr || '';
+                    const eventData = event && event.data;
+                    const inputType = (event && event.inputType) || '';
+
+                    let str = String(rawVal || '').trim();
+                    if (!str) {
                         this.form.physicalQtyStr = '';
                         this.form.physicalQty = 0;
+                        if (event && event.target) event.target.value = '';
                         return;
                     }
-                    this.form.physicalQtyStr = String(rawVal);
-                    this.form.physicalQty = parseFloat(rawVal) || 0;
+
+                    // If user explicitly typed a dot '.' on keyboard/numpad, convert to comma ',' for decimal
+                    if (eventData === '.' || (inputType === 'insertText' && str.endsWith('.'))) {
+                        if (!prev.includes(',')) {
+                            const clean = str.endsWith('.') ? str.slice(0, -1) : str;
+                            const intDigits = clean.replace(/\D/g, '');
+                            const intNum = intDigits ? parseInt(intDigits, 10) : 0;
+                            const formattedInt = intDigits ? intNum.toLocaleString('id-ID') : '0';
+                            this.form.physicalQtyStr = formattedInt + ',';
+                            this.form.physicalQty = intNum;
+                            if (event && event.target) event.target.value = this.form.physicalQtyStr;
+                            return;
+                        }
+                    }
+
+                    // Decimal mode (active if string contains a comma ',')
+                    if (str.includes(',')) {
+                        const parts = str.split(',');
+                        const intRaw = parts[0].replace(/\D/g, '');
+                        const decRaw = parts.slice(1).join('').replace(/\D/g, '').slice(0, 3);
+
+                        const intNum = intRaw ? parseInt(intRaw, 10) : 0;
+                        const formattedInt = intRaw ? intNum.toLocaleString('id-ID') : '0';
+
+                        const display = formattedInt + ',' + decRaw;
+                        const num = parseFloat((intRaw || '0') + '.' + (decRaw || '0'));
+                        this.form.physicalQtyStr = display;
+                        this.form.physicalQty = isNaN(num) ? 0 : Math.round(num * 1000) / 1000;
+                        if (event && event.target) event.target.value = display;
+                        return;
+                    }
+
+                    // Pure integer mode: all dots are strictly thousand separators
+                    const digits = str.replace(/\D/g, '');
+                    if (!digits) {
+                        this.form.physicalQtyStr = '';
+                        this.form.physicalQty = 0;
+                        if (event && event.target) event.target.value = '';
+                        return;
+                    }
+
+                    const intNum = parseInt(digits, 10);
+                    const display = intNum.toLocaleString('id-ID');
+                    this.form.physicalQtyStr = display;
+                    this.form.physicalQty = intNum;
+                    if (event && event.target) event.target.value = display;
                 },
 
                 formDiffQty() {
                     if (!this.form.selectedProduct || this.form.physicalQtyStr === '' || this.form.physicalQtyStr === null || this.form.physicalQtyStr === undefined) return 0;
-                    const phys = parseFloat(this.form.physicalQtyStr);
-                    if (isNaN(phys)) return 0;
+                    const phys = Number(this.form.physicalQty || 0);
                     const sys = Number(this.form.selectedProduct.systemQty || 0);
                     return Math.round((phys - sys) * 1000) / 1000;
                 },
@@ -3237,8 +3131,6 @@
                     if (!this.form.selectedProduct || this.form.physicalQtyStr === '' || this.form.physicalQtyStr === null || this.form.physicalQtyStr === undefined) {
                         return 'Status Selisih';
                     }
-                    const phys = parseFloat(this.form.physicalQtyStr);
-                    if (isNaN(phys)) return 'Status Selisih';
                     const sys = Number(this.form.selectedProduct.systemQty || 0);
                     if (sys === 0) return 'Stok Awal';
                     const diff = this.formDiffQty();

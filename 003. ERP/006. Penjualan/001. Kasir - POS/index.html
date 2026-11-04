@@ -1633,15 +1633,27 @@
                                                     <div class="flex items-center gap-2 min-w-0">
                                                         <h4 class="text-sm font-bold text-gray-900 truncate group-hover:text-[#0b595b] transition-colors" x-text="item.name"></h4>
                                                         <span x-show="item.isParcel || item.category === 'parcel'" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-200 shrink-0">Parcel</span>
+                                                        <span x-show="item.discountPerUnit > 0" class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-red-100 text-red-600 border border-red-200 shrink-0 font-poppins"
+                                                              x-text="item.discountType === 'percent' ? ('-' + item.discount + '%') : ('-Rp ' + (item.discountPerUnit || 0).toLocaleString('id-ID'))"></span>
                                                     </div>
                                                     <span class="text-xs sm:text-sm font-extrabold text-[#0b595b] shrink-0 font-poppins" 
-                                                          x-text="'Rp ' + ((item.qty || 0) * (item.sellPrice || item.price || item.buyPrice || 0)).toLocaleString('id-ID')"></span>
+                                                          x-text="'Rp ' + getItemSubtotal(item).toLocaleString('id-ID')"></span>
                                                 </div>
                                                 
                                                 <!-- BARIS 2: Harga Satuan (Kiri) & Kuantitas (Kanan) -->
                                                 <div class="flex items-center justify-between gap-2 mt-0.5">
-                                                    <span class="text-xs font-medium text-gray-500 font-poppins" 
-                                                          x-text="'Rp ' + (item.sellPrice || item.price || item.buyPrice || 0).toLocaleString('id-ID') + ' / ' + (item.unit || 'Kg')"></span>
+                                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                                        <template x-if="item.discountPerUnit > 0">
+                                                            <div class="flex items-center gap-1.5 text-xs font-poppins">
+                                                                <span class="line-through text-gray-400 text-[11px]" x-text="'Rp ' + (item.sellPrice || item.price || 0).toLocaleString('id-ID')"></span>
+                                                                <span class="font-bold text-[#0b595b]" x-text="'Rp ' + getItemUnitPrice(item).toLocaleString('id-ID') + ' / ' + (item.unit || 'Kg')"></span>
+                                                            </div>
+                                                        </template>
+                                                        <template x-if="!item.discountPerUnit || item.discountPerUnit <= 0">
+                                                            <span class="text-xs font-medium text-gray-500 font-poppins" 
+                                                                  x-text="'Rp ' + (item.sellPrice || item.price || item.buyPrice || 0).toLocaleString('id-ID') + ' / ' + (item.unit || 'Kg')"></span>
+                                                        </template>
+                                                    </div>
                                                     <span class="text-xs font-semibold text-gray-600 shrink-0 text-right font-poppins" 
                                                           x-text="((item.qty || 0).toLocaleString('id-ID')) + ' ' + (item.unit || 'Kg')"></span>
                                                 </div>
@@ -2421,11 +2433,13 @@
                                                             x-text="it.unit || 'Pcs'"></td>
                                                         <td class="px-4 py-2.5 text-right font-bold text-gray-900"
                                                             x-text="Number(it.qty || 0).toLocaleString('id-ID')"></td>
-                                                        <td class="px-4 py-2.5 text-right text-gray-600"
-                                                            x-text="'Rp ' + Number(it.price || it.sellPrice || it.unitPrice || it.buyPrice || 0).toLocaleString('id-ID')">
+                                                        <td class="px-4 py-2.5 text-right text-gray-600">
+                                                            <div x-show="it.discountPerUnit > 0" class="text-[10px] line-through text-gray-400" x-text="'Rp ' + Number(it.sellPrice || it.price || 0).toLocaleString('id-ID')"></div>
+                                                            <span :class="it.discountPerUnit > 0 ? 'font-bold text-[#0b595b]' : ''" x-text="'Rp ' + Number(it.finalPrice !== undefined ? it.finalPrice : (it.price || it.sellPrice || 0)).toLocaleString('id-ID')"></span>
+                                                            <span x-show="it.discountPerUnit > 0" class="text-[9px] font-bold text-red-500 block font-poppins" x-text="it.discountType === 'percent' ? ('-' + it.discount + '%') : ('-Rp ' + (it.discountPerUnit || 0).toLocaleString('id-ID'))"></span>
                                                         </td>
                                                         <td class="px-4 py-2.5 text-right font-bold text-gray-900"
-                                                            x-text="'Rp ' + Number(it.subtotal || ((it.qty || 0) * (it.price || it.sellPrice || it.unitPrice || it.buyPrice || 0))).toLocaleString('id-ID')">
+                                                            x-text="'Rp ' + Number(it.subtotal || ((it.qty || 0) * (it.finalPrice !== undefined ? it.finalPrice : (it.price || it.sellPrice || it.unitPrice || it.buyPrice || 0)))).toLocaleString('id-ID')">
                                                         </td>
                                                     </tr>
                                                 </template>
@@ -2571,7 +2585,16 @@
             <!-- MODAL 1: PILIH KATEGORI PRODUK (+ TAMBAH)                -->
             <!-- ======================================================== -->
             <div x-show="categoryPickerModalOpen" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-                <div @click.outside="categoryPickerModalOpen = false" class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-auto transition-all">
+                <div @click.outside="categoryPickerModalOpen = false"
+                    @touchstart="handleTouchStart($event)" @touchend="handleTouchEnd($event)"
+                    @pointerdown="handlePointerDown($event)" @pointerup="handlePointerUp($event)"
+                    x-transition:enter="transition ease-out duration-250 transform"
+                    x-transition:enter-start="opacity-0 -translate-x-6 scale-98"
+                    x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+                    x-transition:leave="transition ease-in duration-200 transform"
+                    x-transition:leave-start="opacity-100 translate-x-0 scale-100"
+                    x-transition:leave-end="opacity-0 -translate-x-6 scale-98"
+                    class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-auto transition-all">
                     
                     <!-- Header Modal Kategori -->
                     <div class="px-5 sm:px-6 pt-5 pb-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
@@ -2579,51 +2602,47 @@
                             <h4 class="text-base font-bold text-gray-900 leading-tight">Pilih Kategori Produk</h4>
                             <p class="text-xs text-gray-500 mt-0.5">Tentukan jenis item yang ingin ditambahkan</p>
                         </div>
-                        <button type="button" @click="categoryPickerModalOpen = false" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                        <button type="button" @click="categoryPickerModalOpen = false" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition cursor-pointer" title="Tutup / Batal">
                             <i class="ph-bold ph-x text-sm"></i>
                         </button>
                     </div>
 
-                    <!-- 3 Kartu Kategori Utama -->
+                    <!-- 3 Kartu Kategori Utama (Tanpa Penjelasan / Langsung Kategori) -->
                     <div class="p-5 space-y-3">
-                        <!-- 1. Buah & Olahan selain jus -->
+                        <!-- 1. Buah / Olahan Selain Jus (Tanaman Buah) -->
                         <button type="button" @click="selectCategoryFromPicker('buah')"
                             class="w-full p-4 rounded-2xl border border-gray-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/40 text-left transition-all group flex items-center gap-4 cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.99]">
                             <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-[#0b595b] flex items-center justify-center shrink-0 group-hover:bg-[#0b595b] group-hover:text-white transition-colors">
-                                <i class="ph-fill ph-apple-logo text-2xl"></i>
+                                <i class="ph-fill ph-plant text-2xl"></i>
                             </div>
                             <div class="min-w-0 flex-1">
-                                <div class="text-sm font-bold text-gray-900 group-hover:text-[#0b595b] transition-colors">Buah & Olahan selain jus</div>
-                                <div class="text-xs text-gray-500 mt-0.5">Produk belum proses olahan apapun (Alpukat, Buah Naga, Pir, dll)</div>
+                                <div class="text-sm sm:text-base font-bold text-gray-900 group-hover:text-[#0b595b] transition-colors">Buah / Olahan Selain Jus</div>
                             </div>
                             <i class="ph-bold ph-caret-right text-gray-400 group-hover:text-[#0b595b] group-hover:translate-x-0.5 transition-all text-base"></i>
                         </button>
 
-                        <!-- 2. Parcel (Rangkai Parcel / Tambah-Tambah Buah) -->
+                        <!-- 2. Parcel (Shopping Bag Buah) -->
                         <button type="button" @click="selectCategoryFromPicker('parcel')"
-                            class="w-full p-4 rounded-2xl border-2 border-amber-300 hover:border-amber-500 bg-amber-50/30 hover:bg-amber-50/70 text-left transition-all group flex items-center gap-4 cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.99]">
+                            class="w-full p-4 rounded-2xl border border-gray-200 hover:border-amber-500 bg-white hover:bg-amber-50/40 text-left transition-all group flex items-center gap-4 cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.99]">
                             <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                                <i class="ph-fill ph-gift text-2xl"></i>
+                                <i class="ph-fill ph-shopping-bag text-2xl"></i>
                             </div>
                             <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-bold text-gray-900 group-hover:text-amber-900 transition-colors">Parcel</span>
-                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-200 text-amber-900">Rangkai di POS</span>
-                                </div>
-                                <div class="text-xs text-gray-600 mt-0.5">Sistem rakit/tambah-tambah isi buah, keranjang & pita langsung di kasir</div>
+                                <div class="text-sm sm:text-base font-bold text-gray-900 group-hover:text-amber-900 transition-colors">Parcel</div>
                             </div>
-                            <i class="ph-bold ph-caret-right text-amber-600 group-hover:text-amber-800 group-hover:translate-x-0.5 transition-all text-base"></i>
+                            <i class="ph-bold ph-caret-right text-gray-400 group-hover:text-amber-800 group-hover:translate-x-0.5 transition-all text-base"></i>
                         </button>
 
-                        <!-- 3. Jus -->
+                        <!-- 3. Jus (Gelas Minuman Tropis) -->
                         <button type="button" @click="selectCategoryFromPicker('jus')"
                             class="w-full p-4 rounded-2xl border border-gray-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/40 text-left transition-all group flex items-center gap-4 cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.99]">
                             <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                                <i class="ph-fill ph-brand-soda text-2xl"></i>
+                                <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                                    <path d="M21 5V3H3v2l8 8v6H7v2h10v-2h-4v-6l8-8zm-2.83 0l-2 2H7.83l-2-2h12.34z"/>
+                                </svg>
                             </div>
                             <div class="min-w-0 flex-1">
-                                <div class="text-sm font-bold text-gray-900 group-hover:text-emerald-800 transition-colors">Jus</div>
-                                <div class="text-xs text-gray-500 mt-0.5">Minuman segar olahan buah (Jus Alpukat, Jeruk peras, dll)</div>
+                                <div class="text-sm sm:text-base font-bold text-gray-900 group-hover:text-emerald-800 transition-colors">Jus</div>
                             </div>
                             <i class="ph-bold ph-caret-right text-gray-400 group-hover:text-emerald-700 group-hover:translate-x-0.5 transition-all text-base"></i>
                         </button>
@@ -2636,25 +2655,26 @@
             <!-- MODAL 2: RANGKAI PARCEL (PRODUKSI DI POS)                -->
             <!-- ======================================================== -->
             <div x-show="parcelBuilderModalOpen" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-                <div @click.outside="parcelBuilderModalOpen = false" class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-auto transition-all max-h-[92vh]">
+                <div @click.outside="parcelBuilderModalOpen = false"
+                    @touchstart="handleTouchStart($event)" @touchend="handleTouchEnd($event)"
+                    @pointerdown="handlePointerDown($event)" @pointerup="handlePointerUp($event)"
+                    x-transition:enter="transition ease-out duration-250 transform"
+                    x-transition:enter-start="opacity-0 translate-x-6 scale-98"
+                    x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+                    x-transition:leave="transition ease-in duration-200 transform"
+                    x-transition:leave-start="opacity-100 translate-x-0 scale-100"
+                    x-transition:leave-end="opacity-0 translate-x-6 scale-98"
+                    class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-auto transition-all max-h-[92vh]">
                     
                     <!-- Header Rangkai Parcel -->
-                    <div class="px-5 sm:px-6 pt-4 pb-3.5 border-b border-gray-100 flex items-center justify-between bg-amber-50/40 shrink-0">
-                        <div class="flex items-center gap-2.5">
-                            <button type="button" @click="parcelBuilderModalOpen = false; categoryPickerModalOpen = true;" class="w-8 h-8 rounded-xl bg-white border border-gray-200 hover:bg-gray-100 flex items-center justify-center text-gray-600 transition cursor-pointer" title="Kembali ke Kategori">
-                                <i class="ph-bold ph-arrow-left text-xs"></i>
-                            </button>
-                            <div>
-                                <div class="flex items-center gap-1.5">
-                                    <h4 class="text-sm sm:text-base font-bold text-gray-900 leading-tight">Rangkai Parcel Baru</h4>
-                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-200 text-amber-900">Produksi POS</span>
-                                </div>
-                                <p class="text-[11px] text-gray-500">Tambah-tambah komponen isi buah & kemasan</p>
+                    <div class="px-5 sm:px-6 pt-4 pb-3.5 border-b border-gray-100 bg-amber-50/40 shrink-0">
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <h4 class="text-sm sm:text-base font-bold text-gray-900 leading-tight">Rangkai Parcel Baru</h4>
+                                <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-200 text-amber-900 shrink-0">Produksi POS</span>
                             </div>
+                            <p class="text-[11px] text-gray-500 mt-0.5">Tambah-tambah komponen isi buah & kemasan</p>
                         </div>
-                        <button type="button" @click="parcelBuilderModalOpen = false" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
-                            <i class="ph-bold ph-x text-sm"></i>
-                        </button>
                     </div>
 
                     <!-- Body Rangkai Parcel -->
@@ -2847,24 +2867,27 @@
             <div x-show="itemModalOpen" x-cloak @click.self="itemModalOpen = false"
                 class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
 
-                <div @click.outside="itemModalOpen = false" x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                <div @click.outside="itemModalOpen = false"
+                    @touchstart="handleTouchStart($event)" @touchend="handleTouchEnd($event)"
+                    @pointerdown="handlePointerDown($event)" @pointerup="handlePointerUp($event)"
+                    x-transition:enter="transition ease-out duration-250 transform"
+                    x-transition:enter-start="opacity-0 translate-x-6 scale-98"
+                    x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+                    x-transition:leave="transition ease-in duration-200 transform"
+                    x-transition:leave-start="opacity-100 translate-x-0 scale-100"
+                    x-transition:leave-end="opacity-0 translate-x-6 scale-98"
                     class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-auto max-h-[92vh]">
 
                     <!-- Modal Header -->
                     <div
-                        class="px-5 sm:px-6 pt-4 sm:pt-5 pb-3.5 border-b border-gray-100 flex items-center justify-between shrink-0 bg-gray-50/50">
+                        class="px-5 sm:px-6 pt-4 sm:pt-5 pb-3.5 border-b border-gray-100 shrink-0 bg-gray-50/50">
                         <div>
                             <h4 class="text-base font-bold text-gray-900 leading-tight"
-                                x-text="modalMode === 'add' ? 'Tambah Item Belanja' : 'Edit Item Belanja'"></h4>
+                                x-text="modalMode === 'add' ? (selectedModalCategory === 'buah' ? 'Tambah Buah & Olahan' : (selectedModalCategory === 'jus' ? 'Tambah Jus' : 'Tambah Item Belanja')) : 'Edit Item Belanja'"></h4>
                             <p class="text-xs text-gray-500 mt-0.5"
                                 x-text="modalMode === 'add' ? 'Pilih produk dan tentukan detail belanja' : 'Perbarui detail item belanja'">
                             </p>
                         </div>
-                        <button type="button" @click="itemModalOpen = false"
-                            class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
-                            <i class="ph-bold ph-x text-sm"></i>
-                        </button>
                     </div>
 
                     <!-- Modal Body Form -->
@@ -2877,32 +2900,6 @@
 
                             <div
                                 class="bg-white border border-gray-200 rounded-xl flex flex-col overflow-hidden shadow-2xs">
-                                <!-- Category Filter Pills di Dalam Modal -->
-                                <div class="px-2.5 py-1.5 bg-gray-50/80 border-b border-gray-100 flex items-center gap-1.5 overflow-x-auto minimal-scrollbar">
-                                    <button type="button" @click="selectedModalCategory = 'all'"
-                                        class="px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition cursor-pointer"
-                                        :class="selectedModalCategory === 'all' ? 'bg-[#0b595b] text-white shadow-2xs' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/80'">
-                                        Semua
-                                    </button>
-                                    <button type="button" @click="selectedModalCategory = 'buah'"
-                                        class="px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition flex items-center gap-1 cursor-pointer"
-                                        :class="selectedModalCategory === 'buah' ? 'bg-[#0b595b] text-white shadow-2xs' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/80'">
-                                        <i class="ph-fill ph-apple-logo text-xs"></i>
-                                        <span>Buah & Olahan selain jus</span>
-                                    </button>
-                                    <button type="button" @click="selectedModalCategory = 'parcel'"
-                                        class="px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition flex items-center gap-1 cursor-pointer"
-                                        :class="selectedModalCategory === 'parcel' ? 'bg-amber-500 text-white shadow-2xs' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/80'">
-                                        <i class="ph-fill ph-gift text-xs"></i>
-                                        <span>Parcel</span>
-                                    </button>
-                                    <button type="button" @click="selectedModalCategory = 'jus'"
-                                        class="px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition flex items-center gap-1 cursor-pointer"
-                                        :class="selectedModalCategory === 'jus' ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/80'">
-                                        <i class="ph-fill ph-brand-soda text-xs"></i>
-                                        <span>Jus</span>
-                                    </button>
-                                </div>
 
                                 <!-- Search Box -->
                                 <div class="relative border-b border-gray-100 shrink-0">
@@ -2913,7 +2910,7 @@
                                 </div>
 
                                 <!-- Radio List -->
-                                <div class="h-[135px] overflow-y-auto overscroll-none bg-white scrollbar-hide">
+                                <div class="h-[160px] overflow-y-auto overscroll-none bg-white scrollbar-hide">
                                     <template x-for="item in getFilteredMasterProducts()" :key="item.name">
                                         <label @click="selectModalProduct(item)"
                                             class="flex items-center gap-3 px-3.5 py-2.5 border-b border-gray-100 transition-colors last:border-b-0 cursor-pointer hover:bg-gray-50/80">
@@ -2946,7 +2943,22 @@
                             </div>
                         </div>
 
+                        <!-- Baris 1: Harga Jual (Kiri, Read-only & Ter-adjust Diskon) & Kuantitas (Kanan, Input) -->
                         <div class="grid grid-cols-2 gap-3">
+                            <!-- Harga Jual / Satuan (Terkunci / Read-only, ter-adjust melalui Diskon) -->
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                                        Harga Jual <span class="text-gray-400 font-normal" x-show="modalItem.unit" x-text="'/' + modalItem.unit"></span>
+                                    </label>
+                                    <span x-show="modalItem.discount > 0" class="line-through text-[10px] text-gray-400 font-poppins"
+                                          x-text="'Rp ' + (modalItem.basePrice || modalItem.price || 0).toLocaleString('id-ID')"></span>
+                                </div>
+                                <input type="text" readonly
+                                    :value="getModalFinalUnitPrice() > 0 ? getModalFinalUnitPrice().toLocaleString('id-ID') : '0'"
+                                    class="w-full h-10 px-3.5 bg-gray-100/80 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none cursor-default shadow-2xs select-none">
+                            </div>
+
                             <!-- Kuantitas -->
                             <div>
                                 <label
@@ -2955,50 +2967,39 @@
                                         x-text="'(' + modalItem.unit + ')'"></span>
                                 </label>
                                 <input type="text" inputmode="decimal" :value="modalQtyString"
-                                    @input="handleQtyInput($event)" placeholder="0"
-                                    class="w-full h-10 px-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:bg-white focus:border-emerald-500 transition shadow-2xs placeholder:text-gray-300 placeholder:font-normal">
-                            </div>
-
-                            <!-- Harga Beli Satuan -->
-                            <div>
-                                <label
-                                    class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Harga
-                                    Beli / Satuan</label>
-                                <input type="text" inputmode="numeric" :value="formatRupiahInput(modalItem.buyPrice)"
-                                    @input="handlePriceInput('buyPrice', $event)" placeholder="0"
+                                    @input="handleModalQtyInput($event)" placeholder="1"
                                     class="w-full h-10 px-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:bg-white focus:border-emerald-500 transition shadow-2xs placeholder:text-gray-300 placeholder:font-normal">
                             </div>
                         </div>
 
-                        <!-- Baris Harga Jual & Margin (%) Berdampingan -->
+                        <!-- Baris 2: Diskon (Kiri) & Total Harga (Kanan) -->
                         <div class="grid grid-cols-2 gap-3">
-                            <!-- Harga Jual -->
+                            <!-- Diskon -->
                             <div>
-                                <label
-                                    class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Harga
-                                    Jual</label>
-                                <input type="text" inputmode="numeric" :value="formatRupiahInput(modalItem.sellPrice)"
-                                    @input="handlePriceInput('sellPrice', $event)" placeholder="0"
-                                    class="w-full h-10 px-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 outline-none focus:bg-white focus:border-emerald-500 transition shadow-2xs placeholder:text-gray-300 placeholder:font-normal">
+                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 truncate">Diskon</label>
+                                <div class="relative flex items-center h-10 bg-gray-50 border border-gray-200 focus-within:bg-white focus-within:border-emerald-500 rounded-xl transition shadow-2xs">
+                                    <button type="button" @click="toggleModalDiscountType()"
+                                        class="w-9 h-full flex items-center justify-center text-xs font-bold text-gray-400 hover:text-gray-600 transition cursor-pointer select-none shrink-0"
+                                        title="Klik untuk ubah jenis diskon (% / Rp)">
+                                        <span x-text="getModalDiscountType() === 'percent' ? '%' : 'Rp'" class="leading-none text-center"></span>
+                                    </button>
+                                    <span class="w-[1px] h-4 bg-gray-200 block shrink-0"></span>
+                                    <input type="text" inputmode="numeric" :value="modalDiscountString"
+                                        @input="handleDiscountInput($event)" placeholder="0"
+                                        class="w-full h-full pl-3.5 pr-3.5 bg-transparent text-xs font-bold text-gray-800 outline-none placeholder:text-gray-300 placeholder:font-normal">
+                                </div>
                             </div>
 
-                            <!-- Margin (%) -->
+                            <!-- Total Harga -->
                             <div>
-                                <label
-                                    class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Margin
-                                    (%)</label>
-                                <input type="text" readonly
-                                    :value="modalItem.marginPercent !== null && modalItem.marginPercent !== undefined ? modalItem.marginPercent + '%' : '0%'"
-                                    class="w-full h-10 px-3.5 bg-gray-100/80 border border-gray-200 rounded-xl text-xs font-bold text-emerald-700 outline-none cursor-default shadow-2xs select-none">
+                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Total Harga</label>
+                                <div
+                                    class="w-full h-10 px-3.5 bg-emerald-50/70 border border-emerald-200/80 rounded-xl flex items-center justify-between text-xs shadow-2xs">
+                                    <span class="text-[11px] font-semibold text-emerald-800">Total</span>
+                                    <span class="text-xs sm:text-sm font-extrabold text-[#0b595b] font-poppins"
+                                        x-text="'Rp ' + getModalSubtotal().toLocaleString('id-ID')"></span>
+                                </div>
                             </div>
-                        </div>
-
-                        <!-- Total Estimasi -->
-                        <div
-                            class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 flex items-center justify-between text-xs">
-                            <span class="font-semibold text-emerald-800">Total Harga Item</span>
-                            <span class="font-extrabold text-[#0b595b] text-sm font-poppins"
-                                x-text="'Rp ' + Math.round((modalItem.qty || 0) * (modalItem.sellPrice || modalItem.price || modalItem.buyPrice || 0)).toLocaleString('id-ID')"></span>
                         </div>
                     </div>
 
@@ -3590,12 +3591,24 @@
                 },
                 productSearchQuery: '',
                 modalQtyString: '',
+                modalPriceString: '',
+                modalDiscountString: '',
+                modalLastEdited: 'qty',
                 modalItem: {
                     productId: null,
                     name: '',
                     unit: '',
+                    category: '',
+                    isParcel: false,
                     buyPrice: null,
-                    sellPrice: null,
+                    basePrice: 0,
+                    sellPrice: 0,
+                    price: null,
+                    discount: 0,
+                    discountType: null,
+                    discountPerUnit: 0,
+                    finalUnitPrice: 0,
+                    finalPrice: null,
                     marginPercent: null,
                     qty: null
                 },
@@ -3991,7 +4004,11 @@
                                 price: sellPrice || buyPrice,
                                 marginPercent: marginPercent,
                                 qty: qty,
-                                isParcel: Boolean(it.isParcel || it.category === 'parcel')
+                                isParcel: Boolean(it.isParcel || it.category === 'parcel'),
+                                discount: it.discount || 0,
+                                discountType: it.discountType || null,
+                                discountPerUnit: it.discountPerUnit || 0,
+                                finalPrice: (it.finalPrice !== undefined && it.finalPrice !== null) ? it.finalPrice : (it.discountPerUnit ? Math.max(0, sellPrice - it.discountPerUnit) : sellPrice)
                             };
                         });
                     } else {
@@ -4133,8 +4150,25 @@
                     this.openEditForm(order);
                 },
 
+                getItemUnitPrice(item) {
+                    if (!item) return 0;
+                    if (item.finalPrice !== undefined && item.finalPrice !== null) {
+                        return item.finalPrice;
+                    }
+                    const basePrice = Number(item.sellPrice || item.price || item.buyPrice || 0);
+                    if (item.discountPerUnit && item.discountPerUnit > 0) {
+                        return Math.max(0, basePrice - item.discountPerUnit);
+                    }
+                    return basePrice;
+                },
+
+                getItemSubtotal(item) {
+                    if (!item) return 0;
+                    return Math.round((Number(item.qty || 0)) * this.getItemUnitPrice(item));
+                },
+
                 calculateGrandTotal() {
-                    return this.form.items.reduce((acc, item) => acc + ((item.qty || 0) * (item.sellPrice || item.price || item.buyPrice || 0)), 0);
+                    return (this.form.items || []).reduce((acc, item) => acc + this.getItemSubtotal(item), 0);
                 },
 
                 getFilteredMasterProducts() {
@@ -4167,6 +4201,65 @@
 
                 openCategoryPickerModal() {
                     this.categoryPickerModalOpen = true;
+                },
+
+                // Gesture Touch / Swipe (Geser Kanan untuk Back)
+                touchStartX: 0,
+                touchStartY: 0,
+                pointerStartX: 0,
+                pointerStartY: 0,
+                triggerBackSwipe() {
+                    if (this.subItemPickerOpen) {
+                        this.subItemPickerOpen = false;
+                    } else if (this.itemModalOpen) {
+                        if (this.modalMode === 'add') {
+                            this.itemModalOpen = false;
+                            this.categoryPickerModalOpen = true;
+                        } else {
+                            this.itemModalOpen = false;
+                        }
+                    } else if (this.parcelBuilderModalOpen) {
+                        this.parcelBuilderModalOpen = false;
+                        this.categoryPickerModalOpen = true;
+                    } else if (this.categoryPickerModalOpen) {
+                        this.categoryPickerModalOpen = false;
+                    }
+                },
+                handleTouchStart(e) {
+                    if (e.touches && e.touches.length === 1) {
+                        this.touchStartX = e.touches[0].clientX;
+                        this.touchStartY = e.touches[0].clientY;
+                    }
+                },
+                handleTouchEnd(e) {
+                    if (!this.touchStartX) return;
+                    const touch = e.changedTouches ? e.changedTouches[0] : null;
+                    if (!touch) return;
+                    const diffX = touch.clientX - this.touchStartX;
+                    const diffY = touch.clientY - this.touchStartY;
+
+                    // Swipe kanan minimal 45px dengan pergerakan dominan horizontal (Back)
+                    if (diffX > 45 && Math.abs(diffX) > Math.abs(diffY) * 1.3) {
+                        this.triggerBackSwipe();
+                    }
+                    this.touchStartX = 0;
+                    this.touchStartY = 0;
+                },
+                handlePointerDown(e) {
+                    if (e.button !== undefined && e.button !== 0) return;
+                    if (e.target && (e.target.closest('input') || e.target.closest('button') || e.target.closest('select') || e.target.closest('textarea'))) return;
+                    this.pointerStartX = e.clientX;
+                    this.pointerStartY = e.clientY;
+                },
+                handlePointerUp(e) {
+                    if (!this.pointerStartX) return;
+                    const diffX = e.clientX - this.pointerStartX;
+                    const diffY = e.clientY - this.pointerStartY;
+                    if (diffX > 45 && Math.abs(diffX) > Math.abs(diffY) * 1.3) {
+                        this.triggerBackSwipe();
+                    }
+                    this.pointerStartX = 0;
+                    this.pointerStartY = 0;
                 },
 
                 selectCategoryFromPicker(cat) {
@@ -4295,6 +4388,9 @@
                     this.productSearchQuery = '';
                     this.selectedModalCategory = category || 'all';
                     this.modalQtyString = '';
+                    this.modalPriceString = '';
+                    this.modalDiscountString = '';
+                    this.modalLastEdited = 'qty';
                     this.modalItem = {
                         productId: null,
                         name: '',
@@ -4302,8 +4398,15 @@
                         category: (category && category !== 'all') ? category : '',
                         isParcel: category === 'parcel',
                         buyPrice: null,
-                        sellPrice: null,
+                        basePrice: 0,
+                        sellPrice: 0,
                         price: null,
+                        discount: 0,
+                        discountType: 'percent',
+                        discountTypeLocked: false,
+                        discountPerUnit: 0,
+                        finalUnitPrice: 0,
+                        finalPrice: null,
                         marginPercent: null,
                         qty: null
                     };
@@ -4316,6 +4419,10 @@
                     this.productSearchQuery = '';
                     this.modalItem = { ...this.form.items[idx] };
                     this.selectedModalCategory = this.modalItem.category || (this.modalItem.isParcel ? 'parcel' : 'all');
+                    if (!this.modalItem.basePrice) {
+                        this.modalItem.basePrice = this.modalItem.price || this.modalItem.sellPrice || 0;
+                    }
+                    this.modalLastEdited = 'qty';
                     if (this.modalItem.qty !== null && this.modalItem.qty !== undefined) {
                         const parts = String(this.modalItem.qty).split('.');
                         const intFormatted = parseInt(parts[0], 10).toLocaleString('id-ID');
@@ -4323,6 +4430,21 @@
                     } else {
                         this.modalQtyString = '';
                     }
+                    if (this.modalItem.discount && this.modalItem.discount > 0) {
+                        this.modalDiscountString = this.formatDiscountInput(this.modalItem.discount);
+                    } else {
+                        this.modalItem.discount = 0;
+                        this.modalDiscountString = '';
+                    }
+                    if (!this.modalItem.discountType) {
+                        this.modalItem.discountType = this.modalItem.discount > 100 ? 'nominal' : (this.modalItem.discount > 0 ? 'percent' : 'nominal');
+                    }
+                    this.modalItem.discountTypeLocked = false;
+                    this.calculateModalDiscount();
+                    const finalUnit = this.getModalFinalUnitPrice();
+                    const totalSellPrice = Number(this.modalItem.sellPrice || this.modalItem.subtotal || Math.round((this.modalItem.qty || 0) * finalUnit));
+                    this.modalItem.sellPrice = totalSellPrice;
+                    this.modalPriceString = totalSellPrice > 0 ? totalSellPrice.toLocaleString('id-ID') : '';
                     this.updateModalMargin();
                     this.itemModalOpen = true;
                 },
@@ -4330,12 +4452,58 @@
                 selectModalProduct(item) {
                     this.modalItem.productId = item.id;
                     this.modalItem.name = item.name;
-                    this.modalItem.unit = item.unit;
+                    this.modalItem.unit = item.unit || 'Kg';
                     this.modalItem.category = item.category || (item.isParcel ? 'parcel' : 'buah');
                     this.modalItem.isParcel = Boolean(item.isParcel || item.category === 'parcel');
                     this.modalItem.buyPrice = item.buyPrice || 0;
-                    this.modalItem.sellPrice = item.price || item.sellPrice || 0;
-                    this.modalItem.price = this.modalItem.sellPrice;
+                    this.modalItem.basePrice = item.price || item.sellPrice || 0;
+                    this.modalItem.price = this.modalItem.basePrice;
+                    this.modalLastEdited = 'qty';
+                    this.calculateModalDiscount();
+
+                    if (!this.modalItem.qty || this.modalItem.qty <= 0) {
+                        this.modalItem.qty = 1;
+                        this.modalQtyString = '1';
+                    }
+                    const finalUnit = this.getModalFinalUnitPrice();
+                    this.modalItem.sellPrice = Math.round((this.modalItem.qty || 1) * finalUnit);
+                    this.modalPriceString = this.modalItem.sellPrice > 0 ? this.modalItem.sellPrice.toLocaleString('id-ID') : '';
+                    this.updateModalMargin();
+                },
+
+                handleModalPriceInput(event) {
+                    this.modalLastEdited = 'price';
+                    const raw = event.target.value.replace(/\D/g, '');
+                    const num = raw ? parseInt(raw, 10) : 0;
+                    this.modalItem.sellPrice = num;
+                    this.modalPriceString = num > 0 ? num.toLocaleString('id-ID') : '';
+                    event.target.value = this.modalPriceString;
+
+                    const finalUnit = this.getModalFinalUnitPrice();
+                    if (finalUnit > 0 && num > 0) {
+                        const calculatedQty = num / finalUnit;
+                        const rounded = Math.round(calculatedQty * 1000) / 1000;
+                        this.modalItem.qty = rounded;
+                        const strVal = String(rounded).replace('.', ',');
+                        const parts = strVal.split(',');
+                        const intFormatted = parseInt(parts[0], 10).toLocaleString('id-ID');
+                        this.modalQtyString = parts.length > 1 ? intFormatted + ',' + parts[1] : intFormatted;
+                    } else if (num === 0) {
+                        this.modalItem.qty = 0;
+                        this.modalQtyString = '';
+                    }
+                    this.updateModalMargin();
+                },
+
+                handleModalQtyInput(event) {
+                    this.modalLastEdited = 'qty';
+                    this.handleQtyInput(event);
+
+                    const qty = Number(this.modalItem.qty || 0);
+                    const finalUnit = this.getModalFinalUnitPrice();
+                    const calculatedPrice = Math.round(qty * finalUnit);
+                    this.modalItem.sellPrice = calculatedPrice;
+                    this.modalPriceString = calculatedPrice > 0 ? calculatedPrice.toLocaleString('id-ID') : '';
                     this.updateModalMargin();
                 },
 
@@ -4408,14 +4576,130 @@
                     const num = raw ? parseInt(raw, 10) : null;
                     this.modalItem[field] = num;
                     event.target.value = num && num > 0 ? num.toLocaleString('id-ID') : '';
+                    this.calculateModalDiscount();
                     this.updateModalMargin();
+                },
+
+                formatDiscountInput(val) {
+                    if (val === null || val === undefined || val === '' || val === 0) return '';
+                    const num = typeof val === 'number' ? val : parseInt(String(val).replace(/\D/g, ''), 10);
+                    if (isNaN(num) || num <= 0) return '';
+                    if (num <= 100) {
+                        return String(num);
+                    }
+                    return num.toLocaleString('id-ID');
+                },
+
+                toggleModalDiscountType() {
+                    const curType = this.getModalDiscountType();
+                    const newType = curType === 'percent' ? 'nominal' : 'percent';
+                    this.modalItem.discountType = newType;
+                    this.modalItem.discountTypeLocked = true;
+
+                    const disc = Number(this.modalItem.discount || 0);
+                    if (disc > 0 && newType === 'percent' && disc > 100) {
+                        this.modalItem.discount = 100;
+                        this.modalDiscountString = '100';
+                    }
+                    this.calculateModalDiscount();
+                    const finalUnit = this.getModalFinalUnitPrice();
+                    const qty = Number(this.modalItem.qty || 0);
+                    this.modalItem.sellPrice = Math.round(qty * finalUnit);
+                    this.updateModalMargin();
+                },
+
+                handleDiscountInput(event) {
+                    const raw = event.target.value.trim();
+                    if (!raw) {
+                        this.modalItem.discount = 0;
+                        this.modalDiscountString = '';
+                        this.modalItem.discountType = 'percent';
+                        this.modalItem.discountTypeLocked = false;
+                        event.target.value = '';
+                    } else {
+                        if (raw.includes(',')) {
+                            const parts = raw.split(',');
+                            const intPart = parts[0].replace(/\D/g, '');
+                            const decPart = parts.slice(1).join('').replace(/\D/g, '').slice(0, 2);
+                            const num = parseFloat((intPart || '0') + '.' + (decPart || '0'));
+                            if (num <= 100) {
+                                this.modalItem.discount = num;
+                                this.modalDiscountString = (intPart || '0') + ',' + decPart;
+                                this.modalItem.discountType = 'percent';
+                                event.target.value = this.modalDiscountString;
+                            }
+                        } else {
+                            const digits = raw.replace(/\D/g, '');
+                            const num = digits ? parseInt(digits, 10) : 0;
+                            this.modalItem.discount = num;
+                            this.modalDiscountString = this.formatDiscountInput(num);
+                            if (!this.modalItem.discountTypeLocked) {
+                                this.modalItem.discountType = num <= 100 ? 'percent' : 'nominal';
+                            }
+                            event.target.value = this.modalDiscountString;
+                        }
+                    }
+                    this.calculateModalDiscount();
+
+                    const finalUnit = this.getModalFinalUnitPrice();
+                    const qty = Number(this.modalItem.qty || 0);
+                    this.modalItem.sellPrice = Math.round(qty * finalUnit);
+                    this.updateModalMargin();
+                },
+
+                calculateModalDiscount() {
+                    const basePrice = Number(this.modalItem.basePrice || this.modalItem.price || 0);
+                    const disc = Number(this.modalItem.discount || 0);
+                    if (!disc || disc <= 0) {
+                        if (!this.modalItem.discountTypeLocked) {
+                            this.modalItem.discountType = 'percent';
+                        }
+                        this.modalItem.discountPerUnit = 0;
+                        this.modalItem.finalUnitPrice = basePrice;
+                        return;
+                    }
+                    const type = this.getModalDiscountType();
+                    if (type === 'percent') {
+                        this.modalItem.discountPerUnit = Math.round((basePrice * disc) / 100);
+                    } else {
+                        this.modalItem.discountPerUnit = Math.round(disc);
+                    }
+                    this.modalItem.discountPerUnit = Math.min(this.modalItem.discountPerUnit, basePrice);
+                    this.modalItem.finalUnitPrice = Math.max(0, basePrice - this.modalItem.discountPerUnit);
+                },
+
+                getModalDiscountType() {
+                    if (this.modalItem.discountType) return this.modalItem.discountType;
+                    const disc = Number(this.modalItem.discount || 0);
+                    if (!disc || disc <= 0) return 'percent';
+                    return disc <= 100 ? 'percent' : 'nominal';
+                },
+
+                getModalDiscountPerUnit() {
+                    return this.modalItem.discountPerUnit || 0;
+                },
+
+                getModalFinalUnitPrice() {
+                    const basePrice = Number(this.modalItem.basePrice || this.modalItem.price || 0);
+                    const pot = this.modalItem.discountPerUnit || 0;
+                    return Math.max(0, basePrice - pot);
+                },
+
+                getModalSubtotal() {
+                    const qty = Number(this.modalItem.qty || 0);
+                    return Math.round(qty * this.getModalFinalUnitPrice());
+                },
+
+                getModalTotalSaving() {
+                    const qty = Number(this.modalItem.qty || 0);
+                    return Math.round(qty * this.getModalDiscountPerUnit());
                 },
 
                 updateModalMargin() {
                     const buy = this.modalItem.buyPrice || 0;
-                    const sell = this.modalItem.sellPrice || 0;
-                    if (sell > 0) {
-                        this.modalItem.marginPercent = Number((((sell - buy) / sell) * 100).toFixed(1));
+                    const finalUnit = this.getModalFinalUnitPrice();
+                    if (finalUnit > 0) {
+                        this.modalItem.marginPercent = Number((((finalUnit - buy) / finalUnit) * 100).toFixed(1));
                     } else {
                         this.modalItem.marginPercent = 0;
                     }
@@ -4432,28 +4716,38 @@
                         this.modalItem.qty = Math.round(parsed * 1000) / 1000;
                     }
                     if (!this.modalItem.qty || this.modalItem.qty <= 0) {
-                        alert('Silakan masukkan kuantitas');
+                        alert('Silakan tentukan kuantitas atau harga jual');
                         return;
                     }
+                    this.calculateModalDiscount();
+                    const finalUnit = this.getModalFinalUnitPrice();
+                    const totalSellPrice = Number(this.modalItem.sellPrice || Math.round(this.modalItem.qty * finalUnit));
+
                     if (this.modalItem.buyPrice === null || this.modalItem.buyPrice === undefined || this.modalItem.buyPrice === '') {
-                        this.modalItem.buyPrice = Math.round(Number(this.modalItem.sellPrice || 0) * 0.7);
+                        this.modalItem.buyPrice = Math.round(Number(finalUnit || 0) * 0.7);
                     }
-                    if (this.modalItem.sellPrice === null || this.modalItem.sellPrice === undefined || this.modalItem.sellPrice === '') {
-                        this.modalItem.sellPrice = this.modalItem.price || this.modalItem.buyPrice || 0;
-                    }
-                    this.modalItem.price = this.modalItem.sellPrice;
 
                     if (this.modalItem.productId) {
                         const targetProd = (this.masterProducts || []).find(p => p.id === this.modalItem.productId) || (this.masterItems || []).find(p => p.id === this.modalItem.productId);
                         if (targetProd) {
-                            targetProd.sellPrice = this.modalItem.sellPrice;
-                            targetProd.price = this.modalItem.sellPrice;
                             if (this.modalItem.buyPrice) targetProd.buyPrice = this.modalItem.buyPrice;
                         }
                     }
 
+                    const itemToSave = {
+                        ...this.modalItem,
+                        basePrice: this.modalItem.basePrice || this.modalItem.price || 0,
+                        finalUnitPrice: finalUnit,
+                        discount: this.modalItem.discount || 0,
+                        discountType: this.modalItem.discountType || null,
+                        discountPerUnit: this.modalItem.discountPerUnit || 0,
+                        sellPrice: totalSellPrice,
+                        price: finalUnit,
+                        subtotal: totalSellPrice
+                    };
+
                     if (this.modalMode === 'add') {
-                        this.form.items.push({ ...this.modalItem });
+                        this.form.items.push(itemToSave);
                         this.modalItem = {
                             productId: null,
                             name: '',
@@ -4462,14 +4756,23 @@
                             isParcel: false,
                             qty: null,
                             buyPrice: null,
-                            sellPrice: null,
+                            basePrice: 0,
+                            sellPrice: 0,
                             price: null,
+                            discount: 0,
+                            discountType: null,
+                            discountPerUnit: 0,
+                            finalUnitPrice: 0,
+                            finalPrice: null,
                             marginPercent: null
                         };
                         this.modalQtyString = '';
+                        this.modalPriceString = '';
+                        this.modalDiscountString = '';
+                        this.modalLastEdited = 'qty';
                         this.productSearchQuery = '';
                     } else if (this.editingIndex !== null) {
-                        this.form.items[this.editingIndex] = { ...this.modalItem };
+                        this.form.items[this.editingIndex] = itemToSave;
                         this.itemModalOpen = false;
                     }
                 },
