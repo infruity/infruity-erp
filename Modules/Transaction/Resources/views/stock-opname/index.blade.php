@@ -699,6 +699,56 @@
                 .stock-opname-page .stock-opname-modal .modal-dialog { margin:12px; }
                 .stock-opname-page .stock-opname-modal .modal-body { padding:16px; }
             }
+
+            .stock-opname-page .so-row { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:12px 8px; border-top:1px solid #f1f3f5; cursor:pointer; transition:background .15s ease; }
+            .stock-opname-page .so-row:hover, .stock-opname-page .so-row:focus-visible { background:#f3faf7; outline:none; }
+            #transaction-table tbody tr:first-child .so-row { border-top:0; }
+            .so-row__main { min-width:0; flex:1; }
+            .so-row__title { display:flex; align-items:center; gap:8px; min-width:0; }
+            .so-row__name { overflow:hidden; color:#111827; font-size:13px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
+            .so-row__status { flex:none; border-radius:999px; background:#fffbeb; padding:1px 7px; color:#b45309; font-size:10px; font-weight:700; }
+            .so-row__time { display:block; margin-top:2px; overflow:hidden; color:#9ca3af; font-size:11px; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums; }
+            .so-row__side { display:flex; flex:none; flex-direction:column; align-items:flex-end; gap:2px; text-align:right; font-variant-numeric:tabular-nums; }
+            .so-row__diff { font-size:13px; font-weight:700; color:#9ca3af; }
+            .so-row__diff small { font-size:11px; font-weight:500; opacity:.8; }
+            .so-row__diff.is-surplus, .so-row__value.is-surplus { color:#047857; }
+            .so-row__diff.is-loss, .so-row__value.is-loss { color:#be123c; }
+            .so-row__value { font-size:11px; font-weight:500; }
+            .so-detail .modal-content { overflow:hidden; border:0; border-radius:20px; box-shadow:0 24px 72px rgba(11,22,31,.25); }
+            .so-detail__head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:20px 22px 8px; }
+            .so-detail__heading { min-width:0; }
+            .so-detail__title { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+            .so-detail__title h2 { margin:0; color:#1f2937; font-size:17px; font-weight:800; overflow-wrap:anywhere; }
+            .so-detail__status { border-radius:999px; background:#f0fdf4; padding:2px 9px; color:#166534; font-size:10px; font-weight:700; }
+            .so-detail__status.is-pending { background:#fffbeb; color:#b45309; }
+            .so-detail__heading p { margin:4px 0 0; color:#9ca3af; font-size:11px; }
+            .so-detail .btn-close-soft { display:inline-flex; align-items:center; justify-content:center; flex:none; border:0; border-radius:50%; background:#f3f4f6; color:#6b7280; width:32px; height:32px; }
+            .so-detail__body { display:grid; gap:14px; padding:12px 22px 22px; }
+            .so-detail__boxes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+            .so-detail__box { display:flex; flex-direction:column; gap:2px; border:1px solid #e5e7eb; border-radius:12px; padding:10px; background:#f9fafb; }
+            .so-detail__box span { color:#9ca3af; font-size:10px; font-weight:700; text-transform:uppercase; }
+            .so-detail__box strong { color:#111827; font-size:13px; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+            .so-detail__box.is-primary { border-color:#cfe8da; background:#edf7f2; }
+            .so-detail__box.is-primary span, .so-detail__box.is-primary strong { color:#0b595b; }
+            .so-detail__box.is-surplus strong { color:#047857; }
+            .so-detail__box.is-loss strong { color:#be123c; }
+            .so-detail__value { display:flex; align-items:center; justify-content:space-between; gap:12px; border-radius:12px; background:#f9fafb; padding:12px 14px; }
+            .so-detail__value span { display:block; color:#374151; font-size:12px; font-weight:700; }
+            .so-detail__value small { color:#9ca3af; font-size:11px; }
+            .so-detail__value strong { color:#111827; font-size:15px; font-variant-numeric:tabular-nums; }
+            .so-detail__value strong.is-surplus { color:#047857; }
+            .so-detail__value strong.is-loss { color:#be123c; }
+            .so-detail__adjust { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+            .so-detail__btn { display:inline-flex; min-height:44px; align-items:center; justify-content:center; gap:6px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; font-size:13px; font-weight:700; }
+            .so-detail__btn.is-up { color:#047857; border-color:#a7f3d0; background:#ecfdf5; }
+            .so-detail__btn.is-down { color:#be123c; border-color:#fecdd3; background:#fff1f2; }
+            .so-detail__list { display:grid; border-top:1px solid #f1f3f5; }
+            .so-detail__link { display:flex; min-height:46px; align-items:center; gap:10px; border:0; border-bottom:1px solid #f1f3f5; background:transparent; color:#374151; font-size:13px; font-weight:600; text-align:left; }
+            .so-detail__link i { color:#6b7280; font-size:18px; }
+            .so-detail__link:hover { background:#f9fafb; }
+            .so-detail__link.is-success, .so-detail__link.is-success i { color:#047857; }
+            .so-detail__link.is-danger, .so-detail__link.is-danger i { color:#be123c; }
+            .so-detail__count { margin-left:auto; border-radius:999px; background:#fee2e2; padding:1px 8px; color:#b91c1c; font-size:10px; font-weight:700; }
         </style>
         <x-erp.workspace title="Stok Opname" subtitle="Cocokkan stok fisik dan stok sistem."><x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" placeholder="Cari stok opname…" aria-label="Cari stok opname"></div><button class="erp-action" type="button" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
                             <div class="px-7 py-5">
@@ -873,6 +923,42 @@
     </div>
 
     <!--begin::Stock Adjustment Modal-->
+    <div class="modal fade stock-opname-modal so-detail" id="kt_modal_stock_detail" tabindex="-1" aria-labelledby="so-detail-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content">
+                <div class="so-detail__head">
+                    <div class="so-detail__heading">
+                        <div class="so-detail__title"><h2 id="so-detail-title" data-so-field="name"></h2><span class="so-detail__status" data-so-field="status"></span></div>
+                        <p data-so-field="meta"></p>
+                    </div>
+                    <button type="button" class="btn-close-soft" data-bs-dismiss="modal" aria-label="Tutup"><i class="ph ph-x" aria-hidden="true"></i></button>
+                </div>
+                <div class="so-detail__body">
+                    <div class="so-detail__boxes">
+                        <div class="so-detail__box"><span>Sistem</span><strong data-so-field="system"></strong></div>
+                        <div class="so-detail__box is-primary"><span>Fisik</span><strong data-so-field="physical"></strong></div>
+                        <div class="so-detail__box"><span>Selisih</span><strong data-so-field="diff"></strong></div>
+                    </div>
+                    <div class="so-detail__value">
+                        <div><span data-so-field="value-label"></span><small data-so-field="hpp"></small></div>
+                        <strong data-so-field="value"></strong>
+                    </div>
+                    <div class="so-detail__adjust">
+                        <button type="button" class="so-detail__btn is-up" data-so-action="adjust-up"><i class="ph-bold ph-arrow-up-right" aria-hidden="true"></i>+ Kredit</button>
+                        <button type="button" class="so-detail__btn is-down" data-so-action="adjust-down"><i class="ph-bold ph-arrow-down-right" aria-hidden="true"></i>- Kredit</button>
+                    </div>
+                    <div class="so-detail__list">
+                        <button type="button" class="so-detail__link" data-so-action="edit"><i class="ph ph-pencil-simple" aria-hidden="true"></i>Sesuaikan stok fisik</button>
+                        <button type="button" class="so-detail__link" data-so-action="history"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>Riwayat<span class="so-detail__count d-none" data-so-count="history"></span></button>
+                        <button type="button" class="so-detail__link" data-so-action="discussion"><i class="ph ph-chat-circle-text" aria-hidden="true"></i>Diskusi dan catatan<span class="so-detail__count d-none" data-so-count="discussion"></span></button>
+                        <button type="button" class="so-detail__link is-success d-none" data-so-action="finalize"><i class="ph ph-check-circle" aria-hidden="true"></i>Finalisasi opname</button>
+                        <button type="button" class="so-detail__link is-danger" data-so-action="delete"><i class="ph ph-trash" aria-hidden="true"></i>Hapus transaksi</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade stock-opname-modal" id="kt_modal_stock_adjustment" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-md">
             <div class="modal-content"
@@ -1150,210 +1236,115 @@
             return $('<div>').text(value ?? '').html();
         }
 
-        function renderStockOpnameCard(row) {
-            const productName = row?.product?.name || row?.name || '-';
-            const code = row?.code ? `#${row.code}` : '-';
-            const cleanCode = row?.code ? row.code : '-';
-            const branchName = row?.branch_name || 'Semua Cabang';
+        // Row data shared with the detail sheet (keyed by stock opname id).
+        window.stockOpnameRows = window.stockOpnameRows || {};
+
+        function describeStockOpname(row) {
             const isPending = row?.status === 'pending';
-            const dateLabel = formatLongDateTime(row?.created_at || row?.date);
-            const creatorName = row?.creator_name || '';
             const stockSystem = isPending ? Number(row?.live_stock || 0) : Number(row?.stock || 0);
             const stockFisik = Number(row?.real_stock || 0);
-            const selisih = stockFisik - stockSystem;
+            const selisih = Math.round((stockFisik - stockSystem) * 100) / 100;
             const hpp = Number(row?.avg_hpp_calc || row?.avg_price || 0);
-            const nilaiSelisih = Math.floor(selisih * hpp);
-            const id = row?.id || 0;
-            const discussionsCount = Number(row?.discussions_count || 0);
-            const historyCount = Number(row?.history_count || 0);
-
-            const isMinus = selisih < 0;
-            const hppText =
-                `HPP: Rp ${formatRupiah(Math.round(Math.abs(hpp)))}/${row?.product?.unit?.abbreviation || 'Kg'}`;
-            const nilaiText = `Rp ${formatRupiah(Math.abs(nilaiSelisih))}`;
-
-            // Dynamic Stock Match Label & Color
-            let stockMatchLabel = 'STOCK MATCH';
-            let stockMatchColor = '#111827';
-            if (selisih < 0) {
-                stockMatchLabel = 'POTENSI RUGI';
-                stockMatchColor = '#ef4444';
-            } else if (selisih > 0) {
-                stockMatchLabel = 'SURPLUS STOK';
-                stockMatchColor = '#10b981';
-            }
-
-            // Dynamic Selisih Box Class
-            let selisihClass = '';
-            if (selisih > 0) {
-                selisihClass = 'is-surplus';
-            } else if (selisih < 0) {
-                selisihClass = 'is-loss';
-            }
-
-            // Mobile Match Bar Class & Content
-            let mobileMatchClass = 'is-match';
-            let mobileMatchText = 'STOCK MATCH: Rp 0';
-            if (selisih > 0) {
-                mobileMatchClass = 'is-surplus';
-                mobileMatchText = `NILAI KELEBIHAN: Rp ${formatRupiah(Math.abs(nilaiSelisih))}`;
-            } else if (selisih < 0) {
-                mobileMatchClass = 'is-loss';
-                mobileMatchText = `NILAI KERUGIAN: -Rp ${formatRupiah(Math.abs(nilaiSelisih))}`;
-            }
-
-            // Dynamic User Avatar using userId modulo
-            const userId = row?.created_by || 1;
-            const avatarNum = (userId % 30) + 1;
-            const avatarUrl = `/assets/media/avatars/300-${avatarNum}.jpg`;
-
-            // Helper to format quantity nicely (e.g. keeping decimal if needed)
-            const formatQty = (val) => {
-                const num = Number(val || 0);
-                if (num === 0) return '0.0';
-                return num % 1 === 0 ? num.toString() : num.toFixed(2);
+            return {
+                id: row?.id || 0,
+                name: row?.product?.name || row?.name || '-',
+                code: row?.code || '-',
+                branch: row?.branch_name || 'Semua Cabang',
+                unit: row?.product?.unit?.abbreviation || 'Kg',
+                isPending,
+                dateLabel: formatLongDateTime(row?.created_at || row?.date),
+                creator: row?.creator_name || '',
+                system: stockSystem,
+                physical: stockFisik,
+                diff: selisih,
+                hpp,
+                value: Math.floor(selisih * hpp),
+                historyCount: Number(row?.history_count || 0),
+                discussionsCount: Number(row?.discussions_count || 0)
             };
+        }
 
-            const creatorHtml = creatorName ?
-                `
-                <span class="text-muted mx-1">•</span>
-                <span class="so-time-row">
-                    <img src="${avatarUrl}" class="so-creator-avatar" alt="Avatar">
-                    <span>${escapeHtml(creatorName)}</span>
-                </span>
-                ` :
-                '';
+        function formatStockQty(value) {
+            const num = Math.round(Number(value || 0) * 100) / 100;
+            return Number.isInteger(num) ? String(num) : num.toFixed(2);
+        }
 
-            const statusHtml = isPending ?
-                `<span class="badge badge-light-warning fs-8 fw-bold">Pending</span>` :
-                `<span class="badge badge-light-success fs-8 fw-bold">Finalized</span>`;
+        function formatSignedStockQty(value) {
+            return (value > 0 ? '+' : '') + formatStockQty(value);
+        }
+
+        function formatSignedRupiah(value) {
+            return (value < 0 ? '-' : (value > 0 ? '+' : '')) + 'Rp ' + formatRupiah(Math.abs(value));
+        }
+
+        function renderStockOpnameCard(row) {
+            const info = describeStockOpname(row);
+            window.stockOpnameRows[info.id] = info;
+            const tone = info.diff > 0 ? 'is-surplus' : (info.diff < 0 ? 'is-loss' : 'is-match');
+            const pending = info.isPending ? '<span class="so-row__status">Pending</span>' : '';
+            const value = info.diff !== 0
+                ? `<span class="so-row__value ${tone}">${escapeHtml(formatSignedRupiah(info.value))}</span>`
+                : '';
 
             return `
-                <div class="so-card d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
-                    <!-- Left: Info -->
-                    <div class="d-flex flex-column flex-grow-1" style="min-width:0; flex:1;">
-                        <div class="d-flex align-items-start gap-2 mb-1">
-                            <h4 class="so-card-title mb-0" style="min-width:0;flex:1;overflow-wrap:anywhere">${escapeHtml(productName)}</h4>
-                            ${statusHtml}
-                        </div>
-                        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap text-muted fs-7">
-                            <span class="so-card-code">${escapeHtml(cleanCode)}</span>
-                            <span class="text-muted">•</span>
-                            <span class="so-meta-item">${escapeHtml(branchName)}</span>
-                            <span class="text-muted">•</span>
-                            <span class="so-meta-item">${escapeHtml(hppText)}</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-1 text-muted fs-8 flex-wrap">
-                            <span class="so-time-row">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                <span>${escapeHtml(dateLabel)}</span>
-                            </span>
-                            ${creatorHtml}
-                        </div>
+                <div class="so-row" role="button" tabindex="0" data-so-id="${info.id}"
+                    onclick="openStockDetail(${info.id})"
+                    onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openStockDetail(${info.id}); }">
+                    <div class="so-row__main">
+                        <div class="so-row__title"><span class="so-row__name">${escapeHtml(info.name)}</span>${pending}</div>
+                        <span class="so-row__time">${escapeHtml(info.dateLabel)}</span>
                     </div>
-
-                    <!-- Middle: Stock Boxes -->
-                    <div class="so-stock-box-container justify-content-start justify-content-lg-center">
-                        <!-- Box 1: Sistem -->
-                        <div class="so-stock-box">
-                            <span class="so-stock-label">Sistem</span>
-                            <span class="so-stock-number">${formatQty(stockSystem)}</span>
-                        </div>
-                        <!-- Box 2: Fisik -->
-                        <div class="so-stock-box is-active" onclick="editProduct(${id})" title="Klik untuk sesuaikan stock fisik">
-                            <span class="so-stock-label is-primary">Fisik</span>
-                            <span class="so-stock-number is-primary">${formatQty(stockFisik)}</span>
-                        </div>
-                        <!-- Box 3: Selisih -->
-                        <div class="so-stock-box ${selisihClass}">
-                            <span class="so-stock-label">Selisih</span>
-                            <span class="so-stock-number">${formatQty(selisih)}</span>
-                        </div>
-                    </div>
-
-                    <!-- Mobile Match Bar (only visible on mobile) -->
-                    <div class="so-mobile-match-bar ${mobileMatchClass} d-flex d-lg-none align-items-center justify-content-center">
-                        <span>${escapeHtml(mobileMatchText)}</span>
-                    </div>
-
-                    <!-- Mobile Divider (only visible on mobile) -->
-                    <div class="so-mobile-divider d-lg-none mt-2 mb-3"></div>
-
-                    <!-- Right: Match, Actions, Delete -->
-                    <div class="so-card-actions d-flex align-items-center justify-content-between justify-content-lg-end gap-2 gap-lg-3 flex-wrap w-100 w-lg-auto">
-                        <!-- Value Match -->
-                        <div class="so-match-section d-none d-lg-flex">
-                            <span class="so-match-label">${stockMatchLabel}</span>
-                            <span class="so-match-value" style="color: ${stockMatchColor};">${selisih < 0 ? '-' : ''}${nilaiText}</span>
-                        </div>
-
-                        <!-- Logs & Chats -->
-                        <div class="d-flex align-items-center gap-1">
-                            <!-- History -->
-                            <button class="so-btn-icon-clean" onclick="showHistory(${id})" title="History Transaksi">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                                    <path d="M3 3v5h5"/>
-                                    <path d="M12 7v5l4 2"/>
-                                </svg>
-                                ${historyCount > 0 ? `<span class="position-absolute badge rounded-pill bg-danger text-white" style="top: 2px; right: 2px; font-size: 8px; padding: 0.25em 0.5em; z-index: 1;">${historyCount}</span>` : ''}
-                            </button>
-                            <!-- Chat/Discussion -->
-                            <button class="so-btn-icon-clean is-blue" data-discussion-btn-id="${id}" title="Diskusi / Catatan" onclick="showDiscussion(${id})">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                                </svg>
-                                ${discussionsCount > 0 ? `<span class="position-absolute badge rounded-pill bg-danger text-white" style="top: 2px; right: 2px; font-size: 8px; padding: 0.25em 0.5em; z-index: 1;">${discussionsCount}</span>` : ''}
-                            </button>
-                        </div>
-
-                        <div class="so-divider"></div>
-
-                        <!-- Quick Adjustments -->
-                        <div class="d-flex align-items-center gap-2">
-                            <!-- Adjust Up -->
-                            <button class="so-btn-quick-adj is-up" onclick="openAdjustmentModal(${id}, 'up')" title="Sesuaikan Stok Masuk">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="7" y1="17" x2="17" y2="7"/>
-                                    <polyline points="7 7 17 7 17 17"/>
-                                </svg>
-                                <span class="d-lg-none">+ Kredit</span>
-                            </button>
-                            <!-- Adjust Down -->
-                            <button class="so-btn-quick-adj is-down" onclick="openAdjustmentModal(${id}, 'down')" title="Sesuaikan Stok Keluar">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="7" y1="7" x2="17" y2="17"/>
-                                    <polyline points="17 7 17 17 7 17"/>
-                                </svg>
-                                <span class="d-lg-none">- Kredit</span>
-                            </button>
-                        </div>
-
-                        <div class="so-divider"></div>
-
-                        <!-- Finalize (if pending) -->
-                        ${isPending ? `
-                            <button class="so-btn-icon-clean text-success" onclick="finalizeStockOpname(${id})" title="Finalisasi Transaksi">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <path d="M9 12l2 2 4-4"></path>
-                                </svg>
-                            </button>
-                            ` : ''}
-
-                        <!-- Delete -->
-                        <button class="so-btn-delete-clean" onclick="deleteProduct(${id})" title="Hapus Transaksi">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="3 6 5 6 21 6"/>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                <line x1="10" y1="11" x2="10" y2="17"/>
-                                <line x1="14" y1="11" x2="14" y2="17"/>
-                            </svg>
-                        </button>
+                    <div class="so-row__side">
+                        <span class="so-row__diff ${tone}">${escapeHtml(formatSignedStockQty(info.diff))} <small>${escapeHtml(info.unit)}</small></span>
+                        ${value}
                     </div>
                 </div>
             `;
         }
+
+        function openStockDetail(id) {
+            const info = window.stockOpnameRows[id];
+            if (!info) return;
+            const $sheet = $('#kt_modal_stock_detail');
+            const tone = info.diff > 0 ? 'is-surplus' : (info.diff < 0 ? 'is-loss' : 'is-match');
+            $sheet.data('stockOpnameId', id);
+            $sheet.find('[data-so-field="name"]').text(info.name);
+            $sheet.find('[data-so-field="meta"]').text(`${info.code} • ${info.branch} • ${info.dateLabel}`);
+            $sheet.find('[data-so-field="status"]').text(info.isPending ? 'Pending' : 'Finalized')
+                .toggleClass('is-pending', info.isPending);
+            $sheet.find('[data-so-field="system"]').text(`${formatStockQty(info.system)} ${info.unit}`);
+            $sheet.find('[data-so-field="physical"]').text(`${formatStockQty(info.physical)} ${info.unit}`);
+            $sheet.find('[data-so-field="diff"]').text(`${formatSignedStockQty(info.diff)} ${info.unit}`)
+                .closest('.so-detail__box').removeClass('is-surplus is-loss is-match').addClass(tone);
+            const label = info.diff < 0 ? 'Potensi rugi' : (info.diff > 0 ? 'Surplus stok' : 'Stok sesuai');
+            $sheet.find('[data-so-field="value-label"]').text(label);
+            $sheet.find('[data-so-field="value"]').text(info.diff === 0 ? 'Rp 0' : formatSignedRupiah(info.value))
+                .removeClass('is-surplus is-loss is-match').addClass(tone);
+            $sheet.find('[data-so-field="hpp"]').text(`HPP Rp ${formatRupiah(Math.round(Math.abs(info.hpp)))}/${info.unit}`);
+            $sheet.find('[data-so-action="finalize"]').toggleClass('d-none', !info.isPending);
+            $sheet.find('[data-so-count="history"]').text(info.historyCount > 0 ? info.historyCount : '').toggleClass('d-none', info.historyCount === 0);
+            $sheet.find('[data-so-count="discussion"]').text(info.discussionsCount > 0 ? info.discussionsCount : '').toggleClass('d-none', info.discussionsCount === 0);
+            bootstrap.Modal.getOrCreateInstance($sheet[0]).show();
+        }
+
+        $(document).on('click', '#kt_modal_stock_detail [data-so-action]', function() {
+            const $sheet = $('#kt_modal_stock_detail');
+            const id = $sheet.data('stockOpnameId');
+            const action = this.dataset.soAction;
+            const run = {
+                edit: () => editProduct(id),
+                'adjust-up': () => openAdjustmentModal(id, 'up'),
+                'adjust-down': () => openAdjustmentModal(id, 'down'),
+                history: () => showHistory(id),
+                discussion: () => showDiscussion(id),
+                finalize: () => finalizeStockOpname(id),
+                delete: () => deleteProduct(id)
+            }[action];
+            if (!run) return;
+            // Close the sheet first so the next modal/drawer does not stack on its backdrop.
+            $sheet.one('hidden.bs.modal', run);
+            bootstrap.Modal.getOrCreateInstance($sheet[0]).hide();
+        });
 
         $(document).ready(function() {
             const $branchFilter = $('[data-kt-ecommerce-product-filter="cabang"]');
