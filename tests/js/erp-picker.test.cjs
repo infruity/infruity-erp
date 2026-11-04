@@ -20,6 +20,17 @@ test('normalizeItems keeps id and label, maps custom rows and drops rows without
     assert.deepEqual(items, [{ id: '7', text: 'Jus Alpukat', meta: 'Cup' }, { id: '0', text: 'Nol', meta: '' }]);
 });
 
+test('normalizeItems carries the extra fields page handlers read from the select2 data object', () => {
+    const { normalizeItems } = picker();
+    const [item] = normalizeItems([{ id: 5, name: 'Bu Ani', tier_id: 2, address: 'Jl. Uji' }], (row) => ({ id: row.id, text: row.name, meta: 'Tier 2', data: row }));
+
+    assert.equal(item.id, '5');
+    assert.equal(item.data.tier_id, 2);
+    assert.equal(item.data.address, 'Jl. Uji');
+    // Rows without extra data keep the exact plain shape.
+    assert.ok(!('data' in normalizeItems([{ id: 1, text: 'A' }])[0]));
+});
+
 test('normalizeItems accepts the plain {id,text} shape and a {results} envelope', () => {
     const { normalizeItems } = picker();
 
@@ -52,6 +63,8 @@ test('the picker drives the original select and the select2 events the page hand
     assert.match(js, /select2:select/);
     assert.match(js, /select2:clear/);
     assert.match(js, /new Option\(/);
+    // With a select2 instance the selection goes through select2 itself, so select2('data') keeps the extra fields.
+    assert.match(js, /trigger\('select', \{ data:/);
     assert.match(js, /X-Requested-With/);
     // Search results are written with textContent, never as markup.
     assert.ok(!js.includes('innerHTML'), 'picker must not inject server text as HTML');
@@ -74,4 +87,25 @@ test('Produksi form swaps the select2 look for pickers without changing ids or h
     assert.match(js, /route\('ajax\.getBranch'\)/);
     assert.match(js, /\.on\('select2:select'/);
     assert.match(js, /loadRecipeIngredients\(selectedProductId\)/);
+});
+
+test('the picker pages through long lists and can pin fixed items on the first page', () => {
+    const js = fs.readFileSync(asset, 'utf8');
+
+    assert.match(js, /pagination/);
+    assert.match(js, /options\.prepend/);
+    assert.match(js, /scrollHeight/);
+});
+
+test('POS header swaps customer and branch selects for pickers and keeps the select2 handlers', () => {
+    const js = read('Modules/Pos/Resources/views/pos/js/js-header.blade.php');
+
+    assert.match(js, /ErpPicker\.attach\(\s*'#customer_id'/);
+    assert.match(js, /ErpPicker\.attach\(\s*'#branch_id'/);
+    assert.match(js, /route\('customer\.get-customer'\)/);
+    assert.match(js, /\$\('#customer_id'\)\.on\('select2:select'/);
+    // The walk-in customer stays selectable and keeps the fields the handler reads.
+    assert.match(js, /Pelanggan Umum/);
+    assert.match(js, /tier_id/);
+    assert.match(js, /ongkir_address/);
 });

@@ -15,7 +15,10 @@
         list.forEach(function (row) {
             var mapped = map ? map(row) : row;
             if (!mapped || mapped.id === undefined || mapped.id === null || mapped.id === '') return;
-            items.push({ id: String(mapped.id), text: String(mapped.text == null ? '' : mapped.text), meta: mapped.meta == null ? '' : String(mapped.meta) });
+            var item = { id: String(mapped.id), text: String(mapped.text == null ? '' : mapped.text), meta: mapped.meta == null ? '' : String(mapped.meta) };
+            // Extra fields (tier, address, stock...) that page handlers read from the select2 data object.
+            if (mapped.data !== undefined) item.data = mapped.data;
+            items.push(item);
         });
         return items;
     }
@@ -108,6 +111,15 @@
     function choose(item) {
         var select = active.select;
         var jq = window.jQuery;
+        var instance = jq && jq(select).data('select2');
+        if (instance) {
+            // Same path select2 takes for a click on its own result: creates the option, keeps the data
+            // for select2('data'), fires change and select2:select.
+            var data = Object.assign({}, item.data || {}, { id: item.id, text: item.text });
+            instance.trigger('select', { data: data });
+            closeDialog();
+            return;
+        }
         var exists = Array.prototype.some.call(select.options, function (option) { return option.value === item.id; });
         if (!exists) select.append(new Option(item.text, item.id, true, true));
         if (jq) jq(select).val(item.id); else select.value = item.id;
@@ -115,8 +127,8 @@
         closeDialog();
     }
 
-    function renderList(items) {
-        dialog.list.replaceChildren();
+    function renderList(items, append) {
+        if (!append) dialog.list.replaceChildren();
         var current = active.select.value;
         items.forEach(function (item) {
             var row = el('li', 'erp-picker__item' + (item.id === current ? ' is-selected' : ''));
@@ -132,20 +144,27 @@
             row.addEventListener('keydown', function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose(item); } });
             dialog.list.append(row);
         });
-        dialog.empty.hidden = items.length > 0;
+        dialog.empty.hidden = dialog.list.childElementCount > 0;
     }
 
-    function load(term) {
+    function load(term, page) {
         var options = active.options;
         var request = ++active.request;
+        var append = page > 1;
         var url = options.url + (options.url.indexOf('?') === -1 ? '?' : '&') + (options.searchParam || 'search') + '=' + encodeURIComponent(term || '');
+        if (options.paginate) url += '&page=' + (page || 1);
+        active.loading = true;
         dialog.overlay.classList.add('is-loading');
         return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' }, credentials: 'same-origin' })
             .then(function (response) { if (!response.ok) throw new Error('HTTP ' + response.status); return response.json(); })
             .then(function (json) {
                 if (!active || request !== active.request) return;
-                active.items = normalizeItems(json, options.map);
-                renderList(filterItems(active.items, options.localFilter ? term : ''));
+                var items = normalizeItems(json, options.map);
+                if (!append && options.prepend) items = filterItems(normalizeItems(options.prepend), term).concat(items);
+                active.page = page || 1;
+                active.more = !!(json && json.pagination && json.pagination.more);
+                active.items = append ? active.items.concat(items) : items;
+                renderList(options.localFilter ? filterItems(items, term) : items, append);
             })
             .catch(function () {
                 if (!active || request !== active.request) return;
@@ -153,12 +172,16 @@
                 dialog.empty.textContent = 'Gagal memuat data. Coba lagi.';
                 dialog.empty.hidden = false;
             })
-            .then(function () { if (active && request === active.request) dialog.overlay.classList.remove('is-loading'); });
+            .then(function () {
+                if (!active || request !== active.request) return;
+                active.loading = false;
+                dialog.overlay.classList.remove('is-loading');
+            });
     }
 
     function openDialog(select, trigger, options) {
         if (!dialog) dialog = buildDialog();
-        active = { select: select, trigger: trigger, options: options, request: 0, items: [], timer: null };
+        active = { select: select, trigger: trigger, options: options, request: 0, items: [], timer: null, page: 1, more: false, loading: false };
         dialog.title.textContent = options.title || 'Pilih';
         dialog.subtitle.textContent = options.subtitle || '';
         dialog.subtitle.hidden = !options.subtitle;
@@ -173,7 +196,7 @@
         dialog.search.oninput = function () {
             clearTimeout(active.timer);
             var term = dialog.search.value;
-            active.timer = setTimeout(function () { load(term); }, 250);
+            active.timer = setTimeout(function () { load(term, 1); }, 250);
         };
         dialog.clear.onclick = function () {
             var jq = window.jQuery;
@@ -181,7 +204,11 @@
             fire(select, 'select2:clear', {});
             closeDialog();
         };
-        load('');
+        dialog.list.onscroll = function () {
+            if (!active || !active.more || active.loading) return;
+            if (dialog.list.scrollTop + dialog.list.clientHeight >= dialog.list.scrollHeight - 40) load(dialog.search.value, active.page + 1);
+        };
+        load('', 1);
         dialog.search.focus();
     }
 
