@@ -50,6 +50,7 @@
             customer_phone: text(data.customer?.whatsapp),
             branch_name: text(row.cells[0]?.querySelector('.badge-light-primary')?.textContent),
             created_at: created,
+            created_by_name: text(data.created_by_name),
             updated_at: edited,
             locked: /\bLocked\b/i.test(row.cells[row.cells.length - 1]?.textContent || '')
         });

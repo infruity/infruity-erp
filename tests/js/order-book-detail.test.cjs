@@ -94,3 +94,16 @@ test('detail labels preserve text, not executable markup', () => {
     assert.equal(normalize({ customer_name: value }).customerDisplay, value);
     assert.ok(!fs.readFileSync(asset, 'utf8').includes('innerHTML'));
 });
+
+test('detail shows the real creator name when the list response provides it', () => {
+    const { fromRow } = helpers();
+    const first = { querySelector: selector => ({
+        'a.text-gray-800': { textContent: 'Pelanggan Uji' },
+        '.badge-light-primary': { textContent: 'Cabang Uji' }
+    })[selector] || null };
+    const date = { querySelector: () => ({ textContent: '31 Jul 2026 17:27' }) };
+    const detail = fromRow({ cells: [first, date, { textContent: '' }] }, { created_by: 42, created_by_name: 'Pembuat Uji' }, 'Asia/Jakarta');
+    assert.equal(detail.createdBy, 'Dibuat oleh Pembuat Uji');
+    // An id alone must never be turned into an invented name.
+    assert.equal(fromRow({ cells: [first, date, { textContent: '' }] }, { created_by: 42 }, 'Asia/Jakarta').createdBy, 'Dibuat oleh -');
+});

@@ -407,7 +407,7 @@ class OrderBookController extends Controller
 
     public function get_data(Request $request)
     {
-        $query = OrderBook::with('customer', 'pos', 'branch')->whereIn('branch_id', UserBranch::getUserBranch());
+        $query = OrderBook::with('customer', 'pos', 'branch', 'user:id_user,nm_user')->whereIn('branch_id', UserBranch::getUserBranch());
         if ($request->has('status_filter') && $request->status_filter !== 'all') {
             if ($request->status_filter === 'process') {
                 $query = $query->whereIn('status', ['process', 'posting']);
@@ -449,10 +449,14 @@ class OrderBookController extends Controller
                         }
                         $sub->orWhere('status', 'LIKE', "%{$search}%");
                         $sub->orWhere('invoice_number', 'LIKE', "%{$search}%");
+                        $sub->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery->where('nm_user', 'LIKE', "%{$search}%");
+                        });
                     });
                 }
             }, true)
             ->addIndexColumn()
+            ->addColumn('created_by_name', fn ($item) => $item->user?->nm_user)
             ->addColumn('name', function ($item) {
                 $warningIcon = $item->updated_at ? '<span class="text-warning mx-1" title="Terakhir diedit" style="font-size: 0.75rem;">⚠️</span>' : '';
                 $parcelBadge = $this->containsParcelKeyword($item->note ?? '')
@@ -565,6 +569,8 @@ class OrderBookController extends Controller
             ->rawColumns(['name', 'action', 'date'])
             // branch is eager-loaded only for the badge; keep it out of the JSON as before.
             ->removeColumn('branch')
+            // The creator is eager loaded only for the name column and search; keep the record out of the JSON.
+            ->removeColumn('user')
             ->make(true);
     }
 }

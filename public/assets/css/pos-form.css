@@ -47,3 +47,8 @@
     .pos-fields { grid-template-columns:minmax(0,1fr); gap:14px; }
     .pos-card__head, .pos-card__body { padding-right:16px; padding-left:16px; }
 }
+.pos-note-count { margin-top:8px; text-align:right; color:#9ca3af; font-size:11px; font-weight:500; }
+.pos-card__body textarea.form-control { border-radius:12px; font-size:13px; }
+.pos-form-actions { display:flex; gap:10px; }
+.pos-form-actions .btn { min-height:44px; border-radius:12px; font-size:13px; font-weight:700; }
+.pos-form-actions .btn-primary { flex:1; }

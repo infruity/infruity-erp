@@ -4,117 +4,74 @@
 @section('content')
     <link rel="stylesheet" href="{{ asset('assets/css/pos-form.css') }}?v={{ filemtime(public_path('assets/css/pos-form.css')) }}">
     <div class="w-100 flex-lg-row-auto" x-data="posApp()" x-init="init()">
-        <div class="erp-editor"><div class="erp-editor-main"><section class="erp-editor-section"><header><i class="ph ph-note-pencil" aria-hidden="true"></i><h2>Informasi pesanan</h2></header><div class="erp-editor-body">
-            <div class="d-flex flex-column gap-10 mb-3">
-                <!--begin::Input group-->
-                <div class="row">
-                    <div class="col-12 mb-3">
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Cabang</label>
-                            <!--end::Label-->
-                            <!--begin::Select-->
+        <div class="pos-form">
+            <section class="pos-card" aria-labelledby="ob-info-title">
+                <div class="pos-card__head">
+                    <h2 id="ob-info-title">Informasi Pesanan</h2>
+                    <span class="pos-card__hint">* Wajib diisi</span>
+                </div>
+                <div class="pos-card__body">
+                    <div class="pos-fields">
+                        <div class="fv-row is-wide">
+                            <label class="required form-label" for="branch_id">Cabang</label>
                             <select class="form-control" name="branch_id" id="branch_id">
                                 <option value="">Pilih Cabang</option>
                             </select>
-                            <!--end::Select-->
                         </div>
-                    </div>
-                    <div class="col-9">
+                        <div class="fv-row is-wide">
+                            <label class="required form-label" for="customer_id">Pelanggan</label>
+                            <div class="pos-customer">
+                                <select class="form-select" id="customer_id" name="customer_id">
+                                    <option value="">Pilih Pelanggan</option>
+                                </select>
+                                <button type="button" @click="addCustomer()" aria-label="Tambah pelanggan" class="pos-customer__add">
+                                    <i class="ph-bold ph-plus" aria-hidden="true"></i><span>Baru</span>
+                                </button>
+                            </div>
+                            <input type="hidden" name="tier_id" id="tier_id">
+                        </div>
                         <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Pilih Pelanggan</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <select class="form-select" id="customer_id" name="customer_id">
-                                <option value="">Pilih Pelanggan</option>
-                            </select>
-                            <!--end::Editor-->
+                            <label class="required form-label" for="ob_date">Tanggal Transaksi</label>
+                            <input type="date" class="form-control" id="ob_date" name="date" value="{{ date('Y-m-d') }}">
+                        </div>
+                        <div class="fv-row">
+                            <label class="required form-label" for="ob_invoice">Nomor Faktur</label>
+                            <input type="text" class="form-control" id="ob_invoice" name="invoice_number" value="{{ $invoice_number }}"
+                                readonly>
                         </div>
                     </div>
-                    <input type="hidden" name="tier_id" id="tier_id">
-                    <div class="col-3 mt-8">
-                        <button @click="addCustomer()"
-                            class="btn btn-outline btn-outline-dashed btn-outline-primary btn-active-light-primary">
-                            <i class="fa-solid fa-plus"></i>
+                </div>
+            </section>
+
+            <section class="pos-card" aria-labelledby="ob-note-title" x-data="{ noteLength: {{ strlen($data->note ?? '') }} }">
+                <div class="pos-card__head">
+                    <h2 id="ob-note-title">Catatan Pesanan <span class="text-danger">*</span></h2>
+                </div>
+                <div class="pos-card__body">
+                    <label for="note" class="visually-hidden">Produk dan catatan pesanan</label>
+                    <textarea name="note" id="note" rows="8" class="form-control" placeholder="Tuliskan produk dan catatan pesanan..."
+                        @input="noteLength = $event.target.value.length">{{ $data->note ?? '' }}</textarea>
+                    <div class="pos-note-count"><span x-text="noteLength + ' karakter'"></span></div>
+                </div>
+            </section>
+
+            <div class="pos-form-footer">
+                <div class="pos-form-footer__inner">
+                    <div class="pos-form-actions" x-data="{ loading: false }">
+                        <a href="{{ url('/order-book') }}" class="btn btn-light"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Kembali</a>
+                        <button type="button" class="btn btn-light border" @click="loading = true; saveDraft(() => loading = false)" :disabled="loading">
+                            <template x-if="!loading"><span>Draft</span></template>
+                            <template x-if="loading"><span><span class="spinner-border spinner-border-sm align-middle me-2"></span>Memproses...</span></template>
+                        </button>
+                        <button type="button" class="btn btn-primary" @click="loading = true; saveTransaction(() => loading = false)" :disabled="loading">
+                            <template x-if="!loading"><span>Simpan &amp; Proses</span></template>
+                            <template x-if="loading"><span><span class="spinner-border spinner-border-sm align-middle me-2"></span>Memproses...</span></template>
                         </button>
                     </div>
-
                 </div>
-                <!--end::Input group-->
-            </div>
-            <div class="d-flex flex-column gap-10">
-                <!--begin::Input group-->
-                <div class="row">
-                    <div class="col">
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Tanggal Transaksi</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <input type="date" class="form-control" name="date" value="{{ date('Y-m-d') }}">
-                            <!--end::Editor-->
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Nomor Faktur</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <input type="text" class="form-control" name="invoice_number" value="{{ $invoice_number }}"
-                                readonly>
-                            <!--end::Editor-->
-                        </div>
-                    </div>
-                </div>
-                <!--end::Input group-->
-            </div>
-        </div></section></div><aside class="erp-editor-summary"><h2>Rincian pesanan</h2><label for="note" class="form-label">Produk dan catatan pesanan</label><textarea name="note" id="note" rows="10" class="form-control" placeholder="Masukkan produk dan catatan pesanan">{{ $data->note ?? '' }}</textarea></aside></div>
-            @include('pos::pos.segment.modal-customer')
-        <div class="erp-editor-actions">
-            <div class="flex-shrink-0 me-2">
-                <a href="{{ url('/order-book') }}"
-                    class="btn btn-sm btn-light d-inline-flex align-items-center gap-2 px-3 py-2 shadow-sm text-nowrap">
-                    <i class="bi bi-arrow-left"></i>
-                    <span>Kembali</span>
-                </a>
-            </div>
-            <div class="d-flex align-items-center gap-2 flex-nowrap ms-auto" x-data="{ loading: false }">
-                <button type="button"
-                    class="btn btn-sm btn-light d-inline-flex align-items-center gap-2 px-3 py-2 shadow-sm text-nowrap"
-                    @click="loading = true; saveDraft(() => loading = false)" :disabled="loading">
-                    <template x-if="!loading">
-                        <span class="d-inline-flex align-items-center gap-2">
-                            <i class="bi bi-file-earmark-text"></i>
-                            <span>Draft</span>
-                        </span>
-                    </template>
-                    <template x-if="loading">
-                        <span>
-                            <span class="spinner-border spinner-border-sm align-middle me-2"></span>
-                            Memproses...
-                        </span>
-                    </template>
-                </button>
-                <button type="button"
-                    class="btn btn-sm btn-primary d-inline-flex align-items-center gap-2 px-3 py-2 shadow-sm text-nowrap"
-                    @click="loading = true; saveTransaction(() => loading = false)" :disabled="loading">
-                    <template x-if="!loading">
-                        <span class="d-inline-flex align-items-center gap-2">
-                            <i class="bi bi-check2-circle"></i>
-                            <span>Simpan & Proses</span>
-                        </span>
-                    </template>
-                    <template x-if="loading">
-                        <span>
-                            <span class="spinner-border spinner-border-sm align-middle me-2"></span>
-                            Memproses...
-                        </span>
-                    </template>
-                </button>
             </div>
         </div>
+            @include('pos::pos.segment.modal-customer')
     </div>
 @section('script')
     @include('pos::pos.js.js-header')
