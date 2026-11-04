@@ -2,6 +2,52 @@
 @section('title', 'Kasir / POS')
 
 @section('content')
+<style>
+    .pos-list-row { display:flex; min-width:0; align-items:center; gap:12px; }
+    .pos-list-avatar { display:flex; width:40px; height:40px; flex:none; align-items:center; justify-content:center; border:1px solid #d1fae5; border-radius:12px; background:#ecfdf5; color:#0b595b; font-size:19px; }
+    .pos-list-copy { display:flex; min-width:0; flex-direction:column; gap:2px; text-decoration:none; }
+    .pos-list-customer { display:flex; min-width:0; align-items:center; gap:6px; color:#1f2937; font-size:14px; font-weight:700; }
+    .pos-list-customer span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .pos-list-copy:hover .pos-list-customer { color:#0b595b; }
+    .pos-list-parcel { flex:none; color:#0b595b; font-size:15px; }
+    .pos-list-sub { color:#6b7280; font-size:12px; font-variant-numeric:tabular-nums; }
+    .pos-list-status-cell { display:flex; flex-direction:column; align-items:center; gap:3px; font-variant-numeric:tabular-nums; }
+    .pos-list-status { display:inline-flex; align-items:center; border-radius:999px; padding:3px 9px; font-size:11px; font-weight:700; }
+    .pos-list-status.is-paid { background:#f0fdf4; color:#166534; }
+    .pos-list-status.is-pending { background:#f3f4f6; color:#6b7280; }
+    .pos-list-status.is-debt { background:#fff1f2; color:#be123c; }
+    .pos-list-status.is-canceled { background:#e5e7eb; color:#1f2937; }
+    .pos-list-status.is-other { background:#fffbeb; color:#b45309; }
+    .pos-list-total { color:#111827; font-size:13px; font-weight:700; }
+    .pos-list-due { color:#be123c; font-size:11px; }
+    .pos-list-meta { color:#9ca3af; font-size:11px; }
+    #pos-table tbody tr.is-openable { cursor:pointer; }
+    .pos-list-empty { display:flex; min-height:260px; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center; }
+    .pos-list-empty i { display:flex; width:56px; height:56px; align-items:center; justify-content:center; border:1px solid #d1fae5; border-radius:20px; background:#ecfdf5; color:#0b595b; font-size:26px; }
+    .pos-list-empty strong { color:#1f2937; font-size:14px; }
+    .pos-list-empty span { max-width:280px; color:#6b7280; font-size:12px; line-height:1.55; }
+    @media (max-width:1279px) {
+        #pos-table, #pos-table tbody { display:block; width:100% !important; }
+        #pos-table thead { display:none; }
+        #pos-table tbody tr { display:grid; grid-template-columns:minmax(0,1fr) auto 36px; align-items:center; gap:4px 12px; padding:12px 16px; border-bottom:1px solid #f1f3f5; }
+        #pos-table tbody td { display:block; width:auto !important; border:0 !important; padding:0 !important; }
+        #pos-table tbody td:nth-child(2) { text-align:right; }
+        #pos-table .pos-list-status-cell { align-items:flex-end; }
+        #pos-table .pos-list-status { padding:0; background:transparent !important; font-size:12px; }
+        #pos-table .pos-list-status.is-paid { color:#0b595b; }
+        #pos-table .pos-list-status.is-pending { color:#9ca3af; }
+        #pos-table .pos-list-status.is-debt { color:#be123c; }
+        #pos-table .pos-list-meta { display:none; }
+        #pos-table_wrapper .dataTables_info, #pos-table_wrapper .dataTables_paginate { display:none !important; }
+        #pos-table td.dataTables_empty { grid-column:1 / -1; }
+    }
+    @media (max-width:767px) {
+        .pos-list-avatar { width:36px; height:36px; border-radius:11px; font-size:17px; }
+        .pos-list-customer { font-size:13px; }
+        .pos-list-sub { font-size:11px; }
+        .pos-list-total { font-size:12px; }
+    }
+</style>
 <x-erp.workspace title="Kasir / POS" subtitle="Kelola kasir / pos dan lihat rincian transaksi."><x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari kasir / pos" placeholder="Cari kasir / pos…"></div><button type="button" class="erp-action" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
                             <!--begin::Header-->
                             <div class="px-7 py-5">
@@ -71,7 +117,7 @@
                                 <!--end::Input group-->
                             </div>
                             <!--end::Content-->
-                        </div>@if(check_access('pos.create'))<a href="{{ url('pos/create') }}" class="erp-action erp-action--primary"><i class="ph-bold ph-plus" aria-hidden="true"></i>Tambah Kasir / POS</a>@endif</x-slot:toolbar><x-erp.collection table="pos-table"><table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
+                        </div>@if(check_access('pos.create'))<a href="{{ url('pos/create') }}" class="erp-action erp-action--primary"><i class="ph-bold ph-plus" aria-hidden="true"></i>Tambah Kasir / POS</a>@endif</x-slot:toolbar><div class="pos-list"><table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
                     <thead>
                         <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
                             <th class="text-start min-w-150px">Name</th>
@@ -80,7 +126,7 @@
                         </tr>
                     </thead>
                     <tbody class="fw-semibold text-gray-600"></tbody>
-                </table></x-erp.collection></x-erp.workspace>
+                </table></div></x-erp.workspace>
 
 @section('script')
     <script type="text/javascript">
@@ -142,7 +188,17 @@
                 $activeBranchButtonLabel.text(selectedBranch);
             }
 
+            const posEmptyState = '<div class="pos-list-empty"><i class="ph ph-receipt" aria-hidden="true"></i><strong>Belum ada transaksi</strong><span>Transaksi kasir yang tersimpan akan muncul di sini.</span></div>';
+
             dataTable = $('#pos-table').DataTable({
+                language: { emptyTable: posEmptyState, zeroRecords: posEmptyState },
+                createdRow: function(row) {
+                    const link = row.querySelector('a.pos-list-copy');
+                    if (link) {
+                        row.classList.add('is-openable');
+                        row.dataset.href = link.getAttribute('href');
+                    }
+                },
                 pageLength: 100,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                 processing: true,
@@ -194,6 +250,12 @@
             }).on('hide.bs.dropdown', '.dropstart', function(e) {
                 $(e.target).closest('td').css('z-index', '');
             });
+            // A tap on the row opens the existing detail page; row actions keep their own behaviour.
+            $('#pos-table tbody').on('click', 'tr.is-openable', function(event) {
+                if ($(event.target).closest('a, button, .dropdown, .dropdown-menu').length) return;
+                window.location.href = this.dataset.href;
+            });
+
             // Search manual lewat input
             $('#search').on('keyup', function() {
                 dataTable.search(this.value).draw();

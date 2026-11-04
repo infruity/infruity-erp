@@ -1437,21 +1437,23 @@ class PosController extends Controller
             }, true)
             ->addIndexColumn()
             ->addColumn('name', function ($item) {
-                $hasParcel  = $item->details->contains(fn($detail) => isset($detail->product) && $detail->type === 'parcel');
-                $iconHtml   = $hasParcel ? '<i class="bi bi-box-seam text-success" title="Ada Parcel"></i>' : '';
-                $html       = '<div class="d-flex align-items-center">';
-                $html      .= '<div class="ms-5">';
+                $hasParcel = $item->details->contains(fn($detail) => isset($detail->product) && $detail->type === 'parcel');
+                $iconHtml  = $hasParcel ? '<i class="ph ph-gift pos-list-parcel" title="Ada Parcel" aria-label="Ada Parcel"></i>' : '';
                 if (isset($item->customer->name)) {
                     $waLast4  = ! empty($item->customer->whatsapp) ? ' (' . substr($item->customer->whatsapp, -4) . ')' : '';
-                    $html    .= $iconHtml . ' <a href="' . url('pos') . '/show' . '/' . $item->id . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $item->customer->name . $waLast4 . '</a> ';
+                    $customer = e($item->customer->name . $waLast4);
                 } else {
-                    $html .= $iconHtml . ' <a href="' . url('pos') . '/show' . '/' . $item->id . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">Pelanggan Umum</a> ';
+                    $customer = 'Pelanggan Umum';
                 }
-                $html .= '<br><span class="text-muted d-block fs-7">Total Rp' . tonumberround($item->total) . '</span>';
-                $html .= '<span class="text-muted d-block fs-7">Sisa Rp' . tonumberround($item->total_due - ($item->voucher ?? 0)) . '</span>';
-                $html .= '</div>';
-                $html .= '</div>';
-                return $html;
+                $when = date('d M Y', strtotime($item->date)) . ' ' . date('H:i', strtotime($item->created_at));
+
+                return '<div class="pos-list-row">
+                            <span class="pos-list-avatar" aria-hidden="true"><i class="ph ph-receipt"></i></span>
+                            <a href="' . url('pos') . '/show/' . $item->id . '" class="pos-list-copy">
+                                <span class="pos-list-customer">' . $iconHtml . '<span>' . $customer . '</span></span>
+                                <span class="pos-list-sub">' . $when . '</span>
+                            </a>
+                        </div>';
             })
             ->addColumn('total_price', function ($item) {
                 return 'Rp. ' . number_format($item->total_price, 0, ',', '.');
@@ -1460,26 +1462,32 @@ class PosController extends Controller
                 return $item->total_quantity;
             })
             ->addColumn('date', function ($item) {
-                $date         = date('d M Y', strtotime($item->date)) . ' ' . date('H:i', strtotime($item->created_at));
                 $statusLabels = [
-                    'paid'     => ['label' => 'Lunas', 'class' => 'success'],
-                    'draft'    => ['label' => 'Pending', 'class' => 'secondary'],
-                    'debt'     => ['label' => 'Piutang', 'class' => 'danger'],
-                    'canceled' => ['label' => 'Dihapus', 'class' => 'dark'],
-                    'temp'     => ['label' => 'Pending', 'class' => 'secondary'],
+                    'paid'     => ['label' => 'Lunas', 'class' => 'paid'],
+                    'draft'    => ['label' => 'Pending', 'class' => 'pending'],
+                    'debt'     => ['label' => 'Piutang', 'class' => 'debt'],
+                    'canceled' => ['label' => 'Dihapus', 'class' => 'canceled'],
+                    'temp'     => ['label' => 'Pending', 'class' => 'pending'],
                 ];
-                $statusInfo  = $statusLabels[$item->status] ?? ['label' => ucfirst($item->status), 'class' => 'warning'];
-                $badge       = '<span class="badge badge-light-' . $statusInfo['class'] . '">' . $statusInfo['label'] . '</span>';
-                $branchLabel = '';
+                $statusInfo = $statusLabels[$item->status] ?? ['label' => ucfirst($item->status), 'class' => 'other'];
+                $due        = (float) ($item->total_due - ($item->voucher ?? 0));
+                $dueLine    = ($due > 0 && $item->status !== 'paid')
+                    ? '<span class="pos-list-due">Sisa Rp' . tonumberround($due) . '</span>'
+                    : '';
+                $meta = [];
                 if ($item->branch) {
-                    $branchLabel = '<span class="badge badge-light-primary ms-1">' . e($item->branch->name) . '</span>';
+                    $meta[] = e($item->branch->name);
                 }
-                $userLabel = '';
                 if ($item->user) {
-                    $userLabel = '<span class="text-muted d-block fs-8 mt-1"><i class="bi bi-person"></i> ' . e(ucwords(strtolower($item->user->nm_user))) . '</span>';
+                    $meta[] = e(ucwords(strtolower($item->user->nm_user)));
                 }
+                $metaLine = $meta ? '<span class="pos-list-meta">' . implode(' · ', $meta) . '</span>' : '';
 
-                return "<span class=\"text-muted d-block fs-8\">{$date}</span>{$badge}{$branchLabel}{$userLabel}";
+                return '<div class="pos-list-status-cell">
+                            <span class="pos-list-status is-' . $statusInfo['class'] . '">' . $statusInfo['label'] . '</span>
+                            <span class="pos-list-total">Rp' . tonumberround($item->total) . '</span>
+                            ' . $dueLine . $metaLine . '
+                        </div>';
             })
             ->addColumn('action', function ($item) {
                 $html  = '';
