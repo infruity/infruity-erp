@@ -749,6 +749,26 @@
             .so-detail__link.is-success, .so-detail__link.is-success i { color:#047857; }
             .so-detail__link.is-danger, .so-detail__link.is-danger i { color:#be123c; }
             .so-detail__count { margin-left:auto; border-radius:999px; background:#fee2e2; padding:1px 8px; color:#b91c1c; font-size:10px; font-weight:700; }
+
+            .stock-opname-modal .so-form-label { color:#374151; font-size:12px; font-weight:700; }
+            .stock-opname-modal .so-form-hint { color:#9ca3af; font-size:11px; }
+            .stock-opname-modal .so-form-panel { display:grid; grid-template-columns:1fr 1fr; gap:16px; border:1px solid #e5e7eb; border-radius:14px; background:#f9fafb; padding:14px 16px; }
+            .stock-opname-modal .so-form-panel > div + div { border-left:1px solid #e5e7eb; padding-left:16px; }
+            .stock-opname-modal .so-form-panel__label { display:block; margin-bottom:6px; color:#9ca3af; font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
+            .stock-opname-modal .so-form-panel__input .form-control { background:#fff; border-radius:10px; font-size:1rem; }
+            .stock-opname-modal .so-form-panel__value { display:block; margin-top:8px; color:#0b595b; font-size:1rem; font-weight:800; font-variant-numeric:tabular-nums; }
+            .stock-opname-modal .so-form-panel small { display:block; margin-top:6px; color:#9ca3af; font-size:10px; }
+            .stock-opname-modal .so-form-physical { min-height:46px; border:1px solid #d1d5db; border-radius:12px; font-size:1.05rem; }
+            .stock-opname-modal .so-form-physical:focus { border-color:#0b595b; box-shadow:0 0 0 1px #0b595b; }
+            .stock-opname-modal .so-form-diff { border:1px solid #e5e7eb; border-radius:12px; padding:12px 14px; background:#f9fafb; color:#374151; font-variant-numeric:tabular-nums; }
+            .stock-opname-modal .so-form-diff__row { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:12px; }
+            .stock-opname-modal .so-form-diff__row strong { font-size:15px; font-weight:800; }
+            .stock-opname-modal .so-form-diff__row.is-sub { margin-top:8px; border-top:1px solid #e5e7eb; padding-top:8px; }
+            .stock-opname-modal .so-form-diff__row.is-sub strong { font-size:13px; }
+            .stock-opname-modal .so-form-diff.is-surplus { border-color:#a7f3d0; background:#ecfdf5; color:#065f46; }
+            .stock-opname-modal .so-form-diff.is-loss { border-color:#fecdd3; background:#fff1f2; color:#9f1239; }
+            .stock-opname-modal .so-form-diff.is-surplus .is-sub, .stock-opname-modal .so-form-diff.is-loss .is-sub { border-color:currentColor; }
+            @media (max-width:575px) { .stock-opname-modal .so-form-panel { grid-template-columns:1fr; } .stock-opname-modal .so-form-panel > div + div { border-left:0; border-top:1px solid #e5e7eb; padding:12px 0 0; } }
         </style>
         <x-erp.workspace title="Stok Opname" subtitle="Cocokkan stok fisik dan stok sistem."><x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" placeholder="Cari stok opname…" aria-label="Cari stok opname"></div><button class="erp-action" type="button" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
                             <div class="px-7 py-5">
@@ -832,9 +852,9 @@
 
                             <input type="hidden" id="date" name="date" value="{{ date('Y-m-d') }}" />
 
-                            <div class="row g-5 mb-6">
+                            <div class="row g-5 mb-5">
                                 <div class="col-md-6 fv-row">
-                                    <label class="required form-label text-gray-800 fw-bold fs-7 mb-2">Cabang</label>
+                                    <label class="required form-label so-form-label" for="branch_id">Cabang Pelaksanaan</label>
                                     <select class="form-select form-select-solid" name="branch_id" id="branch_id"
                                         data-placeholder="Pilih Cabang">
                                         @foreach ($branches as $branch)
@@ -843,7 +863,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-6 fv-row">
-                                    <label class="required form-label text-gray-800 fw-bold fs-7 mb-2">Pilih Produk</label>
+                                    <label class="required form-label so-form-label" for="product_id">Pilih Produk</label>
                                     <select class="form-select" style="border-color: var(--erp-border);" name="product_id"
                                         id="product_id" data-placeholder="Pilih Produk">
                                         <option value="">Pilih Product</option>
@@ -851,39 +871,44 @@
                                 </div>
                             </div>
 
-                            <div class="p-5 rounded-4 mb-6" style="background-color: #f9fafb;">
-                                <div class="row g-5">
-                                    <div class="col-6">
-                                        <label class="form-label text-gray-700 fw-bold mb-3 text-uppercase"
-                                            style="font-size: 0.75rem; letter-spacing: 0.05em;">Stock Sistem Saat
-                                            Ini</label>
-                                        <div class="input-group">
-                                            <input type="number" step="0.01"
-                                                class="form-control text-end fw-bolder border-0" name="quantity"
-                                                value="0" readonly
-                                                style="font-size: 1.15rem; background-color: #ffffff; border-top-left-radius: 0.475rem; border-bottom-left-radius: 0.475rem;" />
-                                            <span class="input-group-text border-0 fw-semibold text-gray-600"
-                                                style="background-color: #f1f3f7; border-top-right-radius: 0.475rem; border-bottom-right-radius: 0.475rem;">Kg</span>
-                                        </div>
+                            <div class="so-form-panel mb-5">
+                                <div>
+                                    <span class="so-form-panel__label">Stok Sistem</span>
+                                    <div class="input-group so-form-panel__input">
+                                        <input type="number" step="0.01" class="form-control text-end fw-bolder border-0"
+                                            name="quantity" value="0" readonly aria-label="Stok sistem saat ini" />
                                     </div>
-                                    <div class="col-6">
-                                        <label class="form-label text-primary fw-bold mb-3 text-uppercase"
-                                            style="font-size: 0.75rem; letter-spacing: 0.05em;">Stock Fisik (Audit)</label>
-                                        <div class="input-group"
-                                            style="border: 1px solid var(--erp-border); border-radius: 0.475rem; overflow: hidden;">
-                                            <input type="number" step="0.01"
-                                                class="form-control text-end fw-bolder border-0" name="real_stock"
-                                                value="0"
-                                                style="font-size: 1.15rem; background-color: #ffffff; color: #8892a2;" />
-                                            <span class="input-group-text border-0 fw-bold text-primary"
-                                                style="background-color: #eff4ff;">Kg</span>
-                                        </div>
-                                    </div>
+                                    <small>Catatan buku saat ini</small>
+                                </div>
+                                <div>
+                                    <span class="so-form-panel__label">HPP / Satuan</span>
+                                    <strong class="so-form-panel__value" id="stock-hpp-value">-</strong>
+                                    <small>Dipakai untuk menghitung dampak</small>
                                 </div>
                             </div>
 
-                            <div class="fv-row mb-6">
-                                <label class="form-label text-gray-800 fw-bold fs-7 mb-2">Detail Quantity</label>
+                            <div class="fv-row mb-4">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label class="required form-label so-form-label mb-0" for="real_stock">Stok Fisik Terhitung</label>
+                                    <span class="so-form-hint">Hasil timbang aktual</span>
+                                </div>
+                                <input type="number" step="0.01" inputmode="decimal" id="real_stock"
+                                    class="form-control text-end fw-bolder so-form-physical" name="real_stock" value="0" />
+                            </div>
+
+                            <div class="so-form-diff is-match mb-5" aria-live="polite">
+                                <div class="so-form-diff__row">
+                                    <span id="stock-difference-label">Stok sesuai</span>
+                                    <strong id="stock-difference-text">0 Kg</strong>
+                                </div>
+                                <div class="so-form-diff__row is-sub">
+                                    <span>Dampak Finansial</span>
+                                    <strong id="stock-difference-value">Rp 0</strong>
+                                </div>
+                            </div>
+
+                            <div class="fv-row mb-5">
+                                <label class="form-label so-form-label">Detail Quantity</label>
                                 <div id="detail-qty-container" class="d-flex flex-column gap-3">
                                 </div>
                                 <button type="button" class="btn btn-sm btn-light-primary mt-3"
@@ -893,8 +918,8 @@
                             </div>
 
                             <div class="fv-row mb-2">
-                                <label class="form-label text-gray-800 fw-bold fs-7 mb-2">Catatan Audit</label>
-                                <textarea class="form-control" style="border: 1px solid #e5e7eb; border-radius: 0.475rem;" name="note"
+                                <label class="form-label so-form-label" for="so_note">Catatan Koreksi</label>
+                                <textarea class="form-control" id="so_note" style="border: 1px solid #e5e7eb; border-radius: 12px;" name="note"
                                     rows="3" placeholder="Tulis kondisi barang, temuan, atau keterangan lainnya..."></textarea>
                             </div>
                             <!--end::Input group-->
@@ -1201,20 +1226,19 @@
             const realStock = Number($('input[name="real_stock"]').val() || 0);
             const difference = realStock - systemStock;
             const price = Number(unitPrice ?? $('#product_id').data('unit-price') ?? 0);
+            const unit = $('#product_id').data('unit') || 'Kg';
             const value = difference * price;
             const diffRounded = Math.round(difference * 100) / 100;
 
-            $('#stock-difference-text').text(`${diffRounded} Kg`);
-            $('#stock-difference-value').text(`${value < 0 ? '-' : ''}Rp ${formatRupiah(Math.abs(value))}`);
+            $('#stock-hpp-value').text(price > 0 ? `Rp ${formatRupiah(Math.round(price))}/${unit}` : '-');
+            $('#stock-difference-label').text(diffRounded < 0 ? 'Potensi rugi' : (diffRounded > 0 ? 'Surplus stok' : 'Stok sesuai'));
+            $('#stock-difference-text').text(`${diffRounded > 0 ? '+' : ''}${diffRounded} ${unit}`);
+            $('#stock-difference-value').text(`${value < 0 ? '-' : (value > 0 ? '+' : '')}Rp ${formatRupiah(Math.abs(Math.round(value)))}`);
 
-            const $card = $('.summary-card');
-            if (difference > 0) {
-                $card.addClass('summary-positive').removeClass('summary-negative');
-            } else if (difference < 0) {
-                $card.removeClass('summary-positive').addClass('summary-negative');
-            } else {
-                $card.removeClass('summary-positive summary-negative');
-            }
+            $('.so-form-diff')
+                .toggleClass('is-surplus', diffRounded > 0)
+                .toggleClass('is-loss', diffRounded < 0)
+                .toggleClass('is-match', diffRounded === 0);
         }
 
         function formatLongDateTime(dateValue) {
@@ -1798,6 +1822,7 @@
                     $('input[name="quantity"]').val(response.stock);
                     $('input[name="real_stock"]').val(response.real_stock);
                     $('textarea[name="note"]').val(response.note || '');
+                    $('#product_id').data('unit', response.product?.unit?.abbreviation || response.unit || 'Kg');
                     updateStockSummary(response.avg_price || 0);
 
                     // Ubah action form untuk update
@@ -1875,6 +1900,7 @@
                     $('input[name="quantity"]').val(response.stock);
                     $('input[name="real_stock"]').val(response.real_stock);
                     $('textarea[name="note"]').val(response.note || '');
+                    $('#product_id').data('unit', response.product?.unit?.abbreviation || response.unit || 'Kg');
                     updateStockSummary(response.avg_price || 0);
 
                     // Ubah action form untuk view (no action)
