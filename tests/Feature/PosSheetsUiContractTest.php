@@ -22,6 +22,14 @@ final class PosSheetsUiContractTest extends TestCase
         }
     }
 
+    public function test_sheet_close_button_keeps_its_x_icon(): void
+    {
+        // .erp-sheet-header button sets a flat `background`, which wipes Bootstrap's .btn-close X image.
+        $css = file_get_contents(base_path('public/assets/css/pos-form.css'));
+
+        $this->assertMatchesRegularExpression('/\.pos-sheet-header\s+\.btn-close\s*\{[^}]*url\(/', $css);
+    }
+
     public function test_customer_modal_is_retitled_but_keeps_the_bindings_the_save_flow_reads(): void
     {
         $modal = $this->segment('modal-customer');
