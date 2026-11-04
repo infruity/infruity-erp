@@ -769,6 +769,28 @@
             .stock-opname-modal .so-form-diff.is-loss { border-color:#fecdd3; background:#fff1f2; color:#9f1239; }
             .stock-opname-modal .so-form-diff.is-surplus .is-sub, .stock-opname-modal .so-form-diff.is-loss .is-sub { border-color:currentColor; }
             @media (max-width:575px) { .stock-opname-modal .so-form-panel { grid-template-columns:1fr; } .stock-opname-modal .so-form-panel > div + div { border-left:0; border-top:1px solid #e5e7eb; padding:12px 0 0; } }
+
+            .so-hist-tabs { display:inline-flex; margin-right:8px; border:1px solid #e5e7eb; border-radius:999px; background:#f9fafb; padding:3px; }
+            .so-hist-tab { border:0; border-radius:999px; background:transparent; padding:5px 14px; color:#6b7280; font-size:12px; font-weight:700; }
+            .so-hist-tab.is-active { background:#0b595b; color:#fff; }
+            .so-hist-head { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f1f3f5; padding:8px 4px; color:#9ca3af; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+            .so-hist-head__side { display:flex; gap:4px; }
+            .so-hist-col { min-width:58px; text-align:right; font-variant-numeric:tabular-nums; }
+            .so-hist-reason-head { flex:1; }
+            .so-hist-row { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; border-bottom:1px solid #f1f3f5; padding:12px 4px; }
+            .so-hist-main { display:flex; min-width:0; flex-direction:column; gap:2px; }
+            .so-hist-kind { color:#374151; font-size:12px; font-weight:700; }
+            .so-hist-kind.is-surplus { color:#047857; }
+            .so-hist-kind.is-loss { color:#be123c; }
+            .so-hist-time, .so-hist-by { color:#9ca3af; font-size:11px; }
+            .so-hist-side { display:flex; flex:1; justify-content:flex-end; gap:4px; font-size:13px; }
+            .so-hist-side .so-hist-col { color:#374151; }
+            .so-hist-side .so-hist-col.is-strong { color:#111827; font-weight:700; }
+            .so-hist-side .so-hist-col.is-surplus { color:#047857; font-weight:700; }
+            .so-hist-side .so-hist-col.is-loss { color:#be123c; font-weight:700; }
+            .so-hist-reason { max-width:240px; color:#4b5563; font-size:12px; line-height:1.5; text-align:right; overflow-wrap:anywhere; }
+            .so-hist-details { display:grid; grid-template-columns:1fr auto; gap:2px 10px; margin-top:6px; border-radius:8px; background:#f9fafb; padding:6px 8px; color:#6b7280; font-size:11px; text-align:left; }
+            .so-hist-empty { padding:32px 0; color:#9ca3af; text-align:center; font-size:13px; }
         </style>
         <x-erp.workspace title="Stok Opname" subtitle="Cocokkan stok fisik dan stok sistem."><x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" placeholder="Cari stok opname…" aria-label="Cari stok opname"></div><button class="erp-action" type="button" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
                             <div class="px-7 py-5">
@@ -1075,6 +1097,10 @@
                     <span class="text-muted fs-7 fw-semibold" id="history-transaction-code">-</span>
                 </div>
                 <div class="card-toolbar">
+                    <div class="so-hist-tabs" role="group" aria-label="Mode riwayat">
+                        <button type="button" class="so-hist-tab is-active" data-so-history-tab="credit" aria-pressed="true">Kredit</button>
+                        <button type="button" class="so-hist-tab" data-so-history-tab="reason" aria-pressed="false">Alasan</button>
+                    </div>
                     <button type="button" class="btn btn-sm btn-icon btn-active-light-primary me-n5"
                         id="kt_stock_opname_history_close">
                         <i class="ki-outline ki-cross fs-1"></i>
@@ -1091,7 +1117,7 @@
                     data-kt-scroll-dependencies="#kt_stock_opname_history_header" data-kt-scroll-offset="5px"
                     style="height: calc(100vh - 100px);">
 
-                    <div class="timeline timeline-border-dashed mt-5" id="history-timeline-items">
+                    <div class="so-hist mt-4" id="history-timeline-items">
                         <!-- Timeline items rendered dynamically -->
                     </div>
 
@@ -1944,6 +1970,74 @@
             });
         }
 
+        // Credit tab: Awal / Mutasi / Saldo per movement. Reason tab: the note of each movement.
+        function renderStockOpnameHistory() {
+            const state = window.stockOpnameHistory || { entries: [], unit: 'Kg', tab: 'credit' };
+            const unit = state.unit;
+            const num = value => {
+                const n = Math.round(Number(value || 0) * 100) / 100;
+                return Number.isInteger(n) ? String(n) : n.toFixed(2);
+            };
+            const signed = value => (value > 0 ? '+' : '') + num(value);
+
+            $('[data-so-history-tab]').each(function() {
+                const active = this.dataset.soHistoryTab === state.tab;
+                this.classList.toggle('is-active', active);
+                this.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+
+            const $list = $('#history-timeline-items').empty();
+            if (!state.entries.length) {
+                $list.append('<div class="so-hist-empty">Belum ada riwayat audit.</div>');
+                return;
+            }
+
+            const head = state.tab === 'credit'
+                ? '<span class="so-hist-col">Awal</span><span class="so-hist-col">Mutasi</span><span class="so-hist-col">Saldo</span>'
+                : '<span class="so-hist-reason-head">Alasan Pergerakan</span>';
+            $list.append(`<div class="so-hist-head"><span>Kredit (${escapeHtml(unit)})</span><div class="so-hist-head__side">${head}</div></div>`);
+
+            state.entries.forEach((item, index) => {
+                const isInitial = item.action === 'INITIAL';
+                const saldo = Number(item.real_stock || 0);
+                // Entries are newest first, so the next one is the previous state.
+                const awal = isInitial
+                    ? saldo - Number(item.difference || 0)
+                    : (state.entries[index + 1] ? Number(state.entries[index + 1].real_stock) : saldo);
+                const mutasi = Math.round((saldo - awal) * 100) / 100;
+                const tone = mutasi > 0 ? 'is-surplus' : (mutasi < 0 ? 'is-loss' : '');
+                const kind = isInitial ? 'Input Awal' : (mutasi < 0 ? 'Kredit Kurang' : 'Kredit Lebih');
+
+                let side;
+                if (state.tab === 'credit') {
+                    side = `<span class="so-hist-col">${num(awal)}</span><span class="so-hist-col ${tone}">${signed(mutasi)}</span><span class="so-hist-col is-strong">${num(saldo)}</span>`;
+                } else {
+                    let details = '';
+                    if (Array.isArray(item.details) && item.details.length) {
+                        details = '<div class="so-hist-details">' + item.details.map(det =>
+                            `<span>${escapeHtml(det.name)}</span><b>${num(det.qty)} ${escapeHtml(unit)}</b>`).join('') + '</div>';
+                    }
+                    side = `<div class="so-hist-reason">${escapeHtml(item.note || '-')}${details}</div>`;
+                }
+
+                $list.append(`
+                    <div class="so-hist-row">
+                        <div class="so-hist-main">
+                            <span class="so-hist-kind ${tone}">${kind}</span>
+                            <span class="so-hist-time">${escapeHtml(formatLongDateTime(item.created_at))}</span>
+                            <span class="so-hist-by">${escapeHtml(item.creator_name || 'System')}</span>
+                        </div>
+                        <div class="so-hist-side">${side}</div>
+                    </div>`);
+            });
+        }
+
+        $(document).on('click', '[data-so-history-tab]', function() {
+            if (!window.stockOpnameHistory) return;
+            window.stockOpnameHistory.tab = this.dataset.soHistoryTab;
+            renderStockOpnameHistory();
+        });
+
         function showHistory(id) {
             $.ajax({
                 url: `/stock-opname/${id}/history`,
@@ -1951,122 +2045,8 @@
                 success: function(response) {
                     $('#history-transaction-code').text(response.code || '-');
 
-                    const $timeline = $('#history-timeline-items');
-                    $timeline.empty();
-
-                    const unit = response.unit || 'Kg';
-
-                    // Helper to format quantity nicely
-                    const formatNum = (v) => {
-                        const n = Number(v || 0);
-                        return n % 1 === 0 ? n.toString() : n.toFixed(2);
-                    };
-
-                    if (response.history && response.history.length > 0) {
-                        response.history.forEach((item, index) => {
-                            const isInitial = item.action === 'INITIAL';
-
-                            let badgeClass = 'is-initial';
-                            let actionLabel = 'INITIAL';
-                            let qtyHtml = '';
-
-                            if (isInitial) {
-                                badgeClass = 'is-initial';
-                                actionLabel = 'INITIAL';
-                                qtyHtml =
-                                    `<span class="history-qty-badge">${formatNum(item.real_stock)} ${unit}</span>`;
-                            } else {
-                                // Since history is descending, the item at index+1 is chronological predecessor
-                                const nextItem = response.history[index + 1];
-                                const oldStock = nextItem ? Number(nextItem.real_stock) : Number(item
-                                    .real_stock);
-                                const newStock = Number(item.real_stock);
-
-                                if (newStock >= oldStock) {
-                                    badgeClass = 'is-kredit';
-                                    actionLabel = '+ KREDIT';
-                                    qtyHtml = `
-                                        <div class="d-flex align-items-center gap-1 flex-nowrap">
-                                            <span class="text-muted text-decoration-line-through fs-7">${formatNum(oldStock)}</span>
-                                            <span class="text-muted fs-7 mx-1">&rarr;</span>
-                                            <span class="history-qty-badge is-kredit">${formatNum(newStock)} ${unit}</span>
-                                        </div>
-                                    `;
-                                } else {
-                                    badgeClass = 'is-debit';
-                                    actionLabel = '- DEBIT';
-                                    qtyHtml = `
-                                        <div class="d-flex align-items-center gap-1 flex-nowrap">
-                                            <span class="text-muted text-decoration-line-through fs-7">${formatNum(oldStock)}</span>
-                                            <span class="text-muted fs-7 mx-1">&rarr;</span>
-                                            <span class="history-qty-badge is-debit">${formatNum(newStock)} ${unit}</span>
-                                        </div>
-                                    `;
-                                }
-                            }
-
-                            const formattedTime = formatLongDateTime(item.created_at);
-
-                            // Dynamic User Avatar using userId modulo
-                            const userId = item.created_by || 1;
-                            const avatarNum = (userId % 30) + 1;
-                            const avatarUrl = `/assets/media/avatars/300-${avatarNum}.jpg`;
-
-                            let detailsHtml = '';
-                            if (item.details && Array.isArray(item.details) && item.details.length >
-                                0) {
-                                detailsHtml =
-                                    '<div class="history-details-box mt-3 mb-3 p-3 bg-light rounded">';
-                                detailsHtml +=
-                                    '<div class="fw-bold fs-8 text-muted mb-2">Detail Stock Fisik:</div>';
-                                item.details.forEach(det => {
-                                    detailsHtml += `<div class="d-flex justify-content-between align-items-center fs-8 text-gray-700 border-bottom border-gray-300 pb-1 mb-1 last-border-none">
-                                        <span>${escapeHtml(det.name)}</span>
-                                        <span class="fw-bold">${formatNum(det.qty)} ${unit}</span>
-                                    </div>`;
-                                });
-                                detailsHtml += '</div>';
-                            }
-
-                            const timelineItemHtml = `
-                                <div class="timeline-item">
-                                    <div class="timeline-line"></div>
-                                    <div class="timeline-icon">
-                                        <span class="bullet bullet-dot bg-primary h-10px w-10px"></span>
-                                    </div>
-                                    <div class="timeline-content mb-8 mt-n1">
-                                        <div class="history-card">
-                                            <div class="d-flex align-items-center justify-content-between mb-3">
-                                                <span class="history-action-badge ${badgeClass}">${actionLabel}</span>
-                                                <span class="history-time-text d-flex align-items-center gap-1">
-                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                                    ${formattedTime}
-                                                </span>
-                                            </div>
-
-                                            <div class="history-note-text ${detailsHtml ? '' : 'mb-3'}">
-                                                "${escapeHtml(item.note || '')}"
-                                            </div>
-
-                                            ${detailsHtml}
-
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <img src="${avatarUrl}" class="so-creator-avatar" alt="Avatar">
-                                                    <span class="fs-7 fw-semibold text-gray-700">${escapeHtml(item.creator_name || 'System')}</span>
-                                                </div>
-                                                ${qtyHtml}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                            $timeline.append(timelineItemHtml);
-                        });
-                    } else {
-                        $timeline.append(
-                            '<div class="text-muted text-center py-5">Belum ada riwayat audit.</div>');
-                    }
+                    window.stockOpnameHistory = { entries: response.history || [], unit: response.unit || 'Kg', tab: 'credit' };
+                    renderStockOpnameHistory();
 
                     // Show Metronic Drawer
                     const drawerEl = document.getElementById('kt_stock_opname_history');
