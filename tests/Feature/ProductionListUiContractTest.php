@@ -57,6 +57,40 @@ final class ProductionListUiContractTest extends TestCase
         }
         $this->assertStringContainsString("route('production.detail', \$item->id)", $controller);
         // Cell markup must not trigger extra relation loads beyond what get_data already eager loads.
-        $this->assertStringContainsString("Production::with(['products', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])", $controller);
+        $this->assertStringContainsString("Production::with(['products.unit', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])", $controller);
+    }
+
+    public function test_rows_follow_the_reference_avatar_name_datetime_status_and_quantity_with_unit(): void
+    {
+        $controller = $this->controller();
+
+        $this->assertStringContainsString('ProductGlyph::for(', $controller);
+        $this->assertStringContainsString('production-avatar', $controller);
+        $this->assertStringContainsString("translatedFormat('j M Y · H:i')", $controller);
+        $this->assertStringContainsString("products->unit->abbreviation", $controller);
+        foreach (["'Draf'", "'Siap Produksi'", "'Selesai'"] as $label) {
+            $this->assertStringContainsString($label, $controller);
+        }
+        $this->assertStringNotContainsString("'Completed'", $controller);
+    }
+
+    public function test_finished_filter_also_matches_the_legacy_complete_status(): void
+    {
+        $this->assertStringContainsString("whereIn('status', ['posting', 'complete'])", $this->controller());
+    }
+
+    public function test_mobile_toolbar_is_a_search_pill_with_a_tune_button_that_opens_a_filter_sheet(): void
+    {
+        $view = $this->listView();
+
+        $this->assertStringContainsString('<x-erp.mobile-search', $view);
+        $this->assertStringContainsString('erp-mobile-search__filter', $view);
+        $this->assertStringContainsString('productionFilterSheet()', $view);
+        $this->assertStringContainsString('Filter Produksi', $view);
+        // The sheet drives the existing selects, so the DataTable wiring stays as it is.
+        $this->assertStringContainsString("data-kt-ecommerce-product-filter=\"status\"", $view);
+        $this->assertStringContainsString("data-kt-ecommerce-product-filter=\"cabang\"", $view);
+        // Heading and the add button yield to the dock on small screens.
+        $this->assertStringContainsString('.production-workspace .erp-workspace-heading { display:none; }', $view);
     }
 }
