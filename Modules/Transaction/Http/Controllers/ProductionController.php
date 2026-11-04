@@ -787,24 +787,20 @@ class ProductionController extends Controller
                     });
                 }, true)
                 ->addColumn('name', function ($item) {
-                    $productName = $item->products ? e($item->products->name) : 'N/A';
-                    $quantity    = number_format($item->quantity ?? 0, 0, ',', '.');
+                    $productName     = $item->products ? e($item->products->name) : 'N/A';
+                    $number          = e($item->production_number ?? 'N/A');
+                    $createdAt       = $item->created_at ? date('d/m/Y H:i', strtotime($item->created_at)) : 'N/A';
                     $ingredientCount = $item->productionDetails ? $item->productionDetails->count() : 0;
+                    $ingredientLine  = $ingredientCount > 0
+                        ? ' · ' . $ingredientCount . ' bahan'
+                        : '';
 
-                    $ingredientBadge = '';
-                    if ($ingredientCount > 0) {
-                        $ingredientBadge = '<span class="badge badge-outline badge-primary mt-2">' . $ingredientCount . ' bahan</span>';
-                    }
-
-                    return '<div class="d-flex align-items-center">
-                                <div class="ms-5">
-                                    <a href="' . route('production.detail', $item->id) . '" class="text-primary fs-6 fw-bold text-hover-primary">' . ($item->production_number ?? 'N/A') . '</a>
-                                    <br>
-                                    <span class="text-gray-800 fw-semibold">' . $productName . '</span>
-                                    <br>
-                                    <span class="text-success fw-bold">Qty: ' . $quantity . '</span>
-                                    ' . $ingredientBadge . '
-                                </div>
+                    return '<div class="production-row">
+                                <span class="production-avatar" aria-hidden="true"><i class="ph ph-cooking-pot"></i></span>
+                                <a href="' . route('production.detail', $item->id) . '" class="production-copy">
+                                    <span class="production-product">' . $productName . '</span>
+                                    <span class="production-sub">' . $number . ' · ' . $createdAt . $ingredientLine . '</span>
+                                </a>
                             </div>';
                 })
                 ->addColumn('production_date', function ($item) {
@@ -825,27 +821,26 @@ class ProductionController extends Controller
                 ->addColumn('status', function ($item) {
                     $posBadge = '';
                     if ($item->pos_id) {
-                        $customerName = '';
-                        if ($item->pos && $item->pos->customer) {
-                            $customerName = '<br><span class="text-muted fs-8">' . e($item->pos->customer->name) . '</span>';
-                        } else {
-                            $customerName = '<br><span class="text-muted fs-8">Pelanggan Umum</span>';
-                        }
-                        $posBadge = ' <br><span class="badge badge-light-danger">POS</span>' . $customerName;
+                        $customerName = $item->pos && $item->pos->customer
+                            ? e($item->pos->customer->name)
+                            : 'Pelanggan Umum';
+                        $posBadge = '<span class="production-pos">POS · ' . $customerName . '</span>';
                     }
 
-                    switch ($item->status) {
-                        case 'posting':
-                            return '<span class="badge badge-light-success">Completed</span>' . $posBadge;
-                        case 'complete':
-                            return '<span class="badge badge-light-success">Complete</span>' . $posBadge;
-                        case 'draft':
-                            return '<span class="badge badge-light-warning">Draft</span>' . $posBadge;
-                        case 'temp':
-                            return '<span class="badge badge-light-info">Temp</span>' . $posBadge;
-                        default:
-                            return '<span class="badge badge-light-secondary">' . ucfirst($item->status ?? 'Unknown') . '</span>' . $posBadge;
-                    }
+                    $labels = [
+                        'posting'  => ['Completed', 'is-posting'],
+                        'complete' => ['Complete', 'is-complete'],
+                        'draft'    => ['Draft', 'is-draft'],
+                        'temp'     => ['Temp', 'is-temp'],
+                    ];
+                    [$label, $class] = $labels[$item->status] ?? [ucfirst($item->status ?? 'Unknown'), 'is-muted'];
+                    $quantity        = number_format($item->quantity ?? 0, 0, ',', '.');
+
+                    return '<div class="production-status-cell">
+                                <span class="production-status ' . $class . '">' . $label . '</span>
+                                <span class="production-qty">Qty: ' . $quantity . '</span>
+                                ' . $posBadge . '
+                            </div>';
                 })
                 ->addColumn('action', function ($row) {
                     $editUrl   = route('production.edit', $row->id);

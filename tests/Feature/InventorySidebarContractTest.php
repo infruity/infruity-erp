@@ -65,6 +65,10 @@ final class InventorySidebarContractTest extends TestCase
         $this->assertStringContainsString('<span>Inventaris</span>', $wholesale);
         $this->assertStringNotContainsString('Pembelian', $wholesale);
 
+        $form = file_get_contents(base_path('Modules/Transaction/Resources/views/wholesale/create2.blade.php'));
+        $this->assertStringContainsString("@section('title', 'Pengadaan - Inventaris')", $form);
+        $this->assertStringNotContainsString('<span>Pembelian</span>', $form);
+
         foreach (['index', 'create'] as $view) {
             $source = file_get_contents(base_path("Modules/Transaction/Resources/views/production/{$view}.blade.php"));
             $this->assertStringContainsString("@section('title', 'Produksi')", $source);

@@ -15,10 +15,10 @@
     <script src="{{ asset('assets/plugins/global/plugins.bundle.js') }}"></script>
 @endpush
 
-@section('title', 'Pengadaan - Pembelian')
+@section('title', 'Pengadaan - Inventaris')
 @section('page-title', request()->routeIs('wholesale.edit') ? 'Edit Pengadaan' : (request()->routeIs('wholesale.show', 'wholesale-show') ? 'Detail Pengadaan' : 'Tambah Pengadaan'))
 @section('page-breadcrumb')
-    <span>Pembelian</span><i class="ph ph-caret-right text-[0.55rem]"></i><a href="{{ route('wholesale.index') }}">Pengadaan</a>
+    <span>Inventaris</span><i class="ph ph-caret-right text-[0.55rem]"></i><a href="{{ route('wholesale.index') }}">Pengadaan</a>
 @endsection
 
 @section('content')
