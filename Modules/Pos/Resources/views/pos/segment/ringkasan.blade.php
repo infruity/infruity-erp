@@ -1,4 +1,5 @@
-<div class="accordion mb-3" id="accordionTotal">
+<div class="pos-card pos-card--flush">
+<div class="accordion" id="accordionTotal">
     <div class="accordion-item">
         <h2 class="accordion-header" id="headingTotal">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
@@ -107,7 +108,9 @@
     </div>
 </div>
 
-<div class="mt-4 border-top pt-3">
+</div>
+
+<div class="pos-form-footer"><div class="pos-form-footer__inner">
     <div class="d-flex justify-content-between">
         <div>
             <span>Total</span> <span x-text="totalProduk"></span><span> Item</span>
@@ -117,7 +120,7 @@
             <span x-text="formatRupiah(totalHargaKeseluruhan)"></span>
         </div>
     </div>
-    <div class="row mt-5 gap-2">
+    <div class="row mt-3 gap-2">
         <div class="col" x-data="{ loading: false }">
             <button class="btn btn-primary w-100" @click="loading = true; saveTransaction(() => loading = false)"
                 :disabled="loading">
@@ -145,6 +148,7 @@
         </div>
     </div>
 </div>
+</div><!-- /pos-form-footer -->
 
 <!-- Modal Tambah Alamat -->
 <div class="modal fade" id="modal_tambah_alamat" tabindex="-1" aria-labelledby="modalTambahAlamatLabel"
