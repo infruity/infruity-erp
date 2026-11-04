@@ -877,6 +877,27 @@
             minimumInputLength: 0
         });
 
+        // Searchable pickers replace the select2 look; the selects, their ids and the select2 handlers stay the source of truth.
+        ErpPicker.attach('#product_id', {
+            title: 'Pilih Produk Olahan',
+            subtitle: 'Produk yang akan diproduksi',
+            placeholder: 'Cari nama produk...',
+            placeholderTrigger: 'Pilih produk olahan...',
+            emptyText: 'Produk olahan tidak ditemukan',
+            clearable: true,
+            url: '{{ route('products.get-receipt') }}',
+            map: item => ({ id: item.product_id, text: item.products?.name || 'Unknown Product' })
+        });
+        ErpPicker.attach('#branch_id', {
+            title: 'Pilih Cabang / Dapur',
+            placeholder: 'Cari cabang...',
+            placeholderTrigger: 'Pilih cabang...',
+            emptyText: 'Cabang tidak ditemukan',
+            clearable: true,
+            url: '{{ route('ajax.getBranch') }}',
+            map: item => ({ id: item.id, text: item.name })
+        });
+
         // Set branch_id for editing
         @if(isset($data) && $data->branch_id && isset($data->branch))
             setTimeout(() => {
