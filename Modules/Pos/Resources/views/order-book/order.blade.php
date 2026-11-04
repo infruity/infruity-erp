@@ -2,6 +2,7 @@
 @section('title', 'Proses Pesanan')
 
 @section('content')
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-form.css') }}?v={{ filemtime(public_path('assets/css/pos-form.css')) }}">
     <style>
         /* Animasi flying cart - produk terbang ke keranjang */
         @keyframes flyToCart {

@@ -88,44 +88,7 @@
     </style>
 
 
-    <style>
-        .pos-form { display:flex; flex-direction:column; gap:16px; max-width:896px; margin:0 auto; }
-        .pos-card { overflow:clip; border:1px solid #e5e7eb; border-radius:16px; background:#fff; }
-        .pos-card--flush .accordion-item { border:0; }
-        .pos-card__head { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f3f4f6; padding:14px 20px; }
-        .pos-card__head h2 { margin:0; color:#111827; font-size:14px; font-weight:800; }
-        .pos-card__hint { color:#9ca3af; font-size:11px; }
-        .pos-card__body { padding:16px 20px 20px; }
-        .pos-card__body--list { padding:4px 20px 12px; }
-        .pos-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
-        .pos-fields .is-wide { grid-column:1 / -1; }
-        .pos-form .form-label { margin-bottom:6px; color:#374151; font-size:12px; font-weight:700; }
-        .pos-form .form-control, .pos-form .form-select { min-height:44px; border-radius:12px; font-size:13px; }
-        .pos-customer { display:flex; align-items:stretch; gap:8px; }
-        .pos-customer .select2-container { flex:1; min-width:0; }
-        .pos-customer__add, .pos-add { display:inline-flex; align-items:center; justify-content:center; gap:6px; flex:none; border:0; border-radius:12px; padding:0 14px; background:#ecfdf5; color:#0b595b; font-size:12px; font-weight:700; }
-        .pos-add { min-height:34px; border-radius:999px; }
-        .pos-customer__add:hover, .pos-add:hover { background:#d1fae5; }
-        .pos-cart-row { display:flex; width:100%; flex-direction:column; gap:4px; border:0; border-bottom:1px solid #f1f3f5; background:transparent; padding:12px 8px; text-align:left; }
-        .pos-cart-row:last-child { border-bottom:0; }
-        .pos-cart-row:hover { background:#f9fafb; }
-        .pos-cart-top, .pos-cart-bottom { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-        .pos-cart-name { display:flex; min-width:0; flex-wrap:wrap; align-items:center; gap:6px; }
-        .pos-cart-name strong { color:#111827; font-size:14px; font-weight:700; overflow-wrap:anywhere; }
-        .pos-cart-row:hover .pos-cart-name strong { color:#0b595b; }
-        .pos-cart-tag { border-radius:6px; padding:1px 6px; font-size:10px; font-weight:700; }
-        .pos-cart-tag.is-parcel { background:#fef3c7; color:#92400e; }
-        .pos-cart-tag.is-discount { background:#fee2e2; color:#b91c1c; }
-        .pos-cart-total { flex:none; color:#0b595b; font-size:14px; font-weight:800; font-variant-numeric:tabular-nums; }
-        .pos-cart-bottom { color:#6b7280; font-size:12px; font-variant-numeric:tabular-nums; }
-        .pos-form-footer { position:sticky; bottom:0; z-index:15; margin-top:4px; border-top:1px solid #eef0f3; background:rgba(255,255,255,.98); padding:12px 20px calc(14px + env(safe-area-inset-bottom)); }
-        .pos-form-footer__inner { max-width:896px; margin:0 auto; }
-        .pos-form-footer .btn { min-height:44px; border-radius:12px; font-size:13px; font-weight:700; }
-        @media (max-width:640px) {
-            .pos-fields { grid-template-columns:minmax(0,1fr); gap:14px; }
-            .pos-card__head, .pos-card__body { padding-right:16px; padding-left:16px; }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-form.css') }}?v={{ filemtime(public_path('assets/css/pos-form.css')) }}">
     <!--begin::Aside column-->
     <div class="w-100 flex-lg-row-auto" x-data="posApp()" x-init="init()">
         <div class="pos-form">

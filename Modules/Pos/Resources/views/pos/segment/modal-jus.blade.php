@@ -1,10 +1,10 @@
 {{-- Modal Add Product --}}
 <div class="modal fade" id="jusModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true" x-show="showJusModal"
     style="display: none;">
-    <div class="modal-dialog erp-sheet-dialog modal-fullscreen-sm-down">
+    <div class="modal-dialog erp-sheet-dialog pos-sheet modal-fullscreen-sm-down">
         <div class="modal-content" x-data>
-            <div class="erp-sheet-header" style="background-color: #ff000d; color: #fff;">
-                <h5 class="modal-title" style="color: #fff">Tambah Jus</h5>
+            <div class="erp-sheet-header pos-sheet-header">
+                <h5 class="modal-title">Tambah Jus</h5>
                 <button type="button" class="btn-close" @click="closeJusModal()"></button>
             </div>
             <div class="erp-sheet-body">
@@ -64,10 +64,10 @@
 {{-- Modal Edit Jus --}}
 <div class="modal fade" id="editJusModal" tabindex="-1" aria-labelledby="editJusModalLabel" aria-hidden="true" x-show="editJusModal"
     style="display: none;">
-    <div class="modal-dialog erp-sheet-dialog modal-fullscreen-sm-down">
+    <div class="modal-dialog erp-sheet-dialog pos-sheet modal-fullscreen-sm-down">
         <div class="modal-content" x-data>
-            <div class="erp-sheet-header" style="background-color: #ff000d; color: #fff;">
-                <h5 class="modal-title" style="color: #fff">Edit Jus</h5>
+            <div class="erp-sheet-header pos-sheet-header">
+                <h5 class="modal-title">Edit Jus</h5>
                 <button type="button" class="btn-close" @click="closeEditJusModal()"></button>
             </div>
             <div class="erp-sheet-body">

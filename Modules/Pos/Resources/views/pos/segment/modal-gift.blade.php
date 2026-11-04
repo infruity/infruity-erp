@@ -1,10 +1,10 @@
 {{-- Modal Add Gift --}}
 <div class="modal fade" id="giftModal" tabindex="-1" aria-labelledby="giftModalLabel" aria-hidden="true"
     x-show="showGiftModal" style="display: none;">
-    <div class="modal-dialog erp-sheet-dialog modal-fullscreen-sm-down">
+    <div class="modal-dialog erp-sheet-dialog pos-sheet modal-fullscreen-sm-down">
         <div class="modal-content" x-data>
-            <div class="erp-sheet-header" style="background-color: #ff000d; color: #fff;">
-                <h5 class="modal-title" style="color: #fff">Tambah Hadiah</h5>
+            <div class="erp-sheet-header pos-sheet-header">
+                <h5 class="modal-title">Tambah Hadiah</h5>
                 <button type="button" class="btn-close" @click="closeGiftModal()"></button>
             </div>
             <div class="erp-sheet-body">

@@ -2,6 +2,7 @@
 @section('title', 'Pesanan')
 
 @section('content')
+    <link rel="stylesheet" href="{{ asset('assets/css/pos-form.css') }}?v={{ filemtime(public_path('assets/css/pos-form.css')) }}">
     <div class="w-100 flex-lg-row-auto" x-data="posApp()" x-init="init()">
         <div class="erp-editor"><div class="erp-editor-main"><section class="erp-editor-section"><header><i class="ph ph-note-pencil" aria-hidden="true"></i><h2>Informasi pesanan</h2></header><div class="erp-editor-body">
             <div class="d-flex flex-column gap-10 mb-3">

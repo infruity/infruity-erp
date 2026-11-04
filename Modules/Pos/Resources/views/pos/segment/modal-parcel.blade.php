@@ -1,10 +1,10 @@
 {{-- Modal Add Parcel --}}
 <div class="modal fade" id="parcelModal" tabindex="-1" aria-labelledby="parcelModalLabel" aria-hidden="true"
     x-show="showParcelModal" style="display: none;" x-data="parcelForm()" x-init="initSelect2">
-    <div class="modal-dialog erp-sheet-dialog modal-fullscreen-sm-down">
+    <div class="modal-dialog erp-sheet-dialog pos-sheet modal-fullscreen-sm-down">
         <div class="modal-content" x-data>
-            <div class="erp-sheet-header" style="background-color: #ff000d; color: #fff;">
-                <h5 class="modal-title" style="color: #fff">Tambah Parcel</h5>
+            <div class="erp-sheet-header pos-sheet-header">
+                <h5 class="modal-title">Tambah Parcel</h5>
                 <button type="button" class="btn-close" @click="closeParcelModal()"></button>
             </div>
             <div class="erp-sheet-body">
@@ -39,11 +39,10 @@
                     <input type="text" class="form-control format-number" id="parcel_jasa" name="parcel_jasa"
                         inputmode="numeric" @input="updateTotal" placeholder="Masukkan Biaya jasa">
                 </div>
-                <hr>
-
+                <div class="pos-sheet-section">Isi Parcel</div>
                 <div>
                     <template x-for="(item, index) in parcels" :key="index">
-                        <div class="border rounded p-3 mb-3">
+                        <div class="pos-sheet-row">
                             <div class="row">
                                 <div class="col-9 mb-3">
                                     <label class="form-label">Produk</label>
@@ -67,18 +66,18 @@
                         </div>
                     </template>
 
-                    <button type="button" class="btn btn-primary mt-2" @click="addParcel()">+ Tambah Produk</button>
+                    <button type="button" class="btn btn-light-primary mt-2" @click="addParcel()"><i class="ph-bold ph-plus me-1" aria-hidden="true"></i>Tambah Produk</button>
 
                     <template x-if="parcels.length > 0">
-                        <div>
-                            <hr>
-                            <h5>Total Keseluruhan: <span x-text="formatRupiah(totalAll)"></span></h5>
+                        <div class="pos-sheet-total">
+                            <span>Total Keseluruhan</span>
+                            <strong x-text="formatRupiah(totalAll)"></strong>
                         </div>
                     </template>
                 </div>
             </div>
             <div class="erp-sheet-footer">
-                <button class="btn btn-secondary" @click="closeParcelModal()">Tutup</button>
+                <button type="button" class="btn btn-light" @click="closeParcelModal()">Tutup</button>
                 <button class="btn btn-primary" @click="saveParcelToCart()">Simpan</button>
             </div>
         </div>
@@ -88,10 +87,10 @@
 {{-- Modal Edit Parcel --}}
 <div class="modal fade" id="parcelEditModal" tabindex="-1" aria-labelledby="parcelModalLabel" aria-hidden="true"
     x-show="showParcelModal" style="display: none;" x-data="parcelForm()">
-    <div class="modal-dialog erp-sheet-dialog modal-fullscreen-sm-down">
+    <div class="modal-dialog erp-sheet-dialog pos-sheet modal-fullscreen-sm-down">
         <div class="modal-content">
-            <div class="erp-sheet-header" style="background-color: #ff000d; color: #fff;">
-                <h5 class="modal-title" style="color: #fff">Edit Parcel</h5>
+            <div class="erp-sheet-header pos-sheet-header">
+                <h5 class="modal-title">Edit Parcel</h5>
                 <button type="button" class="btn-close" @click="closeParcelModal()"></button>
             </div>
             <div class="erp-sheet-body">
@@ -126,11 +125,10 @@
                     <input type="text" class="form-control format-number" id="parcel_edit_jasa"
                         name="parcel_jasa" @input="updateTotal" placeholder="Masukkan Biaya jasa">
                 </div>
-                <hr>
-
+                <div class="pos-sheet-section">Isi Parcel</div>
                 <div>
                     <template x-for="(item, index) in parcels" :key="index">
-                        <div class="border rounded p-3 mb-3">
+                        <div class="pos-sheet-row">
                             <div class="row">
                                 <div class="col-9 mb-3">
                                     <label class="form-label">Produk</label>
@@ -154,12 +152,12 @@
                         </div>
                     </template>
 
-                    <button type="button" class="btn btn-primary mt-2" @click="addParcel()">+ Tambah Produk</button>
+                    <button type="button" class="btn btn-light-primary mt-2" @click="addParcel()"><i class="ph-bold ph-plus me-1" aria-hidden="true"></i>Tambah Produk</button>
 
                     <template x-if="parcels.length > 0">
-                        <div>
-                            <hr>
-                            <h5>Total Keseluruhan: <span x-text="formatRupiah(totalAll)"></span></h5>
+                        <div class="pos-sheet-total">
+                            <span>Total Keseluruhan</span>
+                            <strong x-text="formatRupiah(totalAll)"></strong>
                         </div>
                     </template>
                 </div>
