@@ -137,3 +137,21 @@ test('Stok Opname form uses pickers for branch and product and keeps the select2
     assert.match(view, /unit_price:/);
     assert.match(view, /branch_id:\s*\$\('#branch_id'\)\.val\(\)/);
 });
+
+test('POS Buah, Hadiah and Jus sheets use one list-product picker and keep the stock rules and handlers', () => {
+    const js = read('Modules/Pos/Resources/views/pos/js/js-buah.blade.php');
+
+    assert.equal((js.match(/this\.attachListProductPicker\(\{/g) || []).length, 3);
+    for (const id of ['#select_product', '#select_gift', '#select_jus']) {
+        assert.match(js, new RegExp(`selector: '${id}'`), `${id} must use the picker`);
+        // The select2 handler that writes addProduct stays in place.
+        assert.ok(js.includes(`$('${id}').select2(`), `${id} select2 must stay`);
+    }
+    // Same data contract the select2 results had: stock in cart, original stock, parent id, stock map.
+    for (const token of ['window.productStockMap', 'calculateUsedStock', 'stock_available', 'original_stock', 'parent_id', 'receipt: item.product_receipt', "url: '/ajax/listProduct'", "searchParam: 'term'"]) {
+        assert.ok(js.includes(token), `Missing ${token}`);
+    }
+    assert.match(js, /produksi otomatis/);
+    // Out-of-stock fruit is still stopped by the existing handler, not by hiding it.
+    assert.match(js, /Stok tidak mencukupi/);
+});

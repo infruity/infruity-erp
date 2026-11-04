@@ -892,6 +892,51 @@
                 this.closeEditJusModal();
             },
 
+            // Searchable picker for the sheets that list products from /ajax/listProduct. The select2 above stays the
+            // source of truth: the picker returns the same data object, so the select2:select handlers and the stock rules apply.
+            attachListProductPicker({ selector, title, params, zeroLabel }) {
+                const mapItem = item => {
+                    window.productStockMap = window.productStockMap || {};
+                    window.productStockMap[item.id] = item.parent_product ? item.parent_product.parent_id : item.id;
+                    let qtyInCart = 0;
+                    if (typeof this.calculateUsedStock === 'function') {
+                        qtyInCart = this.calculateUsedStock(item.id);
+                    } else {
+                        const mainApp = window.mainCartInstance || (document.querySelector('[x-data="posApp()"]') ? document.querySelector('[x-data="posApp()"]').__x.$data : null);
+                        if (mainApp && typeof mainApp.calculateUsedStock === 'function') {
+                            qtyInCart = mainApp.calculateUsedStock(item.id);
+                        }
+                    }
+                    const stock_available = (item.get_stock?.stock_available ?? 0) - qtyInCart;
+                    return {
+                        id: item.id,
+                        text: item.name,
+                        meta: stock_available > 0 ? 'Stok: ' + stock_available : zeroLabel,
+                        data: {
+                            id: item.id,
+                            text: item.name,
+                            unit: item.unit,
+                            price: item.price,
+                            hpp: item.hpp,
+                            receipt: item.product_receipt,
+                            stock_available: stock_available,
+                            original_stock: item.get_stock?.stock_available ?? 0,
+                            parent_id: item.parent_product ? item.parent_product.parent_id : item.id
+                        }
+                    };
+                };
+                ErpPicker.attach(selector, {
+                    title: title,
+                    placeholder: 'Cari nama produk...',
+                    placeholderTrigger: 'Pilih produk',
+                    emptyText: 'Produk tidak ditemukan',
+                    url: '/ajax/listProduct',
+                    searchParam: 'term',
+                    params: params,
+                    map: mapItem
+                });
+            },
+
             // Add Product Section
             openAddModal() {
                 this.showAddModal = true;
@@ -985,6 +1030,12 @@
                         subtotal = this.addProduct.qty * this.addProduct.price;
                         // skip formatRupiah undefined, let updateAddTotalFromQty handle it
                         this.updateAddTotalFromQty();
+                    });
+                    this.attachListProductPicker({
+                        selector: '#select_product',
+                        title: 'Pilih Buah',
+                        zeroLabel: 'Stok habis',
+                        params: () => ({ branch: $('#branch_id').val(), status: 'aktif', limit: 10 })
                     });
                 }, 0);
             },
@@ -2002,6 +2053,12 @@
                             .total);
                         this.updateAddTotalFromQty();
                     });
+                    this.attachListProductPicker({
+                        selector: '#select_gift',
+                        title: 'Pilih Hadiah',
+                        zeroLabel: 'Stok habis',
+                        params: () => ({})
+                    });
                 }, 0);
             },
             closeGiftModal() {
@@ -2756,6 +2813,12 @@
                         this.addProduct.receipt = data.receipt;
                         this.updateAddTotalFromQty();
                         this.loadReceipt(data.receipt);
+                    });
+                    this.attachListProductPicker({
+                        selector: '#select_jus',
+                        title: 'Pilih Jus',
+                        zeroLabel: 'Stok 0, produksi otomatis',
+                        params: () => ({ jenis: 'receipt', branch: $('#branch_id').val(), limit: 10 })
                     });
                 }, 0);
             },
