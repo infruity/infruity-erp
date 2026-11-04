@@ -38,7 +38,7 @@
             #production-table tbody td:nth-child(3) { display:none; }
             #production-table tbody td:nth-child(2) { text-align:right; }
             #production-table tbody td:nth-child(4) .btn { display:flex; width:32px; height:32px; align-items:center; justify-content:center; padding:0; border:0; background:transparent; color:#9ca3af; }
-            #production-table tbody td:nth-child(4) .btn::after { display:none; }
+            #production-table tbody td:nth-child(4) .btn::before, #production-table tbody td:nth-child(4) .btn::after { display:none; }
             #production-table_wrapper .dataTables_info, #production-table_wrapper .dataTables_paginate { display:none !important; }
             #production-table td.dataTables_empty { grid-column:1 / -1; }
         }

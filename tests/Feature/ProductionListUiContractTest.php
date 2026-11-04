@@ -93,4 +93,12 @@ final class ProductionListUiContractTest extends TestCase
         // Heading and the add button yield to the dock on small screens.
         $this->assertStringContainsString('.production-workspace .erp-workspace-heading { display:none; }', $view);
     }
+
+    public function test_row_action_button_hides_both_dropdown_carets(): void
+    {
+        // .dropstart draws its caret with ::before and .dropdown-toggle with ::after.
+        $view = $this->listView();
+
+        $this->assertStringContainsString('.btn::before, #production-table tbody td:nth-child(4) .btn::after { display:none; }', $view);
+    }
 }
