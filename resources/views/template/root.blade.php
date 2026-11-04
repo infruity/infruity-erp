@@ -71,7 +71,7 @@
 <!--end::Head-->
 <!--begin::Body-->
 
-<body id="kt_body" class="aside-enabled erp-ui erp-legacy {{ request()->routeIs('reports.hub', 'report-*', 'product-stock*', 'pos.payment', 'sortir.create', 'sortir.edit', 'sortir.show', 'transfer-pengirim.create', 'transfer-pengirim.edit', 'transfer-pengirim.show', 'transfer-penerima.show', 'wholesale.create', 'wholesale.edit', 'wholesale.show') ? 'erp-hide-dock' : '' }}">
+<body id="kt_body" class="aside-enabled erp-ui erp-legacy {{ request()->routeIs('reports.hub', 'report-*', 'product-stock*', 'pos.payment', 'sortir.create', 'sortir.edit', 'sortir.show', 'transfer-pengirim.create', 'transfer-pengirim.edit', 'transfer-pengirim.show', 'transfer-penerima.show', 'wholesale.create', 'wholesale.edit', 'wholesale.show', 'production.create', 'production.edit') ? 'erp-hide-dock' : '' }}">
     <!--begin::Theme mode setup on page load-->
     <script>
         var defaultThemeMode = "light";

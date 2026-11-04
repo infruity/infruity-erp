@@ -108,49 +108,65 @@
         }
     </style>
 
+    <style>
+        .production-form { display:flex; flex-direction:column; gap:16px; max-width:896px; margin:0 auto; }
+        .production-card { overflow:clip; border:1px solid #e5e7eb; border-radius:16px; background:#fff; }
+        .production-card__head { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f3f4f6; padding:16px 20px; }
+        .production-card__title { display:flex; align-items:center; gap:10px; min-width:0; }
+        .production-card__step { display:flex; width:28px; height:28px; flex:none; align-items:center; justify-content:center; border-radius:9px; background:#ecfdf5; color:#0b595b; font-size:13px; font-weight:700; }
+        .production-card__title h2 { margin:0; color:#111827; font-size:14px; font-weight:800; }
+        .production-card__title small { color:#9ca3af; font-size:12px; font-weight:700; }
+        .production-card__hint { color:#9ca3af; font-size:11px; font-weight:500; }
+        .production-card__body { padding:16px 20px 20px; }
+        .production-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+        .production-fields .is-wide { grid-column:1 / -1; }
+        .production-form .form-label { margin-bottom:6px; color:#374151; font-size:12px; font-weight:700; }
+        .production-form .form-control, .production-form .form-select { min-height:44px; border-radius:12px; font-size:13px; }
+        .production-add { display:inline-flex; align-items:center; gap:6px; border:0; border-radius:999px; padding:7px 14px; background:#ecfdf5; color:#0b595b; font-size:12px; font-weight:700; }
+        .production-add:hover { background:#d1fae5; }
+        .production-form-footer { position:sticky; bottom:0; z-index:15; margin-top:4px; border-top:1px solid #eef0f3; background:rgba(255,255,255,.97); padding:12px 20px calc(14px + env(safe-area-inset-bottom)); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+        .production-form-footer__inner { max-width:896px; margin:0 auto; }
+        .production-total { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f3f4f6; padding-bottom:12px; }
+        .production-total__label { display:flex; align-items:center; gap:8px; color:#111827; font-size:14px; font-weight:800; }
+        .production-total__count { border-radius:999px; background:#d1fae5; padding:2px 9px; color:#065f46; font-size:12px; font-weight:800; }
+        .production-total__value { text-align:right; }
+        .production-total__value strong { display:block; color:#0b595b; font-size:17px; font-weight:800; }
+        .production-total__value span { color:#9ca3af; font-size:11px; }
+        .production-actions { display:flex; gap:12px; padding-top:12px; }
+        .production-actions .btn { flex:1; min-height:44px; border-radius:12px; font-size:13px; font-weight:700; }
+        @media (max-width:640px) {
+            .production-fields { grid-template-columns:minmax(0,1fr); gap:14px; }
+            .production-card__head, .production-card__body { padding-right:16px; padding-left:16px; }
+        }
+    </style>
+
     <!--begin::Main column-->
     <div class="w-100 flex-lg-row-auto" x-data="productionApp()" x-init="init()">
-        <!-- Header Information Card -->
-        <div class="erp-editor erp-operations-editor"><div class="erp-editor-main"><section class="erp-editor-section"><header><i class="ph ph-factory" aria-hidden="true"></i><h2>Informasi produksi</h2></header><div class="erp-editor-body">
-            <div class="d-flex flex-column gap-10 mb-3">
-                <!--begin::Input group-->
-                <div class="row">
-                    <div class="col-6">
+        <div class="production-form">
+            <!-- Kartu 1: informasi hasil produksi -->
+            <section class="production-card" aria-labelledby="production-info-title">
+                <div class="production-card__head">
+                    <div class="production-card__title">
+                        <span class="production-card__step" aria-hidden="true">1</span>
+                        <h2 id="production-info-title">Informasi Hasil Produksi</h2>
+                    </div>
+                    <span class="production-card__hint">* Wajib diisi</span>
+                </div>
+                <div class="production-card__body">
+                    <div class="production-fields">
                         <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Pilih Cabang</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
+                            <label class="required form-label" for="branch_id">Cabang / Dapur</label>
                             <select class="form-select" id="branch_id" name="branch_id">
                                 <option value="">Pilih Branch</option>
                             </select>
-                            <!--end::Editor-->
                         </div>
-                    </div>
-                    <div class="col-6">
                         <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Tanggal Produksi</label>
-                            <!--end::Label-->
-                            <!--begin::Input-->
-                            <input type="date" class="form-control" name="production_date"
+                            <label class="required form-label" for="production_date">Tanggal Produksi</label>
+                            <input type="date" class="form-control" id="production_date" name="production_date"
                                 value="{{ old('production_date') ?? date('Y-m-d') }}">
-                            <!--end::Input-->
                         </div>
-                    </div>
-                </div>
-                <!--end::Input group-->
-            </div>
-
-            <div class="d-flex flex-column gap-10 mb-3">
-                <!--begin::Input group-->
-                <div class="row">
-                    <div class="col-6">
                         <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Pilih Produk</label>
-                            <!--end::Label-->
-                            <!--begin::Select-->
+                            <label class="required form-label" for="product_id">Produk yang Diproduksi</label>
                             <select name="product_id" id="product_id" class="form-select">
                                 @if (isset($edit_product_id) && isset($edit_product_name))
                                     <option value="{{ $edit_product_id }}" selected>{{ $edit_product_name }}</option>
@@ -160,105 +176,58 @@
                                     <option value="">Pilih Produk</option>
                                 @endif
                             </select>
-                            <!--end::Select-->
                         </div>
-                    </div>
-                    <div class="col-6">
                         <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="form-label">Harga Jual</label>
-                            <!--end::Label-->
-                            <!--begin::Select-->
+                            <label class="required form-label" for="quantity">Jumlah Produksi</label>
+                            <input type="number" inputmode="decimal" name="quantity" id="quantity" class="form-control"
+                                placeholder="Masukkan Jumlah" step="0.01" x-model="productionQuantity"
+                                value="{{ isset($data) ? $data->quantity : '' }}" />
+                        </div>
+                        <div class="fv-row">
+                            <label class="form-label" for="sell_price">Harga Jual</label>
                             <input type="text" inputmode="numeric" name="sell_price" id="sell_price" class="form-control format-number"
-                                placeholder="Masukkan Jumlah" x-model="sellPrice"
+                                placeholder="Masukkan Harga Jual" x-model="sellPrice"
                                 value="{{ isset($edit_sell_price) ? number_format($edit_sell_price, 0, ',', '.') : '' }}" />
                             <input type="hidden" name="production_number" id="production_number" class="form-control"
                                 value="{{ $production_number }}">
                             <input type="hidden" name="id" id="production_id" class="form-control"
                                 value="{{ isset($id) ? $id : '' }}">
-                            <!--end::Select-->
                         </div>
-                    </div>
-                    {{-- <div class="col-3 mt-8">
-                        <button type="button" @click="refreshProduct()"
-                            class="btn btn-outline btn-outline-dashed btn-outline-primary btn-active-light-primary">
-                            <i class="fa-solid fa-refresh"></i>
-                        </button>
-                    </div> --}}
-                </div>
-                <!--end::Input group-->
-            </div>
-
-            <div class="d-flex flex-column gap-10 mb-3">
-                <!--begin::Input group-->
-                <div class="row">
-                    <div class="col-6">
                         <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Jumlah Produksi</label>
-                            <!--end::Label-->
-                            <!--begin::Input-->
-                            <input type="number" inputmode="decimal" name="quantity" id="quantity" class="form-control"
-                                placeholder="Masukkan Jumlah" step="0.01" x-model="productionQuantity"
-                                value="{{ isset($data) ? $data->quantity : '' }}" />
-                            <!--end::Input-->
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="form-label">Biaya Jasa Produksi per Unit</label>
-                            <!--end::Label-->
-                            <!--begin::Input-->
+                            <label class="form-label" for="service_cost">Biaya Jasa Produksi per Unit</label>
                             <input type="text" inputmode="numeric" name="service_cost" id="service_cost" class="form-control format-number"
                                 placeholder="Masukkan Biaya Jasa" x-model="serviceCost"
                                 value="{{ isset($edit_service_cost) ? number_format($edit_service_cost, 0, ',', '.') : '' }}" />
-                            <!--end::Input-->
+                        </div>
+                        <div class="fv-row is-wide">
+                            <label class="form-label" for="production_notes">Catatan Produksi (Opsional)</label>
+                            <input type="text" class="form-control" id="production_notes" name="notes"
+                                placeholder="Contoh: Batch pagi, untuk display etalase" x-model="notes">
                         </div>
                     </div>
                 </div>
-                <!--end::Input group-->
-            </div>
-        </div></section><section class="erp-editor-section"><header><i class="ph ph-package" aria-hidden="true"></i><h2>Bahan produksi</h2></header><div class="erp-editor-body">
-            <div class="mb-4 d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="fs-5 fw-bold d-flex">Bahan Baku yang Digunakan</span>
-                    <span class="text-danger">Diperbarui per {{ date('d/m/Y') }}</span>
-                    <small class="text-muted d-block mt-1">
-                        <i class="ki-duotone ki-information-5 fs-7 text-info me-1">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                            <span class="path3"></span>
-                        </i>
-                        Klik pada bahan untuk edit jumlah
-                    </small>
-                </div>
-                <div>
-                    <button type="button" class="btn btn-outline btn-outline-dashed btn-outline-primary"
-                        @click="openAddIngredientModal()" aria-label="Tambah bahan produksi">
-                        <i class="fa fa-plus"></i>
-                    </button>
-                </div>
-                {{-- <div class="btn-group">
-                    <button type="button" class="btn btn-outline btn-outline-dashed btn-outline-primary dropdown-toggle"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa fa-plus"></i>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <button class="dropdown-item" type="button" @click="openAddIngredientModal()" aria-label="Tambah bahan produksi">
-                                <i class="ki-duotone ki-purchase text-success me-2 fs-5"></i> Tambah Bahan
-                            </button>
-                        </li>
-                    </ul>
-                </div> --}}
-            </div>
+            </section>
 
-            <!-- Ingredients Cart -->
-            @include('transaction::production.segment.ingredients-cart')
-        </div></section></div><aside class="erp-editor-summary"><h2>Ringkasan produksi</h2>
+            <!-- Kartu 2: bahan baku terpakai -->
+            <section class="production-card" aria-labelledby="production-ingredients-title">
+                <div class="production-card__head">
+                    <div class="production-card__title">
+                        <span class="production-card__step" aria-hidden="true">2</span>
+                        <h2 id="production-ingredients-title">Bahan Baku Terpakai <small x-text="'(' + ingredients.length + ' item)'"></small></h2>
+                    </div>
+                    <button type="button" class="production-add" @click="openAddIngredientModal()" aria-label="Tambah bahan produksi">
+                        <i class="ph-bold ph-plus" aria-hidden="true"></i><span>Tambah Bahan</span>
+                    </button>
+                </div>
+                <div class="production-card__body">
+                    <small class="text-muted d-block mb-3">Diperbarui per {{ date('d/m/Y') }} · ketuk bahan untuk mengubah jumlah.</small>
+                    @include('transaction::production.segment.ingredients-cart')
+                </div>
+            </section>
+
+            <!-- Footer: total biaya dan aksi simpan -->
             @include('transaction::production.segment.summary')
-        </aside></div>
+        </div>
 
         <!-- Modals -->
         @include('transaction::production.segment.modal-ingredient')
