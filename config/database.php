@@ -62,7 +62,9 @@ return [
             // supported form and exists since PHP 8.4 (the minimum for this app).
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Pdo\Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-                Pdo\Mysql::ATTR_INIT_COMMAND => 'SET SESSION cte_max_recursion_depth = ' . max(1000, (int) env('DB_CTE_MAX_RECURSION_DEPTH', 10000)),
+                // product_hpp recurses once per ledger row of a product, so the depth
+                // must exceed the longest product history (it grows every day).
+                Pdo\Mysql::ATTR_INIT_COMMAND => 'SET SESSION cte_max_recursion_depth = ' . max(1000, (int) env('DB_CTE_MAX_RECURSION_DEPTH', 1000000)),
             ]) : [],
         ],
 

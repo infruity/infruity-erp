@@ -12,6 +12,8 @@
 --     stok keluar are losses, bahan produksi moves into the finished product.
 --   * At saldo 0 the HPP keeps its last value. It is never negative or NULL.
 --   * Same timestamp: pengadaan first, then other inflows, opname, outflows.
+--     Remaining ties are broken by transaction, variant and qty, so the
+--     order never changes between queries.
 --
 -- Note: no semicolons inside this file except the final one, the migrations
 -- split the file on them.
@@ -43,13 +45,15 @@ WITH RECURSIVE ledger AS (
             ELSE b.url
         END AS trx_type,
         b.url AS source_url,
-        b.reff AS source_reff
+        b.reff AS source_reff,
+        b.product_id AS source_product_id
     FROM transaction_stock_base b
     LEFT JOIN product_child pc ON pc.product_id = b.product_id
     LEFT JOIN production pr
         ON b.url = 'production' AND b.reff = 'produksi' AND pr.id = b.id
     LEFT JOIN products pp ON pp.id = pr.product_id
-    WHERE b.product_id IS NOT NULL
+    -- App\Support\LedgerSql puts a product filter at the marker below.
+    WHERE /*:ledger_filter*/ b.product_id IS NOT NULL
         AND b.product_id <> 0
         AND b.quantity <> 0
 ),
@@ -69,7 +73,11 @@ ordered AS (
                 END,
                 l.trx_id,
                 l.source_url,
-                l.source_reff
+                l.source_reff,
+                -- Variants of one note share all keys above, so finish on the
+                -- variant and qty to keep the order the same on every query.
+                l.source_product_id,
+                l.qty_signed
         ) AS rn
     FROM ledger l
 ),

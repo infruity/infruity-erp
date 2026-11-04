@@ -9,6 +9,8 @@ WITH parent_ts AS (
     -- functions (they sort the whole ledger and are not needed for a SUM).
     FROM transaction_stock_show_base ts
     LEFT JOIN product_child pc_ts ON pc_ts.product_id = ts.product_id
+    -- App\Support\LedgerSql puts product filters at the /*:...*/ markers.
+    /*:parent_filter*/
     GROUP BY
         ts.branch_id,
         ts.product_id
@@ -29,6 +31,7 @@ child_agg AS (
         ON ts.product_id = pc.product_id
     JOIN products p
         ON p.id = pc.product_id
+    /*:child_filter*/
     GROUP BY
         pc.parent_id,
         ts.branch_id
@@ -82,6 +85,6 @@ LEFT JOIN child_agg
    AND child_agg.branch_id = parent_ts.branch_id
 LEFT JOIN product_units C
     ON C.id = A.product_unit
-WHERE A.tipe != 'parcel';
+WHERE A.tipe != 'parcel' /*:product_filter*/;
 -- AND A.is_variant IS NULL
 -- AND LOWER(A.name) NOT LIKE '%jus%';

@@ -3,14 +3,13 @@
 namespace App\Support;
 
 use Modules\Transaction\Entities\ProductHppRunning;
-use Modules\Transaction\Entities\ProductStock;
 
 /**
- * Batch lookups for the product_stock and product_hpp views.
+ * Batch lookups for the product_stock and product_hpp ledgers.
  *
- * Both views rebuild the whole stock ledger on every query, so asking for
- * ten products costs the same as asking for one. Fetch all products of a
- * transaction in one call instead of querying inside item loops.
+ * Reads go through LedgerSql, which computes only the asked products. Still
+ * fetch all products of a transaction in one call instead of querying inside
+ * item loops.
  */
 class InventorySnapshot
 {
@@ -31,8 +30,7 @@ class InventorySnapshot
         $stock = array_fill_keys($ids, 0.0);
         $seen = [];
 
-        $rows = ProductStock::query()
-            ->whereIn('id', $ids)
+        $rows = LedgerSql::stock($ids)
             ->where('branch_id', $branchId)
             ->get(['id', 'stock_available']);
 
@@ -62,8 +60,7 @@ class InventorySnapshot
 
         $latest = array_fill_keys($ids, null);
 
-        $rows = ProductHppRunning::query()
-            ->whereIn('product_id', $ids)
+        $rows = LedgerSql::hpp($ids)
             ->orderBy('seq', 'desc')
             ->get();
 
