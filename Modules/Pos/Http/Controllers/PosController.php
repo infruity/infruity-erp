@@ -25,7 +25,6 @@ use Modules\Pos\Entities\Payment;
 use Modules\Pos\Entities\PosDetailModel;
 use Modules\Pos\Entities\PosModel;
 use Modules\Pos\Entities\SettingNota;
-use Modules\Transaction\Entities\ProductHppRunning;
 use Modules\Transaction\Entities\Production;
 use Modules\Transaction\Entities\ProductionDetail;
 use Modules\Transaction\Entities\ProductionParcelDetail;
@@ -911,9 +910,9 @@ class PosController extends Controller
                 ? ($data['subtotal'] * ($globalDiscountInput / 100))
                 : $globalDiscountInput;
 
-            // HPP of every involved product in one query (product_hpp rebuilds the whole
-            // ledger per call). Once this request writes rows into a product's HPP
-            // history, that product is read directly again so results stay identical.
+            // HPP of every involved product in one query. Once this request writes rows
+            // into a product's HPP history, that product is read again so results stay
+            // identical.
             $hppSnapshot    = InventorySnapshot::latestHpp($allProductIdsToLock);
             $hppTouched     = [];
             $hppDirectOnly  = false;
@@ -922,9 +921,7 @@ class PosController extends Controller
             };
             $hppOf = function (int $productId) use (&$hppSnapshot, $hppIsStale) {
                 if ($hppIsStale($productId)) {
-                    return ProductHppRunning::where('product_id', $productId)
-                        ->orderBy('seq', 'desc')
-                        ->first();
+                    return InventorySnapshot::latestHpp([$productId])[$productId] ?? null;
                 }
 
                 return $hppSnapshot[$productId];
@@ -975,7 +972,7 @@ class PosController extends Controller
 
             $movingHpp = static function (int $productId) use (&$hppSnapshot, $hppIsStale): float {
                 $current = $hppIsStale($productId)
-                    ? ProductHppRunning::where('product_id', $productId)->orderByDesc('seq')->value('hpp_berjalan')
+                    ? (InventorySnapshot::latestHpp([$productId])[$productId] ?? null)?->hpp_berjalan
                     : $hppSnapshot[$productId]?->hpp_berjalan;
                 return (float) ($current ?? Product::whereKey($productId)->value('hpp') ?? 0);
             };

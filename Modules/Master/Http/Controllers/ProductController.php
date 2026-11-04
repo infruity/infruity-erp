@@ -18,7 +18,7 @@ use Modules\Master\Entities\ProductChild;
 use Modules\Master\Entities\ProductUnit;
 use Modules\Master\Entities\UserBranch;
 use Modules\Master\Support\ProductIcon;
-use Modules\Transaction\Entities\ProductHppRunning;
+use App\Support\LedgerSql;
 use Yajra\DataTables\Facades\DataTables;
 
 class ProductController extends Controller
@@ -337,7 +337,7 @@ class ProductController extends Controller
             'reference' => ['nullable', 'in:all,stock-opname,sortir,pos,production,wholesale,transfer'],
         ]);
 
-        $query = ProductHppRunning::where('product_id', $request->product_id)
+        $query = LedgerSql::hpp([$request->product_id])
             ->orderBy('seq', 'asc');
 
         $startDate = $request->input('start_date');

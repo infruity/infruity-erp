@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Support\LedgerSql;
 use App\Support\ProductHpp;
 use App\Support\ProductionCost;
 use Illuminate\Support\Facades\Artisan;
@@ -174,6 +175,62 @@ class ProductHppLedgerTest extends TestCase
         $this->assertEqualsWithDelta(2500, (float) $salad[0]['hpp_berjalan'], 0.0001);
         $this->assertEqualsWithDelta(5000, (float) $salad[0]['total_aset_berjalan'], 0.0001);
         $this->assertEqualsWithDelta(2500, (float) DB::table('products')->where('id', self::SALAD)->value('hpp'), 0.0001);
+    }
+
+    public function test_variants_of_one_note_keep_a_fixed_order(): void
+    {
+        DB::table('product_child')->insert(['parent_id' => self::APEL, 'product_id' => self::APEL_GRADE_A]);
+
+        $this->pengadaan(1, self::APEL, 10, 1000, '10:00');
+        // One note, same time: the parent and its variant share every other sort key.
+        $this->penjualan(1, self::APEL_GRADE_A, 3, '10:01');
+        DB::table('pos_transaction_detail')->insert([
+            'pos_id' => 1, 'product_id' => self::APEL, 'quantity' => 2, 'price' => 0, 'discount' => 0,
+            'subtotal' => 0, 'exp' => 0, 'exp_value' => 0,
+        ]);
+
+        $rows = $this->ledger(self::APEL);
+        $this->assertEqualsWithDelta([10, 8, 5], array_map(fn ($r) => (float) $r['qty_berjalan'], $rows), 0.0001);
+    }
+
+    public function test_per_product_queries_match_the_views(): void
+    {
+        DB::table('product_child')->insert(['parent_id' => self::APEL, 'product_id' => self::APEL_GRADE_A]);
+        DB::table('products')->whereIn('id', [self::APEL, self::SALAD, self::JERUK, self::APEL_GRADE_A])->update(['tipe' => 'buah']);
+
+        $this->pengadaan(1, self::APEL, 50, 20000, '10:00');
+        $this->pengadaan(2, self::APEL_GRADE_A, 10, 30000, '10:01');
+        $this->penjualan(1, self::APEL_GRADE_A, 4, '10:02');
+        $this->produksi(1, self::SALAD, 1, [self::APEL => 5], '10:03', hppPerUnit: 100000);
+        $this->opname(1, self::APEL, -1, '10:04');
+
+        // More than 20 products: MySQL 8.4 returned wrong rows for bound ids here.
+        $ids = [self::APEL, self::SALAD, self::JERUK, self::APEL_GRADE_A];
+        for ($i = 0; $i < 24; $i++) {
+            $id = 9100 + $i;
+            $ids[] = $id;
+            DB::table('products')->insert(['id' => $id, 'name' => 'Buah ' . $i, 'hpp' => 0, 'tipe' => 'buah']);
+            $this->pengadaan(100 + $i, $id, 10 + $i, 1000 + $i, '11:00');
+            $this->penjualan(100 + $i, $id, 1 + $i % 5, '11:01');
+        }
+
+        $normalize = fn ($rows) => array_map(fn ($row) => array_map(
+            fn ($v) => is_numeric($v) ? round((float) $v, 6) : $v, (array) $row
+        ), $rows);
+
+        $view = DB::table('product_hpp')->whereIn('product_id', $ids)->orderBy('product_id')->orderBy('seq')->get()->all();
+        $ledger = LedgerSql::hpp($ids)->orderBy('product_id')->orderBy('seq')->get()->map->getAttributes()->all();
+        $this->assertGreaterThan(50, count($view));
+        $this->assertSame($normalize($view), $normalize($ledger));
+
+        $single = LedgerSql::hpp([self::APEL])->orderBy('seq')->get()->map->getAttributes()->all();
+        $this->assertSame($normalize($this->ledger(self::APEL)), $normalize($single));
+
+        $columns = ['id', 'branch_id', 'parent_stock', 'child_consumed', 'stock_available', 'avg_hpp', 'child', 'stock_status'];
+        $stockView = DB::table('product_stock')->whereIn('id', $ids)->orderBy('id')->orderBy('branch_id')->get($columns)->all();
+        $stockLedger = LedgerSql::stock($ids)->orderBy('id')->orderBy('branch_id')->get($columns)->map->getAttributes()->all();
+        $this->assertNotEmpty($stockView);
+        $this->assertSame($normalize($stockView), $normalize($stockLedger));
     }
 
     private function ledger(int $productId): array
