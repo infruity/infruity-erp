@@ -1372,6 +1372,10 @@
                 .removeClass('is-surplus is-loss is-match').addClass(tone);
             $sheet.find('[data-so-field="hpp"]').text(`HPP Rp ${formatRupiah(Math.round(Math.abs(info.hpp)))}/${info.unit}`);
             $sheet.find('[data-so-action="finalize"]').toggleClass('d-none', !info.isPending);
+            // update / adjust / destroy answer 422 for a finished record, so only pending ones offer them.
+            $sheet.find('.so-detail__adjust').toggleClass('d-none', !info.isPending);
+            $sheet.find('[data-so-action="edit"]').toggleClass('d-none', !info.isPending);
+            $sheet.find('[data-so-action="delete"]').toggleClass('d-none', !info.isPending);
             $sheet.find('[data-so-count="history"]').text(info.historyCount > 0 ? info.historyCount : '').toggleClass('d-none', info.historyCount === 0);
             $sheet.find('[data-so-count="discussion"]').text(info.discussionsCount > 0 ? info.discussionsCount : '').toggleClass('d-none', info.discussionsCount === 0);
             bootstrap.Modal.getOrCreateInstance($sheet[0]).show();

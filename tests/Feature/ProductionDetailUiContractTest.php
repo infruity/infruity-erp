@@ -36,6 +36,12 @@ final class ProductionDetailUiContractTest extends TestCase
         }
     }
 
+    public function test_legacy_complete_status_reads_as_finished(): void
+    {
+        // Older rows (and POS-generated runs) carry status "complete"; the controller already treats it like "posting".
+        $this->assertStringContainsString("in_array(\$data->status, ['posting', 'complete'], true)", $this->show());
+    }
+
     public function test_cost_comes_from_the_server_values_and_frozen_hpp_is_explained(): void
     {
         $show = $this->show();

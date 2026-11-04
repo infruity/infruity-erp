@@ -44,6 +44,16 @@ final class StockOpnameListUiContractTest extends TestCase
         }
     }
 
+    public function test_detail_sheet_hides_edit_adjust_and_delete_once_the_record_is_finished(): void
+    {
+        $source = $this->source();
+
+        // update / adjust / destroy all answer 422 for a finished record, so the sheet must not offer them.
+        $this->assertStringContainsString("find('.so-detail__adjust').toggleClass('d-none', !info.isPending)", $source);
+        $this->assertStringContainsString("find('[data-so-action=\"edit\"]').toggleClass('d-none', !info.isPending)", $source);
+        $this->assertStringContainsString("find('[data-so-action=\"delete\"]').toggleClass('d-none', !info.isPending)", $source);
+    }
+
     public function test_server_endpoints_and_filters_are_unchanged(): void
     {
         $source = $this->source();
