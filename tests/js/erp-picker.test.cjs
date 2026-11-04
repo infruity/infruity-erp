@@ -155,3 +155,11 @@ test('POS Buah, Hadiah and Jus sheets use one list-product picker and keep the s
     // Out-of-stock fruit is still stopped by the existing handler, not by hiding it.
     assert.match(js, /Stok tidak mencukupi/);
 });
+
+test('trigger can show a Pilih/Ganti action label next to the caret', () => {
+    const js = fs.readFileSync(asset, 'utf8');
+
+    assert.match(js, /actionLabels/);
+    assert.match(js, /erp-picker__action/);
+    assert.match(read('public/assets/css/erp-picker.css'), /\.erp-picker__action/);
+});

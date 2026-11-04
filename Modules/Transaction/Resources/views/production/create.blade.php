@@ -87,6 +87,15 @@
         }
 
         /* Ingredient item hover effects */
+        .production-input-unit { position:relative; }
+        .production-input-unit .form-control { padding-right:64px; }
+        .production-unit { position:absolute; top:50%; right:14px; transform:translateY(-50%); color:#6b7280; font-size:12px; font-weight:700; letter-spacing:.04em; pointer-events:none; }
+        .production-extra { border:1px dashed #d1d5db; border-radius:12px; padding:0 14px; }
+        .production-extra > summary { display:flex; min-height:44px; align-items:center; gap:6px; color:#374151; font-size:13px; font-weight:700; cursor:pointer; }
+        .production-extra > summary small { color:#9ca3af; font-weight:500; }
+        .production-extra[open] { padding-bottom:14px; }
+        .production-extra[open] > summary { margin-bottom:6px; }
+
         .ingredient-item {
             position: relative;
             transition: all 0.3s ease;
@@ -178,26 +187,36 @@
                             </select>
                         </div>
                         <div class="fv-row">
-                            <label class="required form-label" for="quantity">Jumlah Produksi</label>
-                            <input type="number" inputmode="decimal" name="quantity" id="quantity" class="form-control"
-                                placeholder="Masukkan Jumlah" step="0.01" x-model="productionQuantity"
-                                value="{{ isset($data) ? $data->quantity : '' }}" />
+                            <label class="required form-label" for="quantity">Target Hasil Produksi</label>
+                            <div class="production-input-unit">
+                                <input type="number" inputmode="decimal" name="quantity" id="quantity" class="form-control"
+                                    placeholder="Masukkan Jumlah" step="0.01" x-model="productionQuantity"
+                                    value="{{ isset($data) ? $data->quantity : '' }}" />
+                                <span class="production-unit" id="production-unit">{{ isset($data) ? strtoupper($data->products->unit->abbreviation ?? '') : '' }}</span>
+                            </div>
                         </div>
-                        <div class="fv-row">
-                            <label class="form-label" for="sell_price">Harga Jual</label>
-                            <input type="text" inputmode="numeric" name="sell_price" id="sell_price" class="form-control format-number"
-                                placeholder="Masukkan Harga Jual" x-model="sellPrice"
-                                value="{{ isset($edit_sell_price) ? number_format($edit_sell_price, 0, ',', '.') : '' }}" />
-                            <input type="hidden" name="production_number" id="production_number" class="form-control"
-                                value="{{ $production_number }}">
-                            <input type="hidden" name="id" id="production_id" class="form-control"
-                                value="{{ isset($id) ? $id : '' }}">
-                        </div>
-                        <div class="fv-row">
-                            <label class="form-label" for="service_cost">Biaya Jasa Produksi per Unit</label>
-                            <input type="text" inputmode="numeric" name="service_cost" id="service_cost" class="form-control format-number"
-                                placeholder="Masukkan Biaya Jasa" x-model="serviceCost"
-                                value="{{ isset($edit_service_cost) ? number_format($edit_service_cost, 0, ',', '.') : '' }}" />
+                        <input type="hidden" name="production_number" id="production_number" class="form-control"
+                            value="{{ $production_number }}">
+                        <input type="hidden" name="id" id="production_id" class="form-control"
+                            value="{{ isset($id) ? $id : '' }}">
+                        <div class="fv-row is-wide">
+                            <details class="production-extra" @if ((isset($edit_sell_price) && $edit_sell_price > 0) || (isset($edit_service_cost) && $edit_service_cost > 0)) open @endif>
+                                <summary>Harga &amp; Biaya <small>(opsional)</small></summary>
+                                <div class="production-fields">
+                                    <div class="fv-row">
+                                        <label class="form-label" for="sell_price">Harga Jual</label>
+                                        <input type="text" inputmode="numeric" name="sell_price" id="sell_price" class="form-control format-number"
+                                            placeholder="Masukkan Harga Jual" x-model="sellPrice"
+                                            value="{{ isset($edit_sell_price) ? number_format($edit_sell_price, 0, ',', '.') : '' }}" />
+                                    </div>
+                                    <div class="fv-row">
+                                        <label class="form-label" for="service_cost">Biaya Jasa Produksi per Unit</label>
+                                        <input type="text" inputmode="numeric" name="service_cost" id="service_cost" class="form-control format-number"
+                                            placeholder="Masukkan Biaya Jasa" x-model="serviceCost"
+                                            value="{{ isset($edit_service_cost) ? number_format($edit_service_cost, 0, ',', '.') : '' }}" />
+                                    </div>
+                                </div>
+                            </details>
                         </div>
                         <div class="fv-row is-wide">
                             <label class="form-label" for="production_notes">Catatan Produksi (Opsional)</label>

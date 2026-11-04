@@ -779,6 +779,8 @@
             }).on('select2:select', function(e) {
                 // Auto load ingredients when product is selected
                 const selectedProductId = e.params.data.id;
+                const unitLabel = document.getElementById('production-unit');
+                if (unitLabel && e.params.data.unit !== undefined) unitLabel.textContent = String(e.params.data.unit).toUpperCase();
                 if (selectedProductId) {
                     // Add a small delay to ensure Alpine is ready
                     setTimeout(() => {
@@ -787,6 +789,8 @@
                 }
             }).on('select2:clear', function(e) {
                 // Clear ingredients when product is cleared
+                const unitLabel = document.getElementById('production-unit');
+                if (unitLabel) unitLabel.textContent = '';
                 try {
                     const alpineElement = document.querySelector('[x-data*="productionApp"]') ||
                         document.querySelector('[x-data]');
@@ -886,7 +890,8 @@
             emptyText: 'Produk olahan tidak ditemukan',
             clearable: true,
             url: '{{ route('products.get-receipt') }}',
-            map: item => ({ id: item.product_id, text: item.products?.name || 'Unknown Product' })
+            actionLabels: ['Pilih', 'Ganti'],
+            map: item => ({ id: item.product_id, text: item.products?.name || 'Unknown Product', data: { unit: item.products?.unit?.abbreviation || '' } })
         });
         ErpPicker.attach('#branch_id', {
             title: 'Pilih Cabang / Dapur',

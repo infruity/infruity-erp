@@ -8,6 +8,7 @@
 .erp-picker__trigger:disabled { background:var(--erp-surface-muted,#f9fafb); color:var(--erp-muted,#6b7280); cursor:not-allowed; }
 .erp-picker__trigger i { flex:none; color:var(--erp-primary,#0b595b); font-size:13px; }
 .erp-picker__label { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.erp-picker__action { flex:none; margin-left:auto; color:var(--erp-primary,#0b595b); font-size:12px; font-weight:700; }
 .erp-picker__label.is-placeholder { color:#9ca3af; font-weight:500; }
 
 html.erp-picker-open { overflow:hidden; }
