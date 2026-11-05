@@ -1,20 +1,24 @@
 # Plan Migrasi Bootstrap/Metronic → Tailwind CSS
 
-5 November 2026. Branch fondasi: `feature/tailwind-migration` (dari `origin/main` @ `671fb18a`).
+5 November 2026 (revisi 2). Branch fondasi: `feature/tailwind-migration` (dari `origin/main` @ `671fb18a`).
 
-Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [Lampiran A](#lampiran-a--checklist-per-view) dan memperbarui bagian **Status** di bawah. Angka inventaris dihasilkan dengan grep pada 5 November 2026. Hitung ulang di awal setiap batch karena `main` terus bergerak.
+> **Model:** plan ini disusun dengan Opus. **Implementasi B0–B6 dijalankan dengan Sonnet.** Ganti model sesi ke Sonnet sebelum mulai mengerjakan batch mana pun.
+
+Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [Lampiran A](#lampiran-a--checklist-per-view) dan [Lampiran B](#lampiran-b--backend-yang-menghasilkan-html), lalu memperbarui **Status**. Angka inventaris dihasilkan dengan grep pada 5 November 2026; hitung ulang di awal setiap batch karena `main` terus bergerak.
 
 ## Status
 
 | Batch | Branch | PR | Status |
 |---|---|---|---|
-| B0 Fondasi build | `feature/tailwind-migration` | — | plan ditulis |
-| B1 Shell, auth, errors, landing, komponen | — | — | belum |
+| B0 Fondasi build | `feature/tailwind-migration` | — | plan direview |
+| B1 Layout final, komponen, shell, auth, errors, landing | — | — | belum |
 | B2 Master | — | — | belum |
 | B3 Report, CRM, Chat, admin | — | — | belum |
 | B4 Transaction | — | — | menunggu `ui/produksi-reference` + `ui/stock-opname-reference` masuk `main` |
 | B5 POS | — | — | belum |
 | B6 Cleanup | — | — | belum |
+
+**Di luar scope, ditindaklanjuti terpisah:** celah XSS di kolom DataTables (§2.6). Akan dibuat PR keamanan sendiri; migrasi tidak menunggu PR itu, tetapi komponen §6.3 otomatis meng-escape.
 
 ---
 
@@ -22,25 +26,32 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 
 | # | Topik | Keputusan |
 |---|---|---|
-| Q1 | Definisi selesai | Bootstrap **dan** Metronic (CSS + JS) tidak dimuat lagi. Tidak ada `data-bs-*`, `data-kt-*` maupun class Bootstrap/Metronic. Semua halaman memakai satu layout Tailwind. |
-| Q2/Q11 | Build | Vite + **Tailwind 3.4** compiled. Laravel Mix dan Tailwind CDN dihapus. Tailwind 3.4 dipilih demi perangkat lama (Safari 14+, Chrome 88+ kira-kira) dan karena cocok dengan class v3 yang sudah dipakai lewat CDN. |
-| Q3 | Rollout | Bertahap per batch. Setiap batch punya branch + PR sendiri ke `main`. |
-| Q4/Q17 | Interaksi | Alpine.js + `<dialog>` native + `erp-overlays.js`, dibungkus sebagai Blade component `x-erp.*`. |
-| Q5 | Plugin | Select2 → `erp-picker` lalu dihapus. DataTables tetap (paket npm, styling Tailwind). SweetAlert2 dan Flatpickr tetap (npm). |
-| Q6 | Visual | Mengikuti referensi `infruity-frontend` bila ada; selain itu tampilan sekarang dipertahankan. Bukan redesign. |
-| Q7 | Kode mati | Diaudit dulu, lalu dihapus di commit terpisah dalam batch-nya. Daftar kandidat ada di Lampiran A (⚠). |
-| Q8 | Test | Test diperlakukan sebagai spesifikasi perilaku dan diperbarui bersama port. Tidak ada skip. Ditambah screenshot sebelum/sesudah. |
-| Q9 | Branch | Branch ini berasal dari `main` murni. Branch UI lain tidak di-merge ke sini. |
-| Q10 | Deploy | Build di server (`npm ci && npm run build`). Node dipasang bila belum ada. `public/build` di-gitignore. |
-| Q12 | Dark mode | Dibuang, termasuk toggle di Pengaturan, skrip `data-bs-theme` di `template.root`, dan ikon `ki-night-day`/`ki-moon`. |
+| Q1 | Definisi selesai | Bootstrap **dan** Metronic (CSS + JS) tidak dimuat lagi. Tidak ada `data-bs-*`, `data-kt-*`, class Bootstrap/Metronic, maupun ikon `ki-`/`bi-`/`fa-`. Semua halaman memakai satu layout Tailwind. |
+| Q2/Q11 | Build | Vite + **Tailwind 3.4** compiled. Laravel Mix dan Tailwind CDN dihapus. 3.4 dipilih demi perangkat lama dan agar cocok dengan class v3 yang sudah dipakai. |
+| Q3 | Rollout | Bertahap per batch; setiap batch punya branch + PR sendiri ke `main`. |
+| Q4/Q17 | Interaksi | Alpine.js + `<dialog>` native + `erp-overlays.js`, dibungkus Blade component `x-erp.*`. |
+| Q5 | Plugin | Select2 → `erp-picker` lalu dihapus. DataTables tetap (npm, styling Tailwind). SweetAlert2 dan Flatpickr tetap (npm). |
+| Q6 | Visual | Ikuti referensi `infruity-frontend` bila ada; selain itu pertahankan tampilan sekarang (dengan konversi ukuran §4.1). Bukan redesign. |
+| Q7 | Kode mati | Diaudit, daftarnya dikonfirmasi pemilik repo, lalu dihapus di commit terpisah dalam batch-nya. |
+| Q8 | Test | Test = spesifikasi perilaku, diperbarui bersama port, tanpa skip. Ditambah screenshot sebelum/sesudah. |
+| Q9 | Branch | Berasal dari `main` murni; branch UI lain tidak di-merge ke sini. |
+| Q10 | Deploy | Build di server (`npm ci && npm run build`), Node dipasang bila belum ada. `public/build` di-gitignore. |
+| Q12 | Dark mode | Dibuang: toggle Pengaturan, skrip `data-bs-theme`, ikon bulan/matahari. |
 | Q13 | Urutan | B0 → B1 → B2 → B3 → B4 → B5 → B6. |
-| Q14 | Branch berjalan | `ui/produksi-reference` (3 commit) dan `ui/stock-opname-reference` (3 commit, 7 di belakang) di-merge ke `main` sebelum B4. |
-| Q15 | Print/nota | Dikeluarkan dari Tailwind. Hasil cetak harus identik. View dompdf/Excel juga tidak disentuh. |
-| Q16 | Data | Memakai DB lokal `infruity_clone` (dummy) dari `.env` checkout utama. |
-| Q18 | Form/tombol | `@tailwindcss/forms` (strategi `class`) + class `erp-input`, `erp-select`, `erp-btn-*`, `erp-label`, `erp-error` di `@layer components`. |
-| Q19 | Aturan baru | Setelah B1 masuk, UI baru wajib memakai layout/komponen Tailwind. Ditegakkan oleh test ratchet (§7.3) dan ditulis di `AGENTS.md` + `docs/ui-design-system.md`. |
-| Q20 | PR | Claude commit, push, dan membuka PR. Merge dilakukan pemilik repo. |
-| Q21/Q22 | Plan | File ini. Direview dulu sebelum B0 dikerjakan. |
+| Q14 | Branch berjalan | `ui/produksi-reference` dan `ui/stock-opname-reference` masuk `main` sebelum B4. |
+| Q15 | Print/nota | Dikecualikan dari Tailwind; hasil cetak harus identik. View dompdf/Excel tidak disentuh. |
+| Q16 | Data | DB lokal `infruity_clone` (dummy) dari `.env` checkout utama. |
+| Q18 | Form | `@tailwindcss/forms` (strategi `class`) + class komponen `erp-*` (§5.4). |
+| Q19 | Aturan baru | Setelah B1 masuk, UI baru wajib memakai layout/komponen Tailwind. Ditegakkan oleh test ratchet (§8.3) dan ditulis di `AGENTS.md` + `docs/ui-design-system.md`. |
+| Q20 | PR | Claude commit, push, dan membuka PR. Merge oleh pemilik repo. |
+| Q21/Q22 | Plan | File ini; direview sebelum B0. |
+| **Q23** | Ikon | Font **Phosphor** `<i class="ph …" aria-hidden="true">` di semua tempat (Blade, JS, controller). Bobot: regular, bold, fill, duotone. Light/thin dibuang. Penggantian lewat codemod + tabel §4.4. |
+| **Q24** | HTML controller | Blade component yang dirender server (`row-actions`, `cell-title`, `badge`, `avatar`). Controller hanya mengirim data. |
+| **Q25** | XSS | Ditunda ke PR keamanan terpisah (lihat Status). |
+| **Q26** | Ukuran dasar | **`html` 16px, teks body 13px.** Skala Tailwind dan referensi tetap akurat (`text-sm` = 14px). Halaman lama dikonversi dengan tabel §4.1. |
+| **Q27** | Penamaan class | Lanjutkan keluarga `erp-*` yang sudah ada (`erp-action`, `erp-record`, `erp-sheet-*`). `erp-button` dilebur ke `erp-action`. Hex di class wajib token. |
+| **Q28** | Codemod | Pasangan aman 1:1 diganti script per batch (diff direview). Komponen dan nilai yang beda diganti manual. |
+| **Q29** | CSS halaman | 18 file CSS di `public/assets/css` dipindah ke `resources/css/pages/` (Vite) saat halaman pemiliknya diport. |
 
 ---
 
@@ -50,21 +61,31 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 
 | Layout | Dipakai | Memuat |
 |---|---|---|
-| `template.root` | 73 view | Metronic `style.bundle.css` (Bootstrap 5, 1,27 MB), `plugins.bundle.css/js`, `scripts.bundle.js`, `datatables.bundle.*`, **Tailwind CDN `preflight: false`**, jQuery 3.6 CDN, Alpine (unpkg), `@livewireStyles` bersyarat, firebase messaging, dan 9 file `erp-*.css`. Shell-nya sudah Tailwind (`x-erp.sidebar`, `x-erp.topbar`, `x-erp.mobile-navbar`). |
-| `layouts.erp-tailwind` | 20 view | Tailwind CDN dengan preflight, `tailwind.config` inline sendiri, Alpine + collapse (jsdelivr), jQuery, `datatables.bundle.*`, SweetAlert2 CDN, sekitar 100 baris CSS inline untuk sidebar. **Tanpa** `style.bundle.css`. |
-| `layouts.app` | 4 view (`auth/passwords/*`, `auth/verify`) | Mix `css/app.css` (Bootstrap 4) + `js/app.js`. Semuanya kandidat mati. |
+| `template.root` | 73 view | Metronic `style.bundle.css` (Bootstrap 5, 1,2 MB), `plugins.bundle.css/js` (11 MB folder), `scripts.bundle.js`, `datatables.bundle.*`, **Tailwind CDN `preflight: false`**, jQuery 3.6 CDN, Alpine (unpkg), `@livewireStyles` bersyarat, firebase messaging, 9 file `erp-*.css`. Shell sudah Tailwind (`x-erp.sidebar/topbar/mobile-navbar`). |
+| `layouts.erp-tailwind` | 20 view | Tailwind CDN dengan preflight + `tailwind.config` inline sendiri, Alpine + collapse (jsdelivr), jQuery, `datatables.bundle.*`, SweetAlert2 CDN, ±100 baris CSS inline sidebar. Tanpa `style.bundle.css`. |
+| `layouts.app` | 4 view (`auth/passwords/*`, `auth/verify`) | Mix `css/app.css` (Bootstrap 4) + `js/app.js`. Kandidat mati. |
 | `errors.layout` | 10 view | Standalone. |
-| `auth/login`, `landing` | standalone | Tailwind CDN. `landing` juga memakai `KT*`. |
-| `*::layouts.master` (Chat, CRM, Master, POS, Report, Transaction) | 0–1 view | Scaffold nwidart, kandidat mati. |
-| `pos/index` | standalone | Bootstrap 5.3 dari CDN. Kandidat mati (controller memakai `index2`). |
+| `auth/login`, `landing` | standalone | Tailwind CDN; `landing` juga memakai `KT*`. |
+| `*::layouts.master` | 0–1 view | Scaffold nwidart; kandidat mati. |
+| `pos/index` | standalone | Bootstrap 5.3 CDN; kandidat mati (controller memakai `index2`). |
 
-- Ada **dua konfigurasi Tailwind inline yang berbeda** (`template.root` vs `erp-tailwind`), keduanya harus digabung.
-- `package.json` masih memakai Laravel Mix 5 + `bootstrap@4` + `popper.js` + `sass` + `vue-template-compiler`. Pipeline ini hanya melayani `layouts.app`.
-- Ada 18 file CSS kustom di `public/assets/css` (sekitar 2.300 baris) dan 13 file JS kustom di `public/assets/js`. Semuanya dimuat lewat `asset()?v=filemtime`, bukan bundler.
+Dua `tailwind.config` inline yang berbeda harus digabung. `package.json` masih Laravel Mix 5 + `bootstrap@4` + `popper.js` + `sass` + `vue-template-compiler`, hanya untuk `layouts.app`. Ada 18 file CSS kustom (±2.300 baris) dan 13 file JS kustom di `public/assets`, dimuat lewat `asset()?v=filemtime`.
 
-### 2.2 Kepadatan per batch
+### 2.2 Ukuran dasar sekarang (terbukti di browser)
 
-Angka "BS" menghitung token class yang bergaya Bootstrap/Metronic: `form-control`, `btn-*`, `modal*`, `card*`, `col-*`, `d-*`, `fs-*`, `fw-*`, `text-gray-*`, spasi, dan seterusnya. Ini indikator kepadatan, bukan jumlah pasti yang harus diganti. Sebagian nama (misalnya `p-3`, `mb-4`) juga sah di Tailwind; lihat §4.
+Metronic memasang `body, html { font-size: 13px !important }` dan `12px !important` di bawah 768px. `html.erp-html { font-size: 16px }` di `erp-theme.css` **kalah** karena tidak `!important`. Akibatnya:
+
+| Layout | Root `rem` | `p-4` | `text-sm` |
+|---|---|---|---|
+| `template.root` ≥ 768px | 13px | 13px | 11,4px |
+| `template.root` < 768px | 12px | 12px | 10,5px |
+| `layouts.erp-tailwind`, referensi `infruity-frontend` | 16px | 16px | 14px |
+
+Referensi `infruity-frontend` (38 file, Tailwind CDN) dirancang di root 16px: `text-sm` 2.182×, `text-lg` 1.361×, `text-[11px]` 412×, `text-[10px]` 357×. Shell (`x-erp.sidebar`/`topbar`) sekarang tampil dengan **dua ukuran berbeda** tergantung layout-nya.
+
+### 2.3 Kepadatan per batch
+
+"BS" = token class bergaya Bootstrap/Metronic (`form-control`, `btn-*`, `modal*`, `card*`, `col-*`, `d-*`, `fs-*`, `fw-*`, `text-gray-*`, spasi, …). Ini indikator kepadatan; sebagian nama juga sah di Tailwind (§4.2).
 
 | Batch | View | Hit BS | Kandidat mati |
 |---|---:|---:|---:|
@@ -74,65 +95,78 @@ Angka "BS" menghitung token class yang bergaya Bootstrap/Metronic: `form-control
 | B4 | 74 | 3.134 | 22 |
 | B5 | 50 | 1.687 | 4 |
 
-### 2.3 Ketergantungan JavaScript
+### 2.4 Ketergantungan JavaScript
 
 | Pemakaian | Jumlah | Catatan |
 |---|---|---|
 | `data-kt-menu*` | 175 | Hampir semua di `template/*` lama dan `auth/footer` |
-| `data-kt-ecommerce*` | 164 | Dari demo Metronic: pengadaan, transfer, sortir, production, stock-opname, `livewire/product-table` |
+| `data-kt-ecommerce*` | 164 | Demo Metronic: pengadaan, transfer, sortir, production, stock-opname, `livewire/product-table` |
 | `data-kt-check*` | 78 | Select-all checkbox |
-| `data-kt-drawer*` | 76 | `template/aside`, `template/drawer`, **stock-opname index** |
+| `data-kt-drawer*` | 76 | `template/*`, **stock-opname index** |
 | `data-kt-scroll*` | 79 | stock-opname, stock-out, delivery-order, master handling/location/department |
-| `data-bs-*` | sekitar 130 | toggle/target/dismiss modal, dropdown, tooltip |
+| `data-bs-*` | ±130 | toggle/target/dismiss modal, dropdown, tooltip |
 | `bootstrap.Modal` / `.modal()` | 7 file + `erp-crm.js` | |
-| Select2 | 79 referensi | `erp-picker.js` masih punya 8 referensi `select2` (jembatan) |
-| SweetAlert2 | 332 panggilan / 47 file | Di `template.root` datang dari `plugins.bundle`, di `erp-tailwind` dari CDN |
-| DataTables 1.13.7 | 101 `ajax:`, 43 `serverSide:`, 25 `fixedColumns:`, 6 `responsive:`, sekitar 10 `select:` | Bundle Metronic juga berisi JSZip + pdfmake, tapi tidak ada konfigurasi `buttons:` yang terdeteksi |
+| Select2 | 79 ref | `erp-picker.js` masih punya 8 ref `select2` (jembatan) |
+| SweetAlert2 | 332 panggilan / 47 file | `template.root` dari `plugins.bundle`, `erp-tailwind` dari CDN |
+| DataTables 1.13.7 | 101 `ajax:`, 43 `serverSide:`, 25 `fixedColumns:`, 6 `responsive:`, ±10 `select:` | bundle Metronic ikut berisi JSZip + pdfmake; tidak terdeteksi `buttons:` |
 | `toastr` | 1 file | `production/js-create` |
 | ApexCharts | 1 file | `crm::dashboard.js-dashboard` (kandidat mati) |
-| Quill | 1 file | `master::products.edit` (kandidat mati) |
-| `KTImageInput`, `KTPasswordMeter` | — | `crm::tier`, `master::products.edit` |
+| Quill, `KTImageInput`, `KTPasswordMeter` | — | `master::products.edit` (kandidat mati), `crm::tier` |
 | `KT*` di view | 3 file | `landing`, `stock-opname/index`, `crm::dashboard.js-dashboard` |
-| Livewire 4 | 1 halaman hidup | `produk.blade.php` → `<livewire:produk-form/>`. Livewire 4 menyuntik Alpine sendiri, jadi bentrok dengan Alpine dari CDN/bundle. |
+| Livewire 4 | 1 halaman hidup | `produk.blade.php` → `<livewire:produk-form/>`; Livewire membawa Alpine sendiri |
 
-### 2.4 Ikon (semuanya ikut termuat lewat `plugins.bundle.css`)
+### 2.5 Ikon
 
-| Set | Ref | Tujuan |
+| Set | Semua file | **File hidup saja** | Dimuat dari |
+|---|---:|---:|---|
+| Phosphor `ph-*` | 629 (regular 304, bold 271, fill 54, duotone 42) | — | `public/assets/plugins/phosphor` (6 bobot; light/thin tidak dipakai) |
+| Keenicons `ki-*` | 716 | **56 pemakaian, 18 nama** + `<span class="pathN">` di dalamnya | `plugins.bundle.css` |
+| Bootstrap Icons `bi-*` | 155 | **145 pemakaian, 20 nama** (sebagian besar di controller) | `plugins.bundle.css` |
+| FontAwesome `fa-*` | 56 | **34 pemakaian, 14 nama** | `plugins.bundle.css` |
+
+"File hidup" = view yang direferensikan, controller non-`temp`, dan `public/assets/js` non-bundle. Total **52 nama ikon lama, 235 pemakaian, 58 file**. Begitu `plugins.bundle.css` dilepas, semua ikon ini hilang, jadi semuanya harus sudah diganti sebelum halamannya pindah layout.
+
+### 2.6 HTML dari backend
+
+35 file PHP di luar `Resources/views` (683 atribut `class=`) menghasilkan HTML, terutama kolom Yajra DataTables. Polanya seragam:
+
+| Pola | Jumlah | Contoh |
 |---|---:|---|
-| Keenicons `ki-*` | 716 (57 file, 24 di luar `template/*`) | Phosphor |
-| Bootstrap Icons `bi-*` | 155 (termasuk controller) | Phosphor |
-| FontAwesome `fa-*` | 56 | Phosphor |
-| Phosphor `ph-*` | 629 | tetap (dilayani lokal) |
+| Dropdown aksi baris | 41 | `div.dropstart > button.btn.btn-sm.btn-light-primary.dropdown-toggle[data-bs-toggle] > i.bi-three-dots-vertical` + `ul.dropdown-menu > li > a.dropdown-item[onclick]` |
+| Badge status | ±95 | `span.badge.badge-light-{success,danger,warning,primary,info,secondary}` |
+| Sel nama + subjudul | 21 | `a.text-gray-800.text-hover-primary.fs-5.fw-bold` + `span.text-muted.d-block.fs-7/8` |
+| Avatar | beberapa | `div.symbol.symbol-circle.symbol-50px > div.symbol-label.fs-3.bg-light-{$warna}` (class disusun dinamis) |
 
-### 2.5 HTML dari backend
+**Celah keamanan (ditunda, Q25):** data user disambung tanpa escape, lalu dikirim sebagai `rawColumns`. Contoh: `ProductUnitController` (`name`, `description`), `HandlingController`, `LocationController`, `DepartmentController`, `SupplierController` (`name`), `ProductController` (`data-name`).
 
-35 file PHP di luar `Resources/views` (683 atribut `class=`) menghasilkan HTML. Sebagian besar berupa kolom Yajra DataTables (`addColumn`/`editColumn`) yang berisi badge, tombol aksi, dropdown dan ikon `bi-`. Daftarnya ada di [Lampiran B](#lampiran-b--backend-yang-menghasilkan-html). Controller-controller ini **wajib** ikut dimigrasi di batch modulnya, dan path-nya **wajib** masuk `content` Tailwind.
+### 2.7 Sistem class yang hidup bersamaan
 
-### 2.6 Test
+1. **Bootstrap/Metronic**, ditambah adapter di `erp-theme.css` yang men-styling ulang `.btn` (14 aturan), `.form-control` (7), `.card` (7), `.form-select`, `.modal-*`, `.select2-*`, `.dataTables_*`, `.swal2-*`, `.flatpickr-*` di bawah `.erp-ui`.
+2. **Utility Tailwind dengan nilai ad-hoc**: `text-[11px]` 96, `text-[10px]` 51, `text-[13px]` 47, `bg-[#0b595b]` 37, `text-[#0b595b]` 32, `rounded-[2rem]` 53. Ada 125 atribut class yang lebih dari 180 karakter.
+3. **Class semantik `erp-*`** di 18 file CSS: `erp-action` (107; varian `--primary` 29, `--danger` 1), `erp-record` (48), `erp-sheet-dialog/header/body/footer` (±25), `erp-picker`, `erp-workspace*`, `erp-editor*`, `erp-mobile-*`, dan lain-lain. `erp-button` (16) tumpang-tindih dengan `erp-action`.
 
-- 61 file di `tests/Feature`, kurang lebih 39 di antaranya mengunci markup: membaca file view atau me-render Blade, lalu `assertStringContainsString` class/struktur. Kata `modal` muncul 64 kali, `select2` 13 kali.
-- 23 test JS (`tests/js/*.test.cjs`, `node --test`) mengunci `public/assets/js/*` dan beberapa view.
-- Peta test → view ada di kolom "Test pengunci" pada Lampiran A.
-- Worktree ini belum punya `vendor/` dan `node_modules/`. Baseline hijau/merah belum diketahui; ini langkah pertama B0.
+### 2.8 Test
+
+61 file `tests/Feature`, ±39 di antaranya mengunci markup (`modal` 64×, `select2` 13×), ditambah 23 test JS (`node --test`). Peta test → view ada di Lampiran A. Worktree belum punya `vendor/` dan `node_modules/`, jadi baseline belum diketahui (langkah pertama B0).
 
 ---
 
-## 3. Arsitektur akhir (target B6)
+## 3. Arsitektur akhir
 
 ```
 resources/
   css/
-    app.css            ← @tailwind base/components/utilities + token + @layer components (erp-*)
-    legacy.css         ← SEMENTARA (B0–B5): @config tailwind.legacy.config.js, preflight off, untuk template.root
+    app.css                 ← base + token + @layer components (erp-*) + import pages/* dan vendor/*
+    legacy.css              ← SEMENTARA B0–B5: @config tailwind.legacy.config.js (preflight off) untuk template.root
+    components/             ← erp-action, erp-input, erp-badge, erp-table, erp-panel, erp-sheet, erp-avatar …
+    pages/                  ← pindahan 18 file public/assets/css (Q29), dipindah saat halamannya diport
     vendor/
-      datatables.css   ← skin Tailwind untuk DataTables (tanpa dataTables.bootstrap5)
-      flatpickr.css    ← import flatpickr + override token
-      swal.css         ← override token SweetAlert2
+      datatables.css  flatpickr.css  swal.css  phosphor.css (4 bobot)
   js/
-    app.js             ← Alpine (+collapse, +focus), komponen erp, jQuery global, DataTables, Swal, flatpickr
-    erp/
-      dialog.js  dropdown.js  tabs.js  drawer.js  check-all.js  tooltip.js  toast.js
-    legacy-bridge.js   ← SEMENTARA: shim bootstrap.Modal → x-erp.dialog (lihat §5.3)
+    app.js                  ← Alpine (+collapse, +focus), jQuery global, DataTables npm, Swal, flatpickr, erp/*
+    erp/                    ← dialog, drawer, dropdown, tabs, collapse, check-all, tooltip, toast, picker, overlays, collections
+    pages/                  ← pindahan JS halaman dari public/assets/js saat halamannya diport
+    legacy-bridge.js        ← SEMENTARA: shim bootstrap.Modal / $.fn.modal (§5.3), dihapus di B6
   views/
     layouts/erp.blade.php   ← satu-satunya layout aplikasi
     layouts/guest.blade.php ← login, lupa password, errors
@@ -141,422 +175,594 @@ tailwind.config.js
 tailwind.legacy.config.js   ← SEMENTARA, dihapus di B6
 postcss.config.js
 vite.config.js
+scripts/ui-migrate/         ← codemod class + ikon, audit class, tabel pemetaan (JSON)
 ```
 
-### 3.1 `tailwind.config.js`
+### 3.1 Ukuran dasar (Q26)
+
+- `html { font-size: 16px }`. Tidak di-override; skala `rem` Tailwind dan referensi berlaku apa adanya.
+- `body { font-size: 13px; line-height: 1.5 }` di `@layer base` (`theme.extend.fontSize.body = ['13px', '1.5']`, dipakai `body { @apply text-body }`).
+- Input/select/textarea di layar < 768px memakai **16px** agar iOS Safari tidak zoom saat fokus (aturan ini sudah ada di `erp-theme.css` dan dipindah ke `erp-input`).
+- Konsekuensi untuk 20 halaman `erp-tailwind`: teks yang **tidak** punya class ukuran sekarang mewarisi 16px dan akan menjadi 13px. Ini dicek di B1 lewat screenshot; teks yang memang harus 16px diberi `text-base` eksplisit.
+- Konsekuensi untuk 73 halaman lama: semua nilai `rem` mereka sekarang dihitung dari 13px. Saat diport, gunakan tabel konversi §4.1 agar ukurannya tetap sama dalam px, kecuali bagian yang mengikuti referensi.
+
+### 3.2 `tailwind.config.js`
 
 - `content`:
-  - `resources/views/**/*.blade.php`
-  - `Modules/*/Resources/views/**/*.blade.php`
-  - `app/**/*.php`
-  - `Modules/*/Http/**/*.php` dan `Modules/*/Support/**/*.php` (HTML dari controller)
-  - `resources/js/**/*.js`
-  - `public/assets/js/*.js` kecuali `*.bundle.js` (selama file-file itu belum masuk Vite)
-- `theme.extend`: gabungan dua config inline lama ditambah token `docs/ui-design-system.md`:
+  - `resources/views/**/*.blade.php`, `Modules/*/Resources/views/**/*.blade.php`
+  - `app/**/*.php`, `Modules/*/Http/**/*.php`, `Modules/*/Support/**/*.php`
+  - `resources/js/**/*.js`, `public/assets/js/*.js` kecuali `*.bundle.js` (selama belum pindah ke Vite)
+- `theme.screens`: **default Tailwind** (`sm 640, md 768, lg 1024, xl 1280, 2xl 1536`), sama dengan referensi dan 20 halaman Tailwind. Breakpoint Bootstrap dipetakan di §4.2.
+- `theme.extend`:
   - `colors`:
-    - `primary #0F5C45`, `teal { DEFAULT #0b595b, hover #08484a }`, `lime #d1f36e`, `accent #F2B400`, `strawberry #D6455D`
-    - `canvas #e5e9f3`
-    - status success/warning/error/info memakai skala bawaan
-  - `fontFamily.sans = "Plus Jakarta Sans"`, `fontFamily.serif = "Poppins"` (dua config lama sama-sama memakai `serif` untuk Poppins; nama ini dipertahankan agar class lama tidak patah)
-  - `boxShadow.soft`, `boxShadow.card` (nilai dari ui-design-system)
-  - `borderRadius`: `control 12px`, `panel 16px`
-  - `height.control 44px`
-- `plugins`: `@tailwindcss/forms({ strategy: 'class' })`. Strategi `class` dipilih supaya reset tidak menimpa input plugin (DataTables, flatpickr) secara global.
-- `safelist`: **hanya** class yang terbukti disusun dinamis (hasil audit §7.2), bukan pola luas.
-- Tanpa `prefix`. 20 halaman Tailwind dan shell yang ada sudah memakai class tanpa prefix.
+    - `teal { DEFAULT: '#0b595b', hover: '#08484a' }` (primary action/sidebar)
+    - `primary: '#0F5C45'` (brand green), `lime: '#d1f36e'`, `accent: '#F2B400'`, `strawberry: '#D6455D'`, `canvas: '#e5e9f3'`
+    - Status memakai skala bawaan: emerald (success), amber (warning), red (error), blue (info)
+  - `fontFamily`: `sans: ['"Plus Jakarta Sans"', 'sans-serif']`, `serif: ['"Poppins"', 'sans-serif']` (nama `serif` dipertahankan karena dua config lama memakainya)
+  - `fontSize.body: ['13px', '1.5']`
+  - `boxShadow`: `card: '0 1px 3px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.04)'`, `soft: '0 10px 40px -10px rgba(0,0,0,.08)'`
+  - `borderRadius`: `control: '12px'`, `panel: '16px'`
+  - `height/minHeight`: `control: '44px'` (dalam px, karena target sentuh tidak boleh ikut skala)
+- `plugins`: `@tailwindcss/forms({ strategy: 'class' })`, supaya reset tidak menimpa input plugin secara global.
+- `safelist`: **hanya** class yang terbukti disusun dinamis (audit §8.2). Tanpa pola luas.
+- Tanpa `prefix`, tanpa `important`.
 
-### 3.2 `tailwind.legacy.config.js` (sementara)
+### 3.3 `tailwind.legacy.config.js` (sementara)
 
-Isinya `presets: [require('./tailwind.config.js')]`, `corePlugins.preflight: false`, `important: false`. Dipakai `resources/css/legacy.css` lewat `@config`, menggantikan CDN di `template.root`. Hasilnya: halaman lama tetap tampil persis seperti sekarang (CDN tanpa preflight), tetapi class-nya sudah compiled.
+`presets: [require('./tailwind.config.js')]`, `corePlugins: { preflight: false }`. Dipakai `resources/css/legacy.css` lewat `@config`, menggantikan CDN di `template.root`. Halaman lama tampil persis seperti sekarang (Metronic tetap memaksa root 13px di layout itu); bedanya, CSS-nya sudah compiled.
 
-### 3.3 Vite
+### 3.4 Vite
 
-- `laravel-vite-plugin`, dengan input `resources/css/app.css`, `resources/css/legacy.css`, `resources/js/app.js`.
-- Layout memakai `@vite([...])`.
-- Script per-halaman yang masih di `public/assets/js` tetap memakai `asset()?v=filemtime` dan dipindahkan ke `resources/js` saat halaman pemiliknya diport.
+`laravel-vite-plugin` dengan input `resources/css/app.css`, `resources/css/legacy.css`, `resources/js/app.js`. Layout memakai `@vite([...])`. Script per halaman yang masih di `public/assets/js` tetap memakai `asset()?v=filemtime` sampai halaman pemiliknya diport, lalu pindah ke `resources/js/pages/`.
 
-### 3.4 Alpine dan Livewire
+### 3.5 Alpine dan Livewire
 
-Livewire 4 membawa Alpine sendiri. Supaya tidak ada dua instance Alpine:
-
-- **Opsi utama (diputuskan di B2):** jika `produk-form` masih hidup, `app.js` mengimpor `Livewire` dan `Alpine` dari `vendor/livewire/livewire/dist/livewire.esm` lalu memanggil `Livewire.start()`, dan layout memakai `@livewireScriptConfig`. Plugin Alpine (collapse, focus) didaftarkan ke Alpine yang sama.
-- Jika `produk-form` mati: hapus pemakaian Livewire dan impor `alpinejs` biasa. Paket composer `livewire/livewire` tetap ada sampai ada keputusan backend terpisah.
-- Selama B0–B1, untuk menjaga perilaku sekarang, Alpine di-bundle via npm dan Livewire tetap memakai skrip auto-inject hanya di halaman `produk`. Halaman itu diuji khusus di B0.
+Livewire 4 membawa Alpine sendiri; tidak boleh ada dua instance.
+- Jika `produk-form` masih hidup (diputuskan awal B2): `app.js` mengimpor `Livewire` dan `Alpine` dari `vendor/livewire/livewire/dist/livewire.esm`, mendaftarkan plugin Alpine ke instance itu, lalu memanggil `Livewire.start()`. Layout memakai `@livewireScriptConfig`.
+- Jika mati: Livewire tidak dipakai di layout, dan `alpinejs` diimpor biasa.
+- B0–B1: Alpine di-bundle via npm, halaman `produk` tetap memakai auto-inject Livewire dan diuji khusus.
 
 ---
 
-## 4. Aturan pemetaan class
+## 4. Aturan pemetaan
 
-### 4.1 Prinsip
+### 4.1 Konversi ukuran halaman lama (root 13px → 16px)
 
-1. **Metronic memakai skala spasi 0,25rem, sama seperti Tailwind.** `p-3` = .75rem, `mb-4` = 1rem, `px-10` = 2,5rem, `gap-3` = .75rem. Utility spasi bernama sama **aman** dibiarkan. Perhatian: Metronic menambahkan `!important` dan Tailwind tidak. Ketika Metronic dilepas, aturan lain yang dulu kalah bisa menang.
-2. **Nama sama, nilai beda: wajib dicek manual.**
+Berlaku untuk utility **berbasis rem** di halaman `template.root`, baik dari Metronic maupun Tailwind CDN, **kecuali** bagian yang dipindahkan dari referensi (pakai nilai referensi apa adanya). Utility px (`w-50px`, `text-[11px]`, `min-w-[160px]`) tidak berubah.
 
-| Class | Metronic | Tailwind 3.4 | Tindakan |
-|---|---|---|---|
-| `text-gray-100..900` | `--bs-text-gray-*`, misalnya 600 = `#78829D` | skala gray Tailwind (600 = `#4b5563`) | Ganti dengan token tampilan yang dimaksud, bukan sekadar menyamakan nama |
-| `bg-gray-*`, `border-gray-*` | skala Metronic | skala Tailwind | sama seperti di atas |
-| `rounded` | .475rem | .25rem | `rounded-lg`/`rounded-control` |
-| `rounded-1..4`, `rounded-pill`, `rounded-circle` | Metronic | tidak ada | `rounded-md/lg/xl/2xl`, `rounded-full` |
-| `shadow`, `shadow-sm`, `shadow-lg` | var Metronic | Tailwind | `shadow-card`/`shadow-soft` |
-| `collapse` | `display:none` tanpa `.show` | `visibility: collapse` | **Bentrok aktif**: ganti dengan `x-erp.collapse`/`x-collapse` |
-| `container` | Bootstrap max-width | Tailwind container | hindari dan pakai wrapper eksplisit |
-| `table` | komponen tabel | `display: table` | `erp-table` (§5.2) |
-| `border` | warna Metronic | `currentColor`/gray-200 lewat preflight | `border border-gray-200` |
-| `fs-1..7`, `fs-8..9` | skala Metronic (fs-6 = 1.075rem) | tidak ada | `text-xs/sm/base/lg/xl` sesuai token ui-design-system |
-| `fw-bold/semibold/bolder` | 600/500/... (Metronic) | tidak ada | `font-semibold`/`font-medium`/`font-bold` |
-| `w-100`, `h-100`, `w-50px`, `h-50px`, `mw-*`, `mh-*` | Metronic | tidak ada | `w-full`, `h-full`, `w-[50px]` |
-| `ms-*`/`me-*`/`ps-*`/`pe-*` | margin/padding kiri-kanan | Tailwind 3.3+ juga punya (logical) | aman, nilai sama |
-| `text-start/end` | Bootstrap | Tailwind 3.3+ punya `text-start/end` | aman |
-| `d-none`, `d-flex`, `d-md-block` | Bootstrap | tidak ada | `hidden`, `flex`, `md:block` |
-| `visible`/`invisible` | Bootstrap | Tailwind | aman |
+**Spasi** (`p`, `m`, `gap`, `space`, `inset`, `w`/`h` angka). Metronic dan Tailwind memakai skala yang sama (1 = 0,25rem), jadi hanya root-nya yang berbeda. Rumus: px lama = N × 3,25; pilih Tailwind terdekat (seri → yang lebih kecil).
 
-3. Breakpoint: Bootstrap `sm 576 / md 768 / lg 992 / xl 1200 / xxl 1400`, Tailwind `sm 640 / md 768 / lg 1024 / xl 1280 / 2xl 1536`. Hanya `md` yang sama. Untuk `col-lg-*`/`d-lg-*` dan `col-xl-*`/`d-xl-*`, uji di 992–1023 px dan 1200–1279 px. Tidak menambah breakpoint kustom kecuali ada layar yang benar-benar patah.
+| Lama N (px @13) | 1 (3,25) | 2 (6,5) | 3 (9,75) | 4 (13) | 5 (16,25) | 6 (19,5) | 7 (22,75) | 8 (26) | 9 (29,25) | 10 (32,5) | 12 (39) | 15 (48,75) | 20 (65) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Tailwind** | `1` | `1.5` | `2.5` | `3` | `4` | `5` | `6` | `6` | `7` | `8` | `10` | `12` | `16` |
 
-### 4.2 Pemetaan struktural
+**Ukuran teks Metronic** (`fs-*`, dihitung di root 13px, lebar 1440px):
+
+| Lama | px | Tailwind |
+|---|---|---|
+| `fs-9` | 9,75 | `text-[10px]` |
+| `fs-8` | 11,05 | `text-[11px]` |
+| `fs-7` | 12,35 | `text-xs` (12px) |
+| `fs-base` / tanpa class | 13 | `text-body` (13px) / tanpa class |
+| `fs-6` | 13,98 | `text-sm` (14px) |
+| `fs-5` | 14,95 | `text-[15px]` |
+| `fs-4` | 16,25 | `text-base` |
+| `fs-3` | ±18 (`calc`, responsif) | `text-lg` |
+| `fs-2` | ±21 | `text-xl` |
+| `fs-1` | ±25 | `text-2xl` |
+| `display-*` | — | manual |
+
+**Ukuran teks Tailwind** di halaman lama (CDN dihitung di 13px): `text-xs` (9,75px) → `text-[10px]`; `text-sm` (11,4) → `text-[11px]`; `text-base` (13) → `text-body`; `text-lg` (14,6) → `text-sm`/`text-[15px]`; `text-xl` (16,25) → `text-base`. Aturannya: jika markup itu disalin dari referensi, kembalikan ke class referensi.
+
+**Radius:** Metronic `rounded` (0,475rem = 6,2px) → `rounded-md` (6px); badge (5,5px) → `rounded-md`. Kontrol dan panel memakai token `rounded-control`/`rounded-panel`.
+
+### 4.2 Pemetaan class (codemod = otomatis; manual = dikerjakan per halaman)
+
+**Display, flex, alignment: codemod**
+
+| Bootstrap/Metronic | Tailwind |
+|---|---|
+| `d-none` `d-block` `d-inline` `d-inline-block` `d-flex` `d-inline-flex` `d-grid` `d-table` | `hidden` `block` `inline` `inline-block` `flex` `inline-flex` `grid` `table` |
+| `d-{bp}-{x}` | `{bp'}:{x}` (bp' di bawah) |
+| `flex-column` `flex-row` `flex-column-reverse` | `flex-col` `flex-row` `flex-col-reverse` |
+| `flex-wrap` `flex-nowrap` | sama |
+| `flex-grow-1` `flex-shrink-0` `flex-fill` | `grow` `shrink-0` `flex-1` |
+| `flex-center` (Metronic) | `flex items-center justify-center` |
+| `flex-column-fluid` / `flex-row-fluid` (Metronic, `flex: 1 0 auto`) | `grow shrink-0 basis-auto` |
+| `align-items-{start,center,end,baseline,stretch}` | `items-{…}` |
+| `align-self-*` / `align-content-*` | `self-*` / `content-*` |
+| `justify-content-{start,end,center,between,around,evenly}` | `justify-{…}` |
+| `order-*` | `order-*` |
+
+**Breakpoint** (prefix, dipakai codemod untuk `d-*`, `text-*`, `flex-*`): `sm` (576) → `sm` (640), `md` → `md` (sama, 768), `lg` (992) → `lg` (1024), `xl` (1200) → `xl` (1280), `xxl` (1400) → `2xl` (1536). **Wajib dicek visual** di rentang 576–639, 992–1023, 1200–1279.
+
+**Teks: codemod**
+
+| Bootstrap/Metronic | Tailwind |
+|---|---|
+| `text-start` `text-end` `text-center` | sama (Tailwind 3.3+) |
+| `text-uppercase` `text-lowercase` `text-capitalize` | `uppercase` `lowercase` `capitalize` |
+| `text-nowrap` `text-truncate` `text-wrap` `text-break` | `whitespace-nowrap` `truncate` `whitespace-normal` `break-words` |
+| `fw-normal` (400) `fw-semibold` (**500**) `fw-bold` (**600**) `fw-bolder` (700) | `font-normal` `font-medium` `font-semibold` `font-bold` |
+| `fst-italic` | `italic` |
+| `lh-1` `lh-sm` `lh-base` `lh-lg` | `leading-none` `leading-tight` `leading-normal` `leading-loose` |
+| `text-decoration-none` / `text-decoration-underline` | `no-underline` / `underline` |
+| `visually-hidden` | `sr-only` |
+
+**Warna: codemod** (Metronic gray kebiruan, digeser satu tingkat ke skala gray Tailwind sesuai ui-design-system)
+
+| Metronic | hex | Tailwind |
+|---|---|---|
+| `*-gray-100` | `#F9F9F9` | `*-gray-50` |
+| `*-gray-200` | `#F1F1F4` | `*-gray-100` |
+| `*-gray-300` | `#DBDFE9` | `*-gray-200` |
+| `*-gray-400` | `#C4CADA` | `*-gray-300` |
+| `*-gray-500`, `text-muted` | `#99A1B7` | `*-gray-400` |
+| `*-gray-600` | `#78829D` | `*-gray-500` |
+| `*-gray-700` | `#4B5675` | `*-gray-600` |
+| `*-gray-800`, `text-dark` | `#252F4A` | `*-gray-800` |
+| `*-gray-900` | `#071437` | `*-gray-900` |
+| `text-primary` / `bg-primary` | (dioverride ke teal oleh erp-theme) | `text-teal` / `bg-teal` |
+| `text-success` / `danger` / `warning` / `info` | | `text-emerald-700` / `text-red-600` / `text-amber-700` / `text-blue-600` |
+| `bg-light` / `bg-body` | | `bg-gray-50` / `bg-white` |
+| `bg-light-{success,danger,warning,info,primary}` | | `bg-emerald-50` / `bg-red-50` / `bg-amber-50` / `bg-blue-50` / `bg-teal/10` |
+| `text-hover-primary` / `bg-hover-light` | | `hover:text-teal` / `hover:bg-gray-50` |
+| `bg-[#0b595b]` / `text-[#0b595b]` / `border-[#0b595b]` | | `bg-teal` / `text-teal` / `border-teal` |
+| `bg-[#08484a]` / `bg-[#d1f36e]` / `bg-[#e5e9f3]` / `#F2B400` / `#0F5C45` | | `bg-teal-hover` / `bg-lime` / `bg-canvas` / `accent` / `primary` |
+
+**Ukuran, posisi, border, lainnya: codemod**
+
+| Bootstrap/Metronic | Tailwind |
+|---|---|
+| `w-25` `w-50` `w-75` `w-100` `w-auto` | `w-1/4` `w-1/2` `w-3/4` `w-full` `w-auto` |
+| `h-100` `mw-100` `mh-100` `vh-100` `min-vh-100` | `h-full` `max-w-full` `max-h-full` `h-screen` `min-h-screen` |
+| `w-{N}px` `h-{N}px` `min-w-{N}px` `mw-{N}px` `mh-{N}px` (Metronic) | `w-[Npx]` `h-[Npx]` `min-w-[Npx]` `max-w-[Npx]` `max-h-[Npx]` |
+| `position-{relative,absolute,fixed,sticky,static}` | `relative` … `static` |
+| `top-0` `bottom-0` `start-0` `end-0` | sama (Tailwind 3.3+) |
+| `translate-middle` | `-translate-x-1/2 -translate-y-1/2` |
+| `border-top` `border-bottom` `border-start` `border-end` | `border-t` `border-b` `border-s` `border-e` |
+| `border-0` `border-dashed` | sama |
+| `rounded-0` `rounded-circle` `rounded-pill` | `rounded-none` `rounded-full` `rounded-full` |
+| `rounded` `rounded-1..4` | manual (§4.1) |
+| `shadow-none` / `shadow-sm` `shadow` | `shadow-none` / `shadow-card` |
+| `overflow-*`, `cursor-pointer`, `opacity-*`, `visible`/`invisible` | sama |
+| `user-select-none` / `pe-none` | `select-none` / `pointer-events-none` (hati-hati: `pe-3` = padding-end, sama di keduanya) |
+| `z-index-N` (Metronic) | `z-N` |
+| `img-fluid` | `max-w-full h-auto` |
+| `float-start` / `float-end` / `clearfix` | `float-left` / `float-right` / `flow-root` |
+| `scroll-y` / `hover-scroll-y` / `data-kt-scroll` | `overflow-y-auto` + tinggi flex `min-h-0` (manual untuk tingginya) |
+| `separator` | `border-t border-gray-100` |
+| `row-gap-*` / `column-gap-*` | `gap-y-*` / `gap-x-*` |
+
+**Spasi (`m-*`, `p-*`, `ms-*`, `me-*`, `ps-*`, `pe-*`, `mx-auto`, `m-n*`)**: nama sama, codemod hanya mengonversi nilai menurut §4.1 (dan `m-n3` → `-m-2.5`, dan seterusnya).
+
+**Struktural: manual (ditulis ulang ke komponen §5)**
 
 | Bootstrap/Metronic | Pengganti |
 |---|---|
-| `row` + `col-*` / `g-*` | `grid grid-cols-12 gap-*` + `col-span-*`, atau `flex flex-wrap` bila kolomnya auto |
-| `card`, `card-header/body/footer`, `card-flush` | `erp-panel` (sudah ada di erp-theme) atau `x-erp.panel` |
-| `modal` + `data-bs-toggle="modal"` | `x-erp.dialog` (§5.1) |
-| `dropdown`, `dropdown-menu`, `menu menu-sub-dropdown` + `data-kt-menu-trigger` | `x-erp.dropdown` |
-| `nav nav-tabs` + `tab-pane` | `x-erp.tabs` |
-| `accordion`, `collapse` | `x-erp.collapse` |
-| `data-kt-drawer` | `x-erp.drawer` (sheet kanan/bawah, memakai `erp-overlays.js`) |
-| `data-kt-check` (select-all) | `x-erp.check-all` (Alpine) |
-| `data-bs-toggle="tooltip"` | `x-erp.tooltip` atau atribut `title` bila cukup |
-| `data-kt-scroll` | `overflow-y-auto` + `max-h-[...]`/flex `min-h-0` (tanpa JS) |
-| `badge badge-light-*` | `erp-badge erp-badge--{success,warning,danger,info,neutral}` |
-| `btn btn-primary/light/danger/icon/sm` | `erp-btn erp-btn-primary/secondary/danger/ghost/icon` + ukuran `erp-btn-sm` |
-| `form-control`, `form-control-solid` | `erp-input` |
-| `form-select`, select2 | `erp-select` / `erp-picker` |
-| `form-check`, `form-check-input` | `erp-check` (berbasis `form-checkbox` dari plugin forms) |
-| `form-label`, `required` | `erp-label`, `erp-label--required` |
-| `invalid-feedback`, `is-invalid` | `erp-error` + `aria-invalid` + `aria-describedby` |
-| `input-group` | `erp-input-group` (flex + border bersama) |
-| `table table-row-dashed gy-5 fs-6` | `erp-table` (+ skin DataTables §6.1) |
-| `symbol symbol-50px` | `erp-avatar erp-avatar--md` |
-| `separator` | `border-t border-gray-100` |
-| `bg-light-*` / `text-*` status | token status ui-design-system |
+| `row` + `col-*` + `g-*`/`gx-*`/`gy-*` | `grid grid-cols-12 gap-*` + `col-span-*`, atau `flex flex-wrap` untuk kolom auto |
+| `card`, `card-header/body/footer/title/toolbar`, `card-flush` | `x-erp.panel` / `erp-panel` |
+| `modal*` + `data-bs-toggle="modal"` | `x-erp.dialog` |
+| `dropdown*`, `dropstart`, `menu menu-sub-dropdown` + `data-kt-menu-trigger` | `x-erp.dropdown` |
+| `nav nav-tabs`, `nav-link`, `tab-content`, `tab-pane` | `x-erp.tabs` |
+| `accordion*`, `collapse` | `x-erp.collapse` |
+| `data-kt-drawer*` | `x-erp.drawer` |
+| `data-kt-check*` | `x-erp.check-all` |
+| `data-bs-toggle="tooltip"` | `x-erp.tooltip` atau `title` |
+| `badge badge-light-*` / `badge-*` | `x-erp.badge` / `erp-badge erp-badge--{tone}` |
+| `btn btn-*` | `erp-action erp-action--{tone}` (§5.4) |
+| `form-control` / `form-control-solid` / `form-select` / `form-check*` / `form-label` / `invalid-feedback` / `is-invalid` / `input-group` | `erp-input` / `erp-input` / `erp-select` / `erp-check` / `erp-label` / `erp-error` / `aria-invalid` / `erp-input-group` |
+| `table table-row-dashed gy-5 fs-6` | `erp-table` (+ skin DataTables) |
+| `symbol symbol-*` + `symbol-label` | `x-erp.avatar` / `erp-avatar` |
+| `bullet`, `menu-*`, `aside-*`, `app-*` (Metronic) | dihapus atau ditulis ulang sesuai referensi |
 
-### 4.3 Ikon → Phosphor
+**Bentrok nama (nama sama, makna beda): selalu manual.** `collapse` (Bootstrap: `display:none`; Tailwind: `visibility: collapse`), `container`, `table`, `border` (warna), `rounded`, `shadow`, `text-gray-*`, `bg-gray-*`. Codemod menolak menyentuh token ini dan mencatatnya sebagai "perlu manual".
 
-Phosphor sudah dilayani lokal. Pemetaan untuk ikon yang paling sering dipakai (sisanya dipetakan per file saat port):
+### 4.3 Lapisan class (Q27)
 
-| Lama | Phosphor |
-|---|---|
-| `ki-cross`, `bi-x`, `fa-times` | `ph ph-x` |
-| `ki-cross-circle` | `ph ph-x-circle` |
-| `ki-check-circle`, `bi-check-circle(-fill)`, `bi-check2-circle` | `ph ph-check-circle` / `ph-fill ph-check-circle` |
-| `ki-plus`, `bi-plus(-lg)`, `fa-plus` | `ph ph-plus` |
-| `ki-minus`, `fa-minus` | `ph ph-minus` |
-| `ki-magnifier` | `ph ph-magnifying-glass` |
-| `ki-basket`, `fa-shopping-cart` | `ph ph-shopping-cart` |
-| `ki-pencil`, `bi-pencil(-square/-fill)`, `fa-pencil`, `fa-edit` | `ph ph-pencil-simple` |
-| `bi-trash`, `fa-trash(-alt)` | `ph ph-trash` |
-| `bi-eye`, `fa-eye` | `ph ph-eye` |
-| `bi-three-dots-vertical` | `ph-bold ph-dots-three-vertical` |
-| `ki-arrow-right`, `bi-arrow-right` / `bi-arrow-left` | `ph ph-arrow-right` / `ph ph-arrow-left` |
-| `ki-information-5`, `bi-info-circle` | `ph ph-info` |
-| `ki-security-user` | `ph ph-user-gear` |
-| `ki-sms`, `ki-message-text-2`, `fa-comment` | `ph ph-chat-text` |
-| `ki-package`, `bi-box` | `ph ph-package` |
-| `ki-purchase`, `bi-cash-stack`, `fa-credit-card` | `ph ph-receipt` / `ph ph-money` / `ph ph-credit-card` |
-| `fa-print` | `ph ph-printer` |
-| `fa-receipt` | `ph ph-receipt` |
-| `fa-thumbtack` | `ph ph-push-pin` |
-| `bi-save` | `ph ph-floppy-disk` |
-| `bi-lock-fill` | `ph-fill ph-lock` |
-| `ki-chart*` | `ph ph-chart-bar` / `ph ph-chart-line` / `ph ph-chart-line-down` |
-| `ki-down` | `ph ph-caret-down` |
-| `ki-night-day`, `ki-moon` | dihapus (dark mode dibuang) |
-| `bi-whatsapp` | `ph ph-whatsapp-logo` |
+| Lapis | Isi | Aturan |
+|---|---|---|
+| **Token** (`tailwind.config`) | warna, font, radius, shadow, tinggi kontrol | Tidak ada hex baru di class. Ukuran font px ad-hoc (`text-[11px]`) boleh, karena referensi juga memakainya. |
+| **Komponen** (`@layer components`, prefix `erp-`) | Hanya untuk yang berulang **dan** muncul di string JS/controller: action, input, badge, table, panel, sheet, avatar | Nama BEM: `erp-blok`, `erp-blok__elemen`, `erp-blok--varian`. Melanjutkan nama yang sudah ada. Tidak ada `!important`. |
+| **Utility** | layout dan spasi per halaman | Bebas. |
+| **Blade component** | `x-erp.*` | Menerima prop varian (`tone`, `size`, `variant`), bukan override class, supaya tidak ada bentrok `p-4` vs `p-6`. `$attributes->merge()` hanya untuk class layout luar (margin, grid). |
+| **CSS halaman** | `resources/css/pages/<modul>-<halaman>.css` | Selector diawali class root halaman (misal `.erp-transfer-list …`). Tidak ada selector Bootstrap. |
 
-Ikon tanpa padanan yang jelas (`ki-abstract-26`, `ki-color-swatch`, `ki-switch`, `ki-star`) diputuskan per halaman mengikuti referensi `infruity-frontend`.
+### 4.4 Ikon → Phosphor (Q23)
+
+Aturan:
+- Satu bentuk penulisan di Blade, JS, dan PHP: `<i class="ph ph-{nama}" aria-hidden="true"></i>`.
+- Bobot: `ph` (regular, default), `ph-bold` (ikon di tombol/aksi), `ph-fill` (state aktif/status terisi), `ph-duotone` (ilustrasi kecil di header kartu/empty state, seperti di halaman referensi).
+- Tombol yang hanya berisi ikon wajib `aria-label` (bukan hanya `title`).
+- Ukuran: `text-base` (16px) di dalam teks, `text-xl` (20px) di tombol, `text-2xl` (24px) di navigasi. Bukan `fs-*`.
+- Codemod menghapus `<span class="pathN"></span>` di dalam Keenicons, mengganti class sesuai tabel, mempertahankan class lain pada `<i>` (misal `me-2` → `me-2`), dan **gagal** bila ada ikon yang tidak terdaftar.
+- Semua nama tujuan sudah diverifikasi ada di `phosphor/regular/style.css`.
+
+**Keenicons (18 nama, 56 pemakaian)**
+
+| Lama | Phosphor | | Lama | Phosphor |
+|---|---|---|---|---|
+| `ki-cross` | `ph-x` | | `ki-trash` | `ph-trash` |
+| `ki-star` | `ph-star` | | `ki-search-list` | `ph-list-magnifying-glass` |
+| `ki-purchase` | `ph-shopping-bag` | | `ki-pencil` | `ph-pencil-simple` |
+| `ki-plus` | `ph-plus` | | `ki-gift` | `ph-gift` |
+| `ki-package` | `ph-package` | | `ki-gear` | `ph-gear` |
+| `ki-magnifier` | `ph-magnifying-glass` | | `ki-down` | `ph-caret-down` |
+| `ki-information-5` | `ph-info` | | `ki-chef-hat` | `ph-chef-hat` |
+| `ki-check` | `ph-check` | | `ki-calculator` | `ph-calculator` |
+| `ki-arrow-right` | `ph-arrow-right` | | `ki-book` | `ph-book-open` |
+
+**Bootstrap Icons (20 nama, 145 pemakaian)**
+
+| Lama | Phosphor | | Lama | Phosphor |
+|---|---|---|---|---|
+| `bi-three-dots-vertical` | `ph-bold ph-dots-three-vertical` | | `bi-whatsapp` | `ph-whatsapp-logo` |
+| `bi-trash` | `ph-trash` | | `bi-save` | `ph-floppy-disk` |
+| `bi-pencil-square`, `bi-pencil`, `bi-pencil-fill` | `ph-pencil-simple` | | `bi-plus`, `bi-plus-lg` | `ph-plus` |
+| `bi-eye` | `ph-eye` | | `bi-dash-lg` | `ph-minus` |
+| `bi-cash-stack` | `ph-money` | | `bi-person-bounding-box` | `ph-user-focus` |
+| `bi-check2-circle`, `bi-check-circle` | `ph-check-circle` | | `bi-check-circle-fill` | `ph-fill ph-check-circle` |
+| `bi-lock-fill` | `ph-fill ph-lock` | | `bi-box-arrow-up-right` | `ph-arrow-square-out` |
+| `bi-box`, `bi-box-seam` | `ph-package` | | `bi-arrow-left` / `bi-arrow-right` | `ph-arrow-left` / `ph-arrow-right` |
+
+**FontAwesome (14 nama, 34 pemakaian)**
+
+| Lama | Phosphor | | Lama | Phosphor |
+|---|---|---|---|---|
+| `fa-plus` | `ph-plus` | | `fa-trash-alt`, `fa-trash` | `ph-trash` |
+| `fa-print` | `ph-printer` | | `fa-paste` | `ph-clipboard-text` |
+| `fa-eye` | `ph-eye` | | `fa-minus` | `ph-minus` |
+| `fa-times` | `ph-x` | | `fa-history` | `ph-clock-counter-clockwise` |
+| `fa-pencil`, `fa-edit` | `ph-pencil-simple` | | `fa-file` | `ph-file` |
+| `fa-receipt` | `ph-receipt` | | `fa-comment` | `ph-chat-text` |
+| `fa-check` | `ph-check` | | `fa-3x`, `fa-lg`, `fa-fw` (ukuran) | `text-3xl` / `text-lg` / `w-5 text-center` |
+
+Pilihan `ph-pencil-simple` untuk semua aksi "ubah" dan `ph-trash` untuk "hapus" mengikuti konvensi yang sudah ada (17 dan 21 pemakaian). Ikon di file kandidat mati tidak dipetakan; file itu dihapus. Bila main bertambah ikon lama baru sebelum batch-nya, codemod akan gagal dan tabel ini ditambah.
 
 ---
 
-## 5. Komponen yang dibangun (B1)
+## 5. Komponen yang dibangun
 
-Semua komponen adalah Blade anonymous component di `resources/views/components/erp/` dengan logika Alpine di `resources/js/erp/`. Setiap komponen punya test Blade render (feature test) dan, bila ada logika JS, test `node --test`.
+Semua komponen adalah Blade anonymous component di `resources/views/components/erp/`, dengan logika Alpine di `resources/js/erp/`. Setiap komponen punya feature test render dan, bila ada logika JS, test `node --test`.
 
 ### 5.1 Overlay
 
 | Komponen | API | Perilaku wajib |
 |---|---|---|
-| `x-erp.dialog` | `id`, `title`, `size` (`sm/md/lg/xl/full`), `variant` (`center` / `sheet` = bottom sheet di mobile), slot `header`, default, `footer`, `static` (tidak tertutup klik backdrop) | `<dialog>` + `showModal()`; Esc menutup (kecuali `static`); fokus pertama dan pemulihan fokus; scroll-lock body; tinggi dibatasi `dvh` dengan isi yang scroll (seperti `.erp-sheet-dialog` sekarang); event `erp:dialog-open`/`erp:dialog-close` (ditambah `shown.bs.modal`/`hidden.bs.modal` selama masa jembatan, §5.3) |
-| `x-erp.drawer` | `id`, `side` (`right`/`bottom`), `width`, slot | sama seperti dialog; memakai containment + inert di `erp-overlays.js`; menggantikan `data-kt-drawer` |
-| `x-erp.dropdown` | `align`, `placement`, slot `trigger`, default | klik/Enter/Space membuka; Esc + klik luar menutup; navigasi panah; posisi otomatis naik bila mepet bawah (row aksi DataTables di baris terakhir); tidak terpotong `overflow` tabel (teleport ke body untuk tabel) |
+| `x-erp.dialog` | `id`, `title`, `size` (`sm/md/lg/xl/full`), `variant` (`center` / `sheet` = bottom sheet di mobile), slot `header`/default/`footer`, `static` | `<dialog>` + `showModal()`; Esc menutup (kecuali `static`); fokus awal + pemulihan fokus; scroll-lock; tinggi dibatasi `dvh` dengan isi yang scroll (setara `.erp-sheet-dialog` sekarang); event `erp:dialog-open/close`, ditambah `show/shown/hide/hidden.bs.modal` selama masa jembatan |
+| `x-erp.drawer` | `id`, `side` (`right`/`bottom`), `width`, slot | Seperti dialog; containment + inert dari `erp-overlays.js` |
+| `x-erp.dropdown` | `align`, `placement`, slot `trigger`/default | Klik/Enter/Space membuka; Esc + klik luar menutup; navigasi panah; naik otomatis bila mepet bawah; teleport ke `body` di dalam tabel |
 | `x-erp.tooltip` | `text`, `placement` | hover + fokus; `aria-describedby` |
-| `x-erp.toast` / `erp.toast()` | `type`, `message` | dibangun di atas `Swal.mixin({toast:true})`; menggantikan `toastr` |
+| `erp.toast()` (JS) | `type`, `message` | Di atas `Swal.mixin({ toast: true })`; menggantikan `toastr` |
 
-### 5.2 Konten dan form
+### 5.2 Konten dan data
 
-| Komponen / class | Catatan |
-|---|---|
-| `x-erp.tabs` + `x-erp.tab` | `role=tablist`; navigasi panah; mendukung `?tab=` di URL bila halaman lama memakai hash |
-| `x-erp.collapse` | `x-collapse`; `aria-expanded`/`aria-controls` |
-| `x-erp.check-all` | header checkbox mengontrol `[data-erp-check]`; state indeterminate; terhubung ke DataTables redraw |
-| `x-erp.panel` | pembungkus `erp-panel` |
-| `x-erp.badge` | variant status; dipakai juga oleh controller (§6.3) |
-| `x-erp.row-actions` | tombol titik tiga + dropdown standar untuk kolom aksi DataTables; dirender di server |
-| `erp-input`, `erp-select`, `erp-textarea`, `erp-check`, `erp-radio`, `erp-label`, `erp-error`, `erp-help`, `erp-input-group` | `@layer components`; tinggi 44px, radius 12px, focus-visible teal 2px offset 3px, state error merah + `aria-invalid` |
-| `erp-btn` + `-primary/-secondary/-danger/-ghost/-icon/-sm/-block` | disabled = opacity + `cursor-not-allowed`; slot spinner `[data-loading]` |
-| `erp-table` | header, padding, border dashed, angka tabular |
-
-Komponen yang sudah ada (`workspace`, `collection`, `detail-dialog`, `dropdown-select`, `load-more`, `mobile-*`, `sidebar`, `topbar`) dibersihkan dari class Bootstrap di B1. `detail-dialog` dibangun ulang di atas `x-erp.dialog`, dan `dropdown-select` dievaluasi: dilebur ke `erp-picker` atau dipertahankan.
+| Komponen | API | Catatan |
+|---|---|---|
+| `x-erp.tabs` + `x-erp.tab` | `name`, `label`, `active` | `role=tablist`, navigasi panah, mendukung `?tab=` |
+| `x-erp.collapse` | `open`, slot `trigger`/default | `x-collapse`, `aria-expanded/controls` |
+| `x-erp.check-all` | `target` (selector) | header mengontrol `[data-erp-check]`; indeterminate; ikut DataTables `draw` |
+| `x-erp.panel` | `title`, slot `toolbar`/default/`footer`, `padding` | pembungkus `erp-panel` |
+| `x-erp.badge` | `tone` (`success/warning/danger/info/neutral/primary`), slot | `erp-badge erp-badge--{tone}` |
+| `x-erp.avatar` | `name`, `src`, `tone`, `size` | inisial bila tanpa gambar; tone dari daftar tetap (bukan konkatenasi bebas) |
+| `x-erp.image-input` | `name`, `value`, `accept` | pengganti `KTImageInput`; dibangun saat batch yang membutuhkan (B3) |
 
 ### 5.3 Jembatan sementara `legacy-bridge.js`
 
-Banyak skrip halaman memanggil `bootstrap.Modal.getOrCreateInstance(el).show()`, `$('#x').modal('hide')`, dan mendengarkan `shown.bs.modal`. Supaya port bisa dilakukan per halaman tanpa menulis ulang semua JS sekaligus:
+Banyak skrip halaman memanggil `bootstrap.Modal.getOrCreateInstance(el).show()`, `$('#x').modal('hide')`, dan mendengarkan `shown.bs.modal`. Supaya port bisa per halaman:
+- Di `layouts.erp`, `window.bootstrap = { Modal, Tooltip }` adalah shim kecil: Modal meneruskan ke `x-erp.dialog` (`show/hide/toggle/getInstance/getOrCreateInstance`) dan memancarkan event `*.bs.modal`; Tooltip no-op. `$.fn.modal` mendapat shim yang sama.
+- Dropdown/Tab/Collapse **tidak** di-shim; markup-nya langsung diganti komponen.
+- Setiap pemakaian shim menulis `console.warn` di mode dev. Grep `bootstrap\.` dan `.modal(` harus 0 di akhir B5; shim dihapus di B6.
 
-- Di layout baru (`layouts.erp`), `window.bootstrap = { Modal }` adalah shim kecil yang meneruskan ke `x-erp.dialog` (`show`, `hide`, `toggle`, `getInstance`, `getOrCreateInstance`) dan memancarkan `show/shown/hide/hidden.bs.modal`. `$.fn.modal` mendapat shim yang sama.
-- Shim **hanya** untuk Modal (dan Tooltip no-op). Dropdown/Tab/Collapse langsung diganti markup komponen.
-- Setiap pemakaian shim dicatat (`console.warn` di dev) dan **dihapus di B6**. Grep `bootstrap\.` dan `.modal(` harus 0 di akhir B5.
+### 5.4 Class komponen CSS
+
+| Class | Isi |
+|---|---|
+| `erp-action` + `--primary` `--secondary` `--danger` `--ghost` `--icon` `--sm` `--block` | Keluarga yang sudah ada (107 pemakaian) dirapikan. `erp-button` (16) dilebur ke sini. Tinggi `h-control`, radius `rounded-control`, focus-visible teal 2px offset 3px, disabled `opacity-50 cursor-not-allowed`, slot spinner `[data-loading]`. |
+| `erp-input`, `erp-select`, `erp-textarea` | Berbasis `form-input/form-select/form-textarea` (plugin forms), tinggi 44px, radius 12px, 16px di < 768px; `[aria-invalid=true]` merah |
+| `erp-check`, `erp-radio` | berbasis `form-checkbox/form-radio`, warna teal |
+| `erp-label`, `erp-label--required`, `erp-help`, `erp-error` | `erp-error` dihubungkan lewat `aria-describedby` |
+| `erp-input-group` | prefix/suffix (Rp, satuan) dengan border bersama |
+| `erp-badge` + `--{tone}` | radius `rounded-md`, `text-xs font-semibold`, warna soft (bg-50 + text-700) |
+| `erp-table` | header, padding baris, border dashed, `tabular-nums` |
+| `erp-panel`, `erp-sheet-*`, `erp-record` | yang sudah ada dipindah ke `resources/css/components/` dan dibersihkan dari ketergantungan Bootstrap |
+| `erp-avatar` + `--sm/md/lg` + `--{tone}` | pengganti `symbol` |
 
 ---
 
-## 6. Strategi plugin
+## 6. Strategi plugin dan backend
 
 ### 6.1 DataTables
 
-- Ganti `datatables.bundle.*` Metronic dengan npm:
-  - `datatables.net@1.13.x` (versi sama dengan sekarang, 1.13.7, supaya API tidak berubah)
-  - `datatables.net-fixedcolumns`, `datatables.net-responsive`, `datatables.net-select` (sesuai pemakaian §2.3)
-- **Tanpa** `datatables.net-bs5`. JSZip/pdfmake tidak dipasang kecuali audit B0 menemukan tombol export.
-- Skin `resources/css/vendor/datatables.css`: wrapper, `dataTables_length/filter/info/paginate`, sort icon, `processing`, `fixedColumns`. Semuanya memakai token.
-- `erp-collections.js` (membaca DOM DataTables untuk daftar mobile) dipertahankan. Selector-nya diaudit karena class wrapper bs5 seperti `.row`, `.col-sm-12` di `dom` default bs5 akan hilang. Opsi `dom` di setiap halaman dicek.
+- Ganti `datatables.bundle.*` Metronic dengan npm `datatables.net@1.13.x` (API sama dengan 1.13.7 sekarang) + `datatables.net-fixedcolumns`, `datatables.net-responsive`, `datatables.net-select`. **Tanpa** `datatables.net-bs5`. JSZip/pdfmake hanya dipasang bila audit B0 menemukan tombol export.
+- Skin `resources/css/vendor/datatables.css` memakai token: wrapper, length, filter, info, paginate, ikon sort, processing, fixedColumns.
+- `erp-collections.js` (daftar mobile dari DOM DataTables) dipertahankan; selector-nya diaudit karena `dom` default bs5 (`.row`, `.col-sm-12`) hilang. Opsi `dom` di setiap halaman dicek.
 - Upgrade ke DataTables 2.x **bukan** bagian migrasi ini.
-- Selama B0–B5: halaman lama tetap memuat bundle Metronic dan halaman baru memuat build npm. Satu halaman tidak pernah memuat keduanya.
+- Satu halaman tidak pernah memuat bundle Metronic dan build npm sekaligus.
 
 ### 6.2 Select2 → `erp-picker`
 
-- `erp-picker.js` sudah mendukung sumber ajax/statis, pagination, extra data dan modal hosting.
-- Setiap batch mengganti semua `select2` di halamannya dengan `erp-picker`. Event `select2:select` yang didengar skrip halaman dipetakan ke event `erp-picker`; daftar event ditulis di §5 saat B1.
-- Saat select2 terakhir hilang (B5), jembatan `select2` di `erp-picker.js` dan CSS adapter select2 di `erp-theme.css` dihapus (B6).
+Setiap batch mengganti semua `select2` di halamannya. Event `select2:select/unselect/clear` yang didengar skrip halaman dipetakan ke event `erp-picker` (daftar event ditulis di B1). Setelah select2 terakhir hilang (B5), jembatan di `erp-picker.js` dan adapter select2 di `erp-theme.css` dihapus (B6).
 
-### 6.3 HTML dari controller
+### 6.3 HTML dari controller (Q24)
 
-- Semua HTML di `addColumn`/`editColumn` dipindah ke Blade partial/komponen: `view('components.erp.row-actions', [...])->render()` atau partial modul `master::products.partials.actions`. Hal yang sama berlaku untuk badge (`x-erp.badge`).
-- Logika otorisasi (`check_access`) **tetap di controller atau dioper ke partial apa adanya**. Tidak ada perubahan perilaku.
-- Ini perubahan backend dan dilaporkan di setiap PR.
-- `ProductionController_temp.php`, `PosController.php.temp` dan `StockOpnameController.php.temp` adalah kandidat mati (B6).
+Empat komponen server-render menggantikan pola §2.6:
+
+```php
+// Sebelum — ProductUnitController
+$html = '<div class="dropstart"><button class="btn btn-sm btn-light-primary dropdown-toggle" data-bs-toggle="dropdown">'
+      . '<i class="bi bi-three-dots-vertical"></i></button><ul class="dropdown-menu p-1">';
+if (check_access('unit.edit')) {
+    $html .= '<li><a class="dropdown-item" onclick="editProduct(' . $row->id . ')"><i class="bi bi-pencil-square"></i></a></li>';
+}
+
+// Sesudah
+->addColumn('action', fn ($row) => view('components.erp.row-actions', [
+    'label'   => "Aksi {$row->name}",
+    'actions' => [
+        ['label' => 'Ubah',  'icon' => 'pencil-simple', 'onclick' => "editProduct({$row->id})",   'can' => check_access('unit.edit')],
+        ['label' => 'Hapus', 'icon' => 'trash', 'tone' => 'danger', 'onclick' => "deleteProduct({$row->id})", 'can' => check_access('unit.delete')],
+    ],
+])->render())
+->addColumn('name', fn ($row) => view('components.erp.cell-title', [
+    'title' => $row->name, 'subtitle' => $row->description,
+])->render())
+->addColumn('type', fn ($row) => view('components.erp.badge', [
+    'tone' => ['+' => 'success', '-' => 'danger'][$row->type] ?? 'primary', 'slot' => $row->type,
+])->render())
+```
+
+| Komponen | Props | Menggantikan |
+|---|---|---|
+| `x-erp.row-actions` | `label` (aria), `actions[]` = `label`, `icon`, `href`/`onclick`/`data`, `tone`, `can`, `confirm` | 41 dropdown aksi; item dengan `can=false` tidak dirender; bila semua item `can=false`, komponen tidak merender apa-apa |
+| `x-erp.cell-title` | `title`, `subtitle`, `href` | 21 sel nama + subjudul |
+| `x-erp.badge` | `tone`, slot | ±95 badge |
+| `x-erp.avatar` | `name`, `src`, `tone`, `size` | `symbol` + `bg-light-{$warna}` dinamis |
+
+Aturan:
+- Pengecekan akses (`check_access`) tetap di controller; nilainya dioper sebagai `can`. Handler `onclick`/`data-*` yang dipakai JS halaman **tidak berubah**.
+- Output memakai `{{ }}` (escape). Ini juga menutup XSS untuk kolom yang dimigrasi; PR keamanan Q25 tetap dibuat untuk kolom yang belum dimigrasi.
+- Kolom yang hanya berisi angka/teks tanpa HTML tidak disentuh.
+- Bila render Blade per baris terlalu lambat (diukur di B2 pada tabel 100 baris), komponen di-cache per request atau dipindah ke helper PHP. Ini fallback, bukan rencana awal.
+- Setiap PR mencantumkan controller yang diubah (perubahan backend).
 
 ### 6.4 Lainnya
 
 | Plugin | Keputusan |
 |---|---|
-| SweetAlert2 | npm `sweetalert2`, diekspor ke `window.Swal`. Override token di `swal.css`. |
-| Flatpickr | npm `flatpickr` + locale `id`. |
-| `toastr` (1 file) | Diganti `erp.toast()` di B4. |
-| ApexCharts (`crm::dashboard`) | Bila halamannya hidup, npm `apexcharts` diimpor hanya di halaman itu; bila mati, dihapus. |
-| Quill, `KTImageInput`, `KTPasswordMeter` | Hanya ada di `master::products.edit` (kandidat mati) dan `crm::tier`. Image input ditulis ulang sebagai komponen Alpine kecil `x-erp.image-input` di batch yang membutuhkannya. |
-| Firebase messaging | Tidak tersentuh; dipindah apa adanya ke layout baru. |
-| jQuery | Tetap (npm `jquery`, `window.$`), selama DataTables dan skrip halaman masih memakainya. Penghapusan jQuery **bukan** tujuan migrasi ini. |
+| SweetAlert2 | npm, `window.Swal`, override token di `vendor/swal.css` |
+| Flatpickr | npm + locale `id`, override token di `vendor/flatpickr.css` |
+| `toastr` (1 file) | `erp.toast()` di B4 |
+| ApexCharts | npm, impor hanya di halaman CRM dashboard bila hidup |
+| Quill, `KTImageInput`, `KTPasswordMeter` | Halaman pemakainya kandidat mati, kecuali `crm::tier` → `x-erp.image-input` |
+| jQuery | Tetap (npm, `window.$`) selama DataTables dan skrip halaman memakainya. Menghapus jQuery bukan tujuan migrasi ini. |
+| Firebase messaging | Dipindah apa adanya ke layout baru |
 
 ---
 
-## 7. Risiko dan jebakan
+## 7. Yang dibangun dan yang dibuang
 
-### 7.1 Daftar risiko
+### 7.1 Dibangun
+
+| Kategori | Item | Batch |
+|---|---|---|
+| Build | `package.json` baru, `vite.config.js`, `postcss.config.js`, `tailwind.config.js` | B0 |
+| Build sementara | `tailwind.legacy.config.js`, `resources/css/legacy.css` | B0 (dihapus B6) |
+| CSS | `resources/css/app.css` (base 16px/body 13px, token, import), `resources/css/components/*`, `resources/css/vendor/{datatables,flatpickr,swal,phosphor}.css` | B0–B1 |
+| CSS halaman | `resources/css/pages/*` (pindahan 18 file, Q29) | saat halamannya diport |
+| JS | `resources/js/app.js`, `resources/js/erp/{dialog,drawer,dropdown,tabs,collapse,check-all,tooltip,toast}.js`; `erp-overlays`, `erp-picker`, `erp-collections` dipindah ke `resources/js/erp/` | B0–B1 |
+| JS sementara | `resources/js/legacy-bridge.js` | B1 (dihapus B6) |
+| JS halaman | `resources/js/pages/*` (pindahan `public/assets/js/*`) | saat halamannya diport |
+| Layout | `layouts/erp.blade.php`, `layouts/guest.blade.php` | B1 |
+| Blade component | `dialog`, `drawer`, `dropdown`, `tooltip`, `tabs`, `tab`, `collapse`, `check-all`, `panel`, `badge`, `avatar`, `row-actions`, `cell-title` | B1 |
+| Blade component | `image-input` | B3 |
+| Komponen dibangun ulang | `detail-dialog` (di atas `dialog`), `dropdown-select` (dilebur ke `erp-picker` atau dipertahankan), `sidebar`/`topbar`/`mobile-navbar` bersih dari Bootstrap | B1 |
+| Class komponen | `erp-action*` (dirapikan), `erp-input`, `erp-select`, `erp-textarea`, `erp-check`, `erp-radio`, `erp-label*`, `erp-help`, `erp-error`, `erp-input-group`, `erp-badge*`, `erp-table`, `erp-avatar*` | B1 |
+| Tooling | `scripts/ui-migrate/class-map.json`, `icon-map.json`, `codemod.mjs` (class + ikon, mode `--check` / `--write`, per file/folder), `class-audit.mjs` (class dipakai vs CSS compiled) | B0 (map) / B1 (codemod) |
+| Test | `NoLegacyUiMarkupTest` + `tests/fixtures/legacy-ui-allowlist.php`, test render tiap komponen, test JS `erp-collections`, test bahwa view print/pdf tidak memuat `@vite` | B0–B1 |
+| Dokumen | README "Build frontend", `docs/ui-design-system.md` (komponen, class, ukuran 16/13), aturan Q19 di `AGENTS.md` | B0–B1 |
+
+### 7.2 Dibuang
+
+| Item | Ukuran / jumlah | Batch | Syarat |
+|---|---|---|---|
+| `<script src="https://cdn.tailwindcss.com">` + 2 `tailwind.config` inline | 4 file | B0 | — |
+| Alpine dari unpkg/jsdelivr, SweetAlert2 CDN, jQuery CDN di layout | — | B0 | diganti bundle npm |
+| Laravel Mix: `webpack.mix.js`, `resources/sass/`, `resources/js/bootstrap.js`, `public/mix-manifest.json`, `public/css/app.css`, `public/js/app.js` | 1,3 MB | B0, atau B1 bila `layouts.app` masih hidup | `layouts.app` terbukti mati |
+| Dependensi npm: `laravel-mix`, `bootstrap@4`, `popper.js`, `sass`, `sass-loader`, `resolve-url-loader`, `vue-template-compiler`, `cross-env`; `axios`/`lodash` bila tak terpakai | — | B0 | — |
+| CSS inline sidebar di `layouts.erp-tailwind` | ±100 baris | B0 | dipindah ke `app.css` |
+| Dark mode: toggle Pengaturan, skrip `data-bs-theme`, `ki-night-day`/`ki-moon` | — | B1 | — |
+| `layouts.erp-tailwind` (menjadi alias, lalu dihapus) | — | B1 / B6 | — |
+| `template - Copy/` | folder | B1 | — |
+| View kandidat mati (Lampiran A ⚠) | ±50 view | batch modulnya | dikonfirmasi pemilik repo |
+| `PosController.php.temp`, `StockOpnameController.php.temp`, `ProductionController_temp.php` | 3 file | B4/B5 | dikonfirmasi |
+| Bobot Phosphor light + thin | 2 dari 6 | B0 | — |
+| `template/root.blade.php` + sisa `template/*` | ±25 view | B6 | 0 view memakai `template.root` |
+| `public/assets/css/style.bundle.css` | 1,2 MB | B6 | — |
+| `public/assets/plugins/global/` (`plugins.bundle.*`, font ikon Keenicons/BS Icons/FA) | 11 MB | B6 | grep ikon lama = 0 |
+| `public/assets/plugins/custom/` (datatables, formrepeater, ckeditor, tinymce, fullcalendar, jstree, leaflet, …: 16 plugin) | 12 MB | B6 | hanya `datatables` + `formrepeater` yang direferensikan; keduanya sudah tidak dipakai |
+| `public/assets/js/scripts.bundle.js`, `widgets.bundle.js`, `public/assets/js/custom/` (133 file demo) | 1,4 MB | B6 | — |
+| `public/assets/media/` | 47 MB | B6 | **audit per file**: hanya `svg/files/*`, `avatars/300-*`, `flags/indonesia.svg` yang direferensikan file hidup; yang dipakai dipindah ke `public/images/`, sisanya dihapus |
+| `public/jquery.js`, `public/js/jquery.min.js` | 88 KB + | B6 | 0 referensi |
+| `public/mask/`, `public/error/`, `public/font/`, `public/assets-landing/` | 4,6 MB | B6 | 0 referensi statis terdeteksi; cek ulang (bisa dipakai lewat CSS/JS) |
+| `public/infruity-ui/` | 27 MB | **tidak dibuang otomatis** | 7 referensi; ditanyakan ke pemilik repo |
+| Adapter Bootstrap/select2/DataTables-bs5 di `erp-theme.css` | ±150 baris | B6 | — |
+| Jembatan select2 di `erp-picker.js`; `legacy-bridge.js`; `tailwind.legacy.config.js`; `legacy.css`; `layouts.erp-tailwind` | — | B6 | — |
+| Fixture allowlist ratchet | — | B6 | allowlist kosong (test-nya tetap ada) |
+
+---
+
+## 8. Risiko, audit, penjaga
+
+### 8.1 Risiko
 
 | # | Risiko | Mitigasi |
 |---|---|---|
-| R1 | Class yang hanya dibentuk di runtime (konkatenasi JS/PHP, `'text-' + status`) tidak ikut ter-compile, karena CDN dulu men-scan DOM sedangkan compiled men-scan file. | Audit §7.2 di B0. Safelist eksplisit. Screenshot sebelum/sesudah B0 harus identik. |
-| R2 | Kehilangan `!important` Metronic mengubah urutan menang CSS kustom `erp-*.css`. | Port per halaman + screenshot. Tidak menambah `!important` baru (aturan ui-design-system). |
-| R3 | `collapse`, `container`, `table` bentrok (§4.1). | Diganti di setiap port; grep di B1 untuk `class="...collapse` di halaman Tailwind. |
-| R4 | Skala gray Metronic ≠ Tailwind, sehingga warna teks bergeser diam-diam. | Aturan §4.1; review screenshot fokus pada warna teks. |
-| R5 | Livewire + Alpine dobel. | §3.4; halaman `produk` diuji di B0 dan B2. |
-| R6 | DataTables kehilangan markup bs5 dan `erp-collections.js` patah. | §6.1; test JS untuk `erp-collections` ditambahkan di B0. |
-| R7 | Uang: POS payment, delivery order payment, arus kas, wholesale. | POS di B5 (paling akhir). Test kontrak uang tidak boleh diubah maknanya, hanya selector. Smoke test alur uang manual (§8.3). |
-| R8 | Build di server gagal: Node tidak ada atau versinya tidak cocok. | B0 menulis langkah deploy + versi Node minimum di README dan memverifikasinya di server **sebelum** PR B0 di-merge. Fallback: commit `public/build` sementara. |
-| R9 | Cache: `asset()?v=filemtime` vs manifest Vite. | Aset Vite memakai hash otomatis. File di `public/assets` yang belum dipindah tetap memakai `filemtime`. |
-| R10 | Branch UI lain di `main` terus menambah markup Bootstrap. | Test ratchet §7.3 dan aturan di `AGENTS.md` mulai B1. |
-| R11 | `ui/produksi-reference` / `ui/stock-opname-reference` konflik dengan B4. | Q14: kedua branch masuk `main` dulu, B4 dibuat setelahnya. |
-| R12 | View dompdf (`chat::srrd`) dan Excel ikut terkena perubahan. | Dikecualikan (Q15). Test memastikan view tersebut tidak memuat `@vite`. |
-| R13 | Breakpoint lg/xl bergeser (§4.1). | Screenshot di 1024 dan 1280 selain 390 dan 1440. |
-| R14 | Halaman yang dikira mati ternyata masih dipakai (referensi dinamis, bookmark user, route di `.temp`). | Sebelum menghapus: cek route (`php artisan route:list`), cek log akses bila ada, dan **konfirmasi ke pemilik repo** dengan daftar per batch. |
-| R15 | PHP lokal default 8.3 (repo butuh ^8.5). | Jalankan dengan `/opt/homebrew/opt/php@8.5/bin/php`. |
+| R1 | Class yang disusun di runtime (konkatenasi JS/PHP) tidak ikut ter-compile: CDN men-scan DOM, compiled men-scan file | Audit §8.2 di B0; safelist eksplisit; screenshot B0 harus identik |
+| R2 | Kehilangan `!important` Metronic mengubah urutan menang CSS `erp-*` | Port per halaman + screenshot; tidak ada `!important` baru |
+| R3 | Bentrok nama `collapse`/`container`/`table`/`border`/`rounded`/`shadow` | Selalu manual (§4.2); codemod menolaknya |
+| R4 | Ukuran bergeser: root 13px → 16px | Tabel konversi §4.1; screenshot fokus pada ukuran teks dan jarak |
+| R5 | Teks tanpa class di 20 halaman Tailwind berubah 16px → 13px karena body 13px | Cek di B1; beri `text-base` eksplisit bila memang 16px |
+| R6 | Livewire + Alpine dobel | §3.5; halaman `produk` diuji di B0 dan B2 |
+| R7 | DataTables kehilangan markup bs5, `erp-collections.js` patah | §6.1; test JS `erp-collections` ditambahkan di B0 |
+| R8 | Uang: POS payment, delivery order payment, arus kas, wholesale | POS paling akhir (B5); makna test kontrak uang tidak berubah; smoke test dua kali (Claude + pemilik repo) |
+| R9 | Build di server gagal | B0 menulis langkah deploy + versi Node minimum, diverifikasi di server **sebelum** PR B0 di-merge; fallback sementara: commit `public/build` |
+| R10 | Cache `?v=filemtime` vs manifest Vite | Aset Vite memakai hash; file di `public/assets` yang belum dipindah tetap `filemtime` |
+| R11 | Pekerjaan UI lain di `main` menambah markup Bootstrap | Test ratchet §8.3 + aturan `AGENTS.md` mulai B1 |
+| R12 | Konflik dengan `ui/produksi-reference`/`ui/stock-opname-reference` | Q14 |
+| R13 | View dompdf/Excel ikut berubah | Dikecualikan; test memastikan tidak memuat `@vite` |
+| R14 | Breakpoint `sm`/`lg`/`xl` bergeser | Screenshot di 390, 600, 1000, 1240, 1440 |
+| R15 | Halaman "mati" ternyata dipakai (referensi dinamis, bookmark) | Cek `route:list` + konfirmasi pemilik repo sebelum hapus |
+| R16 | Render Blade per baris memperlambat DataTables | Ukur di B2 (100 baris); fallback §6.3 |
+| R17 | PHP lokal default 8.3 (repo ^8.5) | Pakai `/opt/homebrew/opt/php@8.5/bin/php` |
 
-### 7.2 Audit class dinamis (B0)
+### 8.2 Audit class dinamis (B0, diulang setiap batch)
 
-1. `grep` konkatenasi class di `public/assets/js/*.js` (non-bundle), `<script>` inline Blade, dan PHP (`'badge-' .`, `"text-{$x}"`, template literal `` `bg-${...}` ``).
-2. Untuk setiap temuan: ganti dengan map class lengkap (`{success: 'erp-badge--success', ...}`), atau tambahkan ke `safelist` bila tidak bisa diubah di B0.
-3. Bandingkan CSS: render 20 halaman `erp-tailwind` + sampel `template.root`, kumpulkan `document.querySelectorAll('[class]')` → set class unik, lalu cek setiap class ada di CSS compiled. Script ini disimpan di `scripts/tailwind-class-audit.js` dan dijalankan ulang di setiap batch.
+1. Grep konkatenasi class di `public/assets/js/*.js`, `<script>` inline Blade, dan PHP (`'badge-' .`, `'bg-light-' . $color`, `"text-{$x}"`, template literal `` `bg-${…}` ``).
+2. Setiap temuan diganti map class lengkap (`{ success: 'erp-badge--success', … }`), atau dimasukkan ke `safelist` bila belum bisa diubah.
+3. `scripts/ui-migrate/class-audit.mjs` me-render halaman sampel lewat browser, mengumpulkan semua class di DOM, lalu memastikan setiap class Tailwind ada di CSS compiled. Dijalankan di setiap PR.
 
-### 7.3 Test ratchet "tidak ada Bootstrap baru"
+### 8.3 Test ratchet "tidak ada markup lama baru" (B1)
 
-`tests/Feature/NoLegacyUiMarkupTest.php` (B1):
-
-- Memindai semua `*.blade.php` dan PHP backend untuk penanda: `data-bs-`, `data-kt-`, `\bki-(duotone|outline|solid)`, `\bbi-`, `\bfa[srb]? fa-`, `form-control`, `form-select`, `btn btn-`, `class="[^"]*\bmodal\b`, `select2`, `bootstrap\.`, `KT[A-Z]`, `@extends('template.root')`.
-- Membandingkan dengan `tests/fixtures/legacy-ui-allowlist.php` (path → jumlah hit maksimum).
-- **Gagal** bila ada file baru dengan penanda, atau jumlah hit sebuah file **naik**.
-- Setiap batch menurunkan atau menghapus entri allowlist. Di akhir B6 allowlist kosong dan file fixture dihapus.
+`tests/Feature/NoLegacyUiMarkupTest.php` memindai `*.blade.php` dan PHP backend untuk penanda: `data-bs-`, `data-kt-`, `ki-(duotone|outline|solid)`, `\bbi-`, `\bfa[srb]? fa-`, `form-control`, `form-select`, `btn btn-`, `class="[^"]*\bmodal\b`, `select2`, `bootstrap\.`, `KT[A-Z]`, `@extends('template.root')`, `cdn.tailwindcss.com`, dan hex di class (`-\[#`). Hasilnya dibandingkan dengan `tests/fixtures/legacy-ui-allowlist.php` (path → jumlah maksimum). Test **gagal** bila ada file baru dengan penanda atau jumlah sebuah file naik. Setiap batch menurunkan allowlist; di akhir B6 kosong.
 
 ---
 
-## 8. Prosedur verifikasi
+## 9. Prosedur verifikasi
 
-### 8.1 Lingkungan lokal
+### 9.1 Lingkungan lokal
 
 ```bash
 cp ../../../.env .env   # sudah dilakukan; tidak di-commit
 /opt/homebrew/opt/php@8.5/bin/php /opt/homebrew/bin/composer install
-npm ci
-npm run dev             # atau npm run build
+npm ci && npm run dev
 /opt/homebrew/opt/php@8.5/bin/php artisan serve
 ```
 
-DB: `infruity_clone` di MySQL lokal. Akun login memakai user dari data dummy yang ada (tidak ditulis di repo).
+DB `infruity_clone` (dummy). Akun login memakai user dari data yang ada (tidak ditulis di repo).
 
-### 8.2 Resep port per halaman (B1–B5)
+### 9.2 Resep port per halaman (B1–B5)
 
-1. **Sebelum**: screenshot di 390, 1024, 1280 dan 1440 px untuk state kosong, berisi, modal/sheet terbuka, error validasi, dan loading DataTables. Disimpan di scratchpad, tidak di repo.
-2. Ubah `@extends('template.root')` → `@extends('layouts.erp')`.
-3. Ganti markup sesuai §4 dan komponen §5.
-4. Ganti JS: `bootstrap.Modal`/`.modal()` → API dialog (atau shim §5.3 bila skripnya besar; dicatat), `select2` → `erp-picker`, `data-kt-*` → komponen.
-5. HTML controller untuk halaman itu → partial/komponen (§6.3).
-6. Ikon → Phosphor (§4.3).
-7. Perbarui test pengunci (kolom Lampiran A): selector boleh berubah, **perilaku yang dikunci tidak boleh hilang**.
-8. **Sesudah**: screenshot pada state yang sama; bandingkan. Selisih yang disengaja (mengikuti referensi) dicatat di PR.
-9. Turunkan atau hapus entri allowlist ratchet dan centang Lampiran A.
+1. **Sebelum**: screenshot di 390, 1024, 1280, 1440 px untuk state kosong, berisi, modal/sheet terbuka, error validasi, loading DataTables (disimpan di scratchpad, tidak di repo).
+2. Jalankan `codemod --check` pada file halaman (+ partial + controller-nya) dan baca laporannya.
+3. Jalankan `codemod --write`, lalu review diff.
+4. `@extends('template.root')` → `@extends('layouts.erp')`.
+5. Kerjakan manual: komponen §5 (modal, dropdown, card, form, tabs), bentrok nama §4.2, konversi ukuran §4.1 (atau nilai referensi), ikon tanpa padanan.
+6. JS: `bootstrap.Modal`/`.modal()` → API dialog (atau shim, dicatat), `select2` → `erp-picker`, `data-kt-*` → komponen. JS halaman pindah ke `resources/js/pages/`, CSS ke `resources/css/pages/`.
+7. Controller halaman itu → komponen §6.3.
+8. Perbarui test pengunci (Lampiran A): selector boleh berubah, **perilaku yang dikunci tidak boleh hilang**.
+9. **Sesudah**: screenshot pada state yang sama, bandingkan. Selisih yang disengaja (mengikuti referensi) dicatat di PR.
+10. Turunkan allowlist ratchet dan centang Lampiran A/B.
 
-### 8.3 Gerbang setiap PR batch
+### 9.3 Gerbang setiap PR batch
 
 - [ ] `php artisan test` hijau
 - [ ] `node --test tests/js` hijau
-- [ ] `npm run build` tanpa warning content/safelist
-- [ ] Audit class (§7.2) tidak menemukan class hilang
-- [ ] Screenshot sebelum/sesudah semua halaman batch dilampirkan atau diringkas di PR
-- [ ] Smoke test alur yang relevan, sesuai modul batch:
+- [ ] `npm run build` tanpa peringatan; `class-audit` bersih
+- [ ] `codemod --check` pada file batch: 0 token lama tersisa (kecuali yang tercatat)
+- [ ] Ratchet: allowlist turun, tidak ada file baru
+- [ ] Screenshot sebelum/sesudah semua halaman batch diringkas di PR
+- [ ] Smoke test alur sesuai modul batch:
   - Master: CRUD produk, pelanggan, staff
   - Transaction: pengadaan → terima → transfer → sortir → produksi → stok opname
-  - POS: transaksi kasir → pembayaran → struk cetak → delivery order + pembayaran → arus kas → order book
-- [ ] Konsol browser bersih (tidak ada error JS) di semua halaman batch
-- [ ] Perubahan backend (controller HTML, route) disebutkan di deskripsi PR
+  - POS: kasir → pembayaran → struk → delivery order + pembayaran → arus kas → order book
+- [ ] Konsol browser bersih di semua halaman batch
+- [ ] Perubahan backend (controller, route) dan view yang dihapus disebutkan di deskripsi PR
 
 ---
 
-## 9. Rencana per batch
+## 10. Rencana per batch
 
 ### B0 — Fondasi build (branch ini)
 
-Tujuan: mengganti **mesin**-nya tanpa mengubah tampilan sedikit pun.
+Tujuan: mengganti **mesin** tanpa mengubah tampilan.
 
-1. Baseline:
-   - `composer install`, `npm ci` (dengan `package.json` lama)
-   - jalankan semua test PHP + JS, catat hasilnya di PR (merah yang sudah ada dicatat, bukan diperbaiki diam-diam)
-   - screenshot baseline semua route GET yang me-render view (dari `php artisan route:list`)
-2. Audit B0:
-   - class dinamis (§7.2)
-   - opsi DataTables per halaman (`dom`, extensions, ada/tidaknya `buttons`)
-   - siapa yang memakai `axios`/`lodash` (dari Mix)
-   - ketersediaan Node di server (R8)
-3. `package.json` baru:
-   - hapus `laravel-mix`, `bootstrap`, `popper.js`, `sass`, `sass-loader`, `resolve-url-loader`, `vue-template-compiler`, `cross-env`, serta `axios`/`lodash` bila tidak terpakai
-   - tambah `vite`, `laravel-vite-plugin`, `tailwindcss@^3.4`, `postcss`, `autoprefixer`, `@tailwindcss/forms`, `alpinejs`, `@alpinejs/collapse`, `@alpinejs/focus`, `jquery`, `datatables.net@1.13` + extensions §6.1, `sweetalert2`, `flatpickr`
-   - script `dev`, `build`, `test:js`
-4. `vite.config.js`, `postcss.config.js`, `tailwind.config.js`, `tailwind.legacy.config.js`, `resources/css/app.css`, `resources/css/legacy.css`, `resources/js/app.js` (§3).
-5. Ganti CDN:
-   - `layouts.erp-tailwind`, `auth/login` dan `landing` → `@vite(['resources/css/app.css', 'resources/js/app.js'])`
-   - `template.root` → `@vite(['resources/css/legacy.css', ...])`
-   - hapus `<script src="https://cdn.tailwindcss.com">` dan `tailwind.config` inline
-   - CSS inline sidebar di `erp-tailwind` dipindah ke `app.css` `@layer components`
-6. Alpine: dari CDN ke bundle (§3.4). jQuery, SweetAlert2 dan DataTables di `erp-tailwind` dipindah ke bundle npm; `template.root` **tetap** memakai `plugins.bundle` sampai halamannya diport.
-7. Hapus `webpack.mix.js`, `resources/sass/`, `resources/js/bootstrap.js` dan `mix-manifest.json` **setelah** memastikan `css/app.css`/`js/app.js` (Mix) hanya dipakai `layouts.app`. Jika `layouts.app` masih hidup, tunda ke B1.
-8. `.gitignore`: tambah `/public/build`.
-9. README: bagian "Build frontend" (versi Node minimum, `npm ci && npm run build` saat deploy) + `scripts/tailwind-class-audit.js`.
-10. Gerbang B0: screenshot setelah = baseline (toleransi hanya anti-aliasing font), semua test sama dengan baseline, halaman `produk` (Livewire) berfungsi.
+1. **Baseline**: `composer install`, `npm ci` (package lama), jalankan semua test PHP + JS dan catat hasilnya (merah yang sudah ada dicatat, tidak diperbaiki diam-diam). Screenshot baseline semua route GET yang me-render view.
+2. **Audit**: class dinamis (§8.2), opsi DataTables per halaman, pemakaian `axios`/`lodash`, Node di server (R9).
+3. `package.json` baru (§7.1/§7.2).
+4. `vite.config.js`, `postcss.config.js`, `tailwind.config.js` (§3.2), `tailwind.legacy.config.js` (§3.3), `resources/css/app.css` + `legacy.css`, `resources/js/app.js`.
+5. Ganti CDN: `layouts.erp-tailwind`, `auth/login`, `landing` → `@vite(app)`; `template.root` → `@vite(legacy)`. CSS inline sidebar → `app.css`. Alpine/jQuery/Swal/DataTables di `erp-tailwind` → bundle npm; `template.root` tetap memakai `plugins.bundle`.
+6. **Belum** memasang `body 13px` di B0. Itu perubahan visual, jadi masuk B1.
+7. Phosphor: hanya 4 bobot dimuat.
+8. Hapus Mix bila `layouts.app` terbukti mati; bila tidak, tunda ke B1.
+9. `.gitignore` + `/public/build`; README "Build frontend".
+10. `scripts/ui-migrate/class-map.json` + `icon-map.json` (isi §4.2 dan §4.4) dan `class-audit.mjs`.
+11. Gerbang B0: screenshot = baseline (toleransi anti-aliasing), test = baseline, halaman `produk` (Livewire) berfungsi.
 
-Ukuran: M. Risiko utama: R1, R5, R8.
+Ukuran: M. Risiko utama: R1, R6, R9.
 
-### B1 — Shell, layout final, komponen, auth, errors, landing
+### B1 — Layout final, komponen, shell, auth, errors, landing
 
-1. `layouts/erp.blade.php` (dari `erp-tailwind` + bagian `template.root` yang masih perlu: firebase, `template.notif`, `erp-chrome`) dan `layouts/guest.blade.php`. `layouts.erp-tailwind` menjadi alias (`@extends('layouts.erp')`) sampai 20 view-nya dialihkan di batch ini.
-2. Bangun komponen §5 + test-nya + `legacy-bridge.js` (§5.3).
-3. Bersihkan komponen `x-erp.*` yang ada dari class Bootstrap (`topbar` 35 hit, `sidebar` 22, `detail-dialog`, `dropdown-select`, `mobile-navbar` memakai bs-js).
-4. Dark mode dibuang: toggle di `settings/index`, skrip theme di `template.root`, `data-bs-theme`.
-5. Port: `dashboard` (81 hit), `change-password`, `forgot-password`, `auth/login`, `errors/*`, `landing` (lepas dari `KT*`).
-6. Audit kandidat mati B1 (`template/*` Metronic lama, `auth/passwords/*`, `auth/verify`, `auth/register`, `auth/footer`, `auth/login-option`, `layouts.app`, `*::layouts.master`, `admin-view`, `pemohon-view`, `template - Copy/`). Kirim daftar ke pemilik repo, lalu hapus setelah disetujui. Ini juga mengakhiri Mix bila tertunda dari B0.
-7. Test ratchet §7.3 + aturan di `AGENTS.md` dan `docs/ui-design-system.md` (Q19).
-8. Perbarui `docs/ui-design-system.md`: komponen baru, class `erp-*`, dan aturan pemetaan.
+1. `layouts/erp.blade.php` (dari `erp-tailwind` + bagian `template.root` yang masih perlu: firebase, `template.notif`, `erp-chrome`) dan `layouts/guest.blade.php`. `body` 13px dipasang di sini. `layouts.erp-tailwind` menjadi alias.
+2. Kalibrasi 20 halaman `erp-tailwind` + shell terhadap body 13px (R5).
+3. Komponen §5 + test + `legacy-bridge.js` + class komponen §5.4. `erp-button` dilebur ke `erp-action`.
+4. `codemod.mjs` (class + ikon), dengan test unit untuk tabel pemetaan.
+5. Bersihkan komponen `x-erp.*` yang ada dari Bootstrap.
+6. Dark mode dibuang.
+7. Port `dashboard`, `change-password`, `forgot-password`, `auth/login`, `errors/*`, `landing`.
+8. Audit dan hapus kandidat mati B1 setelah dikonfirmasi (`template/*` Metronic lama, `auth/passwords/*`, `auth/verify`, `auth/register`, `auth/footer`, `auth/login-option`, `layouts.app`, `*::layouts.master`, `admin-view`, `pemohon-view`, `template - Copy/`). Mix dihapus bila tertunda.
+9. Test ratchet §8.3; aturan Q19 di `AGENTS.md`; `docs/ui-design-system.md` diperbarui (ukuran 16/13, komponen, class, ikon).
 
-Ukuran: L. Ini batch dengan desain paling banyak, dan semua batch berikutnya bergantung padanya.
+Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 
 ### B2 — Master (42 view)
 
-Halaman utama: products (index sudah Tailwind; `create`, `stock-show` 108 hit; `edit` kandidat mati 215 hit + Quill + `KTImageInput`), customer (+ overlay, membership kandidat mati), staff (+ overlay), supplier, branch, position, unit, location, department, handling, kurir, category, serta `partials/mobile-index` (dikunci 6 test). Ditambah Livewire `produk`/`produk-form`/`product-table`.
-
-Backend: `ProductController` (60 class), `StaffController`, `CustomerController`, `SupplierController`, `ProductUnitController`, `PositionController`, `LocationController`, `HandlingController`, `DepartmentController`, `KurirController`, `ProductCategoryController`.
-
-Keputusan di awal B2: nasib Livewire (§3.4).
+- products (`index` sudah Tailwind; `create`; `stock-show` 108 hit; `edit` kandidat mati 215 hit + Quill + `KTImageInput`)
+- customer (+ overlay; `membership` kandidat mati), staff (+ overlay), supplier, branch, position, unit, location, department, handling, kurir, category, payment method, account
+- `partials/mobile-index` (dikunci 6 test)
+- Livewire `produk`, `produk-form`, `product-table`: putuskan nasib Livewire di awal batch (§3.5)
+- Backend: lihat Lampiran B (B2). Ukur performa render komponen per baris (R16).
 
 ### B3 — Report, CRM, Chat, admin/settings/user (52 view)
 
-Report hub dan semua laporan (`ReportController` 57 class; `report-mobile.js` 703 baris), CRM (dashboard + ApexCharts, tier + image input, deposito, campaign, report customer `data-kt-check`, setting-exp kandidat mati), Chat (kecuali `srrd` dompdf), `admin/role`, `admin/user`, `user`, `menu`, `role-menu`, `settings`, `list_permohonan`, `qrcode`.
+- Report hub + semua laporan (`ReportController` 57 class; `report-mobile.js` 703 baris)
+- CRM: dashboard + ApexCharts, tier + `x-erp.image-input`, deposito, campaign, report customer (`data-kt-check`), setting-exp (kandidat mati)
+- Chat (kecuali `srrd` dompdf)
+- `admin/role`, `admin/user`, `user`, `menu`, `role-menu`, `settings`, `list_permohonan`, `qrcode`
 
 ### B4 — Transaction (74 view)
 
-**Prasyarat**: `ui/produksi-reference` dan `ui/stock-opname-reference` sudah di `main`. Hitung ulang inventaris setelahnya.
+**Prasyarat**: `ui/produksi-reference` dan `ui/stock-opname-reference` sudah di `main`; hitung ulang inventaris.
 
-Halaman paling berat: `stock-opname/index` (422 hit BS + 130 KT, `KTDrawer`, `KT*`, select2, 3 test kontrak), `production/process-parcel` (173, `data-kt-ecommerce`), `wholesale/create|show|edit` (132/106/110), `pengadaan/index2`, `stock-out`, `stock-out-type`, `receipt`, `transfer`, `sortir`. Ganti `toastr` di `production/js-create`.
-
-Kandidat mati terbanyak ada di sini (22): versi lama `pengadaan/*`, `transfer/index|show|segment/*`, `sortir/index`, `wholesale/edit`, `*.temp`, `ProductionController_temp.php`.
-
-Backend: `WholesaleController`, `ProductionParcelController`, `ProductionController`, `TransferController`, `ProductReceiptController`, `StockOutController`, `SortirController`, `StockOutTypeController`.
+- Terberat: `stock-opname/index` (422 hit BS + 130 KT, `KTDrawer`, `KT*`, select2, 3 test kontrak), `production/process-parcel` (173, `data-kt-ecommerce`), `wholesale/create|show|edit` (132/106/110), `pengadaan/index2`, `stock-out`, `stock-out-type`, `receipt`, `transfer`, `sortir`
+- Ganti `toastr` di `production/js-create`
+- Kandidat mati terbanyak (22): versi lama `pengadaan/*`, `transfer/index|show|segment/*`, `sortir/index`, `wholesale/edit`, `StockOpnameController.php.temp`, `ProductionController_temp.php`
 
 ### B5 — POS (50 view)
 
-Paling akhir karena menyangkut uang. Halaman:
-- `pos/create2` + `segment/*` + `js/*`
-- `pos/payment` + `js-payment` + `payment-success2`
+- `pos/create2` + `segment/*` + `js/*`; `pos/payment` + `js-payment` + `payment-success2`
 - `delivery-order/index` (97 hit BS + 39 KT; `delivery-order-mobile.js` 727 baris; 3 feature test + 3 test JS)
-- `order-book/*`
-- `expenditure`, `otherbook`, `arus-kas`, `setting-nota` (UI pengaturannya saja; tampilan nota dikecualikan)
-
-`pos/receipt*`/`print*` hanya dicek bebas Bootstrap (Q15). Kandidat mati: `pos/index` (BS5 CDN), `pos/create`, `pos/payment-success`, `pos/print`.
-
-Backend: `DeliveryOrderController`, `OrderBookController`, `PosController`, `OtherBookController`, `ExpenditureController`.
-
-Gerbang tambahan: `PosPaymentIdempotencyTest`, `PosPaymentUiContractTest`, `pos-payment-attempt.test.cjs` dan `DeliveryOrderMobilePaymentTest` maknanya **tidak berubah**. Smoke test uang dilakukan dua kali: oleh Claude di lokal, lalu oleh pemilik repo.
+- `order-book/*`, `expenditure`, `otherbook`, `arus-kas`, `setting-nota` (UI pengaturannya; tampilan nota dikecualikan)
+- `pos/receipt*`/`print*` hanya dicek bebas Bootstrap (Q15)
+- Kandidat mati: `pos/index` (BS5 CDN), `pos/create`, `pos/payment-success`, `pos/print`, `PosController.php.temp`
+- Gerbang tambahan: `PosPaymentIdempotencyTest`, `PosPaymentUiContractTest`, `pos-payment-attempt.test.cjs`, `DeliveryOrderMobilePaymentTest` tidak berubah maknanya. Smoke test uang dua kali.
 
 ### B6 — Cleanup
 
-1. Hapus `template/root.blade.php` dan seluruh `template/*` yang tersisa, `tailwind.legacy.config.js`, `resources/css/legacy.css`, `legacy-bridge.js`, dan `layouts.erp-tailwind` (alias).
-2. Hapus aset Metronic:
-   - `public/assets/css/style.bundle.css`
-   - `public/assets/plugins/global/`, `public/assets/plugins/custom/datatables/`
-   - `public/assets/js/scripts.bundle.js`, `widgets.bundle.js`, `public/assets/js/custom/` (133 file demo)
-   - aset Keenicons/BS Icons/FontAwesome
-   - `public/jquery.js` bila tidak dipakai
-   - `public/css/app.css`, `public/js/app.js` (Mix)
-3. Hapus adapter Bootstrap/select2 di `erp-theme.css` ("token Bootstrap menjadi jembatan") dan jembatan select2 di `erp-picker.js`.
-4. Pindahkan CSS/JS kustom yang tersisa di `public/assets` ke `resources/` (Vite), atau dokumentasikan alasannya bila tetap di sana.
-5. Gerbang grep = 0 untuk semua penanda §7.3 di seluruh repo (kecuali view print/pdf yang memang tidak memakainya). Allowlist dan fixture ratchet dihapus; test ratchet tetap ada dengan allowlist kosong.
-6. Perbarui `docs/ui-design-system.md`: hapus bagian "jembatan Bootstrap".
+Hapus semua item §7.2 bertanda B6. Gerbang: grep penanda §8.3 = 0 di seluruh repo; allowlist kosong; `docs/ui-design-system.md` tanpa bagian "jembatan Bootstrap"; ukuran `public/` turun ±75 MB (tergantung audit media dan `infruity-ui`).
 
 ---
 
-## 10. Rollback
+## 11. Rollback
 
-- Setiap batch adalah satu PR yang bisa di-revert tanpa memengaruhi batch sebelumnya.
-- Aset Metronic tidak dihapus sampai B6, jadi revert batch mana pun di B1–B5 mengembalikan halaman ke `template.root` yang masih berfungsi.
-- B0 bisa di-revert utuh: CDN kembali, `package.json` lama kembali.
+- Setiap batch satu PR yang bisa di-revert tanpa memengaruhi batch sebelumnya.
+- Aset Metronic baru dihapus di B6, jadi revert B1–B5 mengembalikan halaman ke `template.root` yang masih berfungsi.
+- B0 bisa di-revert utuh: CDN dan `package.json` lama kembali.
 
-## 11. Yang harus dicek di awal B0 (belum diketahui)
+## 12. Yang dicek di awal B0
 
-1. Baseline test hijau/merah.
-2. Node di server production: ada atau tidak, versinya, dan siapa yang menjalankan deploy.
-3. Apakah ada tombol export DataTables (JSZip/pdfmake) yang terlewat oleh grep.
-4. `RegisterController@showRegister` tidak memanggil `view()`. Cek apakah route `/register` hidup atau rusak (memengaruhi `auth.register`).
-5. Apakah `produk`/`produk-form` (Livewire) masih dipakai user.
+1. Baseline test.
+2. Node di server production (ada/tidak, versi, siapa yang deploy).
+3. Tombol export DataTables (JSZip/pdfmake) yang terlewat grep.
+4. `RegisterController@showRegister` tidak memanggil `view()`: route `/register` hidup atau rusak?
+5. `produk`/`produk-form` (Livewire) masih dipakai?
+6. `public/infruity-ui/`, `public/mask/`, `public/error/`, `public/font/`, `public/assets-landing/`: masih dipakai?
 
 ---
 
 ## Lampiran A — Checklist per view
 
-Legenda: `[ ]` belum, `[x]` selesai, `[-]` dikecualikan. Layout: `root` = `template.root`, `tw` = `layouts.erp-tailwind`, `partial` = include/komponen/standalone. BS/KT = indikator kepadatan (§2.2). "⚠ kandidat mati" = 0 referensi statis di `app/`, `routes/`, `Modules/` dan `resources/views`; wajib dikonfirmasi sebelum dihapus (R14). `template - Copy/` tidak didaftar (dihapus di B1).
+Legenda: `[ ]` belum, `[x]` selesai, `[-]` dikecualikan. Layout: `root` = `template.root`, `tw` = `layouts.erp-tailwind`, `partial` = include/komponen/standalone. BS/KT = indikator kepadatan (§2.3). "⚠ kandidat mati" = 0 referensi statis di `app/`, `routes/`, `Modules/` dan `resources/views`; wajib dikonfirmasi sebelum dihapus (R15). `template - Copy/` tidak didaftar (dihapus di B1).
 
 ### B1 — Shell, auth, errors, landing, dashboard
 
