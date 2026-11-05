@@ -261,13 +261,18 @@
         var trigger = el('button', 'erp-picker__trigger');
         trigger.type = 'button';
         var label = el('span', 'erp-picker__label');
-        trigger.append(label, el('i', 'ph-bold ph-caret-down'));
+        var action = null;
+        if (options.actionLabels) action = el('span', 'erp-picker__action');
+        trigger.append(label);
+        if (action) trigger.append(action);
+        trigger.append(el('i', 'ph-bold ph-caret-down'));
         select.insertAdjacentElement('afterend', trigger);
 
         var sync = function () {
             var value = selectedLabel(select);
             label.textContent = value || options.placeholderTrigger || 'Pilih';
             label.classList.toggle('is-placeholder', !value);
+            if (action) action.textContent = value ? options.actionLabels[1] : options.actionLabels[0];
             trigger.disabled = select.disabled;
         };
         select.addEventListener('change', sync);

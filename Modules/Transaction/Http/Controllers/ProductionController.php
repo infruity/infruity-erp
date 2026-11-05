@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\ProductGlyph;
 use App\Support\InventorySnapshot;
 use App\Support\ProductionCost;
 use Exception;
@@ -730,11 +731,16 @@ class ProductionController extends Controller
     public function get_data(Request $request)
     {
         try {
-            $query = Production::with(['products', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])
+            $query = Production::with(['products.unit', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])
                 ->whereNotNull('product_id');
 
             if ($request->has('status_filter') && $request->status_filter !== 'all' && ! empty($request->status_filter)) {
-                $query->where('status', $request->status_filter);
+                // "Selesai" covers the legacy status "complete" as well as "posting".
+                if ($request->status_filter === 'posting') {
+                    $query->whereIn('status', ['posting', 'complete']);
+                } else {
+                    $query->where('status', $request->status_filter);
+                }
             } else {
                 $statusColumnSearch = trim((string) data_get($request->input('columns', []), '1.search.value', ''));
                 if ($statusColumnSearch !== '') {
@@ -787,19 +793,19 @@ class ProductionController extends Controller
                     });
                 }, true)
                 ->addColumn('name', function ($item) {
-                    $productName     = $item->products ? e($item->products->name) : 'N/A';
-                    $number          = e($item->production_number ?? 'N/A');
-                    $createdAt       = $item->created_at ? date('d/m/Y H:i', strtotime($item->created_at)) : 'N/A';
-                    $ingredientCount = $item->productionDetails ? $item->productionDetails->count() : 0;
-                    $ingredientLine  = $ingredientCount > 0
-                        ? ' · ' . $ingredientCount . ' bahan'
-                        : '';
+                    $productName = $item->products ? e($item->products->name) : 'N/A';
+                    $number      = e($item->production_number ?? 'N/A');
+                    $glyph       = ProductGlyph::for($item->products?->name);
+                    $when        = $item->created_at
+                        ? \Carbon\Carbon::parse($item->created_at)->locale('id')->translatedFormat('j M Y · H:i')
+                        : 'N/A';
+                    $posTag      = $item->pos_id ? ' · POS' : '';
 
                     return '<div class="production-row">
-                                <span class="production-avatar" aria-hidden="true"><i class="ph ph-cooking-pot"></i></span>
-                                <a href="' . route('production.detail', $item->id) . '" class="production-copy">
+                                <span class="production-avatar" aria-hidden="true" style="background-color:' . $glyph['color'] . '">' . $glyph['emoji'] . '</span>
+                                <a href="' . route('production.detail', $item->id) . '" class="production-copy" title="' . $number . '">
                                     <span class="production-product">' . $productName . '</span>
-                                    <span class="production-sub">' . $number . ' · ' . $createdAt . $ingredientLine . '</span>
+                                    <span class="production-sub"><span class="production-code">' . $number . ' · </span>' . $when . $posTag . '</span>
                                 </a>
                             </div>';
                 })
@@ -819,27 +825,19 @@ class ProductionController extends Controller
                     return $result;
                 })
                 ->addColumn('status', function ($item) {
-                    $posBadge = '';
-                    if ($item->pos_id) {
-                        $customerName = $item->pos && $item->pos->customer
-                            ? e($item->pos->customer->name)
-                            : 'Pelanggan Umum';
-                        $posBadge = '<span class="production-pos">POS · ' . $customerName . '</span>';
-                    }
-
                     $labels = [
-                        'posting'  => ['Completed', 'is-posting'],
-                        'complete' => ['Complete', 'is-complete'],
-                        'draft'    => ['Draft', 'is-draft'],
-                        'temp'     => ['Temp', 'is-temp'],
+                        'posting'  => ['Selesai', 'is-posting'],
+                        'complete' => ['Selesai', 'is-posting'],
+                        'draft'    => ['Siap Produksi', 'is-draft'],
+                        'temp'     => ['Draf', 'is-temp'],
                     ];
                     [$label, $class] = $labels[$item->status] ?? [ucfirst($item->status ?? 'Unknown'), 'is-muted'];
                     $quantity        = number_format($item->quantity ?? 0, 0, ',', '.');
+                    $unit            = e($item->products->unit->abbreviation ?? '');
 
                     return '<div class="production-status-cell">
                                 <span class="production-status ' . $class . '">' . $label . '</span>
-                                <span class="production-qty">Qty: ' . $quantity . '</span>
-                                ' . $posBadge . '
+                                <span class="production-qty">' . trim($quantity . ' ' . $unit) . '</span>
                             </div>';
                 })
                 ->addColumn('action', function ($row) {

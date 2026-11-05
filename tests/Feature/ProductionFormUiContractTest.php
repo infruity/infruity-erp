@@ -24,6 +24,38 @@ final class ProductionFormUiContractTest extends TestCase
         $this->assertStringNotContainsString('erp-editor-summary', $form);
     }
 
+    public function test_card_one_follows_the_reference_target_unit_and_folds_price_fields(): void
+    {
+        $form = $this->form();
+
+        $this->assertStringContainsString('Target Hasil Produksi', $form);
+        $this->assertStringContainsString('id="production-unit"', $form);
+        $this->assertStringContainsString('<details class="production-extra"', $form);
+        $this->assertStringContainsString('Harga &amp; Biaya', $form);
+        // Folded fields keep every id and binding the save payload reads.
+        foreach (['id="sell_price"', 'id="service_cost"', 'x-model="sellPrice"', 'x-model="serviceCost"'] as $kept) {
+            $this->assertStringContainsString($kept, $form);
+        }
+        $this->assertStringContainsString('x-model="productionQuantity"', $form);
+    }
+
+    public function test_product_picker_shows_pilih_or_ganti_and_feeds_the_unit(): void
+    {
+        $js = file_get_contents(base_path('Modules/Transaction/Resources/views/production/js-create.blade.php'));
+
+        $this->assertStringContainsString('actionLabels', $js);
+        $this->assertStringContainsString("unit: item.products?.unit?.abbreviation", $js);
+        $this->assertStringContainsString("production-unit", $js);
+        $this->assertStringContainsString("loadRecipeIngredients(selectedProductId)", $js);
+    }
+
+    public function test_receipt_endpoint_returns_the_product_unit(): void
+    {
+        $controller = file_get_contents(base_path('Modules/Transaction/Http/Controllers/ProductReceiptController.php'));
+
+        $this->assertStringContainsString("Receipt::with('products.unit')", $controller);
+    }
+
     public function test_existing_fields_and_save_handlers_are_kept(): void
     {
         $form = $this->form();

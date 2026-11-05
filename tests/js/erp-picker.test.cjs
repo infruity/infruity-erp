@@ -175,3 +175,11 @@ test('without a select2 instance the select2:select payload still carries the ro
 
     assert.match(src, /fire\(select, 'select2:select', Object\.assign\(\{\}, item\.data \|\| \{\}, \{ id: item\.id, text: item\.text \}\)\)/);
 });
+
+test('trigger can show a Pilih/Ganti action label next to the caret', () => {
+    const js = fs.readFileSync(asset, 'utf8');
+
+    assert.match(js, /actionLabels/);
+    assert.match(js, /erp-picker__action/);
+    assert.match(read('public/assets/css/erp-picker.css'), /\.erp-picker__action/);
+});
