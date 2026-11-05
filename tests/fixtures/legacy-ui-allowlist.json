@@ -1032,11 +1032,6 @@
         "form-classes": 2,
         "bs-utilities": 3
     },
-    "resources/views/admin-view.blade.php": {
-        "fontawesome": 1,
-        "btn": 2,
-        "bs-utilities": 1
-    },
     "resources/views/admin/role/edit.blade.php": {
         "hex-class": 1
     },
@@ -1059,33 +1054,8 @@
         "select2": 1,
         "bootstrap-js": 3
     },
-    "resources/views/auth/footer.blade.php": {
-        "data-kt": 21,
-        "keenicons": 2,
-        "btn": 3,
-        "bs-utilities": 13
-    },
-    "resources/views/auth/login-option.blade.php": {
-        "btn": 4
-    },
     "resources/views/auth/login.blade.php": {
         "hex-class": 1
-    },
-    "resources/views/auth/passwords/confirm.blade.php": {
-        "form-classes": 1,
-        "btn": 2
-    },
-    "resources/views/auth/passwords/email.blade.php": {
-        "form-classes": 1,
-        "btn": 1
-    },
-    "resources/views/auth/passwords/reset.blade.php": {
-        "form-classes": 3,
-        "btn": 1
-    },
-    "resources/views/auth/verify.blade.php": {
-        "btn": 1,
-        "bs-utilities": 1
     },
     "resources/views/change-password.blade.php": {
         "root-layout": 1
@@ -1109,25 +1079,10 @@
         "fontawesome": 7,
         "root-layout": 1
     },
-    "resources/views/livewire/product-table.blade.php": {
-        "data-kt": 9,
-        "keenicons": 14,
-        "form-classes": 7,
-        "btn": 4,
-        "badge-light": 1,
-        "select2": 1,
-        "bs-utilities": 19
-    },
     "resources/views/menu/index.blade.php": {
         "fontawesome": 2,
         "form-classes": 1,
         "btn": 4,
-        "root-layout": 1
-    },
-    "resources/views/pemohon-view.blade.php": {
-        "bs-utilities": 2
-    },
-    "resources/views/produk.blade.php": {
         "root-layout": 1
     },
     "resources/views/role-menu.blade.php": {
@@ -1136,94 +1091,6 @@
     "resources/views/settings/index.blade.php": {
         "root-layout": 1
     },
-    "resources/views/template/aside.blade.php": {
-        "data-bs": 3,
-        "data-kt": 13,
-        "keenicons": 2,
-        "btn": 2,
-        "bs-utilities": 7
-    },
-    "resources/views/template/aside/menu/apps.blade.php": {
-        "data-kt": 20,
-        "keenicons": 24,
-        "bs-utilities": 12
-    },
-    "resources/views/template/aside/menu/dashboard.blade.php": {
-        "data-bs": 1,
-        "data-kt": 3,
-        "keenicons": 6,
-        "btn": 2,
-        "bs-utilities": 4
-    },
-    "resources/views/template/aside/menu/helps.blade.php": {
-        "keenicons": 8,
-        "bs-utilities": 4
-    },
-    "resources/views/template/aside/menu/menus.blade.php": {
-        "data-kt": 1,
-        "keenicons": 92,
-        "bs-utilities": 34
-    },
-    "resources/views/template/aside/menu/pages.blade.php": {
-        "data-kt": 24,
-        "keenicons": 22,
-        "bs-utilities": 11
-    },
-    "resources/views/template/aside/search.blade.php": {
-        "data-bs": 2,
-        "data-kt": 29,
-        "keenicons": 34,
-        "form-classes": 22,
-        "btn": 36,
-        "select2": 2,
-        "bs-utilities": 216
-    },
-    "resources/views/template/aside/user.blade.php": {
-        "data-kt": 4,
-        "keenicons": 2,
-        "btn": 3,
-        "badge-light": 2,
-        "bs-utilities": 25
-    },
-    "resources/views/template/aside/user/language.blade.php": {
-        "data-kt": 3,
-        "bs-utilities": 6
-    },
-    "resources/views/template/aside/user/subscribetion.blade.php": {
-        "data-bs": 1,
-        "data-kt": 3,
-        "keenicons": 2,
-        "form-classes": 3,
-        "bs-utilities": 4
-    },
-    "resources/views/template/drawer.blade.php": {
-        "data-bs": 29,
-        "data-kt": 54,
-        "keenicons": 62,
-        "form-classes": 1,
-        "btn": 76,
-        "badge-light": 2,
-        "bs-utilities": 296
-    },
-    "resources/views/template/footer.blade.php": {
-        "bs-utilities": 5
-    },
-    "resources/views/template/header.blade.php": {
-        "data-kt": 4,
-        "keenicons": 6,
-        "btn": 4,
-        "bs-utilities": 7
-    },
-    "resources/views/template/modals.blade.php": {
-        "data-bs": 3,
-        "data-kt": 45,
-        "keenicons": 8,
-        "form-classes": 73,
-        "btn": 11,
-        "modal-class": 10,
-        "select2": 34,
-        "bs-utilities": 272
-    },
     "resources/views/template/notif.blade.php": {
         "bs-utilities": 1
     },
@@ -1231,24 +1098,5 @@
         "data-kt": 1,
         "keenicons": 2,
         "hex-class": 1
-    },
-    "resources/views/template/toolbar.blade.php": {
-        "data-bs": 4,
-        "data-kt": 14,
-        "keenicons": 16,
-        "form-classes": 1,
-        "btn": 12,
-        "select2": 1,
-        "bs-utilities": 43
-    },
-    "resources/views/user.blade.php": {
-        "data-bs": 6,
-        "fontawesome": 4,
-        "form-classes": 4,
-        "btn": 10,
-        "modal-class": 5,
-        "bootstrap-js": 1,
-        "bs-utilities": 3,
-        "root-layout": 1
     }
 }

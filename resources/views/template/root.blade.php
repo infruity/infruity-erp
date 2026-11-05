@@ -37,9 +37,6 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.bundle.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/erp-mobile-search.css') }}?v={{ filemtime(public_path('assets/css/erp-mobile-search.css')) }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    @isset($livewire)
-        @livewireStyles
-    @endisset
     @include('partials.erp-chrome')
     @vite('resources/js/alpine.js')
     <!--end::Global Stylesheets Bundle-->
