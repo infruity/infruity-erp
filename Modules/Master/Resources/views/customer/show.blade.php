@@ -1,5 +1,6 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Detail Pelanggan')
+@section('page-title', 'Detail Pelanggan')
 @section('content')
 <x-erp.workspace title="Detail Pelanggan" subtitle="Informasi dan riwayat pencatatan."><x-slot:toolbar><a href="{{ url(Request::segment(1)) }}" class="erp-action"><i class="ph ph-arrow-left" aria-hidden="true"></i>Kembali</a></x-slot:toolbar><header class="erp-person-header"><span class="erp-record__avatar">{{ mb_strtoupper(mb_substr($data->name ?? '',0,1)) }}</span><div><h2>{{ $data->name }}</h2><p>{{ $data->status }}</p></div></header><dl class="erp-detail-grid"><div><dt>Kode</dt><dd>{{ ($data->code) ?: '—' }}</dd></div><div><dt>Email</dt><dd>{{ ($data->email) ?: '—' }}</dd></div><div><dt>WhatsApp</dt><dd>{{ ($data->whatsapp) ?: '—' }}</dd></div><div><dt>Provinsi</dt><dd>{{ ($province->name ?? null) ?: '—' }}</dd></div><div><dt>Kota</dt><dd>{{ ($city->name ?? null) ?: '—' }}</dd></div><div><dt>Kecamatan</dt><dd>{{ ($district->name ?? null) ?: '—' }}</dd></div><div><dt>Tanggal lahir</dt><dd>{{ ($data->birth_of_date) ?: '—' }}</dd></div><div><dt>Jenis kelamin</dt><dd>{{ ($data->gender == 'male' ? 'Laki-laki' : 'Perempuan') ?: '—' }}</dd></div><div><dt>Dibuat oleh</dt><dd>{{ ($data->user->nm_user ?? null) ?: '—' }}</dd></div><div><dt>Dibuat pada</dt><dd>{{ ($data->created_at) ?: '—' }}</dd></div><div><dt>Diperbarui pada</dt><dd>{{ ($data->updated_at) ?: '—' }}</dd></div></dl></x-erp.workspace>
 @endsection

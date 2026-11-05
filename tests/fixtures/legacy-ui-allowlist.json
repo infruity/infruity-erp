@@ -184,9 +184,6 @@
     "Modules/Master/Resources/views/customer/edit-overlay.blade.php": {
         "hex-class": 1
     },
-    "Modules/Master/Resources/views/customer/show.blade.php": {
-        "root-layout": 1
-    },
     "Modules/Master/Resources/views/partials/mobile-index.blade.php": {
         "hex-class": 8
     },
@@ -221,10 +218,6 @@
         "select2": 6,
         "bs-utilities": 6
     },
-    "Modules/Master/Resources/views/products/show-transaction.blade.php": {
-        "bs-utilities": 5,
-        "root-layout": 1
-    },
     "Modules/Master/Resources/views/products/stock-show.blade.php": {
         "data-kt": 22,
         "form-classes": 6,
@@ -232,15 +225,8 @@
         "bs-utilities": 5,
         "root-layout": 1
     },
-    "Modules/Master/Resources/views/products/stock.blade.php": {
-        "root-layout": 1,
-        "hex-class": 1
-    },
     "Modules/Master/Resources/views/staff/form-fields.blade.php": {
         "hex-class": 1
-    },
-    "Modules/Master/Resources/views/staff/show.blade.php": {
-        "root-layout": 1
     },
     "Modules/Master/Resources/views/unit/index.blade.php": {
         "hex-class": 4

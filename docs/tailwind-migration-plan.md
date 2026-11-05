@@ -785,6 +785,10 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 - Judul dialog setelah simpan sebelumnya salah ("Tambah Category"/"Tambah Penanganan"); kini selalu "Tambah <judul>". Menutup dialog (Esc, X, Batal) mengembalikan form ke mode tambah (sebelumnya action `PUT` tetap menempel setelah batal ubah).
 - Diuji di browser (guest, baris contoh disuntik ke DataTables): kartu mobile + aksi Ubah/Hapus, menu titik tiga desktop, buka/tutup/reset dialog, Batal dengan konfirmasi (klik sungguhan), alur simpan (spinner, sukses, error) dengan `$.ajax` di-stub, tombol + mobile. Server-side data sungguhan belum diuji (DB guest tanpa data).
 
+**B2b-1 (selesai): `products/show-transaction`, `products/stock`, `staff/show`, `customer/show`** pindah ke `layouts.erp` (codemod `--convert-rem`; tabel riwayat HPP memakai `erp-table`). `staff/show` dan `customer/show` tidak diuji di browser karena DB guest tanpa data; hanya `@extends` dan `page-title` yang berubah, class `erp-person-header`/`erp-detail-grid` ada di `erp-workspace.css` yang dimuat kedua layout. Catatan: codemod menggeser skala `gray` Metronic; di halaman `template.root` yang diukur (`/campaign`) `text-gray-400/500/600` memang dirender sebagai warna Metronic (`#C4CADA`, `#99A1B7`, `#78829D`), jadi pergeseran itu menjaga tampilan.
+
+**B2b-2 (menunggu): `products/stock-show` (899 baris).** Bukan alih-alih mekanis: CSS inline-nya bergantung pada struktur Metronic (`#kt_content`, `#kt_post`, `.card/.card-header/.card-toolbar`), memakai select2 (ganti `erp-picker`), flatpickr, bottom sheet filter buatan sendiri, dan dikunci `ProductStockDetailTopbarBackButtonTest`. Perlu data produk sungguhan untuk menguji riwayat stok; DB guest tidak punya.
+
 ### B3 — Report, CRM, Chat, admin/settings/user (52 view)
 
 - Report hub + semua laporan (`ReportController` 57 class; `report-mobile.js` 703 baris)
@@ -908,7 +912,7 @@ Legenda: `[ ]` belum, `[x]` selesai, `[-]` dikecualikan. Layout: `root` = `templ
 | [ ] | `Master/customer/index.blade.php` | partial | 0 | 0 | - | CustomerEditOverlay |  |
 | [ ] | `Master/customer/js-create.blade.php` | partial | 12 | 0 | - | CustomerEditOverlay |  |
 | [ ] | `Master/customer/membership.blade.php` | partial | 56 | 0 | - | - | ⚠ kandidat mati (0 referensi) |
-| [ ] | `Master/customer/show.blade.php` | root | 0 | 0 | - | - |  |
+| [x] | `Master/customer/show.blade.php` | root | 0 | 0 | - | - |  |
 | [x] | `Master/department/index.blade.php` | root | 42 | 27 | DT, Swal, bs-js | - |  |
 | [x] | `Master/handling/index.blade.php` | root | 42 | 27 | DT, Swal, bs-js | - |  |
 | [ ] | `Master/index.blade.php` | master::layouts.master | 0 | 0 | - | - |  |
@@ -923,9 +927,9 @@ Legenda: `[ ]` belum, `[x]` selesai, `[-]` dikecualikan. Layout: `root` = `templ
 | [ ] | `Master/products/index.blade.php` | tw | 146 | 11 | select2, DT, Swal | - |  |
 | [ ] | `Master/products/partials/create-form.blade.php` | partial | 77 | 2 | select2 | - |  |
 | [ ] | `Master/products/partials/create-script.blade.php` | partial | 52 | 14 | select2, DT, Swal | - |  |
-| [ ] | `Master/products/show-transaction.blade.php` | root | 21 | 0 | DT | - |  |
+| [x] | `Master/products/show-transaction.blade.php` | root | 21 | 0 | DT | - |  |
 | [ ] | `Master/products/stock-show.blade.php` | root | 108 | 26 | select2, DT, flatpickr | - |  |
-| [ ] | `Master/products/stock.blade.php` | root | 19 | 2 | - | - |  |
+| [x] | `Master/products/stock.blade.php` | root | 19 | 2 | - | - |  |
 | [ ] | `Master/staff/create-overlay.blade.php` | partial | 12 | 0 | - | UserStaffLink |  |
 | [ ] | `Master/staff/create.blade.php` | tw | 6 | 0 | - | - | ⚠ kandidat mati (0 referensi) |
 | [ ] | `Master/staff/edit-form.blade.php` | partial | 0 | 0 | - | - |  |
@@ -934,7 +938,7 @@ Legenda: `[ ]` belum, `[x]` selesai, `[-]` dikecualikan. Layout: `root` = `templ
 | [ ] | `Master/staff/index.blade.php` | partial | 0 | 0 | - | - |  |
 | [ ] | `Master/staff/js-create.blade.php` | partial | 0 | 0 | - | staff-edit-overlay(js) |  |
 | [ ] | `Master/staff/js-edit.blade.php` | partial | 0 | 0 | - | staff-edit-overlay(js) |  |
-| [ ] | `Master/staff/show.blade.php` | root | 0 | 0 | - | - |  |
+| [x] | `Master/staff/show.blade.php` | root | 0 | 0 | - | - |  |
 | [ ] | `Master/supllier/index.blade.php` | partial | 0 | 0 | - | SupplierRegionFields |  |
 | [ ] | `Master/unit/index.blade.php` | tw | 70 | 0 | Swal | - |  |
 | [ ] | `app/livewire/pos-kasir.blade.php` | partial | 6 | 0 | - | - |  |
