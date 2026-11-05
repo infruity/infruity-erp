@@ -16,7 +16,6 @@ use Illuminate\Validation\Rule;
 use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\Position;
 use Modules\Master\Entities\Staff;
-use Yajra\DataTables\Facades\DataTables;
 
 class StaffController extends Controller
 {
@@ -246,94 +245,6 @@ class StaffController extends Controller
         }
     }
 
-    public function get_data(Request $request)
-    {
-        $this->authorizeAccess('staff.index');
-
-        // eager load relations supaya lebih efisien
-        $data = Staff::with(['position', 'department'])
-            ->orderBy('name', 'asc');
-
-        return DataTables::of($data)
-            ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                $colors      = ['warning', 'success', 'info', 'primary'];
-                $color       = $colors[$item->id % count($colors)];
-                $initial     = strtoupper(substr($item->name ?? '', 0, 1));
-                $displayName = $item->name ?? '-';
-                $email       = $item->email ?? '-';
-                $contact     = $item->contact ?? '-';
-
-                $avatarInner = '<div class="symbol-label fs-3 bg-light-' . $color . ' text-' . $color . '">' . e($initial) . '</div>';
-                if ($item->image) {
-                    $imageUrl    = asset('storage/' . $item->image);
-                    $avatarInner = '<img src="' . $imageUrl . '" alt="' . e($displayName) . '" style="width: 50px; height: 50px; object-fit: cover;">';
-                }
-
-                $linkUrl = $item->image ? asset('storage/' . $item->image) : 'javascript:void(0)';
-                $target  = $item->image ? 'target="_blank"' : '';
-
-                return '<div class="d-flex align-items-center">
-                        <div class="symbol symbol-circle symbol-50px overflow-hidden me-3 border">
-                            <a href="' . $linkUrl . '" ' . $target . ' class="d-block w-100 h-100">
-                                ' . $avatarInner . '
-                            </a>
-                        </div>
-                        <div class="ms-5">
-                            <a href="javascript:void(0)" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . e($displayName) . '</a><br>
-                            <span class="fs-7">' . e($email) . '</span>
-                            <span class="fs-7">' . e($contact) . '</span>
-                        </div>
-                    </div>';
-            })
-            ->addColumn('date_in', function ($item) {
-                return dateindo($item->date_in);
-            })
-            ->addColumn('position', function ($item) {
-                // safe guard: cek relasi sebelum akses ->name
-                $positionLabel = '<span class="badge badge-light-danger">Belum ada jabatan</span>';
-                if ($item->position && $item->position->name) {
-                    $positionLabel = '<span class="badge badge-light-primary">' . e($item->position->name) . '</span>';
-                }
-
-                $departmentLabel = '<span class="badge badge-light-danger">Belum ada departemen</span>';
-                if ($item->department && $item->department->name) {
-                    $departmentLabel = '<span class="badge badge-light-primary">' . e($item->department->name) . '</span>';
-                }
-
-                return $positionLabel . ' ' . $departmentLabel;
-            })
-            ->addColumn('action', function ($item) {
-                $html = '
-                <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                        <li>
-                            <a class="dropdown-item" href="' . route('staff.show', $item->id) . '">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="' . route('staff.edit', $item->id) . '">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $item->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            ';
-                return $html;
-            })
-            ->rawColumns(['name', 'action', 'position'])
-            ->make(true);
-    }
-
     private function syncPendingRoles(int $staffId, array $roleIds): void
     {
         $roleIds = array_values(array_unique(array_map('intval', $roleIds)));
@@ -410,7 +321,6 @@ class StaffController extends Controller
     {
         return Branch::query()->pluck('id')->map(fn ($id) => (int) $id)->all();
     }
-
 
     public function getStaff(Request $request)
     {

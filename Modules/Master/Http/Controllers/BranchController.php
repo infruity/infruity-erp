@@ -12,7 +12,6 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\UserBranch;
-use Yajra\DataTables\Facades\DataTables;
 
 class BranchController extends Controller
 {
@@ -255,34 +254,4 @@ class BranchController extends Controller
         return response()->json($data);
     }
 
-    public function get_data(Request $request)
-    {
-        $data = Branch::all();
-        return DataTables::of($data)
-            ->addIndexColumn()
-            ->addColumn('action', function ($row) {
-                $name = e($row->name);
-
-                return '
-                <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi ' . $name . '">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" onclick="editProduct(' . $row->id . ')">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $row->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>';
-            })
-            ->rawColumns(['name', 'quantity', 'action'])
-            ->make(true);
-    }
 }

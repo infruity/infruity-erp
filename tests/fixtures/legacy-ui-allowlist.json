@@ -103,49 +103,6 @@
         "bootstrap-js": 6,
         "bs-utilities": 16
     },
-    "Modules/Master/Http/Controllers/AccountController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 3,
-        "btn": 2,
-        "bs-utilities": 1
-    },
-    "Modules/Master/Http/Controllers/BranchController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 3,
-        "btn": 2,
-        "bs-utilities": 1
-    },
-    "Modules/Master/Http/Controllers/CustomerController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 4,
-        "btn": 2,
-        "badge-light": 3,
-        "bs-utilities": 6
-    },
-    "Modules/Master/Http/Controllers/KurirController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 3,
-        "btn": 2,
-        "bs-utilities": 1
-    },
-    "Modules/Master/Http/Controllers/PaymentMethodController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 3,
-        "btn": 2,
-        "bs-utilities": 1
-    },
-    "Modules/Master/Http/Controllers/PositionController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 3,
-        "btn": 2,
-        "bs-utilities": 5
-    },
-    "Modules/Master/Http/Controllers/ProductCategoryController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 3,
-        "btn": 2,
-        "bs-utilities": 1
-    },
     "Modules/Master/Http/Controllers/ProductController.php": {
         "data-bs": 3,
         "data-kt": 3,
@@ -154,36 +111,6 @@
         "btn": 15,
         "badge-light": 10,
         "bs-utilities": 7
-    },
-    "Modules/Master/Http/Controllers/ProductUnitController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 3,
-        "btn": 2,
-        "bs-utilities": 9
-    },
-    "Modules/Master/Http/Controllers/StaffController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 4,
-        "btn": 2,
-        "badge-light": 4,
-        "bs-utilities": 8
-    },
-    "Modules/Master/Http/Controllers/SupplierController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 3,
-        "btn": 2,
-        "badge-light": 2,
-        "bs-utilities": 7
-    },
-    "Modules/Master/Resources/views/products/edit.blade.php": {
-        "data-bs": 7,
-        "data-kt": 11,
-        "keenicons": 8,
-        "form-classes": 16,
-        "btn": 14,
-        "select2": 3,
-        "bs-utilities": 60,
-        "root-layout": 1
     },
     "Modules/Pos/Http/Controllers/DeliveryOrderController.php": {
         "data-bs": 1,

@@ -12,7 +12,7 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 |---|---|---|---|
 | B0 Fondasi build | `feature/tailwind-migration` | — | selesai dan terverifikasi; menunggu review dan uji build di server |
 | B1 Layout final, komponen, shell, auth, errors, landing | langsung di `integration/tailwind-migration` | — | **B1a, B1b-1 (DataTables npm), B1b-2 (`body` 13px), B1b-3 (kode mati golongan A) selesai**; B1b-4 (`erp-button` → `erp-action`) selesai; menunggu: golongan B kode mati |
-| B2 Master | langsung di `integration/tailwind-migration` | — | **B2a selesai** (location, handling, department); berikutnya B2b |
+| B2 Master | langsung di `integration/tailwind-migration` | — | **B2 selesai** (a–d); berikutnya B3 |
 | B3 Report, CRM, Chat, admin | — | — | belum |
 | B4 Transaction | — | — | menunggu `ui/produksi-reference` + `ui/stock-opname-reference` masuk `main` |
 | B5 POS | — | — | belum |
@@ -798,9 +798,7 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 - **Flatpickr dari npm** (`flatpickr@4.6.13`, versi yang sama dengan bundel Metronic) di `vendor.js`, termasuk plugin jQuery `$.fn.flatpickr` yang dipasang eksplisit (import di-hoist sehingga deteksi `jQuery` otomatis flatpickr tidak jalan). CSS dasar: `@vite('resources/css/flatpickr.css')` lewat `@push('styles')` di halaman pemakainya.
 - Diuji di browser dengan rute debug sementara (sudah dihapus, tidak dikomit) dan baris contoh yang disuntik: daftar riwayat, bottom sheet filter, select native, kalender Flatpickr, preset tanggal; form produk: baris varian, picker, baris "Produk baru", tambah/hapus baris; `/products` DataTables + filter. Ajax server-side sungguhan belum diuji (DB guest tanpa produk).
 
-**B2d (menunggu persetujuan pemilik repo): kode mati Master.** Bukti: tidak ada `view()`, `@include`, `@extends` atau JS yang memanggilnya.
-- View: `products/edit.blade.php` (557 baris, 120 temuan; `ProductController::edit` mengembalikan JSON), `customer/membership.blade.php` (479 baris; `CustomerController::edit` memakai `edit-overlay`), `Master/index.blade.php` + `layouts/master.blade.php` (hanya `RegionController::index`, tanpa route).
-- Metode `get_data` di controller yang view-nya sudah daftar Alpine (`mobile-index`) dan route `*/data`-nya tidak dipanggil siapa pun: Category, Unit, Position, Supplier, Customer, Staff, PaymentMethod, Kurir, Account, Branch (route tetap bisa diakses lewat URL, jadi hapus route sekaligus).
+**B2d (selesai, disetujui pemilik repo): kode mati Master dihapus.** `products/edit` (557 baris), `customer/membership` (479), `Master/index` + `layouts/master` + `RegionController::index`, serta metode `get_data` dan route `*/data` milik Category, Unit, Position, Supplier, Customer, Staff, PaymentMethod, Kurir, Account, Branch (506 baris PHP). Tidak ada referensi tersisa (diperiksa lewat nama route, URL, JS, dan test). Allowlist 171 → 160 file. **B2 selesai** kecuali server-side data sungguhan yang belum diuji.
 
 ### B3 — Report, CRM, Chat, admin/settings/user (52 view)
 

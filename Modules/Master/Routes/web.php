@@ -86,17 +86,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::get('products/data', [ProductController::class, 'get_data'])->name('products-data');
     Route::get('products/child-data', [ProductController::class, 'get_child_data'])->name('products-child-data');
     Route::get('products/stock-data', [ProductController::class, 'get_data_stock'])->name('products.stock-data');
-    Route::get('category/data', [ProductCategoryController::class, 'get_data'])->name('category-data');
-    Route::get('unit/data', [ProductUnitController::class, 'get_data'])->name('unit-data');
     Route::get('location/data', [LocationController::class, 'get_data'])->name('location-data');
     Route::get('handling/data', [HandlingController::class, 'get_data'])->name('handling-data');
     Route::get('department/data', [DepartmentController::class, 'get_data'])->name('department-data');
-    Route::get('position/data', [PositionController::class, 'get_data'])->name('position-data');
-    Route::get('supplier/data', [SupplierController::class, 'get_data'])->name('supplier-data');
-    Route::get('customers/data', [CustomerController::class, 'get_data'])->name('customers-data');
-    Route::get('staff/data', [StaffController::class, 'get_data'])->name('staff-data');
-    Route::get('branch/data', [BranchController::class, 'get_data'])->name('branch.data');
-    Route::get('payment-method/data', [PaymentMethodController::class, 'get_data'])->name('payment-method.data');
-    Route::get('account/data', [AccountController::class, 'get_data'])->name('account.data');
-    Route::get('kurir/data', [KurirController::class, 'get_data'])->name('kurir.data');
 });

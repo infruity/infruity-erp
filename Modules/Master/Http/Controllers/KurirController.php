@@ -9,7 +9,6 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Modules\Master\Entities\Kurir;
 use Modules\Master\Entities\Staff;
-use Yajra\DataTables\Facades\DataTables;
 
 class KurirController extends Controller
 {
@@ -227,39 +226,4 @@ class KurirController extends Controller
         return response()->json(['results' => $staff]);
     }
 
-    public function get_data(Request $request)
-    {
-        $data = Kurir::all();
-        return DataTables::of($data)
-            ->addIndexColumn()
-            ->addColumn('type', function ($row) {
-                $badgeClass = $row->type === 'internal' ? 'badge-success' : 'badge-warning';
-                $label = $row->type === 'internal' ? 'Internal' : 'External';
-                return '<span class="badge ' . $badgeClass . '">' . $label . '</span>';
-            })
-            ->addColumn('action', function ($row) {
-                $name = e($row->name);
-
-                return '
-                <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi ' . $name . '">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" onclick="editKurir(' . $row->id . ')">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteKurir(' . $row->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>';
-            })
-            ->rawColumns(['type', 'name', 'action'])
-            ->make(true);
-    }
 }

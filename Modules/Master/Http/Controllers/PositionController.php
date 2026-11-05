@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Master\Entities\Position;
 use Modules\Master\Entities\Department;
-use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use DB;
@@ -239,70 +238,6 @@ class PositionController extends Controller
                 'message' => 'Gagal menghapus data: ' . $e->getMessage()
             ], 500);
         }
-    }
-
-    public function get_data(Request $request)
-    {
-        $data = Position::all();
-        return DataTables::of($data)
-            ->addIndexColumn()
-            ->addColumn('department_name', function ($position) {
-                return $position->department->name ?? '-';
-            })
-            ->addColumn('name', function ($position) {
-                $colors = ['warning', 'success', 'info', 'primary'];
-                $color = $colors[$position->id % count($colors)];
-
-                $html = '';
-                $html .= '<div class="d-flex align-items-center">';
-                // $html .= '
-                //             <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                //                 <a href="javascript:void(0)">
-                //                     <div class="symbol-label fs-3 bg-light-' . $color . ' text-' . $color . '">' . strtoupper(substr($position->name, 0, 1)) . '</div>
-                //                 </a>
-                //             </div>';
-                $html .= '<div class="ms-5">
-                                <a href="javascript:void(0)" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $position->name . '</a>
-                            </div>';
-                $html .= '</div>';
-                return $html;
-            })
-            ->addColumn('code', function ($position) {
-                return 'J-' . $position->code;
-            })
-            ->addColumn('action', function ($row) {
-                $name = e($row->name);
-
-                $html = '
-                <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi ' . $name . '">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
-                if (check_access('position.edit')) {
-                    $html .= '
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" onclick="editProduct(' . $row->id . ')">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>';
-                }
-
-                if (check_access('position.delete')) {
-                    $html .= '
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $row->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>';
-                }
-                $html .= '
-                    </ul>
-                </div>';
-                return $html;
-            })
-            ->rawColumns(['name', 'action'])
-            ->make(true);
     }
 
     public function getPosition(Request $request)

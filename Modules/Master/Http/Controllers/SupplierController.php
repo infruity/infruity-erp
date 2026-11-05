@@ -6,7 +6,6 @@ use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Master\Entities\Supplier;
-use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -228,56 +227,4 @@ class SupplierController extends Controller
         }
     }
 
-    public function get_data(Request $request)
-    {
-        $data = Supplier::all();
-        return DataTables::of($data)
-            ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                return '<div class="d-flex align-items-center">
-                            <div class="ms-5">
-                                <a href="javascript:void(0)" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $item->name . '</a>
-                                <br> ' . $item->pic_name . '<br> <div class="badge badge-light-success fw-bold">' . $item->pic_whatsapp . '</div>
-                            </div>
-                        </div>';
-            })
-            ->addColumn('pic_name', function ($item) {
-                return $item->pic_name . '<br> <div class="badge badge-light-success fw-bold">' . $item->pic_whatsapp . '</div>';
-            })
-            ->addColumn('address', function ($item) {
-                return $item->address . '<br> <div class="badge badge-light fw-bold">' . $item->email . '</div>';
-            })
-            ->addColumn('action', function ($row) {
-                $name = e($row->name);
-
-                $html = '
-                <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi ' . $name . '">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
-                if (check_access('supplier.edit')) {
-                    $html .= '
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" onclick="editProduct(' . $row->id . ')">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>';
-                }
-                if (check_access('supplier.delete')) {
-                    $html .= '
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $row->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>';
-                }
-                $html .= '
-                    </ul>
-                </div>';
-                return $html;
-            })
-            ->rawColumns(['name', 'action', 'pic_name', 'address'])
-            ->make(true);
-    }
 }

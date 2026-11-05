@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Validator;
 use Modules\Master\Entities\Customer;
 use Modules\Master\Entities\CustomerAddress;
 use Modules\Master\Entities\Region;
-use Yajra\DataTables\Facades\DataTables;
 
 class CustomerController extends Controller
 {
@@ -422,77 +421,6 @@ class CustomerController extends Controller
                 'message' => 'Gagal menambahkan data: ' . $e->getMessage(),
             ], 500);
         }
-    }
-
-    public function get_data(Request $request)
-    {
-        $this->authorizeAccess('customers.index');
-
-        $query = Customer::query()->orderBy('name', 'asc');
-
-        // Handle search from custom parameter 'q'
-        $searchValue = $request->input('q');
-        if (!empty($searchValue)) {
-            $searchValue = trim($searchValue);
-            if ($searchValue !== '') {
-                $query->where('name', 'like', '%' . $searchValue . '%');
-            }
-        }
-
-        return DataTables::of($query)
-            ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                return '<div class="d-flex align-items-center">
-                            <div class="ms-5">
-                                <a href="javascript:void(0)" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . e($item->name) . '</a><br>
-                                <span class="fs-7">' . e($item->code) . '</span><br>
-                                <span class="badge badge-light-success fs-7">' . e($item->whatsapp) . '</span>
-                            </div>
-                        </div>';
-            })
-            ->addColumn('birth_of_date', function ($item) {
-                if ($item->birth_of_date) {
-                    try {
-                        $age = \Carbon\Carbon::parse($item->birth_of_date)->diffInYears();
-                        return '<span class="badge badge-light-danger">' . $age . '</span> Thn';
-                    } catch (\Exception $e) {
-                        // fall through
-                    }
-                }
-                return '<span class="badge badge-light-secondary">-</span>';
-            })
-            ->addColumn('action', function ($item) {
-                $html = '';
-                if ($item->status != 'complete') {
-                    $html .= '
-                    <div class="dropstart">
-                        <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                            <li>
-                                <a class="dropdown-item" href="' . route('customers.show', $item->id) . '">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="' . route('customers.edit', $item->id) . '">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $item->id . ')">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    ';
-                }
-                return $html;
-            })
-            ->rawColumns(['name', 'action', 'birth_of_date'])
-            ->make(true);
     }
 
     public function getCustomer(Request $request)
