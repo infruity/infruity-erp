@@ -11,7 +11,7 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 | Batch | Branch | PR | Status |
 |---|---|---|---|
 | B0 Fondasi build | `feature/tailwind-migration` | — | selesai dan terverifikasi; menunggu review dan uji build di server |
-| B1 Layout final, komponen, shell, auth, errors, landing | `feature/tailwind-m1-components` | — | **B1a selesai** (komponen, codemod, penjaga, layout, dark mode); **B1b menunggu**: DataTables ke npm + skin, `body` 13px, hapus kode mati |
+| B1 Layout final, komponen, shell, auth, errors, landing | `feature/tailwind-m1-components` | — | **B1a selesai** (komponen, codemod, penjaga, layout, dark mode); **B1b**: DataTables npm selesai; `body` 13px dan kode mati menunggu |
 | B2 Master | — | — | belum |
 | B3 Report, CRM, Chat, admin | — | — | belum |
 | B4 Transaction | — | — | menunggu `ui/produksi-reference` + `ui/stock-opname-reference` masuk `main` |
@@ -488,7 +488,7 @@ Banyak skrip halaman memanggil `bootstrap.Modal.getOrCreateInstance(el).show()`,
 
 ### 6.1 DataTables
 
-- Ganti `datatables.bundle.*` Metronic dengan npm `datatables.net@1.13.x` (API sama dengan 1.13.7 sekarang) + `datatables.net-fixedcolumns`, `datatables.net-responsive`, `datatables.net-select`. **Tanpa** `datatables.net-bs5`. JSZip/pdfmake hanya dipasang bila audit B0 menemukan tombol export.
+- **Selesai untuk `layouts.erp` (B1b-1):** `datatables.net@1.13.7` di `vendor.js` + `datatables-bootstrap.js` + `resources/css/datatables.css`. Halaman `template.root` tetap memakai bundle Metronic sampai dipindah. Ganti `datatables.bundle.*` Metronic dengan npm `datatables.net@1.13.x` (API sama dengan 1.13.7 sekarang) + `datatables.net-fixedcolumns`, `datatables.net-responsive`, `datatables.net-select`. **Tanpa** `datatables.net-bs5`. JSZip/pdfmake hanya dipasang bila audit B0 menemukan tombol export.
 - Skin `resources/css/vendor/datatables.css` memakai token: wrapper, length, filter, info, paginate, ikon sort, processing, fixedColumns.
 - `erp-collections.js` (daftar mobile dari DOM DataTables) dipertahankan; selector-nya diaudit karena `dom` default bs5 (`.row`, `.col-sm-12`) hilang. Opsi `dom` di setiap halaman dicek.
 - Upgrade ke DataTables 2.x **bukan** bagian migrasi ini.
@@ -733,12 +733,20 @@ Dibagi dua karena ukurannya. **B1a selesai** (PR terpisah); **B1b** menyusul.
 7. Dark mode dibuang (baris Tema di Pengaturan dan skrip tema di `template.root`).
 8. Aturan Q19 di `AGENTS.md` dan `docs/ui-design-system.md` (komponen, aturan, alat).
 
+**B1b-1 (selesai): DataTables dari npm, bundle Metronic keluar dari `layouts.erp`.** `layouts.erp` tidak lagi memuat satu pun aset Metronic.
+- Survei runtime: di 20 halaman layout ERP hanya **2 tabel DataTables** (`products-table`, `wholesale-table`), keduanya inti saja (server-side, tanpa FixedColumns/Responsive/Select/Buttons). Ekstensi, JSZip, dan pdfmake di bundle 2,4 MB tidak terpakai di sana.
+- `datatables.net@1.13.7` (versi yang sama persis dengan bundle) masuk ke `vendor.js` (254 KB, sebelumnya 165 KB + 2,4 MB).
+- **Bundle itu ternyata juga membawa integrasi Bootstrap** (wrapper `dt-bootstrap4`, `form-select-solid`, paginasi `ul.pagination > li.page-item`, `dom` bawaan, bawaan bahasa Metronic). Tanpa itu markup tabel berubah. Ditulis ulang agar terbaca di `resources/js/vendor/datatables-bootstrap.js` (dicatat sebagai utang di allowlist penjaga, dihapus di B6).
+- Skin inti diekstrak tanpa perubahan nilai ke `resources/css/datatables.css` (12,5 KB dari 36,5 KB; ekstensi dan dark mode dibuang), dimuat di posisi yang sama dengan bundle lama karena adapter `erp-*.css` mengandalkan urutan itu.
+- Verifikasi: tabel sintetis 30 baris di konteks halaman asli, enam keadaan (awal, halaman 2, urut, cari, kosong, 25 per halaman) **identik byte demi byte** antara sebelum dan sesudah (markup, class, style, ukuran, teks). Pemindaian visual 20 halaman × 2 lebar: satu-satunya selisih adalah `opacity` animasi masuk (artefak waktu).
+- **Tidak teruji:** baris data nyata dari server. Basis data guest tidak punya produk, dan akun yang diberikan ditolak di database lokal. Jalur ajax server-side memakai kode inti yang sama; tetap perlu dicoba sekilas di lingkungan dengan data.
+- Ekstensi baru (fixedColumns, responsive, select) ditambahkan bersama halaman yang membutuhkannya (B2 sampai B5), JS dan CSS-nya sekaligus.
+
 **B1b (menunggu):**
-1. DataTables dari npm (`datatables.net@1.13`, `fixedcolumns`, `responsive`, `select`) + skin `resources/css/vendor/datatables.css`; hapus `datatables.bundle.*` dari `layouts.erp`. Uji dengan pemindaian visual yang sama seperti B0 pada 20 halaman layout ERP.
-2. `body` 13px dan kalibrasi 20 halaman + shell (R5). Perubahan visual yang disengaja.
-3. Peleburan `erp-button` ke `erp-action`.
-4. Audit kandidat mati dan penghapusannya setelah dikonfirmasi pemilik repo: `template/*` Metronic lama (dominan di angka B1), `auth/passwords/*`, `auth/verify`, `auth/register`, `auth/footer`, `auth/login-option`, `layouts.app` (+ `public/css/app.css`, `public/js/app.js`, `mix-manifest.json`), `*::layouts.master`, `admin-view`, `pemohon-view`, `template - Copy/`.
-5. Mengisi detail-dialog/dropdown-select lama dengan komponen baru bila perlu.
+1. `body` 13px dan kalibrasi 20 halaman + shell (R5). Perubahan visual yang disengaja.
+2. Peleburan `erp-button` ke `erp-action`.
+3. Audit kandidat mati dan penghapusannya setelah dikonfirmasi pemilik repo: `template/*` Metronic lama (dominan di angka B1), `auth/passwords/*`, `auth/verify`, `auth/register`, `auth/footer`, `auth/login-option`, `layouts.app` (+ `public/css/app.css`, `public/js/app.js`, `mix-manifest.json`), `*::layouts.master`, `admin-view`, `pemohon-view`, `template - Copy/`.
+4. Mengisi detail-dialog/dropdown-select lama dengan komponen baru bila perlu.
 
 Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 

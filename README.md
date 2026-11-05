@@ -178,9 +178,9 @@ npm run build
 | Output | Isi | Cara dimuat |
 |---|---|---|
 | `public/build/assets/*.css`, `alpine-*.js`, `manifest.json` | CSS Tailwind (`app.css` untuk layout baru, `legacy.css` untuk layout `template.root` tanpa preflight) dan Alpine.js | `@vite(...)` |
-| `public/build/vendor/vendor.js` | jQuery + SweetAlert2 sebagai skrip klasik (IIFE) | `@include('partials.vendor-js')` |
+| `public/build/vendor/vendor.js` | jQuery + SweetAlert2 + DataTables 1.13 (inti) sebagai skrip klasik (IIFE) | `@include('partials.vendor-js')` |
 
-jQuery dan SweetAlert2 sengaja bukan module, karena skrip inline di banyak halaman memakai `$` dan `Swal` saat HTML masih di-parse.
+jQuery, SweetAlert2, dan DataTables sengaja bukan module, karena skrip inline di banyak halaman memakai `$` dan `Swal` saat HTML masih di-parse.
 
 **Deploy:** server butuh Node ^20.19 atau >= 22.12. Tambahkan `npm ci && npm run build` ke prosedur deploy. Tanpa `public/build/manifest.json`, halaman yang memakai `@vite` akan error; tanpa `public/build/vendor/vendor.js`, konsol browser menampilkan pesan dan halaman yang butuh jQuery akan rusak.
 

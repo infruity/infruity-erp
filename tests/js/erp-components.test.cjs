@@ -274,3 +274,28 @@ test('legacy bridge ignores Modal on a non-dialog element instead of throwing', 
 
     assert.deepEqual(target.events, []);
 });
+
+test('DataTables defaults keep the markup of the old Metronic bundle', async () => {
+    const { install } = await load('../vendor/datatables-bootstrap.js');
+
+    const merge = (target, source) => {
+        for (const [k, v] of Object.entries(source)) {
+            target[k] = v && typeof v === 'object' && !Array.isArray(v) ? merge(target[k] || {}, v) : v;
+        }
+        return target;
+    };
+    const dataTable = { defaults: {}, ext: { classes: {}, renderer: { pageButton: {} } } };
+    const $ = { fn: { dataTable }, extend: (deep, target, source) => (typeof deep === 'boolean' ? merge(target, source) : Object.assign(deep, target)) };
+
+    install($, {});
+
+    assert.equal(dataTable.defaults.renderer, 'bootstrap');
+    assert.ok(dataTable.defaults.dom.startsWith("<'table-responsive'tr>"));
+    assert.equal(dataTable.defaults.language.lengthMenu, '_MENU_');
+    assert.equal(dataTable.defaults.language.info, 'Showing _START_ to _END_ of _TOTAL_ records');
+    assert.equal(dataTable.defaults.language.paginate.next, '<i class="next"></i>');
+    assert.equal(dataTable.ext.classes.sWrapper, 'dataTables_wrapper dt-bootstrap4');
+    assert.equal(dataTable.ext.classes.sLengthSelect, 'form-select form-select-sm form-select-solid');
+    assert.equal(dataTable.ext.classes.sPageButton, 'paginate_button page-item');
+    assert.equal(typeof dataTable.ext.renderer.pageButton.bootstrap, 'function');
+});

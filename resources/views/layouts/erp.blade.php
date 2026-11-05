@@ -20,9 +20,8 @@
     <!-- jQuery + SweetAlert2 (needed by existing page scripts / DataTables); built by `npm run build` -->
     @include('partials.vendor-js')
 
-    <!-- DataTables (kept for index.blade.php DataTables usage) -->
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}">
-    <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    {{-- DataTables 1.13 (inti) ada di vendor.js di atas; skin-nya dimuat di posisi yang sama dengan bundle Metronic lama. --}}
+    @vite('resources/css/datatables.css')
 
     <!-- Alpine.js (+ collapse), module = deferred, same ordering as the old CDN scripts -->
     @vite(['resources/js/alpine.js', 'resources/js/erp.js'])

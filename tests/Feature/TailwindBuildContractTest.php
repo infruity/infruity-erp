@@ -50,16 +50,15 @@ class TailwindBuildContractTest extends TestCase
         }
     }
 
-    public function test_page_scripts_still_get_jquery_and_swal_before_the_body(): void
+    public function test_the_erp_layout_gets_jquery_swal_and_datatables_from_the_vendor_bundle(): void
     {
         $erp = file_get_contents(base_path('resources/views/layouts/erp.blade.php'));
         $head = substr($erp, 0, strpos($erp, '</head>'));
 
-        $vendor = strpos($head, "@include('partials.vendor-js')");
-        $datatables = strpos($head, 'datatables.bundle.js');
-
-        $this->assertNotFalse($vendor);
-        $this->assertNotFalse($datatables);
-        $this->assertLessThan($datatables, $vendor, 'jQuery harus dimuat sebelum DataTables');
+        $this->assertStringContainsString("@include('partials.vendor-js')", $head, 'jQuery/Swal/DataTables dimuat sinkron sebelum skrip halaman');
+        $this->assertStringContainsString("@vite('resources/css/datatables.css')", $head);
+        $this->assertStringNotContainsString('datatables.bundle', $erp, 'bundle DataTables Metronic (2,4 MB) tidak boleh kembali ke layout ERP');
+        $this->assertStringNotContainsString('plugins.bundle', $erp);
+        $this->assertStringNotContainsString('style.bundle', $erp);
     }
 }

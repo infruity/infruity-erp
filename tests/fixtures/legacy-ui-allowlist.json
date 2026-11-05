@@ -1028,6 +1028,10 @@
     "resources/js/erp/legacy-bridge.js": {
         "bootstrap-js": 8
     },
+    "resources/js/vendor/datatables-bootstrap.js": {
+        "form-classes": 2,
+        "bs-utilities": 3
+    },
     "resources/views/admin-view.blade.php": {
         "fontawesome": 1,
         "btn": 2,
