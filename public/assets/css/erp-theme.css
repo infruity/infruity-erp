@@ -104,17 +104,14 @@ html.erp-html { font-size:16px; }
 .erp-ui :is(button,a) { touch-action: manipulation; }
 .erp-ui :is(button:disabled,input:disabled,select:disabled,textarea:disabled) { cursor: not-allowed; }
 .erp-ui :is(button[aria-busy=true],form[aria-busy=true]) { cursor: progress; }
-.erp-ui .erp-button, .erp-ui .erp-link-button {
-    display: inline-flex; min-height: 44px; align-items: center; justify-content: center;
-    gap: 8px; padding: 10px 18px; border: 1px solid var(--erp-border);
-    border-radius: var(--erp-radius-control); background: var(--erp-surface);
-    color: var(--erp-text); font-size: 14px; font-weight: 600; line-height: 1.4;
-    text-decoration: none; transition: background-color .16s, border-color .16s;
-}
-.erp-ui .erp-button--primary { border-color: var(--erp-primary); background: var(--erp-primary); color: white; }
-.erp-ui .erp-button--primary:hover { border-color: var(--erp-primary-hover); background: var(--erp-primary-hover); }
-.erp-ui .erp-button--danger { border-color: var(--erp-danger); background: var(--erp-danger); color: white; }
-.erp-ui .erp-button:disabled { opacity: .5; }
+/* Tombol aksi ERP (satu keluarga untuk semua tombol). Ada di theme.css
+   karena halaman mandiri (error, struk) hanya memuat berkas ini. */
+.erp-action { display:inline-flex; min-height:44px; align-items:center; justify-content:center; flex:none; gap:8px; border:1px solid var(--erp-border); border-radius:999px; padding:10px 18px; background:white; color:#4b5563; font:600 13px/1.4 var(--erp-font); text-decoration:none; cursor:pointer; }
+.erp-action:hover { background:var(--erp-surface-muted); color:var(--erp-primary); }
+.erp-action--primary { background:var(--erp-primary); border-color:var(--erp-primary); color:white; }
+.erp-action--primary:hover { background:var(--erp-primary-hover); color:white; }
+.erp-action--danger { color:var(--erp-danger); border-color:#fecaca; background:var(--erp-danger-soft); }
+.erp-action:disabled { opacity:.5; cursor:not-allowed; }
 /* Adapter for existing Bootstrap controls. No global recolouring of info badges,
    avatars, charts, supplied assets, or native form affordances. */
 .erp-legacy :is(.btn,.form-control,.form-select,.input-group-text) {

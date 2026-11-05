@@ -41,10 +41,10 @@
 <body class="erp-ui">
     <div class="preview-container">
         <div class="action-buttons no-print">
-            <button onclick="window.print()" class="btn erp-button erp-button--primary">
+            <button onclick="window.print()" class="erp-action erp-action--primary">
                 Cetak Laporan
             </button>
-            <button onclick="window.close()" class="btn erp-button">
+            <button onclick="window.close()" class="erp-action">
                 Tutup Preview
             </button>
         </div>

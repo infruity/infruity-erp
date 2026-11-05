@@ -77,4 +77,26 @@ class TailwindBuildContractTest extends TestCase
         $this->assertMatchesRegularExpression('/body\.erp-app\s*\{\s*@apply text-body;/', $css);
         $this->assertStringContainsString("body: ['13px', '1.5']", $config);
     }
+
+    public function test_erp_action_is_the_only_button_family(): void
+    {
+        // erp-button dilebur ke erp-action. .erp-action hidup di erp-theme.css karena halaman
+        // mandiri (error, struk) hanya memuat berkas itu.
+        $theme = file_get_contents(base_path('public/assets/css/erp-theme.css'));
+        $workspace = file_get_contents(base_path('public/assets/css/erp-workspace.css'));
+
+        $this->assertStringContainsString('.erp-action {', $theme);
+        $this->assertStringNotContainsString('.erp-action {', $workspace);
+
+        $roots = ['resources/views', 'Modules', 'public/assets/css', 'public/assets/js', 'resources/css', 'resources/js'];
+        foreach ($roots as $root) {
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(base_path($root), \FilesystemIterator::SKIP_DOTS));
+            foreach ($iterator as $file) {
+                if (! preg_match('/\.(php|css|js)$/', $file->getFilename()) || str_contains($file->getPathname(), '/node_modules/')) {
+                    continue;
+                }
+                $this->assertStringNotContainsString('erp-button', file_get_contents($file->getPathname()), $file->getPathname().' memakai erp-button; pakai erp-action');
+            }
+        }
+    }
 }

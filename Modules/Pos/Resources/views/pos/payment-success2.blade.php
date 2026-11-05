@@ -51,7 +51,7 @@ body { margin:0; }
 
         <div class="buttons">
             <div class="button-row receipt-buttons">
-                <button class="erp-button"
+                <button class="erp-action"
                     onclick="window.location.href='{{ url('pos/printNota') . '/' . $data->id }}'">Cetak Struk</button>
                 @php
                     $url = isset($data->uuid)
@@ -67,11 +67,11 @@ body { margin:0; }
                     }
                     $waUrl = "https://wa.me/{$phone}?text={$message}";
                 @endphp
-                <button class="erp-button" onclick="window.location.href='{{ $waUrl }}'">Kirim Struk</button>
+                <button class="erp-action" onclick="window.location.href='{{ $waUrl }}'">Kirim Struk</button>
             </div>
-            <button class="erp-button erp-button--primary" onclick="window.location.href='{{ route('pos.create') }}'">Transaksi
+            <button class="erp-action erp-action--primary" onclick="window.location.href='{{ route('pos.create') }}'">Transaksi
                 Baru</button>
-            <button class="erp-button" onclick="window.location.href='{{ route('pos.index') }}'">Kembali
+            <button class="erp-action" onclick="window.location.href='{{ route('pos.index') }}'">Kembali
                 ke Daftar</button>
         </div>
 </section></main></body></html>

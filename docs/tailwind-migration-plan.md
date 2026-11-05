@@ -11,7 +11,7 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 | Batch | Branch | PR | Status |
 |---|---|---|---|
 | B0 Fondasi build | `feature/tailwind-migration` | — | selesai dan terverifikasi; menunggu review dan uji build di server |
-| B1 Layout final, komponen, shell, auth, errors, landing | langsung di `integration/tailwind-migration` | — | **B1a, B1b-1 (DataTables npm), B1b-2 (`body` 13px), B1b-3 (kode mati golongan A) selesai**; menunggu: peleburan `erp-button`, golongan B kode mati |
+| B1 Layout final, komponen, shell, auth, errors, landing | langsung di `integration/tailwind-migration` | — | **B1a, B1b-1 (DataTables npm), B1b-2 (`body` 13px), B1b-3 (kode mati golongan A) selesai**; B1b-4 (`erp-button` → `erp-action`) selesai; menunggu: golongan B kode mati |
 | B2 Master | — | — | belum |
 | B3 Report, CRM, Chat, admin | — | — | belum |
 | B4 Transaction | — | — | menunggu `ui/produksi-reference` + `ui/stock-opname-reference` masuk `main` |
@@ -755,9 +755,14 @@ Dibagi dua karena ukurannya. **B1a selesai** (PR terpisah); **B1b** menyusul.
 - Allowlist ratchet turun dari 218 file / 5.623 temuan menjadi 192 file. Test: sama dengan `main` (4 error + 1 failure bawaan).
 - Masih menunggu konfirmasi pemilik repo (golongan B): `public/{mask,font,error,assets-landing}`, `public/template.xlsx`, `Modules/*/Resources/views/{layouts/master,index}`, controller `Auth/{Confirm,Forgot,Reset}Password` + `VerificationController` (tanpa route).
 
+**B1b-4 (selesai): `erp-button` dilebur ke `erp-action`.** 16 pemakaian di 5 view (`errors/layout`, `products/create`, `pos/payment-success2`, `pos/receipt2`, `stock-opname/exports/preview`) diganti; `.erp-ui .erp-button*` dan `.erp-link-button` (tanpa pemakai) dihapus. Aturan `.erp-action*` dipindah dari `erp-workspace.css` ke `erp-theme.css` karena halaman mandiri (error, struk) hanya memuat berkas itu; urutan aturan sama.
+- Diverifikasi di browser: 20 elemen `.erp-action` di 9 halaman identik sebelum/sesudah (semua properti gaya + ukuran kotak).
+- Perubahan tampilan yang disengaja pada 16 tombol bekas `erp-button`: radius 12px → pil (999px), font 14px → 13px, tinggi tetap. Pil adalah bentuk 107 pemakaian `erp-action`.
+- Keputusan terbuka: §5.4 menyebut radius `rounded-control` untuk keluarga tombol. Itu akan mengubah ±120 tombol; ditunda sampai ada acuan dari `infruity-frontend`.
+- Dijaga `TailwindBuildContractTest::test_erp_action_is_the_only_button_family`.
+
 **B1b (menunggu):**
-1. Peleburan `erp-button` ke `erp-action`.
-2. Mengisi detail-dialog/dropdown-select lama dengan komponen baru bila perlu.
+1. Mengisi detail-dialog/dropdown-select lama dengan komponen baru bila perlu.
 
 Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 
