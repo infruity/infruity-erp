@@ -2,7 +2,8 @@
     Halaman master sederhana: DataTables server-side + dialog tambah/ubah.
     Dipakai location, handling, department.
     Parameter: resource (segmen URL & awalan id), title, noun (huruf kecil), subtitle, icon,
-    dataRoute (nama route data), columns [[title, data]], fields [[name, label, required?]].
+    dataRoute (nama route data), columns [[title, data]], fields [[name, label, required?, sumber-respons?]].
+    Elemen ke-4 field dipakai bila nama kunci JSON `edit` berbeda dari nama input.
     Menu baris (Ubah/Hapus) dirender controller lewat App\Support\DataTableCells.
 --}}
 @php
@@ -36,7 +37,7 @@
         @foreach ($fields as $field)
             <div>
                 <label for="{{ $resource }}-{{ $field[0] }}" class="erp-label {{ ($field[2] ?? false) ? 'erp-label--required' : '' }}">{{ $field[1] }}</label>
-                <input type="text" id="{{ $resource }}-{{ $field[0] }}" name="{{ $field[0] }}" class="erp-input" autocomplete="off">
+                <input type="text" id="{{ $resource }}-{{ $field[0] }}" name="{{ $field[0] }}" class="erp-input" autocomplete="off"@isset($field[3]) data-source="{{ $field[3] }}"@endisset>
             </div>
         @endforeach
     </form>
@@ -89,7 +90,7 @@
                     @foreach ($columns as $column)
                         { data: @js($column[1]), name: @js($column[1]) },
                     @endforeach
-                    { data: 'action', name: 'action' }
+                    { data: 'action', name: 'action', orderable: false, searchable: false }
                 ]
             });
 
@@ -183,7 +184,7 @@
                 url: '/' + resource + '/' + id + '/edit',
                 type: 'GET',
                 success: function (response) {
-                    form.find('input[type="text"]').each(function () { $(this).val(response[this.name] ?? ''); });
+                    form.find('input[type="text"]').each(function () { $(this).val(response[this.dataset.source || this.name] ?? ''); });
                     form.attr('action', '/' + resource + '/' + id);
                     form.find('input[name="_method"]').remove();
                     form.append('<input type="hidden" name="_method" value="PUT">');

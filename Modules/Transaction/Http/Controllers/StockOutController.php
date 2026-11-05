@@ -2,6 +2,7 @@
 
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\DataTableCells;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -244,44 +245,13 @@ class StockOutController extends Controller
         $data = $query->get();
         return DataTables::of($data)
             ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                return '<div class="d-flex align-items-center">
-                            <div class="ms-5">
-                                <a href="'. url('wholesale') . '/' . $item->id . '/show' .'" class="text-gray-800 text-hover-primary fs-5 fw-bold">#' . $item->code . '</a>
-                                <br>
-                                <span class="text-muted fw-bold d-block fs-7">'. $item->product->name. '</span>
-                                <span class="text-danger fw-bold d-block fs-7">'. $item->type->name. '</span>                                
-                                <span class="text-success fw-bold d-block fs-7">'. dateindo($item->date). '</span>
-                            </div>
-                        </div>';
-            })
-            ->addColumn('quantity', function ($item) {
-                return '<span class="badge badge-light-primary" data-id="' . $item->id . '" data-value="' . $item->quantity . '">' . toNumber($item->quantity) . ' ' . $item->product->unit->abbreviation . '</span>';
-            })
-            ->addColumn('action', function ($row) {
-                $editUrl = route('products.edit', $row->id);
-                $deleteUrl = route('products.destroy', $row->id);
-                $name = e($row->name);
-
-                return '
-                <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi ' . $name . '">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" onclick="editProduct(' . $row->id . ')">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $row->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>';
-            })
+            ->addColumn('name', fn ($item) => DataTableCells::title(
+                '#'.$item->code,
+                $item->product->name.' · '.$item->type->name.' · '.dateindo($item->date),
+                url('wholesale/'.$item->id.'/show')
+            ))
+            ->addColumn('quantity', fn ($item) => DataTableCells::badge(toNumber($item->quantity).' '.$item->product->unit->abbreviation, 'primary'))
+            ->addColumn('action', fn ($row) => DataTableCells::editDeleteMenu((string) $row->product->name, $row->id, true, true))
             ->rawColumns(['name', 'quantity', 'action'])
             ->make(true);
     }

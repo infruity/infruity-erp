@@ -1,124 +1,50 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Stok Keluar')
+@section('page-title', 'Stok Keluar')
+@section('page-breadcrumb')
+    <span>Inventaris</span><i class="ph ph-caret-right text-[0.55rem]"></i><span>Stok Keluar</span>
+@endsection
+@push('styles')
+    @vite('resources/css/flatpickr.css')
+@endpush
 @section('content')
+    @include('crm::partials.assets')
     <link rel="stylesheet" href="{{ asset('assets/css/erp-operations.css') }}?v={{ filemtime(public_path('assets/css/erp-operations.css')) }}">
     <x-erp.workspace title="Stok Keluar" subtitle="Telusuri barang keluar dan jumlahnya." icon="package">
         <x-slot:toolbar>
-            <label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-kt-ecommerce-product-filter="search" id="search" aria-label="Cari transaksi stok keluar" placeholder="Cari transaksi stok keluar..."></label>
-            <div class="erp-operations-toolbar-actions"><details class="erp-operations-filter"><summary class="erp-action"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i>Filter</summary><div class="erp-operations-filter__body"><label for="stock-out-type-filter">Jenis stok<select id="stock-out-type-filter" class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Stock" data-kt-ecommerce-product-filter="stock"><option value="all">Semua</option>@foreach ($type as $item)<option value="{{ $item->id }}">{{ $item->name }}</option>@endforeach</select></label><label for="kt_ecommerce_sales_flatpickr">Rentang tanggal<div class="input-group"><input class="form-control" placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr"><button type="button" class="erp-action" id="kt_ecommerce_sales_flatpickr_clear" aria-label="Hapus rentang tanggal"><i class="ph ph-x" aria-hidden="true"></i></button></div></label></div></details><button type="button" class="erp-action erp-action--primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Transaksi</button></div>
+            <label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" aria-label="Cari transaksi stok keluar" placeholder="Cari transaksi stok keluar..."></label>
+            <div class="erp-operations-toolbar-actions"><details class="erp-operations-filter"><summary class="erp-action"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i>Filter</summary><div class="erp-operations-filter__body"><label for="stock-out-type-filter">Jenis stok<select id="stock-out-type-filter" class="erp-select" data-erp-filter="stock"><option value="all">Semua</option>@foreach ($type as $item)<option value="{{ $item->id }}">{{ $item->name }}</option>@endforeach</select></label><label for="kt_ecommerce_sales_flatpickr">Rentang tanggal<div class="flex gap-2"><input class="erp-input" placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr"><button type="button" class="erp-action" id="kt_ecommerce_sales_flatpickr_clear" aria-label="Hapus rentang tanggal"><i class="ph ph-x" aria-hidden="true"></i></button></div></label></div></details><button type="button" class="erp-action erp-action--primary" data-erp-open="#crm-dialog" data-crm-create><i class="ph ph-plus" aria-hidden="true"></i>Tambah Transaksi</button></div>
         </x-slot:toolbar>
         <div class="erp-operations-collection" data-erp-collection="transaction-table" data-erp-empty="Belum ada stok keluar" data-erp-empty-description="Data yang tersimpan akan muncul di sini.">
-            <table class="table erp-operations-table align-middle" id="transaction-table" width="100%">
+            <table class="erp-table erp-operations-table" id="transaction-table" width="100%">
                     <thead>
-                        <tr class="text-start">
-
-                            <th class="text-start min-w-100px">Nama</th>
-                            <th class="text-end min-w-70px">Jumlah</th>
-                            <th class="text-end min-w-70px">Aksi</th>
+                        <tr>
+                            <th>Nama</th>
+                            <th class="text-right">Jumlah</th>
+                            <th class="text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class=""></tbody>
                 </table>
         </div>
     </x-erp.workspace>
-    <div class="modal fade erp-operations-modal" id="kt_modal_add_customer" tabindex="-1" aria-hidden="true">
-        <!--begin::Modal dialog-->
-        <div class="modal-dialog erp-sheet-dialog">
-            <!--begin::Modal content-->
-            <div class="modal-content">
-                <!--begin::Form-->
-                <form class="form" action="{{ url(Request::segment(1)) }}" id="kt_modal_add_customer_form"
-                    data-kt-redirect="#">
-                    @csrf
-                    <!--begin::Modal header-->
-                    <div class="erp-sheet-header" id="kt_modal_add_customer_header">
-                        <!--begin::Modal title-->
-                        <h2 class="fw-bold">Tambah Transaksi</h2>
-                        <!--end::Modal title-->
-                        <!--begin::Close-->
-                        <button type="button" id="kt_modal_add_customer_close" class="erp-action erp-operations-close" aria-label="Tutup"><i class="ph ph-x" aria-hidden="true"></i></button>
-                        <!--end::Close-->
-                    </div>
-                    <!--end::Modal header-->
-                    <!--begin::Modal body-->
-                    <div class="erp-sheet-body erp-operations-fields">
-                        <!--begin::Scroll-->
-                        <div class="scroll-y me-n7 pe-7" id="kt_modal_add_customer_scroll" data-kt-scroll="true"
-                            data-kt-scroll-activate="{default: false, lg: true}" data-kt-scroll-max-height="auto"
-                            data-kt-scroll-dependencies="#kt_modal_add_customer_header"
-                            data-kt-scroll-wrappers="#kt_modal_add_customer_scroll" data-kt-scroll-offset="300px">
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required form-label">Product</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <select class="form-select mb-2" name="product_id" id="product_id"
-                                    data-placeholder="Select a product">
-                                </select>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fs-6 fw-semibold mb-2">Tanggal</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="text" id="date" class="form-control form-control-solid" placeholder=""
-                                    name="date" value="{{ date('Y-m-d') }}" />
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fs-6 fw-semibold mb-2">Name</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <select class="form-select mb-2" name="type" id="type"
-                                    data-placeholder="Select a product">
-                                    @foreach ($type as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                </select>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-15">
-                                <!--begin::Label-->
-                                <label class="fs-6 fw-semibold mb-2">Quantity</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="number" step="0.01" class="form-control form-control-solid" placeholder=""
-                                    name="quantity" />
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-                        </div>
-                        <!--end::Scroll-->
-                    </div>
-                    <!--end::Modal body-->
-                    <!--begin::Modal footer-->
-                    <div class="erp-sheet-footer erp-operations-actions">
-                        <!--begin::Button-->
-                        <button type="reset" id="kt_modal_add_customer_cancel" class="btn btn-light me-3">Batal</button>
-                        <!--end::Button-->
-                        <!--begin::Button-->
-                        <button type="submit" id="kt_modal_add_customer_submit" class="btn btn-primary">
-                            <span class="indicator-label">Simpan</span>
-                            <span class="indicator-progress">Menyimpan...
-                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                        </button>
-                        <!--end::Button-->
-                    </div>
-                    <!--end::Modal footer-->
-                </form>
-                <!--end::Form-->
+    <x-erp.dialog id="crm-dialog" title="Tambah Transaksi" variant="sheet" data-erp-create data-crm-dialog>
+        <form id="crm-form" class="erp-crm-form" action="{{ url(Request::segment(1)) }}">@csrf
+            <div class="erp-crm-fields">
+                <div class="erp-crm-form-error" data-crm-form-error role="alert" tabindex="-1" hidden></div>
+                <div class="erp-crm-field"><label for="product_id" class="erp-label erp-label--required">Produk</label><select name="product_id" id="product_id" class="erp-select"></select></div>
+                <div class="erp-crm-field"><label for="date" class="erp-label erp-label--required">Tanggal</label><input type="text" id="date" class="erp-input" name="date" value="{{ date('Y-m-d') }}"></div>
+                <div class="erp-crm-field"><label for="type" class="erp-label erp-label--required">Jenis</label><select name="type" id="type" class="erp-select">@foreach ($type as $item)<option value="{{ $item->id }}">{{ $item->name }}</option>@endforeach</select></div>
+                <div class="erp-crm-field"><label for="quantity" class="erp-label">Kuantitas</label><input type="number" step="0.01" id="quantity" class="erp-input" name="quantity"></div>
             </div>
-        </div>
-    </div>
+        </form>
+        <x-slot:footer>
+            <div class="ml-auto flex gap-3">
+                <button type="button" id="crm-cancel" class="erp-action">Batal</button>
+                <button type="submit" form="crm-form" id="crm-submit" class="erp-action erp-action--primary"><span data-label>Simpan</span><span data-progress hidden>Menyimpan…</span></button>
+            </div>
+        </x-slot:footer>
+    </x-erp.dialog>
 @section('script')
     <script type="text/javascript">
         var dataTable;
@@ -145,7 +71,7 @@
                     url: "{{ route('stock-out.data') }}",
                     data: function(d) {
                         d.url = "{{ request()->segment(1) }}";
-                        d.stock_filter = $('[data-kt-ecommerce-product-filter="stock"]').val();
+                        d.stock_filter = $('[data-erp-filter="stock"]').val();
                         var range = $('#kt_ecommerce_sales_flatpickr').val();
                         if (range) {
                             var dates = range.split(' to ');
@@ -177,11 +103,11 @@
             $('#search').on('keyup', function() {
                 dataTable.search(this.value).draw();
             });
-            $('[data-kt-ecommerce-product-filter="stock"]').on('change', function() {
+            $('[data-erp-filter="stock"]').on('change', function() {
                 dataTable.draw(); // trigger fetch ulang dari server
             });
 
-            document.getElementById('kt_modal_add_customer_cancel').addEventListener('click', function(e) {
+            document.getElementById('crm-cancel').addEventListener('click', function(e) {
                 e.preventDefault(); // Mencegah form reset langsung
                 Swal.fire({
                     text: "Apakah Anda yakin ingin membatalkan?",
@@ -191,31 +117,27 @@
                     confirmButtonText: "Ya, Batalkan!",
                     cancelButtonText: "Tidak, Kembali",
                     customClass: {
-                        confirmButton: "btn btn-primary",
-                        cancelButton: "btn btn-active-light"
+                        confirmButton: "erp-action erp-action--primary",
+                        cancelButton: "erp-action ml-3"
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Tutup modal manual
-                        const modal = bootstrap.Modal.getInstance(document.getElementById(
-                            'kt_modal_add_customer'));
-                        modal.hide();
-                        document.getElementById('kt_modal_add_customer_form').reset();
+                        erp.dialog.close('crm-dialog');
                     }
                 });
             });
 
-            $('#kt_modal_add_customer_form').on('submit', function(e) {
+            $('#crm-form').on('submit', function(e) {
                 e.preventDefault();
 
                 var form = $(this);
                 var url = form.attr('action');
-                var submitBtn = $('#kt_modal_add_customer_submit');
+                var submitBtn = $('#crm-submit');
 
                 // Show loading
                 submitBtn.prop('disabled', true);
-                submitBtn.find('.indicator-label').hide();
-                submitBtn.find('.indicator-progress').show();
+                submitBtn.find('[data-label]').prop('hidden', true);
+                submitBtn.find('[data-progress]').prop('hidden', false);
 
                 $.ajax({
                     type: 'POST',
@@ -240,13 +162,8 @@
                                 `/${segment1}`); // Misal segment1 = 'stock-out'
 
                             // 4. Kembalikan judul modal (opsional)
-                            $('#kt_modal_add_customer_header h2').text(
-                                'Tambah transaction');
-
                             // 5. Tutup modal
-                            const modal = bootstrap.Modal.getInstance(document
-                                .getElementById('kt_modal_add_customer'));
-                            if (modal) modal.hide();
+                            erp.dialog.close('crm-dialog');
 
                             // 6. Refresh DataTable
                             if (typeof dataTable !== 'undefined') {
@@ -268,8 +185,8 @@
                     complete: function() {
                         // Reset loading state
                         submitBtn.prop('disabled', false);
-                        submitBtn.find('.indicator-label').show();
-                        submitBtn.find('.indicator-progress').hide();
+                        submitBtn.find('[data-label]').prop('hidden', false);
+                        submitBtn.find('[data-progress]').prop('hidden', true);
                     }
                 });
             });
@@ -293,8 +210,8 @@
                 confirmButtonText: 'Ya, hapus!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--danger',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false
             }).then((result) => {
@@ -350,7 +267,7 @@
                     $('select[name="type"]').val(response.type_id).trigger('change');
 
                     // Ubah action form untuk update
-                    var form = $('#kt_modal_add_customer_form');
+                    var form = $('#crm-form');
                     form.attr('action', `/stock-out/${id}`); // URL untuk update produk
                     form.find('input[name="_method"]').remove(); // Hapus input _method jika ada
                     form.append(
@@ -358,8 +275,8 @@
                     ); // Menambahkan input _method untuk PUT
 
                     // Tampilkan modal untuk edit produk
-                    var modal = new bootstrap.Modal(document.getElementById('kt_modal_add_customer'));
-                    modal.show();
+                    
+                    erp.dialog.open('crm-dialog');
                 },
                 error: function(xhr) {
                     Swal.fire({
@@ -387,30 +304,25 @@
             }
         });
 
-        $('#kt_modal_add_customer').on('shown.bs.modal', function() {
-            $('#product_id').select2({
-                placeholder: 'Select a product',
-                dropdownParent: $('#kt_modal_add_customer'),
-                ajax: {
-                    url: '{{ route('ajax.stock-available') }}',
-                    dataType: 'json',
-                    delay: 250,
-                    data: params => ({
-                        search: params.term
-                    }),
-                    processResults: data => ({
-                        results: data.map(item => ({
-                            id: item.id,
-                            text: item.name,
-                            stock_available: item.stock_available
-                        }))
-                    })
-                }
-            }).on('select2:select', function(e) {
-                const data = e.params.data;
-                $('input[name="quantity"]').val(data.stock_available || 0);
-            });
+        // Clear rentang tanggal filter.
+        $('#kt_ecommerce_sales_flatpickr_clear').on('click', function() {
+            document.getElementById('kt_ecommerce_sales_flatpickr')._flatpickr?.clear();
+            dataTable.draw();
+        });
 
+        // Produk (ErpPicker menggantikan select2); memilih produk mengisi kuantitas dengan stok tersedia.
+        $(function() {
+            ErpPicker.attach('#product_id', {
+                title: 'Pilih produk',
+                placeholder: 'Cari produk...',
+                placeholderTrigger: 'Pilih produk',
+                emptyText: 'Produk tidak ditemukan',
+                url: '{{ route('ajax.stock-available') }}',
+                map: item => ({ id: item.id, text: item.name, data: { stock_available: item.stock_available } })
+            });
+            $('#product_id').on('select2:select', function(e) {
+                $('input[name="quantity"]').val(e.params.data.stock_available || 0);
+            });
         });
     </script>
 @endsection
