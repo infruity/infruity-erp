@@ -58,26 +58,22 @@
                 dataTable.search(this.value).draw();
             });
 
-            $('#style').select2({
-                templateResult: function(data) {
-                    if (!data.id) return data.text;
+            // Pratinjau warna label (nilai tersimpan tetap kelas lama `badge-light-*`).
+            const styleTones = {
+                'badge-light-primary': 'erp-badge--primary', 'badge-light-secondary': 'erp-badge--neutral',
+                'badge-light-success': 'erp-badge--success', 'badge-light-danger': 'erp-badge--danger',
+                'badge-light-warning': 'erp-badge--warning', 'badge-light-info': 'erp-badge--info',
+                'badge-light': 'erp-badge--neutral', 'badge-light-dark': 'erp-badge--neutral'
+            };
+            const syncStylePreview = () => {
+                const preview = document.getElementById('crm-style-preview');
+                preview.className = 'erp-badge shrink-0 ' + (styleTones[$('#style').val()] || 'erp-badge--neutral');
+            };
+            $('#style').on('change', syncStylePreview);
+            document.getElementById('crm-dialog').addEventListener('erp:dialog-close', syncStylePreview);
+            syncStylePreview();
 
-                    const badgeClass = $(data.element).data('badge') || 'badge-light';
-                    return $('<span class="badge ' + badgeClass + '">' + data.text + '</span>');
-                },
-                templateSelection: function(data) {
-                    if (!data.id) return data.text;
-
-                    const badgeClass = $(data.element).data('badge') || 'badge-light';
-                    return $('<span class="badge ' + badgeClass + '">' + data.text + '</span>');
-                },
-                escapeMarkup: function(markup) {
-                    return markup;
-                },
-                width: '100%' // agar mengikuti lebar
-            });
-
-            document.getElementById('kt_modal_add_customer_cancel').addEventListener('click', function(e) {
+            document.getElementById('crm-cancel').addEventListener('click', function(e) {
                 e.preventDefault(); // Mencegah form reset langsung
                 Swal.fire({
                     text: "Apakah Anda yakin ingin membatalkan?",
@@ -87,33 +83,29 @@
                     confirmButtonText: "Ya, Batalkan!",
                     cancelButtonText: "Tidak, Kembali",
                     customClass: {
-                        confirmButton: "btn btn-primary",
-                        cancelButton: "btn btn-active-light"
+                        confirmButton: "erp-action erp-action--primary",
+                        cancelButton: "erp-action ml-3"
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Tutup modal manual
-                        const modal = bootstrap.Modal.getInstance(document.getElementById(
-                            'kt_modal_add_customer'));
-                        modal.hide();
-                        document.getElementById('kt_modal_add_customer_form').reset();
+                        erp.dialog.close('crm-dialog');
                     }
                 });
             });
 
-            $('#kt_modal_add_customer_form').on('submit', function(e) {
+            $('#crm-form').on('submit', function(e) {
                 e.preventDefault();
 
                 var form = $(this)[0];
                 var url = $(this).attr('action');
-                var submitBtn = $('#kt_modal_add_customer_submit');
+                var submitBtn = $('#crm-submit');
 
                 var formData = new FormData(form); // Gunakan FormData agar file bisa ikut terkirim
 
                 // Show loading
                 submitBtn.prop('disabled', true);
-                submitBtn.find('.indicator-label').hide();
-                submitBtn.find('.indicator-progress').show();
+                submitBtn.find('[data-label]').prop('hidden', true);
+                submitBtn.find('[data-progress]').prop('hidden', false);
 
                 $.ajax({
                     type: 'POST',
@@ -130,15 +122,12 @@
                             timer: 1500
                         }).then(() => {
                             // Reset form, tutup modal, dan refresh DataTable
-                            $('#kt_modal_add_customer_form').trigger('reset');
-                            $('#kt_modal_add_customer_form').find(
+                            $('#crm-form').trigger('reset');
+                            $('#crm-form').find(
                                 'input[name="_method"]').remove();
-                            $('#kt_modal_add_customer_form').attr('action',
+                            $('#crm-form').attr('action',
                                 `/${segment1}`);
-                            $('#kt_modal_add_customer_header h2').text('Tambah Tier');
-                            const modal = bootstrap.Modal.getInstance(document
-                                .getElementById('kt_modal_add_customer'));
-                            if (modal) modal.hide();
+                            erp.dialog.close('crm-dialog');
                             if (typeof dataTable !== 'undefined') dataTable.ajax.reload(
                                 null, false);
                         });
@@ -153,8 +142,8 @@
                     },
                     complete: function() {
                         submitBtn.prop('disabled', false);
-                        submitBtn.find('.indicator-label').show();
-                        submitBtn.find('.indicator-progress').hide();
+                        submitBtn.find('[data-label]').prop('hidden', false);
+                        submitBtn.find('[data-progress]').prop('hidden', true);
                     }
                 });
             });
@@ -179,8 +168,8 @@
                 confirmButtonText: 'Ya, hapus!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--danger',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false
             }).then((result) => {
@@ -227,12 +216,13 @@
                     $('input[name="exp"]').val(response.exp);
                     $('input[name="level"]').val(response.level);
                     // Tampilkan gambar jika ada
+                    if (response.style) $('select[name="style"]').val(response.style).trigger('change');
                     if (response.icon) {
-                        $('.image-input-wrapper').css('background-image', `url(/storage/${response.icon})`);
+                        erp.imageInput.set(document.querySelector('#crm-form [data-erp-image-input]'), `/storage/${response.icon}`);
                     }
 
                     // Ubah action form untuk update
-                    var form = $('#kt_modal_add_customer_form');
+                    var form = $('#crm-form');
                     form.attr('action', `/tier/${id}`); // URL untuk update produk
                     form.find('input[name="_method"]').remove(); // Hapus input _method jika ada
                     form.append(
@@ -240,8 +230,8 @@
                     ); // Menambahkan input _method untuk PUT
 
                     // Tampilkan modal untuk edit produk
-                    var modal = new bootstrap.Modal(document.getElementById('kt_modal_add_customer'));
-                    modal.show();
+                    
+                    erp.dialog.open('crm-dialog');
                 },
                 error: function(xhr) {
                     Swal.fire({
@@ -253,221 +243,94 @@
             });
         }
 
-        $("#date").flatpickr({
-            altInput: !0,
-            altFormat: "d F, Y",
-            dateFormat: "Y-m-d"
-        });
 
-        $('#kt_modal_add_customer').on('shown.bs.modal', function() {
-            $('#product_id').select2({
-                placeholder: 'Select a product',
-                dropdownParent: $('#kt_modal_add_customer'),
-                ajax: {
-                    url: '{{ route('ajax.stock-available') }}',
-                    dataType: 'json',
-                    delay: 250,
-                    data: params => ({
-                        search: params.term
-                    }),
-                    processResults: data => ({
-                        results: data.map(item => ({
-                            id: item.id,
-                            text: item.name,
-                            stock_available: item.stock_available
-                        }))
-                    })
-                }
-            }).on('select2:select', function(e) {
-                const data = e.params.data;
-                $('input[name="quantity"]').val(data.stock_available || 0);
-            });
-
-        });
+        function field(label, control) {
+            return `<div><label class="erp-label">${label}</label>${control}</div>`;
+        }
+        function esc(value) {
+            return String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+        }
 
         function format(rowData) {
+            const toggle = (name, text, checked) => `
+                <label class="flex items-center gap-2 text-sm text-gray-700">
+                    <input type="checkbox" class="erp-check" name="${name}" value="1" ${checked == 1 ? 'checked' : ''}>
+                    ${text}
+                </label>`;
             return `
-                <div class="accordion-content">
-                    <form class="accordion-form" data-id="${rowData.id}">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Atur Benefit</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="row fv-row mb-7 fv-plugins-icon-container">
-                                    <div class="col-md-3 text-md-text-start">
-                                        <label class="fs-6 fw-semibold form-label mt-3">
-                                            <span>
-                                                Diskon Setiap Transaksi
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <input type="number" class="form-control" name="discount_transaction" value="${rowData.discount_transaction || ''}" placeholder="Diskon (Rp jika > 100, % jika ≤ 100)" />
-                                    </div>
-                                </div>
-                                <div class="row fv-row mb-7 fv-plugins-icon-container">
-                                    <div class="col-md-3 text-md-text-start">
-                                        <label class="fs-6 fw-semibold form-label mt-3">
-                                            <span>
-                                                Gratis Product
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <select class="form-select select-product" multiple name="free_product_id[]" style="width:100%;"></select>
-                                    </div>
-                                </div>
-                                <div class="row fv-row mb-7 fv-plugins-icon-container">
-                                    <div class="col-md-3 text-md-text-start">
-                                        <label class="fs-6 fw-semibold form-label mt-3">
-                                            <span>
-                                                Minimal Pembelian
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <input type="text" class="form-control format-number" name="minimal_purchase" value="${rowData.minimal_purchase || ''}" placeholder="Minimal Pembelian" />
-                                    </div>
-                                </div>
-                                <div class="row fv-row mb-7 fv-plugins-icon-container">
-                                    <div class="col-md-3 text-md-text-start">
-                                        <label class="fs-6 fw-semibold form-label mt-3">
-                                            <span>
-                                                Maksimal Claim
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <input type="number" class="form-control" name="max_claim" value="${rowData.max_claim || ''}" placeholder="Maksimal Claim" />
-                                    </div>
-                                </div>
-                                <div class="row fv-row mb-7 fv-plugins-icon-container">
-                                    <div class="col-md-3 text-md-text-start">
-                                        <label class="fs-6 fw-semibold form-label mt-3">
-                                            <span>
-                                                Voucher
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <input type="text" class="form-control format-number" name="voucher" value="${rowData.voucher || ''}" placeholder="Voucher" />
-                                    </div>
-                                </div>
-                                <div class="row fv-row mb-7 fv-plugins-icon-container">
-                                    <div class="col-md-3 text-md-text-start">
-                                        <label class="fs-6 fw-semibold form-label mt-3">
-                                            <span>
-                                                Hadiah Ulang Tahun
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <div class="form-check form-switch mt-3">
-                                            <input class="form-check-input" type="checkbox" name="birthday_gift" id="birthday_gift" ${rowData.birthday_gift == 1 ? 'checked' : ''} value="1">
-                                            <label class="form-check-label" for="birthday_gift">
-                                                Aktifkan Hadiah Ulang Tahun
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row fv-row mb-7 fv-plugins-icon-container align-items-center">
-                                    <div class="col-md-3 text-md-text-start">
-                                        <label class="fs-6 fw-semibold form-label mt-3">
-                                            <span>
-                                                Promo Gabungan
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <div class="form-check form-switch mt-3">
-                                            <input class="form-check-input" type="checkbox" name="combo_promo" id="combo_promo" ${rowData.combo_promo == 1 ? 'checked' : ''} value="1">
-                                            <label class="form-check-label" for="combo_promo">
-                                                Aktifkan Promo Gabungan
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row fv-row mb-7 fv-plugins-icon-container">
-                                    <div class="col-md-3 text-md-text-start">
-                                        <label class="fs-6 fw-semibold form-label mt-3">
-                                            <span>
-                                                Deposito
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <input type="text" class="form-control format-number" name="deposito" value="${rowData.deposito || ''}" placeholder="Deposito" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer text-end">
-                            <button type="submit" class="btn btn-primary">Simpan</button>
-                        </div>
-                    </form>
-                </div>
-            `;
+                <form class="space-y-4" data-benefit-form data-id="${esc(rowData.id)}">
+                    ${field('Diskon Setiap Transaksi', `<input type="number" class="erp-input" name="discount_transaction" value="${esc(rowData.discount_transaction)}" placeholder="Diskon (Rp jika > 100, % jika ≤ 100)">`)}
+                    ${field('Gratis Produk', `
+                        <div data-free-products>
+                            <div class="mb-2 flex flex-wrap gap-2" data-free-chips></div>
+                            <select multiple name="free_product_id[]" class="hidden" aria-hidden="true" tabindex="-1"></select>
+                            <select id="free-product-picker" class="erp-select" aria-label="Tambah produk gratis"></select>
+                        </div>`)}
+                    ${field('Minimal Pembelian', `<input type="text" class="erp-input format-number" name="minimal_purchase" value="${esc(rowData.minimal_purchase)}" placeholder="Minimal Pembelian">`)}
+                    ${field('Maksimal Claim', `<input type="number" class="erp-input" name="max_claim" value="${esc(rowData.max_claim)}" placeholder="Maksimal Claim">`)}
+                    ${field('Voucher', `<input type="text" class="erp-input format-number" name="voucher" value="${esc(rowData.voucher)}" placeholder="Voucher">`)}
+                    ${field('Hadiah Ulang Tahun', toggle('birthday_gift', 'Aktifkan Hadiah Ulang Tahun', rowData.birthday_gift))}
+                    ${field('Promo Gabungan', toggle('combo_promo', 'Aktifkan Promo Gabungan', rowData.combo_promo))}
+                    ${field('Deposito', `<input type="text" class="erp-input format-number" name="deposito" value="${esc(rowData.deposito)}" placeholder="Deposito">`)}
+                    <div class="flex justify-end pt-2"><button type="submit" class="erp-action erp-action--primary">Simpan</button></div>
+                </form>`;
+        }
 
+        // Produk gratis: daftar chip + ErpPicker satu per satu (pengganti select2 multiple).
+        function setupFreeProducts(root, products) {
+            const multi = root.querySelector('select[multiple]');
+            const chips = root.querySelector('[data-free-chips]');
+            const picker = root.querySelector('#free-product-picker');
+            const add = (id, name) => {
+                id = String(id);
+                if ([...multi.options].some(o => o.value === id)) return;
+                multi.append(new Option(name, id, true, true));
+                const chip = document.createElement('span');
+                chip.className = 'erp-badge erp-badge--primary';
+                chip.dataset.id = id;
+                chip.append(document.createTextNode(name + ' '));
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.setAttribute('aria-label', 'Hapus ' + name);
+                remove.innerHTML = '<i class="ph ph-x" aria-hidden="true"></i>';
+                remove.addEventListener('click', () => {
+                    [...multi.options].find(o => o.value === id)?.remove();
+                    chip.remove();
+                });
+                chip.append(remove);
+                chips.append(chip);
+            };
+            products.forEach(prod => add(prod.id, prod.name));
+            ErpPicker.attach(picker, {
+                title: 'Tambah produk gratis',
+                placeholder: 'Cari produk...',
+                placeholderTrigger: 'Tambah produk',
+                emptyText: 'Produk tidak ditemukan',
+                url: '/ajax/listProduct',
+                searchParam: 'term',
+                map: item => ({ id: item.id, text: item.name })
+            });
+            $(picker).on('select2:select', function(e) {
+                add(e.params.data.id, e.params.data.text);
+                picker.innerHTML = '';
+                $(picker).trigger('change');
+            });
         }
 
         $('#transaction-table tbody').on('click', 'tr', function(e) {
             if ($(e.target).closest('button, a').length) return;
 
-            let tr = $(this);
-            let row = dataTable.row(tr);
-
+            let row = dataTable.row($(this));
             if (!row.data()) return;
             const container = document.getElementById('tier-benefit-content');
             container.innerHTML = format(row.data());
-            const close = document.createElement('button');
-            close.type = 'button'; close.className = 'erp-action'; close.textContent = 'Tutup';
-            close.addEventListener('click', () => bootstrap.Modal.getInstance(document.getElementById('tier-benefit-modal')).hide());
-            container.querySelector('.card-header').append(close);
-            bootstrap.Modal.getOrCreateInstance(document.getElementById('tier-benefit-modal')).show();
-                // Aktifkan select2 setelah konten ditambahkan ke DOM
-                let select = $('#tier-benefit-content .select-product');
-
-                select.select2({
-                    dropdownParent: $('#tier-benefit-modal'),
-                    ajax: {
-                        url: '/ajax/listProduct',
-                        dataType: 'json',
-                        delay: 250,
-                        data: function(params) {
-                            return {
-                                term: params.term
-                            };
-                        },
-                        processResults: function(data) {
-                            return {
-                                results: data.map(item => ({
-                                    id: item.id,
-                                    text: item.name
-                                }))
-                            };
-                        },
-                        cache: true
-                    },
-                    placeholder: 'Pilih Produk',
-                    minimumInputLength: 1
-                });
-
-                // 👇 Tambahkan ini untuk mengisi default value (selected)
-                let freeProducts = row.data().freeProduct || [];
-                console.log(freeProducts);
-                freeProducts.forEach(prod => {
-                    let option = new Option(prod.name, prod.id, true, true);
-                    select.append(option);
-                });
-
-                select.trigger('change');
-
-                bindFormatNumber();
+            setupFreeProducts(container, row.data().freeProduct || []);
+            erp.dialog.open('tier-benefit-dialog');
+            bindFormatNumber();
         });
 
         // Submit form di dalam accordion
-        $('#tier-benefit-content').on('submit', '.accordion-form', function(e) {
+        $('#tier-benefit-content').on('submit', '[data-benefit-form]', function(e) {
             e.preventDefault();
             let form = $(this);
             let id = form.data('id');
@@ -481,7 +344,7 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function() {
-                    bootstrap.Modal.getInstance(document.getElementById('tier-benefit-modal'))?.hide();
+                    erp.dialog.close('tier-benefit-dialog');
                     Swal.fire({ icon:'success', title:'Benefit disimpan', confirmButtonText:'Selesai' });
                     if (typeof dataTable !== 'undefined') dataTable.ajax.reload(
                         null, false);

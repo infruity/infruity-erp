@@ -2,6 +2,8 @@
 
 namespace Modules\Crm\Http\Controllers;
 
+use Illuminate\Support\Facades\Blade;
+use App\Support\DataTableCells;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -277,31 +279,11 @@ class TierController extends Controller
                     return json_decode($row->freeProducts()->get());
                 }
             })
-            ->addColumn('action', function ($row) {
-                $name = e($row->name);
-                return '
-                <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi ' . $name . '">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" onclick="editProduct(' . $row->id . ')">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $row->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>';
-            })
+            ->addColumn('action', fn ($row) => DataTableCells::editDeleteMenu((string) $row->name, $row->id, true, true))
             ->addColumn('exp', function ($row) {
                 return toNumber($row->exp);
             })
-            ->rawColumns(['name', 'exp', 'action'])
+            ->rawColumns(['exp', 'action'])
             ->make(true);
     }
 
@@ -311,63 +293,23 @@ class TierController extends Controller
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('type_customer', function ($row) {
-                $type = strtolower($row->type_customer); // pastikan lowercase
-                $options = ['reguler', 'member', 'mitra'];
+                $type = strtolower((string) $row->type_customer);
+                $tones = ['reguler' => 'neutral', 'member' => 'primary', 'mitra' => 'success'];
+                $actions = array_map(fn ($opt) => [
+                    'label' => ucfirst($opt),
+                    'onclick' => 'changeTypeCustomer('.(int) $row->id_customer.", '".$opt."')",
+                ], ['reguler', 'member', 'mitra']);
 
-                // Mapping class badge berbeda per type_customer
-                $badgeClassMap = [
-                    'reguler' => 'badge bg-secondary',
-                    'member' => 'badge bg-primary',
-                    'mitra' => 'badge bg-success',
-                ];
-
-                $badgeClass = $badgeClassMap[$type] ?? 'badge bg-dark';
-
-                $dropdown = '<div class="dropdown">
-        <span class="' . $badgeClass . ' dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer;">
-            ' . ucfirst($type) . '
-        </span>
-        <ul class="dropdown-menu p-0 m-0">';
-
-                foreach ($options as $opt) {
-                    $dropdown .= '<li>
-            <a class="dropdown-item px-3 py-2 small"
-               href="javascript:void(0)"
-               onclick="changeTypeCustomer(' . $row->id_customer . ', \'' . $opt . '\')">'
-                        . ucfirst($opt) .
-                        '</a>
-        </li>';
-                }
-
-                $dropdown .= '</ul></div>';
-
-                return $dropdown;
-            })
-            ->addColumn('action', function ($row) {
-                $name = e($row->name);
-                return '
-                <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi ' . $name . '">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" onclick="editProduct(' . $row->id_customer . ')">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $row->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>';
+                return Blade::render(
+                    '<x-erp.dropdown label="Ubah tipe pelanggan" trigger-class="cursor-pointer"><x-slot:trigger><x-erp.badge :tone="$tone">{{ $label }}</x-erp.badge></x-slot:trigger>'
+                    .'@foreach ($actions as $action)<button type="button" role="menuitem" class="erp-menu__item" onclick="{{ $action[\'onclick\'] }}">{{ $action[\'label\'] }}</button>@endforeach</x-erp.dropdown>',
+                    ['tone' => $tones[$type] ?? 'danger', 'label' => ucfirst($type), 'actions' => $actions]
+                );
             })
             ->addColumn('total_transaksi', function ($row) {
                 return toNumber($row->total_transaksi);
             })
-            ->rawColumns(['name', 'total_transaksi', 'action', 'type_customer'])
+            ->rawColumns(['total_transaksi', 'type_customer'])
             ->make(true);
     }
 }

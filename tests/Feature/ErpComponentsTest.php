@@ -219,4 +219,25 @@ class ErpComponentsTest extends TestCase
         $this->assertStringContainsString('erp-panel__header', $titled);
         $this->assertStringContainsString('erp-panel__footer', $titled);
     }
+
+    public function test_image_input_renders_preview_file_remove_and_flag(): void
+    {
+        $html = $this->render('<x-erp.image-input name="avatar" remove-name="avatar_remove" value="/storage/a.png" />');
+
+        $this->assertStringContainsString('data-erp-image-input', $html);
+        $this->assertStringContainsString("background-image:url('/storage/a.png')", $html);
+        $this->assertStringContainsString('name="avatar"', $html);
+        $this->assertStringContainsString('accept=".png,.jpg,.jpeg"', $html);
+        $this->assertStringContainsString('name="avatar_remove"', $html);
+        $this->assertStringContainsString('data-image-remove', $html);
+        $this->assertMatchesRegularExpression('/data-image-cancel hidden/', $html);
+    }
+
+    public function test_image_input_without_value_uses_the_placeholder_and_no_flag(): void
+    {
+        $html = $this->render('<x-erp.image-input name="avatar" placeholder="/img/blank.svg" />');
+
+        $this->assertStringContainsString("background-image:url('/img/blank.svg')", $html);
+        $this->assertStringNotContainsString('data-image-remove-flag', $html);
+    }
 }

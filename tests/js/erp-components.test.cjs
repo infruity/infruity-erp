@@ -299,3 +299,39 @@ test('DataTables defaults keep the markup of the old Metronic bundle', async () 
     assert.equal(dataTable.ext.classes.sPageButton, 'paginate_button page-item');
     assert.equal(typeof dataTable.ext.renderer.pageButton.bootstrap, 'function');
 });
+
+test('image-input: pilih file menampilkan pratinjau, Hapus menyalakan flag, Batal/reset mengembalikan gambar awal', async () => {
+    const { install, set } = await load('image-input.js');
+    const listeners = {};
+    const doc = { addEventListener: (type, fn) => { listeners[type] = fn; } };
+    const state = { bg: '', flag: '', fileValue: 'x', cancelHidden: true };
+    const root = {
+        dataset: { original: '/orig.png', placeholder: '/blank.svg' },
+        querySelector(sel) {
+            if (sel === '[data-image-preview]') return { style: { set backgroundImage(v) { state.bg = v; } } };
+            if (sel === '[data-image-file]') return { set value(v) { state.fileValue = v; } };
+            if (sel === '[data-image-remove-flag]') return { get value() { return state.flag; }, set value(v) { state.flag = v; } };
+            if (sel === '[data-image-cancel]') return { set hidden(v) { state.cancelHidden = v; } };
+            return null;
+        },
+    };
+    const mk = (matches) => ({ closest: (sel) => (matches.includes(sel) ? { closest: () => root, ...root } : null) });
+    install(doc, { URL: { createObjectURL: () => 'blob:preview' } });
+
+    // hapus
+    listeners.click({ target: { closest: (sel) => (sel === '[data-image-remove]' ? { closest: () => root } : null) } });
+    assert.equal(state.flag, '1');
+    assert.equal(state.bg, 'url("/blank.svg")');
+    assert.equal(state.cancelHidden, false);
+
+    // batal -> kembali ke gambar awal, flag bersih
+    listeners.click({ target: { closest: (sel) => (sel === '[data-image-cancel]' ? { closest: () => root } : null) } });
+    assert.equal(state.flag, '');
+    assert.equal(state.bg, 'url("/orig.png")');
+    assert.equal(state.cancelHidden, true);
+
+    // set() mengganti gambar awal dan menampilkannya
+    set(root, '/storage/new.png');
+    assert.equal(root.dataset.original, '/storage/new.png');
+    assert.equal(state.bg, 'url("/storage/new.png")');
+});

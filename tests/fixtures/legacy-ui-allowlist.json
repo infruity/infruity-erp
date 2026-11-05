@@ -2,15 +2,6 @@
     "Modules/Chat/Resources/views/index.blade.php": {
         "root-layout": 1
     },
-    "Modules/Crm/Http/Controllers/TierController.php": {
-        "data-bs": 3,
-        "bootstrap-icons": 6,
-        "btn": 4,
-        "bs-utilities": 2
-    },
-    "Modules/Crm/Resources/views/dashboard/index.blade.php": {
-        "hex-class": 12
-    },
     "Modules/Crm/Resources/views/dashboard/js-dashboard.blade.php": {
         "kt-js": 25
     },
@@ -26,19 +17,11 @@
         "select2": 2
     },
     "Modules/Crm/Resources/views/tier/index.blade.php": {
-        "data-bs": 2,
-        "data-kt": 6,
-        "form-classes": 4,
-        "badge-light": 14,
-        "modal-class": 6,
-        "root-layout": 1
+        "badge-light": 7
     },
     "Modules/Crm/Resources/views/tier/js-tier.blade.php": {
-        "form-classes": 12,
-        "btn": 5,
-        "select2": 5,
-        "bootstrap-js": 6,
-        "bs-utilities": 16
+        "badge-light": 7,
+        "select2": 2
     },
     "Modules/Master/Http/Controllers/ProductController.php": {
         "data-bs": 3,
@@ -724,6 +707,9 @@
         "badge-light": 1,
         "bs-utilities": 1
     },
+    "resources/js/erp/image-input.js": {
+        "kt-js": 1
+    },
     "resources/js/erp/legacy-bridge.js": {
         "bootstrap-js": 8
     },
@@ -761,6 +747,9 @@
     },
     "resources/views/components/erp/dropdown-select.blade.php": {
         "hex-class": 3
+    },
+    "resources/views/components/erp/image-input.blade.php": {
+        "kt-js": 1
     },
     "resources/views/components/erp/mobile-navbar.blade.php": {
         "bootstrap-js": 1

@@ -98,4 +98,10 @@
     .erp-input-group__addon:last-child {
         @apply rounded-r-control;
     }
+
+    /* Pemilih gambar dengan pratinjau (x-erp.image-input). */
+    .erp-image-input { @apply flex flex-wrap items-center gap-3; }
+    .erp-image-input__preview {
+        @apply block h-16 w-16 shrink-0 rounded-2xl border border-gray-200 bg-gray-50 bg-cover bg-center;
+    }
 }

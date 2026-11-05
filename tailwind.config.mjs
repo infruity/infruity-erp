@@ -54,6 +54,8 @@ export default {
                     DEFAULT: '#d1f36e',
                 },
                 canvas: '#e5e9f3',
+                forest: '#0f5c45', // hijau tua dashboard CRM
+                mist: '#ebf2ef', // hijau pucat latar chip
             },
             fontFamily: {
                 sans: ['"Plus Jakarta Sans"', 'sans-serif'],
