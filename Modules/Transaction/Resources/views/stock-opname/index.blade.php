@@ -742,13 +742,6 @@
             .so-detail__btn { display:inline-flex; min-height:44px; align-items:center; justify-content:center; gap:6px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; font-size:13px; font-weight:700; }
             .so-detail__btn.is-up { color:#047857; border-color:#a7f3d0; background:#ecfdf5; }
             .so-detail__btn.is-down { color:#be123c; border-color:#fecdd3; background:#fff1f2; }
-            .so-detail__list { display:grid; border-top:1px solid #f1f3f5; }
-            .so-detail__link { display:flex; min-height:46px; align-items:center; gap:10px; border:0; border-bottom:1px solid #f1f3f5; background:transparent; color:#374151; font-size:13px; font-weight:600; text-align:left; }
-            .so-detail__link i { color:#6b7280; font-size:18px; }
-            .so-detail__link:hover { background:#f9fafb; }
-            .so-detail__link.is-success, .so-detail__link.is-success i { color:#047857; }
-            .so-detail__link.is-danger, .so-detail__link.is-danger i { color:#be123c; }
-            .so-detail__count { margin-left:auto; border-radius:999px; background:#fee2e2; padding:1px 8px; color:#b91c1c; font-size:10px; font-weight:700; }
 
             .stock-opname-modal .so-form-label { color:#374151; font-size:12px; font-weight:700; }
             .stock-opname-modal .so-form-hint { color:#9ca3af; font-size:11px; }
@@ -957,13 +950,9 @@
                     <label class="so-correction-label" for="so-credit-reason">Catatan Koreksi <span>*</span></label><textarea id="so-credit-reason" rows="5" maxlength="1000" placeholder="Tuliskan catatan koreksi…"></textarea>
                     <p id="so-correction-error" class="so-correction-error" role="status" aria-live="polite"></p>
                 </form>
-                <details class="so-detail-extra"><summary>Aksi lainnya</summary><div class="so-detail__list">
-                    @if(check_access('stock-opname.update'))<button type="button" class="so-detail__link" data-so-action="edit"><i class="ph ph-pencil-simple" aria-hidden="true"></i>Sesuaikan stok fisik</button><button type="button" class="so-detail__link" data-so-action="adjust-up">+ Kredit (form terpisah)</button><button type="button" class="so-detail__link" data-so-action="adjust-down">− Kredit (form terpisah)</button>@endif
-                    <button type="button" class="so-detail__link" data-so-action="discussion"><i class="ph ph-chat-circle-text" aria-hidden="true"></i>Diskusi dan catatan<span data-so-count="discussion"></span></button>
-                    @if(check_access('stock-opname.destroy'))<button type="button" class="so-detail__link is-danger" data-so-action="delete"><i class="ph ph-trash" aria-hidden="true"></i>Hapus transaksi</button>@endif
-                </div></details>
+
             </div>
-            <footer class="so-sheet-footer so-detail-footer"><button type="button" class="so-history-button" data-so-action="history" aria-label="Riwayat stok opname"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i><span data-so-count="history"></span></button><button type="submit" form="so-detail-correction" id="so-correction-save" disabled>Tambah Koreksi</button>@if(check_access('stock-opname.update'))<button type="button" class="is-primary" data-so-action="finalize">Selesaikan Opname</button>@endif</footer>
+            <footer class="so-sheet-footer so-detail-footer"><button type="button" class="so-history-button" data-so-action="history" aria-label="Riwayat stok opname"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i><span data-so-count="history"></span></button><button type="submit" form="so-detail-correction" id="so-correction-save" disabled>Simpan Koreksi</button>@if(check_access('stock-opname.update'))<button type="button" class="is-primary" data-so-action="finalize">Selesaikan Opname</button>@endif<button type="button" class="is-primary d-none" id="so-detail-done" data-bs-dismiss="modal">Selesai</button></footer>
         </div></div>
     </div>
 
@@ -1278,14 +1267,12 @@
             $sheet.find('[data-so-field="hpp"]').text(`Rp ${formatRupiah(Math.round(Math.abs(info.hpp)))} / ${info.unit}`);
             $sheet.find('[data-so-field="unit"]').text(info.unit);
             $sheet.find('[data-so-action="finalize"]').toggleClass('d-none', !info.isPending);
-            $sheet.find('[data-so-action="edit"], [data-so-action^="adjust-"]').toggleClass('d-none', !info.isPending);
             const canCorrect = info.isPending && @json(check_access('stock-opname.update'));
             $sheet.find('#so-credit-plus, #so-credit-minus, #so-credit-reason').val('').prop('disabled', !canCorrect);
             $sheet.find('#so-correction-save').prop('disabled', true);
-            $sheet.find('#so-correction-error').text(canCorrect ? '' : (info.isPending ? 'Tidak memiliki akses koreksi.' : 'Opname selesai — koreksi dikunci.'));
-            $sheet.find('.so-detail-extra').prop('open', false);
+            $sheet.find('#so-detail-done').toggleClass('d-none', canCorrect);
+            $sheet.find('#so-correction-error').text(info.isPending && !canCorrect ? 'Tidak memiliki akses koreksi.' : '');
             $sheet.find('[data-so-count="history"]').text(info.historyCount || '');
-            $sheet.find('[data-so-count="discussion"]').text(info.discussionsCount || '');
             bootstrap.Modal.getOrCreateInstance($sheet[0]).show();
         }
 
@@ -1298,13 +1285,8 @@
                 return;
             }
             const run = {
-                edit: () => editProduct(id),
-                'adjust-up': () => openAdjustmentModal(id, 'up'),
-                'adjust-down': () => openAdjustmentModal(id, 'down'),
                 history: () => showHistory(id),
-                discussion: () => showDiscussion(id),
                 finalize: () => finalizeStockOpname(id),
-                delete: () => deleteProduct(id)
             }[action];
             if (!run) return;
             // Close the sheet first so the next modal/drawer does not stack on its backdrop.

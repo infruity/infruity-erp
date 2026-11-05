@@ -138,7 +138,7 @@ function initStockOpnameReference() {
         function finish() {
             busy=false;
             $('#so-credit-plus,#so-credit-minus,#so-credit-reason').prop('readonly',false);
-            $('#so-correction-save').text('Tambah Koreksi').prop('disabled',!correction());
+            $('#so-correction-save').text('Simpan Koreksi').prop('disabled',!correction());
             $('#kt_modal_stock_detail [data-so-action]').prop('disabled',false);
         }
         $.ajax({url:`/stock-opname/${id}/adjust`,type:'POST',data:{...payload,_token:$('meta[name="csrf-token"]').attr('content')},dataType:'json',success(response) {

@@ -81,8 +81,7 @@
 .so-reference-sheet .so-correction-label span { color:#ef4444; }
 .so-reference-sheet #so-credit-reason { display:block; width:100%; min-height:130px; padding:14px 12px; border:1px solid #e5e7eb; border-radius:16px; resize:vertical; background:#f9fafb; font-size:16px; }
 .so-reference-sheet .so-correction-error { margin:6px 0 0; color:#be123c; font-size:11px; }
-.so-reference-sheet .so-detail-extra { margin-top:12px; font-size:11px; color:#6b7280; }
-.so-reference-sheet .so-detail-extra summary { cursor:pointer; }
+.so-reference-sheet .so-correction-error:empty { display:none; }
 .so-reference-sheet .so-detail-footer { grid-template-columns:44px 1fr 1fr; gap:10px; }
 .so-reference-sheet .so-history-button { position:relative; font-size:22px!important; }
 .so-reference-sheet .so-history-button span { position:absolute; right:-3px; top:-4px; min-width:16px; border-radius:999px; background:#0d9488; color:#fff; font-size:10px; }
@@ -123,7 +122,7 @@
 .so-reference-history .so-hist-side.is-reason { display:block; width:228px; }
 .so-reference-history .so-hist-reason-head { text-align:right; }
 @media(max-width:767px) {
-    #kt_content:has(.stock-opname-page) { padding:0; }
+    #kt_content:has(.stock-opname-page) { padding:0; padding-inline:0!important; }
     .stock-opname-page { padding-bottom:0; width:100%; }
     .stock-opname-page .so-workspace { border:0; border-radius:0; box-shadow:none; }
     .stock-opname-page .erp-workspace-heading { display:none; }
@@ -133,7 +132,10 @@
     .stock-opname-page #so-search-clear[hidden] { display:none; }
     .stock-opname-page :is(.so-desktop-search,.so-desktop-filter,.so-desktop-create) { display:none; }
     .stock-opname-page .erp-workspace-content { padding:8px 16px calc(96px + env(safe-area-inset-bottom)); }
-    .stock-opname-page .so-row { padding:12px 8px; }
+    .stock-opname-page .so-row { padding:12px 8px; min-width:0; }
+    .stock-opname-page .so-row__main { flex:1 1 0; }
+    .stock-opname-page .so-row__name { min-width:0; white-space:normal; overflow-wrap:anywhere; }
+    .stock-opname-page .so-row__side { flex:0 1 auto; min-width:0; max-width:45%; overflow-wrap:anywhere; }
     .stock-opname-page .erp-table-region { border:0; border-radius:0; }
     .stock-opname-page #transaction-table_wrapper :is(.dataTables_length,.dataTables_info) { display:none; }
     .stock-opname-page #transaction-table_wrapper.so-single-page .dataTables_paginate { display:none; }

@@ -22,7 +22,7 @@ final class StockOpnameListUiContractTest extends TestCase
         $this->assertStringNotContainsString('<div class="so-card d-flex', $source);
     }
 
-    public function test_tapping_a_row_opens_a_detail_sheet_that_keeps_every_existing_action(): void
+    public function test_tapping_a_row_opens_a_detail_sheet_with_history_and_completion(): void
     {
         $source = $this->source();
 
@@ -39,7 +39,7 @@ final class StockOpnameListUiContractTest extends TestCase
         ] as $action) {
             $this->assertStringContainsString($action, $source, "Aksi hilang: {$action}");
         }
-        foreach (['adjust-up', 'adjust-down', 'finalize', 'history', 'discussion', 'delete', 'edit'] as $action) {
+        foreach (['finalize', 'history'] as $action) {
             $this->assertStringContainsString('data-so-action="' . $action . '"', $source, "Tombol hilang: {$action}");
         }
     }
