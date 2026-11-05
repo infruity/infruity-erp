@@ -15,31 +15,6 @@
     <!-- Phosphor Icons -->
 
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#0F5C45',      // Green
-                        accent: '#F2B400',       // Golden Accent
-                        cream: '#FAF8F2',        // Background
-                        strawberry: '#D6455D',   // Highlight
-                    },
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        serif: ['"Poppins"', 'sans-serif'],
-                    },
-                    boxShadow: {
-                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
-                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-                        'input': '0 2px 10px rgba(0,0,0,0.02)',
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         .glass-panel {
             background: rgba(255, 255, 255, 0.7);
@@ -55,6 +30,7 @@
 <link rel="stylesheet" href="{{ asset('assets/css/erp-theme.css') }}?v={{ filemtime(public_path('assets/css/erp-theme.css')) }}">
 <link rel="stylesheet" href="{{ asset('assets/fonts/infruity/fonts.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/plugins/phosphor/phosphor.css') }}">
+@vite('resources/css/app.css')
 </head>
 
 <body class="erp-ui erp-auth font-sans bg-cream text-gray-800 antialiased min-h-[100dvh] flex overflow-x-hidden">

@@ -1,0 +1,10 @@
+/*
+ * SEMENTARA (dihapus di B6): untuk layout template.root.
+ * Tema default Tailwind + preflight, sama seperti yang efektif dipakai CDN lama.
+ * Lihat tailwind.legacy.config.mjs.
+ */
+@config "../../tailwind.legacy.config.mjs";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

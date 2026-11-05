@@ -260,7 +260,7 @@
                                                     <input type="radio" name="cabangFilter" :value="b.id" x-model.number="tempSelectedBranchId" class="peer appearance-none w-4 h-4 border-2 border-gray-300 rounded-full checked:border-emerald-500 transition-colors cursor-pointer">
                                                     <div class="absolute w-2 h-2 bg-emerald-500 rounded-full scale-0 peer-checked:scale-100 transition-transform duration-200"></div>
                                                 </div>
-                                                <span class="text-xs text-gray-700" :class="tempSelectedBranchId == b.id ? 'font-bold text-gray-900' : 'font-medium'" x-text="b.name"></span>
+                                                <span class="text-xs text-gray-700" :class="tempSelectedBranchId == b.id ? 'font-bold' : 'font-medium'" x-text="b.name"></span>
                                             </label>
                                         </template>
                                         <div x-show="filteredBranches.length === 0" class="text-center py-4 text-xs text-gray-400">

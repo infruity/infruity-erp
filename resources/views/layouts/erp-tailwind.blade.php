@@ -17,52 +17,16 @@
     <!-- Phosphor Icons -->
 
 
-    <!-- jQuery (needed by existing page scripts / DataTables) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- jQuery + SweetAlert2 (needed by existing page scripts / DataTables); built by `npm run build` -->
+    @include('partials.vendor-js')
 
     <!-- DataTables (kept for index.blade.php DataTables usage) -->
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}">
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 
-    <!-- SweetAlert2 (used by existing page scripts) -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Alpine.js (+ collapse), module = deferred, same ordering as the old CDN scripts -->
+    @vite('resources/js/alpine.js')
 
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"></script>
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#0F5C45',
-                        'primary-light': '#1a7d5e',
-                        'primary-dark': '#0a3d2e',
-                        accent: '#F2B400',
-                        'accent-light': '#f5c733',
-                        cream: '#F7F7F7',
-                        'cream-dark': '#EBEBEB',
-                        strawberry: '#D6455D',
-                        'strawberry-light': '#e06a7e',
-                    },
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        serif: ['"Poppins"', 'sans-serif'],
-                    },
-                    boxShadow: {
-                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
-                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-                        'input': '0 2px 10px rgba(0,0,0,0.02)',
-                        'card': '0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.04)',
-                        'sidebar': '4px 0 24px rgba(0,0,0,0.06)',
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         [x-cloak] {
             display: none !important;
@@ -257,6 +221,8 @@
 <script defer src="{{ asset('assets/js/erp-picker.js') }}?v={{ filemtime(public_path('assets/js/erp-picker.js')) }}"></script>
 <link rel="stylesheet" href="{{ asset('assets/css/erp-shell.css') }}?v={{ filemtime(public_path('assets/css/erp-shell.css')) }}">
 <link rel="stylesheet" href="{{ asset('assets/css/erp-filters.css') }}?v={{ filemtime(public_path('assets/css/erp-filters.css')) }}">
+    {{-- Tailwind compiled. Harus paling akhir di <head>: CDN lama menyisipkan <style>-nya di akhir <head>, sehingga utility menang atas aturan lain dengan spesifisitas sama. --}}
+    @vite('resources/css/app.css')
 </head>
 
 <body class="erp-ui font-sans bg-[#e5e9f3] text-gray-800 antialiased h-[100dvh] min-h-[100dvh] overflow-hidden">

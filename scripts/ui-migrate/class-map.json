@@ -1,0 +1,62 @@
+{
+  "_doc": "Pemetaan class Bootstrap/Metronic -> Tailwind yang AMAN 1:1 (dipakai codemod M1). Token di `manualOnly` tidak pernah disentuh codemod karena namanya sama tapi maknanya beda. Lihat docs/tailwind-migration-plan.md §4.1-4.2.",
+  "exact": {
+    "d-none": "hidden", "d-block": "block", "d-inline": "inline", "d-inline-block": "inline-block",
+    "d-flex": "flex", "d-inline-flex": "inline-flex", "d-grid": "grid", "d-table": "table",
+    "flex-column": "flex-col", "flex-column-reverse": "flex-col-reverse", "flex-row": "flex-row",
+    "flex-wrap": "flex-wrap", "flex-nowrap": "flex-nowrap",
+    "flex-grow-1": "grow", "flex-shrink-0": "shrink-0", "flex-fill": "flex-1",
+    "flex-center": "flex items-center justify-center",
+    "flex-column-fluid": "grow shrink-0 basis-auto", "flex-row-fluid": "grow shrink-0 basis-auto",
+    "align-items-start": "items-start", "align-items-center": "items-center", "align-items-end": "items-end",
+    "align-items-baseline": "items-baseline", "align-items-stretch": "items-stretch",
+    "justify-content-start": "justify-start", "justify-content-end": "justify-end",
+    "justify-content-center": "justify-center", "justify-content-between": "justify-between",
+    "justify-content-around": "justify-around", "justify-content-evenly": "justify-evenly",
+    "text-uppercase": "uppercase", "text-lowercase": "lowercase", "text-capitalize": "capitalize",
+    "text-nowrap": "whitespace-nowrap", "text-truncate": "truncate", "text-wrap": "whitespace-normal", "text-break": "break-words",
+    "fw-normal": "font-normal", "fw-semibold": "font-medium", "fw-bold": "font-semibold", "fw-bolder": "font-bold",
+    "fst-italic": "italic",
+    "lh-1": "leading-none", "lh-sm": "leading-tight", "lh-base": "leading-normal", "lh-lg": "leading-loose",
+    "text-decoration-none": "no-underline", "text-decoration-underline": "underline",
+    "visually-hidden": "sr-only",
+    "w-25": "w-1/4", "w-50": "w-1/2", "w-75": "w-3/4", "w-100": "w-full", "w-auto": "w-auto",
+    "h-100": "h-full", "mw-100": "max-w-full", "mh-100": "max-h-full", "vh-100": "h-screen", "min-vh-100": "min-h-screen",
+    "position-relative": "relative", "position-absolute": "absolute", "position-fixed": "fixed",
+    "position-sticky": "sticky", "position-static": "static",
+    "translate-middle": "-translate-x-1/2 -translate-y-1/2",
+    "border-top": "border-t", "border-bottom": "border-b", "border-start": "border-s", "border-end": "border-e",
+    "rounded-0": "rounded-none", "rounded-circle": "rounded-full", "rounded-pill": "rounded-full",
+    "shadow-none": "shadow-none",
+    "user-select-none": "select-none", "pe-none": "pointer-events-none",
+    "img-fluid": "max-w-full h-auto",
+    "float-start": "float-left", "float-end": "float-right", "clearfix": "flow-root",
+    "separator": "border-t border-gray-100",
+    "text-gray-100": "text-gray-50", "text-gray-200": "text-gray-100", "text-gray-300": "text-gray-200",
+    "text-gray-400": "text-gray-300", "text-gray-500": "text-gray-400", "text-muted": "text-gray-400",
+    "text-gray-600": "text-gray-500", "text-gray-700": "text-gray-600", "text-gray-800": "text-gray-800",
+    "text-gray-900": "text-gray-900", "text-dark": "text-gray-800",
+    "bg-gray-100": "bg-gray-50", "bg-gray-200": "bg-gray-100", "bg-gray-300": "bg-gray-200", "bg-gray-400": "bg-gray-300",
+    "bg-gray-500": "bg-gray-400", "bg-gray-600": "bg-gray-500", "bg-gray-700": "bg-gray-600", "bg-light": "bg-gray-50", "bg-body": "bg-white",
+    "text-primary": "text-teal", "bg-primary": "bg-teal", "text-hover-primary": "hover:text-teal",
+    "text-success": "text-emerald-700", "text-danger": "text-red-600", "text-warning": "text-amber-700", "text-info": "text-blue-600",
+    "bg-light-success": "bg-emerald-50", "bg-light-danger": "bg-red-50", "bg-light-warning": "bg-amber-50",
+    "bg-light-info": "bg-blue-50", "bg-light-primary": "bg-teal/10",
+    "bg-[#0b595b]": "bg-teal", "text-[#0b595b]": "text-teal", "border-[#0b595b]": "border-teal",
+    "bg-[#08484a]": "bg-teal-hover", "bg-[#d1f36e]": "bg-lime", "bg-[#e5e9f3]": "bg-canvas"
+  },
+  "breakpoints": { "sm": "sm", "md": "md", "lg": "lg", "xl": "xl", "xxl": "2xl" },
+  "spacingRem13to16": {
+    "_doc": "Utility spasi berbasis rem di halaman lama dihitung dari root 13px; di layout baru root 16px. Nilai N lama -> N baru agar ukuran px tetap sama (N*3.25px dibulatkan ke skala Tailwind terdekat, seri jatuh ke yang lebih kecil).",
+    "0": "0", "1": "1", "2": "1.5", "3": "2.5", "4": "3", "5": "4", "6": "5", "7": "6", "8": "6", "9": "7", "10": "8", "11": "9", "12": "10", "13": "11", "14": "11", "15": "12", "16": "12", "17": "14", "18": "14", "19": "16", "20": "16"
+  },
+  "fontSizeMetronic": {
+    "fs-9": "text-[10px]", "fs-8": "text-[11px]", "fs-7": "text-xs", "fs-base": "text-body", "fs-6": "text-sm",
+    "fs-5": "text-[15px]", "fs-4": "text-base", "fs-3": "text-lg", "fs-2": "text-xl", "fs-1": "text-2xl"
+  },
+  "manualOnly": [
+    "collapse", "container", "table", "border", "rounded", "rounded-1", "rounded-2", "rounded-3", "rounded-4",
+    "shadow", "shadow-sm", "shadow-lg", "card", "modal", "dropdown", "btn", "badge", "form-control", "form-select",
+    "row", "col", "nav", "accordion", "symbol"
+  ]
+}

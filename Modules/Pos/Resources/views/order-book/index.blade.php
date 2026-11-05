@@ -200,12 +200,12 @@
 
                     <div x-show="calendarView === 'month'" x-cloak class="mt-[8px] grid grid-cols-3 gap-[8px]">
                         <template x-for="(month, index) in monthNames" :key="month">
-                            <button type="button" @click="selectCalendarMonth(index)" class="rounded-[12px] py-[10px] text-[12px] leading-[16px] font-medium transition-colors" :class="currentMonth === index ? 'font-bold text-[#111827] shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'text-[#374151] hover:bg-gray-50'" :style="currentMonth === index ? 'background-color:#c5f037' : ''" x-text="month"></button>
+                            <button type="button" @click="selectCalendarMonth(index)" class="rounded-[12px] py-[10px] text-[12px] leading-[16px] transition-colors" :class="currentMonth === index ? 'font-bold text-[#111827] shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'font-medium text-[#374151] hover:bg-gray-50'" :style="currentMonth === index ? 'background-color:#c5f037' : ''" x-text="month"></button>
                         </template>
                     </div>
                     <div x-show="calendarView === 'year'" x-cloak class="mt-[8px] grid grid-cols-3 gap-[8px]">
                         <template x-for="year in calendarYears" :key="year">
-                            <button type="button" @click="selectCalendarYear(year)" class="rounded-[12px] py-[10px] text-[12px] leading-[16px] font-medium transition-colors" :class="currentYear === year ? 'font-bold text-[#111827] shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'text-[#374151] hover:bg-gray-50'" :style="currentYear === year ? 'background-color:#c5f037' : ''" x-text="year"></button>
+                            <button type="button" @click="selectCalendarYear(year)" class="rounded-[12px] py-[10px] text-[12px] leading-[16px] transition-colors" :class="currentYear === year ? 'font-bold text-[#111827] shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'font-medium text-[#374151] hover:bg-gray-50'" :style="currentYear === year ? 'background-color:#c5f037' : ''" x-text="year"></button>
                         </template>
                     </div>
                     <button type="button" @click="closeCalendar()" class="mt-[16px] flex w-full cursor-pointer items-center justify-center gap-[8px] rounded-[12px] bg-gray-50 py-[10px] text-[12px] leading-[16px] font-bold text-[#374151] transition-colors hover:bg-gray-100"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i>Kembali</button>
