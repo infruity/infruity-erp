@@ -44,6 +44,7 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 | Q18 | Form | Class komponen `erp-*` (§5.4) ditulis sendiri. `@tailwindcss/forms` **tidak dipakai**: class-nya (`.form-select`, dst.) bentrok dengan `.form-select` Bootstrap/Metronic dan terbukti mengubah padding 61 elemen di halaman lama. Bisa dievaluasi lagi setelah B6. |
 | Q19 | Aturan baru | Setelah B1 masuk, UI baru wajib memakai layout/komponen Tailwind. Ditegakkan oleh test ratchet (§8.3) dan ditulis di `AGENTS.md` + `docs/ui-design-system.md`. |
 | Q20 | PR | Claude commit, push, dan membuka PR. Merge oleh pemilik repo. |
+| **Q30** | Branch integrasi | **Tidak ada yang masuk `main` sampai pemilik repo menyetujui seluruh migrasi.** Semua batch di-merge ke `integration/tailwind-migration` (dibuat dari `main`); setiap batch tetap branch + PR sendiri ke branch itu. `main` baru menerima satu PR dari `integration/tailwind-migration` setelah disetujui. Sinkronkan branch integrasi dengan `main` secara berkala bila `main` bergerak. |
 | Q21/Q22 | Plan | File ini; direview sebelum B0. |
 | **Q23** | Ikon | Font **Phosphor** `<i class="ph …" aria-hidden="true">` di semua tempat (Blade, JS, controller). Bobot: regular, bold, fill, duotone. Light/thin dibuang. Penggantian lewat codemod + tabel §4.4. |
 | **Q24** | HTML controller | Blade component yang dirender server (`row-actions`, `cell-title`, `badge`, `avatar`). Controller hanya mengirim data. |
