@@ -142,9 +142,4 @@ class DashboardController extends Controller
     {
         return view('qrcode');
     }
-
-    public function produk()
-    {
-        return view('produk');
-    }
 }

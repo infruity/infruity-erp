@@ -11,7 +11,7 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 | Batch | Branch | PR | Status |
 |---|---|---|---|
 | B0 Fondasi build | `feature/tailwind-migration` | — | selesai dan terverifikasi; menunggu review dan uji build di server |
-| B1 Layout final, komponen, shell, auth, errors, landing | langsung di `integration/tailwind-migration` | — | **B1a, B1b-1 (DataTables npm), B1b-2 (`body` 13px) selesai**; menunggu: peleburan `erp-button`, kode mati |
+| B1 Layout final, komponen, shell, auth, errors, landing | langsung di `integration/tailwind-migration` | — | **B1a, B1b-1 (DataTables npm), B1b-2 (`body` 13px), B1b-3 (kode mati golongan A) selesai**; menunggu: peleburan `erp-button`, golongan B kode mati |
 | B2 Master | — | — | belum |
 | B3 Report, CRM, Chat, admin | — | — | belum |
 | B4 Transaction | — | — | menunggu `ui/produksi-reference` + `ui/stock-opname-reference` masuk `main` |
@@ -749,10 +749,15 @@ Dibagi dua karena ukurannya. **B1a selesai** (PR terpisah); **B1b** menyusul.
 - Yang ikut menjadi 13px dan memang wajar: teks bawaan DataTables (`Showing no records`, `Loading...`, `Memuat…`). Tampilannya kini sama dengan di halaman lama (root 13px).
 - Pelajaran untuk B2 sampai B5: halaman `template.root` yang dipindah ke `layouts.erp` mendapat base 13px (sama dengan root lama), tetapi ukuran rem-nya dihitung dari 16px, jadi tetap pakai `codemod --convert-rem` (§4.1). Ikon tanpa ukuran yang berada langsung di body/wadah tanpa ukuran perlu `text-base`.
 
+**B1b-3 (selesai): kode mati golongan A dihapus** (disetujui pemilik repo; satu commit per grup, daftar bukti: nol referensi di `app`, `Modules`, `routes`, `resources`, `config`).
+- `resources/views/template - Copy/` (27 file); `template/{aside*,header,footer,drawer,modals,toolbar}` (hanya `root` dan `notif` tersisa); `auth/{passwords/*,verify,footer,login-option,register}`; `layouts/app.blade.php` + `public/css/app.css`, `public/js/{app,jquery.min}.js`, `public/jquery.js`, `public/mix-manifest.json`; `admin-view`, `pemohon-view`, `user`, `produk`; file kosong `segment(2)` dan `your`.
+- Livewire dibuang lebih awal dari jatah B2: `app/Livewire/*`, `resources/views/livewire/*`, `DashboardController::produk()`, blok `@livewireStyles` di `template.root`, dan paket `livewire/livewire` dari `composer.json`. `composer.lock` di-gitignore, jadi server cukup `composer install` / `composer update` setelah deploy; cache `bootstrap/cache/{packages,services}.php` dan `php artisan view:clear` perlu dijalankan di server.
+- Allowlist ratchet turun dari 218 file / 5.623 temuan menjadi 192 file. Test: sama dengan `main` (4 error + 1 failure bawaan).
+- Masih menunggu konfirmasi pemilik repo (golongan B): `public/{mask,font,error,assets-landing}`, `public/template.xlsx`, `Modules/*/Resources/views/{layouts/master,index}`, controller `Auth/{Confirm,Forgot,Reset}Password` + `VerificationController` (tanpa route).
+
 **B1b (menunggu):**
 1. Peleburan `erp-button` ke `erp-action`.
-2. Audit kandidat mati dan penghapusannya setelah dikonfirmasi pemilik repo: `template/*` Metronic lama (dominan di angka B1), `auth/passwords/*`, `auth/verify`, `auth/register`, `auth/footer`, `auth/login-option`, `layouts.app` (+ `public/css/app.css`, `public/js/app.js`, `mix-manifest.json`), `*::layouts.master`, `admin-view`, `pemohon-view`, `template - Copy/`.
-3. Mengisi detail-dialog/dropdown-select lama dengan komponen baru bila perlu.
+2. Mengisi detail-dialog/dropdown-select lama dengan komponen baru bila perlu.
 
 Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 
