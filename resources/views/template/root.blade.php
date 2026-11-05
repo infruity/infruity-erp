@@ -67,27 +67,6 @@
 <!--begin::Body-->
 
 <body id="kt_body" class="aside-enabled erp-ui erp-legacy {{ request()->routeIs('reports.hub', 'report-*', 'product-stock*', 'pos.payment', 'sortir.create', 'sortir.edit', 'sortir.show', 'transfer-pengirim.create', 'transfer-pengirim.edit', 'transfer-pengirim.show', 'transfer-penerima.show', 'wholesale.create', 'wholesale.edit', 'wholesale.show', 'production.create', 'production.edit', 'pos.create', 'pos.edit', 'order-book.create', 'order-book.edit') ? 'erp-hide-dock' : '' }}">
-    <!--begin::Theme mode setup on page load-->
-    <script>
-        var defaultThemeMode = "light";
-        var themeMode;
-        if (document.documentElement) {
-            if (document.documentElement.hasAttribute("data-bs-theme-mode")) {
-                themeMode = document.documentElement.getAttribute("data-bs-theme-mode");
-            } else {
-                if (localStorage.getItem("data-bs-theme") !== null) {
-                    themeMode = localStorage.getItem("data-bs-theme");
-                } else {
-                    themeMode = defaultThemeMode;
-                }
-            }
-            if (themeMode === "system") {
-                themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-            }
-            document.documentElement.setAttribute("data-bs-theme", themeMode);
-        }
-    </script>
-    <!--end::Theme mode setup on page load-->
     <!--begin::Main-->
     <!--begin::Root-->
     <div class="erp-shell flex h-[100dvh] min-h-[100dvh] w-full overflow-hidden bg-[#e5e9f3] font-sans text-gray-800 antialiased"

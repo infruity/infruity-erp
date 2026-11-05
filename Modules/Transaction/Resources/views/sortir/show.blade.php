@@ -1,4 +1,4 @@
-@extends('layouts.erp-tailwind')
+@extends('layouts.erp')
 @section('title', 'Detail Sortir Barang')
 @section('page-title', 'Sortir Barang')
 @section('page-breadcrumb', 'Inventaris / Detail Sortir Barang')

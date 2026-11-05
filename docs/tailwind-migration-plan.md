@@ -11,7 +11,7 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 | Batch | Branch | PR | Status |
 |---|---|---|---|
 | B0 Fondasi build | `feature/tailwind-migration` | — | selesai dan terverifikasi; menunggu review dan uji build di server |
-| B1 Layout final, komponen, shell, auth, errors, landing | — | — | belum |
+| B1 Layout final, komponen, shell, auth, errors, landing | `feature/tailwind-m1-components` | — | **B1a selesai** (komponen, codemod, penjaga, layout, dark mode); **B1b menunggu**: DataTables ke npm + skin, `body` 13px, hapus kode mati |
 | B2 Master | — | — | belum |
 | B3 Report, CRM, Chat, admin | — | — | belum |
 | B4 Transaction | — | — | menunggu `ui/produksi-reference` + `ui/stock-opname-reference` masuk `main` |
@@ -44,6 +44,7 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 | Q18 | Form | Class komponen `erp-*` (§5.4) ditulis sendiri. `@tailwindcss/forms` **tidak dipakai**: class-nya (`.form-select`, dst.) bentrok dengan `.form-select` Bootstrap/Metronic dan terbukti mengubah padding 61 elemen di halaman lama. Bisa dievaluasi lagi setelah B6. |
 | Q19 | Aturan baru | Setelah B1 masuk, UI baru wajib memakai layout/komponen Tailwind. Ditegakkan oleh test ratchet (§8.3) dan ditulis di `AGENTS.md` + `docs/ui-design-system.md`. |
 | Q20 | PR | Claude commit, push, dan membuka PR. Merge oleh pemilik repo. |
+| **Q30** | Branch integrasi | **Tidak ada yang masuk `main` sampai pemilik repo menyetujui seluruh migrasi.** Semua batch di-merge ke `integration/tailwind-migration` (dibuat dari `main`); setiap batch tetap branch + PR sendiri ke branch itu. `main` baru menerima satu PR dari `integration/tailwind-migration` setelah disetujui. Sinkronkan branch integrasi dengan `main` secara berkala bila `main` bergerak. |
 | Q21/Q22 | Plan | File ini; direview sebelum B0. |
 | **Q23** | Ikon | Font **Phosphor** `<i class="ph …" aria-hidden="true">` di semua tempat (Blade, JS, controller). Bobot: regular, bold, fill, duotone. Light/thin dibuang. Penggantian lewat codemod + tabel §4.4. |
 | **Q24** | HTML controller | Blade component yang dirender server (`row-actions`, `cell-title`, `badge`, `avatar`). Controller hanya mengirim data. |
@@ -87,15 +88,20 @@ Referensi `infruity-frontend` (38 file, Tailwind CDN) dirancang di root 16px: `t
 
 ### 2.3 Kepadatan per batch
 
-"BS" = token class bergaya Bootstrap/Metronic (`form-control`, `btn-*`, `modal*`, `card*`, `col-*`, `d-*`, `fs-*`, `fw-*`, `text-gray-*`, spasi, …). Ini indikator kepadatan; sebagian nama juga sah di Tailwind (§4.2).
+Angka ini diukur dengan penanda presisi di `tests/Support/LegacyUiMarkup.php` (dipakai juga oleh test penjaga), bukan hitungan token kasar. Hitungan awal plan ("BS") ternyata dipenuhi false positive, karena token spasi seperti `p-3` sah di Tailwind; **koreksi penting: shell, layout, dashboard, auth, errors, dan landing sebenarnya sudah bersih dari markup Bootstrap**, jadi B1 bukan batch "memorting halaman" melainkan batch komponen dan alat.
 
-| Batch | View | Hit BS | Kandidat mati |
-|---|---:|---:|---:|
-| B1 | 50 | 3.714 | 10 (sebagian besar `template/*` Metronic lama) |
-| B2 | 42 | 1.341 | 3 |
-| B3 | 52 | 929 | 10 |
-| B4 | 74 | 3.134 | 22 |
-| B5 | 50 | 1.687 | 4 |
+Kolom "Markup" = semua penanda kecuali hex di class (`data-bs`, `data-kt`, ikon lama, `form-*`, `btn*`, `modal`, `select2`, `bootstrap.*`, `KT*`, utilitas `d-*`/`fw-*`/`fs-*`, `badge-light-*`, `@extends('template.root')`). Total hari ini: **217 file, 6.400 hit**. Angka diperbarui dengan `php scripts/ui-migrate/ratchet-snapshot.php --summary`.
+
+| Batch | File | Markup | `data-kt`+`KT*` | Ikon lama | `select2` | `template.root` |
+|---|---:|---:|---:|---:|---:|---:|
+| B1 | 30 | 1847 | 239 | 288 | 37 | 1 |
+| B2 | 35 | 571 | 78 | 79 | 22 | 10 |
+| B3 | 47 | 439 | 42 | 49 | 16 | 26 |
+| B4 | 61 | 1610 | 162 | 150 | 61 | 21 |
+| B5 | 39 | 923 | 67 | 93 | 70 | 15 |
+| JS | 4 | 17 | 3 | 0 | 9 | 0 |
+
+B1 didominasi `template/*` (Metronic lama yang mati dan akan dihapus), bukan halaman hidup. Rincian per file ada di `tests/fixtures/legacy-ui-allowlist.json`.
 
 ### 2.4 Ketergantungan JavaScript
 
@@ -447,7 +453,7 @@ Semua komponen adalah Blade anonymous component di `resources/views/components/e
 
 | Komponen | API | Catatan |
 |---|---|---|
-| `x-erp.tabs` + `x-erp.tab` | `name`, `label`, `active` | `role=tablist`, navigasi panah, mendukung `?tab=` |
+| `x-erp.tabs` + `x-erp.tab-panel` | `tabs=[['name','label']]`, `active`; panel `<x-erp.tab-panel name>` | `role=tablist`, navigasi panah (belum: `?tab=` di URL) |
 | `x-erp.collapse` | `open`, slot `trigger`/default | `x-collapse`, `aria-expanded/controls` |
 | `x-erp.check-all` | `target` (selector) | header mengontrol `[data-erp-check]`; indeterminate; ikut DataTables `draw` |
 | `x-erp.panel` | `title`, slot `toolbar`/default/`footer`, `padding` | pembungkus `erp-panel` |
@@ -713,17 +719,26 @@ Tujuan: mengganti **mesin** tanpa mengubah tampilan.
 
 Ukuran: M. Risiko utama: R1, R9.
 
-### B1 — Layout final, komponen, shell, auth, errors, landing
+### B1 — Layout final, komponen, alat, penjaga
 
-1. `layouts/erp.blade.php` (dari `erp-tailwind` + bagian `template.root` yang masih perlu: firebase, `template.notif`, `erp-chrome`) dan `layouts/guest.blade.php`. `body` 13px dipasang di sini. `layouts.erp-tailwind` menjadi alias.
-2. Kalibrasi 20 halaman `erp-tailwind` + shell terhadap body 13px (R5).
-3. Komponen §5 + test + `legacy-bridge.js` + class komponen §5.4. `erp-button` dilebur ke `erp-action`.
-4. `codemod.mjs` (class + ikon), dengan test unit untuk tabel pemetaan.
-5. Bersihkan komponen `x-erp.*` yang ada dari Bootstrap.
-6. Dark mode dibuang.
-7. Port `dashboard`, `change-password`, `forgot-password`, `auth/login`, `errors/*`, `landing`.
-8. Audit dan hapus kandidat mati B1 setelah dikonfirmasi (`template/*` Metronic lama, `auth/passwords/*`, `auth/verify`, `auth/register`, `auth/footer`, `auth/login-option`, `layouts.app`, `*::layouts.master`, `admin-view`, `pemohon-view`, `template - Copy/`). Mix dihapus bila tertunda.
-9. Test ratchet §8.3; aturan Q19 di `AGENTS.md`; `docs/ui-design-system.md` diperbarui (ukuran 16/13, komponen, class, ikon).
+Dibagi dua karena ukurannya. **B1a selesai** (PR terpisah); **B1b** menyusul.
+
+**B1a (selesai):**
+1. `layouts/erp-tailwind` diganti nama menjadi `layouts/erp` dan 20 view diarahkan ke sana. (Layout `guest` tidak dibuat: login, landing, dan errors sudah berdiri sendiri dan bersih; tidak ada duplikasi yang perlu disatukan.)
+2. Komponen §5: `dialog`, `drawer`, `dropdown`, `tabs` + `tab-panel`, `collapse`, `check-all`, `tooltip`, `panel`, `badge`, `avatar`, `cell-title`, `row-actions`, plus `erp.toast()`. 19 test render Blade, 14 test JS (termasuk regresi bug check-all yang ditemukan lewat uji di browser), diverifikasi di browser (dialog, fokus kembali ke pemicu, klik latar, `static`, Esc, drawer, sheet, tab + panah, collapse, check-all + indeterminate, dropdown teleport + panah + Esc + klik luar).
+3. Class komponen §5.4 (`erp-input/select/textarea/check/radio/label/help/error/input-group/badge/avatar/panel/table/menu/tabs/tooltip/dialog`) di `resources/css/components/`. `erp-action` tetap di `erp-workspace.css`; peleburan `erp-button` ditunda ke B1b.
+4. `legacy-bridge.js` (shim `bootstrap.Modal` dan `$.fn.modal` di atas dialog; aman untuk elemen non-`<dialog>`).
+5. `scripts/ui-migrate/codemod.mjs` (class + ikon; laporan dulu, `--write`, `--convert-rem`, `--strict`) dengan 15 test, dan `class-conflicts.mjs` (R18) dengan test seluruh repo. Detektor menemukan 11 tabrakan state aktif/tidak aktif yang tidak terlihat oleh pemindaian visual; semuanya diperbaiki.
+6. Penjaga `NoLegacyUiMarkupTest` + `tests/fixtures/legacy-ui-allowlist.json` (217 file, 6.400 hit) + `ratchet-snapshot.php`. Terbukti gagal bila ada markup lama baru.
+7. Dark mode dibuang (baris Tema di Pengaturan dan skrip tema di `template.root`).
+8. Aturan Q19 di `AGENTS.md` dan `docs/ui-design-system.md` (komponen, aturan, alat).
+
+**B1b (menunggu):**
+1. DataTables dari npm (`datatables.net@1.13`, `fixedcolumns`, `responsive`, `select`) + skin `resources/css/vendor/datatables.css`; hapus `datatables.bundle.*` dari `layouts.erp`. Uji dengan pemindaian visual yang sama seperti B0 pada 20 halaman layout ERP.
+2. `body` 13px dan kalibrasi 20 halaman + shell (R5). Perubahan visual yang disengaja.
+3. Peleburan `erp-button` ke `erp-action`.
+4. Audit kandidat mati dan penghapusannya setelah dikonfirmasi pemilik repo: `template/*` Metronic lama (dominan di angka B1), `auth/passwords/*`, `auth/verify`, `auth/register`, `auth/footer`, `auth/login-option`, `layouts.app` (+ `public/css/app.css`, `public/js/app.js`, `mix-manifest.json`), `*::layouts.master`, `admin-view`, `pemohon-view`, `template - Copy/`.
+5. Mengisi detail-dialog/dropdown-select lama dengan komponen baru bila perlu.
 
 Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 

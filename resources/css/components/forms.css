@@ -1,0 +1,101 @@
+/*
+ * Kontrol form. Ditulis sendiri (bukan @tailwindcss/forms: class `.form-select`-nya
+ * bentrok dengan Bootstrap selama migrasi). Token: docs/ui-design-system.md.
+ * Target sentuh 44px; di bawah 768px teks 16px agar iOS Safari tidak zoom saat fokus.
+ */
+@layer components {
+    .erp-label {
+        @apply mb-1.5 block text-xs font-semibold text-gray-600;
+    }
+    .erp-label--required::after {
+        content: ' *';
+        @apply text-red-500;
+    }
+    .erp-help {
+        @apply mt-1 block text-xs text-gray-500;
+    }
+    .erp-error {
+        @apply mt-1 flex items-start gap-1 text-xs font-medium text-red-600;
+    }
+
+    .erp-input,
+    .erp-select,
+    .erp-textarea {
+        @apply block w-full rounded-control border border-gray-200 bg-white px-3.5 text-base text-gray-800 shadow-input transition-colors md:text-sm;
+        @apply placeholder:text-gray-400;
+        @apply hover:border-gray-300;
+        @apply focus:border-teal focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/25;
+        @apply disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400;
+        @apply read-only:bg-gray-50;
+    }
+    .erp-input,
+    .erp-select {
+        @apply h-control;
+    }
+    .erp-textarea {
+        @apply min-h-[88px] py-2.5;
+    }
+    .erp-input[aria-invalid='true'],
+    .erp-select[aria-invalid='true'],
+    .erp-textarea[aria-invalid='true'] {
+        @apply border-red-500 focus:border-red-500 focus-visible:ring-red-500/25;
+    }
+
+    .erp-select {
+        @apply appearance-none pr-10;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%236b7280'%3E%3Cpath d='M213.66 101.66l-80 80a8 8 0 0 1-11.32 0l-80-80a8 8 0 0 1 11.32-11.32L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.875rem center;
+        background-size: 1rem;
+    }
+
+    .erp-check,
+    .erp-radio {
+        @apply h-4 w-4 shrink-0 cursor-pointer appearance-none border border-gray-300 bg-white align-middle transition-colors;
+        @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/30 focus-visible:ring-offset-1;
+        @apply checked:border-teal checked:bg-teal;
+        @apply disabled:cursor-not-allowed disabled:opacity-50;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+    }
+    .erp-check {
+        @apply rounded;
+    }
+    .erp-check:checked {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.5l3 3 6-6.5'/%3E%3C/svg%3E");
+    }
+    .erp-check:indeterminate {
+        @apply border-teal bg-teal;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M4 8h8'/%3E%3C/svg%3E");
+    }
+    .erp-radio {
+        @apply rounded-full;
+    }
+    .erp-radio:checked {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Ccircle cx='8' cy='8' r='3'/%3E%3C/svg%3E");
+    }
+
+    /* Prefix/suffix (Rp, satuan) dengan border bersama. */
+    .erp-input-group {
+        @apply flex w-full items-stretch;
+    }
+    .erp-input-group > .erp-input {
+        @apply min-w-0 flex-1;
+    }
+    .erp-input-group > .erp-input:not(:first-child) {
+        @apply rounded-l-none border-l-0;
+    }
+    .erp-input-group > .erp-input:not(:last-child) {
+        @apply rounded-r-none;
+    }
+    .erp-input-group__addon {
+        @apply flex h-control shrink-0 items-center border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-500;
+    }
+    .erp-input-group__addon:first-child {
+        @apply rounded-l-control;
+    }
+    .erp-input-group__addon:last-child {
+        @apply rounded-r-control;
+    }
+}

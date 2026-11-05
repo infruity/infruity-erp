@@ -63,3 +63,46 @@ Tidak ada !important baru pada adapter. Aturan penting vendor yang tidak dipakai
 Form transaksi memakai `.erp-editor` dengan area informasi/item dan `.erp-editor-summary`. Keranjang menggunakan satu tombol baris per item untuk desktop/mobile, bukan dua pohon card yang berbeda. Dialog Bootstrap menggunakan struktur `.erp-sheet-dialog/header/body/footer`; lifecycle fokus Bootstrap tetap digunakan. Benefit tier tampil sebagai sheet, menggantikan editor pada child-row tabel.
 
 Font Plus Jakarta Sans, Poppins, Material Symbols Rounded dan Phosphor dilayani lokal di `public/assets/fonts/infruity` serta `public/assets/plugins/phosphor`; sumber dan lisensi disertakan. Capture visual tahap kedua menunggu font tersedia serta transisi dialog selesai. Semua klaim keselarasan harus merujuk matriks halaman/state; keberadaan token atau wrapper baru saja tidak cukup.
+
+## Komponen dan aturan penulisan (migrasi Tailwind, B1)
+
+Ringkasan pemakaian. Rancangan lengkap dan alasannya ada di [tailwind-migration-plan.md](tailwind-migration-plan.md).
+
+### Aturan
+
+1. **Halaman baru memakai `layouts.erp`** dan komponen `x-erp.*`. Jangan menambah markup Bootstrap/Metronic (`form-control`, `btn btn-*`, `modal`, `data-bs-*`, `data-kt-*`, ikon `ki-`/`bi-`/`fa-`, `select2`). `tests/Feature/NoLegacyUiMarkupTest` gagal bila ada file baru yang memakainya atau jumlah di file lama naik. Setelah memigrasi halaman, perbarui batas: `php scripts/ui-migrate/ratchet-snapshot.php`.
+2. **Ikon hanya Phosphor**, satu bentuk di Blade, JS, dan PHP: `<i class="ph ph-trash" aria-hidden="true"></i>`. Bobot: `ph` (biasa), `ph-bold` (aksi), `ph-fill` (aktif/terisi), `ph-duotone` (ilustrasi kecil). Tombol berisi ikon saja wajib `aria-label`.
+3. **Jangan taruh dua utility dari kelompok yang sama di satu elemen** (`bg-white` + `bg-emerald-50`, `font-medium` + `font-bold`). Pemenangnya ditentukan urutan CSS, bukan urutan atribut. Untuk state aktif/tidak aktif, tulis keduanya di `:class` yang eksklusif: `:class="on ? 'border-teal' : 'border-gray-200'"`. Dijaga oleh `tests/js/class-conflicts-repo.test.cjs`; cek manual dengan `node scripts/ui-migrate/class-conflicts.mjs <path>`.
+4. **Tulis nama class lengkap**, jangan disusun lewat konkatenasi (`'bg-' + warna`); scanner Tailwind tidak melihatnya. Pakai peta: `{ success: 'erp-badge--success' }`.
+5. Warna memakai token (`bg-teal`, `text-teal`, `bg-lime`, `bg-canvas`), bukan hex (`bg-[#0b595b]`). Ukuran font px ad-hoc (`text-[11px]`) masih boleh.
+6. HTML kolom DataTables dari controller dibuat dengan komponen (`x-erp.row-actions`, `x-erp.cell-title`, `x-erp.badge`, `x-erp.avatar`), bukan string PHP. Komponen meng-escape isinya.
+
+### Komponen
+
+| Komponen | Pemakaian |
+|---|---|
+| `x-erp.dialog` | `<x-erp.dialog id="edit" title="Ubah" size="md\|lg\|xl\|full" variant="center\|sheet" static>` + slot `footer`. Buka: `data-erp-open="#edit"` atau `erp.dialog.open('edit')`. Tutup: `data-erp-close` atau `erp.dialog.close('edit')`. `<dialog>` native: fokus trap, Esc, dan pemulihan fokus ditangani browser. `static` = tidak tertutup klik latar/Esc. Event: `erp:dialog-open`, `erp:dialog-close`. |
+| `x-erp.drawer` | Sama seperti dialog, panel dari kanan (di mobile penuh). |
+| `x-erp.dropdown` | `label` (aria), `align="start\|end"`, slot `trigger`, isi berupa item `role="menuitem"` class `erp-menu__item`. Panel di-teleport ke `<body>` (tidak terpotong `overflow` tabel). Navigasi panah, Esc, klik luar. |
+| `x-erp.row-actions` | `:actions="[['label'=>'Ubah','icon'=>'pencil-simple','onclick'=>'edit(1)','can'=>check_access('x.edit')], ...]"`. Item `can=false` tidak dirender; bila semua tersembunyi, tidak merender apa pun. `tone => 'danger'`, `href`, `data`. |
+| `x-erp.tabs` + `x-erp.tab-panel` | `:tabs="[['name'=>'a','label'=>'Umum']]"`, panel `<x-erp.tab-panel name="a">`. Navigasi panah. |
+| `x-erp.collapse` | `title` atau slot `trigger`, `open`. |
+| `x-erp.check-all` | `target="#tabel"`; isi tabel memakai `<input class="erp-check" data-erp-check>`. Status `indeterminate` otomatis. |
+| `x-erp.tooltip` | `text="..."`, membungkus pemicu yang bisa fokus. |
+| `x-erp.panel` | `title`, slot `toolbar`, `footer`. |
+| `x-erp.badge` | `tone="success\|warning\|danger\|info\|primary\|neutral"`. |
+| `x-erp.avatar` | `name`, `src`, `tone`, `size="sm\|md\|lg"`. Tanpa `tone`, warna stabil dari nama. |
+| `x-erp.cell-title` | `title`, `subtitle`, `href`. |
+| `erp.toast({type, message})` | `success\|error\|warning\|info`; menggantikan toastr. |
+
+Catatan Blade: di template inline, slot bernama (`<x-slot:x>`) yang langsung diikuti teks tanpa baris baru membocorkan output buffer; beri baris baru.
+
+### Class form dan data
+
+`erp-label` (+ `--required`), `erp-help`, `erp-error` (hubungkan lewat `aria-describedby`; set `aria-invalid="true"` pada kontrol), `erp-input`, `erp-select`, `erp-textarea`, `erp-check`, `erp-radio`, `erp-input-group` (+ `__addon`), `erp-table`, `erp-panel`, `erp-badge--*`, `erp-avatar--*`. Kontrol 44px, radius 12px, teks 16px di bawah 768px (mencegah zoom iOS). `erp-action` (+ `--primary`, `--danger`) tetap untuk tombol.
+
+### Alat bantu migrasi (`scripts/ui-migrate`)
+
+- `codemod.mjs`: laporan dulu, `--write` untuk menulis, `--convert-rem` untuk halaman yang di-extend dari `template.root` (root 13px ke 16px). Hanya mengganti pasangan aman; bentrok nama (`collapse`, `card`, `btn`, `rounded`) dan komponen dilaporkan untuk dikerjakan manual. Ikon tanpa padanan membuat atribut dibiarkan utuh dan dilaporkan.
+- `class-conflicts.mjs`: detektor tabrakan class.
+- `ratchet-snapshot.php`: tulis ulang batas `tests/fixtures/legacy-ui-allowlist.json`.

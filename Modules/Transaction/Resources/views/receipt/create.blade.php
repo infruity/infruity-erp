@@ -1,4 +1,4 @@
-@extends('layouts.erp-tailwind')
+@extends('layouts.erp')
 
 @section('title', (isset($data) ? 'Edit' : 'Tambah') . ' Resep Produk - Master')
 @section('page-title', 'Resep Produk')

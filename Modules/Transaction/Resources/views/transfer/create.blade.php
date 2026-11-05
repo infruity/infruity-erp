@@ -1,4 +1,4 @@
-@extends('layouts.erp-tailwind')
+@extends('layouts.erp')
 @php
     $receiving = ($type ?? request()->segment(1)) === 'transfer-penerima';
     $readOnly = $is_view ?? false;

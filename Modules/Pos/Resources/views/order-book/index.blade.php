@@ -144,7 +144,7 @@
                         </div>
                         <div class="mt-[4px] flex flex-wrap gap-[8px]">
                             <template x-for="status in statusOptions" :key="status.value">
-                                <button type="button" @click="draftStatus = status.value" :aria-pressed="draftStatus === status.value" class="cursor-pointer rounded-full border-[1px] border-solid px-[12px] py-[6px] text-[12px] leading-[16px] font-medium transition-colors" :class="draftStatus === status.value ? 'border-emerald-300 bg-emerald-50 font-semibold text-emerald-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'border-gray-200 bg-white text-[#4b5563] hover:border-emerald-300'" x-text="status.label"></button>
+                                <button type="button" @click="draftStatus = status.value" :aria-pressed="draftStatus === status.value" class="cursor-pointer rounded-full border-[1px] border-solid px-[12px] py-[6px] text-[12px] leading-[16px] transition-colors" :class="draftStatus === status.value ? 'border-emerald-300 bg-emerald-50 font-semibold text-emerald-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'border-gray-200 bg-white font-medium text-[#4b5563] hover:border-emerald-300'" x-text="status.label"></button>
                             </template>
                         </div>
                     </section>
@@ -155,11 +155,11 @@
                             <button type="button" x-show="draftStartDate || draftEndDate" @click="draftStartDate = ''; draftEndDate = ''" class="text-[10px] font-semibold text-red-500 transition-colors hover:text-red-600">Reset</button>
                         </div>
                         <div class="flex w-full flex-col gap-[8px] sm:flex-row">
-                            <button type="button" aria-label="Tanggal mulai" :aria-expanded="calOpen" x-ref="dateRangeStart" @click="toggleCalendar('start')" class="flex flex-1 cursor-pointer items-center gap-[8px] rounded-[12px] border-[1px] border-solid border-gray-200 bg-white px-[12px] py-[10px] text-left text-[12px] leading-[16px] text-[#374151] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : 'hover:border-emerald-400'">
+                            <button type="button" aria-label="Tanggal mulai" :aria-expanded="calOpen" x-ref="dateRangeStart" @click="toggleCalendar('start')" class="flex flex-1 cursor-pointer items-center gap-[8px] rounded-[12px] border-[1px] border-solid bg-white px-[12px] py-[10px] text-left text-[12px] leading-[16px] text-[#374151] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
                                 <span class="w-[32px] text-[10px] font-bold text-[#9ca3af]">DARI</span>
                                 <span class="text-[12px] leading-[16px] font-medium" :class="draftStartDate ? 'text-[#1f2937]' : 'text-[#9ca3af]'" x-text="draftStartDate ? formatDisplayDate(draftStartDate) : 'Pilih Tanggal'"></span>
                             </button>
-                            <button type="button" aria-label="Tanggal akhir" :aria-expanded="calOpen" x-ref="dateRangeEnd" @click="toggleCalendar('end')" class="flex flex-1 cursor-pointer items-center gap-[8px] rounded-[12px] border-[1px] border-solid border-gray-200 bg-white px-[12px] py-[10px] text-left text-[12px] leading-[16px] text-[#374151] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : 'hover:border-emerald-400'">
+                            <button type="button" aria-label="Tanggal akhir" :aria-expanded="calOpen" x-ref="dateRangeEnd" @click="toggleCalendar('end')" class="flex flex-1 cursor-pointer items-center gap-[8px] rounded-[12px] border-[1px] border-solid bg-white px-[12px] py-[10px] text-left text-[12px] leading-[16px] text-[#374151] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
                                 <span class="w-[32px] text-[10px] font-bold text-[#9ca3af]">KE</span>
                                 <span class="text-[12px] leading-[16px] font-medium" :class="draftEndDate ? 'text-[#1f2937]' : 'text-[#9ca3af]'" x-text="draftEndDate ? formatDisplayDate(draftEndDate) : 'Pilih Tanggal'"></span>
                             </button>

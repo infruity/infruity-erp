@@ -15,7 +15,7 @@ use Tests\TestCase;
 class TailwindBuildContractTest extends TestCase
 {
     private const LAYOUTS = [
-        'resources/views/layouts/erp-tailwind.blade.php' => 'resources/css/app.css',
+        'resources/views/layouts/erp.blade.php' => 'resources/css/app.css',
         'resources/views/template/root.blade.php' => 'resources/css/legacy.css',
         'resources/views/auth/login.blade.php' => 'resources/css/app.css',
         'resources/views/landing.blade.php' => 'resources/css/app.css',
@@ -52,7 +52,7 @@ class TailwindBuildContractTest extends TestCase
 
     public function test_page_scripts_still_get_jquery_and_swal_before_the_body(): void
     {
-        $erp = file_get_contents(base_path('resources/views/layouts/erp-tailwind.blade.php'));
+        $erp = file_get_contents(base_path('resources/views/layouts/erp.blade.php'));
         $head = substr($erp, 0, strpos($erp, '</head>'));
 
         $vendor = strpos($head, "@include('partials.vendor-js')");

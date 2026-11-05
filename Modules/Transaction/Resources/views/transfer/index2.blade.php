@@ -1,4 +1,4 @@
-@extends('layouts.erp-tailwind')
+@extends('layouts.erp')
 @php
     $receiving = request()->segment(1) === 'transfer-penerima';
     $filterBranches = $branches->map(fn ($branch) => ['id' => (string) $branch->id, 'name' => ucwords($branch->name)])->values();

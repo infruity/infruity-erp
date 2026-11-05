@@ -1,4 +1,4 @@
-@extends('layouts.erp-tailwind')
+@extends('layouts.erp')
 
 @section('title', 'Pengadaan - Inventaris')
 @section('page-title', 'Pengadaan')
@@ -159,7 +159,7 @@
                                 </div>
                                 <div class="mt-1 flex flex-wrap gap-2">
                                     @foreach (['all' => 'Semua Status', 'temp' => 'Draft', 'draft' => 'Pending', 'posting' => 'Dalam Pengiriman', 'complete' => 'Selesai'] as $value => $label)
-                                        <button type="button" @click="mobileStatus = '{{ $value }}'" :aria-pressed="mobileStatus === '{{ $value }}'" :class="mobileStatus === '{{ $value }}' ? 'border-emerald-300 bg-emerald-50 text-emerald-700 font-semibold shadow-2xs' : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'" class="cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium transition-colors">{{ $label }}</button>
+                                        <button type="button" @click="mobileStatus = '{{ $value }}'" :aria-pressed="mobileStatus === '{{ $value }}'" :class="mobileStatus === '{{ $value }}' ? 'border-emerald-300 bg-emerald-50 text-emerald-700 font-semibold shadow-2xs' : 'border-gray-200 bg-white font-medium text-gray-600 hover:border-emerald-300'" class="cursor-pointer rounded-full border px-3 py-1.5 text-xs transition-colors">{{ $label }}</button>
                                     @endforeach
                                 </div>
                             </div>

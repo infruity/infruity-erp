@@ -1,4 +1,4 @@
-@extends('layouts.erp-tailwind')
+@extends('layouts.erp')
 
 @section('title', $pageTitle . ' - Master')
 @section('page-title', $pageTitle)

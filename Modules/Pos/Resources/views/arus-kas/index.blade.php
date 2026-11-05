@@ -271,7 +271,7 @@
             <header class="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
                 <span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-emerald-50 text-[#0b595b]"><i class="ph-bold ph-receipt text-lg" aria-hidden="true"></i></span>
                 <div class="min-w-0 flex-1"><h2 id="arus-kas-invoice-title" class="break-words text-sm font-extrabold text-gray-900" x-text="selectedOrder?.poNumber"></h2><p class="mt-0.5 text-[11px] text-gray-500" x-text="'Oleh: ' + (selectedOrder?.staffName || '—')"></p><p class="text-[10px] text-gray-400" x-text="formatDateTime(selectedOrder?.date, selectedOrder?.time)"></p></div>
-                <span class="rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700" :class="selectedOrder?.status === 'Draft' ? 'border-gray-200 bg-gray-50 text-gray-500' : ''" x-text="selectedOrder?.status"></span>
+                <span class="rounded-full border px-2 py-1 text-[10px] font-bold" :class="selectedOrder?.status === 'Draft' ? 'border-gray-200 bg-gray-50 text-gray-500' : 'border-emerald-100 bg-emerald-50 text-emerald-700'" x-text="selectedOrder?.status"></span>
                 <button type="button" @click="printOrder()" class="rounded-xl border border-gray-200 px-2.5 py-2 text-[11px] font-bold text-gray-700"><i class="ph-bold ph-printer mr-1" aria-hidden="true"></i>Cetak PO</button>
                 <button type="button" @click="invoiceModalOpen = false" aria-label="Tutup" class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-gray-100 text-gray-500"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
             </header>

@@ -1,0 +1,1250 @@
+{
+    "Modules/Chat/Resources/views/index.blade.php": {
+        "root-layout": 1
+    },
+    "Modules/Crm/Http/Controllers/CampaignController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "badge-light": 2,
+        "bs-utilities": 1
+    },
+    "Modules/Crm/Http/Controllers/DepositoController.php": {
+        "data-bs": 2,
+        "data-kt": 1,
+        "bootstrap-icons": 3,
+        "fontawesome": 1,
+        "btn": 6,
+        "badge-light": 9,
+        "bs-utilities": 4
+    },
+    "Modules/Crm/Http/Controllers/TierController.php": {
+        "data-bs": 3,
+        "bootstrap-icons": 6,
+        "btn": 4,
+        "bs-utilities": 2
+    },
+    "Modules/Crm/Resources/views/campaign/index.blade.php": {
+        "data-bs": 2,
+        "data-kt": 2,
+        "form-classes": 5,
+        "modal-class": 3,
+        "select2": 1,
+        "root-layout": 1
+    },
+    "Modules/Crm/Resources/views/campaign/js-campaign.blade.php": {
+        "btn": 4,
+        "bootstrap-js": 3
+    },
+    "Modules/Crm/Resources/views/dashboard/index.blade.php": {
+        "hex-class": 12
+    },
+    "Modules/Crm/Resources/views/dashboard/js-dashboard.blade.php": {
+        "kt-js": 25
+    },
+    "Modules/Crm/Resources/views/dashboard/top_distribution.blade.php": {
+        "keenicons": 2,
+        "btn": 4,
+        "bs-utilities": 11
+    },
+    "Modules/Crm/Resources/views/dashboard/top_tier.blade.php": {
+        "bs-utilities": 11
+    },
+    "Modules/Crm/Resources/views/deposito/customer-deposito.blade.php": {
+        "data-kt": 1,
+        "root-layout": 1
+    },
+    "Modules/Crm/Resources/views/deposito/index.blade.php": {
+        "data-bs": 2,
+        "data-kt": 2,
+        "form-classes": 4,
+        "modal-class": 3,
+        "root-layout": 1
+    },
+    "Modules/Crm/Resources/views/deposito/js-deposito.blade.php": {
+        "btn": 4,
+        "select2": 4,
+        "bootstrap-js": 3
+    },
+    "Modules/Crm/Resources/views/deposito/show.blade.php": {
+        "data-kt": 1,
+        "badge-light": 6,
+        "root-layout": 1
+    },
+    "Modules/Crm/Resources/views/point-schedule/index.blade.php": {
+        "data-kt": 1,
+        "form-classes": 6,
+        "root-layout": 1
+    },
+    "Modules/Crm/Resources/views/report/customer.blade.php": {
+        "data-kt": 2,
+        "form-classes": 3,
+        "bs-utilities": 4,
+        "root-layout": 1
+    },
+    "Modules/Crm/Resources/views/setting-exp/index2.blade.php": {
+        "data-kt": 1,
+        "form-classes": 2,
+        "select2": 1,
+        "root-layout": 1
+    },
+    "Modules/Crm/Resources/views/tier/index.blade.php": {
+        "data-bs": 2,
+        "data-kt": 6,
+        "form-classes": 4,
+        "badge-light": 14,
+        "modal-class": 6,
+        "root-layout": 1
+    },
+    "Modules/Crm/Resources/views/tier/js-tier.blade.php": {
+        "form-classes": 12,
+        "btn": 5,
+        "select2": 5,
+        "bootstrap-js": 6,
+        "bs-utilities": 16
+    },
+    "Modules/Master/Http/Controllers/AccountController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "bs-utilities": 1
+    },
+    "Modules/Master/Http/Controllers/BranchController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "bs-utilities": 1
+    },
+    "Modules/Master/Http/Controllers/CustomerController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 4,
+        "btn": 2,
+        "badge-light": 3,
+        "bs-utilities": 6
+    },
+    "Modules/Master/Http/Controllers/DepartmentController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "bs-utilities": 4
+    },
+    "Modules/Master/Http/Controllers/HandlingController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "bs-utilities": 4
+    },
+    "Modules/Master/Http/Controllers/KurirController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "bs-utilities": 1
+    },
+    "Modules/Master/Http/Controllers/LocationController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "bs-utilities": 5
+    },
+    "Modules/Master/Http/Controllers/PaymentMethodController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "bs-utilities": 1
+    },
+    "Modules/Master/Http/Controllers/PositionController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "bs-utilities": 5
+    },
+    "Modules/Master/Http/Controllers/ProductCategoryController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "bs-utilities": 1
+    },
+    "Modules/Master/Http/Controllers/ProductController.php": {
+        "data-bs": 3,
+        "data-kt": 3,
+        "keenicons": 2,
+        "fontawesome": 2,
+        "btn": 15,
+        "badge-light": 10,
+        "bs-utilities": 7
+    },
+    "Modules/Master/Http/Controllers/ProductUnitController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "bs-utilities": 9
+    },
+    "Modules/Master/Http/Controllers/StaffController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 4,
+        "btn": 2,
+        "badge-light": 4,
+        "bs-utilities": 8
+    },
+    "Modules/Master/Http/Controllers/SupplierController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "badge-light": 2,
+        "bs-utilities": 7
+    },
+    "Modules/Master/Resources/views/customer/create-overlay.blade.php": {
+        "hex-class": 1
+    },
+    "Modules/Master/Resources/views/customer/create.blade.php": {
+        "hex-class": 1
+    },
+    "Modules/Master/Resources/views/customer/edit-overlay.blade.php": {
+        "hex-class": 1
+    },
+    "Modules/Master/Resources/views/customer/show.blade.php": {
+        "root-layout": 1
+    },
+    "Modules/Master/Resources/views/department/index.blade.php": {
+        "data-bs": 2,
+        "data-kt": 8,
+        "form-classes": 2,
+        "btn": 6,
+        "modal-class": 3,
+        "bootstrap-js": 3,
+        "bs-utilities": 5,
+        "root-layout": 1
+    },
+    "Modules/Master/Resources/views/handling/index.blade.php": {
+        "data-bs": 2,
+        "data-kt": 8,
+        "form-classes": 2,
+        "btn": 6,
+        "modal-class": 3,
+        "bootstrap-js": 3,
+        "bs-utilities": 5,
+        "root-layout": 1
+    },
+    "Modules/Master/Resources/views/location/index.blade.php": {
+        "data-bs": 2,
+        "data-kt": 8,
+        "form-classes": 3,
+        "btn": 6,
+        "modal-class": 3,
+        "bootstrap-js": 3,
+        "bs-utilities": 7,
+        "root-layout": 1
+    },
+    "Modules/Master/Resources/views/partials/mobile-index.blade.php": {
+        "hex-class": 8
+    },
+    "Modules/Master/Resources/views/products/create.blade.php": {
+        "select2": 2
+    },
+    "Modules/Master/Resources/views/products/edit.blade.php": {
+        "data-bs": 7,
+        "data-kt": 11,
+        "keenicons": 8,
+        "form-classes": 16,
+        "btn": 14,
+        "select2": 3,
+        "bs-utilities": 60,
+        "root-layout": 1
+    },
+    "Modules/Master/Resources/views/products/index.blade.php": {
+        "data-kt": 8,
+        "form-classes": 2,
+        "btn": 2,
+        "select2": 4,
+        "hex-class": 7
+    },
+    "Modules/Master/Resources/views/products/partials/create-form.blade.php": {
+        "data-kt": 1,
+        "form-classes": 4
+    },
+    "Modules/Master/Resources/views/products/partials/create-script.blade.php": {
+        "keenicons": 12,
+        "form-classes": 10,
+        "btn": 12,
+        "select2": 6,
+        "bs-utilities": 6
+    },
+    "Modules/Master/Resources/views/products/show-transaction.blade.php": {
+        "bs-utilities": 5,
+        "root-layout": 1
+    },
+    "Modules/Master/Resources/views/products/stock-show.blade.php": {
+        "data-kt": 22,
+        "form-classes": 6,
+        "select2": 6,
+        "bs-utilities": 5,
+        "root-layout": 1
+    },
+    "Modules/Master/Resources/views/products/stock.blade.php": {
+        "root-layout": 1,
+        "hex-class": 1
+    },
+    "Modules/Master/Resources/views/staff/form-fields.blade.php": {
+        "hex-class": 1
+    },
+    "Modules/Master/Resources/views/staff/show.blade.php": {
+        "root-layout": 1
+    },
+    "Modules/Master/Resources/views/unit/index.blade.php": {
+        "hex-class": 4
+    },
+    "Modules/Pos/Http/Controllers/DeliveryOrderController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 6,
+        "btn": 2,
+        "badge-light": 9,
+        "bs-utilities": 26
+    },
+    "Modules/Pos/Http/Controllers/ExpenditureController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "badge-light": 3,
+        "bs-utilities": 15
+    },
+    "Modules/Pos/Http/Controllers/OrderBookController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 7,
+        "btn": 2,
+        "badge-light": 10,
+        "bs-utilities": 10
+    },
+    "Modules/Pos/Http/Controllers/OtherBookController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 4,
+        "btn": 2,
+        "badge-light": 3,
+        "bs-utilities": 15
+    },
+    "Modules/Pos/Http/Controllers/PosController.php": {
+        "data-bs": 2,
+        "bootstrap-icons": 5,
+        "fontawesome": 1,
+        "btn": 2,
+        "bs-utilities": 5
+    },
+    "Modules/Pos/Resources/views/arus-kas/index.blade.php": {
+        "root-layout": 1,
+        "hex-class": 14
+    },
+    "Modules/Pos/Resources/views/delivery-order/index.blade.php": {
+        "data-kt": 15,
+        "keenicons": 4,
+        "form-classes": 3,
+        "btn": 9,
+        "modal-class": 3,
+        "select2": 2,
+        "bootstrap-js": 2,
+        "bs-utilities": 23,
+        "root-layout": 1
+    },
+    "Modules/Pos/Resources/views/delivery-order/list-kurir.blade.php": {
+        "form-classes": 2,
+        "badge-light": 1,
+        "bs-utilities": 5
+    },
+    "Modules/Pos/Resources/views/expenditure/create.blade.php": {
+        "bootstrap-icons": 2,
+        "fontawesome": 1,
+        "form-classes": 5,
+        "btn": 3,
+        "bs-utilities": 4,
+        "root-layout": 1
+    },
+    "Modules/Pos/Resources/views/expenditure/index.blade.php": {
+        "data-kt": 14,
+        "keenicons": 2,
+        "form-classes": 4,
+        "btn": 4,
+        "select2": 2,
+        "bs-utilities": 11,
+        "root-layout": 1
+    },
+    "Modules/Pos/Resources/views/expenditure/js/js-header.blade.php": {
+        "select2": 2
+    },
+    "Modules/Pos/Resources/views/expenditure/js/js-product.blade.php": {
+        "select2": 5,
+        "bootstrap-js": 6
+    },
+    "Modules/Pos/Resources/views/expenditure/segment/modal-product.blade.php": {
+        "form-classes": 12,
+        "btn": 5,
+        "modal-class": 6,
+        "bs-utilities": 2
+    },
+    "Modules/Pos/Resources/views/expenditure/segment/ringkasan.blade.php": {
+        "data-bs": 3,
+        "form-classes": 2,
+        "btn": 2,
+        "bs-utilities": 7
+    },
+    "Modules/Pos/Resources/views/order-book/create.blade.php": {
+        "bootstrap-icons": 1,
+        "form-classes": 5,
+        "btn": 3,
+        "badge-light": 1,
+        "select2": 2,
+        "bootstrap-js": 2,
+        "root-layout": 1
+    },
+    "Modules/Pos/Resources/views/order-book/index.blade.php": {
+        "data-kt": 14,
+        "btn": 4,
+        "bs-utilities": 6,
+        "root-layout": 1,
+        "hex-class": 42
+    },
+    "Modules/Pos/Resources/views/order-book/order.blade.php": {
+        "data-bs": 5,
+        "keenicons": 10,
+        "fontawesome": 3,
+        "form-classes": 6,
+        "btn": 6,
+        "modal-class": 6,
+        "bs-utilities": 11,
+        "root-layout": 1
+    },
+    "Modules/Pos/Resources/views/otherbook/index.blade.php": {
+        "data-kt": 9,
+        "keenicons": 2,
+        "form-classes": 3,
+        "btn": 4,
+        "select2": 1,
+        "bs-utilities": 9,
+        "root-layout": 1
+    },
+    "Modules/Pos/Resources/views/pos/create.blade.php": {
+        "fontawesome": 18,
+        "form-classes": 26,
+        "btn": 17,
+        "badge-light": 1,
+        "modal-class": 12,
+        "bs-utilities": 24,
+        "root-layout": 1
+    },
+    "Modules/Pos/Resources/views/pos/create2.blade.php": {
+        "data-bs": 1,
+        "form-classes": 5,
+        "root-layout": 1
+    },
+    "Modules/Pos/Resources/views/pos/index.blade.php": {
+        "fontawesome": 6,
+        "form-classes": 2,
+        "btn": 2,
+        "bs-utilities": 5
+    },
+    "Modules/Pos/Resources/views/pos/index2.blade.php": {
+        "data-kt": 15,
+        "keenicons": 2,
+        "form-classes": 4,
+        "btn": 4,
+        "badge-light": 1,
+        "select2": 3,
+        "bs-utilities": 11,
+        "root-layout": 1
+    },
+    "Modules/Pos/Resources/views/pos/js-create.blade.php": {
+        "select2": 1,
+        "bootstrap-js": 4
+    },
+    "Modules/Pos/Resources/views/pos/js-create2.blade.php": {
+        "bootstrap-js": 4
+    },
+    "Modules/Pos/Resources/views/pos/js-payment.blade.php": {
+        "select2": 2
+    },
+    "Modules/Pos/Resources/views/pos/js/js-buah.blade.php": {
+        "form-classes": 4,
+        "badge-light": 3,
+        "select2": 31,
+        "bootstrap-js": 18,
+        "bs-utilities": 13
+    },
+    "Modules/Pos/Resources/views/pos/js/js-header.blade.php": {
+        "badge-light": 5,
+        "select2": 13,
+        "bootstrap-js": 2,
+        "bs-utilities": 7
+    },
+    "Modules/Pos/Resources/views/pos/js/js-parcel.blade.php": {
+        "select2": 6,
+        "bootstrap-js": 3,
+        "bs-utilities": 4
+    },
+    "Modules/Pos/Resources/views/pos/payment-success.blade.php": {
+        "bootstrap-icons": 2,
+        "fontawesome": 2,
+        "btn": 3,
+        "bs-utilities": 13,
+        "root-layout": 1
+    },
+    "Modules/Pos/Resources/views/pos/payment.blade.php": {
+        "data-bs": 3,
+        "fontawesome": 2,
+        "form-classes": 4,
+        "btn": 2,
+        "bs-utilities": 11,
+        "root-layout": 1
+    },
+    "Modules/Pos/Resources/views/pos/print-list-payment.blade.php": {
+        "bootstrap-icons": 2,
+        "fontawesome": 2,
+        "btn": 2,
+        "bs-utilities": 12,
+        "root-layout": 1
+    },
+    "Modules/Pos/Resources/views/pos/receipt.blade.php": {
+        "btn": 5
+    },
+    "Modules/Pos/Resources/views/pos/segment/modal-customer.blade.php": {
+        "data-bs": 2,
+        "form-classes": 3,
+        "btn": 2,
+        "modal-class": 3
+    },
+    "Modules/Pos/Resources/views/pos/segment/modal-gift.blade.php": {
+        "form-classes": 4,
+        "btn": 2,
+        "modal-class": 3
+    },
+    "Modules/Pos/Resources/views/pos/segment/modal-jus.blade.php": {
+        "form-classes": 12,
+        "btn": 5,
+        "modal-class": 6
+    },
+    "Modules/Pos/Resources/views/pos/segment/modal-parcel.blade.php": {
+        "form-classes": 16,
+        "btn": 11,
+        "modal-class": 6
+    },
+    "Modules/Pos/Resources/views/pos/segment/modal-product.blade.php": {
+        "form-classes": 12,
+        "btn": 5,
+        "modal-class": 6
+    },
+    "Modules/Pos/Resources/views/pos/segment/ringkasan.blade.php": {
+        "data-bs": 5,
+        "bootstrap-icons": 2,
+        "fontawesome": 4,
+        "form-classes": 10,
+        "btn": 8,
+        "modal-class": 6,
+        "bs-utilities": 7
+    },
+    "Modules/Pos/Resources/views/setting-nota/index.blade.php": {
+        "root-layout": 1
+    },
+    "Modules/Report/Http/Controllers/ReportController.php": {
+        "data-bs": 6,
+        "bootstrap-icons": 10,
+        "fontawesome": 1,
+        "btn": 14,
+        "badge-light": 26
+    },
+    "Modules/Report/Resources/views/branch-product-rep.blade.php": {
+        "bs-utilities": 2,
+        "root-layout": 1
+    },
+    "Modules/Report/Resources/views/branch-transaction-rep.blade.php": {
+        "bs-utilities": 2,
+        "root-layout": 1
+    },
+    "Modules/Report/Resources/views/customer-transaction-rep.blade.php": {
+        "bs-utilities": 2,
+        "root-layout": 1
+    },
+    "Modules/Report/Resources/views/customer-transaction.blade.php": {
+        "bs-utilities": 2,
+        "root-layout": 1
+    },
+    "Modules/Report/Resources/views/index.blade.php": {
+        "root-layout": 1
+    },
+    "Modules/Report/Resources/views/product-buang.blade.php": {
+        "root-layout": 1,
+        "hex-class": 1
+    },
+    "Modules/Report/Resources/views/product-customer-transaction-rep.blade.php": {
+        "bs-utilities": 2,
+        "root-layout": 1
+    },
+    "Modules/Report/Resources/views/product-sales.blade.php": {
+        "root-layout": 1,
+        "hex-class": 1
+    },
+    "Modules/Report/Resources/views/profit-adjusted.blade.php": {
+        "root-layout": 1,
+        "hex-class": 1
+    },
+    "Modules/Report/Resources/views/profit-revenue.blade.php": {
+        "root-layout": 1,
+        "hex-class": 1
+    },
+    "Modules/Report/Resources/views/shipping-cost.blade.php": {
+        "root-layout": 1,
+        "hex-class": 1
+    },
+    "Modules/Report/Resources/views/total-aset.blade.php": {
+        "root-layout": 1,
+        "hex-class": 1
+    },
+    "Modules/Transaction/Http/Controllers/ProductReceiptController.php": {
+        "data-bs": 2,
+        "bootstrap-icons": 7,
+        "btn": 4,
+        "bs-utilities": 8
+    },
+    "Modules/Transaction/Http/Controllers/ProductionController.php": {
+        "data-bs": 2,
+        "bootstrap-icons": 7,
+        "btn": 4,
+        "badge-light": 1,
+        "bs-utilities": 10
+    },
+    "Modules/Transaction/Http/Controllers/ProductionController_temp.php": {
+        "data-bs": 2,
+        "bootstrap-icons": 8,
+        "fontawesome": 1,
+        "btn": 4,
+        "badge-light": 5,
+        "bs-utilities": 10
+    },
+    "Modules/Transaction/Http/Controllers/ProductionParcelController.php": {
+        "data-bs": 2,
+        "bootstrap-icons": 9,
+        "btn": 4,
+        "badge-light": 4,
+        "bs-utilities": 14
+    },
+    "Modules/Transaction/Http/Controllers/SortirController.php": {
+        "data-bs": 1,
+        "data-kt": 1,
+        "fontawesome": 1,
+        "btn": 10,
+        "badge-light": 3,
+        "bs-utilities": 6
+    },
+    "Modules/Transaction/Http/Controllers/StockOutController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "badge-light": 1,
+        "bs-utilities": 14
+    },
+    "Modules/Transaction/Http/Controllers/StockOutTypeController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "btn": 2,
+        "bs-utilities": 1
+    },
+    "Modules/Transaction/Http/Controllers/TransferController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 5,
+        "btn": 2,
+        "badge-light": 10,
+        "bs-utilities": 10
+    },
+    "Modules/Transaction/Http/Controllers/WholesaleController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 3,
+        "form-classes": 2,
+        "btn": 2,
+        "bs-utilities": 5
+    },
+    "Modules/Transaction/Resources/views/pengadaan/create.blade.php": {
+        "fontawesome": 1,
+        "form-classes": 3,
+        "btn": 1,
+        "bs-utilities": 5,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/pengadaan/index.blade.php": {
+        "data-kt": 3,
+        "keenicons": 2,
+        "form-classes": 4,
+        "bs-utilities": 6,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/pengadaan/index2.blade.php": {
+        "data-kt": 14,
+        "keenicons": 8,
+        "form-classes": 5,
+        "btn": 6,
+        "select2": 2,
+        "bs-utilities": 15,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/pengadaan/js/js-header.blade.php": {
+        "select2": 3
+    },
+    "Modules/Transaction/Resources/views/pengadaan/js/js-product.blade.php": {
+        "select2": 3,
+        "bootstrap-js": 7
+    },
+    "Modules/Transaction/Resources/views/pengadaan/segment/cart.blade.php": {
+        "fontawesome": 1,
+        "btn": 1,
+        "bs-utilities": 24
+    },
+    "Modules/Transaction/Resources/views/pengadaan/segment/modal-product.blade.php": {
+        "form-classes": 12,
+        "btn": 5,
+        "modal-class": 12,
+        "bs-utilities": 2
+    },
+    "Modules/Transaction/Resources/views/pengadaan/segment/ringkasan.blade.php": {
+        "bootstrap-icons": 1,
+        "btn": 5,
+        "bs-utilities": 6
+    },
+    "Modules/Transaction/Resources/views/pengadaan/show.blade.php": {
+        "data-kt": 7,
+        "form-classes": 4,
+        "btn": 2,
+        "badge-light": 1,
+        "select2": 1,
+        "bs-utilities": 27,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/production/create-parcel.blade.php": {
+        "data-kt": 1,
+        "keenicons": 2,
+        "form-classes": 5,
+        "btn": 5,
+        "select2": 2,
+        "bs-utilities": 23,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/production/create.blade.php": {
+        "form-classes": 11,
+        "bs-utilities": 2,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/production/index.blade.php": {
+        "data-kt": 8,
+        "form-classes": 4,
+        "btn": 4,
+        "select2": 2,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/production/js-create.blade.php": {
+        "keenicons": 8,
+        "fontawesome": 2,
+        "form-classes": 2,
+        "btn": 7,
+        "select2": 6,
+        "bootstrap-js": 10,
+        "bs-utilities": 9
+    },
+    "Modules/Transaction/Resources/views/production/js-create2.blade.php": {
+        "keenicons": 8,
+        "form-classes": 8,
+        "btn": 8,
+        "select2": 6,
+        "bs-utilities": 4
+    },
+    "Modules/Transaction/Resources/views/production/js-process.blade.php": {
+        "data-kt": 9,
+        "btn": 4,
+        "select2": 1,
+        "bootstrap-js": 7,
+        "bs-utilities": 3
+    },
+    "Modules/Transaction/Resources/views/production/parcel.blade.php": {
+        "data-kt": 3,
+        "form-classes": 1,
+        "btn": 2,
+        "select2": 1,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/production/process-parcel.blade.php": {
+        "data-bs": 7,
+        "data-kt": 9,
+        "keenicons": 4,
+        "form-classes": 12,
+        "btn": 12,
+        "modal-class": 18,
+        "bs-utilities": 35,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/production/segment/modal-ingredient.blade.php": {
+        "data-bs": 6,
+        "keenicons": 24,
+        "form-classes": 5,
+        "btn": 6,
+        "modal-class": 9,
+        "bs-utilities": 33
+    },
+    "Modules/Transaction/Resources/views/production/segment/modal-recipe.blade.php": {
+        "data-bs": 2,
+        "keenicons": 8,
+        "form-classes": 3,
+        "btn": 2,
+        "modal-class": 3,
+        "bs-utilities": 16
+    },
+    "Modules/Transaction/Resources/views/production/segment/summary.blade.php": {
+        "btn": 2
+    },
+    "Modules/Transaction/Resources/views/production/show.blade.php": {
+        "btn": 4,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/receipt/create-form.blade.php": {
+        "hex-class": 4
+    },
+    "Modules/Transaction/Resources/views/receipt/create.blade.php": {
+        "hex-class": 1
+    },
+    "Modules/Transaction/Resources/views/receipt/index.blade.php": {
+        "hex-class": 6
+    },
+    "Modules/Transaction/Resources/views/sortir/index.blade.php": {
+        "data-kt": 3,
+        "keenicons": 2,
+        "form-classes": 4,
+        "bs-utilities": 6,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/sortir/js/js-header.blade.php": {
+        "select2": 3
+    },
+    "Modules/Transaction/Resources/views/sortir/segment/modal-product.blade.php": {
+        "modal-class": 5
+    },
+    "Modules/Transaction/Resources/views/stock-opname/exports/preview.blade.php": {
+        "btn": 4
+    },
+    "Modules/Transaction/Resources/views/stock-opname/index.blade.php": {
+        "data-bs": 7,
+        "data-kt": 44,
+        "keenicons": 14,
+        "bootstrap-icons": 2,
+        "form-classes": 20,
+        "btn": 30,
+        "badge-light": 1,
+        "modal-class": 15,
+        "select2": 11,
+        "bootstrap-js": 8,
+        "kt-js": 4,
+        "bs-utilities": 72,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/stock-out-type/index.blade.php": {
+        "data-bs": 2,
+        "data-kt": 8,
+        "form-classes": 1,
+        "btn": 6,
+        "modal-class": 3,
+        "select2": 2,
+        "bootstrap-js": 3,
+        "bs-utilities": 3,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/stock-out/index.blade.php": {
+        "data-bs": 2,
+        "data-kt": 11,
+        "form-classes": 7,
+        "btn": 6,
+        "modal-class": 3,
+        "select2": 3,
+        "bootstrap-js": 3,
+        "bs-utilities": 7,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/transfer/create.blade.php": {
+        "modal-class": 3
+    },
+    "Modules/Transaction/Resources/views/transfer/index.blade.php": {
+        "data-kt": 3,
+        "keenicons": 2,
+        "form-classes": 4,
+        "bs-utilities": 6,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/transfer/js/js-header.blade.php": {
+        "select2": 3
+    },
+    "Modules/Transaction/Resources/views/transfer/js/js-product.blade.php": {
+        "select2": 3,
+        "bootstrap-js": 8,
+        "bs-utilities": 2
+    },
+    "Modules/Transaction/Resources/views/transfer/segment/cart.blade.php": {
+        "bootstrap-icons": 3,
+        "fontawesome": 1,
+        "btn": 1,
+        "badge-light": 1,
+        "bs-utilities": 14
+    },
+    "Modules/Transaction/Resources/views/transfer/segment/mobile-item-modal.blade.php": {
+        "modal-class": 4
+    },
+    "Modules/Transaction/Resources/views/transfer/segment/modal-correction.blade.php": {
+        "data-bs": 2,
+        "bootstrap-icons": 1,
+        "form-classes": 5,
+        "btn": 5,
+        "modal-class": 5,
+        "bs-utilities": 28
+    },
+    "Modules/Transaction/Resources/views/transfer/segment/modal-product.blade.php": {
+        "form-classes": 6,
+        "btn": 5,
+        "modal-class": 12,
+        "bs-utilities": 2
+    },
+    "Modules/Transaction/Resources/views/transfer/segment/ringkasan.blade.php": {
+        "bootstrap-icons": 3,
+        "btn": 3,
+        "bs-utilities": 2
+    },
+    "Modules/Transaction/Resources/views/transfer/show.blade.php": {
+        "data-kt": 7,
+        "form-classes": 4,
+        "btn": 2,
+        "badge-light": 1,
+        "select2": 1,
+        "bs-utilities": 27,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/wholesale/create.blade.php": {
+        "data-bs": 3,
+        "data-kt": 3,
+        "keenicons": 2,
+        "form-classes": 10,
+        "btn": 7,
+        "modal-class": 12,
+        "select2": 2,
+        "bs-utilities": 23,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/wholesale/create2.blade.php": {
+        "form-classes": 7,
+        "btn": 3,
+        "bs-utilities": 2
+    },
+    "Modules/Transaction/Resources/views/wholesale/edit.blade.php": {
+        "data-bs": 2,
+        "data-kt": 5,
+        "keenicons": 2,
+        "form-classes": 8,
+        "btn": 4,
+        "modal-class": 6,
+        "select2": 1,
+        "bs-utilities": 26,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/wholesale/index.blade.php": {
+        "hex-class": 5
+    },
+    "Modules/Transaction/Resources/views/wholesale/js-edit.blade.php": {
+        "data-kt": 4,
+        "bootstrap-icons": 2,
+        "form-classes": 1,
+        "btn": 4,
+        "select2": 1,
+        "bootstrap-js": 2,
+        "bs-utilities": 7
+    },
+    "Modules/Transaction/Resources/views/wholesale/js-show.blade.php": {
+        "data-kt": 7,
+        "form-classes": 1,
+        "select2": 1,
+        "bootstrap-js": 1,
+        "bs-utilities": 4
+    },
+    "Modules/Transaction/Resources/views/wholesale/process.blade.php": {
+        "data-kt": 3,
+        "btn": 4,
+        "badge-light": 4,
+        "select2": 1,
+        "bs-utilities": 14,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/wholesale/receive_product.blade.php": {
+        "data-kt": 3,
+        "form-classes": 2,
+        "btn": 2,
+        "badge-light": 1,
+        "bs-utilities": 15,
+        "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/wholesale/segment/modal-product.blade.php": {
+        "form-classes": 8,
+        "btn": 3,
+        "modal-class": 12,
+        "bs-utilities": 2
+    },
+    "Modules/Transaction/Resources/views/wholesale/segment/ringkasan.blade.php": {
+        "btn": 2,
+        "bs-utilities": 1
+    },
+    "Modules/Transaction/Resources/views/wholesale/show.blade.php": {
+        "data-bs": 3,
+        "data-kt": 2,
+        "form-classes": 9,
+        "btn": 5,
+        "modal-class": 12,
+        "select2": 2,
+        "bs-utilities": 16,
+        "root-layout": 1
+    },
+    "app/Http/Controllers/P_role.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 4,
+        "fontawesome": 1,
+        "btn": 2,
+        "bs-utilities": 1
+    },
+    "app/Http/Controllers/UserController.php": {
+        "data-bs": 1,
+        "bootstrap-icons": 4,
+        "btn": 2,
+        "badge-light": 2,
+        "bs-utilities": 5
+    },
+    "public/assets/js/erp-collections.js": {
+        "data-kt": 2,
+        "bs-utilities": 2
+    },
+    "public/assets/js/erp-crm.js": {
+        "bootstrap-js": 1
+    },
+    "public/assets/js/erp-picker.js": {
+        "select2": 9
+    },
+    "public/assets/js/order-book-detail.js": {
+        "data-kt": 1,
+        "badge-light": 1,
+        "bs-utilities": 1
+    },
+    "resources/js/erp/legacy-bridge.js": {
+        "bootstrap-js": 8
+    },
+    "resources/views/admin-view.blade.php": {
+        "fontawesome": 1,
+        "btn": 2,
+        "bs-utilities": 1
+    },
+    "resources/views/admin/role/edit.blade.php": {
+        "hex-class": 1
+    },
+    "resources/views/admin/role/index.blade.php": {
+        "hex-class": 2
+    },
+    "resources/views/admin/role/js-role.blade.php": {
+        "btn": 6,
+        "select2": 4,
+        "bootstrap-js": 3
+    },
+    "resources/views/admin/role/show.blade.php": {
+        "hex-class": 1
+    },
+    "resources/views/admin/user/index.blade.php": {
+        "hex-class": 6
+    },
+    "resources/views/admin/user/js-user.blade.php": {
+        "btn": 4,
+        "select2": 1,
+        "bootstrap-js": 3
+    },
+    "resources/views/auth/footer.blade.php": {
+        "data-kt": 21,
+        "keenicons": 2,
+        "btn": 3,
+        "bs-utilities": 13
+    },
+    "resources/views/auth/login-option.blade.php": {
+        "btn": 4
+    },
+    "resources/views/auth/login.blade.php": {
+        "hex-class": 1
+    },
+    "resources/views/auth/passwords/confirm.blade.php": {
+        "form-classes": 1,
+        "btn": 2
+    },
+    "resources/views/auth/passwords/email.blade.php": {
+        "form-classes": 1,
+        "btn": 1
+    },
+    "resources/views/auth/passwords/reset.blade.php": {
+        "form-classes": 3,
+        "btn": 1
+    },
+    "resources/views/auth/verify.blade.php": {
+        "btn": 1,
+        "bs-utilities": 1
+    },
+    "resources/views/change-password.blade.php": {
+        "root-layout": 1
+    },
+    "resources/views/components/erp/dropdown-select.blade.php": {
+        "hex-class": 3
+    },
+    "resources/views/components/erp/mobile-navbar.blade.php": {
+        "bootstrap-js": 1
+    },
+    "resources/views/dashboard.blade.php": {
+        "hex-class": 3
+    },
+    "resources/views/landing.blade.php": {
+        "hex-class": 70
+    },
+    "resources/views/layouts/erp.blade.php": {
+        "hex-class": 1
+    },
+    "resources/views/list_permohonan.blade.php": {
+        "fontawesome": 7,
+        "root-layout": 1
+    },
+    "resources/views/livewire/product-table.blade.php": {
+        "data-kt": 9,
+        "keenicons": 14,
+        "form-classes": 7,
+        "btn": 4,
+        "badge-light": 1,
+        "select2": 1,
+        "bs-utilities": 19
+    },
+    "resources/views/menu/index.blade.php": {
+        "fontawesome": 2,
+        "form-classes": 1,
+        "btn": 4,
+        "root-layout": 1
+    },
+    "resources/views/pemohon-view.blade.php": {
+        "bs-utilities": 2
+    },
+    "resources/views/produk.blade.php": {
+        "root-layout": 1
+    },
+    "resources/views/role-menu.blade.php": {
+        "root-layout": 1
+    },
+    "resources/views/settings/index.blade.php": {
+        "root-layout": 1
+    },
+    "resources/views/template/aside.blade.php": {
+        "data-bs": 3,
+        "data-kt": 13,
+        "keenicons": 2,
+        "btn": 2,
+        "bs-utilities": 7
+    },
+    "resources/views/template/aside/menu/apps.blade.php": {
+        "data-kt": 20,
+        "keenicons": 24,
+        "bs-utilities": 12
+    },
+    "resources/views/template/aside/menu/dashboard.blade.php": {
+        "data-bs": 1,
+        "data-kt": 3,
+        "keenicons": 6,
+        "btn": 2,
+        "bs-utilities": 4
+    },
+    "resources/views/template/aside/menu/helps.blade.php": {
+        "keenicons": 8,
+        "bs-utilities": 4
+    },
+    "resources/views/template/aside/menu/menus.blade.php": {
+        "data-kt": 1,
+        "keenicons": 92,
+        "bs-utilities": 34
+    },
+    "resources/views/template/aside/menu/pages.blade.php": {
+        "data-kt": 24,
+        "keenicons": 22,
+        "bs-utilities": 11
+    },
+    "resources/views/template/aside/search.blade.php": {
+        "data-bs": 2,
+        "data-kt": 29,
+        "keenicons": 34,
+        "form-classes": 22,
+        "btn": 36,
+        "select2": 2,
+        "bs-utilities": 216
+    },
+    "resources/views/template/aside/user.blade.php": {
+        "data-kt": 4,
+        "keenicons": 2,
+        "btn": 3,
+        "badge-light": 2,
+        "bs-utilities": 25
+    },
+    "resources/views/template/aside/user/language.blade.php": {
+        "data-kt": 3,
+        "bs-utilities": 6
+    },
+    "resources/views/template/aside/user/subscribetion.blade.php": {
+        "data-bs": 1,
+        "data-kt": 3,
+        "keenicons": 2,
+        "form-classes": 3,
+        "bs-utilities": 4
+    },
+    "resources/views/template/drawer.blade.php": {
+        "data-bs": 29,
+        "data-kt": 54,
+        "keenicons": 62,
+        "form-classes": 1,
+        "btn": 76,
+        "badge-light": 2,
+        "bs-utilities": 296
+    },
+    "resources/views/template/footer.blade.php": {
+        "bs-utilities": 5
+    },
+    "resources/views/template/header.blade.php": {
+        "data-kt": 4,
+        "keenicons": 6,
+        "btn": 4,
+        "bs-utilities": 7
+    },
+    "resources/views/template/modals.blade.php": {
+        "data-bs": 3,
+        "data-kt": 45,
+        "keenicons": 8,
+        "form-classes": 73,
+        "btn": 11,
+        "modal-class": 10,
+        "select2": 34,
+        "bs-utilities": 272
+    },
+    "resources/views/template/notif.blade.php": {
+        "bs-utilities": 1
+    },
+    "resources/views/template/root.blade.php": {
+        "data-kt": 1,
+        "keenicons": 2,
+        "hex-class": 1
+    },
+    "resources/views/template/toolbar.blade.php": {
+        "data-bs": 4,
+        "data-kt": 14,
+        "keenicons": 16,
+        "form-classes": 1,
+        "btn": 12,
+        "select2": 1,
+        "bs-utilities": 43
+    },
+    "resources/views/user.blade.php": {
+        "data-bs": 6,
+        "fontawesome": 4,
+        "form-classes": 4,
+        "btn": 10,
+        "modal-class": 5,
+        "bootstrap-js": 1,
+        "bs-utilities": 3,
+        "root-layout": 1
+    }
+}

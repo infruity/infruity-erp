@@ -536,6 +536,25 @@ Red flags:
 
 ---
 
+## Project Frontend Rules (Bootstrap/Metronic -> Tailwind migration)
+
+Source of truth: `docs/ui-design-system.md` (components, rules) and `docs/tailwind-migration-plan.md` (plan, status).
+
+* New or changed UI uses `layouts.erp` and `x-erp.*` components. Do not add Bootstrap/Metronic markup:
+  `form-control`, `btn btn-*`, `modal`, `data-bs-*`, `data-kt-*`, `ki-`/`bi-`/`fa-` icons, `select2`, `@extends('template.root')`.
+* `tests/Feature/NoLegacyUiMarkupTest` enforces this. After migrating a page, lower the limits with
+  `php scripts/ui-migrate/ratchet-snapshot.php`. Never raise a number to make the test pass.
+* Icons: Phosphor only, `<i class="ph ph-name" aria-hidden="true"></i>`, in Blade, JS and PHP strings alike.
+* One element must not carry two utilities of the same group (`bg-white bg-emerald-50`): CSS order decides the winner,
+  not attribute order. Put state variants in an exclusive `:class` ternary. `tests/js/class-conflicts-repo.test.cjs` enforces it.
+* Write full class names; never build them by string concatenation (Tailwind cannot see them).
+* DataTables HTML produced in controllers uses `x-erp.row-actions`, `x-erp.cell-title`, `x-erp.badge`, `x-erp.avatar`
+  (escaped output), not hand-built PHP strings.
+* Build: `npm ci && npm run build` (Node ^20.19 or >=22.12). `public/build` is not committed. Use PHP 8.5.
+* Implementation of the migration batches runs on Sonnet; planning on Opus.
+
+---
+
 # SAAS SKILL
 
 Activate when prompt involves:

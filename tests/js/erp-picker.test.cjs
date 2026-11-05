@@ -71,7 +71,7 @@ test('the picker drives the original select and the select2 events the page hand
 });
 
 test('picker assets load in both ERP layouts', () => {
-    for (const layout of ['resources/views/template/root.blade.php', 'resources/views/layouts/erp-tailwind.blade.php']) {
+    for (const layout of ['resources/views/template/root.blade.php', 'resources/views/layouts/erp.blade.php']) {
         const source = read(layout);
         assert.match(source, /assets\/css\/erp-picker\.css/, `${layout} must load the picker css`);
         assert.match(source, /assets\/js\/erp-picker\.js/, `${layout} must load the picker js`);
