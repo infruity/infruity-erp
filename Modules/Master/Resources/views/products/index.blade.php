@@ -315,7 +315,7 @@
             <div class="hidden md:flex flex-row gap-3 items-center p-4 border-b border-gray-100 bg-white relative z-10">
                 <!-- Search -->
                 <div class="flex-1 relative w-full">
-                    <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]"></i>
                     <input type="text" data-kt-ecommerce-product-filter="search" id="search"
                         class="w-full bg-gray-50/50 border border-gray-100 rounded-full pl-10 pr-4 h-11 text-[13px] outline-none focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
                         placeholder="Cari produk atau varian..." />

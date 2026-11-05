@@ -20,7 +20,7 @@
     <div class="erp-surface bg-white rounded-none lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden relative">
         <div class="hidden md:flex gap-3 items-center p-4 border-b border-gray-100">
             <div class="relative flex-1">
-                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]"></i>
                 <input x-model.debounce.200ms="search" type="search" placeholder="Cari satuan..."
                        class="w-full h-11 rounded-full border border-gray-100 bg-gray-50/50 pl-11 pr-4 text-[13px] outline-none focus:border-emerald-500">
             </div>

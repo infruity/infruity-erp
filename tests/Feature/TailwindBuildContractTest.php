@@ -61,4 +61,20 @@ class TailwindBuildContractTest extends TestCase
         $this->assertStringNotContainsString('plugins.bundle', $erp);
         $this->assertStringNotContainsString('style.bundle', $erp);
     }
+
+    public function test_only_the_app_layout_gets_the_13px_base_text(): void
+    {
+        $erp = file_get_contents(base_path('resources/views/layouts/erp.blade.php'));
+        $login = file_get_contents(base_path('resources/views/auth/login.blade.php'));
+        $landing = file_get_contents(base_path('resources/views/landing.blade.php'));
+        $css = file_get_contents(base_path('resources/css/app.css'));
+        $config = file_get_contents(base_path('tailwind.config.mjs'));
+
+        $this->assertMatchesRegularExpression('/<body class="[^"]*\berp-app\b/', $erp);
+        // Login juga memakai class erp-ui dan app.css, tetapi harus tetap 16px.
+        $this->assertDoesNotMatchRegularExpression('/<body class="[^"]*\berp-app\b/', $login);
+        $this->assertDoesNotMatchRegularExpression('/<body class="[^"]*\berp-app\b/', $landing);
+        $this->assertMatchesRegularExpression('/body\.erp-app\s*\{\s*@apply text-body;/', $css);
+        $this->assertStringContainsString("body: ['13px', '1.5']", $config);
+    }
 }

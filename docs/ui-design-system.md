@@ -77,6 +77,16 @@ Ringkasan pemakaian. Rancangan lengkap dan alasannya ada di [tailwind-migration-
 5. Warna memakai token (`bg-teal`, `text-teal`, `bg-lime`, `bg-canvas`), bukan hex (`bg-[#0b595b]`). Ukuran font px ad-hoc (`text-[11px]`) masih boleh.
 6. HTML kolom DataTables dari controller dibuat dengan komponen (`x-erp.row-actions`, `x-erp.cell-title`, `x-erp.badge`, `x-erp.avatar`), bukan string PHP. Komponen meng-escape isinya.
 
+### Ukuran teks dasar
+
+`html` 16px (rem Tailwind dan referensi tetap akurat), `body.erp-app` (hanya `layouts.erp`) **13px / 1.5** lewat `text-body`. Login dan landing tetap 16px. `text-sm` = 14px, `text-xs` = 12px.
+
+- Hanya teks yang **mewarisi** ukuran dari body yang berubah. Beri class ukuran eksplisit pada judul dan isi yang penting; jangan mengandalkan warisan.
+- Ikon Phosphor tanpa ukuran eksplisit ikut mengecil jadi 13px. Beri `text-[16px]` (bukan `text-base`: itu juga menetapkan `line-height: 1.5rem` dan mengubah kotak ikon).
+- Wadah yang hanya berisi `<span>` inline bertinggi baris dari font wadahnya (strut). Bila tinggi barisnya harus 24px, beri wadah `text-[16px]`.
+- Input, select, textarea selalu 16px (anti-zoom iOS, aturan di `layouts.erp`).
+- Halaman yang dipindah dari `template.root` memakai `codemod --convert-rem` agar ukuran px tetap sama (root lama 13px).
+
 ### Komponen
 
 | Komponen | Pemakaian |

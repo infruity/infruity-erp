@@ -123,7 +123,7 @@
     <div class="erp-surface bg-white rounded-none lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden">
         <div class="hidden md:flex items-center gap-3 p-4 border-b border-gray-100">
             <form method="GET" action="{{ route('user.index') }}" class="relative flex-1">
-                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]"></i>
                 <input name="q" value="{{ request('q') }}" type="search" placeholder="Cari nama atau email pengguna..." class="w-full h-11 rounded-full border border-gray-100 bg-gray-50/50 pl-11 pr-20 text-[13px] outline-none focus:border-emerald-500">
                 <button type="submit" class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#0b595b]">Cari</button>
             </form>

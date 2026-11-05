@@ -11,7 +11,7 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 | Batch | Branch | PR | Status |
 |---|---|---|---|
 | B0 Fondasi build | `feature/tailwind-migration` | — | selesai dan terverifikasi; menunggu review dan uji build di server |
-| B1 Layout final, komponen, shell, auth, errors, landing | `feature/tailwind-m1-components` | — | **B1a selesai** (komponen, codemod, penjaga, layout, dark mode); **B1b**: DataTables npm selesai; `body` 13px dan kode mati menunggu |
+| B1 Layout final, komponen, shell, auth, errors, landing | langsung di `integration/tailwind-migration` | — | **B1a, B1b-1 (DataTables npm), B1b-2 (`body` 13px) selesai**; menunggu: peleburan `erp-button`, kode mati |
 | B2 Master | — | — | belum |
 | B3 Report, CRM, Chat, admin | — | — | belum |
 | B4 Transaction | — | — | menunggu `ui/produksi-reference` + `ui/stock-opname-reference` masuk `main` |
@@ -742,11 +742,17 @@ Dibagi dua karena ukurannya. **B1a selesai** (PR terpisah); **B1b** menyusul.
 - **Tidak teruji:** baris data nyata dari server. Basis data guest tidak punya produk, dan akun yang diberikan ditolak di database lokal. Jalur ajax server-side memakai kode inti yang sama; tetap perlu dicoba sekilas di lingkungan dengan data.
 - Ekstensi baru (fixedColumns, responsive, select) ditambahkan bersama halaman yang membutuhkannya (B2 sampai B5), JS dan CSS-nya sekaligus.
 
+**B1b-2 (selesai): `body` 13px.** `body.erp-app` (hanya `layouts.erp`; login juga `erp-ui` dan landing tetap 16px) memakai `text-body` = 13px/1.5 di atas root 16px.
+- Diukur dengan pemindaian 20 halaman × 2 lebar sebelum dan sesudah. **3.220 elemen mewarisi ukuran 16px → 13px, tetapi hanya 5 yang berisi teks langsung**: halaman-halaman ini hampir semuanya sudah memakai class ukuran eksplisit, jadi dampak visualnya kecil. Tinggi dokumen tidak berubah di halaman mana pun; tidak ada selisih struktur.
+- Yang benar-benar terdampak dan dikalibrasi dengan `text-base` (16px, sama seperti sebelumnya): judul "Notifikasi" di topbar; ikon tanpa ukuran eksplisit (kaca pembesar di kolom cari pada `admin/role`, `admin/user`, `receipt`, `unit`, `partials/mobile-index`, `products`; panah/titik tiga di dashboard CRM; panah di form pelanggan); trigger `x-erp.row-actions`.
+- Input/select/textarea tetap 16px (aturan anti-zoom iOS di `layouts.erp`), jadi tidak ikut berubah.
+- Yang ikut menjadi 13px dan memang wajar: teks bawaan DataTables (`Showing no records`, `Loading...`, `Memuat…`). Tampilannya kini sama dengan di halaman lama (root 13px).
+- Pelajaran untuk B2 sampai B5: halaman `template.root` yang dipindah ke `layouts.erp` mendapat base 13px (sama dengan root lama), tetapi ukuran rem-nya dihitung dari 16px, jadi tetap pakai `codemod --convert-rem` (§4.1). Ikon tanpa ukuran yang berada langsung di body/wadah tanpa ukuran perlu `text-base`.
+
 **B1b (menunggu):**
-1. `body` 13px dan kalibrasi 20 halaman + shell (R5). Perubahan visual yang disengaja.
-2. Peleburan `erp-button` ke `erp-action`.
-3. Audit kandidat mati dan penghapusannya setelah dikonfirmasi pemilik repo: `template/*` Metronic lama (dominan di angka B1), `auth/passwords/*`, `auth/verify`, `auth/register`, `auth/footer`, `auth/login-option`, `layouts.app` (+ `public/css/app.css`, `public/js/app.js`, `mix-manifest.json`), `*::layouts.master`, `admin-view`, `pemohon-view`, `template - Copy/`.
-4. Mengisi detail-dialog/dropdown-select lama dengan komponen baru bila perlu.
+1. Peleburan `erp-button` ke `erp-action`.
+2. Audit kandidat mati dan penghapusannya setelah dikonfirmasi pemilik repo: `template/*` Metronic lama (dominan di angka B1), `auth/passwords/*`, `auth/verify`, `auth/register`, `auth/footer`, `auth/login-option`, `layouts.app` (+ `public/css/app.css`, `public/js/app.js`, `mix-manifest.json`), `*::layouts.master`, `admin-view`, `pemohon-view`, `template - Copy/`.
+3. Mengisi detail-dialog/dropdown-select lama dengan komponen baru bila perlu.
 
 Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 

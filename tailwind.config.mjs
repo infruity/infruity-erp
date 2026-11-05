@@ -59,6 +59,10 @@ export default {
                 sans: ['"Plus Jakarta Sans"', 'sans-serif'],
                 serif: ['"Poppins"', 'sans-serif'],
             },
+            // Teks dasar aplikasi 13px di atas root 16px (docs/ui-design-system.md); `text-sm` tetap 14px.
+            fontSize: {
+                body: ['13px', '1.5'],
+            },
             boxShadow: {
                 soft: '0 10px 40px -10px rgba(0,0,0,0.08)',
                 glass: '0 8px 32px 0 rgba(31, 38, 135, 0.07)',

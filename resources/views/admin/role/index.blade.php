@@ -110,7 +110,7 @@
      class="flex-1 flex flex-col min-h-0 -mx-4 md:mx-0">
     <div class="erp-surface bg-white rounded-none lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
         <div class="hidden md:flex gap-3 items-center p-4 border-b border-gray-100">
-            <form action="{{ route('roles.index') }}" method="GET" class="relative flex-1"><i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><input name="q" value="{{ $search }}" type="search" placeholder="Cari role..." class="w-full h-11 rounded-full border border-gray-100 bg-gray-50/50 pl-11 pr-4 text-[13px] outline-none focus:border-emerald-500"></form>
+            <form action="{{ route('roles.index') }}" method="GET" class="relative flex-1"><i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]"></i><input name="q" value="{{ $search }}" type="search" placeholder="Cari role..." class="w-full h-11 rounded-full border border-gray-100 bg-gray-50/50 pl-11 pr-4 text-[13px] outline-none focus:border-emerald-500"></form>
             @if(check_access('role.store'))<button type="button" @click="createOpen = true" class="h-11 px-5 rounded-full bg-[#0b595b] text-white text-[13px] font-semibold flex items-center gap-2"><i class="ph-bold ph-plus"></i> Tambah Role</button>@endif
         </div>
         <div class="hidden md:block px-5 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-500">Menampilkan {{ $roles->count() }} dari {{ $roles->total() }} role</div>

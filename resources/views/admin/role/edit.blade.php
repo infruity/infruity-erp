@@ -31,7 +31,7 @@
                 @method('PUT')
                 <div class="flex-1 min-h-0 space-y-4 overflow-y-auto overscroll-contain bg-gray-50/60 px-5 py-5 pb-8">
                     <div class="relative">
-                        <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]"></i>
                         <input x-model="query" type="search" placeholder="Cari modul..." aria-label="Cari modul" class="h-11 w-full rounded-xl border border-gray-200 bg-white pl-11 pr-4 text-sm outline-none focus:border-emerald-500">
                     </div>
                     @foreach($permissions as $prefix => $routes)

@@ -3,3 +3,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * Teks dasar 13px di atas root 16px, hanya untuk layout aplikasi (body.erp-app). Login (juga erp-ui) dan landing
+ * memakai file ini dan tetap 16px. Hanya teks yang mewarisi ukuran dari <body> yang berubah;
+ * semua yang punya class ukuran (text-sm, text-[15px], ...) dan spasi berbasis rem tetap sama.
+ * Input/select/textarea tetap 16px lewat aturan anti-zoom iOS di layouts.erp.
+ */
+@layer base {
+    body.erp-app {
+        @apply text-body;
+    }
+}

@@ -27,7 +27,7 @@
             <form action="{{ route('receipt.index') }}" method="GET" class="relative flex-1">
                 @if($type !== 'all')<input type="hidden" name="type" value="{{ $type }}">@endif
                 @if($category !== 'all')<input type="hidden" name="category" value="{{ $category }}">@endif
-                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]"></i>
                 <input name="q" value="{{ $search }}" type="search" placeholder="Cari resep atau produk..." class="w-full h-11 rounded-full border border-gray-100 bg-gray-50/50 pl-11 pr-4 text-[13px] outline-none focus:border-emerald-500">
             </form>
             <form action="{{ route('receipt.index') }}" method="GET" class="w-48">

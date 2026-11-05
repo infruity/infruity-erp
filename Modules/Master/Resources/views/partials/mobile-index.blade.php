@@ -27,7 +27,7 @@
     <div class="erp-surface bg-white rounded-none lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden relative">
         <div class="hidden md:flex gap-3 items-center p-4 border-b border-gray-100">
             <div class="relative flex-1">
-                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]"></i>
                 <input x-model="search" @keydown.enter.prevent="if (mode === 'server') searchServer()" type="search" :placeholder="'Cari ' + title.toLowerCase() + '...'" class="w-full h-11 rounded-full border border-gray-100 bg-gray-50/50 pl-11 pr-20 text-[13px] outline-none focus:border-emerald-500">
                 <button x-show="mode === 'server'" type="button" @click="searchServer()" class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#0b595b]">Cari</button>
                 <button x-show="mode !== 'server' && search" x-cloak type="button" @click="search = ''" class="absolute right-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100" aria-label="Bersihkan pencarian"><i class="ph ph-x"></i></button>

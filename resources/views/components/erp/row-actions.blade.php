@@ -5,7 +5,7 @@
 @endphp
 @if (count($visible))
     <x-erp.dropdown :label="$label">
-        <x-slot:trigger><i class="ph-bold ph-dots-three-vertical" aria-hidden="true"></i></x-slot:trigger>
+        <x-slot:trigger><i class="ph-bold ph-dots-three-vertical text-[16px]" aria-hidden="true"></i></x-slot:trigger>
         @foreach ($visible as $action)
             @php
                 $tone = ($action['tone'] ?? null) === 'danger' ? 'erp-menu__item--danger' : '';

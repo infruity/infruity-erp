@@ -224,7 +224,7 @@
     @vite('resources/css/app.css')
 </head>
 
-<body class="erp-ui font-sans bg-[#e5e9f3] text-gray-800 antialiased h-[100dvh] min-h-[100dvh] overflow-hidden">
+<body class="erp-ui erp-app font-sans bg-[#e5e9f3] text-gray-800 antialiased h-[100dvh] min-h-[100dvh] overflow-hidden">
 
     <div x-data="erpChrome()" @erp-mobile-sidebar-toggle.window="sidebarOpen = true" class="erp-shell flex h-[100dvh] min-h-[100dvh] w-full overflow-hidden">
 
