@@ -1,7 +1,7 @@
 <dialog class="sortir-modal" id="sortirItemModal" aria-labelledby="sortir-modal-title" x-ref="itemModal" @click.self="closeModal()" @cancel="onModalClosed()" @close="onModalClosed()">
-    <div class="modal-dialog"><form class="modal-content" @submit.prevent="saveModalItem()">
-        <div class="modal-header"><div><h2 id="sortir-modal-title" x-text="editingId === null ? 'Tambah Item Sortir' : 'Edit Item Sortir'"></h2><p x-text="editingId === null ? 'Pilih produk dan tentukan detail sortir' : 'Perbarui detail item sortir'"></p></div><button type="button" class="sortir-close" @click="closeModal()" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
-        <div class="modal-body">
+    <div class="sortir-modal__dialog"><form class="sortir-modal__content" @submit.prevent="saveModalItem()">
+        <div class="sortir-modal__header"><div><h2 id="sortir-modal-title" x-text="editingId === null ? 'Tambah Item Sortir' : 'Edit Item Sortir'"></h2><p x-text="editingId === null ? 'Pilih produk dan tentukan detail sortir' : 'Perbarui detail item sortir'"></p></div><button type="button" class="sortir-close" @click="closeModal()" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
+        <div class="sortir-modal__body">
             <label class="sortir-modal-label" for="sortir-product-search">Pilih Produk / Bahan <span class="sortir-required">*</span></label>
             <div class="sortir-product-picker">
                 <div class="sortir-search-wrap"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i><input id="sortir-product-search" class="sortir-product-search" type="search" x-model="productSearch" @input.debounce.250ms="loadProducts()" placeholder="Cari produk / bahan..." autocomplete="off"></div>
@@ -21,6 +21,6 @@
             <div class="sortir-modal-total"><span>Total HPP / Modal</span><strong x-text="rupiah(modalItem.qty * modalItem.price)"></strong></div>
             <p class="sortir-error" x-show="modalError" x-text="modalError" role="alert" x-cloak></p>
         </div>
-        <div class="modal-footer"><button type="button" class="sortir-action sortir-action-danger" x-show="editingId !== null" @click="deleteModalItem()" x-cloak><i class="ph ph-trash" aria-hidden="true"></i>&nbsp; Hapus Item</button><button type="submit" class="sortir-action sortir-action-primary"><span x-text="editingId === null ? 'Tambah Item' : 'Simpan Perubahan'"></span></button></div>
+        <div class="sortir-modal__footer"><button type="button" class="sortir-action sortir-action-danger" x-show="editingId !== null" @click="deleteModalItem()" x-cloak><i class="ph ph-trash" aria-hidden="true"></i>&nbsp; Hapus Item</button><button type="submit" class="sortir-action sortir-action-primary"><span x-text="editingId === null ? 'Tambah Item' : 'Simpan Perubahan'"></span></button></div>
     </form></div>
 </dialog>

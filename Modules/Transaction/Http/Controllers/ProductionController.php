@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\DataTableCells;
 use App\Support\ProductGlyph;
 use App\Support\InventorySnapshot;
 use App\Support\ProductionCost;
@@ -598,41 +599,14 @@ class ProductionController extends Controller
         $data = ProductionDetail::with('products')->where('production_id', $id)->get();
         return DataTables::of($data)
             ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                $html  = '';
-                $html .= $item->products->name . '<br> Jumlah : ' . $item->quantity . ' ' . $item->products->unit->abbreviation . '<br> Harga : ' . toNumber($item->products->price) . '';
-                return $html;
-            })
+            ->addColumn('name', fn ($item) => e($item->products->name) . '<br> Jumlah : ' . e($item->quantity . ' ' . $item->products->unit->abbreviation) . '<br> Harga : ' . toNumber($item->products->price))
             ->addColumn('hpp', function ($item) {
                 return 'Rp' . toNumber($item->products->hpp * $item->quantity);
             })
             ->addColumn('harga_jual', function ($item) {
                 return toNumber($item->products->price * $item->quantity);
             })
-            ->addColumn('action', function ($item) use ($request) {
-                $html = '';
-
-                $html .= '
-                    <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="editProduct(' . $item->id . ')" title="Edit">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $item->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                    ';
-                return $html;
-            })
+            ->addColumn('action', fn ($item) => DataTableCells::editDeleteMenu((string) $item->products->name, $item->id, true, true))
             ->rawColumns(['name', 'action', 'harga_jual'])
             ->make(true);
     }
@@ -812,14 +786,14 @@ class ProductionController extends Controller
                 ->addColumn('production_date', function ($item) {
                     $date = $item->created_at ? date('d/m/Y H:i', strtotime($item->created_at)) : 'N/A';
 
-                    $result = '<span class="text-muted d-block fs-8">' . $date . '</span>';
+                    $result = '<span class="block text-xs text-gray-500">' . e($date) . '</span>';
 
                     if ($item->branch) {
-                        $result .= '<span class="badge badge-light-primary">' . e($item->branch->name) . '</span>';
+                        $result .= DataTableCells::badge((string) $item->branch->name, 'primary');
                     }
 
                     if ($item->staff) {
-                        $result .= '<br><small class="text-muted">' . e($item->staff->name) . '</small>';
+                        $result .= '<br><small class="text-gray-500">' . e($item->staff->name) . '</small>';
                     }
 
                     return $result;
@@ -841,43 +815,16 @@ class ProductionController extends Controller
                             </div>';
                 })
                 ->addColumn('action', function ($row) {
-                    $editUrl   = route('production.edit', $row->id);
-                    $deleteUrl = route('production.destroy', $row->id);
-                    $name      = e($row->production_number ?? 'Produksi');
+                    $name = (string) ($row->production_number ?? 'Produksi');
 
-                    $html  = '
-                <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi ' . $name . '">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
-                    
-                    if (! $row->pos_id) {
-                        $html .= '
-                            <li>
-                                <a class="dropdown-item text-primary d-flex justify-content-center" href="' . $editUrl . '" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                            </li>';
-                        $html .= '
-                            <li>
-                                <a class="dropdown-item text-danger d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $row->id . ')">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </li>';
-                    } else {
-                        $html .= '
-                            <li>
-                                <span class="dropdown-item text-muted d-flex justify-content-center" title="Terkunci (Terhubung ke POS)" style="cursor: not-allowed;">
-                                    <i class="bi bi-lock-fill"></i>
-                                </span>
-                            </li>';
+                    if ($row->pos_id) {
+                        return DataTableCells::locked('Terkunci (terhubung ke POS)');
                     }
-                    
-                    $html .= '
-                    </ul>
-                </div>';
-                    return $html;
+
+                    return DataTableCells::rowActions([
+                        ['label' => 'Ubah', 'icon' => 'pencil-simple', 'href' => route('production.edit', $row->id)],
+                        ['label' => 'Hapus', 'icon' => 'trash', 'onclick' => 'deleteProduct(' . (int) $row->id . ')', 'tone' => 'danger'],
+                    ], 'Aksi ' . $name);
                 })
                 ->rawColumns(['name', 'action', 'status', 'production_date'])
                 // staff is eager-loaded only for the name label; keep it out of the JSON as before.

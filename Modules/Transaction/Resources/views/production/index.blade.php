@@ -1,5 +1,12 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Produksi')
+@section('page-title', 'Produksi')
+@section('page-breadcrumb')
+    <span>Inventaris</span><i class=\"ph ph-caret-right text-[0.55rem]\"></i><span>Produksi</span>
+@endsection
+@push('styles')
+    @vite('resources/css/flatpickr.css')
+@endpush
 @section('content')
     <link rel="stylesheet" href="{{ asset('assets/css/erp-operations.css') }}?v={{ filemtime(public_path('assets/css/erp-operations.css')) }}">
     <style>
@@ -37,8 +44,7 @@
             #production-table tbody td { display:block; width:auto !important; border:0 !important; padding:0 !important; }
             #production-table tbody td:nth-child(3) { display:none; }
             #production-table tbody td:nth-child(2) { text-align:right; }
-            #production-table tbody td:nth-child(4) .btn { display:flex; width:32px; height:32px; align-items:center; justify-content:center; padding:0; border:0; background:transparent; color:#9ca3af; }
-            #production-table tbody td:nth-child(4) .btn::before, #production-table tbody td:nth-child(4) .btn::after { display:none; }
+            #production-table tbody td:nth-child(4) [data-erp-row-actions] button[aria-haspopup] { display:flex; width:32px; height:32px; align-items:center; justify-content:center; padding:0; border:0; background:transparent; color:#9ca3af; }
             #production-table_wrapper .dataTables_info, #production-table_wrapper .dataTables_paginate { display:none !important; }
             #production-table td.dataTables_empty { grid-column:1 / -1; }
         }
@@ -78,12 +84,12 @@
     <x-erp.workspace class="production-workspace" title="Produksi" subtitle="Pantau produksi, bahan baku dan status pengerjaan." icon="cooking-pot"
         x-data="productionFilterSheet()" @keydown.escape.window="close()">
         <x-slot:toolbar>
-            <label class="erp-search production-desktop-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-kt-ecommerce-product-filter="search" id="search-desktop" aria-label="Cari produksi" placeholder="Cari produksi..."></label>
+            <label class="erp-search production-desktop-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-erp-filter="search" id="search-desktop" aria-label="Cari produksi" placeholder="Cari produksi..."></label>
             <x-erp.mobile-search class="production-mobile-search erp-mobile-search-shell--fill">
-                <x-slot:input><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari produksi" placeholder="Cari..." class="erp-mobile-search__input"></x-slot:input>
+                <x-slot:input><input type="search" id="search" data-erp-filter="search" aria-label="Cari produksi" placeholder="Cari..." class="erp-mobile-search__input"></x-slot:input>
                 <x-slot:filter><button type="button" class="erp-mobile-search__filter" aria-label="Filter produksi" aria-haspopup="dialog" :class="hasActive ? 'is-active' : ''" @click="openSheet()"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></x-slot:filter>
             </x-erp.mobile-search>
-            <div class="erp-operations-toolbar-actions"><details class="erp-operations-filter"><summary class="erp-action"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></summary><div class="erp-operations-filter__body"><label for="production-status-filter">Status<select id="production-status-filter" class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Status" data-kt-ecommerce-product-filter="status"><option value="all">Semua Status</option><option value="temp">Draf</option><option value="draft">Siap Produksi</option><option value="posting">Selesai</option></select></label><label for="production-branch-filter">Cabang<select id="production-branch-filter" class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Cabang" data-kt-ecommerce-product-filter="cabang">@if(count($branches) > 1)<option value="all">Semua Cabang</option>@endif @foreach ($branches as $branch)<option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>@endforeach</select></label><label for="kt_ecommerce_sales_flatpickr">Rentang tanggal<div class="input-group"><input class="form-control" placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr"><button type="button" class="erp-action" id="kt_ecommerce_sales_flatpickr_clear" aria-label="Hapus rentang tanggal"><i class="ph ph-x" aria-hidden="true"></i></button></div></label></div></details><a href="{{ url('production/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Produksi</a></div>
+            <div class="erp-operations-toolbar-actions"><details class="erp-operations-filter"><summary class="erp-action"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></summary><div class="erp-operations-filter__body"><label for="production-status-filter">Status<select id="production-status-filter" class="erp-select" data-erp-filter="status"><option value="all">Semua Status</option><option value="temp">Draf</option><option value="draft">Siap Produksi</option><option value="posting">Selesai</option></select></label><label for="production-branch-filter">Cabang<select id="production-branch-filter" class="erp-select" data-erp-filter="cabang">@if(count($branches) > 1)<option value="all">Semua Cabang</option>@endif @foreach ($branches as $branch)<option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>@endforeach</select></label><label for="kt_ecommerce_sales_flatpickr">Rentang tanggal<div class="flex gap-2"><input class="erp-input" placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr"><button type="button" class="erp-action" id="kt_ecommerce_sales_flatpickr_clear" aria-label="Hapus rentang tanggal"><i class="ph ph-x" aria-hidden="true"></i></button></div></label></div></details><a href="{{ url('production/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Produksi</a></div>
         </x-slot:toolbar>
         <div class="production-filter" x-show="open" x-cloak role="dialog" aria-modal="true" aria-labelledby="production-filter-title">
             <button type="button" class="production-filter__backdrop" aria-label="Tutup filter" @click="close()"></button>
@@ -124,14 +130,13 @@
             </section>
         </div>
         <div class="erp-operations-collection production-list">
-            <table class="table erp-operations-table align-middle" id="production-table" width="100%">
+            <table class="erp-table erp-operations-table" id="production-table" width="100%">
                     <thead>
-                        <tr class="text-start">
-
-                            <th class="text-start min-w-100px">Nama</th>
-                            <th class="text-center min-w-100px">Status</th>
-                            <th class="text-center min-w-100px">Tanggal Produksi</th>
-                            <th class="text-end min-w-70px" style="position: relative; z-index: 1;">Aksi</th>
+                        <tr>
+                            <th>Nama</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Tanggal Produksi</th>
+                            <th class="text-right" style="position: relative; z-index: 1;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class=""></tbody>
@@ -142,7 +147,7 @@
     <script type="text/javascript">
         var dataTable;
         $(document).ready(function() {
-            const $branchFilter = $('[data-kt-ecommerce-product-filter="cabang"]');
+            const $branchFilter = $('[data-erp-filter="cabang"]');
             const $activeBranchButtonLabel = $('#active-branch-button-label');
 
             function updateActiveFilterInfo() {
@@ -177,8 +182,8 @@
                     url: "{{ route('production-data') }}",
                     data: function(d) {
                         d.url = "{{ request()->segment(1) }}";
-                        d.status_filter = $('[data-kt-ecommerce-product-filter="status"]').val();
-                        d.cabang_filter = $('[data-kt-ecommerce-product-filter="cabang"]').val();
+                        d.status_filter = $('[data-erp-filter="status"]').val();
+                        d.cabang_filter = $('[data-erp-filter="cabang"]').val();
                         var range = $('#kt_ecommerce_sales_flatpickr').val();
                         if (range) {
                             var dates = range.split(' to ');
@@ -231,11 +236,11 @@
                 dataTable.search(this.value).draw();
             });
 
-            $('[data-kt-ecommerce-product-filter="status"]').on('change', function() {
+            $('[data-erp-filter="status"]').on('change', function() {
                 dataTable.draw();
             });
 
-            $('[data-kt-ecommerce-product-filter="cabang"]').on('change', function() {
+            $('[data-erp-filter="cabang"]').on('change', function() {
                 updateActiveFilterInfo();
                 dataTable.draw();
             });
@@ -322,8 +327,8 @@
                 confirmButtonText: 'Ya, hapus!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--danger',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false
             }).then((result) => {
@@ -368,8 +373,8 @@
                 confirmButtonText: 'Ya, Proses!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-success',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--primary',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false
             }).then((result) => {

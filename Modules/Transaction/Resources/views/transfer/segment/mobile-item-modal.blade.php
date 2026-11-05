@@ -1,7 +1,7 @@
 <dialog class="transfer-modal" x-ref="itemModal" aria-labelledby="transfer-item-title" @close="productRequest++; loadingProducts = false" @click="if ($event.target === $event.currentTarget) closeItemModal()">
-    <form class="modal-content" @submit.prevent="saveItem()">
-        <div class="modal-header"><div><h2 id="transfer-item-title" x-text="receiving ? 'Terima Produk' : (editingId === null ? 'Tambah Produk' : 'Edit Produk')"></h2><p x-text="receiving ? modalItem.name : (editingId === null ? 'Pilih produk dan tentukan kuantitas' : 'Perbarui kuantitas produk')"></p></div><button type="button" class="transfer-close" @click="closeItemModal()" aria-label="Tutup produk"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
-        <div class="modal-body">
+    <form class="transfer-modal__content" @submit.prevent="saveItem()">
+        <div class="transfer-modal__header"><div><h2 id="transfer-item-title" x-text="receiving ? 'Terima Produk' : (editingId === null ? 'Tambah Produk' : 'Edit Produk')"></h2><p x-text="receiving ? modalItem.name : (editingId === null ? 'Pilih produk dan tentukan kuantitas' : 'Perbarui kuantitas produk')"></p></div><button type="button" class="transfer-close" @click="closeItemModal()" aria-label="Tutup produk"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
+        <div class="transfer-modal__body">
             <div x-show="!receiving && editingId === null">
                 <label class="transfer-modal-label" for="transfer-product-search">Pilih Produk / Bahan <span class="transfer-required">*</span></label>
                 <div class="transfer-product-picker">
@@ -23,6 +23,6 @@
             <div class="transfer-modal-note" x-show="receiving"><label class="transfer-modal-label" for="transfer-item-note">Catatan</label><input id="transfer-item-note" class="transfer-modal-input" type="text" x-model="modalItem.note" placeholder="Tuliskan catatan jika ada..." maxlength="1000"></div>
             <p class="transfer-error" x-show="modalError" x-text="modalError" role="alert"></p>
         </div>
-        <div class="modal-footer"><button type="button" class="transfer-action transfer-action-danger" x-show="editingId !== null && !receiving" @click="deleteItem()"><i class="ph-bold ph-trash" aria-hidden="true"></i> Hapus Item</button><button type="submit" class="transfer-action transfer-action-primary" x-text="receiving ? 'Diterima' : (editingId === null ? 'Tambah' : 'Simpan')"></button></div>
+        <div class="transfer-modal__footer"><button type="button" class="transfer-action transfer-action-danger" x-show="editingId !== null && !receiving" @click="deleteItem()"><i class="ph-bold ph-trash" aria-hidden="true"></i> Hapus Item</button><button type="submit" class="transfer-action transfer-action-primary" x-text="receiving ? 'Diterima' : (editingId === null ? 'Tambah' : 'Simpan')"></button></div>
     </form>
 </dialog>

@@ -58,13 +58,13 @@
                     <x-erp.mobile-search class="erp-mobile-search-shell--always-visible erp-mobile-search-shell--fill erp-mobile-search-shell--flush">
                         <x-slot:input><input id="wholesale-search" type="search" placeholder="Cari cabang, nomor PO, atau bahan..." autocomplete="off" aria-label="Cari cabang, nomor PO, atau bahan" class="erp-mobile-search__input"></x-slot:input>
                         <x-slot:clear><button id="wholesale-search-clear" type="button" class="erp-mobile-search__clear hidden" aria-label="Hapus pencarian"><i class="ph-bold ph-x text-xs"></i></button></x-slot:clear>
-                        <x-slot:filter><button type="button" @click="toggleFilters()" :aria-expanded="filtersOpen" aria-label="Buka filter pengadaan" class="erp-mobile-search__filter" :class="filtersOpen ? 'is-active' : ''"><span class="icon-rounded text-xl leading-none" aria-hidden="true">tune</span><span id="wholesale-filter-dot" class="hidden absolute right-1 top-1 h-2 w-2 rounded-full bg-[#0b595b] ring-2 ring-white"></span></button></x-slot:filter>
+                        <x-slot:filter><button type="button" @click="toggleFilters()" :aria-expanded="filtersOpen" aria-label="Buka filter pengadaan" class="erp-mobile-search__filter" :class="filtersOpen ? 'is-active' : ''"><span class="icon-rounded text-xl leading-none" aria-hidden="true">tune</span><span id="wholesale-filter-dot" class="hidden absolute right-1 top-1 h-2 w-2 rounded-full bg-teal ring-2 ring-white"></span></button></x-slot:filter>
                     </x-erp.mobile-search>
 
                     <div x-show="filtersOpen && window.matchMedia('(min-width: 768px)').matches" x-cloak @click.outside="filtersOpen = false" @keydown.escape.window="filtersOpen = false" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="translate-y-1 opacity-0 scale-95" x-transition:enter-end="translate-y-0 opacity-100 scale-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="translate-y-0 opacity-100 scale-100" x-transition:leave-end="translate-y-1 opacity-0 scale-95" class="absolute right-0 top-12 z-50 hidden w-72 rounded-2xl border border-gray-100 bg-white p-4 shadow-xl md:block">
                             <div class="mb-3 flex items-center justify-between border-b border-gray-100 pb-2.5">
                                 <h2 class="text-xs font-bold uppercase tracking-wide text-gray-600">Filter Pengadaan</h2>
-                                <button type="button" class="text-xs font-semibold text-[#0b595b] hover:underline" data-wholesale-filter-reset>Reset</button>
+                                <button type="button" class="text-xs font-semibold text-teal hover:underline" data-wholesale-filter-reset>Reset</button>
                             </div>
                             <label class="mb-3 block text-xs font-semibold text-gray-600">Status
                                 <select data-wholesale-filter="status" class="mt-1.5 h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none focus:border-emerald-500">
@@ -84,7 +84,7 @@
                         </div>
                     </div>
                     @if (check_access('wholesale.create'))
-                        <a href="{{ route('wholesale.create') }}" class="hidden h-11 shrink-0 items-center gap-2 rounded-full bg-[#0b595b] px-5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#08484a] active:scale-[.98] md:inline-flex">
+                        <a href="{{ route('wholesale.create') }}" class="hidden h-11 shrink-0 items-center gap-2 rounded-full bg-teal px-5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-teal-hover active:scale-[.98] md:inline-flex">
                             <i class="ph-bold ph-plus text-sm" aria-hidden="true"></i><span>Tambah Pengadaan</span>
                         </a>
                     @endif
@@ -192,7 +192,7 @@
                     </div>
                     <div class="flex shrink-0 gap-3 border-t border-gray-100 px-5 pt-4">
                         <button type="button" data-wholesale-filter-reset @click="mobileBranch = 'all'; mobileStatus = 'all'; mobileStartDate = ''; mobileEndDate = ''; branchSearch = ''; filterWholesaleBranches('')" class="h-11 flex-1 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Reset</button>
-                        <button type="button" @click="applyWholesaleMobileFilters(mobileStatus, mobileBranch, mobileStartDate, mobileEndDate); filtersOpen = false" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white">Terapkan</button>
+                        <button type="button" @click="applyWholesaleMobileFilters(mobileStatus, mobileBranch, mobileStartDate, mobileEndDate); filtersOpen = false" class="h-11 flex-1 rounded-xl bg-teal text-sm font-semibold text-white">Terapkan</button>
                     </div>
                 </section>
             </div>

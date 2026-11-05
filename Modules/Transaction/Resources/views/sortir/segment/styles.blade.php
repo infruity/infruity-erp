@@ -66,13 +66,13 @@
     .sortir-error { font-size:12px; line-height:1.6; color:#b91c1c; margin:10px 0 0; }
     dialog.sortir-modal { position:fixed; inset:0; width:calc(100% - 32px); max-width:512px; max-height:calc(100dvh - 32px); margin:auto; border:0; padding:0; background:transparent; overflow:visible; color:#1f2937; }
     dialog.sortir-modal::backdrop { background:rgba(0,0,0,.4); }
-    .sortir-modal .modal-dialog { width:100%; margin:0; display:flex; align-items:center; }
-    .sortir-modal .modal-content { width:100%; margin:0; border:1px solid #e5e7eb; border-radius:24px; background:#fff; box-shadow:0 20px 45px rgba(0,0,0,.2); max-height:calc(100dvh - 32px); overflow:hidden; display:flex; flex-direction:column; }
-    .sortir-modal .modal-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:20px 20px 16px; border-bottom:1px solid #f3f4f6; background:#f9fafb; flex:none; }
-    .sortir-modal .modal-header h2 { margin:0; color:#111827; font-size:17px; line-height:1.4; font-weight:700; }
-    .sortir-modal .modal-header p { color:#6b7280; margin:4px 0 0; font-size:12px; line-height:1.5; }
+    .sortir-modal .sortir-modal__dialog { width:100%; margin:0; display:flex; align-items:center; }
+    .sortir-modal .sortir-modal__content { width:100%; margin:0; border:1px solid #e5e7eb; border-radius:24px; background:#fff; box-shadow:0 20px 45px rgba(0,0,0,.2); max-height:calc(100dvh - 32px); overflow:hidden; display:flex; flex-direction:column; }
+    .sortir-modal .sortir-modal__header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:20px 20px 16px; border-bottom:1px solid #f3f4f6; background:#f9fafb; flex:none; }
+    .sortir-modal .sortir-modal__header h2 { margin:0; color:#111827; font-size:17px; line-height:1.4; font-weight:700; }
+    .sortir-modal .sortir-modal__header p { color:#6b7280; margin:4px 0 0; font-size:12px; line-height:1.5; }
     .sortir-close { width:36px; height:36px; flex:none; border:0; border-radius:50%; color:#6b7280; background:#fff; font-size:17px!important; }
-    .sortir-modal .modal-body { overflow-y:auto; padding:18px 16px; }
+    .sortir-modal .sortir-modal__body { overflow-y:auto; padding:18px 16px; }
     .sortir-modal-label { display:block; margin:0 0 7px; color:#6b7280; font-size:11px; font-weight:700; letter-spacing:.025em; text-transform:uppercase; }
     .sortir-product-picker { overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
     .sortir-search-wrap { display:flex; align-items:center; padding-left:12px; border-bottom:1px solid #f3f4f6; }
@@ -93,9 +93,9 @@
     .sortir-stock { color:#6b7280; font-size:11px; margin:7px 0 0; }
     .sortir-modal-total { display:flex; justify-content:space-between; align-items:center; gap:12px; background:#f0fdf8; border:1px solid #a7f3d0; border-radius:12px; padding:14px 12px; color:#065f46; font-size:12px; font-weight:600; margin-top:16px; }
     .sortir-modal-total strong { font-size:15px; color:#0b595b; }
-    .sortir-modal .modal-footer { display:flex; flex-wrap:nowrap; gap:12px; padding:16px; border-top:1px solid #f3f4f6; background:#f9fafb; flex:none; }
-    .sortir-modal .modal-footer > * { margin:0; }
-    @media(min-width:640px) { .sortir-canvas { padding:24px; } .sortir-branch-card { padding:20px; } .sortir-items-header { padding:16px 24px; } .sortir-items-body { padding:20px 24px; } .sortir-summary { padding:16px 24px 20px; } .sortir-summary-total h2, .sortir-summary-total strong { font-size:18px; } .sortir-action { font-size:13px!important; } .sortir-modal .modal-body { padding:20px; } }
+    .sortir-modal .sortir-modal__footer { display:flex; flex-wrap:nowrap; gap:12px; padding:16px; border-top:1px solid #f3f4f6; background:#f9fafb; flex:none; }
+    .sortir-modal .sortir-modal__footer > * { margin:0; }
+    @media(min-width:640px) { .sortir-canvas { padding:24px; } .sortir-branch-card { padding:20px; } .sortir-items-header { padding:16px 24px; } .sortir-items-body { padding:20px 24px; } .sortir-summary { padding:16px 24px 20px; } .sortir-summary-total h2, .sortir-summary-total strong { font-size:18px; } .sortir-action { font-size:13px!important; } .sortir-modal .sortir-modal__body { padding:20px; } }
     @media(max-width:359px) { .sortir-canvas { padding:16px 12px; gap:16px; } .sortir-summary { padding-left:12px; padding-right:12px; } .sortir-summary-total h2 { font-size:14px; } .sortir-summary-actions { gap:8px; } .sortir-action { padding:10px 7px; font-size:11px!important; } .sortir-items-header { padding:14px; } }
     @media(prefers-reduced-motion:reduce) { .sortir-form *, .sortir-modal * { transition:none!important; } }
 </style>

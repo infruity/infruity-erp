@@ -1,5 +1,5 @@
 /* Structural primitives derived from the reference Master list/form surfaces. */
-.erp-workspace { display:flex; min-width:0; min-height:calc(100dvh - 180px); flex-direction:column; background:white; border-radius:16px; overflow:clip; }
+.erp-workspace { display:flex; flex:none; min-width:0; min-height:calc(100dvh - 180px); flex-direction:column; background:white; border-radius:16px; overflow:clip; }
 .erp-workspace-heading { display:none; }
 .erp-workspace-toolbar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:16px 20px; border-bottom:1px solid var(--erp-border-subtle); }
 .erp-workspace-toolbar > .erp-search, .erp-workspace-toolbar > label.erp-search { flex:1; min-width:180px; }

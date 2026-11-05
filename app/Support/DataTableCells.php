@@ -61,4 +61,10 @@ final class DataTableCells
     {
         return self::rowActions([['label' => $label, 'icon' => 'eye', 'href' => $href]], $menuLabel);
     }
+
+    /** Penanda baris terkunci (tanpa menu aksi), mis. produksi yang terhubung ke POS. */
+    public static function locked(string $title): string
+    {
+        return Blade::render('<span class="inline-flex h-8 w-8 items-center justify-center text-gray-400" title="{{ $title }}"><i class="ph ph-lock-simple" aria-hidden="true"></i><span class="sr-only">{{ $title }}</span></span>', compact('title'));
+    }
 }
