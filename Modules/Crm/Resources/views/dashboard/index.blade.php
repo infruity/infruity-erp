@@ -211,7 +211,7 @@
                                     <template x-for="branch in filterBranches.filter(item => (item.name + ' ' + item.note).toLocaleLowerCase('id-ID').includes(branchSearchQuery.trim().toLocaleLowerCase('id-ID')))" :key="'branch-' + branch.id">
                                         <label class="flex cursor-pointer items-center justify-between px-3.5 py-3 transition-colors hover:bg-gray-50">
                                             <span class="flex min-w-0 flex-col pr-2 text-left">
-                                                <span class="text-xs text-gray-700" :class="String(tempBranchId) === String(branch.id) ? 'font-bold text-gray-900' : 'font-medium'" x-text="branch.name"></span>
+                                                <span class="text-xs text-gray-700" :class="String(tempBranchId) === String(branch.id) ? 'font-bold' : 'font-medium'" x-text="branch.name"></span>
                                                 <span class="text-[10px] font-normal text-gray-400" x-text="branch.note"></span>
                                             </span>
                                             <span class="relative flex h-4 w-4 shrink-0 items-center justify-center">
@@ -237,7 +237,7 @@
                                     <template x-for="item in filterPeriods.filter(periodItem => (periodItem.name + ' ' + periodItem.note).toLocaleLowerCase('id-ID').includes(periodSearchQuery.trim().toLocaleLowerCase('id-ID')))" :key="'period-' + item.offset">
                                         <label class="flex cursor-pointer items-center justify-between px-3.5 py-3 transition-colors hover:bg-gray-50">
                                             <span class="flex min-w-0 flex-col pr-2 text-left">
-                                                <span class="text-xs text-gray-700" :class="Number(tempOffset) === Number(item.offset) ? 'font-bold text-gray-900' : 'font-medium'" x-text="item.name"></span>
+                                                <span class="text-xs text-gray-700" :class="Number(tempOffset) === Number(item.offset) ? 'font-bold' : 'font-medium'" x-text="item.name"></span>
                                                 <span class="text-[10px] font-normal text-gray-400" x-text="item.note"></span>
                                             </span>
                                             <span class="relative flex h-4 w-4 shrink-0 items-center justify-center">

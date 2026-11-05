@@ -10,7 +10,7 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 
 | Batch | Branch | PR | Status |
 |---|---|---|---|
-| B0 Fondasi build | `feature/tailwind-migration` | — | plan direview |
+| B0 Fondasi build | `feature/tailwind-migration` | — | selesai dan terverifikasi; menunggu review dan uji build di server |
 | B1 Layout final, komponen, shell, auth, errors, landing | — | — | belum |
 | B2 Master | — | — | belum |
 | B3 Report, CRM, Chat, admin | — | — | belum |
@@ -30,7 +30,7 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 | Q2/Q11 | Build | Vite + **Tailwind 3.4** compiled. Laravel Mix dan Tailwind CDN dihapus. 3.4 dipilih demi perangkat lama dan agar cocok dengan class v3 yang sudah dipakai. |
 | Q3 | Rollout | Bertahap per batch; setiap batch punya branch + PR sendiri ke `main`. |
 | Q4/Q17 | Interaksi | Alpine.js + `<dialog>` native + `erp-overlays.js`, dibungkus Blade component `x-erp.*`. |
-| Q5 | Plugin | Select2 → `erp-picker` lalu dihapus. DataTables tetap (npm, styling Tailwind). SweetAlert2 dan Flatpickr tetap (npm). |
+| Q5 | Plugin | Select2 → `erp-picker` lalu dihapus. DataTables tetap (npm, styling Tailwind; **dipindah ke npm di B1**, bukan B0, karena skin Metronic harus digantikan sekaligus). SweetAlert2 dan Flatpickr tetap (npm). |
 | Q6 | Visual | Ikuti referensi `infruity-frontend` bila ada; selain itu pertahankan tampilan sekarang (dengan konversi ukuran §4.1). Bukan redesign. |
 | Q7 | Kode mati | Diaudit, daftarnya dikonfirmasi pemilik repo, lalu dihapus di commit terpisah dalam batch-nya. |
 | Q8 | Test | Test = spesifikasi perilaku, diperbarui bersama port, tanpa skip. Ditambah screenshot sebelum/sesudah. |
@@ -41,7 +41,7 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 | Q14 | Branch berjalan | `ui/produksi-reference` dan `ui/stock-opname-reference` masuk `main` sebelum B4. |
 | Q15 | Print/nota | Dikecualikan dari Tailwind; hasil cetak harus identik. View dompdf/Excel tidak disentuh. |
 | Q16 | Data | DB lokal `infruity_clone` (dummy) dari `.env` checkout utama. |
-| Q18 | Form | `@tailwindcss/forms` (strategi `class`) + class komponen `erp-*` (§5.4). |
+| Q18 | Form | Class komponen `erp-*` (§5.4) ditulis sendiri. `@tailwindcss/forms` **tidak dipakai**: class-nya (`.form-select`, dst.) bentrok dengan `.form-select` Bootstrap/Metronic dan terbukti mengubah padding 61 elemen di halaman lama. Bisa dievaluasi lagi setelah B6. |
 | Q19 | Aturan baru | Setelah B1 masuk, UI baru wajib memakai layout/komponen Tailwind. Ditegakkan oleh test ratchet (§8.3) dan ditulis di `AGENTS.md` + `docs/ui-design-system.md`. |
 | Q20 | PR | Claude commit, push, dan membuka PR. Merge oleh pemilik repo. |
 | Q21/Q22 | Plan | File ini; direview sebelum B0. |
@@ -80,6 +80,8 @@ Metronic memasang `body, html { font-size: 13px !important }` dan `12px !importa
 | `template.root` ≥ 768px | 13px | 13px | 11,4px |
 | `template.root` < 768px | 12px | 12px | 10,5px |
 | `layouts.erp-tailwind`, referensi `infruity-frontend` | 16px | 16px | 14px |
+
+**Temuan B0 (terbukti dengan membandingkan dua server berdampingan):** konfigurasi Tailwind inline di `template.root` (`corePlugins.preflight: false` dan seluruh `theme.extend`) **tidak pernah berlaku**, karena diset sebelum skrip CDN dimuat dan tertimpa. Halaman `template.root` sebenarnya berjalan dengan **tema Tailwind default + preflight aktif**: warna border dasar `#e5e7eb`, font shell `ui-sans-serif, system-ui` (bukan Plus Jakarta Sans), dan class kustom seperti `shadow-soft`, `bg-primary`, `bg-strawberry` tidak menghasilkan apa-apa di sana. Layout `erp-tailwind` memakai CDN dengan urutan yang benar sehingga tema kustomnya berlaku. Jadi dua kelompok halaman selama ini tampil dengan font dan token berbeda.
 
 Referensi `infruity-frontend` (38 file, Tailwind CDN) dirancang di root 16px: `text-sm` 2.182×, `text-lg` 1.361×, `text-[11px]` 412×, `text-[10px]` 357×. Shell (`x-erp.sidebar`/`topbar`) sekarang tampil dengan **dua ukuran berbeda** tergantung layout-nya.
 
@@ -157,13 +159,14 @@ Referensi `infruity-frontend` (38 file, Tailwind CDN) dirancang di root 16px: `t
 resources/
   css/
     app.css                 ← base + token + @layer components (erp-*) + import pages/* dan vendor/*
-    legacy.css              ← SEMENTARA B0–B5: @config tailwind.legacy.config.js (preflight off) untuk template.root
+    legacy.css              ← SEMENTARA B0–B5: @config tailwind.legacy.config.mjs (tema default + preflight) untuk template.root
     components/             ← erp-action, erp-input, erp-badge, erp-table, erp-panel, erp-sheet, erp-avatar …
     pages/                  ← pindahan 18 file public/assets/css (Q29), dipindah saat halamannya diport
     vendor/
       datatables.css  flatpickr.css  swal.css  phosphor.css (4 bobot)
   js/
-    app.js                  ← Alpine (+collapse, +focus), jQuery global, DataTables npm, Swal, flatpickr, erp/*
+    alpine.js               ← Alpine (+collapse); module (B0)
+    vendor.js               ← jQuery + SweetAlert2, bundle klasik IIFE (B0); DataTables npm + flatpickr menyusul di B1
     erp/                    ← dialog, drawer, dropdown, tabs, collapse, check-all, tooltip, toast, picker, overlays, collections
     pages/                  ← pindahan JS halaman dari public/assets/js saat halamannya diport
     legacy-bridge.js        ← SEMENTARA: shim bootstrap.Modal / $.fn.modal (§5.3), dihapus di B6
@@ -171,10 +174,10 @@ resources/
     layouts/erp.blade.php   ← satu-satunya layout aplikasi
     layouts/guest.blade.php ← login, lupa password, errors
     components/erp/*.blade.php
-tailwind.config.js
-tailwind.legacy.config.js   ← SEMENTARA, dihapus di B6
-postcss.config.js
-vite.config.js
+tailwind.config.mjs
+tailwind.legacy.config.mjs   ← SEMENTARA, dihapus di B6
+postcss.config.cjs
+vite.config.mjs
 scripts/ui-migrate/         ← codemod class + ikon, audit class, tabel pemetaan (JSON)
 ```
 
@@ -186,7 +189,7 @@ scripts/ui-migrate/         ← codemod class + ikon, audit class, tabel pemetaa
 - Konsekuensi untuk 20 halaman `erp-tailwind`: teks yang **tidak** punya class ukuran sekarang mewarisi 16px dan akan menjadi 13px. Ini dicek di B1 lewat screenshot; teks yang memang harus 16px diberi `text-base` eksplisit.
 - Konsekuensi untuk 73 halaman lama: semua nilai `rem` mereka sekarang dihitung dari 13px. Saat diport, gunakan tabel konversi §4.1 agar ukurannya tetap sama dalam px, kecuali bagian yang mengikuti referensi.
 
-### 3.2 `tailwind.config.js`
+### 3.2 `tailwind.config.mjs`
 
 - `content`:
   - `resources/views/**/*.blade.php`, `Modules/*/Resources/views/**/*.blade.php`
@@ -203,17 +206,22 @@ scripts/ui-migrate/         ← codemod class + ikon, audit class, tabel pemetaa
   - `boxShadow`: `card: '0 1px 3px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.04)'`, `soft: '0 10px 40px -10px rgba(0,0,0,.08)'`
   - `borderRadius`: `control: '12px'`, `panel: '16px'`
   - `height/minHeight`: `control: '44px'` (dalam px, karena target sentuh tidak boleh ikut skala)
-- `plugins`: `@tailwindcss/forms({ strategy: 'class' })`, supaya reset tidak menimpa input plugin secara global.
+- `plugins`: kosong. `@tailwindcss/forms` tidak dipakai (bentrok `.form-select`, lihat Q18); gaya form ditulis sendiri di `@layer components`.
 - `safelist`: **hanya** class yang terbukti disusun dinamis (audit §8.2). Tanpa pola luas.
 - Tanpa `prefix`, tanpa `important`.
 
-### 3.3 `tailwind.legacy.config.js` (sementara)
+### 3.3 `tailwind.legacy.config.mjs` (sementara)
 
-`presets: [require('./tailwind.config.js')]`, `corePlugins: { preflight: false }`. Dipakai `resources/css/legacy.css` lewat `@config`, menggantikan CDN di `template.root`. Halaman lama tampil persis seperti sekarang (Metronic tetap memaksa root 13px di layout itu); bedanya, CSS-nya sudah compiled.
+`content` sama dengan config utama, `theme: {}` (tema Tailwind **default**, tanpa ekstensi), preflight aktif. Dipakai `resources/css/legacy.css` lewat `@config`, menggantikan CDN di `template.root`. Ini meniru perilaku CDN lama yang sebenarnya (lihat temuan di §2.2), supaya B0 tidak mengubah tampilan halaman-halaman itu. Tema kustom (font Plus Jakarta Sans, `shadow-soft`, `bg-primary`, dst.) baru berlaku untuk sebuah halaman ketika ia pindah ke `layouts.erp`; perubahan font itu disengaja dan tercakup screenshot sebelum/sesudah tiap port. Dihapus di B6.
 
 ### 3.4 Vite
 
-`laravel-vite-plugin` dengan input `resources/css/app.css`, `resources/css/legacy.css`, `resources/js/app.js`. Layout memakai `@vite([...])`. Script per halaman yang masih di `public/assets/js` tetap memakai `asset()?v=filemtime` sampai halaman pemiliknya diport, lalu pindah ke `resources/js/pages/`.
+Dua build (`vite.config.mjs`, dipilih lewat `--mode`):
+- **Utama** (`npm run build`): `resources/css/app.css`, `resources/css/legacy.css`, `resources/js/alpine.js` ke `public/build` (+ `manifest.json`), dimuat dengan `@vite(...)`. Alpine adalah module sehingga berjalan terurut dengan skrip `defer` lain, sama seperti skrip CDN sebelumnya.
+- **Vendor** (`--mode vendor`): `resources/js/vendor.js` (jQuery 3.7.1 + SweetAlert2) sebagai **skrip klasik IIFE** ke `public/build/vendor/vendor.js`, dimuat lewat `@include('partials.vendor-js')`. Harus klasik dan sinkron karena skrip inline halaman memakai `$`/`Swal` saat HTML masih di-parse; module baru jalan sesudah parsing.
+- **CSS compiled harus dipasang paling akhir di `<head>`**: CDN lama menyisipkan `<style>`-nya di akhir `<head>` (terverifikasi), jadi utility menang atas aturan lain dengan spesifisitas sama. Posisi ini dipertahankan di semua layout.
+- `npm run clean` menghapus `public/build/assets` sebelum build agar hash lama tidak menumpuk.
+- Script per halaman yang masih di `public/assets/js` tetap memakai `asset()?v=filemtime` sampai halaman pemiliknya diport, lalu pindah ke `resources/js/pages/`.
 
 ### 3.5 Alpine dan Livewire
 
@@ -459,8 +467,8 @@ Banyak skrip halaman memanggil `bootstrap.Modal.getOrCreateInstance(el).show()`,
 | Class | Isi |
 |---|---|
 | `erp-action` + `--primary` `--secondary` `--danger` `--ghost` `--icon` `--sm` `--block` | Keluarga yang sudah ada (107 pemakaian) dirapikan. `erp-button` (16) dilebur ke sini. Tinggi `h-control`, radius `rounded-control`, focus-visible teal 2px offset 3px, disabled `opacity-50 cursor-not-allowed`, slot spinner `[data-loading]`. |
-| `erp-input`, `erp-select`, `erp-textarea` | Berbasis `form-input/form-select/form-textarea` (plugin forms), tinggi 44px, radius 12px, 16px di < 768px; `[aria-invalid=true]` merah |
-| `erp-check`, `erp-radio` | berbasis `form-checkbox/form-radio`, warna teal |
+| `erp-input`, `erp-select`, `erp-textarea` | Ditulis sendiri (`appearance: none` + panah SVG untuk select), tinggi 44px, radius 12px, 16px di < 768px; `[aria-invalid=true]` merah |
+| `erp-check`, `erp-radio` | Ditulis sendiri (`appearance: none`, centang SVG), warna teal |
 | `erp-label`, `erp-label--required`, `erp-help`, `erp-error` | `erp-error` dihubungkan lewat `aria-describedby` |
 | `erp-input-group` | prefix/suffix (Rp, satuan) dengan border bersama |
 | `erp-badge` + `--{tone}` | radius `rounded-md`, `text-xs font-semibold`, warna soft (bg-50 + text-700) |
@@ -546,8 +554,8 @@ Aturan:
 
 | Kategori | Item | Batch |
 |---|---|---|
-| Build | `package.json` baru, `vite.config.js`, `postcss.config.js`, `tailwind.config.js` | B0 |
-| Build sementara | `tailwind.legacy.config.js`, `resources/css/legacy.css` | B0 (dihapus B6) |
+| Build | `package.json` baru, `vite.config.mjs`, `postcss.config.cjs`, `tailwind.config.mjs`, `resources/js/{alpine,vendor}.js`, `partials/vendor-js.blade.php` | B0 |
+| Build sementara | `tailwind.legacy.config.mjs` (tema default + preflight), `resources/css/legacy.css` | B0 (dihapus B6) |
 | CSS | `resources/css/app.css` (base 16px/body 13px, token, import), `resources/css/components/*`, `resources/css/vendor/{datatables,flatpickr,swal,phosphor}.css` | B0–B1 |
 | CSS halaman | `resources/css/pages/*` (pindahan 18 file, Q29) | saat halamannya diport |
 | JS | `resources/js/app.js`, `resources/js/erp/{dialog,drawer,dropdown,tabs,collapse,check-all,tooltip,toast}.js`; `erp-overlays`, `erp-picker`, `erp-collections` dipindah ke `resources/js/erp/` | B0–B1 |
@@ -589,7 +597,7 @@ Aturan:
 | `public/mask/`, `public/error/`, `public/font/`, `public/assets-landing/` | 4,6 MB | B6 | 0 referensi statis terdeteksi; cek ulang (bisa dipakai lewat CSS/JS) |
 | `public/infruity-ui/` | 27 MB | **tidak dibuang otomatis** | 7 referensi; ditanyakan ke pemilik repo |
 | Adapter Bootstrap/select2/DataTables-bs5 di `erp-theme.css` | ±150 baris | B6 | — |
-| Jembatan select2 di `erp-picker.js`; `legacy-bridge.js`; `tailwind.legacy.config.js`; `legacy.css`; `layouts.erp-tailwind` | — | B6 | — |
+| Jembatan select2 di `erp-picker.js`; `legacy-bridge.js`; `tailwind.legacy.config.mjs`; `legacy.css`; `layouts.erp-tailwind` | — | B6 | — |
 | Fixture allowlist ratchet | — | B6 | allowlist kosong (test-nya tetap ada) |
 
 ---
@@ -617,6 +625,7 @@ Aturan:
 | R15 | Halaman "mati" ternyata dipakai (referensi dinamis, bookmark) | Cek `route:list` + konfirmasi pemilik repo sebelum hapus |
 | R16 | Render Blade per baris memperlambat DataTables | Ukur di B2 (100 baris); fallback §6.3 |
 | R17 | PHP lokal default 8.3 (repo ^8.5) | Pakai `/opt/homebrew/opt/php@8.5/bin/php` |
+| R18 | **Class bertabrakan di satu elemen** (misalnya `class="… bg-white" :class="[bgDinamis]"`, `font-medium` + `font-bold`, `text-gray-700` + `text-gray-900`). Utility dengan spesifisitas sama dimenangkan oleh urutan di file CSS, dan urutan CDN berbeda dari build compiled (di 5 kasus yang ditemukan, pemenang CDN adalah class yang lebih awal secara alfabet, build compiled sebaliknya). Hasil visual berubah diam-diam. | Di B0: 5 elemen terbukti terdampak dan diperbaiki agar maksudnya eksplisit dengan hasil sama seperti baseline (§10 B0). Di B1: detektor tabrakan (`scripts/ui-migrate/class-conflicts`, statis untuk `class` + literal di `:class`, dan runtime untuk elemen di DOM) dijalankan per batch, dan test ratchet melarang tabrakan baru. Aturan penulisan: jangan menaruh dua utility dari kelompok yang sama di satu elemen; pindahkan salah satunya ke cabang kondisi yang eksklusif. |
 
 ### 8.2 Audit class dinamis (B0, diulang setiap batch)
 
@@ -679,19 +688,30 @@ DB `infruity_clone` (dummy). Akun login memakai user dari data yang ada (tidak d
 
 Tujuan: mengganti **mesin** tanpa mengubah tampilan.
 
-1. **Baseline**: `composer install`, `npm ci` (package lama), jalankan semua test PHP + JS dan catat hasilnya (merah yang sudah ada dicatat, tidak diperbaiki diam-diam). Screenshot baseline semua route GET yang me-render view.
-2. **Audit**: class dinamis (§8.2), opsi DataTables per halaman, pemakaian `axios`/`lodash`, Node di server (R9).
-3. `package.json` baru (§7.1/§7.2).
-4. `vite.config.js`, `postcss.config.js`, `tailwind.config.js` (§3.2), `tailwind.legacy.config.js` (§3.3), `resources/css/app.css` + `legacy.css`, `resources/js/app.js`.
-5. Ganti CDN: `layouts.erp-tailwind`, `auth/login`, `landing` → `@vite(app)`; `template.root` → `@vite(legacy)`. CSS inline sidebar → `app.css`. Alpine/jQuery/Swal/DataTables di `erp-tailwind` → bundle npm; `template.root` tetap memakai `plugins.bundle`.
-6. **Belum** memasang `body 13px` di B0. Itu perubahan visual, jadi masuk B1.
-7. Phosphor: hanya 4 bobot dimuat.
-8. Hapus Mix bila `layouts.app` terbukti mati; bila tidak, tunda ke B1.
-9. `.gitignore` + `/public/build`; README "Build frontend".
-10. `scripts/ui-migrate/class-map.json` + `icon-map.json` (isi §4.2 dan §4.4) dan `class-audit.mjs`.
-11. Gerbang B0: screenshot = baseline (toleransi anti-aliasing), test = baseline, halaman `produk` (Livewire) berfungsi.
+1. **Baseline**: `composer install` (PHP 8.5), test PHP dan JS (catatan di bawah), scan semua route GET, dan sidik jari style (warna, font, ukuran, jarak, radius, bayangan, ukuran kotak) tiap elemen di 73 halaman sehat pada lebar 1280 dan 390.
+2. **Audit**: class dinamis (semuanya class Metronic, tanpa safelist), opsi DataTables (tanpa `dom`/`buttons`; ekstensi `fixedColumns` 25×, `select` 8×, `responsive` 6×, jadi JSZip/pdfmake tidak perlu), `axios`/`lodash` (hanya di file Mix lama).
+3. `package.json` baru: Vite 8, laravel-vite-plugin 3, Tailwind 3.4, PostCSS, Alpine (+collapse), jQuery **3.7.1** (dipin; jQuery 4 punya perubahan yang memecahkan), SweetAlert2. Node ^20.19 atau >= 22.12.
+4. `vite.config.mjs` (dua mode, §3.4), `postcss.config.cjs`, `tailwind.config.mjs` (gabungan 4 config inline; `cream` disamakan ke `#FAF8F2`, hanya dipakai login dan landing), `tailwind.legacy.config.mjs`, `resources/css/{app,legacy}.css`, `resources/js/{alpine,vendor}.js`.
+5. Ganti CDN: `layouts.erp-tailwind` (Tailwind, Alpine, jQuery, SweetAlert2), `template.root` (Tailwind, Alpine), `auth/login` dan `landing` (Tailwind). CSS compiled dipasang paling akhir di `<head>` (§3.4). Yang **sengaja belum** diganti: jQuery CDN di `template.root` (Metronic memuat jQuery-nya sendiri sesudahnya), `datatables.bundle.*` (skin Metronic, diganti bersama skin baru di B1), CSS inline sidebar di `erp-tailwind` (urutan cascade; dipindah di B1), dan skrip Phosphor via unpkg di `landing`.
+6. `body 13px` **tidak** dipasang di B0; itu perubahan visual dan masuk B1.
+7. Phosphor light + thin dibuang (tidak dipakai di mana pun).
+8. Mix dihapus: `webpack.mix.js`, `resources/sass`, `resources/js/{app,bootstrap}.js`. `public/css/app.css`, `public/js/app.js` dan `public/mix-manifest.json` tetap sampai `layouts.app` (mati) dihapus di B1.
+9. `.gitignore` + `/public/build`; README "Build frontend"; `tests/TestCase.php` memakai `withoutVite()`.
+10. `scripts/ui-migrate/class-map.json` + `icon-map.json` + test integritasnya (`tests/js/ui-migrate-maps.test.cjs`: setiap ikon tujuan ada di font Phosphor, tabel konversi spasi hanya berisi langkah skala valid). `class-audit` dan detektor tabrakan class (R18) ditunda ke B1.
+11. Gerbang B0: test PHP/JS sama dengan baseline, sidik jari style identik dengan baseline di semua halaman, `npm run build` bersih.
 
-Ukuran: M. Risiko utama: R1, R6, R9.
+**Baseline sebelum B0** (PHP 8.5.10): PHP 223 lulus / 5 gagal / 8 dilewati (`TransferConcurrencyTest` ×4 karena tabel `users` tidak ada di sqlite; `UserStaffLinkTest` role index). JS 180 lulus / 1 gagal dari 181 (Order Book detail dialog). Scan 105 route: 87 sehat, 18 error 500 yang **sudah ada sebelumnya** (12× `View [create] not found` karena halaman create pindah ke overlay; 6× skema database `guest` tertinggal: kolom `province` di `branch`/`supplier`, tabel `t_permohonan` dan `arus_kas_transactions`). Semuanya di luar scope migrasi.
+
+**Temuan B0 yang mengubah rancangan** (semua terbukti lewat perbandingan dua server berdampingan):
+- Config Tailwind di `template.root` tidak pernah berlaku (§2.2) → `legacy.css` memakai tema default + preflight.
+- `@tailwindcss/forms` bentrok dengan `.form-select` Bootstrap → dilepas (Q18).
+- CDN menyisipkan CSS di akhir `<head>` → CSS compiled dipasang di posisi yang sama.
+- `package.json` tidak boleh memakai `"type": "module"`: `public/assets/js/*.js` memakai `module.exports` dan di-`require` oleh test JS, sehingga semuanya akan dianggap ES module. Karena itu file konfigurasi memakai ekstensi eksplisit (`vite.config.mjs`, `tailwind.config.mjs`, `tailwind.legacy.config.mjs`, `postcss.config.cjs`).
+- Alpine tidak boleh dijalankan sinkron di `<head>` (butuh `<body>`); jQuery/Swal harus klasik sinkron → dua jenis bundle (§3.4).
+- Urutan aturan utility di CSS compiled berbeda dari CDN, sehingga 5 elemen dengan class bertabrakan berubah tampilannya. Diperbaiki di markup (`admin/user/index` chip modul, `order-book/index` tombol bulan/tahun, pemilih cabang di `products/index`, `wholesale/index`, `crm dashboard/index`) dengan hasil sama seperti baseline. Lihat R18.
+- Perbedaan yang tersisa pada pemindaian adalah soal waktu (select2, `data-erp-ready`, transisi Alpine yang belum selesai pada saat dipotret), bukan perbedaan CSS; dikonfirmasi dengan pemindaian ulang berjeda 4,5 detik.
+
+Ukuran: M. Risiko utama: R1, R9.
 
 ### B1 — Layout final, komponen, shell, auth, errors, landing
 

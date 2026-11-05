@@ -36,21 +36,12 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/global/plugins.bundle.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.bundle.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/erp-mobile-search.css') }}?v={{ filemtime(public_path('assets/css/erp-mobile-search.css')) }}">
-    <script>
-        window.tailwind = window.tailwind || {};
-        window.tailwind.config = { corePlugins: { preflight: false }, theme: { extend: {
-            colors: { primary: '#0F5C45', strawberry: '#D6455D' },
-            fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], serif: ['"Poppins"', 'sans-serif'] },
-            boxShadow: { soft: '0 10px 40px -10px rgba(0,0,0,0.08)' }
-        } } };
-    </script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     @isset($livewire)
         @livewireStyles
     @endisset
     @include('partials.erp-chrome')
-    <script defer src="https://unpkg.com/alpinejs@3.17.5/dist/cdn.min.js"></script>
+    @vite('resources/js/alpine.js')
     <!--end::Global Stylesheets Bundle-->
     <script>
         // Frame-busting to prevent site from being loaded within a frame without permission (click-jacking) if (window.top != window.self) { window.top.location.replace(window.self.location.href); }
@@ -69,6 +60,8 @@
     <link rel="stylesheet" href="{{ asset('assets/css/arus-kas-filter.css') }}?v={{ filemtime(public_path('assets/css/arus-kas-filter.css')) }}">
 @endif
 <link rel="stylesheet" href="{{ asset('assets/css/erp-filters.css') }}?v={{ filemtime(public_path('assets/css/erp-filters.css')) }}">
+    {{-- Tailwind compiled (tema default + preflight, SEMENTARA; lihat tailwind.legacy.config.js). Harus paling akhir di <head>, sama seperti CDN lama. --}}
+    @vite('resources/css/legacy.css')
 </head>
 <!--end::Head-->
 <!--begin::Body-->

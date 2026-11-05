@@ -17,30 +17,6 @@
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web@2.1.2/src/index.js"></script>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#0F5C45',      // Green
-                        accent: '#F2B400',       // Golden Accent
-                        cream: '#FAF8F2',        // Background
-                        strawberry: '#D6455D',   // Highlight
-                    },
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        serif: ['"Poppins"', 'sans-serif'], // Menggunakan Poppins untuk font heading agar sesuai dengan gaya logo yang modern
-                    },
-                    boxShadow: {
-                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
-                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         /* Custom Styles for Animations and Utilities */
         .glass-nav {
@@ -184,6 +160,7 @@
             }
         }
     </style>
+@vite('resources/css/app.css')
 </head>
 
 <body class="font-sans bg-cream text-gray-800 antialiased selection:bg-primary selection:text-white">

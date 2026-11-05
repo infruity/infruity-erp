@@ -139,13 +139,13 @@
                                         @if (count($branches) > 1)
                                             <label data-wholesale-mobile-branch="all" data-branch-search="semua cabang" class="flex cursor-pointer items-center gap-3 px-3.5 py-2 transition-colors hover:bg-gray-50">
                                                 <span class="relative flex h-4 w-4 shrink-0 items-center justify-center"><input type="radio" name="wholesaleMobileBranch" value="all" x-model="mobileBranch" class="peer h-4 w-4 cursor-pointer appearance-none rounded-full border-2 border-gray-300 transition-colors checked:border-emerald-500"><span class="absolute h-2 w-2 scale-0 rounded-full bg-emerald-500 transition-transform duration-200 peer-checked:scale-100"></span></span>
-                                                <span class="text-xs text-gray-700" :class="mobileBranch === 'all' ? 'font-bold text-gray-900' : 'font-medium'">Semua cabang</span>
+                                                <span class="text-xs text-gray-700" :class="mobileBranch === 'all' ? 'font-bold' : 'font-medium'">Semua cabang</span>
                                             </label>
                                         @endif
                                         @foreach ($branches as $branch)
                                             <label data-wholesale-mobile-branch="{{ $branch->id }}" data-branch-search="{{ strtolower($branch->name) }}" class="flex cursor-pointer items-center gap-3 px-3.5 py-2 transition-colors hover:bg-gray-50">
                                                 <span class="relative flex h-4 w-4 shrink-0 items-center justify-center"><input type="radio" name="wholesaleMobileBranch" value="{{ $branch->id }}" x-model="mobileBranch" class="peer h-4 w-4 cursor-pointer appearance-none rounded-full border-2 border-gray-300 transition-colors checked:border-emerald-500"><span class="absolute h-2 w-2 scale-0 rounded-full bg-emerald-500 transition-transform duration-200 peer-checked:scale-100"></span></span>
-                                                <span class="text-xs text-gray-700" :class="mobileBranch === '{{ $branch->id }}' ? 'font-bold text-gray-900' : 'font-medium'">{{ ucwords($branch->name) }}</span>
+                                                <span class="text-xs text-gray-700" :class="mobileBranch === '{{ $branch->id }}' ? 'font-bold' : 'font-medium'">{{ ucwords($branch->name) }}</span>
                                             </label>
                                         @endforeach
                                         <p id="wholesale-mobile-branch-empty" class="hidden py-3 text-center text-xs text-gray-400">Cabang tidak ditemukan</p>

@@ -21,3 +21,6 @@ u101806666_clone_infruity.sql
 .gitignore
 AGENTS.md
 fake-google-creds.json
+
+# Frontend build (npm run build)
+/public/build
