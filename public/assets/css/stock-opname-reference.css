@@ -158,3 +158,36 @@
     .so-reference-sheet .so-detail-footer button { font-size:11px; }
 }
 @media(prefers-reduced-motion:reduce) { .so-reference-sheet.fade .modal-dialog, #kt_stock_opname_history { transition:none; } }
+
+/* The main filter follows the reference; detail and history sheets keep their own sizing. */
+#so-filter-sheet { font-size:16px; line-height:24px; }
+#so-filter-sheet .modal-content { max-height:88dvh; border:0; }
+#so-filter-sheet .so-sheet-header { padding:14px 20px; }
+#so-filter-sheet .so-sheet-header h2 { font-weight:700; }
+#so-filter-sheet .so-sheet-header p { margin-top:2px; line-height:16.5px; }
+#so-filter-sheet .so-close { font-size:14px; }
+#so-filter-sheet .so-filter-section { margin-bottom:16px; }
+#so-filter-sheet .so-filter-section:last-child { margin-bottom:0; }
+#so-filter-sheet .so-filter-section legend { margin-bottom:6px; line-height:15px; }
+#so-filter-sheet .so-filter-heading { display:flex; width:100%; align-items:center; justify-content:space-between; }
+#so-filter-sheet .so-filter-heading button { padding:0; border:0; background:transparent; color:#ef4444; font-size:10px; line-height:15px; font-weight:600; cursor:pointer; text-transform:none; letter-spacing:normal; }
+#so-filter-sheet .so-filter-grid--four button { display:flex; justify-content:center; align-items:center; gap:4px; padding:8px; font-size:12px; line-height:16px; font-weight:600; }
+#so-filter-sheet .so-filter-grid--four i { font-size:12px; color:#9ca3af; }
+#so-filter-sheet .so-filter-chips button { padding:6px 14px; line-height:16px; font-weight:500; }
+#so-filter-sheet .so-filter-chips .is-selected { font-weight:600; }
+#so-filter-sheet .so-branch-search input { line-height:16px; }
+#so-filter-sheet .so-branch-options label { padding:8px 14px; font-size:12px; line-height:16px; }
+#so-filter-sheet .so-filter-dates button { padding:10px 12px; gap:8px; background:#fff; font-size:12px; line-height:16px; }
+#so-filter-sheet .so-filter-dates span { width:32px; flex:none; }
+#so-filter-sheet .so-period-presets button { padding:10px 8px; font-size:12px; line-height:16px; font-weight:600; background:#fff; color:#374151; }
+#so-filter-sheet .so-period-presets [data-so-period="week"] { background:#c5f037; border-color:#c5f037; color:#1f2937; }
+#so-filter-sheet .so-sheet-footer { padding:14px 20px calc(14px + env(safe-area-inset-bottom)); background:rgba(249,250,251,.7); }
+#so-filter-sheet .so-sheet-footer button { font-weight:600; line-height:16px; }
+@media(min-width:640px) {
+    #so-filter-sheet .modal-dialog { min-height:calc(100% - 32px); width:calc(100% - 32px); max-width:512px; margin:16px auto; align-items:center; }
+    #so-filter-sheet .modal-content { border-radius:24px; }
+    #so-filter-sheet .so-sheet-handle { display:none; }
+    #so-filter-sheet .so-filter-dates { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    #so-filter-sheet .so-sheet-footer { padding-bottom:14px; }
+    #so-filter-sheet .so-sheet-footer button { font-size:14px; }
+}
