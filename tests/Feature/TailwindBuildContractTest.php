@@ -86,6 +86,7 @@ class TailwindBuildContractTest extends TestCase
         $workspace = file_get_contents(base_path('public/assets/css/erp-workspace.css'));
 
         $this->assertStringContainsString('.erp-action {', $theme);
+        $this->assertMatchesRegularExpression('/\.erp-action \{[^}]*border-radius:var\(--erp-radius-control\)/', $theme, 'tombol memakai radius kontrol (12px), bukan pil');
         $this->assertStringNotContainsString('.erp-action {', $workspace);
 
         $roots = ['resources/views', 'Modules', 'public/assets/css', 'public/assets/js', 'resources/css', 'resources/js'];

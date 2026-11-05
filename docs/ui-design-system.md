@@ -35,7 +35,7 @@ Nilai utility merujuk skala Tailwind yang dipakai referensi. Biru tetap sah untu
 ## Komponen dan state
 
 - Plus Jakarta Sans untuk UI; Poppins untuk heading/identitas tertentu. Ukuran dasar HTML ERP 16px; isi 13–14px, label 12px, heading panel 16–20px. Tabel memakai angka tabular.
-- Kontrol utama 44px; radius input/button 12px; panel 16px. Button pill pada Master tetap mengikuti referensi. Padding panel legacy 24px desktop / 20px mobile; gap 8/12/16px.
+- Kontrol utama 44px; radius input/button 12px (`erp-action` memakai token `--erp-radius-control`); panel 16px. Pil (`rounded-full`) hanya untuk elemen yang memang dibuat pil, mis. kolom cari dan chip; tombol `erp-action` tidak lagi pil (diputuskan pemilik repo). Padding panel legacy 24px desktop / 20px mobile; gap 8/12/16px.
 - Shadow card: 0 1px 3px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.04). Shadow soft: 0 10px 40px -10px rgba(0,0,0,.08).
 - Primary teal; secondary putih/abu dengan border; destructive merah; disabled opacity dan cursor. Hover, active, focus-visible, spinner dan selection mengikuti fungsi tersebut.
 - Focus-visible outline teal 2px dengan offset 3px. Error input merah, pesan terkait aria-describedby; tidak mengandalkan warna saja.

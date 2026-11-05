@@ -757,8 +757,7 @@ Dibagi dua karena ukurannya. **B1a selesai** (PR terpisah); **B1b** menyusul.
 
 **B1b-4 (selesai): `erp-button` dilebur ke `erp-action`.** 16 pemakaian di 5 view (`errors/layout`, `products/create`, `pos/payment-success2`, `pos/receipt2`, `stock-opname/exports/preview`) diganti; `.erp-ui .erp-button*` dan `.erp-link-button` (tanpa pemakai) dihapus. Aturan `.erp-action*` dipindah dari `erp-workspace.css` ke `erp-theme.css` karena halaman mandiri (error, struk) hanya memuat berkas itu; urutan aturan sama.
 - Diverifikasi di browser: 20 elemen `.erp-action` di 9 halaman identik sebelum/sesudah (semua properti gaya + ukuran kotak).
-- Perubahan tampilan yang disengaja pada 16 tombol bekas `erp-button`: radius 12px → pil (999px), font 14px → 13px, tinggi tetap. Pil adalah bentuk 107 pemakaian `erp-action`.
-- Keputusan terbuka: §5.4 menyebut radius `rounded-control` untuk keluarga tombol. Itu akan mengubah ±120 tombol; ditunda sampai ada acuan dari `infruity-frontend`.
+- Keputusan pemilik repo: radius semua tombol memakai token `rounded-control` (12px), bukan pil. `.erp-action` dari `999px` menjadi `var(--erp-radius-control)`. Diverifikasi di 10 halaman (22 tombol): hanya radius yang berubah (15 tombol pil → 12px), ukuran kotak tidak ada yang bergeser. Tombol bekas `erp-button` juga ikut 13px (sebelumnya 14px). Kolom cari toolbar masih berbentuk pil; disamakan saat halamannya dimigrasi.
 - Dijaga `TailwindBuildContractTest::test_erp_action_is_the_only_button_family`.
 
 **B1b (menunggu):**
