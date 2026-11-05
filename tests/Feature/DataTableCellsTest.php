@@ -53,4 +53,26 @@ class DataTableCellsTest extends TestCase
 
         $this->assertStringNotContainsString('alert(1', $html);
     }
+
+    public function test_badges_escape_labels_and_pick_the_tone_by_branch(): void
+    {
+        $this->assertStringContainsString('erp-badge--success', DataTableCells::branchBadge(2, 'Cabang <b>B</b>', 'Other'));
+        $this->assertStringContainsString('Cabang &lt;b&gt;B&lt;/b&gt;', DataTableCells::branchBadge(2, 'Cabang <b>B</b>', 'Other'));
+        $unknown = DataTableCells::branchBadge(99, 'Apa saja', 'Belum Terdaftar');
+        $this->assertStringContainsString('erp-badge--danger', $unknown);
+        $this->assertStringContainsString('Belum Terdaftar', $unknown);
+        $this->assertStringNotContainsString('Apa saja', $unknown);
+        $this->assertStringNotContainsString('badge-light', $unknown);
+    }
+
+    public function test_gender_badge_and_view_menu(): void
+    {
+        $this->assertStringContainsString('Laki-laki', DataTableCells::genderBadge('male'));
+        $this->assertStringContainsString('Perempuan', DataTableCells::genderBadge('female'));
+        $this->assertStringContainsString('erp-badge--danger', DataTableCells::genderBadge(null));
+
+        $menu = DataTableCells::viewMenu('/pos/9/show');
+        $this->assertStringContainsString('href="/pos/9/show"', $menu);
+        $this->assertStringContainsString('Lihat detail', $menu);
+    }
 }

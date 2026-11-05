@@ -359,60 +359,6 @@
     "Modules/Pos/Resources/views/setting-nota/index.blade.php": {
         "root-layout": 1
     },
-    "Modules/Report/Http/Controllers/ReportController.php": {
-        "data-bs": 6,
-        "bootstrap-icons": 10,
-        "fontawesome": 1,
-        "btn": 14,
-        "badge-light": 26
-    },
-    "Modules/Report/Resources/views/branch-product-rep.blade.php": {
-        "bs-utilities": 2,
-        "root-layout": 1
-    },
-    "Modules/Report/Resources/views/branch-transaction-rep.blade.php": {
-        "bs-utilities": 2,
-        "root-layout": 1
-    },
-    "Modules/Report/Resources/views/customer-transaction-rep.blade.php": {
-        "bs-utilities": 2,
-        "root-layout": 1
-    },
-    "Modules/Report/Resources/views/customer-transaction.blade.php": {
-        "bs-utilities": 2,
-        "root-layout": 1
-    },
-    "Modules/Report/Resources/views/index.blade.php": {
-        "root-layout": 1
-    },
-    "Modules/Report/Resources/views/product-buang.blade.php": {
-        "root-layout": 1,
-        "hex-class": 1
-    },
-    "Modules/Report/Resources/views/product-customer-transaction-rep.blade.php": {
-        "bs-utilities": 2,
-        "root-layout": 1
-    },
-    "Modules/Report/Resources/views/product-sales.blade.php": {
-        "root-layout": 1,
-        "hex-class": 1
-    },
-    "Modules/Report/Resources/views/profit-adjusted.blade.php": {
-        "root-layout": 1,
-        "hex-class": 1
-    },
-    "Modules/Report/Resources/views/profit-revenue.blade.php": {
-        "root-layout": 1,
-        "hex-class": 1
-    },
-    "Modules/Report/Resources/views/shipping-cost.blade.php": {
-        "root-layout": 1,
-        "hex-class": 1
-    },
-    "Modules/Report/Resources/views/total-aset.blade.php": {
-        "root-layout": 1,
-        "hex-class": 1
-    },
     "Modules/Transaction/Http/Controllers/ProductReceiptController.php": {
         "data-bs": 2,
         "bootstrap-icons": 7,

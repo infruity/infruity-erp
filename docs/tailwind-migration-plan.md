@@ -807,6 +807,8 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 - Chat (kecuali `srrd` dompdf)
 - `admin/role`, `admin/user`, `user`, `menu`, `role-menu`, `settings`, `list_permohonan`, `qrcode`
 
+**B3a (selesai): Report.** 12 view pindah ke `layouts.erp` (enam halaman `mobile-detail` + `index`: hanya layout; lima halaman DataTables: `erp-table`, codemod `--convert-rem`). `ReportController` tidak lagi merakit string Bootstrap: badge gender/cabang/satuan memakai `x-erp.badge`, menu aksi memakai `x-erp.row-actions` lewat `DataTableCells::{badge,branchBadge,genderBadge,viewMenu}` (teks cabang/satuan kini di-escape; sebelumnya disisipkan mentah). **Empat dari lima kolom `action` hanya berisi tautan kosong (`#`/`javascript:void(0)`), jadi kini dikosongkan**; hanya `get_data_transaction` (tautan `pos.show`, tidak ditampilkan oleh view-nya) dan tabel total aset memakai menu "Lihat detail". Allowlist Report = 0 temuan. Tidak diuji dengan data sungguhan: endpoint `/report-total-aset/data` gagal di DB guest lokal karena kolom `seq` tidak ada di `product_hpp` (skema DB guest belum dimigrasi; masalah lingkungan, bukan perubahan ini).
+
 ### B4 — Transaction (74 view)
 
 **Prasyarat**: `ui/produksi-reference` dan `ui/stock-opname-reference` sudah di `main`; hitung ulang inventaris.

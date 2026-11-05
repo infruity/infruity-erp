@@ -1,4 +1,4 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Ringkasan Pelanggan')
 @section('page-title', 'Ringkasan Pelanggan')
 
@@ -12,15 +12,15 @@
         <button type="button" class="erp-action" onclick="reloadDataTable()"><i class="ph ph-arrow-clockwise" aria-hidden="true"></i>Muat ulang</button>
     </x-slot:toolbar>
     <div class="erp-report-collection">
-                <table class="table align-middle erp-report-table" data-erp-collection="transaction-table" id="transaction-table" width="100%">
+                <table class="erp-table erp-report-table" data-erp-collection="transaction-table" id="transaction-table" width="100%">
                     <thead>
-                        <tr class="text-start text-gray-500 fw-bold fs-7">
-                            <th class="text-start min-w-150px">Nama Pelanggan</th>
-                            <th class="text-start min-w-50px">Transaksi</th>
-                            <th class="text-start min-w-50px">Omset</th>
-                            <th class="text-start min-w-150px">Margin</th>
-                            <th class="text-start min-w-150px">Kontribusi Omset</th>
-                            <th class="text-start min-w-150px">Kontribusi Margin</th>
+                        <tr>
+                            <th class="text-start min-w-[150px]">Nama Pelanggan</th>
+                            <th class="text-start min-w-[50px]">Transaksi</th>
+                            <th class="text-start min-w-[50px]">Omset</th>
+                            <th class="text-start min-w-[150px]">Margin</th>
+                            <th class="text-start min-w-[150px]">Kontribusi Omset</th>
+                            <th class="text-start min-w-[150px]">Kontribusi Margin</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -28,7 +28,7 @@
                 </table>
     </div>
     <x-slot:footer>
-        <p class="text-xs text-gray-500">Pilih urutan data atau buka baris untuk melihat rincian.</p>
+        <p class="text-xs text-gray-400">Pilih urutan data atau buka baris untuk melihat rincian.</p>
     </x-slot:footer>
 </x-erp.workspace>
 @endsection

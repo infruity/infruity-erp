@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Report\Http\Controllers;
 
+use App\Support\DataTableCells;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -219,51 +220,12 @@ class ReportController extends Controller
             ->editColumn('total', function ($row) {
                 return number_format($row->total, 0, ',', '.');
             })
-            ->editColumn('gender', function ($row) {
-                if ($row->gender == 'male') {
-                    return '<span class="badge badge-light-primary">Laki-laki</span>';
-                } else if ($row->gender == 'female') {
-                    return '<span class="badge badge-light-success">Perempuan</span>';
-                } else {
-                    return '<span class="badge badge-light-danger">-</span>';
-                }
-            })
-            ->editColumn('branch_name', function ($row) {
-                switch ($row->branch_id) {
-                    case 1:
-                        return '<span class="badge badge-light-primary">' . $row->branch_name . '</span>';
-                        break;
-                    case 2:
-                        return '<span class="badge badge-light-success">' . $row->branch_name . '</span>';
-                        break;
-                    case 3:
-                        return '<span class="badge badge-light-warning">' . $row->branch_name . '</span>';
-                        break;
-                    case 4:
-                        return '<span class="badge badge-light-info">' . $row->branch_name . '</span>';
-                        break;
-                    default:
-                        return '<span class="badge badge-light-danger">Other</span>';
-                }
-            })
+            ->editColumn('gender', fn ($row) => DataTableCells::genderBadge($row->gender))
+            ->editColumn('branch_name', fn ($row) => DataTableCells::branchBadge($row->branch_id, $row->branch_name, 'Other'))
             ->editColumn('profit', function ($row) {
                 return number_format($row->profit, 0, ',', '.');
             })
-            ->addColumn('action', function ($row) {
-                return '
-                    <div class="dropstart">
-                        <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                            <li>
-                                <a class="dropdown-item" href="' . route('pos.show', $row->pos_id) . '">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>';
-            })
+            ->addColumn('action', fn ($row) => DataTableCells::viewMenu(route('pos.show', $row->pos_id)))
             ->rawColumns(['action', 'gender', 'branch_name'])
             ->make(true);
     }
@@ -289,21 +251,7 @@ class ReportController extends Controller
             ->editColumn('prosentase_profit', function ($row) {
                 return number_format($row->prosentase_profit, 0, ',', '.') . ' %';
             })
-            ->addColumn('action', function ($row) {
-                return '
-                    <div class="dropstart">
-                        <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                            <li>
-                                <a class="dropdown-item" href="#">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>';
-            })
+            ->addColumn('action', fn () => '')
             ->rawColumns(['action'])
             ->make(true);
     }
@@ -328,21 +276,7 @@ class ReportController extends Controller
             ->editColumn('prosentase_profit', function ($row) {
                 return number_format($row->prosentase_profit, 0, ',', '.') . ' %';
             })
-            ->addColumn('action', function ($row) {
-                return '
-                    <div class="dropstart">
-                        <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                            <li>
-                                <a class="dropdown-item" href="javascript:void(0)">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>';
-            })
+            ->addColumn('action', fn () => '')
             ->rawColumns(['action'])
             ->make(true);
     }
@@ -355,39 +289,8 @@ class ReportController extends Controller
         $data   = BranchProduct::getAllBranchProduct($dr_tgl, $sp_tgl);
         return DataTables::of($data)
             ->addIndexColumn()
-            ->editColumn('branch', function ($row) {
-                switch ($row->branch_id) {
-                    case 1:
-                        return '<span class="badge badge-light-primary">' . $row->branch . '</span>';
-                        break;
-                    case 2:
-                        return '<span class="badge badge-light-success">' . $row->branch . '</span>';
-                        break;
-                    case 3:
-                        return '<span class="badge badge-light-warning">' . $row->branch . '</span>';
-                        break;
-                    case 4:
-                        return '<span class="badge badge-light-info">' . $row->branch . '</span>';
-                        break;
-                    default:
-                        return '<span class="badge badge-light-danger">Belum Terdaftar</span>';
-                }
-            })
-            ->addColumn('action', function ($row) {
-                return '
-                    <div class="dropstart">
-                        <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                            <li>
-                                <a class="dropdown-item" href="javascript:void(0)">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>';
-            })
+            ->editColumn('branch', fn ($row) => DataTableCells::branchBadge($row->branch_id, $row->branch, 'Belum Terdaftar'))
+            ->addColumn('action', fn () => '')
             ->rawColumns(['action', 'branch'])
             ->make(true);
     }
@@ -402,48 +305,9 @@ class ReportController extends Controller
             ->editColumn('nama', function ($row) {
                 return $row->nama ?? 'Pelanggan Umum';
             })
-            ->editColumn('branch', function ($row) {
-                switch ($row->branch_id) {
-                    case 1:
-                        return '<span class="badge badge-light-primary">' . $row->branch . '</span>';
-                        break;
-                    case 2:
-                        return '<span class="badge badge-light-success">' . $row->branch . '</span>';
-                        break;
-                    case 3:
-                        return '<span class="badge badge-light-warning">' . $row->branch . '</span>';
-                        break;
-                    case 4:
-                        return '<span class="badge badge-light-info">' . $row->branch . '</span>';
-                        break;
-                    default:
-                        return '<span class="badge badge-light-danger">Belum Terdaftar</span>';
-                }
-            })
-            ->editColumn('gender', function ($row) {
-                if ($row->gender == 'male') {
-                    return '<span class="badge badge-light-primary">Laki-laki</span>';
-                } else if ($row->gender == 'female') {
-                    return '<span class="badge badge-light-success">Perempuan</span>';
-                } else {
-                    return '<span class="badge badge-light-danger">-</span>';
-                }
-            })
-            ->addColumn('action', function ($row) {
-                return '
-                    <div class="dropstart">
-                        <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                            <li>
-                                <a class="dropdown-item" href="javascript:void(0)">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>';
-            })
+            ->editColumn('branch', fn ($row) => DataTableCells::branchBadge($row->branch_id, $row->branch, 'Belum Terdaftar'))
+            ->editColumn('gender', fn ($row) => DataTableCells::genderBadge($row->gender))
+            ->addColumn('action', fn () => '')
             ->rawColumns(['action', 'branch', 'gender'])
             ->make(true);
     }
@@ -487,24 +351,13 @@ class ReportController extends Controller
             ->filter(function ($queryInstance) {
                 // Search is already applied before groupBy
             })
-            ->editColumn('satuan', function ($row) {
-                switch ($row->unit_id) {
-                    case 1:
-                        return '<span class="badge badge-light-primary">' . $row->satuan . '</span>';
-                        break;
-                    case 2:
-                        return '<span class="badge badge-light-success">' . $row->satuan . '</span>';
-                        break;
-                    case 3:
-                        return '<span class="badge badge-light-warning">' . $row->satuan . '</span>';
-                        break;
-                    case 4:
-                        return '<span class="badge badge-light-info">' . $row->satuan . '</span>';
-                        break;
-                    default:
-                        return '<span class="badge badge-light-danger">' . $row->satuan . '</span>';
-                }
-            })
+            ->editColumn('satuan', fn ($row) => DataTableCells::badge((string) $row->satuan, match ((int) $row->unit_id) {
+                1 => 'primary',
+                2 => 'success',
+                3 => 'warning',
+                4 => 'info',
+                default => 'danger',
+            }))
             ->editColumn('quantity', function ($row) {
                 return fmod($row->quantity, 1) == 0 ? number_format($row->quantity, 0, ',', '.') : number_format($row->quantity, 2, ',', '.');
             })
@@ -940,7 +793,7 @@ class ReportController extends Controller
                 'total_stock' => number_format($row['total_stock_raw'], 2, ',', '.'),
                 'hpp' => 'Rp' . number_format($row['hpp_raw'], 0, ',', '.'),
                 'total_hpp' => 'Rp' . number_format($row['total_hpp_raw'], 0, ',', '.'),
-                'action' => '<a href="' . url('product-stock') . '/' . $row['product_id'] . '/show" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="View"><i class="fa fa-eye"></i></a>',
+                'action' => DataTableCells::viewMenu(url('product-stock/'.$row['product_id'].'/show')),
             ];
         })->values();
 
