@@ -825,7 +825,7 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 
 ### B4 — Transaction (74 view)
 
-**Prasyarat**: `ui/produksi-reference` dan `ui/stock-opname-reference` sudah di `main`; hitung ulang inventaris.
+**Prasyarat (ditangani):** `ui/produksi-reference` (3 commit) dan `ui/production-reference` (= `ui/stock-opname-reference`, 4 commit) belum di `main`, jadi keduanya di-merge ke `integration/tailwind-migration` (bukan ke `main`; cabangnya sendiri tidak disentuh). Konflik: `tests/js/erp-picker.test.cjs` (kedua set test dipertahankan) dan `stock-opname/index.blade.php` (blok sheet detail: versi referensi dipakai karena tombol ubah/sesuaikan/hapus lama diganti kolom koreksi kredit; test kontrak `StockOpnameListUiContractTest` disesuaikan: koreksi hanya untuk record pending lewat `canCorrect`). Bila cabang referensi bertambah commit, merge ulang sebelum mengerjakan view terkait. Allowlist dicatat ulang karena kedua cabang menambah penanda lama pada `stock-opname/index` dan `production/*`; angkanya turun lagi saat view itu dimigrasi.
 
 - Terberat: `stock-opname/index` (422 hit BS + 130 KT, `KTDrawer`, `KT*`, select2, 3 test kontrak), `production/process-parcel` (173, `data-kt-ecommerce`), `wholesale/create|show|edit` (132/106/110), `pengadaan/index2`, `stock-out`, `stock-out-type`, `receipt`, `transfer`, `sortir`
 - Ganti `toastr` di `production/js-create`

@@ -393,12 +393,12 @@
         "root-layout": 1
     },
     "Modules/Transaction/Resources/views/production/create.blade.php": {
-        "form-classes": 11,
+        "form-classes": 12,
         "bs-utilities": 2,
         "root-layout": 1
     },
     "Modules/Transaction/Resources/views/production/index.blade.php": {
-        "data-kt": 8,
+        "data-kt": 9,
         "form-classes": 4,
         "btn": 4,
         "select2": 2,
@@ -493,19 +493,23 @@
         "btn": 4
     },
     "Modules/Transaction/Resources/views/stock-opname/index.blade.php": {
-        "data-bs": 7,
-        "data-kt": 44,
-        "keenicons": 14,
+        "data-bs": 8,
+        "data-kt": 34,
+        "keenicons": 10,
         "bootstrap-icons": 2,
-        "form-classes": 20,
-        "btn": 30,
+        "form-classes": 17,
+        "btn": 25,
         "badge-light": 1,
         "modal-class": 15,
-        "select2": 11,
+        "select2": 10,
         "bootstrap-js": 8,
         "kt-js": 4,
-        "bs-utilities": 72,
+        "bs-utilities": 52,
         "root-layout": 1
+    },
+    "Modules/Transaction/Resources/views/stock-opname/partials/reference-filters.blade.php": {
+        "data-bs": 2,
+        "modal-class": 6
     },
     "Modules/Transaction/Resources/views/stock-out-type/index.blade.php": {
         "data-bs": 2,
@@ -692,6 +696,11 @@
         "data-kt": 1,
         "badge-light": 1,
         "bs-utilities": 1
+    },
+    "public/assets/js/stock-opname-reference-page.js": {
+        "data-kt": 1,
+        "bootstrap-js": 2,
+        "kt-js": 2
     },
     "resources/js/erp/image-input.js": {
         "kt-js": 1

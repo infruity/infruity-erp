@@ -44,14 +44,15 @@ final class StockOpnameListUiContractTest extends TestCase
         }
     }
 
-    public function test_detail_sheet_hides_edit_adjust_and_delete_once_the_record_is_finished(): void
+    public function test_detail_sheet_offers_corrections_only_while_the_record_is_pending(): void
     {
         $source = $this->source();
 
-        // update / adjust / destroy all answer 422 for a finished record, so the sheet must not offer them.
-        $this->assertStringContainsString("find('.so-detail__adjust').toggleClass('d-none', !info.isPending)", $source);
-        $this->assertStringContainsString("find('[data-so-action=\"edit\"]').toggleClass('d-none', !info.isPending)", $source);
-        $this->assertStringContainsString("find('[data-so-action=\"delete\"]').toggleClass('d-none', !info.isPending)", $source);
+        // update / adjust / destroy answer 422 for a finished record. Since the reference redesign the sheet no longer has
+        // separate edit/adjust/delete buttons: the correction fields and the save button follow `canCorrect`.
+        $this->assertStringContainsString("const canCorrect = info.isPending && @json(check_access('stock-opname.update'));", $source);
+        $this->assertStringContainsString("prop('disabled', !canCorrect)", $source);
+        $this->assertStringContainsString("find('[data-so-action=\"finalize\"]').toggleClass('d-none', !info.isPending)", $source);
     }
 
     public function test_server_endpoints_and_filters_are_unchanged(): void
