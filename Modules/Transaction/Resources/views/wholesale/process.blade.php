@@ -1,10 +1,10 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Proses Pengadaan')
 
 @section('content')
     <form id="kt_ecommerce_edit_order_form" class="form erp-editor"
         action="{{ isset($data) ? url(Request::segment(1) . '/' . $data->id) : url(Request::segment(1)) }}" method="POST"
-        enctype="multipart/form-data" data-kt-redirect="">
+        enctype="multipart/form-data">
         @if (isset($data))
             @method('PUT')
         @endif
@@ -22,24 +22,24 @@
                 <!--end::Card header-->
                 <!--begin::Card body-->
                 <div class="erp-editor-body">
-                    <div class="d-flex flex-column gap-10">
+                    <div class="flex flex-col gap-8">
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="form-label">Nomor Pengadaan</label>
+                            <label class="erp-label">Nomor Pengadaan</label>
                             <!--end::Label-->
                             <!--begin::Auto-generated ID-->
-                            <div class="fw-bold fs-3">#{{ isset($data) ? $data->order_number : '14364' }}</div>
+                            <div class="font-semibold text-lg">#{{ isset($data) ? $data->order_number : '14364' }}</div>
                             <!--end::Input-->
                         </div>
                         <!--end::Input group-->
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="required form-label">Tanggal Pengadaan</label>
+                            <label class="erp-label erp-label--required">Tanggal Pengadaan</label>
                             <!--end::Label-->
                             <!--begin::Editor-->
-                            <div class="fw-bold fs-3">{{ isset($data) ? dateindo($data->order_date) : '14364' }}</div>
+                            <div class="font-semibold text-lg">{{ isset($data) ? dateindo($data->order_date) : '14364' }}</div>
                             <!--end::Editor-->
                         </div>
                         <!--end::Input group-->
@@ -47,10 +47,10 @@
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="required form-label">Status</label>
+                            <label class="erp-label erp-label--required">Status</label>
                             <!--end::Label-->
                             <!--begin::Editor-->
-                            <div class="fw-bold fs-3">
+                            <div class="font-semibold text-lg">
                                 @if ($data->status == 'draft')
                                     <span class="badge badge-light-warning">Draft</span>
                                 @elseif($data->status == 'processing')
@@ -84,23 +84,23 @@
                 <!--end::Card header-->
                 <!--begin::Card body-->
                 <div class="erp-editor-body">
-                    <div class="d-flex flex-column gap-10">
+                    <div class="flex flex-col gap-8">
                         <!--begin::Input group-->
                         <div>
                             <!--begin::Selected products-->
-                            <div class="table table-responsive">
-                                <label class="erp-process-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-kt-ecommerce-edit-order-filter="search" placeholder="Cari produk pengadaan…" aria-label="Cari produk pengadaan"></label><x-erp.collection table="kt_ecommerce_edit_order_selected_products_table"><table class="table align-middle table-row-dashed fs-6 gy-3 mb-5"
+                            <div class="overflow-x-auto">
+                                <label class="erp-process-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-order-filter="search" placeholder="Cari produk pengadaan…" aria-label="Cari produk pengadaan"></label><x-erp.collection table="kt_ecommerce_edit_order_selected_products_table"><table class="erp-table"
                                     id="kt_ecommerce_edit_order_selected_products_table">
                                     <thead>
-                                        <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
-                                            <th class="min-w-200px">Product</th>
-                                            <th class="min-w-100px">Price</th>
-                                            <th class="min-w-100px">Total</th>
-                                            <th class="min-w-100px text-end">Actions</th>
+                                        <tr class="text-start text-gray-300 font-semibold text-xs uppercase gs-0">
+                                            <th class="min-w-[200px]">Product</th>
+                                            <th class="min-w-[100px]">Price</th>
+                                            <th class="min-w-[100px]">Total</th>
+                                            <th class="min-w-[100px] text-end">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody id="kt_ecommerce_edit_order_selected_products_body">
-                                        <tr class="text-muted text-center">
+                                        <tr class="text-gray-400 text-center">
                                             <td colspan="6">Select one or more products from the list below by ticking
                                                 the
                                                 checkbox.</td>
@@ -113,14 +113,14 @@
                             <div id="selected-products-hidden"></div>
                             <!--begin::Selected products-->
                             {{-- <!--begin::Total price-->
-                            <div class="fw-bold fs-4">Total Cost: $
+                            <div class="font-semibold text-base">Total Cost: $
                                 <span id="kt_ecommerce_edit_order_total_price">0.00</span>
                             </div>
                             <!--end::Total price--> --}}
                         </div>
                         <!--end::Input group-->
                         <!--begin::Separator-->
-                        <div class="separator"></div>
+                        <div class="border-t border-gray-100"></div>
                         <!--end::Separator-->
                     </div>
                 </div>
@@ -137,9 +137,8 @@
                 @if ($data->status != 'complete')
                     <button type="button" id="kt_ecommerce_edit_order_submit" class="erp-action erp-action--primary"
                         onclick="setSelesai({{ $data->id }})">
-                        <span class="indicator-label">Selesaikan Pengadaan</span>
-                        <span class="indicator-progress">Please wait...
-                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                        <span data-label>Selesaikan Pengadaan</span>
+                    <span data-progress hidden>Mohon tunggu...</span>
                     </button>
                 @endif
                 <!--end::Button-->
@@ -210,14 +209,7 @@
                 }
             });
 
-            $('#inputSupplier').select2({
-                dropdownParent: $('#modalInputQty'),
-                width: '100%',
-                placeholder: 'Choose supplier',
-                allowClear: true
-            });
-
-            document.querySelector('[data-kt-ecommerce-edit-order-filter="search"]')?.addEventListener("keyup",
+            document.querySelector('[data-order-filter="search"]')?.addEventListener("keyup",
                 function(e) {
                     tableSelectedProduct.search(e.target.value).draw();
                 });
@@ -229,7 +221,7 @@
         $("#kt_ecommerce_edit_order_form").submit(function() {
             $(this).find(":submit").attr('disabled', 'disabled');
             $(this).find(":submit").html(
-                `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...`
+                `<span class="erp-spinner" role="status" aria-hidden="true"></span> Loading...`
             );
         });
 
@@ -242,8 +234,8 @@
                 confirmButtonText: 'Ya, Diterima!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-success',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--primary',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false
             }).then((result) => {
@@ -312,8 +304,8 @@
                 confirmButtonText: 'Ya, Selesaikan!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-success',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--primary',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false
             }).then((result) => {

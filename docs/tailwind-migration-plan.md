@@ -844,6 +844,10 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 - Diuji di browser dengan akun Master: daftar produksi sungguhan (781 baris, menu Ubah/Hapus, penanda terkunci), form produksi (picker produk memuat resep, dialog tambah bahan), parcel/create.
 - **Sisa B4:** `wholesale/*`, `stock-opname/index` (2.300 baris, 187 temuan), `pengadaan/js/*`, `receipt`, serta kode mati B4 (27 file, ±507 temuan; daftar di bawah) menunggu persetujuan.
 
+**B4d (sebagian): wholesale.** `process` dan `receive_product` pindah ke `layouts.erp` (codemod + components-pass + `legacybits`: tabel `erp-table`, spinner `erp-spinner`, tombol simpan `data-label/data-progress`, Swal `erp-action`). `receive_product.blade.php` ternyata hanya dirender `receive_productOld` (tidak punya route; route `wholesale/receive-product/{id}` adalah GET yang **mengubah** status menjadi `complete` dan mengembalikan JSON), jadi masuk daftar kode mati.
+- **Belum:** kluster `wholesale/create2` + `wholesale/js-create` + `pengadaan/js/{js-allowed,js-header,js-product}` (±1.600 baris). Halaman ini sudah di `layouts.erp` tetapi memuat bundel Metronic sendiri (`plugins.bundle.*`, `style.bundle.css`) dan memakai select2 (cabang, pembayaran, `#select_product`), modal Bootstrap (`segment/modal-product`), serta CSS inline untuk `.form-control/.btn/.modal-*/.select2-*`. Migrasinya harus satu paket (CSS inline, modal → dialog, select2 → ErpPicker, hapus bundel) dan diuji dengan record pengadaan sungguhan.
+- **Catatan keselamatan pengujian:** jangan membuka rute `GET` yang namanya berbunyi aksi (`receive-product`, `process`, `set-selesai`, `delete`, `save-*`) lewat browser/fetch untuk "melihat halaman": beberapa memodifikasi data. Cek `route:list` dan isi controller dulu.
+
 ### B5 — POS (50 view)
 
 - `pos/create2` + `segment/*` + `js/*`; `pos/payment` + `js-payment` + `payment-success2`
