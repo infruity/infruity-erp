@@ -848,6 +848,8 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 - **Belum:** kluster `wholesale/create2` + `wholesale/js-create` + `pengadaan/js/{js-allowed,js-header,js-product}` (±1.600 baris). Halaman ini sudah di `layouts.erp` tetapi memuat bundel Metronic sendiri (`plugins.bundle.*`, `style.bundle.css`) dan memakai select2 (cabang, pembayaran, `#select_product`), modal Bootstrap (`segment/modal-product`), serta CSS inline untuk `.form-control/.btn/.modal-*/.select2-*`. Migrasinya harus satu paket (CSS inline, modal → dialog, select2 → ErpPicker, hapus bundel) dan diuji dengan record pengadaan sungguhan.
 - **Catatan keselamatan pengujian:** jangan membuka rute `GET` yang namanya berbunyi aksi (`receive-product`, `process`, `set-selesai`, `delete`, `save-*`) lewat browser/fetch untuk "melihat halaman": beberapa memodifikasi data. Cek `route:list` dan isi controller dulu.
 
+**Kode mati B4 dihapus (disetujui pemilik repo): 30 view** tanpa pemanggil (referensi komentar tidak dihitung): `pengadaan/{create,index,index2,show,js-create,segment/*}`, `sortir/index` + `sortir/js/{js-allowed,js-header}`, `transfer/{index,show,js-create,js/*,segment/{cart,modal-correction,modal-product,ringkasan}}`, `wholesale/{create,edit,show,js-edit,js-show,receive_product}`, `production/js-create2`, `Transaction/index`, `Transaction/layouts/master`, dan `WholesaleController::receive_productOld`. Allowlist 101 → 77 file. `ProductionController_temp.php` dan `*.php.temp` tetap menunggu keputusan terpisah.
+
 ### B5 — POS (50 view)
 
 - `pos/create2` + `segment/*` + `js/*`; `pos/payment` + `js-payment` + `payment-success2`

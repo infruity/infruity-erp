@@ -301,29 +301,6 @@
         "btn": 2,
         "bs-utilities": 5
     },
-    "Modules/Transaction/Resources/views/pengadaan/create.blade.php": {
-        "fontawesome": 1,
-        "form-classes": 3,
-        "btn": 1,
-        "bs-utilities": 5,
-        "root-layout": 1
-    },
-    "Modules/Transaction/Resources/views/pengadaan/index.blade.php": {
-        "data-kt": 3,
-        "keenicons": 2,
-        "form-classes": 4,
-        "bs-utilities": 6,
-        "root-layout": 1
-    },
-    "Modules/Transaction/Resources/views/pengadaan/index2.blade.php": {
-        "data-kt": 14,
-        "keenicons": 8,
-        "form-classes": 5,
-        "btn": 6,
-        "select2": 2,
-        "bs-utilities": 15,
-        "root-layout": 1
-    },
     "Modules/Transaction/Resources/views/pengadaan/js/js-header.blade.php": {
         "select2": 3
     },
@@ -331,54 +308,12 @@
         "select2": 3,
         "bootstrap-js": 7
     },
-    "Modules/Transaction/Resources/views/pengadaan/segment/cart.blade.php": {
-        "fontawesome": 1,
-        "btn": 1,
-        "bs-utilities": 24
-    },
-    "Modules/Transaction/Resources/views/pengadaan/segment/modal-product.blade.php": {
-        "form-classes": 12,
-        "btn": 5,
-        "modal-class": 12,
-        "bs-utilities": 2
-    },
-    "Modules/Transaction/Resources/views/pengadaan/segment/ringkasan.blade.php": {
-        "bootstrap-icons": 1,
-        "btn": 5,
-        "bs-utilities": 6
-    },
-    "Modules/Transaction/Resources/views/pengadaan/show.blade.php": {
-        "data-kt": 7,
-        "form-classes": 4,
-        "btn": 2,
-        "badge-light": 1,
-        "select2": 1,
-        "bs-utilities": 27,
-        "root-layout": 1
-    },
     "Modules/Transaction/Resources/views/production/create-parcel.blade.php": {
         "select2": 1
     },
     "Modules/Transaction/Resources/views/production/js-create.blade.php": {
         "form-classes": 1,
         "select2": 5
-    },
-    "Modules/Transaction/Resources/views/production/js-create2.blade.php": {
-        "keenicons": 8,
-        "form-classes": 8,
-        "btn": 8,
-        "select2": 6,
-        "bs-utilities": 4
-    },
-    "Modules/Transaction/Resources/views/sortir/index.blade.php": {
-        "data-kt": 3,
-        "keenicons": 2,
-        "form-classes": 4,
-        "bs-utilities": 6,
-        "root-layout": 1
-    },
-    "Modules/Transaction/Resources/views/sortir/js/js-header.blade.php": {
-        "select2": 3
     },
     "Modules/Transaction/Resources/views/stock-opname/exports/preview.blade.php": {
         "btn": 4
@@ -405,104 +340,13 @@
     "Modules/Transaction/Resources/views/stock-out/index.blade.php": {
         "select2": 2
     },
-    "Modules/Transaction/Resources/views/transfer/index.blade.php": {
-        "data-kt": 3,
-        "keenicons": 2,
-        "form-classes": 4,
-        "bs-utilities": 6,
-        "root-layout": 1
-    },
-    "Modules/Transaction/Resources/views/transfer/js/js-header.blade.php": {
-        "select2": 3
-    },
-    "Modules/Transaction/Resources/views/transfer/js/js-product.blade.php": {
-        "select2": 3,
-        "bootstrap-js": 8,
-        "bs-utilities": 2
-    },
-    "Modules/Transaction/Resources/views/transfer/segment/cart.blade.php": {
-        "bootstrap-icons": 3,
-        "fontawesome": 1,
-        "btn": 1,
-        "badge-light": 1,
-        "bs-utilities": 14
-    },
-    "Modules/Transaction/Resources/views/transfer/segment/modal-correction.blade.php": {
-        "data-bs": 2,
-        "bootstrap-icons": 1,
-        "form-classes": 5,
-        "btn": 5,
-        "modal-class": 5,
-        "bs-utilities": 28
-    },
-    "Modules/Transaction/Resources/views/transfer/segment/modal-product.blade.php": {
-        "form-classes": 6,
-        "btn": 5,
-        "modal-class": 12,
-        "bs-utilities": 2
-    },
-    "Modules/Transaction/Resources/views/transfer/segment/ringkasan.blade.php": {
-        "bootstrap-icons": 3,
-        "btn": 3,
-        "bs-utilities": 2
-    },
-    "Modules/Transaction/Resources/views/transfer/show.blade.php": {
-        "data-kt": 7,
-        "form-classes": 4,
-        "btn": 2,
-        "badge-light": 1,
-        "select2": 1,
-        "bs-utilities": 27,
-        "root-layout": 1
-    },
-    "Modules/Transaction/Resources/views/wholesale/create.blade.php": {
-        "data-bs": 3,
-        "data-kt": 3,
-        "keenicons": 2,
-        "form-classes": 10,
-        "btn": 7,
-        "modal-class": 12,
-        "select2": 2,
-        "bs-utilities": 23,
-        "root-layout": 1
-    },
     "Modules/Transaction/Resources/views/wholesale/create2.blade.php": {
         "form-classes": 7,
         "btn": 3,
         "bs-utilities": 2
     },
-    "Modules/Transaction/Resources/views/wholesale/edit.blade.php": {
-        "data-bs": 2,
-        "data-kt": 5,
-        "keenicons": 2,
-        "form-classes": 8,
-        "btn": 4,
-        "modal-class": 6,
-        "select2": 1,
-        "bs-utilities": 26,
-        "root-layout": 1
-    },
-    "Modules/Transaction/Resources/views/wholesale/js-edit.blade.php": {
-        "data-kt": 4,
-        "bootstrap-icons": 2,
-        "form-classes": 1,
-        "btn": 4,
-        "select2": 1,
-        "bootstrap-js": 2,
-        "bs-utilities": 7
-    },
-    "Modules/Transaction/Resources/views/wholesale/js-show.blade.php": {
-        "data-kt": 7,
-        "form-classes": 1,
-        "select2": 1,
-        "bootstrap-js": 1,
-        "bs-utilities": 4
-    },
     "Modules/Transaction/Resources/views/wholesale/process.blade.php": {
         "badge-light": 4
-    },
-    "Modules/Transaction/Resources/views/wholesale/receive_product.blade.php": {
-        "badge-light": 1
     },
     "Modules/Transaction/Resources/views/wholesale/segment/modal-product.blade.php": {
         "form-classes": 8,
@@ -513,16 +357,6 @@
     "Modules/Transaction/Resources/views/wholesale/segment/ringkasan.blade.php": {
         "btn": 2,
         "bs-utilities": 1
-    },
-    "Modules/Transaction/Resources/views/wholesale/show.blade.php": {
-        "data-bs": 3,
-        "data-kt": 2,
-        "form-classes": 9,
-        "btn": 5,
-        "modal-class": 12,
-        "select2": 2,
-        "bs-utilities": 16,
-        "root-layout": 1
     },
     "app/Http/Controllers/P_role.php": {
         "data-bs": 1,

@@ -447,27 +447,6 @@ class WholesaleController extends Controller
         }
     }
 
-    public function receive_productOld($id)
-    {
-        $data['data']             = Wholesale::findOrFail($id);
-        $data['selectedProducts'] = WholesaleProduct::with('product')
-            ->where('wholesale_id', $id)
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id'    => $item->id,
-                    'name'  => $item->product->name,
-                    'sku'   => $item->product->sku,
-                    'unit'  => $item->product->unit->abbreviation,
-                    'price' => number_format($item->product->price, 0, ',', '.'),
-                    'image' => asset('storage/' . $item->product->image),
-                    'qty'   => $item->quantity,
-                ];
-            });
-        // dd($data);
-        return view('transaction::wholesale.receive_product', $data);
-    }
-
     public function receive_product(Request $request, $id)
     {
         if ($denied = $this->requireAccess('wholesale.receive_product')) {
