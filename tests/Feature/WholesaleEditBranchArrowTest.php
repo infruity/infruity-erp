@@ -4,47 +4,48 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 
+/** Pemilih cabang halaman pengadaan (mode ubah/buat) memakai ErpPicker, bukan select2. */
 class WholesaleEditBranchArrowTest extends TestCase
 {
-    public function test_mobile_edit_branch_selector_matches_reference_open_and_selected_states(): void
+    private function source(string $file = 'wholesale/create2.blade.php'): string
     {
-        $source = file_get_contents(base_path('Modules/Transaction/Resources/views/wholesale/create2.blade.php'));
+        return file_get_contents(base_path('Modules/Transaction/Resources/views/'.$file));
+    }
+
+    public function test_mobile_edit_branch_picker_matches_the_reference_surface_and_selected_state(): void
+    {
+        $source = $this->source();
 
         $this->assertMatchesRegularExpression(
-            '/\.wholesale-procurement\.is-edit-mode\s+#branch_id\s*\+\s*\.select2-container\s+\.select2-selection__arrow\s*\{[^}]*display\s*:\s*none[^}]*\}/s',
+            '/\.wholesale-procurement\.is-edit-mode\s+#branch_id\s*~\s*\.erp-picker__trigger\s*\{[^}]*background\s*:\s*#f9fafb[^}]*font-size\s*:\s*14px[^}]*\}/s',
             $source,
-            'The edit mode must hide Select2’s native arrow to avoid relying on theme styles.'
+            'Pemicu pemilih cabang mode ubah memakai permukaan abu-abu muda dan teks 14px.'
         );
         $this->assertMatchesRegularExpression(
-            '/\.wholesale-procurement\.is-edit-mode\s+#branch_id\s*\+\s*\.select2-container\s+\.select2-selection--single::after\s*\{[^}]*content\s*:\s*""[^}]*border-right\s*:\s*2px solid #[0-9a-f]+[^}]*transform\s*:\s*rotate\(45deg\)[^}]*\}/is',
+            '/\.wholesale-procurement\.is-edit-mode\s+#branch_id\s*~\s*\.erp-picker__trigger\s+\.erp-picker__label:not\(\.is-placeholder\)\s*\{[^}]*font-weight\s*:\s*600[^}]*\}/s',
             $source,
-            'The closed edit-mode branch selector must draw its own down caret.'
-        );
-        $this->assertMatchesRegularExpression(
-            '/\.wholesale-procurement\.is-edit-mode\s+#branch_id\s*\+\s*\.select2-container--open\s+\.select2-selection--single::after\s*\{[^}]*transform\s*:\s*rotate\(225deg\)[^}]*\}/s',
-            $source,
-            'The open edit-mode branch selector must point its caret upward.'
-        );
-        $this->assertMatchesRegularExpression(
-            '/\.wholesale-procurement\.is-edit-mode\s+#branch_id\s*\+\s*\.select2-container--open\s+\.select2-selection--single\s*\{[^}]*background\s*:\s*#fff[^}]*\}/s',
-            $source,
-            'The open branch selector must use the white focused surface.'
-        );
-        $this->assertMatchesRegularExpression(
-            '/\.wholesale-procurement\.is-edit-mode\s+#branch_id\s*\+\s*\.select2-container\s+\.select2-selection__rendered:not\(\.select2-selection__placeholder\)\s*\{[^}]*font-weight\s*:\s*600[^}]*\}/s',
-            $source,
-            'A selected branch must use the semibold reference treatment.'
+            'Cabang yang sudah dipilih memakai semibold.'
         );
     }
 
-    public function test_mobile_edit_branch_select_anchors_its_dropdown_arrow_to_the_field(): void
+    public function test_the_page_no_longer_depends_on_select2_or_the_metronic_bundle(): void
     {
-        $source = file_get_contents(base_path('Modules/Transaction/Resources/views/wholesale/create2.blade.php'));
+        $source = $this->source();
 
-        $this->assertMatchesRegularExpression(
-            '/\.wholesale-procurement\.is-edit-mode\s+#branch_id\s*\+\s*\.select2-container\s+\.select2-selection--single\s*\{[^}]*position\s*:\s*relative[^}]*\}/s',
-            $source,
-            'The edit-mode Select2 selection must anchor its absolute dropdown arrow.'
-        );
+        $this->assertStringNotContainsString('select2', $source);
+        $this->assertStringNotContainsString('plugins.bundle', $source);
+        $this->assertStringNotContainsString('style.bundle', $source);
+        $this->assertStringNotContainsString('select2', $this->source('pengadaan/js/js-header.blade.php'));
+        $this->assertStringContainsString("ErpPicker.attach('#branch_id'", $this->source('pengadaan/js/js-header.blade.php'));
+    }
+
+    public function test_item_dialogs_are_native_dialogs(): void
+    {
+        $segment = $this->source('wholesale/segment/modal-product.blade.php');
+
+        $this->assertStringContainsString('<x-erp.dialog id="addModal"', $segment);
+        $this->assertStringContainsString('<x-erp.dialog id="editModal"', $segment);
+        $this->assertStringNotContainsString('class="modal ', $segment);
+        $this->assertStringNotContainsString('bootstrap', $this->source('pengadaan/js/js-product.blade.php'));
     }
 }

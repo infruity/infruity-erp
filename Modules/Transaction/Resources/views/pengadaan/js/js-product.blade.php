@@ -246,10 +246,7 @@
 
                 this.editModal = true;
 
-                setTimeout(() => {
-                    const modal = new bootstrap.Modal(document.getElementById('editModal'));
-                    modal.show();
-                }, 0);
+                erp.dialog.open('editModal');
             },
 
             get formattedEditPrice() {
@@ -380,9 +377,7 @@ set formattedEditSell(val) {
 
             closeEditModal() {
                 this.editModal = false;
-                const modalEl = document.getElementById('editModal');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) modal.hide();
+                erp.dialog.close('editModal');
             },
 
             // Add Product Section
@@ -419,72 +414,20 @@ set formattedEditSell(val) {
             },
             openAddModal() {
                 this.showAddModal = true;
-                if (document.getElementById('wholesale-product-search')) {
-                    this.resetAddForm();
-                    this.addProductSearch = '';
-                    this.addValidationError = '';
-                    const modalEl = document.getElementById('addModal');
-                    if (!modalEl.dataset.wholesaleBound) {
-                        modalEl.addEventListener('hidden.bs.modal', () => { this.showAddModal = false; });
-                        modalEl.dataset.wholesaleBound = 'true';
-                    }
-                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
-                    this.loadAddProducts();
-                    return;
+                this.resetAddForm();
+                this.addProductSearch = '';
+                this.addValidationError = '';
+                const modalEl = document.getElementById('addModal');
+                if (!modalEl.dataset.wholesaleBound) {
+                    modalEl.addEventListener('erp:dialog-close', () => { this.showAddModal = false; });
+                    modalEl.dataset.wholesaleBound = 'true';
                 }
-                setTimeout(() => {
-                    const modal = new bootstrap.Modal(document.getElementById('addModal'));
-                    modal.show();
-
-                    // Init select2
-                    $('#select_product').select2({
-                        placeholder: 'Pilih produk',
-                        dropdownParent: $('#addModal'),
-                        ajax: {
-                            url: '/ajax/listProduct', // ganti sesuai route
-                            dataType: 'json',
-                            delay: 250,
-                            data: function(params) {
-                                return {
-                                    term: params.term,
-                                    status: 'aktif',
-                                    variant: '0',
-                                    limit: 10
-                                };
-                            },
-                            processResults: data => ({
-                                results: data.map(item => ({
-                                    id: item.id,
-                                    text: item.name,
-                                    unit: item.unit,
-                                    price: item.price || 0,
-                                    hpp: item.hpp || 0,
-                                    last_price: item.last_price ?? null,
-                                    last_sell_price: item.last_sell_price || null,
-                                }))
-                            })
-                        }
-                    }).on('select2:select', (e) => {
-                        const data = e.params.data;
-                        this.addProduct.id = data.id;
-                        this.addProduct.name = data.text;
-                        this.addProduct.unit = data.unit.abbreviation;
-                        // Harga beli berasal dari pengadaan terakhir; produk tanpa riwayat dimulai dari 0.
-                        this.addProduct.price = data.last_price ?? 0;
-                        // Gunakan last_sell_price untuk harga jual nanti
-                        this.addProduct.sell = data.last_sell_price || data.last_price || data.price || 0;
-                        this.addProduct.hpp = data.hpp ?? 0;
-                        subtotal = this.addProduct.qty * this.addProduct.price;
-                        this.addProduct.formattedAddTotalInput = this.formatRupiah(this.addProduct
-                            .total);
-                        this.updateAddTotalFromQty();
-                    });
-                }, 0);
+                erp.dialog.open('addModal');
+                this.loadAddProducts();
             },
             closeAddModal() {
                 this.showAddModal = false;
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
-                if (modal) modal.hide();
+                erp.dialog.close('addModal');
             },
             updateAddTotalFromQty() {
                 const qty = parseFloat(this.addProduct.qty) || 0;
@@ -654,17 +597,12 @@ set formattedEditSell(val) {
             showCartModal: false, // di dalam return {...}
             openCartModal() {
                 this.showCartModal = true;
-                setTimeout(() => {
-                    const modal = new bootstrap.Modal(document.getElementById('cartModal'));
-                    modal.show();
-                }, 0);
+                erp.dialog.open('cartModal');
             },
 
             closeCartModal() {
                 this.showCartModal = false;
-                const modalEl = document.getElementById('cartModal');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) modal.hide();
+                erp.dialog.close('cartModal');
             },
 
             // Update quantity item di cart

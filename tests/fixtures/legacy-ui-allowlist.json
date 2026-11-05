@@ -301,13 +301,6 @@
         "btn": 2,
         "bs-utilities": 5
     },
-    "Modules/Transaction/Resources/views/pengadaan/js/js-header.blade.php": {
-        "select2": 3
-    },
-    "Modules/Transaction/Resources/views/pengadaan/js/js-product.blade.php": {
-        "select2": 3,
-        "bootstrap-js": 7
-    },
     "Modules/Transaction/Resources/views/production/create-parcel.blade.php": {
         "select2": 1
     },
@@ -340,23 +333,8 @@
     "Modules/Transaction/Resources/views/stock-out/index.blade.php": {
         "select2": 2
     },
-    "Modules/Transaction/Resources/views/wholesale/create2.blade.php": {
-        "form-classes": 7,
-        "btn": 3,
-        "bs-utilities": 2
-    },
     "Modules/Transaction/Resources/views/wholesale/process.blade.php": {
         "badge-light": 4
-    },
-    "Modules/Transaction/Resources/views/wholesale/segment/modal-product.blade.php": {
-        "form-classes": 8,
-        "btn": 3,
-        "modal-class": 12,
-        "bs-utilities": 2
-    },
-    "Modules/Transaction/Resources/views/wholesale/segment/ringkasan.blade.php": {
-        "btn": 2,
-        "bs-utilities": 1
     },
     "app/Http/Controllers/P_role.php": {
         "data-bs": 1,

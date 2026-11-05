@@ -1,76 +1,32 @@
 <script>
-    // STEP 1: Ambil data pertama dulu
-    // Detect jika URL mengandung kata "create"
-    if (window.location.pathname.includes("create")) {
-
-        // STEP 1: Ambil data pertama dulu
-        $.ajax({
+    // Cabang: pemilih ErpPicker. `erp-picker.js` dimuat defer, jadi pemasangan menunggu DOM siap.
+    $(function() {
+        const branchPicker = () => ErpPicker.attach('#branch_id', {
+            title: 'Pilih Cabang',
+            placeholder: 'Cari cabang...',
+            placeholderTrigger: 'Pilih Cabang',
+            emptyText: 'Cabang tidak ditemukan',
             url: '/ajax/getBranch',
-            dataType: 'json',
-            success: function(data) {
-
-                if (data.length > 0 && !$('#branch_id').val()) {
-                    let first = data[0];
-                    $('#branch_id')
-                        .append(new Option(first.name, first.id, true, true))
-                        .trigger('change');
-                }
-
-                $('#branch_id').select2({
-                    placeholder: 'Pilih Cabang',
-                    dropdownCssClass: 'wholesale-branch-dropdown',
-                    minimumResultsForSearch: Infinity,
-                    ajax: {
-                        url: '/ajax/getBranch',
-                        dataType: 'json',
-                        delay: 250,
-                        processResults: data => ({
-                            results: data.map(item => ({
-                                id: item.id,
-                                text: item.name,
-                            }))
-                        })
-                    }
-                });
-                $('#branch_id').next('.select2-container')
-                    .toggleClass('has-branch-choices', data.length > 1);
-
-            }
+            map: item => ({ id: item.id, text: item.name })
         });
 
-    } else {
-        // Jika bukan halaman create → Select2 biasa saja
-        $('#branch_id').select2({
-            placeholder: 'Pilih Cabang',
-            dropdownCssClass: 'wholesale-branch-dropdown',
-            minimumResultsForSearch: Infinity,
-            ajax: {
+        // Halaman create: pilih cabang pertama bila belum ada pilihan (draft yang dimuat tidak ditimpa).
+        if (window.location.pathname.includes('create')) {
+            $.ajax({
                 url: '/ajax/getBranch',
                 dataType: 'json',
-                delay: 250,
-                processResults: data => ({
-                    results: data.map(item => ({
-                        id: item.id,
-                        text: item.name,
-                    }))
-                })
-            }
-        });
-    }
-
-
-    $('#payment_id').select2({
-        placeholder: 'Pilih Tipe Pembayaran',
-        ajax: {
-            url: '/ajax/getPaymentMethod', // ganti sesuai route
-            dataType: 'json',
-            delay: 250,
-            processResults: data => ({
-                results: data.map(item => ({
-                    id: item.id,
-                    text: item.name,
-                }))
-            })
+                success: function(data) {
+                    if (data.length > 0 && !$('#branch_id').val()) {
+                        let first = data[0];
+                        $('#branch_id')
+                            .append(new Option(first.name, first.id, true, true))
+                            .trigger('change');
+                    }
+                    branchPicker();
+                }
+            });
+        } else {
+            branchPicker();
         }
-    })
+    });
 </script>

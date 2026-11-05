@@ -850,6 +850,14 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 
 **Kode mati B4 dihapus (disetujui pemilik repo): 30 view** tanpa pemanggil (referensi komentar tidak dihitung): `pengadaan/{create,index,index2,show,js-create,segment/*}`, `sortir/index` + `sortir/js/{js-allowed,js-header}`, `transfer/{index,show,js-create,js/*,segment/{cart,modal-correction,modal-product,ringkasan}}`, `wholesale/{create,edit,show,js-edit,js-show,receive_product}`, `production/js-create2`, `Transaction/index`, `Transaction/layouts/master`, dan `WholesaleController::receive_productOld`. Allowlist 101 → 77 file. `ProductionController_temp.php` dan `*.php.temp` tetap menunggu keputusan terpisah.
 
+**B4d (selesai): kluster pengadaan `wholesale/create2`.** Halaman create/edit/show tidak lagi memuat bundel Metronic (`plugins.bundle.*`, `style.bundle.css`; root 13px → 16px), select2, atau modal Bootstrap:
+- Cabang memakai `ErpPicker` (`pengadaan/js/js-header`, dipasang saat DOM siap; halaman create tetap memilih cabang pertama bila kosong, draf yang dimuat tidak ditimpa). `#payment_id` tidak ada di markup, jadi inisialisasinya dihapus.
+- `addModal` dan `editModal` menjadi `<x-erp.dialog>` (jalur `select2` cadangan di `openAddModal` yang tak pernah jalan dibuang); `js-product` memakai `erp.dialog.open/close`.
+- CSS inline `create2` ditulis ulang: `.card/.row/.col/.form-*/.btn/.modal-*/.select2-*` diganti kelas halaman (`wholesale-card`, `wholesale-summary__actions`, `wholesale-btn-draft/submit`) dan `.erp-picker__trigger`; blok tampilan dropdown select2 dihapus. Header dialog kini putih standar (sebelumnya hijau tua).
+- Test: `WholesaleEditBranchArrowTest` ditulis ulang (kontrak picker/dialog, tanpa select2/bundel Metronic); `wholesale-buttons.test.cjs` memakai tiruan `erp.dialog` dan `ErpPicker`, ditambah satu test untuk halaman edit/show.
+- Diuji di browser dengan akun Master: create (cabang, dialog tambah item, daftar produk), show (10 item, status, total) dan edit (10 item, dialog ubah item membaca nama/qty/harga/margin sungguhan). Tidak ada simpan: autosave draf membuat record, jadi item tidak ditambahkan saat uji.
+- Sisa B4: HTML di controller (`ProductReceipt`, `Sortir`, `Transfer`, `Wholesale`), dan `stock-opname/*`.
+
 ### B5 — POS (50 view)
 
 - `pos/create2` + `segment/*` + `js/*`; `pos/payment` + `js-payment` + `payment-success2`

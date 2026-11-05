@@ -1,12 +1,6 @@
 @push('styles')
 <style>
-    #addModal .modal-dialog { display:flex; align-items:center; width:calc(100% - 32px); max-width:512px; min-height:calc(100% - 32px); margin:16px auto; }
-    #addModal .modal-content { display:flex; width:100%; max-height:92dvh; min-height:0; overflow:hidden; border:1px solid #e5e7eb; border-radius:24px; background:#fff; box-shadow:0 24px 60px rgba(0,0,0,.2); font-family:'Plus Jakarta Sans',sans-serif; }
-    #addModal .modal-header { display:flex; flex:none; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f3f4f6; padding:18px 20px 14px; background:#fafbfc; }
-    #addModal .modal-title { margin:0; color:#111827; font-size:16px; line-height:1.4; font-weight:700; }
     #addModal .wholesale-item-subtitle { margin:2px 0 0; color:#6b7280; font-size:12px; line-height:1.5; }
-    #addModal .wholesale-item-close { display:flex; width:32px; height:32px; flex:none; align-items:center; justify-content:center; border:0; border-radius:50%; background:#fff; color:#6b7280; cursor:pointer; }
-    #addModal .modal-body { min-height:0; overflow-y:auto; padding:16px; overscroll-behavior:contain; }
     #addModal .wholesale-item-label { display:block; margin:0 0 7px; color:#6b7280; font-size:11px; font-weight:700; letter-spacing:.025em; line-height:1.5; text-transform:uppercase; }
     #addModal .wholesale-item-label em { color:#ef4444; font-style:normal; }
     #addModal .wholesale-product-picker { overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; }
@@ -29,7 +23,6 @@
     #addModal .wholesale-item-total { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; border:1px solid #bbf7d0; border-radius:12px; padding:13px 12px; background:#f0fdf8; color:#065f46; font-size:12px; font-weight:600; }
     #addModal .wholesale-item-total strong { color:#0b595b; font-size:14px; font-variant-numeric:tabular-nums; }
     #addModal .wholesale-item-error { margin:12px 0 0; color:#b91c1c; font-size:12px; }
-    #addModal .modal-footer { flex:none; border-top:1px solid #f3f4f6; padding:16px; background:#fafbfc; }
     #addModal .wholesale-item-submit { width:100%; min-height:44px; border:0; border-radius:12px; background:#0b595b; color:#fff; box-shadow:0 4px 8px rgba(11,89,91,.18); font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
     #addModal .wholesale-item-submit:hover { background:#08484a; }
     #addModal button:focus-visible, #addModal input:focus-visible { outline:2px solid #0b595b; outline-offset:2px; }
@@ -37,23 +30,13 @@
     #addModal #wholesale-product-search:focus,
     #addModal #wholesale-product-search:focus-visible,
     #addModal #wholesale-product-search:active { -webkit-appearance:none; appearance:none; border:0 !important; outline:0 !important; box-shadow:none !important; -webkit-box-shadow:none !important; }
-    @media (max-width:380px) { #addModal .wholesale-item-label { font-size:10px; } #addModal .modal-header { padding:16px; } }
+    @media (max-width:380px) { #addModal .wholesale-item-label { font-size:10px; } }
 </style>
 @endpush
 
-{{-- Teleport keeps the dialog outside the scrolling mobile canvas. --}}
-<template x-teleport="body">
-    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-describedby="addModalDescription" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <form class="modal-content" @submit.prevent="saveAddToCart()">
-                <div class="modal-header">
-                    <div>
-                        <h2 class="modal-title" id="addModalLabel">Tambah Item Belanja</h2>
-                        <p class="wholesale-item-subtitle" id="addModalDescription">Pilih produk dan tentukan detail belanja</p>
-                    </div>
-                    <button type="button" class="wholesale-item-close" @click="closeAddModal()" aria-label="Tutup tambah item"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
-                </div>
-                <div class="modal-body">
+<x-erp.dialog id="addModal" title="Tambah Item Belanja" size="md" variant="sheet" aria-describedby="addModalDescription">
+    <p class="wholesale-item-subtitle" id="addModalDescription">Pilih produk dan tentukan detail belanja</p>
+    <form id="wholesale-add-form" @submit.prevent="saveAddToCart()">
                     <div role="group" aria-labelledby="wholesale-product-label">
                         <span class="wholesale-item-label" id="wholesale-product-label">Pilih Produk / Bahan <em>*</em></span>
                         <div class="wholesale-product-picker">
@@ -96,74 +79,56 @@
                         <span>Total Harga Item</span><strong x-text="'Rp ' + formatRupiah(addProduct.total || 0)"></strong>
                     </div>
                     <p class="wholesale-item-error" x-show="addValidationError" x-text="addValidationError" role="alert" x-cloak></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="wholesale-item-submit">Tambah Item</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</template>
-{{-- Modal Edit --}}
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true"
-    x-show="editModal" style="display: none;">
-    <div class="modal-dialog modal-fullscreen-sm-down">
-        <div class="modal-content" x-data>
-            <div class="modal-header" style="background-color: #ff000d; color: #fff;">
-                <span class="fs-4 text-white fw-bold" x-text="editTitle"></span>
+    </form>
+    <x-slot:footer>
+        <button type="submit" form="wholesale-add-form" class="wholesale-item-submit">Tambah Item</button>
+    </x-slot:footer>
+</x-erp.dialog>
+
+<x-erp.dialog id="editModal" size="md" variant="sheet">
+    <x-slot:title><span x-text="editTitle"></span></x-slot:title>
+    <div x-show="editItem" class="space-y-3">
+        <div class="grid grid-cols-3 gap-3">
+            <div class="col-span-2">
+                <label class="erp-label" for="edit-product-name">Nama Product</label>
+                <input id="edit-product-name" type="text" class="erp-input" x-model="editProductName" readonly>
             </div>
-            <div class="modal-body">
-                <div x-show="editItem">
-                    <div class="row mb-3">
-                        <div class="col-8">
-                            <label class="form-label">Nama Product</label>
-                            <input type="text" class="form-control" x-model="editProductName" readonly>
-                        </div>
-                        <div class="col-4">
-                            <label class="form-label">Satuan</label>
-                            <input type="text" class="form-control" step="0.01" min="0"
-                                x-model="editProductUnit" readonly>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <label class="form-label">Harga Beli Satuan</label>
-                            <input type="text" class="form-control" x-model="formattedEditPrice" @input="updateTotalFromEditQty">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Harga Jual Nanti</label>
-                            <input type="text" class="form-control" step="0.01" min="0"
-                                x-model="formattedEditSell">
-                        </div>
-                    </div>
-                    <!-- Input Qty & Persentase HPP -->
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <label class="form-label">Quantity</label>
-                            <input type="number" class="form-control" step="0.01" min="0" x-model="editQty"
-                                @input="updateTotalFromEditQty">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Margin (%)</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" x-model="edit_HPPPercent" readonly>
-                                <span class="input-group-text">%</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Input Mode Harga -->
-                    <div class="mb-3">
-                        <label class="form-label">Jumlah</label>
-                        <input type="text" class="form-control" x-model="editTotalFormatted"
-                            @input="updateEditTotalFormatted" inputmode="numeric">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-danger me-auto" @click="deleteFromCart()">Hapus Produk</button>
-                <button class="btn btn-secondary" @click="closeEditModal()">Batal</button>
-                <button class="btn btn-primary" @click="saveEditToCart()">Simpan</button>
+            <div>
+                <label class="erp-label" for="edit-product-unit">Satuan</label>
+                <input id="edit-product-unit" type="text" class="erp-input" x-model="editProductUnit" readonly>
             </div>
         </div>
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="erp-label" for="edit-price">Harga Beli Satuan</label>
+                <input id="edit-price" type="text" class="erp-input" x-model="formattedEditPrice" @input="updateTotalFromEditQty">
+            </div>
+            <div>
+                <label class="erp-label" for="edit-sell">Harga Jual Nanti</label>
+                <input id="edit-sell" type="text" class="erp-input" x-model="formattedEditSell">
+            </div>
+            <div>
+                <label class="erp-label" for="edit-qty">Quantity</label>
+                <input id="edit-qty" type="number" class="erp-input" step="0.01" min="0" x-model="editQty" @input="updateTotalFromEditQty">
+            </div>
+            <div>
+                <label class="erp-label" for="edit-margin">Margin (%)</label>
+                <div class="erp-input-group">
+                    <input id="edit-margin" type="text" class="erp-input" x-model="edit_HPPPercent" readonly>
+                    <span class="erp-input-group__addon">%</span>
+                </div>
+            </div>
+        </div>
+        <div>
+            <label class="erp-label" for="edit-total">Jumlah</label>
+            <input id="edit-total" type="text" class="erp-input" x-model="editTotalFormatted" @input="updateEditTotalFormatted" inputmode="numeric">
+        </div>
     </div>
-</div>
+    <x-slot:footer>
+        <div class="flex w-full gap-2">
+            <button type="button" class="erp-action erp-action--danger mr-auto" @click="deleteFromCart()">Hapus Produk</button>
+            <button type="button" class="erp-action" @click="closeEditModal()">Batal</button>
+            <button type="button" class="erp-action erp-action--primary" @click="saveEditToCart()">Simpan</button>
+        </div>
+    </x-slot:footer>
+</x-erp.dialog>

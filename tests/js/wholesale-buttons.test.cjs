@@ -21,7 +21,7 @@ function setup() {
             if (selector.includes('name="date"')) return fields.date;
             return {getAttribute:()=> 'test-csrf'};
         },
-    }, bootstrap:{Modal:{getInstance:()=>({hide(){}})}}, Swal:{fire: x=>alerts.push(x)},
+    }, erp:{dialog:{open(){},close(){}}}, Swal:{fire: x=>alerts.push(x)},
     setTimeout:fn=>{timers.set(++timerId,fn);return timerId}, clearTimeout:id=>timers.delete(id),
     redirectToHome:()=>redirectCount++,
     fetch:async (url, options)=>{requests.push({url,...options});return {ok:true,json:async()=>({success:true,invoice_number:'TEST-PO'})}}};
@@ -97,13 +97,27 @@ test('loading branches preserves an existing draft selection; defaults only if e
     const source=fs.readFileSync(path.join(__dirname,'../../Modules/Transaction/Resources/views/pengadaan/js/js-header.blade.php'),'utf8').replace(/^<script>/,'').replace(/<\/script>\s*$/,'');
     for (const initial of ['2','']) {
         let value=initial, appended=0, success;
-        const element={val:()=>value,append(option){appended++;value=option.value;return this},trigger(){return this},select2(){return this},next(){return this},toggleClass(){return this}};
-        const $=()=>element;$.ajax=request=>success=request.success;
-        const context={$ , window:{location:{pathname:'/wholesale/create'}},Option:function(name,id){this.value=id}};
+        const picker=[];
+        const element={val:()=>value,append(option){appended++;value=option.value;return this},trigger(){return this}};
+        const $=(arg)=>{ if (typeof arg==='function') { arg(); return element; } return element; };
+        $.ajax=request=>success=request.success;
+        const context={$ , window:{location:{pathname:'/wholesale/create'}},Option:function(name,id){this.value=id},ErpPicker:{attach:(selector,options)=>picker.push({selector,options})}};
         vm.createContext(context);vm.runInContext(source,context);
         success([{id:'1',name:'A'},{id:'2',name:'B'}]);
         assert.equal(value,initial||'1');assert.equal(appended,initial?0:1);
+        // Setelah cabang terisi, pemilih dipasang pada #branch_id dan memetakan {id,name}.
+        assert.equal(picker.length,1);assert.equal(picker[0].selector,'#branch_id');
+        assert.equal(JSON.stringify(picker[0].options.map({id:3,name:'C'})),JSON.stringify({id:3,text:'C'}));
     }
+});
+test('on edit/show pages the branch picker is attached immediately without defaulting the branch',()=>{
+    const source=fs.readFileSync(path.join(__dirname,'../../Modules/Transaction/Resources/views/pengadaan/js/js-header.blade.php'),'utf8').replace(/^<script>/,'').replace(/<\/script>\s*$/,'');
+    const picker=[];let ajax=0;
+    const element={val:()=>'5',append(){throw new Error('tidak boleh menimpa cabang')},trigger(){return this}};
+    const $=(arg)=>{ if (typeof arg==='function') arg(); return element; };$.ajax=()=>{ajax++};
+    const context={$ , window:{location:{pathname:'/wholesale/12/edit'}},Option:function(){},ErpPicker:{attach:(selector)=>picker.push(selector)}};
+    vm.createContext(context);vm.runInContext(source,context);
+    assert.deepEqual(picker,['#branch_id']);assert.equal(ajax,0);
 });
 test('back is unblocked on empty/saved form, warns only on unsaved edits',()=>{
     const source=fs.readFileSync(path.join(__dirname,'../../Modules/Transaction/Resources/views/pengadaan/js/js-allowed.blade.php'),'utf8').replace(/^<script>/,'').replace(/<\/script>\s*$/,'');
