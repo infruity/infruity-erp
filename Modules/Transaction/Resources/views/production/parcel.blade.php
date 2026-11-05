@@ -1,21 +1,22 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Produksi Parcel')
+@section('page-title', 'Produksi Parcel')
 @section('content')
     <link rel="stylesheet" href="{{ asset('assets/css/erp-operations.css') }}?v={{ filemtime(public_path('assets/css/erp-operations.css')) }}">
     <x-erp.workspace title="Produksi Parcel" subtitle="Pantau proses perakitan parcel." icon="gift">
         <x-slot:toolbar>
-            <label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-kt-ecommerce-product-filter="search" id="search" aria-label="Cari parcel" placeholder="Cari parcel..."></label>
-            <div class="erp-operations-toolbar-actions"><label class="erp-operations-inline-select"><span class="visually-hidden">Status parcel</span><select class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Status" data-kt-ecommerce-product-filter="status"><option></option><option value="all">Semua Status</option><option value="processing">Diproses</option><option value="complete">Selesai</option></select></label><a href="{{ url('parcel/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Parcel</a></div>
+            <label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-erp-filter="search" id="search" aria-label="Cari parcel" placeholder="Cari parcel..."></label>
+            <div class="erp-operations-toolbar-actions"><label class="erp-operations-inline-select"><span class="sr-only">Status parcel</span><select class="erp-select" data-erp-filter="status"><option></option><option value="all">Semua Status</option><option value="processing">Diproses</option><option value="complete">Selesai</option></select></label><a href="{{ url('parcel/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Parcel</a></div>
         </x-slot:toolbar>
         <div class="erp-operations-collection" data-erp-collection="parcel-table" data-erp-empty="Belum ada produksi parcel" data-erp-empty-description="Data yang tersimpan akan muncul di sini.">
-            <table class="table erp-operations-table align-middle" id="parcel-table" width="100%">
+            <table class="erp-table erp-operations-table" id="parcel-table" width="100%">
                     <thead>
                         <tr class="text-start">
 
-                            <th class="text-start min-w-100px">Nama</th>
-                            <th class="text-center min-w-100px">Status</th>
-                            <th class="text-center min-w-100px">Tanggal Produksi</th>
-                            <th class="text-end min-w-50px"></th>
+                            <th class="text-start min-w-[100px]">Nama</th>
+                            <th class="text-center min-w-[100px]">Status</th>
+                            <th class="text-center min-w-[100px]">Tanggal Produksi</th>
+                            <th class="text-end min-w-[50px]"></th>
                         </tr>
                     </thead>
                     <tbody class=""></tbody>
@@ -100,7 +101,7 @@
                 dataTable.search(this.value).draw();
             });
 
-            $('[data-kt-ecommerce-product-filter="status"]').on('change', function() {
+            $('[data-erp-filter="status"]').on('change', function() {
                 let val = $(this).val();
 
                 if (val === 'all') val = ''; // kosongkan filter jika all
@@ -126,8 +127,8 @@
                 confirmButtonText: 'Ya, hapus!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--danger',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false
             }).then((result) => {

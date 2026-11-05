@@ -2,6 +2,7 @@
 
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\DataTableCells;
 use App\Support\ProductionCost;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -234,73 +235,34 @@ class ProductionParcelController extends Controller
         $data = ProductionParcel::with('staff')->get();
         return DataTables::of($data)
             ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                return '<div class="d-flex align-items-center">
-                            <div class="ms-5">
-                                <a href="' . url('production') . '/' . $item->id . '/show' . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">#' . $item->production_number . '</a>
-                                <br>
-                                <span class="text-muted fw-bold d-block fs-7">Budget : ' . tonumber($item->budget) . '</span>
-                                <span class="text-muted fw-bold d-block fs-7">Pic : ' . (isset($item->staff_id) ? $item->staff->name : '-') . '</span>
-                            </div>
-                        </div>';
-            })
+            ->addColumn('name', fn ($item) => DataTableCells::title(
+                '#'.$item->production_number,
+                'Budget : '.tonumber($item->budget).' · Pic : '.(isset($item->staff_id) ? $item->staff->name : '-'),
+                url('production').'/'.$item->id.'/show'
+            ))
             ->addColumn('production_date', function ($item) {
                 return dateindo($item->production_date);
             })
-            ->addColumn('status', function ($item) {
-                if ($item->status == 'posting') {
-                    return '<span class="badge badge-light-primary">Posting</span>';
-                } elseif ($item->status == 'complete') {
-                    return '<span class="badge badge-light-success">Complete</span>';
-                } elseif ($item->status == 'draft') {
-                    return '<span class="badge badge-light-warning">Draft</span>';
-                } else {
-                    return '<span class="badge badge-light-danger">Unknown</span>';
-                }
+            ->addColumn('status', fn ($item) => match ($item->status) {
+                'posting' => DataTableCells::badge('Posting', 'primary'),
+                'complete' => DataTableCells::badge('Complete', 'success'),
+                'draft' => DataTableCells::badge('Draft', 'warning'),
+                default => DataTableCells::badge('Unknown', 'danger'),
             })
             ->addColumn('status_raw', function ($item) {
                 return $item->status;
             })
             ->addColumn('action', function ($item) {
-                $html = '<div class="dropstart">
-                            <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                                <i class="bi bi-three-dots-vertical"></i>
-                            </button>
-                                <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
-
-                if ($item->status != 'complete') {
-                    $html .= '  <li>
-                                <a class="dropdown-item" href="' . route('parcel.edit', $item->id) . '">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="' . route('parcel.edit', $item->id) . '">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="' . route('parcel.process', $item->id) . '">
-                                    <i class="bi bi-box-seam"></i>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $item->id . ')">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </li>
-                    ';
-                } else {
-                    $html .= '  <li>
-                                    <a class="dropdown-item" href="' . route('parcel.show', $item->id) . '">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                </li>
-                    ';
+                if ($item->status == 'complete') {
+                    return DataTableCells::viewMenu(route('parcel.show', $item->id));
                 }
-                $html .= '</ul>
-                    </div>';
-                return $html;
+
+                return DataTableCells::rowActions([
+                    ['label' => 'Lihat', 'icon' => 'eye', 'href' => route('parcel.edit', $item->id)],
+                    ['label' => 'Ubah', 'icon' => 'pencil-simple', 'href' => route('parcel.edit', $item->id)],
+                    ['label' => 'Proses', 'icon' => 'package', 'href' => route('parcel.process', $item->id)],
+                    ['label' => 'Hapus', 'icon' => 'trash', 'onclick' => 'deleteProduct('.(int) $item->id.')', 'tone' => 'danger'],
+                ]);
             })
             ->addColumn('production_id', function ($item) {
                 return $item->id;
@@ -319,41 +281,14 @@ class ProductionParcelController extends Controller
         $data = ProductionParcelDetail::where('production_id', $id)->get();
         return DataTables::of($data)
             ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                $html = '';
-                $html .= $item->product->name . '<br> Jumlah : ' . $item->quantity . ' ' . $item->product->unit->abbreviation . '<br> Harga : ' . toNumber($item->product->price) . '';
-                return $html;
-            })
+            ->addColumn('name', fn ($item) => e($item->product->name) . '<br> Jumlah : ' . e($item->quantity . ' ' . $item->product->unit->abbreviation) . '<br> Harga : ' . toNumber($item->product->price))
             ->addColumn('hpp', function ($item) {
                 return 'Rp' . toNumber($item->product->hpp * $item->quantity);
             })
             ->addColumn('harga_jual', function ($item) {
                 return toNumber($item->product->price * $item->quantity);
             })
-            ->addColumn('action', function ($item) use ($request) {
-                $html = '';
-
-                $html .= '
-                    <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="editProduct(' . $item->id . ')" title="Edit">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $item->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                    ';
-                return $html;
-            })
+            ->addColumn('action', fn ($item) => DataTableCells::editDeleteMenu((string) $item->product->name, $item->id, true, true))
             ->rawColumns(['name', 'action', 'harga_jual'])
             ->make(true);
     }

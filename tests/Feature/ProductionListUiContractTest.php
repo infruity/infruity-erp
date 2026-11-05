@@ -44,8 +44,8 @@ final class ProductionListUiContractTest extends TestCase
         foreach (['status_filter', 'cabang_filter', 'start_date', 'end_date', "route('production-data')", 'deleteProduct('] as $contract) {
             $this->assertStringContainsString($contract, $view . $this->controller());
         }
-        $this->assertStringContainsString("data-kt-ecommerce-product-filter=\"status\"", $view);
-        $this->assertStringContainsString("data-kt-ecommerce-product-filter=\"cabang\"", $view);
+        $this->assertStringContainsString("data-erp-filter=\"status\"", $view);
+        $this->assertStringContainsString("data-erp-filter=\"cabang\"", $view);
     }
 
     public function test_cell_markup_exposes_product_status_and_quantity_without_new_queries(): void
@@ -88,17 +88,19 @@ final class ProductionListUiContractTest extends TestCase
         $this->assertStringContainsString('productionFilterSheet()', $view);
         $this->assertStringContainsString('Filter Produksi', $view);
         // The sheet drives the existing selects, so the DataTable wiring stays as it is.
-        $this->assertStringContainsString("data-kt-ecommerce-product-filter=\"status\"", $view);
-        $this->assertStringContainsString("data-kt-ecommerce-product-filter=\"cabang\"", $view);
+        $this->assertStringContainsString("data-erp-filter=\"status\"", $view);
+        $this->assertStringContainsString("data-erp-filter=\"cabang\"", $view);
         // Heading and the add button yield to the dock on small screens.
         $this->assertStringContainsString('.production-workspace .erp-workspace-heading { display:none; }', $view);
     }
 
-    public function test_row_action_button_hides_both_dropdown_carets(): void
+    public function test_row_action_trigger_is_the_erp_menu_button_without_bootstrap_carets(): void
     {
-        // .dropstart draws its caret with ::before and .dropdown-toggle with ::after.
+        // Menu baris dirender komponen x-erp.row-actions (tanpa .dropstart/.dropdown-toggle), jadi tidak ada caret Bootstrap lagi.
         $view = $this->listView();
 
-        $this->assertStringContainsString('.btn::before, #production-table tbody td:nth-child(4) .btn::after { display:none; }', $view);
+        $this->assertStringContainsString('[data-erp-row-actions] button[aria-haspopup]', $view);
+        $this->assertStringNotContainsString('.btn::before', $view);
+        $this->assertStringContainsString('DataTableCells::rowActions', $this->controller());
     }
 }

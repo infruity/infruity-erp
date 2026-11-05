@@ -33,13 +33,13 @@
                         name: 'name',
                         render: function(data, type, row) {
                             return `
-                            <div class="d-flex align-items-center"
-                                data-kt-ecommerce-edit-order-id="${row.id}"
-                                data-kt-ecommerce-edit-order-type="${row.type}"
-                                data-kt-ecommerce-edit-order-price="${row.price}"
-                                data-kt-ecommerce-edit-order-hpp="${row.hpp}">
-                                <div class="ms-5">
-                                    <a href="#" class="text-gray-800 text-hover-primary fs-5 fw-bold">${data}</a>
+                            <div class="flex items-center"
+                                data-order-id="${row.id}"
+                                data-order-type="${row.type}"
+                                data-order-price="${row.price}"
+                                data-order-hpp="${row.hpp}">
+                                <div class="ms-4">
+                                    <a href="#" class="text-gray-800 hover:text-teal text-[15px] font-semibold">${data}</a>
                                 </div>
                             </div>`;
                         }
@@ -101,12 +101,6 @@
                 }
             });
 
-            $('#inputSupplier').select2({
-                dropdownParent: $('#modalInputQty'),
-                width: '100%',
-                placeholder: 'Choose supplier',
-                allowClear: true
-            });
 
             // Checkbox change event
             $('#kt_ecommerce_edit_order_product_table').on('click', '.check-product', function() {
@@ -114,19 +108,19 @@
                     .value;
                 const row = $(this).closest('tr');
                 const checked = $(this).is(':checked');
-                const productId = row.find('[data-kt-ecommerce-edit-order-id]').data(
-                    'kt-ecommerce-edit-order-id');
-                const type = row.find('[data-kt-ecommerce-edit-order-id]').data(
-                    'kt-ecommerce-edit-order-type');
-                const price = row.find('[data-kt-ecommerce-edit-order-id]').data(
-                    'kt-ecommerce-edit-order-price');
-                const hpp = row.find('[data-kt-ecommerce-edit-order-id]').data(
-                    'kt-ecommerce-edit-order-hpp');
+                const productId = row.find('[data-order-id]').data(
+                    'order-id');
+                const type = row.find('[data-order-id]').data(
+                    'order-type');
+                const price = row.find('[data-order-id]').data(
+                    'order-price');
+                const hpp = row.find('[data-order-id]').data(
+                    'order-hpp');
 
                 const productName = row.find('a.text-gray-800').text().trim();
                 // const productImage = row.find('.symbol-label').css('background-image').replace(
                 //     /^url\(["']?/, '').replace(/["']?\)$/, '');
-                // const price = row.find('[data-kt-ecommerce-edit-order-filter="price"]').text().trim();
+                // const price = row.find('[data-order-filter="price"]').text().trim();
 
                 selectedProduct = {
                     id: productId,
@@ -141,7 +135,7 @@
                     $('#inputSellPrice').val(price);
                     $('#typeList').val(type);
                     $('#inputQuantity').val('');
-                    $('#modalInputQty').modal('show');
+                    erp.dialog.open('modalInputQty');
                 } else {
                     var url = `{{ route('parcel.save-product') }}`;
                     var form = $('#modalInputPrcForm');
@@ -151,7 +145,7 @@
                     $('#inputSellPricePrc').val(price);
                     $('#typeList').val(type);
                     $('#inputPrice').val('');
-                    $('#modalInputPrc').modal('show');
+                    erp.dialog.open('modalInputPrc');
                 }
 
                 bindFormatNumber();
@@ -180,7 +174,7 @@
                         production_id: parcelId
                     },
                     success: function(response) {
-                        $('#modalInputQty').modal('hide');
+                        erp.dialog.close('modalInputQty');
                         // 6. Refresh DataTable
                         if (typeof tableSelectedProduct !== 'undefined') {
                             tableSelectedProduct.ajax.reload(null, false);
@@ -286,8 +280,8 @@
                 confirmButtonText: 'Ya, hapus!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--danger',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false
             }).then((result) => {
@@ -338,7 +332,7 @@
                         var form = $('#kt_modal_add_customer_form');
                         form.attr('action', urlUpdate);
                         $('#methodField').val('PUT');
-                        $('#kt_modal_add_customer').modal('show');
+                        erp.dialog.open('kt_modal_add_customer');
                     } else {
                         var form = $('#modalInputPrcForm');
                         form.attr('action', urlUpdate);
@@ -347,7 +341,7 @@
                         $('#inputSellPricePrc').val(response.data.price);
                         $('#inputQuantityPrc').val(response.data.quantity);
                         $('#inputPrice').val(response.data.nominal);
-                        $('#modalInputPrc').modal('show');
+                        erp.dialog.open('modalInputPrc');
                     }
                     // Set nilai input
 
@@ -373,8 +367,8 @@
 
             // Show loading
             submitBtn.prop('disabled', true);
-            submitBtn.find('.indicator-label').hide();
-            submitBtn.find('.indicator-progress').show();
+            submitBtn.find('[data-label]').prop('hidden', true);
+            submitBtn.find('[data-progress]').prop('hidden', false);
 
             $.ajax({
                 type: 'POST',
@@ -384,9 +378,7 @@
                     form.trigger('reset');
 
                     // 5. Tutup modal
-                    const modalEl = document.getElementById('kt_modal_add_customer');
-                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
-                    modalInstance.hide();
+                    erp.dialog.close('kt_modal_add_customer');
 
                     if (typeof tableSelectedProduct !== 'undefined') {
                         tableSelectedProduct.ajax.reload(null, false);
@@ -406,8 +398,8 @@
                 complete: function() {
                     // Reset loading state
                     submitBtn.prop('disabled', false);
-                    submitBtn.find('.indicator-label').show();
-                    submitBtn.find('.indicator-progress').hide();
+                    submitBtn.find('[data-label]').prop('hidden', false);
+                    submitBtn.find('[data-progress]').prop('hidden', true);
                 }
             });
         });
@@ -432,8 +424,8 @@
                 confirmButtonText: 'Ya, Selesaikan!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-success',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--primary',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false,
                 allowOutsideClick: false,
@@ -520,8 +512,8 @@
 
             // Show loading
             submitBtn.prop('disabled', true);
-            submitBtn.find('.indicator-label').hide();
-            submitBtn.find('.indicator-progress').show();
+            submitBtn.find('[data-label]').prop('hidden', true);
+            submitBtn.find('[data-progress]').prop('hidden', false);
 
             $.ajax({
                 type: 'POST',
@@ -532,9 +524,7 @@
                     form.trigger('reset');
 
                     // 5. Tutup modal
-                    const modalEl = document.getElementById('modalInputPrc');
-                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
-                    modalInstance.hide();
+                    erp.dialog.close('modalInputPrc');
 
                     if (typeof tableSelectedProduct !== 'undefined') {
                         tableSelectedProduct.ajax.reload(null, false);
@@ -554,8 +544,8 @@
                 complete: function() {
                     // Reset loading state
                     submitBtn.prop('disabled', false);
-                    submitBtn.find('.indicator-label').show();
-                    submitBtn.find('.indicator-progress').hide();
+                    submitBtn.find('[data-label]').prop('hidden', false);
+                    submitBtn.find('[data-progress]').prop('hidden', true);
                 }
             });
         });

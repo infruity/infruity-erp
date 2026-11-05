@@ -21,7 +21,7 @@
             <div class="erp-crm-field"><label for="exp-value" class="erp-label">Angka</label><input id="exp-value" type="number" inputmode="decimal" class="erp-input" name="value" value="{{ old('value', isset($exp->value) ? $exp->value : '1') }}"></div>
         </div></section>
     </div>
-    <div class="erp-crm-settings-actions"><a href="{{ url(Request::segment(1)) }}" id="kt_ecommerce_edit_order_cancel" class="erp-action">Batal</a><button type="submit" id="kt_ecommerce_edit_order_submit" class="erp-action erp-action--primary"><span class="indicator-label">Simpan Perubahan</span><span class="indicator-progress">Menyimpan… <span class="spinner-border spinner-border-sm" aria-hidden="true"></span></span></button></div>
+    <div class="erp-crm-settings-actions"><a href="{{ url(Request::segment(1)) }}" id="kt_ecommerce_edit_order_cancel" class="erp-action">Batal</a><button type="submit" id="kt_ecommerce_edit_order_submit" class="erp-action erp-action--primary"><span class="indicator-label">Simpan Perubahan</span><span class="indicator-progress">Menyimpan… <span class="erp-spinner" aria-hidden="true"></span></span></button></div>
 </form>
 </x-erp.workspace>
 @endsection

@@ -1,4 +1,4 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Produksi')
 
 @section('content')
@@ -88,7 +88,7 @@
 
         /* Ingredient item hover effects */
         .production-input-unit { position:relative; }
-        .production-input-unit .form-control { padding-right:64px; }
+        .production-input-unit .erp-input { padding-right:64px; }
         .production-unit { position:absolute; top:50%; right:14px; transform:translateY(-50%); color:#6b7280; font-size:12px; font-weight:700; letter-spacing:.04em; pointer-events:none; }
         .production-extra { border:1px dashed #d1d5db; border-radius:12px; padding:0 14px; }
         .production-extra > summary { display:flex; min-height:44px; align-items:center; gap:6px; color:#374151; font-size:13px; font-weight:700; cursor:pointer; }
@@ -129,8 +129,8 @@
         .production-card__body { padding:16px 20px 20px; }
         .production-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
         .production-fields .is-wide { grid-column:1 / -1; }
-        .production-form .form-label { margin-bottom:6px; color:#374151; font-size:12px; font-weight:700; }
-        .production-form .form-control, .production-form .form-select { min-height:44px; border-radius:12px; font-size:13px; }
+        .production-form .erp-label { margin-bottom:6px; color:#374151; font-size:12px; font-weight:700; }
+        .production-form .erp-input, .production-form .erp-select { min-height:44px; border-radius:12px; font-size:13px; }
         .production-add { display:inline-flex; align-items:center; gap:6px; border:0; border-radius:999px; padding:7px 14px; background:#ecfdf5; color:#0b595b; font-size:12px; font-weight:700; }
         .production-add:hover { background:#d1fae5; }
         .production-form-footer { position:sticky; bottom:0; z-index:15; margin-top:4px; border-top:1px solid #eef0f3; background:rgba(255,255,255,.97); padding:12px 20px calc(14px + env(safe-area-inset-bottom)); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
@@ -142,7 +142,7 @@
         .production-total__value strong { display:block; color:#0b595b; font-size:17px; font-weight:800; }
         .production-total__value span { color:#9ca3af; font-size:11px; }
         .production-actions { display:flex; gap:12px; padding-top:12px; }
-        .production-actions .btn { flex:1; min-height:44px; border-radius:12px; font-size:13px; font-weight:700; }
+        .production-actions .erp-action { flex:1; min-height:44px; border-radius:12px; font-size:13px; font-weight:700; }
         @media (max-width:640px) {
             .production-fields { grid-template-columns:minmax(0,1fr); gap:14px; }
             .production-card__head, .production-card__body { padding-right:16px; padding-left:16px; }
@@ -150,7 +150,7 @@
     </style>
 
     <!--begin::Main column-->
-    <div class="w-100 flex-lg-row-auto" x-data="productionApp()" x-init="init()">
+    <div class="w-full flex-lg-row-auto" x-data="productionApp()" x-init="init()">
         <div class="production-form">
             <!-- Kartu 1: informasi hasil produksi -->
             <section class="production-card" aria-labelledby="production-info-title">
@@ -164,19 +164,19 @@
                 <div class="production-card__body">
                     <div class="production-fields">
                         <div class="fv-row">
-                            <label class="required form-label" for="branch_id">Cabang / Dapur</label>
-                            <select class="form-select" id="branch_id" name="branch_id">
+                            <label class="erp-label erp-label--required" for="branch_id">Cabang / Dapur</label>
+                            <select class="erp-select" id="branch_id" name="branch_id">
                                 <option value="">Pilih Branch</option>
                             </select>
                         </div>
                         <div class="fv-row">
-                            <label class="required form-label" for="production_date">Tanggal Produksi</label>
-                            <input type="date" class="form-control" id="production_date" name="production_date"
+                            <label class="erp-label erp-label--required" for="production_date">Tanggal Produksi</label>
+                            <input type="date" class="erp-input" id="production_date" name="production_date"
                                 value="{{ old('production_date') ?? date('Y-m-d') }}">
                         </div>
                         <div class="fv-row">
-                            <label class="required form-label" for="product_id">Produk yang Diproduksi</label>
-                            <select name="product_id" id="product_id" class="form-select">
+                            <label class="erp-label erp-label--required" for="product_id">Produk yang Diproduksi</label>
+                            <select name="product_id" id="product_id" class="erp-select">
                                 @if (isset($edit_product_id) && isset($edit_product_name))
                                     <option value="{{ $edit_product_id }}" selected>{{ $edit_product_name }}</option>
                                 @elseif (isset($receipt) && $receipt != null)
@@ -187,31 +187,31 @@
                             </select>
                         </div>
                         <div class="fv-row">
-                            <label class="required form-label" for="quantity">Target Hasil Produksi</label>
+                            <label class="erp-label erp-label--required" for="quantity">Target Hasil Produksi</label>
                             <div class="production-input-unit">
-                                <input type="number" inputmode="decimal" name="quantity" id="quantity" class="form-control"
+                                <input type="number" inputmode="decimal" name="quantity" id="quantity" class="erp-input"
                                     placeholder="Masukkan Jumlah" step="0.01" x-model="productionQuantity"
                                     value="{{ isset($data) ? $data->quantity : '' }}" />
                                 <span class="production-unit" id="production-unit">{{ isset($data) ? strtoupper($data->products->unit->abbreviation ?? '') : '' }}</span>
                             </div>
                         </div>
-                        <input type="hidden" name="production_number" id="production_number" class="form-control"
+                        <input type="hidden" name="production_number" id="production_number" class="erp-input"
                             value="{{ $production_number }}">
-                        <input type="hidden" name="id" id="production_id" class="form-control"
+                        <input type="hidden" name="id" id="production_id" class="erp-input"
                             value="{{ isset($id) ? $id : '' }}">
                         <div class="fv-row is-wide">
                             <details class="production-extra" @if ((isset($edit_sell_price) && $edit_sell_price > 0) || (isset($edit_service_cost) && $edit_service_cost > 0)) open @endif>
                                 <summary>Harga &amp; Biaya <small>(opsional)</small></summary>
                                 <div class="production-fields">
                                     <div class="fv-row">
-                                        <label class="form-label" for="sell_price">Harga Jual</label>
-                                        <input type="text" inputmode="numeric" name="sell_price" id="sell_price" class="form-control format-number"
+                                        <label class="erp-label" for="sell_price">Harga Jual</label>
+                                        <input type="text" inputmode="numeric" name="sell_price" id="sell_price" class="erp-input format-number"
                                             placeholder="Masukkan Harga Jual" x-model="sellPrice"
                                             value="{{ isset($edit_sell_price) ? number_format($edit_sell_price, 0, ',', '.') : '' }}" />
                                     </div>
                                     <div class="fv-row">
-                                        <label class="form-label" for="service_cost">Biaya Jasa Produksi per Unit</label>
-                                        <input type="text" inputmode="numeric" name="service_cost" id="service_cost" class="form-control format-number"
+                                        <label class="erp-label" for="service_cost">Biaya Jasa Produksi per Unit</label>
+                                        <input type="text" inputmode="numeric" name="service_cost" id="service_cost" class="erp-input format-number"
                                             placeholder="Masukkan Biaya Jasa" x-model="serviceCost"
                                             value="{{ isset($edit_service_cost) ? number_format($edit_service_cost, 0, ',', '.') : '' }}" />
                                     </div>
@@ -219,8 +219,8 @@
                             </details>
                         </div>
                         <div class="fv-row is-wide">
-                            <label class="form-label" for="production_notes">Catatan Produksi (Opsional)</label>
-                            <input type="text" class="form-control" id="production_notes" name="notes"
+                            <label class="erp-label" for="production_notes">Catatan Produksi (Opsional)</label>
+                            <input type="text" class="erp-input" id="production_notes" name="notes"
                                 placeholder="Contoh: Batch pagi, untuk display etalase" x-model="notes">
                         </div>
                     </div>
@@ -239,7 +239,7 @@
                     </button>
                 </div>
                 <div class="production-card__body">
-                    <small class="text-muted d-block mb-3">Diperbarui per {{ date('d/m/Y') }} · ketuk bahan untuk mengubah jumlah.</small>
+                    <small class="text-gray-400 block mb-2.5">Diperbarui per {{ date('d/m/Y') }} · ketuk bahan untuk mengubah jumlah.</small>
                     @include('transaction::production.segment.ingredients-cart')
                 </div>
             </section>

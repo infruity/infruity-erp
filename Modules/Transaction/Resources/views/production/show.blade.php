@@ -1,4 +1,4 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Detail Produksi')
 
 @section('content')
@@ -41,11 +41,11 @@
     .production-detail__total div:last-child strong { font-size:15px; }
     .production-detail__note { margin:0; color:#6b7280; font-size:11px; line-height:1.6; }
     .production-detail__actions { display:flex; flex-wrap:wrap; gap:8px; }
-    .production-detail__actions .btn { min-height:40px; border-radius:12px; font-size:12px; font-weight:700; }
+    .production-detail__actions .erp-action { min-height:40px; border-radius:12px; font-size:12px; font-weight:700; }
     @media (max-width:640px) {
         .production-detail__head, .production-detail__body { padding-right:16px; padding-left:16px; }
         .production-detail__actions { width:100%; }
-        .production-detail__actions .btn { flex:1; }
+        .production-detail__actions .erp-action { flex:1; }
     }
 </style>
 
@@ -101,13 +101,13 @@
         <div class="production-detail__body pt-0">
             <div class="production-detail__actions">
                 @if(in_array($data->status, ['temp', 'draft']))
-                    <a href="{{ route('production.edit', $data->id) }}" class="btn btn-light-primary"><i class="ph ph-pencil-simple me-1" aria-hidden="true"></i>Edit</a>
+                    <a href="{{ route('production.edit', $data->id) }}" class="erp-action"><i class="ph ph-pencil-simple me-1" aria-hidden="true"></i>Edit</a>
                 @endif
                 @if($data->status == 'draft')
-                    <a href="{{ route('production.payment', $data->id) }}" class="btn btn-success"><i class="ph ph-check me-1" aria-hidden="true"></i>Selesaikan Produksi</a>
+                    <a href="{{ route('production.payment', $data->id) }}" class="erp-action erp-action--primary"><i class="ph ph-check me-1" aria-hidden="true"></i>Selesaikan Produksi</a>
                 @endif
-                <a href="{{ route('production.print', $data->id) }}" class="btn btn-light-info"><i class="ph ph-printer me-1" aria-hidden="true"></i>Print</a>
-                <a href="{{ route('production.index') }}" class="btn btn-light"><i class="ph ph-arrow-left me-1" aria-hidden="true"></i>Kembali</a>
+                <a href="{{ route('production.print', $data->id) }}" class="erp-action"><i class="ph ph-printer me-1" aria-hidden="true"></i>Print</a>
+                <a href="{{ route('production.index') }}" class="erp-action"><i class="ph ph-arrow-left me-1" aria-hidden="true"></i>Kembali</a>
             </div>
         </div>
     </section>

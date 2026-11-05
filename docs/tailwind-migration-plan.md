@@ -831,6 +831,19 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 - Ganti `toastr` di `production/js-create`
 - Kandidat mati terbanyak (22): versi lama `pengadaan/*`, `transfer/index|show|segment/*`, `sortir/index`, `wholesale/edit`, `StockOpnameController.php.temp`, `ProductionController_temp.php`
 
+**B4a (selesai): `stock-out`, `stock-out-type`.** `stock-out-type/index` memakai ulang `master::partials.simple-crud` (kini mendukung `fields[…][3]` = kunci respons bila beda dari nama input); `stock-out/index` memakai dialog `crm-dialog` + aset `crm::partials.assets` (perilaku reset dialog sama) dengan ErpPicker untuk produk (membawa `stock_available`) dan tombol hapus rentang tanggal yang sebelumnya tidak terpasang.
+
+**B4b-c (sebagian): produksi, sortir, transfer.**
+- Produksi: `index`, `create`, `parcel`, `create-parcel`, `process-parcel`, `show`, `js-create`, `js-process`, dan tiga dialog bahan baku/resep dipindah ke `layouts.erp`; semua modal Bootstrap diganti `x-erp.dialog` (id tetap), `bootstrap.Modal`/`.modal()` diganti `erp.dialog.open/close`, select2 dibuang (picker mengirim event `select2:select/clear`), kartu pilihan jenis perhitungan memakai `has-[:checked]`, tabel `erp-table`. `ProductionController` dan `ProductionParcelController` merender sel lewat `DataTableCells` (nama bahan di-escape; produksi terkunci POS memakai `DataTableCells::locked`).
+- Alat baru `scripts/ui-migrate/components-pass.mjs` (dites): `form-control/form-select/form-label/btn*` → `erp-input/erp-select/erp-label/erp-action`. Jalankan setelah `codemod.mjs`.
+- Komponen baru `erp-spinner` (pengganti `spinner-border`).
+- **Layout:** `.erp-workspace` kini `flex:none`. Sebelumnya ia menyusut ke tinggi `main` dan memotong daftar panjang (mis. 100 baris produksi); sekarang halaman yang menggulir.
+- Skrip halaman yang memanggil `ErpPicker.attach` harus menunggu DOM siap (`$(function(){…})`), karena `erp-picker.js` dimuat `defer` sedangkan `@yield('script')` berjalan lebih awal.
+- Sortir/transfer: kelas pengait `modal-*` pada dialog native diganti `sortir-modal__*`/`transfer-modal__*` (CSS ikut diganti).
+- Test kontrak `ProductionListUiContractTest` disesuaikan (atribut `data-erp-filter`, menu baris tanpa caret Bootstrap).
+- Diuji di browser dengan akun Master: daftar produksi sungguhan (781 baris, menu Ubah/Hapus, penanda terkunci), form produksi (picker produk memuat resep, dialog tambah bahan), parcel/create.
+- **Sisa B4:** `wholesale/*`, `stock-opname/index` (2.300 baris, 187 temuan), `pengadaan/js/*`, `receipt`, serta kode mati B4 (27 file, ±507 temuan; daftar di bawah) menunggu persetujuan.
+
 ### B5 — POS (50 view)
 
 - `pos/create2` + `segment/*` + `js/*`; `pos/payment` + `js-payment` + `payment-success2`

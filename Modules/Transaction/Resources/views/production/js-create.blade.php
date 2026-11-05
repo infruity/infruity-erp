@@ -271,8 +271,7 @@
                 this.showAddIngredientModal = true;
                 this.loadAvailableIngredients();
                 this.ingredientSearchTerm = '';
-                const modal = new bootstrap.Modal(document.getElementById('modal-add-ingredient'));
-                modal.show();
+                erp.dialog.open('modal-add-ingredient');
             },
 
             // Open edit ingredient modal
@@ -283,8 +282,7 @@
                 this.editingIndex = index;
                 this.editQuantity = ingredient.quantity;
 
-                const modal = new bootstrap.Modal(document.getElementById('modal-edit-ingredient'));
-                modal.show();
+                erp.dialog.open('modal-edit-ingredient');
 
                 // Focus on input after modal is shown
                 setTimeout(() => {
@@ -327,7 +325,7 @@
                     }
 
                     // Close modal and reset
-                    bootstrap.Modal.getInstance(document.getElementById('modal-edit-ingredient')).hide();
+                    erp.dialog.close('modal-edit-ingredient');
                     this.editingIngredient = null;
                     this.editingIndex = null;
                     this.editQuantity = 0;
@@ -347,7 +345,7 @@
                     this.baseRecipeIngredients = this.baseRecipeIngredients.filter(b => b.id !== ingredientId);
 
                     // Close modal and reset
-                    bootstrap.Modal.getInstance(document.getElementById('modal-edit-ingredient')).hide();
+                    erp.dialog.close('modal-edit-ingredient');
                     this.editingIngredient = null;
                     this.editingIndex = null;
                     this.editQuantity = 0;
@@ -375,13 +373,11 @@
             },
 
             openParcelModal() {
-                const modal = new bootstrap.Modal(document.getElementById('modal-load-recipe'));
-                modal.show();
+                erp.dialog.open('modal-load-recipe');
             },
 
             loadFromRecipe() {
-                const modal = new bootstrap.Modal(document.getElementById('modal-load-recipe'));
-                modal.show();
+                erp.dialog.open('modal-load-recipe');
             },
 
             // Select ingredient
@@ -390,9 +386,8 @@
                 this.ingredientQuantity = 0;
 
                 // Close ingredient modal and open quantity modal
-                bootstrap.Modal.getInstance(document.getElementById('modal-add-ingredient')).hide();
-                const quantityModal = new bootstrap.Modal(document.getElementById('modal-input-quantity'));
-                quantityModal.show();
+                erp.dialog.close('modal-add-ingredient');
+                erp.dialog.open('modal-input-quantity');
             },
 
             // Add ingredient to cart
@@ -500,7 +495,7 @@
                 }
 
                 // Close modal and reset
-                bootstrap.Modal.getInstance(document.getElementById('modal-input-quantity')).hide();
+                erp.dialog.close('modal-input-quantity');
                 this.selectedIngredient = null;
                 this.ingredientQuantity = 0;
 
@@ -576,7 +571,7 @@
                 });
 
                 // Close modal and reset
-                bootstrap.Modal.getInstance(document.getElementById('modal-load-recipe')).hide();
+                erp.dialog.close('modal-load-recipe');
                 this.selectedRecipe = null;
                 this.selectedRecipeId = '';
                 this.recipeMultiplier = 1;
@@ -757,26 +752,8 @@
 
         // Initialize Select2 for product selection with a small delay to ensure Alpine is ready
         setTimeout(function() {
-            $('#product_id').select2({
-                placeholder: 'Pilih Produk',
-                ajax: {
-                    url: '{{ route('products.get-receipt') }}',
-                    dataType: 'json',
-                    delay: 250,
-                    data: params => ({
-                        search: params.term
-                    }),
-                    processResults: data => ({
-                        results: data.map(item => ({
-                            id: item.product_id,
-                            text: item.products?.name || 'Unknown Product'
-                        }))
-                    }),
-                    cache: true
-                },
-                minimumInputLength: 0,
-                allowClear: true
-            }).on('select2:select', function(e) {
+            // Pemilihan produk datang dari ErpPicker (event select2:select / select2:clear dikirim picker).
+            $('#product_id').on('select2:select', function(e) {
                 // Auto load ingredients when product is selected
                 const selectedProductId = e.params.data.id;
                 const unitLabel = document.getElementById('production-unit');
@@ -817,14 +794,14 @@
                         if (tbody) {
                             tbody.innerHTML = `
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4">
-                                    <i class="ki-duotone ki-information-5 fs-2x text-gray-400 mb-2">
-                                        <span class="path1"></span>
-                                        <span class="path2"></span>
-                                        <span class="path3"></span>
+                                <td colspan="5" class="text-center text-gray-400 py-3">
+                                    <i class="ph ph-info fs-2x text-gray-300 mb-1.5">
+                                        
+                                        
+                                        
                                     </i>
                                     <div>Belum ada bahan baku yang dipilih</div>
-                                    <small class="text-gray-500">Pilih produk untuk memuat resep atau klik tombol + untuk menambah bahan baku</small>
+                                    <small class="text-gray-400">Pilih produk untuk memuat resep atau klik tombol + untuk menambah bahan baku</small>
                                 </td>
                             </tr>
                         `;
@@ -841,7 +818,7 @@
 
               // Load product and sell price for editing if in edit mode
               @if(isset($edit_product_id) && isset($edit_product_name))
-                  // Set selected product in Select2
+                  // Isi produk terpilih pada select (ErpPicker membaca label dari option)
                   var editProductOption = new Option('{{ $edit_product_name }}', '{{ $edit_product_id }}', true, true);
                   $('#product_id').append(editProductOption).trigger('change');
 
@@ -859,29 +836,7 @@
               @endif
          }, 500); // Wait 500ms for Alpine to initialize
 
-        // Initialize Select2 for staff selection  
-        $('#branch_id').select2({
-            placeholder: 'Pilih Cabang',
-            allowClear: true,
-            ajax: {
-                url: '{{ route('ajax.getBranch') }}',
-                dataType: 'json',
-                delay: 250,
-                data: params => ({
-                    search: params.term
-                }),
-                processResults: data => ({
-                    results: data.map(item => ({
-                        id: item.id,
-                        text: item.name
-                    }))
-                }),
-                cache: true
-            },
-            minimumInputLength: 0
-        });
-
-        // Searchable pickers replace the select2 look; the selects, their ids and the select2 handlers stay the source of truth.
+        // Pemilih pencarian (ErpPicker); select, id, dan handler select2:* tetap menjadi kontrak halaman.
         ErpPicker.attach('#product_id', {
             title: 'Pilih Produk Olahan',
             subtitle: 'Produk yang akan diproduksi',
@@ -1139,11 +1094,11 @@
         if (ingredients.length === 0) {
             tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="text-center text-muted py-4">
-                    <i class="ki-duotone ki-information-5 fs-2x text-gray-400 mb-2">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                        <span class="path3"></span>
+                <td colspan="5" class="text-center text-gray-400 py-3">
+                    <i class="ph ph-info fs-2x text-gray-300 mb-1.5">
+                        
+                        
+                        
                     </i>
                     <div>Belum ada bahan baku yang dipilih</div>
                 </td>
@@ -1157,50 +1112,50 @@
             console.log('tester');
             const total = parseFloat(ingredient.quantity || 0) * parseFloat(ingredient.hpp || 0);
             const row = `
-            <tr class="border-bottom border-gray-200">
+            <tr class="border-b border-gray-200">
                 <td>
-                    <div class="d-flex align-items-center">
-                        <div class="symbol symbol-50px me-3">
-                            <div class="symbol-label bg-light-primary">
-                                <i class="ki-duotone ki-package fs-2x text-primary">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                    <span class="path3"></span>
+                    <div class="flex items-center">
+                        <div class="symbol symbol-50px me-2.5">
+                            <div class="symbol-label bg-teal/10">
+                                <i class="ph ph-package fs-2x text-teal">
+                                    
+                                    
+                                    
                                 </i>
                             </div>
                         </div>
                         <div>
-                            <div class="fw-bold text-gray-800">${ingredient.name}</div>
-                            <div class="text-muted fs-7">${ingredient.unit}</div>
+                            <div class="font-semibold text-gray-800">${ingredient.name}</div>
+                            <div class="text-gray-400 text-xs">${ingredient.unit}</div>
                         </div>
                     </div>
                 </td>
                 <td class="text-center">
                     <div class="input-group input-group-sm" style="width: 120px;">
-                        <button class="btn btn-outline-secondary btn-sm" type="button">
-                            <i class="fa fa-minus"></i>
+                        <button class="erp-action" type="button">
+                            <i class="ph ph-minus"></i>
                         </button>
-                        <input type="number" class="form-control form-control-sm text-center" style="width:100px"
+                        <input type="number" class="erp-input text-center" style="width:100px"
                             value="${ingredient.quantity}" step="0.01" min="0">
-                        <button class="btn btn-outline-secondary btn-sm" type="button">
-                            <i class="fa fa-plus"></i>
+                        <button class="erp-action" type="button">
+                            <i class="ph ph-plus"></i>
                         </button>
                     </div>
                 </td>
                 <td class="text-center">
-                    <span class="fw-bold text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(ingredient.hpp)}</span>
+                    <span class="font-semibold text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(ingredient.hpp)}</span>
                 </td>
                 <td class="text-center">
-                    <span class="fw-bold text-primary">Rp ${new Intl.NumberFormat('id-ID').format(total)}</span>
+                    <span class="font-semibold text-teal">Rp ${new Intl.NumberFormat('id-ID').format(total)}</span>
                 </td>
                 <td class="text-end">
-                    <button type="button" class="btn btn-sm btn-icon btn-light-danger" title="Hapus">
-                        <i class="ki-duotone ki-trash fs-5">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                            <span class="path3"></span>
-                            <span class="path4"></span>
-                            <span class="path5"></span>
+                    <button type="button" class="erp-action erp-action--danger" title="Hapus">
+                        <i class="ph ph-trash text-[15px]">
+                            
+                            
+                            
+                            
+                            
                         </i>
                     </button>
                 </td>

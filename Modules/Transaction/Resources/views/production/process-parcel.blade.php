@@ -1,18 +1,19 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Proses Parcel')
+@section('page-title', 'Proses Parcel')
 
 @section('content')
-    <form id="kt_ecommerce_edit_order_form" class="form d-flex flex-column flex-lg-row"
+    <form id="kt_ecommerce_edit_order_form" class="form flex flex-col lg:flex-row"
         action="{{ isset($data) ? url(Request::segment(1) . '/' . $data->id) : url(Request::segment(1)) }}" method="POST"
-        enctype="multipart/form-data" data-kt-redirect="">
+        enctype="multipart/form-data">
         @if (isset($data))
             @method('PUT')
         @endif
         @csrf
         <!--begin::Aside column-->
-        <div class="w-100 flex-lg-row-auto w-lg-300px mb-7 me-7 me-lg-10">
+        <div class="w-full flex-lg-row-auto lg:w-[300px] mb-6 me-6 lg:me-8">
             <!--begin::Order details-->
-            <section class="erp-editor-section py-4">
+            <section class="erp-editor-section py-3">
                 <!--begin::Card header-->
                 <div class="erp-detail-header">
                     <div class="card-title">
@@ -22,14 +23,14 @@
                 <!--end::Card header-->
                 <!--begin::Card body-->
                 <div class="erp-editor-body pt-0">
-                    <div class="d-flex flex-column gap-10">
+                    <div class="flex flex-col gap-8">
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="form-label">Nomor Pesanan</label>
+                            <label class="erp-label">Nomor Pesanan</label>
                             <!--end::Label-->
                             <!--begin::Auto-generated ID-->
-                            <div class="fw-bold fs-3">
+                            <div class="font-semibold text-lg">
                                 #{{ isset($data) ? $data->production_number : '14364' }}
                                 <span class="badge badge-info">{{ $data->quantity ?? 0 }} Pcs</span>
                             </div>
@@ -39,20 +40,20 @@
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="required form-label">Tanggal Pesanan</label>
+                            <label class="erp-label erp-label--required">Tanggal Pesanan</label>
                             <!--end::Label-->
                             <!--begin::Editor-->
-                            <div class="fw-bold fs-3">{{ isset($data) ? dateindo($data->production_date) : '14364' }}</div>
+                            <div class="font-semibold text-lg">{{ isset($data) ? dateindo($data->production_date) : '14364' }}</div>
                             <!--end::Editor-->
                         </div>
                         <!--end::Input group-->
                         <!--begin::Input group-->
                         <div class="fv-row">
                             <!--begin::Label-->
-                            <label class="required form-label">Anggaran</label>
+                            <label class="erp-label erp-label--required">Anggaran</label>
                             <!--end::Label-->
                             <!--begin::Editor-->
-                            <div class="fw-bold fs-3">
+                            <div class="font-semibold text-lg">
                                 <span id="sisaAnggaran"></span>
                             </div>
                             <!--end::Editor-->
@@ -66,9 +67,9 @@
         </div>
         <!--end::Aside column-->
         <!--begin::Main column-->
-        <div class="d-flex flex-column flex-lg-row-fluid gap-7 gap-lg-10">
+        <div class="flex flex-col lg:grow lg:shrink-0 lg:basis-auto gap-6 lg:gap-8">
             <!--begin::Order details-->
-            <section class="erp-editor-section py-4">
+            <section class="erp-editor-section py-3">
                 <div class="erp-detail-header">
                     <div class="card-title">
                         <h2>Tambah Produk</h2>
@@ -76,39 +77,32 @@
                 </div>
                 <!--begin::Card body-->
                 <div class="erp-editor-body pt-0">
-                    <div class="d-flex flex-column gap-10">
+                    <div class="flex flex-col gap-8">
                         <!--begin::Input group-->
-                        <div class="fv-row mb-2">
+                        <div class="fv-row mb-1.5">
                             <!--begin::Label-->
-                            <label class="fs-6 fw-semibold mb-2">Jenis Perhitungan
-                                <span class="ms-1" data-bs-toggle="tooltip"
-                                    title="Pilih tipe perhitungan yang akan digunakan">
-                                    <i class="ki-duotone ki-information-5 text-gray-500 fs-6">
-                                        <span class="path1"></span>
-                                        <span class="path2"></span>
-                                        <span class="path3"></span>
+                            <label class="text-sm font-medium mb-1.5">Jenis Perhitungan
+                                <span class="ms-1" title="Pilih tipe perhitungan yang akan digunakan">
+                                    <i class="ph ph-info text-gray-400 text-sm">
+                                        
+                                        
+                                        
                                     </i>
                                 </span></label>
                             <!--End::Label-->
                             <!--begin::Row-->
-                            <div class="row row-cols-2 row-cols-md-2 row-cols-lg-1 row-cols-xl-2 g-9" data-kt-buttons="true"
-                                data-kt-buttons-target="[data-kt-button='true']">
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                                 <!--begin::Col-->
-                                <div class="col">
+                                <div>
                                     <!--begin::Option-->
-                                    <label
-                                        class="btn btn-outline btn-outline-dashed btn-active-light-primary d-flex text-start p-6"
-                                        data-kt-button="true">
+                                    <label class="erp-action flex !justify-start gap-3 !rounded-xl p-4 text-left has-[:checked]:border-teal has-[:checked]:bg-teal/5">
                                         <!--begin::Radio-->
-                                        <span
-                                            class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
-                                            <input class="form-check-input" type="radio" name="calculation_type"
+                                        <input class="erp-radio mt-1" type="radio" name="calculation_type"
                                                 value="weight_to_price" />
-                                        </span>
                                         <!--end::Radio-->
                                         <!--begin::Info-->
-                                        <span class="ms-5">
-                                            <span class="fs-4 fw-bold text-gray-800 d-block">Berat ke Harga</span>
+                                        <span class="ms-4">
+                                            <span class="text-base font-semibold text-gray-800 block">Berat ke Harga</span>
                                         </span>
                                         <!--end::Info-->
                                     </label>
@@ -116,21 +110,16 @@
                                 </div>
                                 <!--end::Col-->
                                 <!--begin::Col-->
-                                <div class="col">
+                                <div>
                                     <!--begin::Option-->
-                                    <label
-                                        class="btn btn-outline btn-outline-dashed btn-active-light-primary active d-flex text-start p-6"
-                                        data-kt-button="true">
+                                    <label class="erp-action flex !justify-start gap-3 !rounded-xl p-4 text-left has-[:checked]:border-teal has-[:checked]:bg-teal/5">
                                         <!--begin::Radio-->
-                                        <span
-                                            class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
-                                            <input class="form-check-input" type="radio" name="calculation_type"
+                                        <input class="erp-radio mt-1" type="radio" name="calculation_type"
                                                 value="price_to_weight" checked="checked" />
-                                        </span>
                                         <!--end::Radio-->
                                         <!--begin::Info-->
-                                        <span class="ms-5">
-                                            <span class="fs-4 fw-bold text-gray-800 d-block">Harga ke Berat</span>
+                                        <span class="ms-4">
+                                            <span class="text-base font-semibold text-gray-800 block">Harga ke Berat</span>
                                         </span>
                                         <!--end::Info-->
                                     </label>
@@ -142,27 +131,27 @@
                         </div>
                         <!--end::Input group-->
                         <!--begin::Search products-->
-                        <div class="d-flex align-items-center position-relative mb-n7">
-                            <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
+                        <div class="flex items-center relative -mb-6">
+                            <i class="ph ph-magnifying-glass text-lg absolute ms-3">
+                                
+                                
                             </i>
-                            <input type="text" data-kt-ecommerce-edit-order-filter="search"
-                                class="form-control form-control-solid w-100 w-lg-50 ps-12" id="search"
+                            <input type="text" data-order-filter="search"
+                                class="erp-input w-full lg:w-1/2 ps-10" id="search"
                                 placeholder="Cari produk" />
                         </div>
                         <!--end::Search products-->
                         <!--begin::Table-->
-                        <table class="table align-middle table-row-dashed fs-6 gy-5"
+                        <table class="erp-table"
                             id="kt_ecommerce_edit_order_product_table">
                             <thead>
-                                <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                                    {{-- <th class="w-25px pe-2"></th> --}}
-                                    <th class="min-w-200px">Product</th>
-                                    <th class="min-w-100px text-end pe-5">Stock</th>
+                                <tr class="text-start text-gray-400 font-semibold text-xs uppercase gs-0">
+                                    {{-- <th class="w-[25px] pe-1.5"></th> --}}
+                                    <th class="min-w-[200px]">Product</th>
+                                    <th class="min-w-[100px] text-end pe-4">Stock</th>
                                 </tr>
                             </thead>
-                            <tbody class="fw-semibold text-gray-600">
+                            <tbody class="font-medium text-gray-500">
 
                             </tbody>
                         </table>
@@ -173,7 +162,7 @@
             </section>
             <!--end::Order details-->
             <!--begin::Order details-->
-            <section class="erp-editor-section py-4">
+            <section class="erp-editor-section py-3">
                 <!--begin::Card header-->
                 <div class="erp-detail-header">
                     <div class="card-title">
@@ -183,26 +172,26 @@
                 <!--end::Card header-->
                 <!--begin::Card body-->
                 <div class="erp-editor-body pt-0">
-                    <div class="d-flex flex-column gap-10">
+                    <div class="flex flex-col gap-8">
                         <!--begin::Input group-->
                         <div>
                             <!--begin::Label-->
-                            <label class="form-label">Add products to this order</label>
+                            <label class="erp-label">Add products to this order</label>
                             <!--end::Label-->
                             <!--begin::Selected products-->
-                            <div class="table table-responsive">
-                                <table class="table align-middle table-row-dashed fs-6 gy-3 mb-5"
+                            <div class="overflow-x-auto">
+                                <table class="erp-table mb-4"
                                     id="kt_ecommerce_edit_order_selected_products_table">
                                     <thead>
-                                        <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
-                                            <th class="min-w-200px">Product</th>
-                                            <th class="min-w-100px">Hpp</th>
-                                            <th class="min-w-100px">Total</th>
-                                            <th class="min-w-100px text-end"></th>
+                                        <tr class="text-start text-gray-300 font-semibold text-xs uppercase gs-0">
+                                            <th class="min-w-[200px]">Product</th>
+                                            <th class="min-w-[100px]">Hpp</th>
+                                            <th class="min-w-[100px]">Total</th>
+                                            <th class="min-w-[100px] text-end"></th>
                                         </tr>
                                     </thead>
                                     <tbody id="kt_ecommerce_edit_order_selected_products_body">
-                                        <tr class="text-muted text-center">
+                                        <tr class="text-gray-400 text-center">
                                             <td colspan="6">Select one or more products from the list below by ticking
                                                 the
                                                 checkbox.</td>
@@ -214,7 +203,7 @@
                             <!-- Tempat hidden input -->
                             <div id="selected-products-hidden"></div>
                             <!--begin::Selected products-->
-                            <table class="table table-sm fw-bold fs-4">
+                            <table class="erp-table">
                                 <tr>
                                     <td>Anggaran</td>
                                     <td>:</td>
@@ -249,7 +238,7 @@
                         </div>
                         <!--end::Input group-->
                         <!--begin::Separator-->
-                        <div class="separator"></div>
+                        <div class="border-t border-gray-100"></div>
                         <!--end::Separator-->
                     </div>
                 </div>
@@ -257,50 +246,36 @@
             </section>
             <!--end::Order details-->
             <!-- Modal for Jumlah Input -->
-            <div class="modal fade" id="modalInputQty" tabindex="-1" aria-labelledby="modalInputQtyLabel"
-                aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalInputQtyLabel">Input Product Details</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="hidden" id="inputProductId">
-                            <input type="hidden" id="typeList">
-                            <div class="mb-3">
-                                <label for="inputJumlah" class="form-label">Jumlah</label>
-                                <input type="number" step="0.01" class="form-control" id="inputJumlah"
-                                    placeholder="Enter quantity">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="inputPrice" class="form-label">Harga Jual</label>
-                                <input type="text" class="form-control format-number" id="inputSellPrice"
-                                    placeholder="Enter price" min="0">
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-primary" id="submitQty">Add Product</button>
-                        </div>
-                    </div>
+            <x-erp.dialog id="modalInputQty" title="Input Product Details" size="sm">
+                <input type="hidden" id="inputProductId">
+                <input type="hidden" id="typeList">
+                <div class="mb-2.5">
+                    <label for="inputJumlah" class="erp-label">Jumlah</label>
+                    <input type="number" step="0.01" class="erp-input" id="inputJumlah" placeholder="Enter quantity">
                 </div>
-            </div>
+                <div class="mb-2.5">
+                    <label for="inputSellPrice" class="erp-label">Harga Jual</label>
+                    <input type="text" class="erp-input format-number" id="inputSellPrice" placeholder="Enter price" min="0">
+                </div>
+                <x-slot:footer>
+                    <div class="ml-auto flex gap-2">
+                        <button type="button" class="erp-action" data-erp-close>Cancel</button>
+                        <button type="button" class="erp-action erp-action--primary" id="submitQty">Add Product</button>
+                    </div>
+                </x-slot:footer>
+            </x-erp.dialog>
 
             <input type="hidden" name="submit_type" id="submit_type" value="draft">
-            <div class="d-flex justify-content-end">
+            <div class="flex justify-end">
                 <!--begin::Button-->
                 <a href="{{ url(Request::segment(1)) }}" id="kt_ecommerce_edit_order_cancel"
-                    class="btn btn-light me-5">Cancel</a>
+                    class="erp-action me-4">Cancel</a>
                 <!--end::Button-->
 
-                <button type="button" id="kt_ecommerce_edit_order_submit" class="btn btn-primary"
+                <button type="button" id="kt_ecommerce_edit_order_submit" class="erp-action erp-action--primary"
                     onclick="setSelesai({{ $data->id }})">
-                    <span class="indicator-label">Selesai</span>
-                    <span class="indicator-progress">Please wait...
-                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                    <span data-label>Selesai</span>
+                    <span data-progress hidden>Mohon tunggu...</span>
                 </button>
                 <!--end::Button-->
             </div>
@@ -308,102 +283,53 @@
         <!--end::Main column-->
     </form>
     <!-- Modal for Jumlah Input -->
-    <div class="modal fade" id="kt_modal_add_customer" tabindex="-1" aria-labelledby="modalEditQtyLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form class="form" action="{{ url(Request::segment(1)) }}" id="kt_modal_add_customer_form"
-                    data-kt-redirect="#">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalEditQtyLabel">Edit Detail</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        @csrf
-                        <input type="hidden" name="_method" id="methodField" value="">
-                        <div class="mb-3">
-                            <label for="inputJumlah" class="form-label">Jumlah</label>
-                            <input type="number" class="form-control" id="inputJumlahEdit" name="qty"
-                                placeholder="Enter quantity" step="0.01" name="qty">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="inputPrice" class="form-label">Harga Jual</label>
-                            <input type="text" class="form-control format-number" id="inputPriceEdit"
-                                name="sell_price" placeholder="Enter price" min="0">
-                        </div>
-                    </div>
-                    <!--begin::Modal footer-->
-                    <div class="modal-footer flex-center">
-                        <!--begin::Button-->
-                        <button type="button" data-bs-dismiss="modal" id="kt_modal_add_customer_cancel"
-                            class="btn btn-light me-3">Close</button>
-                        <!--end::Button-->
-                        <!--begin::Button-->
-                        <button type="submit" id="kt_modal_add_customer_submit" class="btn btn-primary">
-                            <span class="indicator-label">Simpan</span>
-                            <span class="indicator-progress">Please wait...
-                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                        </button>
-                        <!--end::Button-->
-                    </div>
-                    <!--end::Modal footer-->
-
-                </form>
+    <x-erp.dialog id="kt_modal_add_customer" title="Edit Detail" size="sm">
+        <form id="kt_modal_add_customer_form" action="{{ url(Request::segment(1)) }}">
+            @csrf
+            <input type="hidden" name="_method" id="methodField" value="">
+            <div class="mb-2.5">
+                <label for="inputJumlahEdit" class="erp-label">Jumlah</label>
+                <input type="number" class="erp-input" id="inputJumlahEdit" name="qty" placeholder="Enter quantity" step="0.01">
             </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modalInputPrc" tabindex="-1" aria-labelledby="modalEditQtyLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form class="form" action="{{ url(Request::segment(1)) }}" id="modalInputPrcForm"
-                    data-kt-redirect="#">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalInputPrcLabel">Edit Detail</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        @csrf
-                        <input type="hidden" name="_method" id="methodFieldPrc" value="">
-                        <input type="hidden" id="inputProductIdPrc" name="id">
-                        <input type="hidden" name="production_id" value="{{ $data->id }}">
-                        <input type="hidden" id="typeList">
-                        <div class="mb-3">
-                            <label for="inputPrice" class="form-label">Masukkan Harga</label>
-                            <input type="text" class="form-control format-number" id="inputPrice"
-                                placeholder="Enter price" min="0">
-                        </div>
-                        <div class="mb-3">
-                            <label for="inputJumlah" class="form-label">Jumlah</label>
-                            <input type="number" name="qty" step="0.01" class="form-control"
-                                id="inputJumlahPrc" placeholder="Enter quantity" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label for="inputPrice" class="form-label">Harga Jual</label>
-                            <input type="text" name="sell_price" class="form-control format-number"
-                                id="inputSellPricePrc" placeholder="Enter price" min="0" readonly>
-                        </div>
-                    </div>
-                    <!--begin::Modal footer-->
-                    <div class="modal-footer flex-center">
-                        <!--begin::Button-->
-                        <button type="button" data-bs-dismiss="modal" id="kt_modal_add_customer_cancel"
-                            class="btn btn-light me-3">Close</button>
-                        <!--end::Button-->
-                        <!--begin::Button-->
-                        <button type="submit" id="kt_modal_add_customer_submit_prc" class="btn btn-primary">
-                            <span class="indicator-label">Simpan</span>
-                            <span class="indicator-progress">Please wait...
-                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                        </button>
-                        <!--end::Button-->
-                    </div>
-                    <!--end::Modal footer-->
-
-                </form>
+            <div class="mb-2.5">
+                <label for="inputPriceEdit" class="erp-label">Harga Jual</label>
+                <input type="text" class="erp-input format-number" id="inputPriceEdit" name="sell_price" placeholder="Enter price" min="0">
             </div>
-        </div>
-    </div>
+        </form>
+        <x-slot:footer>
+            <div class="ml-auto flex gap-2">
+                <button type="button" class="erp-action" data-erp-close>Close</button>
+                <button type="submit" form="kt_modal_add_customer_form" id="kt_modal_add_customer_submit" class="erp-action erp-action--primary"><span data-label>Simpan</span><span data-progress hidden>Mohon tunggu...</span></button>
+            </div>
+        </x-slot:footer>
+    </x-erp.dialog>
+
+    <x-erp.dialog id="modalInputPrc" title="Edit Detail" size="sm">
+        <form id="modalInputPrcForm" action="{{ url(Request::segment(1)) }}">
+            @csrf
+            <input type="hidden" name="_method" id="methodFieldPrc" value="">
+            <input type="hidden" id="inputProductIdPrc" name="id">
+            <input type="hidden" name="production_id" value="{{ $data->id }}">
+            <input type="hidden" id="typeList">
+            <div class="mb-2.5">
+                <label for="inputPrice" class="erp-label">Masukkan Harga</label>
+                <input type="text" class="erp-input format-number" id="inputPrice" placeholder="Enter price" min="0">
+            </div>
+            <div class="mb-2.5">
+                <label for="inputJumlahPrc" class="erp-label">Jumlah</label>
+                <input type="number" name="qty" step="0.01" class="erp-input" id="inputJumlahPrc" placeholder="Enter quantity" readonly>
+            </div>
+            <div class="mb-2.5">
+                <label for="inputSellPricePrc" class="erp-label">Harga Jual</label>
+                <input type="text" name="sell_price" class="erp-input format-number" id="inputSellPricePrc" placeholder="Enter price" min="0" readonly>
+            </div>
+        </form>
+        <x-slot:footer>
+            <div class="ml-auto flex gap-2">
+                <button type="button" class="erp-action" data-erp-close>Close</button>
+                <button type="submit" form="modalInputPrcForm" id="kt_modal_add_customer_submit_prc" class="erp-action erp-action--primary"><span data-label>Simpan</span><span data-progress hidden>Mohon tunggu...</span></button>
+            </div>
+        </x-slot:footer>
+    </x-erp.dialog>
     @include('transaction::production.js-process')
 @endsection
