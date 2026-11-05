@@ -2,6 +2,7 @@
 
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\DataTableCells;
 use Exception;
 use App\Models\RoleMenu;
 use Illuminate\Contracts\Support\Renderable;
@@ -401,42 +402,6 @@ class SortirController extends Controller
         return redirect('sortir')->with('success', 'Sortir berhasil');
     }
 
-    public function get_data_old(Request $request)
-    {
-        $data = DB::table('sortir_view')->get();
-        return DataTables::of($data)
-            ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                $html = '
-                    <div class="d-flex align-items-center">';
-                $html .= '<div class="ms-5">
-                            <a href="' . url('/products', $item->product_id) . '" class="text-gray-800 text-hover-primary fs-5 fw-bold"
-                               data-kt-ecommerce-product-filter="product_name">
-                                ' . e($item->name) . '
-                            </a>
-                        </div>
-                    </div>
-                ';
-                return $html;
-            })
-            ->addColumn('quantity', function ($item) {
-                $class = 'badge badge-light-primary';
-                if ($item->stock_available <= 0) {
-                    $class = 'badge badge-light-danger';
-                }
-                return '<span class="' . $class . '">' . toNumber($item->stock_available) . ' ' . $item->satuan . '</span>';
-            })
-            ->addColumn('action', function ($item) {
-                return '
-                    <a href="' . route('sortir.show', $item->id) . '" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="View">
-                        <i class="fa fa-pencil"></i>
-                    </a>
-                ';
-            })
-            ->rawColumns(['name', 'action', 'quantity'])
-            ->make(true);
-    }
-
     public function get_data(Request $request)
     {
         $this->authorizeAccess('sortir.index');
@@ -505,29 +470,22 @@ class SortirController extends Controller
 
         return DataTables::of($query)
             ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                return '<a href="' . route('sortir.show', $item->id) . '" class="text-gray-800 fw-bold">'
-                    . e($item->invoice_number) . '</a><br><span class="text-muted">Hpp: Rp'
-                    . tonumberround($item->total) . '</span><br><span class="badge badge-light-danger">'
-                    . e($item->createdBy->nm_user ?? '-') . '</span>';
-            })
+            ->addColumn('name', fn ($item) => DataTableCells::title(
+                (string) $item->invoice_number,
+                'Hpp: Rp'.tonumberround($item->total).' · '.($item->createdBy->nm_user ?? '-'),
+                route('sortir.show', $item->id)
+            ))
             ->addColumn('date', function ($item) {
-                return '<span class="text-muted">' . e($item->created_at?->format('d M Y H:i'))
-                    . '</span><br><span class="badge badge-light-'
-                    . (in_array($item->status, ['paid', 'debt']) ? 'success' : 'warning') . '">'
-                    . (in_array($item->status, ['paid', 'debt']) ? 'Final' : 'Draf') . '</span>';
+                $final = in_array($item->status, ['paid', 'debt']);
+
+                return '<span class="text-gray-500">' . e($item->created_at?->format('d M Y H:i')) . '</span><br>'
+                    . DataTableCells::badge($final ? 'Final' : 'Draf', $final ? 'success' : 'warning');
             })
-            ->addColumn('action', function ($item) {
-                $html = '<a href="' . route('sortir.show', $item->id) . '" class="btn btn-sm btn-light">Detail</a>';
-                if ($this->hasAccess('sortir.edit') && $this->canEdit($item)) {
-                    $html .= '<a href="' . route('sortir.edit', $item->id) . '" class="btn btn-sm btn-light">Edit</a>';
-                }
-                if ($this->hasAccess('sortir.destroy') && $this->canDelete($item)) {
-                    $html .= '<button type="button" class="btn btn-sm btn-light-danger" onclick="deleteProduct('
-                        . $item->id . ')">Hapus</button>';
-                }
-                return $html;
-            })
+            ->addColumn('action', fn ($item) => DataTableCells::rowActions([
+                ['label' => 'Detail', 'icon' => 'eye', 'href' => route('sortir.show', $item->id)],
+                ['label' => 'Edit', 'icon' => 'pencil-simple', 'href' => route('sortir.edit', $item->id), 'can' => $this->hasAccess('sortir.edit') && $this->canEdit($item)],
+                ['label' => 'Hapus', 'icon' => 'trash', 'onclick' => 'deleteProduct('.(int) $item->id.')', 'tone' => 'danger', 'can' => $this->hasAccess('sortir.destroy') && $this->canDelete($item)],
+            ], 'Aksi '.$item->invoice_number))
             ->rawColumns(['name', 'action', 'date'])->make(true);
     }
 }

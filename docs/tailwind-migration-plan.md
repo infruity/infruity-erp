@@ -858,6 +858,8 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 - Diuji di browser dengan akun Master: create (cabang, dialog tambah item, daftar produk), show (10 item, status, total) dan edit (10 item, dialog ubah item membaca nama/qty/harga/margin sungguhan). Tidak ada simpan: autosave draf membuat record, jadi item tidak ditambahkan saat uji.
 - Sisa B4: HTML di controller (`ProductReceipt`, `Sortir`, `Transfer`, `Wholesale`), dan `stock-opname/*`.
 
+**B4e (selesai): HTML di controller Transaction.** `SortirController::get_data`, `TransferController::get_data`, `WholesaleController::get_product`, dan `ProductReceiptController::get_product` kini merender sel lewat `DataTableCells` (judul/sub escaped, badge, menu `row-actions`; menu transfer/sortir memakai `can` per izin). `SortirController::get_data_old` (tanpa route) dihapus. Diperiksa langsung ke endpoint dengan data sungguhan (sortir 110, transfer 265, produk pengadaan 10): tidak ada `dropstart`/`badge-light`/`btn` tersisa. **Tersisa di B4:** `stock-opname/*`; kandidat mati baru (perlu persetujuan): `ProductReceiptController::get_data` (route `receipt/data`, tak dipanggil view mana pun) dan `ProductionController_temp.php` / `*.php.temp`.
+
 ### B5 — POS (50 view)
 
 - `pos/create2` + `segment/*` + `js/*`; `pos/payment` + `js-payment` + `payment-success2`

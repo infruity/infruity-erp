@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\DataTableCells;
 use App\Support\ProductHpp;
 use Exception;
 use Illuminate\Contracts\Support\Renderable;
@@ -523,13 +524,11 @@ class WholesaleController extends Controller
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('name', function ($item) {
-                $html = '';
-                if ($item->supplier_id != null) {
-                    $html .= $item->product->name . '<br>' . $item->supplier->name . '<br> Jumlah : ' . $item->quantity . ' ' . $item->product->unit->abbreviation;;
-                } else {
-                    $html .= $item->product->name . '<br>' . '<span class="text-danger">Tidak ada supplier</span>' . '<br> Jumlah : ' . $item->quantity . ' ' . $item->product->unit->abbreviation;;
-                }
-                return $html;
+                $supplier = $item->supplier_id != null
+                    ? e($item->supplier->name)
+                    : '<span class="text-red-600">Tidak ada supplier</span>';
+
+                return e($item->product->name) . '<br>' . $supplier . '<br> Jumlah : ' . e($item->quantity . ' ' . $item->product->unit->abbreviation);
             })
             ->addColumn('supplier', function ($item) {
                 if (isset($item->supplier_id) && $item->supplier_id != null) {
@@ -544,34 +543,9 @@ class WholesaleController extends Controller
             ->addColumn('total', function ($item) {
                 return 'Rp' . toNumber($item->total_price);
             })
-            ->addColumn('action', function ($item) use ($request) {
-                $html = '';
-
-                if ($request->url == 'wholesale/show') {
-                    $html .= '';
-                } else {
-                    $html .= '
-                    <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="editProduct(' . $item->id . ')" title="Edit">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $item->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                    ';
-                }
-                return $html;
-            })
+            ->addColumn('action', fn ($item) => $request->url == 'wholesale/show'
+                ? ''
+                : DataTableCells::editDeleteMenu((string) $item->product->name, $item->id, true, true))
             ->rawColumns(['name', 'action'])
             ->make(true);
     }

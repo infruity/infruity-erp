@@ -2,6 +2,7 @@
 
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\DataTableCells;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -419,15 +420,9 @@ class ProductReceiptController extends Controller
         $data = ProductReceipt::with('product')->with('ingredients')->where('receipt_id', $id)->get();
         return DataTables::of($data)
             ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                $ingredientName = $item->ingredients?->name ?? 'Produk tidak ditemukan';
-                $unitName = $item->ingredients?->unit?->abbreviation ?? '-';
-                $price = $item->ingredients?->price ?? 0;
-
-                $html = '';
-                $html .= $ingredientName . '<br> Jumlah : ' . $item->quantity . ' ' . $unitName . '<br> Harga : ' . toNumber($price) . '';
-                return $html;
-            })
+            ->addColumn('name', fn ($item) => e($item->ingredients?->name ?? 'Produk tidak ditemukan')
+                . '<br> Jumlah : ' . e($item->quantity . ' ' . ($item->ingredients?->unit?->abbreviation ?? '-'))
+                . '<br> Harga : ' . toNumber($item->ingredients?->price ?? 0))
             ->addColumn('hpp', function ($item) {
                 $hpp = $item->ingredients?->hpp ?? 0;
 
@@ -438,30 +433,7 @@ class ProductReceiptController extends Controller
 
                 return toNumber($price * $item->quantity);
             })
-            ->addColumn('action', function ($item) use ($request) {
-                $html = '';
-
-                $html .= '
-                    <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="editProduct(' . $item->id . ')" title="Edit">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $item->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                    ';
-                return $html;
-            })
+            ->addColumn('action', fn ($item) => DataTableCells::editDeleteMenu((string) ($item->ingredients?->name ?? 'Bahan'), $item->id, true, true))
             ->rawColumns(['name', 'action', 'harga_jual'])
             ->make(true);
     }

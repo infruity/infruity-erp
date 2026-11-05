@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\DataTableCells;
 use App\Support\InventorySnapshot;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -697,83 +698,48 @@ class TransferController extends Controller
                     });
                 }
             }, true)
-            ->addColumn('name', function ($item) use ($request) {
-                $html  = '<div class="d-flex align-items-center">';
-                $html .= '<div class="ms-5">';
-                $html .= '<a href="' . route($request->url . '.show', $item->id) . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $item->invoice_number . '</a>';
-                $html .= '<br><span class="text-muted d-block fs-7">' . ($item->branch->name ?? '-') . ' <i class="bi bi-arrow-right"></i> ' . ($item->branchDestination->name ?? '-') . '</span>';
-                $html .= '<span class="badge badge-light-danger">' . ucwords(strtolower($item->createdBy->nm_user ?? $item->createdBy->name ?? 'unknown')) . '</span>';
-                return $html;
-            })
+            ->addColumn('name', fn ($item) => DataTableCells::title(
+                (string) $item->invoice_number,
+                ($item->branch->name ?? '-') . ' → ' . ($item->branchDestination->name ?? '-')
+                    . ' · ' . ucwords(strtolower($item->createdBy->nm_user ?? $item->createdBy->name ?? 'unknown')),
+                route($request->url . '.show', $item->id)
+            ))
             ->addColumn('date', function ($item) {
                 $date = date('d M Y', strtotime($item->date));
                 $time = date('H:i', strtotime($item->created_at));
-                $html = '<span class="text-muted d-block fs-8">' . $date . ' ' . $time . '</span>';
+                $html = '<span class="block text-xs text-gray-500">' . e($date . ' ' . $time) . '</span>';
 
-                $statusBadges = [
-                    'temp'    => '<span class="badge badge-light-danger">Draft</span>',
-                    'draft'   => '<span class="badge badge-light-danger">Draft</span>',
-                    'pending' => '<span class="badge badge-light-secondary">Pending</span>',
-                    'proses'  => '<span class="badge badge-light-warning">Proses</span>',
-                    'selesai' => '<span class="badge badge-light-success">Selesai</span>',
-                ];
-
-                $html .= $statusBadges[$item->status] ?? '<span class="badge badge-light-dark">' . $item->status . '</span>';
+                $html .= match ($item->status) {
+                    'temp', 'draft' => DataTableCells::badge('Draft', 'danger'),
+                    'pending' => DataTableCells::badge('Pending', 'neutral'),
+                    'proses' => DataTableCells::badge('Proses', 'warning'),
+                    'selesai' => DataTableCells::badge('Selesai', 'success'),
+                    default => DataTableCells::badge((string) $item->status, 'neutral'),
+                };
                 if ($item->picPenerima) {
-                    $html .= '<br><span class="badge badge-light-success mt-1">' . ucwords(strtolower($item->picPenerima->nm_user ?? $item->picPenerima->name ?? 'unknown')) . '</span>';
+                    $html .= '<br>' . DataTableCells::badge(ucwords(strtolower($item->picPenerima->nm_user ?? $item->picPenerima->name ?? 'unknown')), 'success');
                 }
                 return $html;
             })
             ->addColumn('correction', function ($item) {
                 $diff = ($item->total_old ?? 0) - ($item->total_new ?? 0);
                 if ($diff > 0) {
-                    return '<span class="badge badge-light-danger">-' . $diff . '</span>';
+                    return DataTableCells::badge('-' . $diff, 'danger');
                 } elseif ($diff < 0) {
-                    return '<span class="badge badge-light-success">+' . abs($diff) . '</span>';
+                    return DataTableCells::badge('+' . abs($diff), 'success');
                 }
                 return '-';
             })
             ->addColumn('action', function ($item) use ($request) {
-                $html  = '';
-                $html .= '
-                    <div class="dropstart">
-                        <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
-                $html .= '
-                            <li>
-                                <a class="dropdown-item" href="' . route($request->url . '.show', $item->id) . '">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </li>';
-                $isRecent = false;
-                $timeRef = isset($item->updated_at) ? $item->updated_at : (isset($item->created_at) ? $item->created_at : null);
-                if ($timeRef && \Carbon\Carbon::parse($timeRef)->diffInMinutes(now()) <= 30) {
-                    $isRecent = true;
-                }
+                $timeRef = $item->updated_at ?? $item->created_at ?? null;
+                $isRecent = $timeRef && \Carbon\Carbon::parse($timeRef)->diffInMinutes(now()) <= 30;
+                $sender = $request->url == 'transfer-pengirim';
 
-                if ($request->url == 'transfer-pengirim' && (in_array($item->status, ['temp', 'draft']) || $isRecent)) {
-                    $html .= '
-                            <li>
-                                <a class="dropdown-item" href="' . route($request->url . '.edit', $item->id) . '">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                            </li>';
-                }
-                if (! in_array($item->status, ['diterima']) && $request->url == 'transfer-pengirim') {
-                    $html .= '
-                            <li>
-                                <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $item->id . ')">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </li>';
-                }
-                $html .= '
-                        </ul>
-                    </div>
-                    ';
-                return $html;
+                return DataTableCells::rowActions([
+                    ['label' => 'Lihat', 'icon' => 'eye', 'href' => route($request->url . '.show', $item->id)],
+                    ['label' => 'Ubah', 'icon' => 'pencil-simple', 'href' => route($request->url . '.edit', $item->id), 'can' => $sender && (in_array($item->status, ['temp', 'draft']) || $isRecent)],
+                    ['label' => 'Hapus', 'icon' => 'trash', 'onclick' => 'deleteProduct(' . (int) $item->id . ')', 'tone' => 'danger', 'can' => $sender && ! in_array($item->status, ['diterima'])],
+                ], 'Aksi ' . $item->invoice_number);
             })
             ->rawColumns(['name', 'action', 'date', 'correction'])
             ->make(true);
