@@ -1,13 +1,13 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Riwayat Deposito - CRM')
 @section('page-title', 'Riwayat Deposito')
 @section('content')
 @include('crm::partials.assets')
 <x-erp.workspace title="Riwayat Deposito" subtitle="Riwayat transaksi deposito dan penggunaan voucher pelanggan." icon="ph-clock-counter-clockwise">
-    <x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" placeholder="Cari riwayat deposito…" aria-label="Cari riwayat deposito"></div>
+    <x-slot:toolbar><label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" placeholder="Cari riwayat deposito…" aria-label="Cari riwayat deposito"></label>
             </x-slot:toolbar>
     <x-erp.collection table="transaction-table">
-        <table id="transaction-table" class="table erp-crm-table" width="100%"><thead><tr><th scope="col">Pelanggan</th><th scope="col">Tanggal</th><th scope="col">Nominal</th><th scope="col">Voucher</th></tr></thead><tbody></tbody><tfoot><tr><th colspan="2">Total</th><th><span id="total_remaining" class="badge"></span></th><th><span id="total_voucher" class="badge"></span></th></tr></tfoot></table>
+        <table id="transaction-table" class="erp-table erp-crm-table" width="100%"><thead><tr><th scope="col">Pelanggan</th><th scope="col">Tanggal</th><th scope="col">Nominal</th><th scope="col">Voucher</th></tr></thead><tbody></tbody><tfoot><tr><th colspan="2">Total</th><th><span id="total_remaining" class="badge"></span></th><th><span id="total_voucher" class="badge"></span></th></tr></tfoot></table>
     </x-erp.collection>
 </x-erp.workspace>
 @endsection
@@ -54,16 +54,13 @@
                                 .text(val.toLocaleString('id-ID')) // pakai text, bukan html
                                 .removeClass(
                                     // buang semua kemungkinan class lama biar nggak nempel
-                                    'badge badge-light-success badge-light-danger ' +
+                                    'erp-badge erp-badge--success erp-badge--danger ' +
                                     'bg-success bg-danger text-bg-success text-bg-danger ' +
                                     'text-success text-danger'
                                 )
                                 // ==== pilih salah satu style sesuai framework CSS kamu ====
                                 // Jika pakai Bootstrap 5 (default):
-                                .addClass(isPositive ? 'badge badge-light-success' : 'badge badge-light-danger');
-
-                            // Jika kamu memang pakai tema dengan *-light-*:
-                            // .addClass(isPositive ? 'badge badge-light-success' : 'badge badge-light-danger');
+                                .addClass(isPositive ? 'erp-badge erp-badge--success' : 'erp-badge erp-badge--danger');
                         };
 
                         const $voucher = $('#total_voucher');

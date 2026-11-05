@@ -2,6 +2,7 @@
 
 namespace Modules\Crm\Http\Controllers;
 
+use App\Support\DataTableCells;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -235,32 +236,12 @@ class DepositoController extends Controller
                 return e($row->customer->name ?? '-');
             })
             ->addColumn('date', function ($row) {
-                return '<span class="badge badge-light-success">' . date('d M Y', strtotime($row->deposito_date)) . '</span>';
+                return DataTableCells::badge(date('d M Y', strtotime($row->deposito_date)), 'success');
             })
             ->addColumn('deposito', function ($row) {
                 return 'Rp' . number_format($row->deposito, 0, ',', '.');
             })
-            ->addColumn('action', function ($row) {
-                // $name = e($row->name);
-                return '
-                <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" onclick="editProduct(' . $row->id . ')">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $row->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>';
-            })
+            ->addColumn('action', fn ($row) => DataTableCells::editDeleteMenu((string) ($row->customer->name ?? ''), $row->id, true, true))
             ->rawColumns(['name', 'date', 'action'])
             ->make(true);
     }
@@ -284,31 +265,11 @@ class DepositoController extends Controller
             ->addColumn('name', function ($row) {
                 return e($row->customer->name ?? '-');
             })
-            ->addColumn('deposito', function ($row) {
-                $html = '<span class="badge badge-light-success">';
-                $html .= 'Rp' . number_format($row->deposito, 0, ',', '.');
-                $html .= '</span><br>';
-                $html .= '<span class="badge badge-light-danger">';
-                $html .= 'Rp' . number_format($row->nominal_used, 0, ',', '.');
-                $html .= '</span><br>';
-                return $html;
-            })
-            ->addColumn('voucher_qty', function ($row) {
-                $html = '<span class="badge badge-light-success">';
-                $html .= $row->voucher_qty;
-                $html .= '</span><br>';
-                $html .= '<span class="badge badge-light-danger">';
-                $html .= $row->voucher_used;
-                $html .= '</span><br>';
-                return $html;
-            })
-            ->addColumn('action', function ($item) {
-                return '
-                    <a href="' . url('customer-deposito/show') . '/' . $item->customer_id . '" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="View">
-                        <i class="fa fa-eye"></i>
-                    </a>
-                ';
-            })
+            ->addColumn('deposito', fn ($row) => DataTableCells::badge('Rp' . number_format($row->deposito, 0, ',', '.'), 'success')
+                . '<br>' . DataTableCells::badge('Rp' . number_format($row->nominal_used, 0, ',', '.'), 'danger'))
+            ->addColumn('voucher_qty', fn ($row) => DataTableCells::badge((string) $row->voucher_qty, 'success')
+                . '<br>' . DataTableCells::badge((string) $row->voucher_used, 'danger'))
+            ->addColumn('action', fn ($item) => DataTableCells::viewMenu(url('customer-deposito/show/'.$item->customer_id)))
             ->rawColumns(['name', 'deposito', 'voucher_qty', 'action'])
             ->make(true);
     }
@@ -326,31 +287,19 @@ class DepositoController extends Controller
                 'total_remaining' => $totalRemaining,
             ])
             ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                $html = '
-                    <div class="d-flex align-items-center">';
-                $html .= '<div class="ms-5">
-                            <a href="#" class="text-gray-800 text-hover-primary fs-5 fw-bold" 
-                               data-kt-ecommerce-product-filter="product_name">
-                                ' . e($item->customer->name) . '
-                            </a>
-                        </div>
-                    </div>
-                ';
-                return $html;
-            })
+            ->addColumn('name', fn ($item) => DataTableCells::title((string) ($item->customer->name ?? '-')))
             ->addColumn('nominal', function ($item) {
                 if ($item->deposito > 0) {
-                    return '<span class="badge badge-light-success">' . tonumber($item->deposito) . '</span>';
+                    return DataTableCells::badge((string) tonumber($item->deposito), 'success');
                 } else {
-                    return '<span class="badge badge-light-danger">' . tonumber($item->deposito) . '</span>';
+                    return DataTableCells::badge((string) tonumber($item->deposito), 'danger');
                 }
             })
             ->addColumn('voucher_qty', function ($item) {
                 if ($item->voucher > 0) {
-                    return '<span class="badge badge-light-success">' . $item->voucher_qty . '</span>';
+                    return DataTableCells::badge((string) $item->voucher_qty, 'success');
                 } else {
-                    return '<span class="badge badge-light-danger">' . $item->voucher_qty . '</span>';
+                    return DataTableCells::badge((string) $item->voucher_qty, 'danger');
                 }
             })
             ->addColumn('date', function ($item) {

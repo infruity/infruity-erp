@@ -144,7 +144,8 @@
         var exists = Array.prototype.some.call(select.options, function (option) { return option.value === item.id; });
         if (!exists) select.append(new Option(item.text, item.id, true, true));
         if (jq) jq(select).val(item.id); else select.value = item.id;
-        fire(select, 'select2:select', { id: item.id, text: item.text });
+        // Tanpa instance select2, bawa juga data tambahan baris (mis. nominal tier) ke handler select2:select.
+        fire(select, 'select2:select', Object.assign({}, item.data || {}, { id: item.id, text: item.text }));
         closeDialog();
     }
 

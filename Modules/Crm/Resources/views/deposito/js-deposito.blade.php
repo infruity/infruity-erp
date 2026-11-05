@@ -58,7 +58,7 @@
                 dataTable.search(this.value).draw();
             });
 
-            document.getElementById('kt_modal_add_customer_cancel').addEventListener('click', function(e) {
+            document.getElementById('crm-cancel').addEventListener('click', function(e) {
                 e.preventDefault(); // Mencegah form reset langsung
                 Swal.fire({
                     text: "Apakah Anda yakin ingin membatalkan?",
@@ -68,33 +68,29 @@
                     confirmButtonText: "Ya, Batalkan!",
                     cancelButtonText: "Tidak, Kembali",
                     customClass: {
-                        confirmButton: "btn btn-primary",
-                        cancelButton: "btn btn-active-light"
+                        confirmButton: "erp-action erp-action--primary",
+                        cancelButton: "erp-action ml-3"
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Tutup modal manual
-                        const modal = bootstrap.Modal.getInstance(document.getElementById(
-                            'kt_modal_add_customer'));
-                        modal.hide();
-                        document.getElementById('kt_modal_add_customer_form').reset();
+                        erp.dialog.close('crm-dialog');
                     }
                 });
             });
 
-            $('#kt_modal_add_customer_form').on('submit', function(e) {
+            $('#crm-form').on('submit', function(e) {
                 e.preventDefault();
 
                 var form = $(this)[0];
                 var url = $(this).attr('action');
-                var submitBtn = $('#kt_modal_add_customer_submit');
+                var submitBtn = $('#crm-submit');
 
                 var formData = new FormData(form); // Gunakan FormData agar file bisa ikut terkirim
 
                 // Show loading
                 submitBtn.prop('disabled', true);
-                submitBtn.find('.indicator-label').hide();
-                submitBtn.find('.indicator-progress').show();
+                submitBtn.find('[data-label]').prop('hidden', true);
+                submitBtn.find('[data-progress]').prop('hidden', false);
 
                 $.ajax({
                     type: 'POST',
@@ -111,16 +107,12 @@
                             timer: 1500
                         }).then(() => {
                             // Reset form, tutup modal, dan refresh DataTable
-                            $('#kt_modal_add_customer_form').trigger('reset');
-                            $('#kt_modal_add_customer_form').find(
+                            $('#crm-form').trigger('reset');
+                            $('#crm-form').find(
                                 'input[name="_method"]').remove();
-                            $('#kt_modal_add_customer_form').attr('action',
+                            $('#crm-form').attr('action',
                                 `/${segment1}`);
-                            $('#kt_modal_add_customer_header h2').text(
-                                'Tambah Deposito');
-                            const modal = bootstrap.Modal.getInstance(document
-                                .getElementById('kt_modal_add_customer'));
-                            if (modal) modal.hide();
+                            erp.dialog.close('crm-dialog');
                             if (typeof dataTable !== 'undefined') dataTable.ajax.reload(
                                 null, false);
                         });
@@ -135,8 +127,8 @@
                     },
                     complete: function() {
                         submitBtn.prop('disabled', false);
-                        submitBtn.find('.indicator-label').show();
-                        submitBtn.find('.indicator-progress').hide();
+                        submitBtn.find('[data-label]').prop('hidden', false);
+                        submitBtn.find('[data-progress]').prop('hidden', true);
                     }
                 });
             });
@@ -160,8 +152,8 @@
                 confirmButtonText: 'Ya, hapus!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--danger',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false
             }).then((result) => {
@@ -214,7 +206,7 @@
                     ).val(response.customer_id).trigger('change');
 
                     // Ubah action form untuk update
-                    var form = $('#kt_modal_add_customer_form');
+                    var form = $('#crm-form');
                     form.attr('action', `/deposito/${id}`); // URL untuk update produk
                     form.find('input[name="_method"]').remove(); // Hapus input _method jika ada
                     form.append(
@@ -222,8 +214,8 @@
                     ); // Menambahkan input _method untuk PUT
 
                     // Tampilkan modal untuk edit produk
-                    var modal = new bootstrap.Modal(document.getElementById('kt_modal_add_customer'));
-                    modal.show();
+                    
+                    erp.dialog.open('crm-dialog');
                 },
                 error: function(xhr) {
                     Swal.fire({
@@ -235,58 +227,28 @@
             });
         }
 
-        $("#date").flatpickr({
-            altInput: !0,
-            altFormat: "d F, Y",
-            dateFormat: "Y-m-d"
-        });
 
-        $('#kt_modal_add_customer').on('shown.bs.modal', function() {
-            $('#customer_id').select2({
-                placeholder: 'Select a customer',
-                dropdownParent: $('#kt_modal_add_customer'),
-                ajax: {
-                    url: '/customer/get-customer',
-                    dataType: 'json',
-                    delay: 250,
-                    data: params => ({
-                        search: params.term
-                    }),
-                    processResults: data => ({
-                        results: data.map(item => ({
-                            id: item.id,
-                            text: item.name
-                        }))
-                    })
-                }
-            }).on('select2:select', function(e) {
-                const data = e.params.data;
+        // Pilihan pelanggan dan tier (ErpPicker menggantikan select2; sumber datanya sama).
+        $(function() {
+            ErpPicker.attach('#customer_id', {
+                title: 'Pilih pelanggan',
+                placeholder: 'Cari pelanggan...',
+                placeholderTrigger: 'Pilih pelanggan',
+                emptyText: 'Pelanggan tidak ditemukan',
+                url: '/customer/get-customer',
+                map: item => ({ id: item.id, text: item.name })
             });
-        });
-
-        $('#kt_modal_add_customer').on('shown.bs.modal', function() {
-            $('#tier_id').select2({
-                placeholder: 'Select a tier',
-                dropdownParent: $('#kt_modal_add_customer'),
-                ajax: {
-                    url: '/tier/list-tier',
-                    dataType: 'json',
-                    delay: 250,
-                    data: params => ({
-                        search: params.term
-                    }),
-                    processResults: data => ({
-                        results: data.map(item => ({
-                            id: item.id,
-                            text: item.name,
-                            deposito: item.deposito
-                        }))
-                    })
-                }
-            }).on('select2:select', function(e) {
-                const data = e.params.data;
-                const depostio = data.deposito ?? 0;
-                $('input[name="deposito"]').val(depostio);
+            ErpPicker.attach('#tier_id', {
+                title: 'Pilih tier',
+                placeholder: 'Cari tier...',
+                placeholderTrigger: 'Pilih tier',
+                emptyText: 'Tier tidak ditemukan',
+                url: '/tier/list-tier',
+                map: item => ({ id: item.id, text: item.name, data: { deposito: item.deposito } })
+            });
+            // Nominal deposito mengikuti tier yang dipilih.
+            $('#tier_id').on('select2:select', function(e) {
+                $('input[name="deposito"]').val(e.params.data.deposito ?? 0);
                 bindFormatNumber();
             });
         });

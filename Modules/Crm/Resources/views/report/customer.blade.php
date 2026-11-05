@@ -1,24 +1,17 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Analisis Pelanggan')
 
-@section('content')<x-erp.workspace title="Analisis Pelanggan" subtitle="Recency, frekuensi dan nilai belanja pelanggan."><x-slot:toolbar><label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="search" type="search" placeholder="Cari pelanggan…" aria-label="Cari pelanggan"></label></x-slot:toolbar><x-erp.collection table="transaction-table"><table class="table align-middle table-row-dashed fs-6 gy-5" id="transaction-table" width="100%">
+@section('content')<x-erp.workspace title="Analisis Pelanggan" subtitle="Recency, frekuensi dan nilai belanja pelanggan."><x-slot:toolbar><label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="search" type="search" placeholder="Cari pelanggan…" aria-label="Cari pelanggan"></label></x-slot:toolbar><x-erp.collection table="transaction-table"><table class="erp-table" id="transaction-table" width="100%">
                     <thead>
-                        <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                            {{-- <th class="w-10px pe-2">
-                                <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                                    <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                        data-kt-check-target="#kt_ecommerce_sortir_table .form-check-input"
-                                        value="1" />
-                                </div>
-                            </th> --}}
-                            <th class="text-start min-w-100px">Name</th>
-                            <th class="text-start min-w-100px">Status</th>
-                            <th class="text-start min-w-100px">Recency</th>
-                            <th class="text-start min-w-100px">Frequency</th>
-                            <th class="text-start min-w-100px">Monetary</th>
+                        <tr>
+                            <th class="min-w-[100px]">Name</th>
+                            <th class="min-w-[100px]">Status</th>
+                            <th class="min-w-[100px]">Recency</th>
+                            <th class="min-w-[100px]">Frequency</th>
+                            <th class="min-w-[100px]">Monetary</th>
                         </tr>
                     </thead>
-                    <tbody class="fw-semibold text-gray-600"></tbody>
+                    <tbody></tbody>
                 </table></x-erp.collection></x-erp.workspace>@section('script')
     <script type="text/javascript">
         var dataTable;

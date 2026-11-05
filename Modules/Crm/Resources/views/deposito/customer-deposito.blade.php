@@ -1,13 +1,13 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Deposito Pelanggan - CRM')
 @section('page-title', 'Deposito Pelanggan')
 @section('content')
 @include('crm::partials.assets')
 <x-erp.workspace title="Deposito Pelanggan" subtitle="Pantau saldo deposito dan voucher setiap pelanggan." icon="ph-users">
-    <x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" placeholder="Cari deposito pelanggan…" aria-label="Cari deposito pelanggan"></div>
+    <x-slot:toolbar><label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" placeholder="Cari deposito pelanggan…" aria-label="Cari deposito pelanggan"></label>
             </x-slot:toolbar>
     <x-erp.collection table="transaction-table">
-        <table id="transaction-table" class="table erp-crm-table" width="100%"><thead><tr><th scope="col">Pelanggan</th><th scope="col">Deposito</th><th scope="col">Total voucher</th><th scope="col">Detail</th></tr></thead><tbody></tbody></table>
+        <table id="transaction-table" class="erp-table erp-crm-table" width="100%"><thead><tr><th scope="col">Pelanggan</th><th scope="col">Deposito</th><th scope="col">Total voucher</th><th scope="col">Detail</th></tr></thead><tbody></tbody></table>
     </x-erp.collection>
 </x-erp.workspace>
 @endsection

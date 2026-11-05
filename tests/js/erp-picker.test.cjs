@@ -169,3 +169,9 @@ test('withCreatable adds a "new" row for an unknown term and never duplicates an
 test('the picker overlay lives inside an open <dialog> so the modal does not make it inert', () => {
     assert.match(read('public/assets/js/erp-picker.js'), /select\.closest\('dialog\[open\], \.modal'\)/);
 });
+
+test('without a select2 instance the select2:select payload still carries the row data', () => {
+    const src = read('public/assets/js/erp-picker.js');
+
+    assert.match(src, /fire\(select, 'select2:select', Object\.assign\(\{\}, item\.data \|\| \{\}, \{ id: item\.id, text: item\.text \}\)\)/);
+});

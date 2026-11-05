@@ -2,39 +2,11 @@
     "Modules/Chat/Resources/views/index.blade.php": {
         "root-layout": 1
     },
-    "Modules/Crm/Http/Controllers/CampaignController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 3,
-        "btn": 2,
-        "badge-light": 2,
-        "bs-utilities": 1
-    },
-    "Modules/Crm/Http/Controllers/DepositoController.php": {
-        "data-bs": 2,
-        "data-kt": 1,
-        "bootstrap-icons": 3,
-        "fontawesome": 1,
-        "btn": 6,
-        "badge-light": 9,
-        "bs-utilities": 4
-    },
     "Modules/Crm/Http/Controllers/TierController.php": {
         "data-bs": 3,
         "bootstrap-icons": 6,
         "btn": 4,
         "bs-utilities": 2
-    },
-    "Modules/Crm/Resources/views/campaign/index.blade.php": {
-        "data-bs": 2,
-        "data-kt": 2,
-        "form-classes": 5,
-        "modal-class": 3,
-        "select2": 1,
-        "root-layout": 1
-    },
-    "Modules/Crm/Resources/views/campaign/js-campaign.blade.php": {
-        "btn": 4,
-        "bootstrap-js": 3
     },
     "Modules/Crm/Resources/views/dashboard/index.blade.php": {
         "hex-class": 12
@@ -50,43 +22,8 @@
     "Modules/Crm/Resources/views/dashboard/top_tier.blade.php": {
         "bs-utilities": 11
     },
-    "Modules/Crm/Resources/views/deposito/customer-deposito.blade.php": {
-        "data-kt": 1,
-        "root-layout": 1
-    },
-    "Modules/Crm/Resources/views/deposito/index.blade.php": {
-        "data-bs": 2,
-        "data-kt": 2,
-        "form-classes": 4,
-        "modal-class": 3,
-        "root-layout": 1
-    },
     "Modules/Crm/Resources/views/deposito/js-deposito.blade.php": {
-        "btn": 4,
-        "select2": 4,
-        "bootstrap-js": 3
-    },
-    "Modules/Crm/Resources/views/deposito/show.blade.php": {
-        "data-kt": 1,
-        "badge-light": 6,
-        "root-layout": 1
-    },
-    "Modules/Crm/Resources/views/point-schedule/index.blade.php": {
-        "data-kt": 1,
-        "form-classes": 6,
-        "root-layout": 1
-    },
-    "Modules/Crm/Resources/views/report/customer.blade.php": {
-        "data-kt": 2,
-        "form-classes": 3,
-        "bs-utilities": 4,
-        "root-layout": 1
-    },
-    "Modules/Crm/Resources/views/setting-exp/index2.blade.php": {
-        "data-kt": 1,
-        "form-classes": 2,
-        "select2": 1,
-        "root-layout": 1
+        "select2": 2
     },
     "Modules/Crm/Resources/views/tier/index.blade.php": {
         "data-bs": 2,
@@ -779,11 +716,8 @@
         "data-kt": 2,
         "bs-utilities": 2
     },
-    "public/assets/js/erp-crm.js": {
-        "bootstrap-js": 1
-    },
     "public/assets/js/erp-picker.js": {
-        "select2": 10
+        "select2": 12
     },
     "public/assets/js/order-book-detail.js": {
         "data-kt": 1,

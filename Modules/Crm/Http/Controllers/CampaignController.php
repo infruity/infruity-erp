@@ -2,6 +2,7 @@
 
 namespace Modules\Crm\Http\Controllers;
 
+use App\Support\DataTableCells;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Modules\Crm\Entities\Campaign;
@@ -240,32 +241,12 @@ class CampaignController extends Controller
             })
             ->addColumn('type_promo', function ($row) {
                 if ($row->type_promo == 'discount') {
-                    return ucwords($row->type_promo) . ' <span class="badge badge-light-primary">%</span>';
-                } else {
-                    return ucwords($row->type_promo) . ' <span class="badge badge-light-success">Rp</span>';
+                    return e(ucwords($row->type_promo)) . ' ' . DataTableCells::badge('%', 'primary');
                 }
+
+                return e(ucwords($row->type_promo)) . ' ' . DataTableCells::badge('Rp', 'success');
             })
-            ->addColumn('action', function ($row) {
-                $name = e($row->name);
-                return '
-                <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi ' . $name . '">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" onclick="editProduct(' . $row->id . ')">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $row->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>';
-            })
+            ->addColumn('action', fn ($row) => DataTableCells::editDeleteMenu((string) $row->name, $row->id, true, true))
             ->addColumn('exp', function ($row) {
                 return toNumber($row->exp);
             })
