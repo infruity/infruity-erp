@@ -819,6 +819,14 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 - Diuji di browser dengan akun Master (127.0.0.1): campaign, deposito (picker pelanggan sungguhan), tier (baris disuntik, dialog benefit, picker produk sungguhan, chip, serialisasi form), point-schedule, laporan pelanggan, dashboard.
 - **Menunggu persetujuan (kode mati CRM):** `dashboard/js-dashboard.blade.php` (465 baris amCharts/Metronic, tidak di-include siapa pun), `dashboard/top_distribution.blade.php`, `dashboard/top_tier.blade.php` beserta `DashboardController::{topDistribution,topTier}` dan route `crm-dashboard/top-{distribution,tier}` (hanya dipanggil `js-dashboard`).
 
+**B3c (selesai, kecuali kode mati): admin, settings, role-menu, change-password, chat.** `Chat/index`, `role-menu`, `settings/index`, `change-password` pindah ke `layouts.erp` (`role-menu`: tabel `erp-table`); hex merek di `admin/role/*`, `admin/user/index`, `dashboard` menjadi token. Diuji di browser dengan akun Master. **B3 selesai** kecuali daftar berikut.
+
+**Menunggu persetujuan (kode mati B3), semuanya tanpa pemanggil:**
+- `resources/views/list_permohonan.blade.php` + `DashboardController::list_permohonan` + route `list-permohonan`: sisa aplikasi SK (tabel `ipt_pengurangan`, `m_status`; tautan `permohonan/*` tidak punya route).
+- `resources/views/menu/index.blade.php` + `App\Http\Controllers\P_menu` (tidak punya route).
+- `resources/views/admin/role/js-role.blade.php` (330 baris) dan `admin/user/js-user.blade.php` (252 baris): tidak di-include siapa pun (select2/modal Bootstrap).
+- CRM: `dashboard/js-dashboard.blade.php`, `dashboard/top_distribution.blade.php`, `dashboard/top_tier.blade.php`, `DashboardController::{topDistribution,topTier}` dan route `crm-dashboard/top-{distribution,tier}`.
+
 ### B4 — Transaction (74 view)
 
 **Prasyarat**: `ui/produksi-reference` dan `ui/stock-opname-reference` sudah di `main`; hitung ulang inventaris.

@@ -1,7 +1,4 @@
 {
-    "Modules/Chat/Resources/views/index.blade.php": {
-        "root-layout": 1
-    },
     "Modules/Crm/Resources/views/dashboard/js-dashboard.blade.php": {
         "kt-js": 25
     },
@@ -717,22 +714,10 @@
         "form-classes": 2,
         "bs-utilities": 3
     },
-    "resources/views/admin/role/edit.blade.php": {
-        "hex-class": 1
-    },
-    "resources/views/admin/role/index.blade.php": {
-        "hex-class": 2
-    },
     "resources/views/admin/role/js-role.blade.php": {
         "btn": 6,
         "select2": 4,
         "bootstrap-js": 3
-    },
-    "resources/views/admin/role/show.blade.php": {
-        "hex-class": 1
-    },
-    "resources/views/admin/user/index.blade.php": {
-        "hex-class": 6
     },
     "resources/views/admin/user/js-user.blade.php": {
         "btn": 4,
@@ -742,9 +727,6 @@
     "resources/views/auth/login.blade.php": {
         "hex-class": 1
     },
-    "resources/views/change-password.blade.php": {
-        "root-layout": 1
-    },
     "resources/views/components/erp/dropdown-select.blade.php": {
         "hex-class": 3
     },
@@ -753,9 +735,6 @@
     },
     "resources/views/components/erp/mobile-navbar.blade.php": {
         "bootstrap-js": 1
-    },
-    "resources/views/dashboard.blade.php": {
-        "hex-class": 3
     },
     "resources/views/landing.blade.php": {
         "hex-class": 70
@@ -771,12 +750,6 @@
         "fontawesome": 2,
         "form-classes": 1,
         "btn": 4,
-        "root-layout": 1
-    },
-    "resources/views/role-menu.blade.php": {
-        "root-layout": 1
-    },
-    "resources/views/settings/index.blade.php": {
         "root-layout": 1
     },
     "resources/views/template/notif.blade.php": {

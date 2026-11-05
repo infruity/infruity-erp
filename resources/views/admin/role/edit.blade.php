@@ -51,7 +51,7 @@
                 </div>
                 <div class="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-white px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                     <button type="button" @click="closePermissionOverlay()" class="h-11 flex-1 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button>
-                    <button type="submit" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white">Simpan Hak Akses</button>
+                    <button type="submit" class="h-11 flex-1 rounded-xl bg-teal text-sm font-semibold text-white">Simpan Hak Akses</button>
                 </div>
             </form>
         </div>

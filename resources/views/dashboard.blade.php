@@ -41,7 +41,7 @@
                 <p class="mt-1 text-[13px] leading-5 text-gray-500">Pantau kondisi operasional Infruity.</p>
             </div>
             <div class="shrink-0 flex items-center gap-1.5 rounded-full bg-white border border-gray-200 px-3 py-2 text-[11px] font-semibold text-gray-600">
-                <i class="ph ph-map-pin text-[15px] text-[#0b595b]"></i>
+                <i class="ph ph-map-pin text-[15px] text-teal"></i>
                 Semua cabang
             </div>
         </div>
@@ -91,7 +91,7 @@
             </div>
             <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white divide-y divide-gray-100">
                 <div class="flex items-center gap-3 px-4 py-3.5">
-                    <span class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] flex items-center justify-center"><i class="ph ph-receipt text-[20px]"></i></span>
+                    <span class="w-10 h-10 rounded-xl bg-emerald-50 text-teal flex items-center justify-center"><i class="ph ph-receipt text-[20px]"></i></span>
                     <div class="min-w-0 flex-1"><p class="text-[13px] font-semibold text-gray-800">Transaksi</p><p class="mt-0.5 text-[11px] text-gray-500">Jumlah transaksi pada periode ini</p></div>
                     <span class="text-sm font-bold text-gray-500 tabular-nums">—</span>
                 </div>
@@ -124,7 +124,7 @@
                 <h1 id="desktop-dashboard-heading" class="text-2xl font-bold tracking-tight text-gray-900">Ringkasan</h1>
                 <p class="mt-1 text-sm text-gray-500">Pantau kondisi operasional Infruity.</p>
             </div>
-            <span class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-600"><i class="ph ph-map-pin text-lg text-[#0b595b]"></i> Semua cabang · {{ now()->translatedFormat('d F Y') }}</span>
+            <span class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-600"><i class="ph ph-map-pin text-lg text-teal"></i> Semua cabang · {{ now()->translatedFormat('d F Y') }}</span>
         </div>
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1.2fr_0.8fr]">
             <article class="dashboard-saldo relative overflow-hidden p-7 text-white">

@@ -33,7 +33,7 @@
             </div>
             <div class="flex shrink-0 border-t border-gray-100 bg-white pb-[env(safe-area-inset-bottom)]">
                 @if(check_access('role-menu.update'))
-                    <button type="button" data-role-permission-edit @click="roleDetailOpen = false; permissionOpen = true; roleActionError = ''" class="flex h-12 flex-1 items-center justify-center gap-2 text-base font-semibold text-[#0b595b] transition-colors hover:bg-gray-50"><i class="ph-bold ph-pencil-simple"></i> Edit</button>
+                    <button type="button" data-role-permission-edit @click="roleDetailOpen = false; permissionOpen = true; roleActionError = ''" class="flex h-12 flex-1 items-center justify-center gap-2 text-base font-semibold text-teal transition-colors hover:bg-gray-50"><i class="ph-bold ph-pencil-simple"></i> Edit</button>
                 @endif
                 @if(check_access('role.destroy'))
                     @if(strtolower($role->nm_role) === 'administrator')

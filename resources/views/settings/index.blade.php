@@ -1,4 +1,4 @@
-@extends('template.root')
+@extends('layouts.erp')
 
 @section('title', 'Pengaturan')
 

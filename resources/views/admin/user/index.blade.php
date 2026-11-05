@@ -125,10 +125,10 @@
             <form method="GET" action="{{ route('user.index') }}" class="relative flex-1">
                 <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]"></i>
                 <input name="q" value="{{ request('q') }}" type="search" placeholder="Cari nama atau email pengguna..." class="w-full h-11 rounded-full border border-gray-100 bg-gray-50/50 pl-11 pr-20 text-[13px] outline-none focus:border-emerald-500">
-                <button type="submit" class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#0b595b]">Cari</button>
+                <button type="submit" class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-teal">Cari</button>
             </form>
             @if (check_access('user.create'))
-            <button type="button" @click="openCreate()" class="flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold shadow-sm"><i class="ph-bold ph-plus"></i> Tambah Akun</button>
+            <button type="button" @click="openCreate()" class="flex items-center gap-2 bg-teal hover:bg-teal-hover text-white rounded-full h-11 px-5 text-[13px] font-semibold shadow-sm"><i class="ph-bold ph-plus"></i> Tambah Akun</button>
             @endif
         </div>
 
@@ -173,7 +173,7 @@
                 <div class="flex justify-center pt-3 pb-1"><div class="h-1.5 w-16 rounded-full bg-gray-300"></div></div>
                 <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4"><h3 class="text-base font-bold text-gray-800">Filter Akun</h3><button type="button" @click="filterOpen = false" aria-label="Tutup filter" class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500"><i class="ph-bold ph-x"></i></button></div>
                 <div class="p-5"><label for="mobile-user-role-filter" class="mb-2 block text-xs font-semibold text-gray-600">Role</label><select id="mobile-user-role-filter" name="role_id" class="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm"><option value="">Semua role</option>@foreach($role as $roleOption)<option value="{{ $roleOption->id_role }}" @selected((string) $selectedRoleId === (string) $roleOption->id_role)>{{ $roleOption->nm_role }}</option>@endforeach</select></div>
-                <div class="flex gap-3 border-t border-gray-100 px-5 py-4"><a href="{{ route('user.index') }}" class="flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Reset</a><button type="submit" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white">Terapkan</button></div>
+                <div class="flex gap-3 border-t border-gray-100 px-5 py-4"><a href="{{ route('user.index') }}" class="flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Reset</a><button type="submit" class="h-11 flex-1 rounded-xl bg-teal text-sm font-semibold text-white">Terapkan</button></div>
             </form>
         </div>
     </template>
@@ -222,7 +222,7 @@
                 </div>
                 <div x-show="selected?.is_aktif" x-cloak class="flex w-full shrink-0 border-t border-gray-100 pb-[env(safe-area-inset-bottom)]">
                     @if (check_access('user.edit'))
-                        <button type="button" @click="editSelected()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-[#0b595b] transition-colors hover:bg-emerald-50"><i class="ph-bold ph-pencil-simple"></i>Edit</button>
+                        <button type="button" @click="editSelected()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-teal transition-colors hover:bg-emerald-50"><i class="ph-bold ph-pencil-simple"></i>Edit</button>
                     @endif
                     @if (check_access('user.destroy'))
                         <div class="w-px bg-gray-100"></div><button type="button" @click="removeSelected()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50"><i class="ph-bold ph-trash"></i>Hapus</button>
@@ -300,7 +300,7 @@
                             <div class="h-full w-full rounded-full bg-gray-400/50 transition-opacity duration-300 ease-in-out" :style="`height: ${thumbHeight}px; transform: translateY(${scrollPos}px);`" :class="isScrolling ? 'opacity-100' : 'opacity-0'"></div>
                         </div>
                     </div>
-                    <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3"><button type="button" @click="closeDrawer()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold" x-text="editing ? 'Simpan Perubahan' : 'Tambah Akun'"></button></div>
+                    <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3"><button type="button" @click="closeDrawer()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" class="flex-1 h-11 rounded-xl bg-teal text-white text-sm font-semibold" x-text="editing ? 'Simpan Perubahan' : 'Tambah Akun'"></button></div>
                 </form>
             </div>
         </div>

@@ -1,4 +1,4 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Perbarui Kata Sandi')
 @section('content')
 <section class="erp-password-page" aria-label="Perbarui kata sandi">
