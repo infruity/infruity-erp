@@ -3,13 +3,9 @@
     #add_product_form .product-create-content { display: flex; flex-direction: column; gap: 1.25rem; padding: 1.25rem 1.25rem .5rem; }
     #add_product_form .product-field-label { display: block; margin-bottom: .375rem; color: #4b5563; font-size: .75rem; font-weight: 600; }
     #add_product_form .product-input,
-    #add_product_form .product-select,
-    #add_product_form .form-control,
-    #add_product_form .form-select { width: 100%; min-height: 44px; border: 1px solid #e5e7eb; border-radius: .75rem; background: #fff; padding: .625rem .875rem; color: #1f2937; font-size: .875rem; outline: none; }
+    #add_product_form .product-select { width: 100%; min-height: 44px; border: 1px solid #e5e7eb; border-radius: .75rem; background: #fff; padding: .625rem .875rem; color: #1f2937; font-size: .875rem; outline: none; }
     #add_product_form .product-input:focus,
-    #add_product_form .product-select:focus,
-    #add_product_form .form-control:focus,
-    #add_product_form .form-select:focus { border-color: #10b981; box-shadow: 0 0 0 2px rgb(16 185 129 / .12); }
+    #add_product_form .product-select:focus { border-color: #10b981; box-shadow: 0 0 0 2px rgb(16 185 129 / .12); }
     #add_product_form .product-price-row,
     #add_product_form .product-option-row { display: flex; align-items: center; gap: .625rem; }
     #add_product_form .product-price-prefix { position: absolute; left: .875rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: .8125rem; pointer-events: none; }
@@ -19,16 +15,11 @@
     #add_product_form #variant_table, #add_product_form #branch_table { width: 100%; font-size: .8125rem; }
     #add_product_form #variant_table th, #add_product_form #branch_table th { padding: .5rem; border-bottom: 1px solid #f3f4f6; color: #9ca3af; font-size: .6875rem; font-weight: 600; text-align: left; }
     #add_product_form #variant_table td, #add_product_form #branch_table td { padding: .5rem; border-bottom: 1px solid #f9fafb; vertical-align: middle; }
-    #add_product_form .select2-container { width: 100% !important; }
-    #add_product_form .select2-container--default .select2-selection--single { height: 44px; border: 1px solid #e5e7eb; border-radius: .75rem; background: #fff; }
-    #add_product_form .select2-container--default .select2-selection--single .select2-selection__rendered { padding: 7px 14px; color: #1f2937; font-size: .875rem; line-height: 28px; }
-    #add_product_form .select2-container--default .select2-selection--single .select2-selection__arrow { top: 8px; right: 8px; }
-    #add_product_form .select2-container--default.select2-container--focus .select2-selection--single { border-color: #10b981; }
 </style>
 
 <form id="add_product_form"
     action="{{ isset($data) ? url(Request::segment(1) . '/' . $data->id) : url(Request::segment(1)) }}"
-    method="POST" enctype="multipart/form-data" data-kt-redirect="">
+    method="POST" enctype="multipart/form-data">
     @if (isset($data)) @method('PUT') @endif
     @csrf
 

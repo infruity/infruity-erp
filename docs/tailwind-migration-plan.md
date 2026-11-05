@@ -789,7 +789,14 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 
 **B2b-3 (selesai): token merek di view Master.** `bg-[#0b595b]`/`text-[#0b595b]` menjadi `bg-teal`/`text-teal`, `hover:bg-[#0a4e50]` menjadi `hover:bg-teal-hover` (token `#08484a`; hover sedikit lebih gelap dari `#0a4e50` lama) di 7 view. **Jangan jalankan `codemod --write` pada view yang sudah di `layouts.erp`**: pergeseran skala `gray` hanya benar untuk halaman `template.root` (Metronic); di halaman Tailwind-native ia mengubah warna. Sapuan hex dilakukan dengan regex terarah.
 
-**B2b-2 (menunggu): `products/stock-show` (899 baris).** Bukan alih-alih mekanis: CSS inline-nya bergantung pada struktur Metronic (`#kt_content`, `#kt_post`, `.card/.card-header/.card-toolbar`), memakai select2 (ganti `erp-picker`), flatpickr, bottom sheet filter buatan sendiri, dan dikunci `ProductStockDetailTopbarBackButtonTest`. Perlu data produk sungguhan untuk menguji riwayat stok; DB guest tidak punya.
+**B2b-2 (selesai): select2 keluar dari halaman produk, `stock-show` pindah ke `layouts.erp`.**
+- `products/create-script`: baris varian dibangun oleh `buildVariantRow()` (DOM, bukan string HTML: nama produk dari server tidak lagi disisipkan sebagai HTML) dengan `<select class="erp-select">` + `ErpPicker.attach`. Kode `addBranch`/`product_branch` dihapus: tabel cabang lama tidak ada di form (harga cabang sudah Alpine `productBranchPricing`). Markup blok halaman `show` diganti kelas `erp-*`.
+- `ErpPicker` mendapat opsi `creatable` (+ `creatableLabel`, helper murni `withCreatable`): pengganti `tags: true` select2, yaitu mengetik nama yang belum ada menambah baris "Produk baru" dengan id = teks. Dites di `tests/js/erp-picker.test.cjs`.
+- **Overlay picker kini dirender di dalam `<dialog>` terbuka** (`select.closest('dialog[open], .modal')`), alasan sama dengan SweetAlert (modal native membuat elemen luar inert).
+- `products/index`: select2 dan CSS select2 CDN dibuang, `data-kt-ecommerce-product-filter` menjadi `data-erp-filter`, tombol SweetAlert memakai `erp-action`. `create-form`/`create` kehilangan CSS select2 dan `.form-control/.form-select` yang tak terpakai.
+- `products/stock-show`: kartu Metronic (`card`, `card-header`, `card-toolbar`, `card-body`) diganti kelas halaman (`stock-detail-card-*`), input `erp-input`, `<select>` filter menjadi `erp-select` biasa (select2 tidak pernah ada di `layouts.erp`), utilitas Bootstrap dibuang. Halaman penuh di mobile lewat `-mx-4 md:mx-0` (aturan `width:100%` mobile dihapus).
+- **Flatpickr dari npm** (`flatpickr@4.6.13`, versi yang sama dengan bundel Metronic) di `vendor.js`, termasuk plugin jQuery `$.fn.flatpickr` yang dipasang eksplisit (import di-hoist sehingga deteksi `jQuery` otomatis flatpickr tidak jalan). CSS dasar: `@vite('resources/css/flatpickr.css')` lewat `@push('styles')` di halaman pemakainya.
+- Diuji di browser dengan rute debug sementara (sudah dihapus, tidak dikomit) dan baris contoh yang disuntik: daftar riwayat, bottom sheet filter, select native, kalender Flatpickr, preset tanggal; form produk: baris varian, picker, baris "Produk baru", tambah/hapus baris; `/products` DataTables + filter. Ajax server-side sungguhan belum diuji (DB guest tanpa produk).
 
 ### B3 — Report, CRM, Chat, admin/settings/user (52 view)
 
@@ -924,13 +931,13 @@ Legenda: `[ ]` belum, `[x]` selesai, `[-]` dikecualikan. Layout: `root` = `templ
 | [ ] | `Master/partials/mobile-index.blade.php` | tw | 139 | 0 | Swal | BranchOverlayFields, CustomerEditOverlay, PositionDrawerSpacing, SupplierDetailUi, SupplierRegionFields, kurir-drawer(js), staff-edit-overlay(js) |  |
 | [ ] | `Master/payment-method/index.blade.php` | partial | 0 | 0 | - | - |  |
 | [ ] | `Master/position/index.blade.php` | partial | 3 | 0 | - | PositionDrawerSpacing |  |
-| [ ] | `Master/products/create.blade.php` | tw | 2 | 0 | select2 | - |  |
+| [x] | `Master/products/create.blade.php` | tw | 2 | 0 | select2 | - |  |
 | [ ] | `Master/products/edit.blade.php` | root | 215 | 24 | select2 | - | ⚠ kandidat mati (0 referensi) |
-| [ ] | `Master/products/index.blade.php` | tw | 146 | 11 | select2, DT, Swal | - |  |
-| [ ] | `Master/products/partials/create-form.blade.php` | partial | 77 | 2 | select2 | - |  |
-| [ ] | `Master/products/partials/create-script.blade.php` | partial | 52 | 14 | select2, DT, Swal | - |  |
+| [x] | `Master/products/index.blade.php` | tw | 146 | 11 | select2, DT, Swal | - |  |
+| [x] | `Master/products/partials/create-form.blade.php` | partial | 77 | 2 | select2 | - |  |
+| [x] | `Master/products/partials/create-script.blade.php` | partial | 52 | 14 | select2, DT, Swal | - |  |
 | [x] | `Master/products/show-transaction.blade.php` | root | 21 | 0 | DT | - |  |
-| [ ] | `Master/products/stock-show.blade.php` | root | 108 | 26 | select2, DT, flatpickr | - |  |
+| [x] | `Master/products/stock-show.blade.php` | root | 108 | 26 | select2, DT, flatpickr | - |  |
 | [x] | `Master/products/stock.blade.php` | root | 19 | 2 | - | - |  |
 | [ ] | `Master/staff/create-overlay.blade.php` | partial | 12 | 0 | - | UserStaffLink |  |
 | [ ] | `Master/staff/create.blade.php` | tw | 6 | 0 | - | - | ⚠ kandidat mati (0 referensi) |

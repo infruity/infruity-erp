@@ -22,6 +22,7 @@
         "@alpinejs/collapse": "^3.17.5",
         "alpinejs": "^3.17.5",
         "datatables.net": "1.13.7",
+        "flatpickr": "4.6.13",
         "jquery": "^3.7.1",
         "sweetalert2": "^11.26.25"
     }

@@ -1,4 +1,3 @@
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         $(document).ready(function() {
             if (typeof bindFormatNumber === 'function') {
@@ -21,216 +20,47 @@
             }
         });
 
+
+        // Baris varian: <select> dengan ErpPicker (pencarian produk lewat ajax; ketik nama baru untuk membuat produk varian).
+        const variantPickerOptions = {
+            title: 'Pilih produk',
+            placeholder: 'Ketik nama produk...',
+            placeholderTrigger: 'Pilih produk',
+            emptyText: 'Produk tidak ditemukan',
+            url: "{{ route('ajax.getProduct') }}",
+            map: item => ({ id: item.id, text: item.name }),
+            creatable: true,
+            creatableLabel: 'Produk baru'
+        };
+
+        function buildVariantRow(variant) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><select name="variant[id][]" class="erp-select"></select></td>
+                <td><input type="text" inputmode="numeric" name="variant[price][]" class="erp-input format-number" placeholder="Harga Produk"></td>
+                <td class="text-right"><button type="button" class="product-remove-row remove_variant" aria-label="Hapus varian"><i class="ph ph-x" aria-hidden="true"></i></button></td>`;
+            const select = row.querySelector('select');
+            if (variant) {
+                select.append(new Option(variant.name, variant.id, true, true));
+                row.querySelector('input').value = variant.price ?? '';
+            }
+            ErpPicker.attach(select, variantPickerOptions);
+            return row;
+        }
+
         function addVariant() {
-            let html = `
-            <tr>
-                <td>
-                    <select name="variant[id][]" class="form-select mb-2 select2_product"></select>
-                </td>
-                <td>
-                    <input type="text" inputmode="numeric" name="variant[price][]" class="form-control format-number mb-2" placeholder="Harga Produk" />
-                </td>
-                <td class="text-end">
-                    <button type="button" class="btn btn-icon btn-danger remove_variant">
-                        <i class="ki-outline ki-cross fs-2"></i>
-                    </button>
-                </td>
-            </tr>
-            `;
-            $('#kt_ecommerce_edit_order_selected_products_body').append(html);
-            $('#kt_ecommerce_edit_order_selected_products_body .select2_product').select2({
-                placeholder: 'Ketik nama produk',
-                tags: true, // ini aktifkan fitur menambah item baru
-                ajax: {
-                    url: "{{ route('ajax.getProduct') }}",
-                    dataType: 'json',
-                    delay: 250,
-                    data: function(params) {
-                        return {
-                            search: params.term
-                        };
-                    },
-                    processResults: function(data, params) {
-                        const term = params.term || '';
-
-                        // Map hasil dari server
-                        let results = data.map(item => ({
-                            id: item.id, // penting: pastikan id-nya sesuai yg mau kamu simpan
-                            text: item.name
-                        }));
-
-                        // Kalau term (yang diketik user) tidak ada di hasil, tambahkan manual
-                        if (term && !results.some(r => r.text.toLowerCase() === term.toLowerCase())) {
-                            results.push({
-                                id: term, // kita pakai term sebagai id juga (karena produk baru)
-                                text: term
-                            });
-                        }
-
-                        return {
-                            results: results
-                        };
-                    },
-                    cache: true
-                },
-                createTag: function(params) {
-                    const term = $.trim(params.term);
-
-                    if (term === '') {
-                        return null;
-                    }
-
-                    return {
-                        id: term,
-                        text: term,
-                        newTag: true // optional: kalau mau tandai item baru
-                    };
-                }
-            });
-
-
-
-            bindFormatNumber();
+            document.getElementById('kt_ecommerce_edit_order_selected_products_body').append(buildVariantRow());
+            if (typeof bindFormatNumber === 'function') bindFormatNumber();
         }
         $(document).on('click', '#variant_table .remove_variant', function() {
             $(this).closest('tr').remove();
         });
 
         @if (isset($variant) && $variant->count() > 0)
-            const response = {!! json_encode($variant) !!};
-            $('#kt_ecommerce_edit_order_selected_products_body').empty();
-
-            // Loop hasil response
-            response.forEach(item => {
-                let html = `
-                <tr>
-                    <td>
-                        <select name="variant[id][]" class="form-select mb-2 select2_product">
-                            <option value="${item.product_id}" selected>${item.product.name}</option>
-                        </select>
-                    </td>
-                    <td>
-                        <input type="text" name="variant[price][]" class="form-control format-number mb-2" placeholder="Product price" value="${item.product.price || ''}"/>
-                    </td>
-                    <td class="text-end">
-                        <button type="button" class="btn btn-icon btn-danger remove_variant">
-                            <i class="ki-outline ki-cross fs-2"></i>
-                        </button>
-                    </td>
-                </tr>
-                `;
-                $('#kt_ecommerce_edit_order_selected_products_body').append(html);
-            });
-
-            $('#kt_ecommerce_edit_order_selected_products_body .select2_product').select2({
-                placeholder: 'Pilih produk',
-                ajax: {
-                    url: "{{ route('ajax.getProduct') }}",
-                    dataType: 'json',
-                    delay: 250,
-                    data: params => ({
-                        search: params.term
-                    }),
-                    processResults: data => ({
-                        results: data.map(item => ({
-                            id: item.id,
-                            text: item.name
-                        }))
-                    })
-                }
-            });
-        @endif
-
-        function addBranch() {
-            let html = `
-            <tr>
-                <td>
-                    <select name="branch[id][]" class="form-select mb-2 select2_product"></select>
-                </td>
-                <td>
-                    <input type="text" inputmode="numeric" name="branch[price][]" class="form-control format-number mb-2" placeholder="Harga Produk" />
-                </td>
-                <td class="text-end">
-                    <button type="button" class="btn btn-icon btn-danger remove_branch">
-                        <i class="ki-outline ki-cross fs-2"></i>
-                    </button>
-                </td>
-            </tr>
-            `;
-            $('#kt_ecommerce_edit_order_selected_products_branch_body').append(html);
-            $('#kt_ecommerce_edit_order_selected_products_branch_body .select2_product').select2({
-                placeholder: 'Ketik nama branch',
-                tags: true, // ini aktifkan fitur menambah item baru
-                ajax: {
-                    url: "{{ route('ajax.getBranch') }}",
-                    dataType: 'json',
-                    delay: 250,
-                    data: function(params) {
-                        return {
-                            search: params.term
-                        };
-                    },
-                    processResults: function(data, params) {
-                        const term = params.term || '';
-                        let results = data.map(item => ({
-                            id: item.id, // penting: pastikan id-nya sesuai yg mau kamu simpan
-                            text: item.name
-                        }));
-                        return {
-                            results: results
-                        };
-                    },
-                    cache: true
-                },
-            });
-            bindFormatNumber();
-        }
-        $('#branch_table').on('click', '.remove_branch', function() {
-            $(this).closest('tr').remove();
-        });
-
-        @if (isset($product_branch) && $product_branch->count() > 0)
-            const productBranch = {!! json_encode($product_branch) !!};
-            $('#kt_ecommerce_edit_order_selected_products_branch_body').empty();
-
-            // Loop hasil response
-            productBranch.forEach(item => {
-                let html = `
-                <tr>
-                    <td>
-                        <select name="branch[id][]" class="form-select mb-2 select2_product">
-                            <option value="${item.branch_id}" selected>${item.branch.name}</option>
-                        </select>
-                    </td>
-                    <td>
-                        <input type="text" name="branch[price][]" class="form-control format-number mb-2" placeholder="Branch price" value="${item.price || ''}"/>
-                    </td>
-                    <td class="text-end">
-                        <button type="button" class="btn btn-icon btn-danger remove_branch">
-                            <i class="ki-outline ki-cross fs-2"></i>
-                        </button>
-                    </td>
-                </tr>
-                `;
-                $('#kt_ecommerce_edit_order_selected_products_branch_body').append(html);
-            });
-
-            $('#kt_ecommerce_edit_order_selected_products_branch_body .select2_product').select2({
-                placeholder: 'Pilih produk',
-                ajax: {
-                    url: "{{ route('ajax.getProduct') }}",
-                    dataType: 'json',
-                    delay: 250,
-                    data: params => ({
-                        search: params.term
-                    }),
-                    processResults: data => ({
-                        results: data.map(item => ({
-                            id: item.id,
-                            text: item.name
-                        }))
-                    })
-                }
+            $(function() {
+                const body = document.getElementById('kt_ecommerce_edit_order_selected_products_body');
+                body.replaceChildren();
+                @json($variant->map(fn ($item) => ['id' => $item->product_id, 'name' => $item->product->name, 'price' => $item->product->price])).forEach(item => body.append(buildVariantRow(item)));
             });
         @endif
     </script>
@@ -574,17 +404,17 @@
                 let html = `
                 <tr>
                     <td>
-                        <input type="text" name="product_name[]" class="form-control mb-2" placeholder="Nama produk" />
+                        <input type="text" name="product_name[]" class="erp-input" placeholder="Nama produk" />
                     </td>
                     <td>
-                        <input type="text" name="price[]" class="form-control format-number mb-2" placeholder="Harga produk" />
+                        <input type="text" name="price[]" class="erp-input format-number" placeholder="Harga produk" />
                     </td>
-                    <td class="text-end">
-                        <button type="button" class="btn btn-icon btn-primary save_variant">
-                            <i class="ki-outline ki-check fs-2"></i>
+                    <td class="text-right">
+                        <button type="button" class="erp-action erp-action--primary save_variant" aria-label="Simpan varian">
+                            <i class="ph ph-check" aria-hidden="true"></i>
                         </button>
-                        <button type="button" class="btn btn-icon btn-danger remove_variant">
-                            <i class="ki-outline ki-cross fs-2"></i>
+                        <button type="button" class="product-remove-row remove_variant" aria-label="Hapus varian">
+                            <i class="ph ph-x" aria-hidden="true"></i>
                         </button>
                     </td>
                 </tr>

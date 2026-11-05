@@ -1,6 +1,6 @@
 /**
  * Bundle klasik (IIFE) untuk library yang dipakai skrip inline halaman saat
- * HTML masih di-parse: `$` / `jQuery`, `Swal`, dan DataTables. Lihat vite.config.mjs.
+ * HTML masih di-parse: `$` / `jQuery`, `Swal`, Flatpickr, dan DataTables. Lihat vite.config.mjs.
  *
  * DataTables 1.13.7 = versi yang sama dengan bundle Metronic yang digantikan.
  * Hanya inti; ekstensi (fixedColumns, responsive, select, buttons) ditambahkan
@@ -10,6 +10,7 @@
 import $ from 'jquery';
 import Swal from 'sweetalert2';
 import DataTable from 'datatables.net';
+import flatpickr from 'flatpickr';
 import { install as installDataTableDefaults } from './vendor/datatables-bootstrap.js';
 
 window.$ = window.jQuery = $;
@@ -25,6 +26,13 @@ Swal.fire = function (...args) {
     return fire.call(this, { target: host, topLayer: true, heightAuto: false, ...given });
 };
 window.Swal = Swal;
+
+// Flatpickr 4.6.13 (versi yang sama dengan bundle Metronic). Pemasangan plugin jQuery-nya (`$.fn.flatpickr`)
+// bergantung pada `jQuery` global saat modul dievaluasi, padahal import di-hoist; pasang eksplisit.
+window.flatpickr = flatpickr;
+$.fn.flatpickr = function (config) {
+    return flatpickr(this, config);
+};
 
 // Paket datatables.net berbentuk UMD: panggil factory-nya dengan jQuery kita.
 DataTable(window, $);

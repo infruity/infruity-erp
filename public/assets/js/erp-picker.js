@@ -31,6 +31,18 @@
         });
     }
 
+    /**
+     * Pengganti `tags: true` milik select2: bila ada kata kunci yang belum ada di hasil, tambahkan baris
+     * "baru" dengan id = kata kunci (dipakai untuk membuat produk varian dari nama yang diketik).
+     */
+    function withCreatable(items, term, label) {
+        var text = String(term || '').trim();
+        if (!text) return items;
+        var exists = items.some(function (item) { return item.text.toLowerCase() === text.toLowerCase(); });
+        if (exists) return items;
+        return items.concat([{ id: text, text: text, meta: label || 'Tambah baru', created: true }]);
+    }
+
     function optionItems(select) {
         var items = [];
         Array.prototype.forEach.call((select && select.options) || [], function (option) {
@@ -165,7 +177,8 @@
             active.page = 1;
             active.more = false;
             active.items = optionItems(active.select);
-            renderList(filterItems(active.items, term), false);
+            var staticItems = filterItems(active.items, term);
+            renderList(options.creatable ? withCreatable(staticItems, term, options.creatableLabel) : staticItems, false);
             return Promise.resolve();
         }
         var url = options.url + (options.url.indexOf('?') === -1 ? '?' : '&') + (options.searchParam || 'search') + '=' + encodeURIComponent(term || '');
@@ -185,7 +198,8 @@
                 active.page = page || 1;
                 active.more = !!(json && json.pagination && json.pagination.more);
                 active.items = append ? active.items.concat(items) : items;
-                renderList(options.localFilter ? filterItems(items, term) : items, append);
+                var shown = options.localFilter ? filterItems(items, term) : items;
+                renderList(options.creatable && !append ? withCreatable(shown, term, options.creatableLabel) : shown, append);
             })
             .catch(function () {
                 if (!active || request !== active.request) return;
@@ -212,7 +226,8 @@
         dialog.empty.hidden = true;
         dialog.clear.hidden = !(options.clearable && select.value !== '');
         // Bootstrap traps focus inside the open modal, so the overlay lives inside it when the select does.
-        var host = select.closest('.modal') || document.body;
+        // <dialog> modal membuat elemen di luarnya inert, jadi overlay harus berada di dalamnya.
+        var host = select.closest('dialog[open], .modal') || document.body;
         if (dialog.overlay.parentNode !== host) host.append(dialog.overlay);
         dialog.overlay.hidden = false;
         document.documentElement.classList.add('erp-picker-open');
@@ -261,5 +276,5 @@
         return { sync: sync };
     }
 
-    return { normalizeItems: normalizeItems, filterItems: filterItems, optionItems: optionItems, selectedLabel: selectedLabel, attach: attach };
+    return { normalizeItems: normalizeItems, filterItems: filterItems, optionItems: optionItems, withCreatable: withCreatable, selectedLabel: selectedLabel, attach: attach };
 });

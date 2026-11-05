@@ -1,4 +1,4 @@
-@extends('template.root')
+@extends('layouts.erp')
 
 @section('title', $data->name . ' - Stok Barang')
 @section('page-title', $data->name)
@@ -10,11 +10,16 @@
     <span>Riwayat Pergerakan</span>
 @endsection
 
+@push('styles')
+    @vite('resources/css/flatpickr.css')
+@endpush
+
 @section('content')
     {{-- @livewire('product-table') --}}
     <style>
-        #kt_content_container { display:flex; flex:1; flex-direction:column; min-height:0; }
         .product-stock-detail-page { display:flex; min-height:0; flex:1; flex-direction:column; }
+        .product-stock-detail-card { background:#fff; border-radius:12px; }
+        .stock-detail-card-header { display:flex; flex-direction:column; align-items:stretch; }
         .stock-detail-view-header { display:flex; flex:none; align-items:center; justify-content:space-between; gap:16px; padding:16px 20px 12px; border-bottom:1px solid #f3f4f6; background:#fff; }
         .stock-detail-view-title { min-width:0; }
         .stock-detail-view-title p { margin:0 0 3px; color:#6b7280; font-size:12px; font-weight:500; line-height:1.2; }
@@ -26,7 +31,7 @@
         .stock-detail-view-filter.is-active { border-color:rgba(11,89,91,.3); background:rgba(11,89,91,.1); color:#0b595b; }
         .stock-detail-view-filter .erp-mobile-search__filter-dot { position:absolute; top:2px; right:2px; }
         .stock-detail-search-filter { min-width:220px; }
-        .stock-detail-search-filter .form-control { height:40px; border:1px solid #e5e7eb; border-radius:9px; background:#fff; font-size:13px; }
+        .stock-detail-search-filter .erp-input { height:40px; border:1px solid #e5e7eb; border-radius:9px; background:#fff; font-size:13px; }
         .stock-detail-table-heading { display:flex; flex:none; align-items:center; justify-content:space-between; gap:10px; margin:0 20px 8px; padding:9px 10px; border:1px solid #f1f3f5; border-radius:9px; background:rgba(249,250,251,.8); color:#9ca3af; font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
         .stock-detail-table-heading__numbers { display:flex; flex:none; align-items:center; gap:8px; text-align:right; }
         .stock-detail-table-heading__numbers span { width:72px; text-align:right; }
@@ -55,7 +60,7 @@
         .stock-detail-load-more button:hover { border-color:#34d399; color:#047857; background:#ecfdf5; }
         .stock-mobile-list { display:block; min-height:0; flex:1; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; background:#fff; }
         .stock-mobile-list::-webkit-scrollbar { display:none; }
-        .product-stock-detail-card .card-body { display:flex; flex:1; min-height:0; flex-direction:column; overflow:hidden; padding:0!important; }
+        .product-stock-detail-card .stock-detail-card-body { display:flex; flex:1; min-height:0; flex-direction:column; overflow:hidden; padding:0!important; }
         #products-stock-table_wrapper { display:none!important; }
         .stock-mobile-empty { display:flex; min-height:220px; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; color:#6b7280; text-align:center; }
         .stock-mobile-empty i { margin-bottom:10px; color:#9ca3af; font-size:28px; }
@@ -64,9 +69,9 @@
         @media (min-width:768px) { .stock-detail-load-more { display:flex; justify-content:center; } .stock-detail-load-more button { width:auto; padding:0 24px; border-width:1px; border-style:solid; border-radius:999px; } }
         @media (min-width:768px) {
             .product-stock-detail-card { position:relative; display:flex; min-height:0; flex:1; flex-direction:column; overflow:hidden; }
-            .product-stock-detail-card .card-header { flex:none; padding:0; border:0; }
-            .product-stock-detail-card .card-toolbar { position:absolute; top:58px; right:20px; z-index:20; display:none!important; width:min(420px,calc(100vw - 48px)); max-height:75vh; flex-direction:column; align-items:stretch; overflow:auto; padding:20px; border:1px solid #e5e7eb; border-radius:16px; background:#fff; box-shadow:0 18px 42px rgba(15,23,42,.16); }
-            .product-stock-detail-card .card-toolbar.is-open { display:flex!important; }
+            .product-stock-detail-card .stock-detail-card-header { flex:none; padding:0; border:0; }
+            .product-stock-detail-card .stock-detail-card-toolbar { position:absolute; top:58px; right:20px; z-index:20; display:none!important; width:min(420px,calc(100vw - 48px)); max-height:75vh; flex-direction:column; align-items:stretch; overflow:auto; padding:20px; border:1px solid #e5e7eb; border-radius:16px; background:#fff; box-shadow:0 18px 42px rgba(15,23,42,.16); }
+            .product-stock-detail-card .stock-detail-card-toolbar.is-open { display:flex!important; }
             .product-stock-detail-card .stock-detail-filter-handle { display:none; }
             .product-stock-detail-card .stock-detail-filter-head { display:flex; align-items:center; justify-content:space-between; }
             .product-stock-detail-card .stock-detail-filter-close { display:grid; width:32px; height:32px; place-items:center; border:0; border-radius:50%; background:#f3f4f6; color:#6b7280; }
@@ -113,18 +118,15 @@
         .flatpickr-calendar .flatpickr-current-month { color:#253238!important; fill:#253238!important; }
         .flatpickr-calendar .flatpickr-weekday { color:#87939b!important; font-weight:600!important; }
         @media (max-width: 767.98px) {
-            #kt_content { padding:0!important; overflow:hidden; }
-            #kt_post { margin:0; min-height:0; }
-            #kt_content_container { display:flex; flex:1; flex-direction:column; min-height:0; width:100%; max-width:none; padding:0; }
-            .product-stock-detail-page { display:flex; width:100%; height:100%; min-height:0; flex:1; flex-direction:column; padding-bottom:0; box-sizing:border-box; }
+            .product-stock-detail-page { display:flex; height:100%; min-height:0; flex:1; flex-direction:column; padding-bottom:0; box-sizing:border-box; }
             .product-stock-detail-card { display:flex; height:100%; min-height:0; flex-direction:column; border:0; border-radius:0; box-shadow:none; }
-            .product-stock-detail-card .card-header { display:flex; flex:none; flex-direction:column; align-items:stretch; gap:0!important; padding:0!important; border:0; }
+            .product-stock-detail-card .stock-detail-card-header { display:flex; flex:none; flex-direction:column; align-items:stretch; gap:0!important; padding:0!important; border:0; }
             .product-stock-detail-card .stock-detail-search-filter { width:100%; min-width:0; margin:0 8px 20px; }
             .stock-detail-filter-backdrop { position:fixed; inset:0; z-index:1050; background:rgba(0,0,0,.7); opacity:0; transition:opacity .3s ease; }
             .stock-detail-filter-backdrop[hidden] { display:none!important; }
             .stock-detail-filter-backdrop.is-open { opacity:1; }
-            .product-stock-detail-card .card-toolbar { position:fixed; right:0; bottom:0; left:0; z-index:1051; display:flex; width:auto; max-height:85dvh; flex:none; flex-direction:column; flex-wrap:nowrap!important; align-items:stretch; gap:0!important; overflow:hidden; overscroll-behavior:contain; padding:0 0 env(safe-area-inset-bottom)!important; border-radius:24px 24px 0 0; background:#fff; box-shadow:0 -16px 40px rgba(0,0,0,.2); transform:translateY(105%); visibility:hidden; transition:transform .3s ease,visibility .3s; }
-            .product-stock-detail-card .card-toolbar.is-open { transform:translateY(0); visibility:visible; }
+            .product-stock-detail-card .stock-detail-card-toolbar { position:fixed; right:0; bottom:0; left:0; z-index:1051; display:flex; width:auto; max-height:85dvh; flex:none; flex-direction:column; flex-wrap:nowrap!important; align-items:stretch; gap:0!important; overflow:hidden; overscroll-behavior:contain; padding:0 0 env(safe-area-inset-bottom)!important; border-radius:24px 24px 0 0; background:#fff; box-shadow:0 -16px 40px rgba(0,0,0,.2); transform:translateY(105%); visibility:hidden; transition:transform .3s ease,visibility .3s; }
+            .product-stock-detail-card .stock-detail-card-toolbar.is-open { transform:translateY(0); visibility:visible; }
             .stock-detail-filter-handle { width:48px; height:6px; flex:none; margin:12px auto 4px; border-radius:999px; background:#d1d5db; }
             .stock-detail-filter-head { display:flex; width:100%; flex:none; align-items:center; justify-content:space-between; gap:12px; margin:0; padding:12px 20px; border-bottom:1px solid #f3f4f6; }
             .stock-detail-filter-head h2 { margin:0; color:#1f2937; font-size:16px; font-weight:700; line-height:1.25; }
@@ -135,11 +137,6 @@
             .product-stock-detail-card .stock-detail-filter-field { display:block; width:auto; margin:0; }
             .product-stock-detail-card .stock-detail-filter-desktop-control { display:block!important; width:auto; margin:0; }
             .stock-detail-filter-label { display:block; margin:0 0 6px; color:#6b7280; font-size:10px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; }
-            .product-stock-detail-card .card-toolbar .select2-container { width:100%!important; }
-            .product-stock-detail-card .card-toolbar .select2-container .select2-selection--single { height:38px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
-            .product-stock-detail-card .card-toolbar .select2-container .select2-selection__rendered { padding-left:10px; color:#374151; font-size:12px; line-height:36px; }
-            .product-stock-detail-card .card-toolbar .select2-container .select2-selection__arrow { top:0; right:8px; height:36px; }
-            .product-stock-detail-card .card-toolbar .select2-container .select2-selection__arrow b { border-color:#9ca3af transparent transparent; }
             .stock-detail-direction-options { gap:8px; }
             .stock-detail-direction-option { min-height:38px; border-radius:12px; font-size:12px; }
             .stock-detail-date-range { grid-template-columns:1fr; gap:8px; }
@@ -159,7 +156,7 @@
             .stock-detail-filter-cancel { border:1px solid #e5e7eb; background:#fff; color:#4b5563; }
             .stock-detail-filter-apply { border:1px solid #0b595b; background:#0b595b; color:#fff; box-shadow:0 1px 2px rgba(0,0,0,.08); }
             body.stock-detail-filter-open { overflow:hidden; }
-            .product-stock-detail-card .card-body { display:flex; flex:1; min-height:0; flex-direction:column; overflow:hidden; padding:0!important; }
+            .product-stock-detail-card .stock-detail-card-body { display:flex; flex:1; min-height:0; flex-direction:column; overflow:hidden; padding:0!important; }
             .stock-detail-view-header { padding:14px 16px 10px; }
             .stock-detail-view-title p { font-size:11px; }
             .stock-detail-view-title h2 { font-size:13px; }
@@ -208,11 +205,11 @@
         }
         @media (min-width: 768px) { .stock-detail-filter-backdrop { display:none!important; } }
     </style>
-    <div class="product-stock-detail-page">
+    <div class="product-stock-detail-page -mx-4 md:mx-0">
         <div id="stock-detail-filter-backdrop" class="stock-detail-filter-backdrop" hidden></div>
-        <div class="card card-flush product-stock-detail-card">
+        <div class="product-stock-detail-card">
             <!--begin::Card header-->
-            <div class="card-header align-items-stretch p-0 gap-0 flex-column">
+            <div class="stock-detail-card-header">
                 <div class="stock-detail-view-header">
                     <div class="stock-detail-view-title">
                         <p>Riwayat Pergerakan</p>
@@ -224,7 +221,7 @@
                     </div>
                 </div>
                 <!--begin::Card toolbar-->
-                <div class="card-toolbar flex-wrap gap-3 justify-content-end" id="stock-detail-filters" aria-labelledby="stock-detail-filter-title">
+                <div class="stock-detail-card-toolbar" id="stock-detail-filters" aria-labelledby="stock-detail-filter-title">
                     <div class="stock-detail-filter-handle" aria-hidden="true"></div>
                     <div class="stock-detail-filter-head">
                         <div>
@@ -236,7 +233,7 @@
                     <div class="stock-detail-filter-fields">
                         <div class="stock-detail-filter-field stock-detail-search-filter">
                             <label class="stock-detail-filter-label" for="search">Cari aktivitas</label>
-                            <input id="search" type="search" class="form-control form-control-solid" placeholder="Cari aktivitas atau referensi..." autocomplete="off">
+                            <input id="search" type="search" class="erp-input" placeholder="Cari aktivitas atau referensi..." autocomplete="off">
                         </div>
                         <div class="stock-detail-filter-field">
                             <label class="stock-detail-filter-label">Arah Mutasi</label>
@@ -245,7 +242,7 @@
                                 <button type="button" class="stock-detail-direction-option" data-direction="in" aria-pressed="false"><i class="ph-bold ph-arrow-down-left" aria-hidden="true"></i> Masuk</button>
                                 <button type="button" class="stock-detail-direction-option" data-direction="out" aria-pressed="false"><i class="ph-bold ph-arrow-up-right" aria-hidden="true"></i> Keluar</button>
                             </div>
-                            <select id="stock-detail-direction" class="d-none" aria-hidden="true" tabindex="-1">
+                            <select id="stock-detail-direction" class="hidden" aria-hidden="true" tabindex="-1">
                                 <option value="all" selected>Semua</option><option value="in">Masuk</option><option value="out">Keluar</option>
                             </select>
                         </div>
@@ -285,22 +282,18 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="stock-detail-filter-field stock-detail-filter-desktop-control w-100 w-md-auto">
+                        <div class="stock-detail-filter-field stock-detail-filter-desktop-control">
                             <label class="stock-detail-filter-label" for="stock-detail-branch">Cabang</label>
-                            <select class="form-select form-select-solid" data-control="select2"
-                                data-hide-search="true" data-placeholder="Cabang"
-                                data-kt-ecommerce-product-filter="branch" id="stock-detail-branch">
+                            <select class="erp-select" data-erp-filter="branch" id="stock-detail-branch">
                                 <option value="all" selected>Semua Cabang</option>
                                 @foreach ($branch as $item)
                                     <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="stock-detail-filter-field stock-detail-filter-desktop-control w-100 w-md-auto">
+                        <div class="stock-detail-filter-field stock-detail-filter-desktop-control">
                             <label class="stock-detail-filter-label" for="stock-detail-reference">Sumber Transaksi</label>
-                            <select class="form-select form-select-solid" data-control="select2"
-                                data-hide-search="true" data-placeholder="Sumber Transaksi"
-                                data-kt-ecommerce-product-filter="reference" id="stock-detail-reference">
+                            <select class="erp-select" data-erp-filter="reference" id="stock-detail-reference">
                                 <option value="all">Semua Sumber</option>
                                 <option value="stock-opname">Stock Opname</option>
                                 <option value="sortir">Sortir</option>
@@ -310,7 +303,7 @@
                                 <option value="transfer">Transfer</option>
                             </select>
                         </div>
-                    <div class="stock-detail-filter-field stock-detail-filter-field--date w-100 w-md-auto">
+                    <div class="stock-detail-filter-field stock-detail-filter-field--date">
                         <div class="stock-detail-filter-heading">
                             <span class="stock-detail-filter-label">Periode Tanggal</span>
                             <button class="stock-detail-date-clear" id="stock-detail-date-clear" type="button" aria-label="Hapus rentang tanggal" hidden>
@@ -322,7 +315,7 @@
                                 <label for="stock-detail-date-start-display">DARI</label>
                                 <div class="stock-detail-date-field">
                                     <i class="ph ph-calendar-blank" aria-hidden="true"></i>
-                                    <input type="text" class="form-control form-control-solid stock-detail-date-input" placeholder="Pilih Tanggal"
+                                    <input type="text" class="erp-input stock-detail-date-input" placeholder="Pilih Tanggal"
                                         id="stock-detail-date-start" aria-label="Tanggal mulai" autocomplete="off" />
                                 </div>
                             </div>
@@ -330,7 +323,7 @@
                                 <label for="stock-detail-date-end-display">KE</label>
                                 <div class="stock-detail-date-field">
                                     <i class="ph ph-calendar-blank" aria-hidden="true"></i>
-                                    <input type="text" class="form-control form-control-solid stock-detail-date-input" placeholder="Pilih Tanggal"
+                                    <input type="text" class="erp-input stock-detail-date-input" placeholder="Pilih Tanggal"
                                         id="stock-detail-date-end" aria-label="Tanggal akhir" autocomplete="off" />
                                 </div>
                             </div>
@@ -355,25 +348,25 @@
                 <div class="stock-detail-table-heading__numbers"><span id="history-col-one">Awal</span><span id="history-col-two">Mutasi</span><span id="history-col-three" style="color:#0b595b">Saldo</span></div>
             </div>
             <!--begin::Card body-->
-            <div class="card-body pt-0">
+            <div class="stock-detail-card-body">
                 <div id="stock-mobile-list" class="stock-mobile-list" aria-live="polite"></div>
                 <div class="stock-detail-load-more" id="stock-detail-load-more" hidden>
                     <button type="button"><i class="ph ph-arrow-circle-down" aria-hidden="true"></i> <span id="stock-detail-load-more-label">Muat Lebih Banyak</span></button>
                 </div>
                 <!--begin::Table-->
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="products-stock-table" width="100%">
+                <table class="erp-table" id="products-stock-table" width="100%">
                     <thead>
-                        <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                            <th class="min-w-100px">Product</th>
-                            <th class="text-end min-w-70px">Quantity</th>
-                            <th class="text-end min-w-70px">Stock Awal</th>
-                            <th class="text-end min-w-70px">Stock Akhir</th>
-                            <th class="text-end min-w-100px">Tanggal</th>
-                            <th class="text-end min-w-100px">Reference</th>
-                            <th class="text-end min-w-100px">Created By</th>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-right">Quantity</th>
+                            <th class="text-right">Stock Awal</th>
+                            <th class="text-right">Stock Akhir</th>
+                            <th class="text-right">Tanggal</th>
+                            <th class="text-right">Reference</th>
+                            <th class="text-right">Created By</th>
                         </tr>
                     </thead>
-                    <tbody class="fw-semibold text-gray-600">
+                    <tbody>
                     </tbody>
                 </table>
                 <!--end::Table-->
@@ -439,14 +432,14 @@
         }
 
         function syncStockMobileBranchControls() {
-            const selectedBranch = String($('[data-kt-ecommerce-product-filter="branch"]').val() || 'all');
+            const selectedBranch = String($('[data-erp-filter="branch"]').val() || 'all');
             document.querySelectorAll('input[name="stock-detail-branch-mobile"]').forEach((radio) => {
                 radio.checked = radio.value === selectedBranch;
             });
         }
 
         function syncStockMobileReferenceControls() {
-            const selectedReference = String($('[data-kt-ecommerce-product-filter="reference"]').val() || 'all');
+            const selectedReference = String($('[data-erp-filter="reference"]').val() || 'all');
             document.querySelectorAll('[data-stock-reference]').forEach((chip) => {
                 const selected = chip.dataset.stockReference === selectedReference;
                 chip.classList.toggle('is-selected', selected);
@@ -477,8 +470,8 @@
         }
 
         function updateStockDetailFilterState() {
-            const branch = $('[data-kt-ecommerce-product-filter="branch"]').val();
-            const reference = $('[data-kt-ecommerce-product-filter="reference"]').val();
+            const branch = $('[data-erp-filter="branch"]').val();
+            const reference = $('[data-erp-filter="reference"]').val();
             const direction = $('#stock-detail-direction').val();
             const hasDate = Boolean(stockDateValue(stockStartDatePicker) || stockDateValue(stockEndDatePicker));
             const panelOpen = $('#stock-detail-filters').hasClass('is-open');
@@ -518,8 +511,8 @@
         function openStockDetailFilters() {
             window.clearTimeout(stockFilterBackdropTimeout);
             stockFilterSnapshot = {
-                branch: $('[data-kt-ecommerce-product-filter="branch"]').val(),
-                reference: $('[data-kt-ecommerce-product-filter="reference"]').val(),
+                branch: $('[data-erp-filter="branch"]').val(),
+                reference: $('[data-erp-filter="reference"]').val(),
                 direction: $('#stock-detail-direction').val(),
                 startDate: stockDateValue(stockStartDatePicker),
                 endDate: stockDateValue(stockEndDatePicker)
@@ -540,8 +533,8 @@
             if (!stockFilterDraftOpen) return;
 
             if (!applyChanges && stockFilterSnapshot) {
-                $('[data-kt-ecommerce-product-filter="branch"]').val(stockFilterSnapshot.branch).trigger('change.select2');
-                $('[data-kt-ecommerce-product-filter="reference"]').val(stockFilterSnapshot.reference).trigger('change.select2');
+                $('[data-erp-filter="branch"]').val(stockFilterSnapshot.branch);
+                $('[data-erp-filter="reference"]').val(stockFilterSnapshot.reference);
                 $('#stock-detail-direction').val(stockFilterSnapshot.direction || 'all');
                 stockStartDatePicker?.set('maxDate', null);
                 stockEndDatePicker?.set('minDate', null);
@@ -708,8 +701,8 @@
                     url:isHpp ? @json(route('product-transaction-data')) : @json(route('product-stock-data-show')),
                     data:function(d) {
                         d.product_id = {{ $data->id }};
-                        d.branch = $('[data-kt-ecommerce-product-filter="branch"]').val();
-                        d.reference = $('[data-kt-ecommerce-product-filter="reference"]').val();
+                        d.branch = $('[data-erp-filter="branch"]').val();
+                        d.reference = $('[data-erp-filter="reference"]').val();
                         d.stock_direction = $('#stock-detail-direction').val() || 'all';
                         d.start_date = stockDateValue(stockStartDatePicker);
                         d.end_date = stockDateValue(stockEndDatePicker);
@@ -805,8 +798,8 @@
             });
 
             $('#stock-detail-filter-reset').on('click', function() {
-                $('[data-kt-ecommerce-product-filter="branch"]').val('all').trigger('change.select2');
-                $('[data-kt-ecommerce-product-filter="reference"]').val('all').trigger('change.select2');
+                $('[data-erp-filter="branch"]').val('all');
+                $('[data-erp-filter="reference"]').val('all');
                 $('#stock-detail-direction').val('all');
                 $('#search').val('');
                 dataTable?.search('');
@@ -819,12 +812,12 @@
             $('#stock-detail-branch-search').on('input', filterStockMobileBranchOptions);
 
             $(document).on('change', 'input[name="stock-detail-branch-mobile"]', function() {
-                $('[data-kt-ecommerce-product-filter="branch"]').val(this.value).trigger('change');
+                $('[data-erp-filter="branch"]').val(this.value).trigger('change');
                 updateStockDetailFilterState();
             });
 
             $(document).on('click', '[data-stock-reference]', function() {
-                $('[data-kt-ecommerce-product-filter="reference"]').val(this.dataset.stockReference).trigger('change');
+                $('[data-erp-filter="reference"]').val(this.dataset.stockReference).trigger('change');
                 updateStockDetailFilterState();
             });
 
@@ -832,25 +825,17 @@
                 if (event.key === 'Escape' && $('#stock-detail-filters').hasClass('is-open')) closeStockDetailFilters(false);
             });
 
-            $('[data-kt-ecommerce-product-filter="status"]').on('change', function() {
-                let val = $(this).val();
-                if (val === 'all') val = '';
-                dataTable.column(5).search(val).draw();
-            });
 
-            $('[data-kt-ecommerce-product-filter="stock"]').on('change', function() {
-                dataTable.draw();
-            });
 
-            $('[data-kt-ecommerce-product-filter="branch"]').on('change', function() {
+            $('[data-erp-filter="branch"]').on('change', function() {
                 if (!stockFilterDraftOpen) dataTable.draw();
             });
 
-            $('[data-kt-ecommerce-product-filter="reference"]').on('change', function() {
+            $('[data-erp-filter="reference"]').on('change', function() {
                 if (!stockFilterDraftOpen) dataTable.draw();
             });
 
-            $('[data-kt-ecommerce-product-filter="branch"], [data-kt-ecommerce-product-filter="reference"]').on('change.stockDetailFilterState', updateStockDetailFilterState);
+            $('[data-erp-filter="branch"], [data-erp-filter="reference"]').on('change.stockDetailFilterState', updateStockDetailFilterState);
 
             stockStartDatePicker = $("#stock-detail-date-start").flatpickr({
                 altInput: !0,

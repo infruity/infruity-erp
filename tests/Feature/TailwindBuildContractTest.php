@@ -100,4 +100,17 @@ class TailwindBuildContractTest extends TestCase
             }
         }
     }
+
+    public function test_flatpickr_and_swal_dialog_support_ship_in_the_vendor_bundle(): void
+    {
+        $vendor = file_get_contents(base_path('resources/js/vendor.js'));
+        $vite = file_get_contents(base_path('vite.config.mjs'));
+
+        // Halaman jQuery memanggil $(el).flatpickr(...); import di-hoist, jadi plugin dipasang eksplisit.
+        $this->assertStringContainsString('$.fn.flatpickr', $vendor);
+        $this->assertStringContainsString('resources/css/flatpickr.css', $vite);
+        // SweetAlert harus dirender di dalam <dialog> terbuka, kalau tidak ia inert di belakang dialog modal.
+        $this->assertStringContainsString("dialog[open]", $vendor);
+        $this->assertStringContainsString('topLayer: true', $vendor);
+    }
 }

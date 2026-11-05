@@ -10,7 +10,6 @@
 @endsection
 
 @section('extra-style')
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
     <style>
         .product-create-overlay #add_product_form { flex-direction: column !important; padding: 0 !important; }
         .product-create-overlay #add_product_form > div:first-child { width: 100% !important; margin: 0 !important; }
@@ -316,7 +315,7 @@
                 <!-- Search -->
                 <div class="flex-1 relative w-full">
                     <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]"></i>
-                    <input type="text" data-kt-ecommerce-product-filter="search" id="search"
+                    <input type="text" data-erp-filter="search" id="search"
                         class="w-full bg-gray-50/50 border border-gray-100 rounded-full pl-10 pr-4 h-11 text-[13px] outline-none focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
                         placeholder="Cari produk atau varian..." />
                 </div>
@@ -376,9 +375,9 @@
             </div>
 
             <!-- Hidden request-contract inputs (read by DataTables ajax.data) -->
-            <input type="hidden" id="branch-filter-value" data-kt-ecommerce-product-filter="branch">
-            <input type="hidden" id="type-filter-value" data-kt-ecommerce-product-filter="type">
-            <input type="hidden" id="category-filter-value" data-kt-ecommerce-product-filter="category" value="all">
+            <input type="hidden" id="branch-filter-value" data-erp-filter="branch">
+            <input type="hidden" id="type-filter-value" data-erp-filter="type">
+            <input type="hidden" id="category-filter-value" data-erp-filter="category" value="all">
             <!-- Product Count (desktop only) -->
             <div class="hidden md:flex sticky top-0 z-20 px-4 py-3 bg-gray-50/50 backdrop-blur-md border-b border-gray-100 items-center justify-between">
                 <span class="text-xs text-gray-400 font-medium">Menampilkan <span id="products-count-display" class="text-gray-700 font-semibold">0</span> dari <span id="products-count-total" class="text-gray-700 font-semibold">0</span> produk</span>
@@ -544,8 +543,6 @@
             form.querySelector('#product-status').value = '';
             form.querySelector('#category_id').value = '';
             form.querySelector('#product-unit').value = '';
-            const $variantSelects = $(form).find('#kt_ecommerce_edit_order_selected_products_body .select2-hidden-accessible');
-            if ($variantSelects.length) $variantSelects.select2('destroy');
             form.querySelector('#kt_ecommerce_edit_order_selected_products_body')?.replaceChildren();
             const variantToggle = form.querySelector('#product-has-variants');
             variantToggle.checked = false;
@@ -622,26 +619,12 @@
                 pricing.priceRules = rules.length ? rules : [{ id: Date.now(), price: product.price || '', branches: ['all'] }];
             }
 
-            const $body = $(form).find('#kt_ecommerce_edit_order_selected_products_body');
+            const variantBody = form.querySelector('#kt_ecommerce_edit_order_selected_products_body');
             for (const variant of product.variants || []) {
-                const $row = $('<tr>');
-                const $select = $('<select name="variant[id][]" class="form-select mb-2 select2_product">')
-                    .append($('<option selected>').val(variant.id).text(variant.name));
-                $row.append($('<td>').append($select));
-                $row.append($('<td>').append($('<input type="text" name="variant[price][]" class="form-control format-number mb-2">').val(variant.price ?? 0)));
-                $row.append($('<td>').append('<button type="button" class="product-remove-row remove_variant" aria-label="Hapus varian"><i class="ph ph-x"></i></button>'));
-                $body.append($row);
+                variantBody.append(buildVariantRow({ id: variant.id, name: variant.name, price: variant.price ?? 0 }));
             }
-            if ($body.children().length) {
-                $body.find('.select2_product').select2({
-                    placeholder: 'Ketik nama produk', tags: true,
-                    ajax: {
-                        url: @js(route('ajax.getProduct')),
-                        dataType: 'json', delay: 250,
-                        data: params => ({ search: params.term }),
-                        processResults: data => ({ results: data.map(item => ({ id: item.id, text: item.name })) })
-                    }
-                });
+            if (variantBody.children.length) {
+                if (typeof bindFormatNumber === 'function') bindFormatNumber();
                 const toggle = form.querySelector('#product-has-variants');
                 toggle.checked = true;
                 toggle.dispatchEvent(new Event('change', { bubbles: true }));
@@ -683,10 +666,10 @@
                     data: function(d) {
                         d.searchValue = $('#search').val();
                         d.url = "{{ request()->segment(1) }}";
-                        d.branch_filter = $('[data-kt-ecommerce-product-filter="branch"]').val();
-                        d.category_filter = $('[data-kt-ecommerce-product-filter="category"]').val();
+                        d.branch_filter = $('[data-erp-filter="branch"]').val();
+                        d.category_filter = $('[data-erp-filter="category"]').val();
 
-                        var rawType = $('[data-kt-ecommerce-product-filter="type"]').val();
+                        var rawType = $('[data-erp-filter="type"]').val();
                         var typeValue = 'all';
                         if (rawType) {
                             try {
@@ -768,8 +751,8 @@
                 confirmButtonText: 'Ya, hapus!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--danger',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false
             }).then((result) => {
@@ -837,7 +820,7 @@
                 type: 'PUT',
                 data: {
                     price: price,
-                    branch_id: $('[data-kt-ecommerce-product-filter="branch"]').val(),
+                    branch_id: $('[data-erp-filter="branch"]').val(),
                     _token: $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function() {

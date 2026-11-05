@@ -175,9 +175,6 @@
         "badge-light": 2,
         "bs-utilities": 7
     },
-    "Modules/Master/Resources/views/products/create.blade.php": {
-        "select2": 2
-    },
     "Modules/Master/Resources/views/products/edit.blade.php": {
         "data-bs": 7,
         "data-kt": 11,
@@ -186,30 +183,6 @@
         "btn": 14,
         "select2": 3,
         "bs-utilities": 60,
-        "root-layout": 1
-    },
-    "Modules/Master/Resources/views/products/index.blade.php": {
-        "data-kt": 8,
-        "form-classes": 2,
-        "btn": 2,
-        "select2": 4
-    },
-    "Modules/Master/Resources/views/products/partials/create-form.blade.php": {
-        "data-kt": 1,
-        "form-classes": 4
-    },
-    "Modules/Master/Resources/views/products/partials/create-script.blade.php": {
-        "keenicons": 12,
-        "form-classes": 10,
-        "btn": 12,
-        "select2": 6,
-        "bs-utilities": 6
-    },
-    "Modules/Master/Resources/views/products/stock-show.blade.php": {
-        "data-kt": 22,
-        "form-classes": 6,
-        "select2": 6,
-        "bs-utilities": 5,
         "root-layout": 1
     },
     "Modules/Pos/Http/Controllers/DeliveryOrderController.php": {
@@ -937,7 +910,7 @@
         "bootstrap-js": 1
     },
     "public/assets/js/erp-picker.js": {
-        "select2": 9
+        "select2": 10
     },
     "public/assets/js/order-book-detail.js": {
         "data-kt": 1,

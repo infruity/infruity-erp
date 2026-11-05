@@ -123,7 +123,7 @@ test('the picker supports a static source, extra request params and living insid
     assert.match(js, /optionItems\(select\)/);
     assert.match(js, /options\.params/);
     // Bootstrap traps focus inside the open modal, so the overlay must be hosted inside it.
-    assert.match(js, /closest\('\.modal'\)/);
+    assert.match(js, /closest\('dialog\[open\], \.modal'\)/);
 });
 
 test('Stok Opname form uses pickers for branch and product and keeps the select2 data contract', () => {
@@ -154,4 +154,18 @@ test('POS Buah, Hadiah and Jus sheets use one list-product picker and keep the s
     assert.match(js, /produksi otomatis/);
     // Out-of-stock fruit is still stopped by the existing handler, not by hiding it.
     assert.match(js, /Stok tidak mencukupi/);
+});
+
+test('withCreatable adds a "new" row for an unknown term and never duplicates an existing one', () => {
+    const { withCreatable } = picker();
+    const items = [{ id: '1', text: 'Apel Fuji', meta: '' }];
+
+    assert.deepEqual(withCreatable(items, 'Pir', 'Produk baru'), [...items, { id: 'Pir', text: 'Pir', meta: 'Produk baru', created: true }]);
+    assert.equal(withCreatable(items, 'apel fuji').length, 1, 'cocok persis (tanpa beda huruf) tidak ditambah');
+    assert.equal(withCreatable(items, '   ').length, 1, 'kata kunci kosong tidak membuat baris');
+    assert.equal(withCreatable(items, '  Pir  ')[1].id, 'Pir', 'spasi dipangkas');
+});
+
+test('the picker overlay lives inside an open <dialog> so the modal does not make it inert', () => {
+    assert.match(read('public/assets/js/erp-picker.js'), /select\.closest\('dialog\[open\], \.modal'\)/);
 });
