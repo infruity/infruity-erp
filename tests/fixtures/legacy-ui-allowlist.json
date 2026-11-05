@@ -175,18 +175,6 @@
         "badge-light": 2,
         "bs-utilities": 7
     },
-    "Modules/Master/Resources/views/customer/create-overlay.blade.php": {
-        "hex-class": 1
-    },
-    "Modules/Master/Resources/views/customer/create.blade.php": {
-        "hex-class": 1
-    },
-    "Modules/Master/Resources/views/customer/edit-overlay.blade.php": {
-        "hex-class": 1
-    },
-    "Modules/Master/Resources/views/partials/mobile-index.blade.php": {
-        "hex-class": 8
-    },
     "Modules/Master/Resources/views/products/create.blade.php": {
         "select2": 2
     },
@@ -204,8 +192,7 @@
         "data-kt": 8,
         "form-classes": 2,
         "btn": 2,
-        "select2": 4,
-        "hex-class": 7
+        "select2": 4
     },
     "Modules/Master/Resources/views/products/partials/create-form.blade.php": {
         "data-kt": 1,
@@ -224,12 +211,6 @@
         "select2": 6,
         "bs-utilities": 5,
         "root-layout": 1
-    },
-    "Modules/Master/Resources/views/staff/form-fields.blade.php": {
-        "hex-class": 1
-    },
-    "Modules/Master/Resources/views/unit/index.blade.php": {
-        "hex-class": 4
     },
     "Modules/Pos/Http/Controllers/DeliveryOrderController.php": {
         "data-bs": 1,

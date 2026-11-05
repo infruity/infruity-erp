@@ -787,6 +787,8 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 
 **B2b-1 (selesai): `products/show-transaction`, `products/stock`, `staff/show`, `customer/show`** pindah ke `layouts.erp` (codemod `--convert-rem`; tabel riwayat HPP memakai `erp-table`). `staff/show` dan `customer/show` tidak diuji di browser karena DB guest tanpa data; hanya `@extends` dan `page-title` yang berubah, class `erp-person-header`/`erp-detail-grid` ada di `erp-workspace.css` yang dimuat kedua layout. Catatan: codemod menggeser skala `gray` Metronic; di halaman `template.root` yang diukur (`/campaign`) `text-gray-400/500/600` memang dirender sebagai warna Metronic (`#C4CADA`, `#99A1B7`, `#78829D`), jadi pergeseran itu menjaga tampilan.
 
+**B2b-3 (selesai): token merek di view Master.** `bg-[#0b595b]`/`text-[#0b595b]` menjadi `bg-teal`/`text-teal`, `hover:bg-[#0a4e50]` menjadi `hover:bg-teal-hover` (token `#08484a`; hover sedikit lebih gelap dari `#0a4e50` lama) di 7 view. **Jangan jalankan `codemod --write` pada view yang sudah di `layouts.erp`**: pergeseran skala `gray` hanya benar untuk halaman `template.root` (Metronic); di halaman Tailwind-native ia mengubah warna. Sapuan hex dilakukan dengan regex terarah.
+
 **B2b-2 (menunggu): `products/stock-show` (899 baris).** Bukan alih-alih mekanis: CSS inline-nya bergantung pada struktur Metronic (`#kt_content`, `#kt_post`, `.card/.card-header/.card-toolbar`), memakai select2 (ganti `erp-picker`), flatpickr, bottom sheet filter buatan sendiri, dan dikunci `ProductStockDetailTopbarBackButtonTest`. Perlu data produk sungguhan untuk menguji riwayat stok; DB guest tidak punya.
 
 ### B3 — Report, CRM, Chat, admin/settings/user (52 view)

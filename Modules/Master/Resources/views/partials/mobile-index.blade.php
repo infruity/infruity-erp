@@ -29,11 +29,11 @@
             <div class="relative flex-1">
                 <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]"></i>
                 <input x-model="search" @keydown.enter.prevent="if (mode === 'server') searchServer()" type="search" :placeholder="'Cari ' + title.toLowerCase() + '...'" class="w-full h-11 rounded-full border border-gray-100 bg-gray-50/50 pl-11 pr-20 text-[13px] outline-none focus:border-emerald-500">
-                <button x-show="mode === 'server'" type="button" @click="searchServer()" class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#0b595b]">Cari</button>
+                <button x-show="mode === 'server'" type="button" @click="searchServer()" class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-teal">Cari</button>
                 <button x-show="mode !== 'server' && search" x-cloak type="button" @click="search = ''" class="absolute right-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100" aria-label="Bersihkan pencarian"><i class="ph ph-x"></i></button>
             </div>
             @if (check_access($routeBase . '.create'))
-            <button type="button" @click="openCreate()" class="flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold shadow-sm"><i class="ph-bold ph-plus"></i> Tambah {{ $singular }}</button>
+            <button type="button" @click="openCreate()" class="flex items-center gap-2 bg-teal hover:bg-teal-hover text-white rounded-full h-11 px-5 text-[13px] font-semibold shadow-sm"><i class="ph-bold ph-plus"></i> Tambah {{ $singular }}</button>
             @endif
         </div>
         <div class="hidden md:flex px-4 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-400 font-medium">
@@ -74,7 +74,7 @@
                     </p>
                     <nav class="flex shrink-0 items-center gap-2" aria-label="Navigasi halaman {{ strtolower($pageTitle) }}">
                         @if ($records->previousPageUrl())
-                            <a href="{{ $records->previousPageUrl() }}" rel="prev" aria-label="Halaman sebelumnya" class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 text-xs font-semibold text-[#0b595b] transition-colors hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b595b]">
+                            <a href="{{ $records->previousPageUrl() }}" rel="prev" aria-label="Halaman sebelumnya" class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 text-xs font-semibold text-teal transition-colors hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b595b]">
                                 <i class="ph-bold ph-caret-left text-sm" aria-hidden="true"></i><span>Kembali</span>
                             </a>
                         @else
@@ -83,7 +83,7 @@
                             </span>
                         @endif
                         @if ($records->nextPageUrl())
-                            <a href="{{ $records->nextPageUrl() }}" rel="next" aria-label="Halaman berikutnya" class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#0b595b] px-3 text-xs font-semibold text-white transition-colors hover:bg-[#0a4e50] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b595b]">
+                            <a href="{{ $records->nextPageUrl() }}" rel="next" aria-label="Halaman berikutnya" class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-teal px-3 text-xs font-semibold text-white transition-colors hover:bg-teal-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b595b]">
                                 <span>Selanjutnya</span><i class="ph-bold ph-caret-right text-sm" aria-hidden="true"></i>
                             </a>
                         @else
@@ -124,7 +124,7 @@
 </template>
 <template x-if="field.type === 'select' && field.presentation !== 'picker'">
 <select :id="'master-field-' + field.key" x-model="form[field.key]" :required="fieldRequired(field)" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"><option value="" x-text="field.placeholder || ('Pilih ' + field.label)"></option><template x-for="option in field.options" :key="option.value"><option :value="option.value" x-text="option.label"></option></template></select>
-</template><template x-if="field.type === 'textarea'"><textarea :id="'master-field-' + field.key" x-model="form[field.key]" :required="fieldRequired(field)" rows="3" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500"></textarea></template><template x-if="!['select', 'textarea', 'region'].includes(field.type)"><input :id="'master-field-' + field.key" x-model="form[field.key]" :type="field.type || 'text'" :required="fieldRequired(field)" :placeholder="field.placeholder || ('Masukkan ' + field.label.toLowerCase())" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"></template></div></template><p x-show="error" x-text="error" role="alert" class="text-xs text-red-600"></p></div><div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3"><button type="button" @click="closeDrawer()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" :disabled="saving" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold disabled:opacity-50" x-text="saving ? 'Menyimpan...' : (editing ? 'Simpan Perubahan' : 'Tambah {{ $singular }}')"></button></div></form></div></div></template>
+</template><template x-if="field.type === 'textarea'"><textarea :id="'master-field-' + field.key" x-model="form[field.key]" :required="fieldRequired(field)" rows="3" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500"></textarea></template><template x-if="!['select', 'textarea', 'region'].includes(field.type)"><input :id="'master-field-' + field.key" x-model="form[field.key]" :type="field.type || 'text'" :required="fieldRequired(field)" :placeholder="field.placeholder || ('Masukkan ' + field.label.toLowerCase())" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"></template></div></template><p x-show="error" x-text="error" role="alert" class="text-xs text-red-600"></p></div><div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3"><button type="button" @click="closeDrawer()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" :disabled="saving" class="flex-1 h-11 rounded-xl bg-teal text-white text-sm font-semibold disabled:opacity-50" x-text="saving ? 'Menyimpan...' : (editing ? 'Simpan Perubahan' : 'Tambah {{ $singular }}')"></button></div></form></div></div></template>
     <template x-teleport="body">
         <div x-show="detail" x-cloak data-erp-modal role="dialog" aria-modal="true" aria-label="Detail {{ $singular }}" class="fixed inset-0 z-[110] flex items-center justify-center px-4" @keydown.escape.window="detail = null">
             <div class="absolute inset-0 bg-black/60" @click="detail = null"></div>
@@ -170,7 +170,7 @@
                 </template>
                 <div class="flex shrink-0 border-t border-gray-100">
                     @if (check_access($routeBase . '.edit'))
-                        <button type="button" @click="editDetail()" class="flex-1 h-12 text-sm font-semibold text-[#0b595b] hover:bg-emerald-50"><i class="ph ph-pencil-simple mr-1"></i> Edit</button>
+                        <button type="button" @click="editDetail()" class="flex-1 h-12 text-sm font-semibold text-teal hover:bg-emerald-50"><i class="ph ph-pencil-simple mr-1"></i> Edit</button>
                     @endif
                     @if (check_access($routeBase . '.destroy'))
                         <button type="button" @click="deleteDetail()" class="flex-1 h-12 text-sm font-semibold text-red-600 hover:bg-red-50 border-l border-gray-100"><i class="ph ph-trash mr-1"></i> Hapus</button>

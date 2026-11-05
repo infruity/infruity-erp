@@ -303,7 +303,7 @@
                         <button @click="filterOpen = false" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
                             Batal
                         </button>
-                        <button @click="applyMobileFilters()" class="flex-1 h-11 rounded-xl bg-[#0b595b] hover:bg-[#0a4e50] text-white text-sm font-semibold transition-colors shadow-sm">
+                        <button @click="applyMobileFilters()" class="flex-1 h-11 rounded-xl bg-teal hover:bg-teal-hover text-white text-sm font-semibold transition-colors shadow-sm">
                             Terapkan
                         </button>
                     </div>
@@ -368,7 +368,7 @@
                 <!-- Add Button -->
                 @if ($canCreateProduct)
                     <button type="button" @click="openProductCreate()"
-                        class="flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold transition-colors shadow-sm shrink-0">
+                        class="flex items-center gap-2 bg-teal hover:bg-teal-hover text-white rounded-full h-11 px-5 text-[13px] font-semibold transition-colors shadow-sm shrink-0">
                         <i class="ph-bold ph-plus text-sm"></i>
                         <span>Tambah Produk</span>
                     </button>
@@ -444,7 +444,7 @@
                         <button type="button" @click="productCreateOpen = false"
                             class="h-11 flex-1 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">Batal</button>
                         <button type="submit" form="add_product_form" id="product-create-submit"
-                            class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white shadow-sm transition hover:bg-[#0a4e50]">
+                            class="h-11 flex-1 rounded-xl bg-teal text-sm font-semibold text-white shadow-sm transition hover:bg-teal-hover">
                             <span x-text="productEditId ? 'Simpan Perubahan' : 'Tambah Produk'"></span>
                         </button>
                     </footer>
@@ -493,7 +493,7 @@
             </div>
             <div class="flex shrink-0 w-full border-t border-gray-100">
                 @if (check_access('products.edit'))
-                    <button type="button" @click="openProductEdit(productDetail)" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-[#0b595b] hover:bg-emerald-50">
+                    <button type="button" @click="openProductEdit(productDetail)" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-teal hover:bg-emerald-50">
                         <i class="ph-bold ph-pencil-simple"></i> Edit
                     </button>
                 @endif

@@ -106,7 +106,7 @@
             @else
                 <a href="{{ route('staff.index') }}" class="flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</a>
             @endif
-            <button type="submit" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white" data-submit>{{ $editing ? 'Simpan Perubahan' : 'Tambah Karyawan' }}</button>
+            <button type="submit" class="h-11 flex-1 rounded-xl bg-teal text-sm font-semibold text-white" data-submit>{{ $editing ? 'Simpan Perubahan' : 'Tambah Karyawan' }}</button>
         </div>
     </div>
 </form>

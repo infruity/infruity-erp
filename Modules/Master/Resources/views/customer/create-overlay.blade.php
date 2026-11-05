@@ -10,7 +10,7 @@
             <form id="customer-form" action="{{ route('customers.store') }}" method="POST" class="flex-1 min-h-0 flex flex-col">
                 @csrf
                 @include('master::customer.form-fields', ['data' => null])
-                <div class="shrink-0 bg-white border-t border-gray-100 px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center gap-3"><button type="button" @click="closeCustomerCreate()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold" data-submit>Tambah Pelanggan</button></div>
+                <div class="shrink-0 bg-white border-t border-gray-100 px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center gap-3"><button type="button" @click="closeCustomerCreate()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" class="flex-1 h-11 rounded-xl bg-teal text-white text-sm font-semibold" data-submit>Tambah Pelanggan</button></div>
             </form>
         </div>
     </div>

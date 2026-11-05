@@ -25,7 +25,7 @@
                        class="w-full h-11 rounded-full border border-gray-100 bg-gray-50/50 pl-11 pr-4 text-[13px] outline-none focus:border-emerald-500">
             </div>
             @if (check_access('unit.create'))
-            <button type="button" @click="openCreate()" class="flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold shadow-sm">
+            <button type="button" @click="openCreate()" class="flex items-center gap-2 bg-teal hover:bg-teal-hover text-white rounded-full h-11 px-5 text-[13px] font-semibold shadow-sm">
                 <i class="ph-bold ph-plus"></i> Tambah Satuan
             </button>
             @endif
@@ -86,7 +86,7 @@
                     </div>
                     <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3">
                         <button type="button" @click="drawerOpen = false" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button>
-                        <button type="submit" :disabled="saving" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold disabled:opacity-50" x-text="saving ? 'Menyimpan...' : (editing ? 'Simpan Perubahan' : 'Tambah Satuan')"></button>
+                        <button type="submit" :disabled="saving" class="flex-1 h-11 rounded-xl bg-teal text-white text-sm font-semibold disabled:opacity-50" x-text="saving ? 'Menyimpan...' : (editing ? 'Simpan Perubahan' : 'Tambah Satuan')"></button>
                     </div>
                 </form>
             </div>
@@ -110,7 +110,7 @@
             </template>
             <x-slot:actions>
                 @if (check_access('unit.edit'))
-                    <button type="button" @click="editDetail()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-[#0b595b] transition-colors hover:bg-emerald-50"><i class="ph-bold ph-pencil-simple"></i> Edit</button>
+                    <button type="button" @click="editDetail()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-teal transition-colors hover:bg-emerald-50"><i class="ph-bold ph-pencil-simple"></i> Edit</button>
                 @endif
                 @if (check_access('unit.destroy'))
                     <div class="w-px bg-gray-100"></div>
