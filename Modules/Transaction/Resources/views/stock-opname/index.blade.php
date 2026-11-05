@@ -952,7 +952,7 @@
                 </form>
 
             </div>
-            <footer class="so-sheet-footer so-detail-footer"><button type="button" class="so-history-button" data-so-action="history" aria-label="Riwayat stok opname"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i><span data-so-count="history"></span></button><button type="submit" form="so-detail-correction" id="so-correction-save" disabled>Simpan Koreksi</button>@if(check_access('stock-opname.update'))<button type="button" class="is-primary" data-so-action="finalize">Selesaikan Opname</button>@endif<button type="button" class="is-primary d-none" id="so-detail-done" data-bs-dismiss="modal">Selesai</button></footer>
+            <footer class="so-sheet-footer so-detail-footer"><button type="button" class="so-history-button" data-so-action="history" aria-label="Riwayat stok opname"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i><span data-so-count="history"></span></button><button type="submit" form="so-detail-correction" id="so-correction-save" disabled>Simpan Koreksi</button>@if(check_access('stock-opname.update'))<button type="button" class="is-primary" data-so-action="finalize">Selesaikan Opname</button>@endif<button type="button" class="is-primary d-none" id="so-detail-done" data-bs-dismiss="modal">Selesaikan opname</button></footer>
         </div></div>
     </div>
 

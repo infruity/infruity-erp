@@ -9,7 +9,7 @@ final class StockOpnameCommentCorrectionsTest extends TestCase
     {
         $source = file_get_contents(base_path('Modules/Transaction/Resources/views/stock-opname/index.blade.php'));
         $this->assertStringContainsString('id="so-detail-done"', $source);
-        $this->assertMatchesRegularExpression('/id="so-detail-done"[^>]*data-bs-dismiss="modal"[^>]*>Selesai<\/button>/', $source);
+        $this->assertMatchesRegularExpression('/id="so-detail-done"[^>]*data-bs-dismiss="modal"[^>]*>Selesaikan opname<\/button>/', $source);
         $this->assertStringContainsString('Simpan Koreksi', $source);
         $this->assertStringContainsString('[data-so-action="finalize"]', $source);
         $this->assertStringContainsString('/stock-opname/${id}/finalize', $source);
