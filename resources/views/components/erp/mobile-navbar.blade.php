@@ -83,8 +83,11 @@
         nav.dataset.erpNavReady = 'true';
         nav.addEventListener('click', event => {
             if (!event.target.closest('[data-erp-modal-create]')) return;
-            const target = document.getElementById('kt_modal_add_customer');
-            if (target && window.bootstrap?.Modal) window.bootstrap.Modal.getOrCreateInstance(target).show();
+            // Dialog baru menandai diri dengan data-erp-create; id Metronic lama tetap didukung untuk halaman yang belum pindah.
+            const target = document.querySelector('dialog[data-erp-create]') || document.getElementById('kt_modal_add_customer');
+            if (!target) return;
+            if (target.tagName === 'DIALOG') window.erp?.dialog.open(target);
+            else if (window.bootstrap?.Modal) window.bootstrap.Modal.getOrCreateInstance(target).show();
         });
         const profileButton = nav.querySelector('[data-erp-profile-toggle]');
         const profileMenu = nav.querySelector('[data-erp-profile-menu]');

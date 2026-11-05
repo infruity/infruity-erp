@@ -116,3 +116,9 @@ Catatan Blade: di template inline, slot bernama (`<x-slot:x>`) yang langsung dii
 - `codemod.mjs`: laporan dulu, `--write` untuk menulis, `--convert-rem` untuk halaman yang di-extend dari `template.root` (root 13px ke 16px). Hanya mengganti pasangan aman; bentrok nama (`collapse`, `card`, `btn`, `rounded`) dan komponen dilaporkan untuk dikerjakan manual. Ikon tanpa padanan membuat atribut dibiarkan utuh dan dilaporkan.
 - `class-conflicts.mjs`: detektor tabrakan class.
 - `ratchet-snapshot.php`: tulis ulang batas `tests/fixtures/legacy-ui-allowlist.json`.
+
+### Pola halaman master sederhana dan sel DataTables
+
+- Halaman daftar + dialog tambah/ubah yang bentuknya sama memakai partial `master::partials.simple-crud` (lihat `location/index.blade.php` sebagai contoh pemakaian). Dialog memakai `data-erp-create` supaya tombol + di navigasi mobile membukanya.
+- HTML sel DataTables dari controller dirender lewat `App\Support\DataTableCells` (`title`, `rowActions`, `editDeleteMenu`), bukan string Bootstrap. `rowActions` selalu menyertakan salinan tersembunyi untuk daftar kartu mobile (`erp-collections.js`).
+- SweetAlert di halaman yang memakai `x-erp.dialog` otomatis dirender di dalam dialog yang sedang terbuka (`resources/js/vendor.js`); tidak perlu opsi khusus. Tombolnya memakai `customClass: { confirmButton: 'erp-action erp-action--primary', cancelButton: 'erp-action' }` dengan `buttonsStyling: false`.

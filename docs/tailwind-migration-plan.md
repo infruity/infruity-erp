@@ -12,7 +12,7 @@ Dokumen ini adalah acuan tunggal migrasi. Setiap batch mencentang checklist di [
 |---|---|---|---|
 | B0 Fondasi build | `feature/tailwind-migration` | — | selesai dan terverifikasi; menunggu review dan uji build di server |
 | B1 Layout final, komponen, shell, auth, errors, landing | langsung di `integration/tailwind-migration` | — | **B1a, B1b-1 (DataTables npm), B1b-2 (`body` 13px), B1b-3 (kode mati golongan A) selesai**; B1b-4 (`erp-button` → `erp-action`) selesai; menunggu: golongan B kode mati |
-| B2 Master | — | — | belum |
+| B2 Master | langsung di `integration/tailwind-migration` | — | **B2a selesai** (location, handling, department); berikutnya B2b |
 | B3 Report, CRM, Chat, admin | — | — | belum |
 | B4 Transaction | — | — | menunggu `ui/produksi-reference` + `ui/stock-opname-reference` masuk `main` |
 | B5 POS | — | — | belum |
@@ -773,6 +773,18 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 - Livewire `produk`, `produk-form`, `product-table`: putuskan nasib Livewire di awal batch (§3.5)
 - Backend: lihat Lampiran B (B2). Ukur performa render komponen per baris (R16).
 
+**B2a (selesai): location, handling, department.**
+- Tiga view sama bentuknya, jadi dibuat satu partial `master::partials.simple-crud` (DataTables server-side + `x-erp.dialog` sheet); ketiga `index.blade.php` tinggal parameter. Pindah dari `template.root` ke `layouts.erp`.
+- Backend: `get_data` tiga controller memakai `App\Support\DataTableCells` (`title`, `rowActions`, `editDeleteMenu`) yang merender komponen `x-erp.*` (di-escape). Kolom nama sebelumnya menyisipkan `$item->name` mentah: celah XSS pada tiga tabel ini tertutup sebagai efek samping. Izin tidak berubah (`department` memakai `category.edit/delete` seperti sebelumnya).
+- Temuan platform yang diperbaiki di sini, berlaku untuk semua halaman berikutnya:
+  1. **SweetAlert di belakang `<dialog>` modal**: `<dialog>` membuat semua elemen di luarnya inert, jadi konfirmasi/error SweetAlert yang ditempel di `<body>` tidak terlihat dan tidak bisa diklik. `resources/js/vendor.js` kini merender SweetAlert di dalam dialog paling atas dengan `topLayer: true` bila ada dialog terbuka (diuji dengan klik sungguhan).
+  2. **Daftar kartu mobile (`erp-collections.js`)** mencari tombol aksi di dalam baris, padahal panel `x-erp.dropdown` di-teleport ke `<body>`. `x-erp.row-actions` punya prop `copies` yang menambah salinan tersembunyi (`data-erp-action-copies`); `DataTableCells` selalu menyalakannya. Script mengabaikan pemicu menu dan sel `data-erp-row-actions` dari daftar field.
+  3. **Tombol + di navigasi mobile** membuka `#kt_modal_add_customer` lewat Bootstrap. Kini ia membuka `dialog[data-erp-create]` lebih dulu (id lama tetap didukung selama halaman lain belum pindah).
+  4. CSS `erp-input`/`erp-label` baru masuk bundel setelah ada view yang memakainya; jalankan `npm run build` setelah menambah view pertama yang memakai komponen form.
+- Perubahan tampilan yang disengaja: font/warna dasar mengikuti `layouts.erp` (Plus Jakarta Sans 13px) menggantikan font sistem 12px halaman `template.root`; konten bergeser sesuai padding shell baru (4px di mobile, ±19/27px di desktop); tabel memakai `erp-table`; isi dialog putih (sebelumnya abu-abu muda). `h2` judul workspace diberi `line-height:1.2` agar tinggi tidak berubah.
+- Judul dialog setelah simpan sebelumnya salah ("Tambah Category"/"Tambah Penanganan"); kini selalu "Tambah <judul>". Menutup dialog (Esc, X, Batal) mengembalikan form ke mode tambah (sebelumnya action `PUT` tetap menempel setelah batal ubah).
+- Diuji di browser (guest, baris contoh disuntik ke DataTables): kartu mobile + aksi Ubah/Hapus, menu titik tiga desktop, buka/tutup/reset dialog, Batal dengan konfirmasi (klik sungguhan), alur simpan (spinner, sukses, error) dengan `$.ajax` di-stub, tombol + mobile. Server-side data sungguhan belum diuji (DB guest tanpa data).
+
 ### B3 — Report, CRM, Chat, admin/settings/user (52 view)
 
 - Report hub + semua laporan (`ReportController` 57 class; `report-mobile.js` 703 baris)
@@ -897,12 +909,12 @@ Legenda: `[ ]` belum, `[x]` selesai, `[-]` dikecualikan. Layout: `root` = `templ
 | [ ] | `Master/customer/js-create.blade.php` | partial | 12 | 0 | - | CustomerEditOverlay |  |
 | [ ] | `Master/customer/membership.blade.php` | partial | 56 | 0 | - | - | ⚠ kandidat mati (0 referensi) |
 | [ ] | `Master/customer/show.blade.php` | root | 0 | 0 | - | - |  |
-| [ ] | `Master/department/index.blade.php` | root | 42 | 27 | DT, Swal, bs-js | - |  |
-| [ ] | `Master/handling/index.blade.php` | root | 42 | 27 | DT, Swal, bs-js | - |  |
+| [x] | `Master/department/index.blade.php` | root | 42 | 27 | DT, Swal, bs-js | - |  |
+| [x] | `Master/handling/index.blade.php` | root | 42 | 27 | DT, Swal, bs-js | - |  |
 | [ ] | `Master/index.blade.php` | master::layouts.master | 0 | 0 | - | - |  |
 | [ ] | `Master/kurir/index.blade.php` | partial | 3 | 0 | - | - |  |
 | [ ] | `Master/layouts/master.blade.php` | partial | 0 | 0 | - | - |  |
-| [ ] | `Master/location/index.blade.php` | root | 49 | 27 | DT, Swal, bs-js | - |  |
+| [x] | `Master/location/index.blade.php` | root | 49 | 27 | DT, Swal, bs-js | - |  |
 | [ ] | `Master/partials/mobile-index.blade.php` | tw | 139 | 0 | Swal | BranchOverlayFields, CustomerEditOverlay, PositionDrawerSpacing, SupplierDetailUi, SupplierRegionFields, kurir-drawer(js), staff-edit-overlay(js) |  |
 | [ ] | `Master/payment-method/index.blade.php` | partial | 0 | 0 | - | - |  |
 | [ ] | `Master/position/index.blade.php` | partial | 3 | 0 | - | PositionDrawerSpacing |  |
@@ -1155,11 +1167,11 @@ Kolom: jumlah atribut `class=` dan baris yang memuat class Bootstrap/Metronic/ik
 | [ ] | `Modules/Master/Http/Controllers/SupplierController.php` | 14 | 11 | B2 |
 | [ ] | `Modules/Master/Http/Controllers/ProductUnitController.php` | 14 | 11 | B2 |
 | [ ] | `Modules/Master/Http/Controllers/PositionController.php` | 13 | 10 | B2 |
-| [ ] | `Modules/Master/Http/Controllers/LocationController.php` | 13 | 10 | B2 |
+| [x] | `Modules/Master/Http/Controllers/LocationController.php` | 13 | 10 | B2 |
 | [ ] | `app/Http/Controllers/UserController.php` | 12 | 11 | B3 |
 | [ ] | `app/Http/Controllers/P_role.php` | 12 | 11 | B3 |
-| [ ] | `Modules/Master/Http/Controllers/HandlingController.php` | 11 | 8 | B2 |
-| [ ] | `Modules/Master/Http/Controllers/DepartmentController.php` | 11 | 8 | B2 |
+| [x] | `Modules/Master/Http/Controllers/HandlingController.php` | 11 | 8 | B2 |
+| [x] | `Modules/Master/Http/Controllers/DepartmentController.php` | 11 | 8 | B2 |
 | [ ] | `Modules/Crm/Http/Controllers/CampaignController.php` | 10 | 9 | B3 |
 | [ ] | `Modules/Master/Http/Controllers/KurirController.php` | 9 | 8 | B2 |
 | [ ] | `Modules/Transaction/Http/Controllers/StockOutTypeController.php` | 8 | 7 | B4 |

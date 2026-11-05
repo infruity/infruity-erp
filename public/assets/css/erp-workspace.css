@@ -60,7 +60,7 @@
 @media(max-width:767px) {
  .erp-workspace { min-height:calc(100dvh - 60px); border-radius:0; }
  .erp-workspace-heading { display:block; padding:20px 20px 0; }
- .erp-workspace-heading h2 { margin:0; font-size:17px; font-weight:700; }
+ .erp-workspace-heading h2 { margin:0; font-size:17px; font-weight:700; line-height:1.2; }
  .erp-workspace-heading p { margin:6px 0 0; font-size:12px; color:var(--erp-muted); line-height:1.5; }
  .erp-workspace-toolbar { gap:10px; padding:16px 20px; }
  .erp-workspace-toolbar .erp-search { order:0; flex:1 0 100%; }

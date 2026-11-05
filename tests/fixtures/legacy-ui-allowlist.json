@@ -122,29 +122,11 @@
         "badge-light": 3,
         "bs-utilities": 6
     },
-    "Modules/Master/Http/Controllers/DepartmentController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 3,
-        "btn": 2,
-        "bs-utilities": 4
-    },
-    "Modules/Master/Http/Controllers/HandlingController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 3,
-        "btn": 2,
-        "bs-utilities": 4
-    },
     "Modules/Master/Http/Controllers/KurirController.php": {
         "data-bs": 1,
         "bootstrap-icons": 3,
         "btn": 2,
         "bs-utilities": 1
-    },
-    "Modules/Master/Http/Controllers/LocationController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 3,
-        "btn": 2,
-        "bs-utilities": 5
     },
     "Modules/Master/Http/Controllers/PaymentMethodController.php": {
         "data-bs": 1,
@@ -203,36 +185,6 @@
         "hex-class": 1
     },
     "Modules/Master/Resources/views/customer/show.blade.php": {
-        "root-layout": 1
-    },
-    "Modules/Master/Resources/views/department/index.blade.php": {
-        "data-bs": 2,
-        "data-kt": 8,
-        "form-classes": 2,
-        "btn": 6,
-        "modal-class": 3,
-        "bootstrap-js": 3,
-        "bs-utilities": 5,
-        "root-layout": 1
-    },
-    "Modules/Master/Resources/views/handling/index.blade.php": {
-        "data-bs": 2,
-        "data-kt": 8,
-        "form-classes": 2,
-        "btn": 6,
-        "modal-class": 3,
-        "bootstrap-js": 3,
-        "bs-utilities": 5,
-        "root-layout": 1
-    },
-    "Modules/Master/Resources/views/location/index.blade.php": {
-        "data-bs": 2,
-        "data-kt": 8,
-        "form-classes": 3,
-        "btn": 6,
-        "modal-class": 3,
-        "bootstrap-js": 3,
-        "bs-utilities": 7,
         "root-layout": 1
     },
     "Modules/Master/Resources/views/partials/mobile-index.blade.php": {

@@ -2,6 +2,7 @@
 
 namespace Modules\Master\Http\Controllers;
 
+use App\Support\DataTableCells;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -178,51 +179,13 @@ class LocationController extends Controller
         $data = Location::all();
         return DataTables::of($data)
             ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                $colors = ['warning', 'success', 'info', 'primary'];
-                $color = $colors[$item->id % count($colors)];
-                $textName = '<div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                                <a href="javascript:void(0)">
-                                    <div class="symbol-label fs-3 bg-light-' . $color . ' text-' . $color . '">' . strtoupper(substr($item->name, 0, 1)) . '</div>
-                                </a>
-                            </div>';
-
-                return '<div class="d-flex align-items-center">
-                            <div class="ms-5">
-                                <a href="javascript:void(0)" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $item->name . '</a>
-                            </div>
-                        </div>';
-            })
-            ->addColumn('action', function ($row) {
-                $name = e($row->name);
-
-                $html = '
-                <div class="dropstart">
-                    <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi ' . $name . '">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
-                if (check_access('location.edit')) {
-                    $html .= '
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" onclick="editProduct(' . $row->id . ')">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        </li>';
-                }
-                if (check_access('location.delete')) {
-                    $html .= '
-                        <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $row->id . ')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </li>';
-                }
-                $html .= '
-                    </ul>
-                </div>';
-                return $html;
-            })
+            ->addColumn('name', fn ($item) => DataTableCells::title((string) $item->name))
+            ->addColumn('action', fn ($row) => DataTableCells::editDeleteMenu(
+                (string) $row->name,
+                $row->id,
+                check_access('location.edit'),
+                check_access('location.delete')
+            ))
             ->rawColumns(['name', 'action'])
             ->make(true);
     }

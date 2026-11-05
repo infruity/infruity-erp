@@ -13,6 +13,17 @@ import DataTable from 'datatables.net';
 import { install as installDataTableDefaults } from './vendor/datatables-bootstrap.js';
 
 window.$ = window.jQuery = $;
+// <dialog> modal membuat semua elemen di luarnya inert, termasuk SweetAlert yang ditempel di <body>:
+// konfirmasi/error muncul di belakang dialog dan tidak bisa diklik. Bila ada dialog terbuka, render
+// SweetAlert di dalam dialog paling atas dan tampilkan di top layer (popover), jadi terlihat dan bisa diklik.
+const fire = Swal.fire;
+Swal.fire = function (...args) {
+    const dialogs = document.querySelectorAll('dialog[open]');
+    const host = dialogs[dialogs.length - 1];
+    if (!host) return fire.apply(this, args);
+    const given = args[0] && typeof args[0] === 'object' ? args[0] : { title: args[0], html: args[1], icon: args[2] };
+    return fire.call(this, { target: host, topLayer: true, heightAuto: false, ...given });
+};
 window.Swal = Swal;
 
 // Paket datatables.net berbentuk UMD: panggil factory-nya dengan jQuery kita.
