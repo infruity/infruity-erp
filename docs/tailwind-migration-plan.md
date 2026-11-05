@@ -217,7 +217,7 @@ scripts/ui-migrate/         ← codemod class + ikon, audit class, tabel pemetaa
 
 ### 3.5 Alpine dan Livewire
 
-Livewire 4 membawa Alpine sendiri; tidak boleh ada dua instance.
+Livewire 4 membawa Alpine sendiri; tidak boleh ada dua instance. **Status (dicek): Livewire tidak punya halaman hidup**, jadi jalur "mati" di bawah yang dipakai dan jalur "masih hidup" hanya cadangan bila server production ternyata memakainya.
 - Jika `produk-form` masih hidup (diputuskan awal B2): `app.js` mengimpor `Livewire` dan `Alpine` dari `vendor/livewire/livewire/dist/livewire.esm`, mendaftarkan plugin Alpine ke instance itu, lalu memanggil `Livewire.start()`. Layout memakai `@livewireScriptConfig`.
 - Jika mati: Livewire tidak dipakai di layout, dan `alpinejs` diimpor biasa.
 - B0–B1: Alpine di-bundle via npm, halaman `produk` tetap memakai auto-inject Livewire dan diuji khusus.
@@ -576,6 +576,8 @@ Aturan:
 | `template - Copy/` | folder | B1 | — |
 | View kandidat mati (Lampiran A ⚠) | ±50 view | batch modulnya | dikonfirmasi pemilik repo |
 | `PosController.php.temp`, `StockOpnameController.php.temp`, `ProductionController_temp.php` | 3 file | B4/B5 | dikonfirmasi |
+| Livewire: `app/Livewire/{PosKasir,ProductTable,ProdukForm}.php`, `resources/views/livewire/*`, `produk.blade.php`, `DashboardController::produk()`, `@livewireStyles` di `template.root` | 3 class + 3 view + 1 halaman | B2 | dikonfirmasi server; paket composer `livewire/livewire` dilepas di PR backend terpisah |
+| `auth/register.blade.php` (route `/register` tetap sebagai redirect) | 1 view | B1 | konfirmasi server |
 | Bobot Phosphor light + thin | 2 dari 6 | B0 | — |
 | `template/root.blade.php` + sisa `template/*` | ±25 view | B6 | 0 view memakai `template.root` |
 | `public/assets/css/style.bundle.css` | 1,2 MB | B6 | — |
@@ -754,8 +756,8 @@ Hapus semua item §7.2 bertanda B6. Gerbang: grep penanda §8.3 = 0 di seluruh r
 1. Baseline test.
 2. Node di server production (ada/tidak, versi, siapa yang deploy).
 3. Tombol export DataTables (JSZip/pdfmake) yang terlewat grep.
-4. `RegisterController@showRegister` tidak memanggil `view()`: route `/register` hidup atau rusak?
-5. `produk`/`produk-form` (Livewire) masih dipakai?
+4. ~~`/register`~~ **Selesai dicek:** sengaja dinonaktifkan. `showRegister()` me-redirect ke login dengan pesan "Pendaftaran mandiri tidak tersedia" dan `create()` selalu 403. Referensi `infruity-frontend` (47 halaman HTML) tidak punya halaman daftar, dan halaman login tidak menautkannya. Tidak ada UI yang perlu dibuat; route dibiarkan. `auth/register.blade.php`, `auth/footer`, `auth/login-option` dihapus sebagai kode mati. Konfirmasi akhir ke server oleh pemilik repo.
+5. ~~`produk`/`produk-form` (Livewire)~~ **Selesai dicek:** mati. Route `/produk` sudah dikomentari di `routes/web.php`, `DashboardController::produk()` tidak punya route, referensi FE tidak punya halaman setara (Master/Produk di FE adalah modul `products.*`, bukan halaman Livewire ini), dan tidak ada izin/menu bernama `produk` di tabel `role_menu`. Livewire `PosKasir` dan `ProductTable` juga tidak dirujuk di mana pun. Keputusan: seluruh Livewire (`app/Livewire/*`, `views/livewire/*`, `produk.blade.php`, `@livewireStyles`) dihapus di B2, dan §3.5 memakai jalur "Livewire mati".
 6. `public/infruity-ui/`, `public/mask/`, `public/error/`, `public/font/`, `public/assets-landing/`: masih dipakai?
 
 ---
