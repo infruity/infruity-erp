@@ -821,11 +821,7 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 
 **B3c (selesai, kecuali kode mati): admin, settings, role-menu, change-password, chat.** `Chat/index`, `role-menu`, `settings/index`, `change-password` pindah ke `layouts.erp` (`role-menu`: tabel `erp-table`); hex merek di `admin/role/*`, `admin/user/index`, `dashboard` menjadi token. Diuji di browser dengan akun Master. **B3 selesai** kecuali daftar berikut.
 
-**Menunggu persetujuan (kode mati B3), semuanya tanpa pemanggil:**
-- `resources/views/list_permohonan.blade.php` + `DashboardController::list_permohonan` + route `list-permohonan`: sisa aplikasi SK (tabel `ipt_pengurangan`, `m_status`; tautan `permohonan/*` tidak punya route).
-- `resources/views/menu/index.blade.php` + `App\Http\Controllers\P_menu` (tidak punya route).
-- `resources/views/admin/role/js-role.blade.php` (330 baris) dan `admin/user/js-user.blade.php` (252 baris): tidak di-include siapa pun (select2/modal Bootstrap).
-- CRM: `dashboard/js-dashboard.blade.php`, `dashboard/top_distribution.blade.php`, `dashboard/top_tier.blade.php`, `DashboardController::{topDistribution,topTier}` dan route `crm-dashboard/top-{distribution,tier}`.
+**Kode mati B3 dihapus (disetujui pemilik repo):** `list_permohonan` + `DashboardController::list_permohonan` + route `list-permohonan`; `menu/index` + `P_menu`; `admin/role/js-role` dan `admin/user/js-user`; CRM `js-dashboard`, `top_distribution`, `top_tier`, `DashboardController::{topDistribution,topTier}` dan dua route-nya. Katalog izin di `config/constant.php` (`top-distribution`, `top-tier`) sengaja dibiarkan: menghapusnya mengubah daftar hak akses di editor role.
 
 ### B4 — Transaction (74 view)
 

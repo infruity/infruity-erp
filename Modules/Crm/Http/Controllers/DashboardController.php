@@ -275,43 +275,6 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function topDistribution(Request $request)
-    {
-        if ($denied = $this->requireAccess('crm-dashboard.top-distribution')) {
-            return $denied;
-        }
-
-        // Query 5 teratas
-        $top5 = DB::table('customer')
-            ->leftJoin('reg_districts as B', 'customer.district', '=', 'B.id')
-            ->select([
-                'customer.district',
-                'B.name',
-                DB::raw('COUNT(*) as total')
-            ])
-            ->groupBy('customer.district', 'B.name')
-            ->orderByDesc('total')
-            ->limit(5);
-
-        // Query total lainnya
-        $others = DB::table(DB::raw('(
-            SELECT `customer`.`district`, COUNT(*) as total
-            FROM `customer`
-            GROUP BY `customer`.`district`
-            ORDER BY total DESC
-            LIMIT 18446744073709551615 OFFSET 5
-        ) as sub'))
-            ->select([
-                DB::raw("'Other' as district"),
-                DB::raw("'Other' as name"),
-                DB::raw('SUM(total) as total')
-            ]);
-
-        // Gabungkan dengan UNION ALL
-        $totalCustomer = $top5->unionAll($others)->get();
-        return view('crm::dashboard.top_distribution', compact('totalCustomer'));
-    }
-
     public function genderDistribution()
     {
         if ($denied = $this->requireAccess('crm-dashboard.gender-distribution')) {
@@ -326,23 +289,6 @@ class DashboardController extends Controller
             'status' => true,
             'data' => $data,
         ]);
-    }
-
-    public function topTier()
-    {
-        if ($denied = $this->requireAccess('crm-dashboard.top-tier')) {
-            return $denied;
-        }
-
-        $data = Customer::query()
-            ->leftJoin('vw_customer_tier', 'customer.id', '=', 'vw_customer_tier.customer_id')
-            ->leftJoin('crm_tier as C', 'vw_customer_tier.tier_id', '=', 'C.id')
-            ->select('customer.id', 'customer.name', 'vw_customer_tier.*', 'C.name as tier_name')
-            ->limit(6)
-            ->orderBy('C.level', 'desc')
-            ->orderBy('vw_customer_tier.customer_exp', 'desc')
-            ->get();
-        return view('crm::dashboard.top_tier', compact('data'));
     }
 
     public function tierGraphic(Request $request)

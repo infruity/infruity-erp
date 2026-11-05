@@ -1,15 +1,4 @@
 {
-    "Modules/Crm/Resources/views/dashboard/js-dashboard.blade.php": {
-        "kt-js": 25
-    },
-    "Modules/Crm/Resources/views/dashboard/top_distribution.blade.php": {
-        "keenicons": 2,
-        "btn": 4,
-        "bs-utilities": 11
-    },
-    "Modules/Crm/Resources/views/dashboard/top_tier.blade.php": {
-        "bs-utilities": 11
-    },
     "Modules/Crm/Resources/views/deposito/js-deposito.blade.php": {
         "select2": 2
     },
@@ -714,16 +703,6 @@
         "form-classes": 2,
         "bs-utilities": 3
     },
-    "resources/views/admin/role/js-role.blade.php": {
-        "btn": 6,
-        "select2": 4,
-        "bootstrap-js": 3
-    },
-    "resources/views/admin/user/js-user.blade.php": {
-        "btn": 4,
-        "select2": 1,
-        "bootstrap-js": 3
-    },
     "resources/views/auth/login.blade.php": {
         "hex-class": 1
     },
@@ -741,16 +720,6 @@
     },
     "resources/views/layouts/erp.blade.php": {
         "hex-class": 1
-    },
-    "resources/views/list_permohonan.blade.php": {
-        "fontawesome": 7,
-        "root-layout": 1
-    },
-    "resources/views/menu/index.blade.php": {
-        "fontawesome": 2,
-        "form-classes": 1,
-        "btn": 4,
-        "root-layout": 1
     },
     "resources/views/template/notif.blade.php": {
         "bs-utilities": 1

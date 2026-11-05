@@ -24,56 +24,6 @@ class DashboardController extends Controller
         return view('dashboard');
     }
 
-    public function list_permohonan(Request $request)
-    {
-        $firstQuery = DB::table('t_permohonan')
-            ->join('m_layanan', 't_permohonan.id_layanan', '=', 'm_layanan.id_layanan')
-            ->join('m_status', 't_permohonan.id_status', '=', 'm_status.id_status')
-            ->where('t_permohonan.id_user', Auth::user()->id_user)
-            ->select(
-                't_permohonan.id',
-                't_permohonan.no_permohonan',
-                't_permohonan.tanggal_pengajuan',
-                't_permohonan.id_status',
-                't_permohonan.id_surat',
-                'm_layanan.nm_layanan',
-                'm_status.nama_status',
-                'm_status.icon',
-                'm_status.class_color',
-                DB::raw("'permohonan-sk' AS type"),
-                DB::raw("CASE WHEN t_permohonan.id_status < 10 THEN t_permohonan.id_status + 1 ELSE NULL END AS next_status")
-            );
-
-        $secondQuery = DB::table('ipt_pengurangan')
-            ->join('m_status', 'ipt_pengurangan.id_status', '=', 'm_status.id_status')
-            ->where('ipt_pengurangan.id_user', Auth::user()->id_user)
-            ->select(
-                'ipt_pengurangan.id',
-                'ipt_pengurangan.no_permohonan',
-                'ipt_pengurangan.tanggal_pengajuan',
-                'ipt_pengurangan.id_status',
-                'ipt_pengurangan.type AS nm_layanan',
-                'ipt_pengurangan.id_surat',
-                'm_status.nama_status',
-                'm_status.icon',
-                'm_status.class_color',
-                DB::raw("'ipt-pengurangan' AS type"),
-                DB::raw("CASE WHEN ipt_pengurangan.id_status < 10 THEN ipt_pengurangan.id_status + 1 ELSE NULL END AS next_status")
-            );
-
-        $combinedResults = DB::query()->fromSub(
-            $firstQuery->union($secondQuery),
-            'cr'
-        )
-            ->leftJoin('m_status AS ns', 'cr.next_status', '=', 'ns.id_status')
-            ->select('cr.*', 'ns.nama_status AS next_status_name', 'ns.class_color AS next_status_class_color')
-            ->orderBy('cr.tanggal_pengajuan', 'DESC')
-            ->paginate(5);
-        $data['data'] = $combinedResults;
-        // dd($combinedResults);
-        return view('list_permohonan', $data);
-    }
-
     public function landing()
     {
         return view('landing');
