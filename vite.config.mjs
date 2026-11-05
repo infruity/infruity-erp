@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
     return {
         plugins: [
             laravel({
-                input: ['resources/css/app.css', 'resources/css/legacy.css', 'resources/js/alpine.js'],
+                input: ['resources/css/app.css', 'resources/css/legacy.css', 'resources/js/alpine.js', 'resources/js/erp.js'],
                 refresh: [
                     'resources/views/**',
                     'Modules/*/Resources/views/**',

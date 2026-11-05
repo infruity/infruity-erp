@@ -13,7 +13,7 @@ class ErpFilterPresentationTest extends TestCase
 
     public function test_tailwind_layout_loads_the_same_cache_busted_filter_stylesheet(): void
     {
-        $layout = file_get_contents(resource_path('views/layouts/erp-tailwind.blade.php'));
+        $layout = file_get_contents(resource_path('views/layouts/erp.blade.php'));
         $include = "{{ asset('assets/css/erp-filters.css') }}?v={{ filemtime(public_path('assets/css/erp-filters.css')) }}";
 
         $this->assertSame(1, substr_count($layout, $include));

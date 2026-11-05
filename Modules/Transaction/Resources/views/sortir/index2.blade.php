@@ -1,4 +1,4 @@
-@extends('layouts.erp-tailwind')
+@extends('layouts.erp')
 @section('title', 'Sortir Barang - Inventaris')
 @section('page-title', 'Sortir Barang')
 @section('dashboard-fullscreen', '1')

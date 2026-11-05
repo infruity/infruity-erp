@@ -1,4 +1,4 @@
-@extends('layouts.erp-tailwind')
+@extends('layouts.erp')
 
 @section('title', 'Hak Akses - Master')
 @section('page-title', 'Hak Akses')

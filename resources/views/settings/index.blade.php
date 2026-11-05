@@ -215,12 +215,6 @@
                 <span class="erp-settings-option-label">Ganti Kata Sandi</span>
                 <i class="ph ph-caret-right erp-settings-chevron" aria-hidden="true"></i>
             </a>
-            <button type="button" class="erp-settings-option w-full border-0 bg-transparent text-left" data-theme-toggle>
-                <i class="ph ph-sun erp-settings-option-icon" aria-hidden="true"></i>
-                <span class="erp-settings-option-label">Tema</span>
-                <span class="erp-settings-option-value" data-theme-label>Terang</span>
-                <i class="ph ph-caret-right erp-settings-chevron" aria-hidden="true"></i>
-            </button>
             <div class="erp-settings-option">
                 <img class="erp-settings-language-mark" src="{{ asset('assets/media/flags/indonesia.svg') }}" alt="">
                 <span class="erp-settings-option-label">Bahasa</span>
@@ -237,24 +231,4 @@
             </button>
         </form>
     </section>
-
-    <script>
-        (() => {
-            const page = document.querySelector('.erp-settings-page');
-            if (!page) return;
-            const button = page.querySelector('[data-theme-toggle]');
-            const label = page.querySelector('[data-theme-label]');
-            const syncThemeLabel = () => {
-                const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
-                if (label) label.textContent = currentTheme === 'dark' ? 'Gelap' : 'Terang';
-            };
-            syncThemeLabel();
-            button?.addEventListener('click', () => {
-                const nextTheme = (document.documentElement.getAttribute('data-bs-theme') || 'light') === 'dark' ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-bs-theme', nextTheme);
-                localStorage.setItem('data-bs-theme', nextTheme);
-                syncThemeLabel();
-            });
-        })();
-    </script>
 @endsection

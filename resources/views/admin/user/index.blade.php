@@ -1,4 +1,4 @@
-@extends('layouts.erp-tailwind')
+@extends('layouts.erp')
 
 @section('title', 'Akun Pengguna - Master')
 @section('page-title', 'Akun Pengguna')
@@ -281,7 +281,7 @@
                                 <div class="relative max-h-48 overflow-y-auto overscroll-none scrollbar-hide bg-white">
                                     <template x-for="staff in filteredStaffOptions" :key="staff.id">
                                         <button type="button" @click="toggleStaff(staff.id)" :disabled="isStaffUnavailable(staff)" :title="isStaffUnavailable(staff) ? (isStaffLinkedElsewhere(staff) ? 'Karyawan sudah tertaut ke akun lain' : 'Lengkapi cabang dan Hak Akses di halaman Karyawan') : ''" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left transition-colors last:border-b-0 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-50/50">
-                                            <span x-show="!isStaffUnavailable(staff)" class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 transition-colors" :class="String(form.staffId) === String(staff.id) ? 'border-emerald-500' : ''" aria-hidden="true"><span class="h-2 w-2 rounded-full bg-emerald-500 transition-transform" :class="String(form.staffId) === String(staff.id) ? 'scale-100' : 'scale-0'"></span></span>
+                                            <span x-show="!isStaffUnavailable(staff)" class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors" :class="String(form.staffId) === String(staff.id) ? 'border-emerald-500' : 'border-gray-300'" aria-hidden="true"><span class="h-2 w-2 rounded-full bg-emerald-500 transition-transform" :class="String(form.staffId) === String(staff.id) ? 'scale-100' : 'scale-0'"></span></span>
                                             <span x-show="isStaffUnavailable(staff)" class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-400" aria-hidden="true"><i class="ph ph-lock-key text-[10px]"></i></span>
                                             <span class="flex min-w-0 flex-1 items-center justify-between gap-3"><span class="truncate text-[13px]" :class="isStaffUnavailable(staff) ? 'text-gray-400' : (String(form.staffId) === String(staff.id) ? 'font-bold text-gray-900' : 'font-medium text-gray-700')" x-text="staff.name"></span><span x-show="isStaffLinkedElsewhere(staff)" class="shrink-0 text-[10px] italic text-gray-400">Telah ditautkan</span><span x-show="!isStaffLinkedElsewhere(staff) && isStaffIncomplete(staff)" class="shrink-0 text-[10px] italic text-gray-400">Lengkapi di Karyawan</span></span>
                                         </button>

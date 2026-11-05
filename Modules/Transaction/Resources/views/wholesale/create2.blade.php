@@ -1,4 +1,4 @@
-@extends('layouts.erp-tailwind')
+@extends('layouts.erp')
 
 @php
     $isWholesaleReadOnly = request()->routeIs('wholesale.show', 'wholesale-show');

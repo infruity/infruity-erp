@@ -25,7 +25,7 @@
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 
     <!-- Alpine.js (+ collapse), module = deferred, same ordering as the old CDN scripts -->
-    @vite('resources/js/alpine.js')
+    @vite(['resources/js/alpine.js', 'resources/js/erp.js'])
 
     <style>
         [x-cloak] {

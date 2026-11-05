@@ -1,0 +1,56 @@
+/* Badge, avatar, panel, tabel. */
+@layer components {
+    .erp-badge {
+        @apply inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold leading-5 whitespace-nowrap;
+        @apply bg-gray-100 text-gray-600;
+    }
+    .erp-badge--success { @apply bg-emerald-50 text-emerald-700; }
+    .erp-badge--warning { @apply bg-amber-50 text-amber-700; }
+    .erp-badge--danger  { @apply bg-red-50 text-red-600; }
+    .erp-badge--info    { @apply bg-blue-50 text-blue-600; }
+    .erp-badge--primary { @apply bg-teal/10 text-teal; }
+    .erp-badge--neutral { @apply bg-gray-100 text-gray-600; }
+
+    .erp-avatar {
+        @apply inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-gray-100 text-sm font-bold text-gray-600;
+    }
+    .erp-avatar img { @apply h-full w-full object-cover; }
+    .erp-avatar--sm { @apply h-8 w-8 text-xs; }
+    .erp-avatar--md { @apply h-10 w-10 text-sm; }
+    .erp-avatar--lg { @apply h-12 w-12 text-base; }
+    .erp-avatar--success { @apply bg-emerald-50 text-emerald-700; }
+    .erp-avatar--warning { @apply bg-amber-50 text-amber-700; }
+    .erp-avatar--danger  { @apply bg-red-50 text-red-600; }
+    .erp-avatar--info    { @apply bg-blue-50 text-blue-600; }
+    .erp-avatar--primary { @apply bg-teal/10 text-teal; }
+    .erp-avatar--purple  { @apply bg-purple-50 text-purple-600; }
+
+    .erp-panel {
+        @apply flex min-h-0 flex-col overflow-hidden rounded-panel border border-gray-100 bg-white shadow-card;
+    }
+    .erp-panel__header {
+        @apply flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 px-5 py-4 md:px-6;
+    }
+    .erp-panel__title { @apply text-base font-bold text-gray-900; }
+    .erp-panel__body { @apply min-h-0 flex-1 p-5 md:p-6; }
+    .erp-panel__footer { @apply shrink-0 border-t border-gray-100 px-5 py-4 md:px-6; }
+
+    .erp-table {
+        @apply w-full border-collapse text-left text-sm tabular-nums text-gray-700;
+    }
+    .erp-table thead th {
+        @apply whitespace-nowrap border-b border-gray-200 bg-gray-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500;
+    }
+    .erp-table tbody td {
+        @apply border-b border-dashed border-gray-200 px-4 py-3 align-middle;
+    }
+    .erp-table tbody tr:last-child td { @apply border-b-0; }
+    .erp-table tbody tr:hover td { @apply bg-gray-50/60; }
+    .erp-table .is-num { @apply text-right; }
+
+    /* Sel nama + subjudul (kolom DataTables). */
+    .erp-cell-title { @apply flex min-w-0 flex-col; }
+    .erp-cell-title__main { @apply truncate text-sm font-semibold text-gray-800; }
+    a.erp-cell-title__main:hover { @apply text-teal; }
+    .erp-cell-title__sub { @apply truncate text-xs text-gray-500; }
+}
