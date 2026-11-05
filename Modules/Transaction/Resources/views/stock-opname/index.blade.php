@@ -742,13 +742,6 @@
             .so-detail__btn { display:inline-flex; min-height:44px; align-items:center; justify-content:center; gap:6px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; font-size:13px; font-weight:700; }
             .so-detail__btn.is-up { color:#047857; border-color:#a7f3d0; background:#ecfdf5; }
             .so-detail__btn.is-down { color:#be123c; border-color:#fecdd3; background:#fff1f2; }
-            .so-detail__list { display:grid; border-top:1px solid #f1f3f5; }
-            .so-detail__link { display:flex; min-height:46px; align-items:center; gap:10px; border:0; border-bottom:1px solid #f1f3f5; background:transparent; color:#374151; font-size:13px; font-weight:600; text-align:left; }
-            .so-detail__link i { color:#6b7280; font-size:18px; }
-            .so-detail__link:hover { background:#f9fafb; }
-            .so-detail__link.is-success, .so-detail__link.is-success i { color:#047857; }
-            .so-detail__link.is-danger, .so-detail__link.is-danger i { color:#be123c; }
-            .so-detail__count { margin-left:auto; border-radius:999px; background:#fee2e2; padding:1px 8px; color:#b91c1c; font-size:10px; font-weight:700; }
 
             .stock-opname-modal .so-form-label { color:#374151; font-size:12px; font-weight:700; }
             .stock-opname-modal .so-form-hint { color:#9ca3af; font-size:11px; }
@@ -792,41 +785,14 @@
             .so-hist-details { display:grid; grid-template-columns:1fr auto; gap:2px 10px; margin-top:6px; border-radius:8px; background:#f9fafb; padding:6px 8px; color:#6b7280; font-size:11px; text-align:left; }
             .so-hist-empty { padding:32px 0; color:#9ca3af; text-align:center; font-size:13px; }
         </style>
-        <x-erp.workspace title="Stok Opname" subtitle="Cocokkan stok fisik dan stok sistem."><x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" placeholder="Cari stok opname…" aria-label="Cari stok opname"></div><button class="erp-action" type="button" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                            <div class="px-7 py-5">
-                                <div class="fs-5 text-gray-900 fw-bold">Pilihan Filter</div>
-                            </div>
-                            <div class="separator border-gray-200"></div>
-                            <div class="px-7 py-5" data-kt-user-table-filter="form">
-                                <div class="mb-5">
-                                    <label class="form-label fs-6 fw-semibold">Cabang:</label>
-                                    <select class="form-select form-select-solid" data-control="select2"
-                                        data-hide-search="true" data-placeholder="Cabang"
-                                        data-kt-ecommerce-product-filter="cabang">
-                                        @if (count($branches) > 1)
-                                            <option value="all">All</option>
-                                        @endif
-                                        @foreach ($branches as $branch)
-                                            <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
-                                        @endforeach
-                                        <option value="all">Semua</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="form-label fs-6 fw-semibold">Rentang Tanggal:</label>
-                                    <div class="input-group mw-350px">
-                                        <input class="form-control form-control-solid rounded rounded-end-0"
-                                            placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr" />
-                                        <button class="btn btn-icon btn-light" id="kt_ecommerce_sales_flatpickr_clear">
-                                            <i class="ki-duotone ki-cross fs-2">
-                                                <span class="path1"></span>
-                                                <span class="path2"></span>
-                                            </i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>@if(check_access('stock-opname.create'))<button type="button" class="erp-action erp-action--primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer"><i class="ph ph-plus" aria-hidden="true"></i>Tambah stok opname</button>@endif</x-slot:toolbar><div class="erp-table-region"><table class="table fs-6" id="transaction-table" width="100%">
+        <link rel="stylesheet" href="{{ asset('assets/css/stock-opname-reference.css') }}?v={{ filemtime(public_path('assets/css/stock-opname-reference.css')) }}">
+        <x-erp.workspace class="so-workspace" title="Stok Opname" subtitle="Cocokkan stok fisik dan stok sistem."><x-slot:toolbar>
+            <div class="erp-search so-desktop-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-so-search placeholder="Cari produk…" aria-label="Cari produk"></div>
+            <x-erp.mobile-search class="so-mobile-search"><x-slot:input><input type="search" id="search" data-so-search class="erp-mobile-search__input" placeholder="Cari produk…" aria-label="Cari produk"></x-slot:input><x-slot:clear><button type="button" id="so-search-clear" class="erp-mobile-search__clear" aria-label="Hapus pencarian" hidden><i class="ph ph-x" aria-hidden="true"></i></button></x-slot:clear><x-slot:filter><button type="button" class="erp-mobile-search__filter" data-so-open-filter aria-label="Filter stok opname" aria-haspopup="dialog" aria-controls="so-filter-sheet"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></x-slot:filter></x-erp.mobile-search>
+            <button type="button" class="erp-action so-desktop-filter" data-so-open-filter aria-controls="so-filter-sheet"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button>
+            <div hidden><select data-kt-ecommerce-product-filter="cabang"><option value="all">Semua Cabang</option>@foreach($branches as $branch)<option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>@endforeach</select><input type="hidden" id="kt_ecommerce_sales_flatpickr"></div>
+            @if(check_access('stock-opname.create'))<button type="button" class="erp-action erp-action--primary so-desktop-create" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer"><i class="ph ph-plus" aria-hidden="true"></i>Tambah stok opname</button>@endif
+        </x-slot:toolbar><div class="erp-table-region"><table class="table fs-6" id="transaction-table" width="100%">
                     <thead class="d-none">
                         <tr>
                             <th>Transaksi</th>
@@ -969,41 +935,25 @@
         </div>
     </div>
 
+    @include('transaction::stock-opname.partials.reference-filters') {{-- so-filter-sheet / so-history-filter --}}
+
     <!--begin::Stock Adjustment Modal-->
-    <div class="modal fade stock-opname-modal so-detail" id="kt_modal_stock_detail" tabindex="-1" aria-labelledby="so-detail-title" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-md">
-            <div class="modal-content">
-                <div class="so-detail__head">
-                    <div class="so-detail__heading">
-                        <div class="so-detail__title"><h2 id="so-detail-title" data-so-field="name"></h2><span class="so-detail__status" data-so-field="status"></span></div>
-                        <p data-so-field="meta"></p>
-                    </div>
-                    <button type="button" class="btn-close-soft" data-bs-dismiss="modal" aria-label="Tutup"><i class="ph ph-x" aria-hidden="true"></i></button>
-                </div>
-                <div class="so-detail__body">
-                    <div class="so-detail__boxes">
-                        <div class="so-detail__box"><span>Sistem</span><strong data-so-field="system"></strong></div>
-                        <div class="so-detail__box is-primary"><span>Fisik</span><strong data-so-field="physical"></strong></div>
-                        <div class="so-detail__box"><span>Selisih</span><strong data-so-field="diff"></strong></div>
-                    </div>
-                    <div class="so-detail__value">
-                        <div><span data-so-field="value-label"></span><small data-so-field="hpp"></small></div>
-                        <strong data-so-field="value"></strong>
-                    </div>
-                    <div class="so-detail__adjust">
-                        <button type="button" class="so-detail__btn is-up" data-so-action="adjust-up"><i class="ph-bold ph-arrow-up-right" aria-hidden="true"></i>+ Kredit</button>
-                        <button type="button" class="so-detail__btn is-down" data-so-action="adjust-down"><i class="ph-bold ph-arrow-down-right" aria-hidden="true"></i>- Kredit</button>
-                    </div>
-                    <div class="so-detail__list">
-                        <button type="button" class="so-detail__link" data-so-action="edit"><i class="ph ph-pencil-simple" aria-hidden="true"></i>Sesuaikan stok fisik</button>
-                        <button type="button" class="so-detail__link" data-so-action="history"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>Riwayat<span class="so-detail__count d-none" data-so-count="history"></span></button>
-                        <button type="button" class="so-detail__link" data-so-action="discussion"><i class="ph ph-chat-circle-text" aria-hidden="true"></i>Diskusi dan catatan<span class="so-detail__count d-none" data-so-count="discussion"></span></button>
-                        <button type="button" class="so-detail__link is-success d-none" data-so-action="finalize"><i class="ph ph-check-circle" aria-hidden="true"></i>Finalisasi opname</button>
-                        <button type="button" class="so-detail__link is-danger" data-so-action="delete"><i class="ph ph-trash" aria-hidden="true"></i>Hapus transaksi</button>
-                    </div>
-                </div>
+    <div class="modal fade stock-opname-modal so-detail so-reference-sheet" id="kt_modal_stock_detail" tabindex="-1" aria-labelledby="so-detail-title" aria-hidden="true">
+        <div class="modal-dialog"><div class="modal-content">
+            <div class="so-sheet-handle" aria-hidden="true"><span></span></div>
+            <header class="so-sheet-header"><div><h2 id="so-detail-title" data-so-field="name"></h2><p data-so-field="branch"></p></div><button type="button" class="so-close" data-bs-dismiss="modal" aria-label="Tutup detail"><i class="ph ph-x" aria-hidden="true"></i></button></header>
+            <div class="so-sheet-body">
+                <div class="so-detail-meta"><div><span><i class="ph ph-clock" aria-hidden="true"></i>Waktu Dibuat</span><strong data-so-field="created"></strong></div><div><span><i class="ph ph-user" aria-hidden="true"></i>Dibuat oleh</span><strong data-so-field="creator"></strong></div></div>
+                <div class="so-detail-summary"><div><span>Sistem → Fisik</span><strong><span data-so-field="system"></span><span class="so-summary-arrow"> → </span><b data-so-field="physical"></b></strong></div><div><span>HPP / Satuan</span><strong data-so-field="hpp"></strong></div><div class="so-detail-difference"><strong data-so-field="diff"></strong><strong data-so-field="value"></strong></div></div>
+                <form id="so-detail-correction" novalidate>
+                    <div class="so-credit-inputs"><label><span class="is-plus">+</span><input type="text" inputmode="decimal" id="so-credit-plus" placeholder="0" aria-label="Kredit lebih" autocomplete="off"><span data-so-field="unit"></span></label><label><span class="is-minus">−</span><input type="text" inputmode="decimal" id="so-credit-minus" placeholder="0" aria-label="Kredit kurang" autocomplete="off"><span data-so-field="unit"></span></label></div>
+                    <label class="so-correction-label" for="so-credit-reason">Catatan Koreksi <span>*</span></label><textarea id="so-credit-reason" rows="5" maxlength="1000" placeholder="Tuliskan catatan koreksi…"></textarea>
+                    <p id="so-correction-error" class="so-correction-error" role="status" aria-live="polite"></p>
+                </form>
+
             </div>
-        </div>
+            <footer class="so-sheet-footer so-detail-footer"><button type="button" class="so-history-button" data-so-action="history" aria-label="Riwayat stok opname"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i><span data-so-count="history"></span></button><button type="submit" form="so-detail-correction" id="so-correction-save" disabled>Simpan Koreksi</button>@if(check_access('stock-opname.update'))<button type="button" class="is-primary" data-so-action="finalize">Selesaikan Opname</button>@endif<button type="button" class="is-primary d-none" id="so-detail-done" data-bs-dismiss="modal">Selesaikan opname</button></footer>
+        </div></div>
     </div>
 
     <div class="modal fade stock-opname-modal" id="kt_modal_stock_adjustment" tabindex="-1" aria-hidden="true">
@@ -1077,54 +1027,12 @@
     <!--end::Stock Adjustment Modal-->
 
     <!--begin::Stock Opname History Drawer-->
-    <div id="kt_stock_opname_history" class="bg-body" data-kt-drawer="true" data-kt-drawer-name="stock-opname-history"
-        data-kt-drawer-activate="true" data-kt-drawer-overlay="true"
-        data-kt-drawer-width="{default:'100%', 'md': '500px'}" data-kt-drawer-direction="end"
-        data-kt-drawer-close="#kt_stock_opname_history_close">
-        <div class="card w-100 shadow-none border-0 rounded-0" style="height: 100vh;">
-            <!--begin::Header-->
-            <div class="card-header border-0 pe-5" id="kt_stock_opname_history_header" style="min-height: 70px;">
-                <div class="card-title d-flex flex-column align-items-start">
-                    <h3 class="fw-bold text-gray-900 mb-1 d-flex align-items-center gap-2">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #4b5563;">
-                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                            <path d="M3 3v5h5" />
-                            <path d="M12 7v5l4 2" />
-                        </svg>
-                        Audit Timeline
-                    </h3>
-                    <span class="text-muted fs-7 fw-semibold" id="history-transaction-code">-</span>
-                </div>
-                <div class="card-toolbar">
-                    <div class="so-hist-tabs" role="group" aria-label="Mode riwayat">
-                        <button type="button" class="so-hist-tab is-active" data-so-history-tab="credit" aria-pressed="true">Kredit</button>
-                        <button type="button" class="so-hist-tab" data-so-history-tab="reason" aria-pressed="false">Alasan</button>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-icon btn-active-light-primary me-n5"
-                        id="kt_stock_opname_history_close">
-                        <i class="ki-outline ki-cross fs-1"></i>
-                    </button>
-                </div>
-            </div>
-            <!--end::Header-->
-            <!--begin::Body-->
-            <div class="card-body position-relative pt-0" id="kt_stock_opname_history_body">
-                <!--begin::Scroll-->
-                <div id="kt_stock_opname_history_scroll" class="position-relative scroll-y me-n5 pe-5"
-                    data-kt-scroll="true" data-kt-scroll-height="auto"
-                    data-kt-scroll-wrappers="#kt_stock_opname_history_body"
-                    data-kt-scroll-dependencies="#kt_stock_opname_history_header" data-kt-scroll-offset="5px"
-                    style="height: calc(100vh - 100px);">
-
-                    <div class="so-hist mt-4" id="history-timeline-items">
-                        <!-- Timeline items rendered dynamically -->
-                    </div>
-
-                </div>
-                <!--end::Scroll-->
-            </div>
-            <!--end::Body-->
+    <div id="kt_stock_opname_history" class="so-reference-history bg-body" data-kt-drawer="true" data-kt-drawer-name="stock-opname-history"
+        data-kt-drawer-activate="true" data-kt-drawer-overlay="true" data-kt-drawer-width="{default:'100%', 'md': '760px'}" data-kt-drawer-direction="end" data-kt-drawer-close="#kt_stock_opname_history_close" role="dialog" aria-modal="true" aria-hidden="true" inert aria-labelledby="so-history-title" tabindex="-1">
+        <div class="so-history-page">
+            <header class="so-history-topbar"><button type="button" id="kt_stock_opname_history_close" aria-label="Kembali ke detail"><i class="ph ph-caret-left" aria-hidden="true"></i></button><h2 id="so-history-title">Riwayat Stok Opname</h2><span></span></header>
+            <div class="so-history-subheader"><div class="so-history-context"><div><p>Riwayat Stok Opname</p><h3 id="history-transaction-code">—</h3></div><div class="so-history-tools"><button type="button" data-so-history-toggle aria-label="Ubah tampilan menjadi Alasan" aria-pressed="false">Kredit</button><button type="button" id="so-history-filter-open" aria-label="Filter riwayat stok opname" aria-haspopup="dialog" aria-controls="so-history-filter"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></div></div><div id="so-history-columns" class="so-hist-head"></div></div>
+            <div id="kt_stock_opname_history_scroll" class="so-history-scroll"><div id="history-timeline-items" class="so-hist"></div></div>
         </div>
     </div>
     <!--end::Stock Opname History Drawer-->
@@ -1194,6 +1102,7 @@
     <!--end::Stock Opname Discussion Drawer-->
 
 @section('script')
+    <script src="{{ asset('assets/js/stock-opname-reference.js') }}?v={{ filemtime(public_path('assets/js/stock-opname-reference.js')) }}"></script>
     <script type="text/javascript">
         const currentUserId = {{ Auth::user()->id_user }};
         // Data stock kosong dari server
@@ -1268,18 +1177,7 @@
         }
 
         function formatLongDateTime(dateValue) {
-            if (!dateValue) return '-';
-            const dt = new Date(dateValue);
-            if (Number.isNaN(dt.getTime())) return dateValue;
-            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September',
-                'Oktober', 'November', 'Desember'
-            ];
-            const day = dt.getDate();
-            const month = months[dt.getMonth()];
-            const year = dt.getFullYear();
-            const h = String(dt.getHours()).padStart(2, '0');
-            const m = String(dt.getMinutes()).padStart(2, '0');
-            return `${day} ${month} ${year}, ${h}.${m}`;
+            return StockOpnameUi.formatLongDateTime(dateValue, @json(config('app.timezone')));
         }
 
         function escapeHtml(value) {
@@ -1315,8 +1213,7 @@
         }
 
         function formatStockQty(value) {
-            const num = Math.round(Number(value || 0) * 100) / 100;
-            return Number.isInteger(num) ? String(num) : num.toFixed(2);
+            return StockOpnameUi.quantity(value);
         }
 
         function formatSignedStockQty(value) {
@@ -1331,7 +1228,7 @@
             const info = describeStockOpname(row);
             window.stockOpnameRows[info.id] = info;
             const tone = info.diff > 0 ? 'is-surplus' : (info.diff < 0 ? 'is-loss' : 'is-match');
-            const pending = info.isPending ? '<span class="so-row__status">Pending</span>' : '';
+            const pending = info.isPending ? '<span class="so-row__status">Draf</span>' : '';
             const value = info.diff !== 0
                 ? `<span class="so-row__value ${tone}">${escapeHtml(formatSignedRupiah(info.value))}</span>`
                 : '';
@@ -1359,25 +1256,23 @@
             const tone = info.diff > 0 ? 'is-surplus' : (info.diff < 0 ? 'is-loss' : 'is-match');
             $sheet.data('stockOpnameId', id);
             $sheet.find('[data-so-field="name"]').text(info.name);
-            $sheet.find('[data-so-field="meta"]').text(`${info.code} • ${info.branch} • ${info.dateLabel}`);
-            $sheet.find('[data-so-field="status"]').text(info.isPending ? 'Pending' : 'Finalized')
-                .toggleClass('is-pending', info.isPending);
-            $sheet.find('[data-so-field="system"]').text(`${formatStockQty(info.system)} ${info.unit}`);
+            $sheet.find('[data-so-field="branch"]').text(info.branch);
+            $sheet.find('[data-so-field="created"]').text(info.dateLabel);
+            $sheet.find('[data-so-field="creator"]').text(info.creator || '—');
+            $sheet.find('[data-so-field="system"]').text(formatStockQty(info.system));
             $sheet.find('[data-so-field="physical"]').text(`${formatStockQty(info.physical)} ${info.unit}`);
-            $sheet.find('[data-so-field="diff"]').text(`${formatSignedStockQty(info.diff)} ${info.unit}`)
-                .closest('.so-detail__box').removeClass('is-surplus is-loss is-match').addClass(tone);
-            const label = info.diff < 0 ? 'Potensi rugi' : (info.diff > 0 ? 'Surplus stok' : 'Stok sesuai');
-            $sheet.find('[data-so-field="value-label"]').text(label);
-            $sheet.find('[data-so-field="value"]').text(info.diff === 0 ? 'Rp 0' : formatSignedRupiah(info.value))
-                .removeClass('is-surplus is-loss is-match').addClass(tone);
-            $sheet.find('[data-so-field="hpp"]').text(`HPP Rp ${formatRupiah(Math.round(Math.abs(info.hpp)))}/${info.unit}`);
+            $sheet.find('[data-so-field="diff"]').text(`Selisih (${formatSignedStockQty(info.diff)} ${info.unit})`);
+            $sheet.find('[data-so-field="value"]').text(formatSignedRupiah(info.value));
+            $sheet.find('.so-detail-difference').removeClass('is-surplus is-loss is-match').addClass(tone);
+            $sheet.find('[data-so-field="hpp"]').text(`Rp ${formatRupiah(Math.round(Math.abs(info.hpp)))} / ${info.unit}`);
+            $sheet.find('[data-so-field="unit"]').text(info.unit);
             $sheet.find('[data-so-action="finalize"]').toggleClass('d-none', !info.isPending);
-            // update / adjust / destroy answer 422 for a finished record, so only pending ones offer them.
-            $sheet.find('.so-detail__adjust').toggleClass('d-none', !info.isPending);
-            $sheet.find('[data-so-action="edit"]').toggleClass('d-none', !info.isPending);
-            $sheet.find('[data-so-action="delete"]').toggleClass('d-none', !info.isPending);
-            $sheet.find('[data-so-count="history"]').text(info.historyCount > 0 ? info.historyCount : '').toggleClass('d-none', info.historyCount === 0);
-            $sheet.find('[data-so-count="discussion"]').text(info.discussionsCount > 0 ? info.discussionsCount : '').toggleClass('d-none', info.discussionsCount === 0);
+            const canCorrect = info.isPending && @json(check_access('stock-opname.update'));
+            $sheet.find('#so-credit-plus, #so-credit-minus, #so-credit-reason').val('').prop('disabled', !canCorrect);
+            $sheet.find('#so-correction-save').prop('disabled', true);
+            $sheet.find('#so-detail-done').toggleClass('d-none', canCorrect);
+            $sheet.find('#so-correction-error').text(info.isPending && !canCorrect ? 'Tidak memiliki akses koreksi.' : '');
+            $sheet.find('[data-so-count="history"]').text(info.historyCount || '');
             bootstrap.Modal.getOrCreateInstance($sheet[0]).show();
         }
 
@@ -1385,14 +1280,13 @@
             const $sheet = $('#kt_modal_stock_detail');
             const id = $sheet.data('stockOpnameId');
             const action = this.dataset.soAction;
+            if (action === 'finalize' && ($('#so-credit-plus').val() || $('#so-credit-minus').val() || $('#so-credit-reason').val().trim())) {
+                $('#so-correction-error').text('Simpan atau kosongkan koreksi terlebih dahulu sebelum menyelesaikan opname.');
+                return;
+            }
             const run = {
-                edit: () => editProduct(id),
-                'adjust-up': () => openAdjustmentModal(id, 'up'),
-                'adjust-down': () => openAdjustmentModal(id, 'down'),
                 history: () => showHistory(id),
-                discussion: () => showDiscussion(id),
                 finalize: () => finalizeStockOpname(id),
-                delete: () => deleteProduct(id)
             }[action];
             if (!run) return;
             // Close the sheet first so the next modal/drawer does not stack on its backdrop.
@@ -1441,25 +1335,6 @@
                 window.open(url, '_blank');
             };
 
-            $("#kt_ecommerce_sales_flatpickr").flatpickr({
-                altInput: !0,
-                altFormat: "d/m/Y",
-                dateFormat: "Y-m-d",
-                mode: "range",
-                onChange: function(e, t, n) {
-                    if (typeof dataTable !== 'undefined') {
-                        dataTable.draw();
-                    }
-                }
-            });
-
-            $("#kt_ecommerce_sales_flatpickr_clear").on("click", function() {
-                $("#kt_ecommerce_sales_flatpickr").val("");
-                if (typeof dataTable !== 'undefined') {
-                    dataTable.draw();
-                }
-            });
-
             dataTable = $('#transaction-table').DataTable({
                 pageLength: 100,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
@@ -1489,9 +1364,7 @@
                     }
                 }]
             });
-            $('#search').on('keyup', function() {
-                dataTable.search(this.value).draw();
-            });
+            initStockOpnameReference();
 
             $('#kt_stock_opname_discussion_form').on('submit', function(e) {
                 e.preventDefault();
@@ -1974,100 +1847,61 @@
             });
         }
 
-        // Credit tab: Awal / Mutasi / Saldo per movement. Reason tab: the note of each movement.
+        // Normalize the complete server history before filtering (never recompute balances on a subset).
         function renderStockOpnameHistory() {
-            const state = window.stockOpnameHistory || { entries: [], unit: 'Kg', tab: 'credit' };
-            const unit = state.unit;
-            const num = value => {
-                const n = Math.round(Number(value || 0) * 100) / 100;
-                return Number.isInteger(n) ? String(n) : n.toFixed(2);
-            };
-            const signed = value => (value > 0 ? '+' : '') + num(value);
-
-            $('[data-so-history-tab]').each(function() {
-                const active = this.dataset.soHistoryTab === state.tab;
-                this.classList.toggle('is-active', active);
-                this.setAttribute('aria-pressed', active ? 'true' : 'false');
-            });
-
+            const state = window.stockOpnameHistory || {entries:[],unit:'Kg',tab:'credit',direction:'all'};
+            const entries = StockOpnameUi.filterHistory(StockOpnameUi.history(state.entries), state.direction || 'all');
+            const unit = escapeHtml(state.unit);
+            const num = value => StockOpnameUi.quantity(value);
+            const signed = value => value === null ? '—' : (value > 0 ? '+' : '') + num(value);
+            const reasonMode = state.tab === 'reason';
+            $('[data-so-history-toggle]').text(reasonMode ? 'Alasan' : 'Kredit').toggleClass('is-reason', reasonMode)
+                .attr('aria-pressed', String(reasonMode)).attr('aria-label', reasonMode ? 'Ubah tampilan menjadi Kredit' : 'Ubah tampilan menjadi Alasan');
+            $('#so-history-filter-open').toggleClass('is-active', state.direction !== 'all');
+            const head = reasonMode ? '<span class="so-hist-reason-head">Alasan Pergerakan</span>'
+                : '<div class="so-hist-head__side"><span class="so-hist-col">Awal</span><span class="so-hist-col">Kredit</span><span class="so-hist-col">Saldo</span></div>';
+            $('#so-history-columns').html(`<span>Aktivitas</span>${head}`);
             const $list = $('#history-timeline-items').empty();
-            if (!state.entries.length) {
-                $list.append('<div class="so-hist-empty">Belum ada riwayat audit.</div>');
+            if (!entries.length) {
+                $list.append('<div class="so-hist-empty">Tidak ada riwayat sesuai filter.</div>');
                 return;
             }
-
-            const head = state.tab === 'credit'
-                ? '<span class="so-hist-col">Awal</span><span class="so-hist-col">Mutasi</span><span class="so-hist-col">Saldo</span>'
-                : '<span class="so-hist-reason-head">Alasan Pergerakan</span>';
-            $list.append(`<div class="so-hist-head"><span>Kredit (${escapeHtml(unit)})</span><div class="so-hist-head__side">${head}</div></div>`);
-
-            state.entries.forEach((item, index) => {
-                const isInitial = item.action === 'INITIAL';
-                const saldo = Number(item.real_stock || 0);
-                // Entries are newest first, so the next one is the previous state.
-                const awal = isInitial
-                    ? saldo - Number(item.difference || 0)
-                    : (state.entries[index + 1] ? Number(state.entries[index + 1].real_stock) : saldo);
-                const mutasi = Math.round((saldo - awal) * 100) / 100;
-                const tone = mutasi > 0 ? 'is-surplus' : (mutasi < 0 ? 'is-loss' : '');
-                const kind = isInitial ? 'Input Awal' : (mutasi < 0 ? 'Kredit Kurang' : 'Kredit Lebih');
-
+            entries.forEach(item => {
+                const tone = item.delta > 0 ? 'is-surplus' : item.delta < 0 ? 'is-loss' : '';
+                const kind = {initial:'Stok Awal',plus:'Kredit Lebih',minus:'Kredit Kurang',note:'Catatan',unknown:'Perubahan',snapshot:'Snapshot Tersedia'}[item.kind];
+                const badge = tone ? `<span class="so-hist-direction ${tone}" aria-label="${item.delta > 0 ? 'Lebih' : 'Kurang'}">${item.delta > 0 ? '↙' : '↗'}</span>` : '';
                 let side;
-                if (state.tab === 'credit') {
-                    side = `<span class="so-hist-col">${num(awal)}</span><span class="so-hist-col ${tone}">${signed(mutasi)}</span><span class="so-hist-col is-strong">${num(saldo)}</span>`;
+                if (!reasonMode) {
+                    const cell = (value,cls='',isSigned=false) => `<span class="so-hist-col ${cls}">${isSigned ? signed(value) : num(value)}${value !== null ? `<small>${unit}</small>` : ''}</span>`;
+                    side = cell(item.before) + cell(item.delta,tone,true) + cell(item.after,'is-strong');
                 } else {
-                    let details = '';
-                    if (Array.isArray(item.details) && item.details.length) {
-                        details = '<div class="so-hist-details">' + item.details.map(det =>
-                            `<span>${escapeHtml(det.name)}</span><b>${num(det.qty)} ${escapeHtml(unit)}</b>`).join('') + '</div>';
-                    }
-                    side = `<div class="so-hist-reason">${escapeHtml(item.note || '-')}${details}</div>`;
+                    const details = Array.isArray(item.details) && item.details.length
+                        ? '<div class="so-hist-details">' + item.details.map(det => `<span>${escapeHtml(det.name)}</span><b>${num(det.qty)} ${unit}</b>`).join('') + '</div>' : '';
+                    side = `<div class="so-hist-reason">${escapeHtml(item.note || '—')}${details}</div>`;
                 }
-
-                $list.append(`
-                    <div class="so-hist-row">
-                        <div class="so-hist-main">
-                            <span class="so-hist-kind ${tone}">${kind}</span>
-                            <span class="so-hist-time">${escapeHtml(formatLongDateTime(item.created_at))}</span>
-                            <span class="so-hist-by">${escapeHtml(item.creator_name || 'System')}</span>
-                        </div>
-                        <div class="so-hist-side">${side}</div>
-                    </div>`);
+                $list.append(`<div class="so-hist-row"><div class="so-hist-main"><span class="so-hist-kind">${kind}${badge}</span><span class="so-hist-by">${escapeHtml(item.creator_name || '—')}</span><span class="so-hist-time">${escapeHtml(formatLongDateTime(item.created_at))}</span></div><div class="so-hist-side ${reasonMode ? 'is-reason' : ''}">${side}</div></div>`);
             });
         }
 
-        $(document).on('click', '[data-so-history-tab]', function() {
+        $(document).on('click', '[data-so-history-toggle]', function() {
             if (!window.stockOpnameHistory) return;
-            window.stockOpnameHistory.tab = this.dataset.soHistoryTab;
+            window.stockOpnameHistory.tab = window.stockOpnameHistory.tab === 'credit' ? 'reason' : 'credit';
             renderStockOpnameHistory();
         });
 
         function showHistory(id) {
-            $.ajax({
-                url: `/stock-opname/${id}/history`,
-                type: 'GET',
-                success: function(response) {
-                    $('#history-transaction-code').text(response.code || '-');
-
-                    window.stockOpnameHistory = { entries: response.history || [], unit: response.unit || 'Kg', tab: 'credit' };
-                    renderStockOpnameHistory();
-
-                    // Show Metronic Drawer
-                    const drawerEl = document.getElementById('kt_stock_opname_history');
-                    let drawer = KTDrawer.getInstance(drawerEl);
-                    if (!drawer) {
-                        drawer = new KTDrawer(drawerEl);
-                    }
-                    drawer.show();
-                },
-                error: function(xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: 'Terjadi kesalahan saat memuat data riwayat audit.'
-                    });
-                }
-            });
+            $.ajax({url:`/stock-opname/${id}/history`,type:'GET',success:function(response) {
+                $('#history-transaction-code').text(response.product_name || window.stockOpnameRows[id]?.name || response.code || '—');
+                window.stockOpnameHistory = {id,entries:response.history || [],unit:response.unit || 'Kg',tab:'credit',direction:'all'};
+                renderStockOpnameHistory();
+                const drawerEl = document.getElementById('kt_stock_opname_history');
+                let drawer = KTDrawer.getInstance(drawerEl);
+                if (!drawer) drawer = new KTDrawer(drawerEl);
+                drawer.show();
+                requestAnimationFrame(() => document.getElementById('kt_stock_opname_history_close').focus());
+            },error:function() {
+                Swal.fire({icon:'error',title:'Gagal',text:'Terjadi kesalahan saat memuat riwayat stok opname.'});
+            }});
         }
 
         function showDiscussion(id) {
@@ -2462,5 +2296,6 @@
             });
         }
     </script>
+    <script src="{{ asset('assets/js/stock-opname-reference-page.js') }}?v={{ filemtime(public_path('assets/js/stock-opname-reference-page.js')) }}"></script>
 @endsection
 @endsection
