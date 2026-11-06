@@ -144,25 +144,10 @@
         "bs-utilities": 9,
         "root-layout": 1
     },
-    "Modules/Pos/Resources/views/pos/create.blade.php": {
-        "fontawesome": 18,
-        "form-classes": 26,
-        "btn": 17,
-        "badge-light": 1,
-        "modal-class": 12,
-        "bs-utilities": 24,
-        "root-layout": 1
-    },
     "Modules/Pos/Resources/views/pos/create2.blade.php": {
         "data-bs": 1,
         "form-classes": 5,
         "root-layout": 1
-    },
-    "Modules/Pos/Resources/views/pos/index.blade.php": {
-        "fontawesome": 6,
-        "form-classes": 2,
-        "btn": 2,
-        "bs-utilities": 5
     },
     "Modules/Pos/Resources/views/pos/index2.blade.php": {
         "data-kt": 15,
@@ -173,10 +158,6 @@
         "select2": 3,
         "bs-utilities": 11,
         "root-layout": 1
-    },
-    "Modules/Pos/Resources/views/pos/js-create.blade.php": {
-        "select2": 1,
-        "bootstrap-js": 4
     },
     "Modules/Pos/Resources/views/pos/js-create2.blade.php": {
         "bootstrap-js": 4
@@ -201,13 +182,6 @@
         "select2": 6,
         "bootstrap-js": 3,
         "bs-utilities": 4
-    },
-    "Modules/Pos/Resources/views/pos/payment-success.blade.php": {
-        "bootstrap-icons": 2,
-        "fontawesome": 2,
-        "btn": 3,
-        "bs-utilities": 13,
-        "root-layout": 1
     },
     "Modules/Pos/Resources/views/pos/payment.blade.php": {
         "data-bs": 3,
