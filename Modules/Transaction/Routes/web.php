@@ -143,6 +143,5 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::get('stock-opname/data', [StockOpnameController::class, 'get_data'])->name('stock-opname.data');
     Route::get('stock-out-type/data', [StockOutTypeController::class, 'get_data'])->name('stock-out-type.data');
     Route::get('production/data', [ProductionController::class, 'get_data'])->name('production-data');
-    Route::get('receipt/data', [ProductReceiptController::class, 'get_data'])->name('receipt-data');
     Route::get('parcel/data', [ProductionParcelController::class, 'get_data'])->name('parcel-data');
 });

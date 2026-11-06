@@ -870,6 +870,8 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 - Test: `StockOpnameCommentCorrections/History/List/ReferencePresentation` dipindah ke kontrak baru. `stock-opname-reference.test.cjs` tidak berubah.
 - Diuji di browser dengan akun Master (tanpa menyimpan): daftar, filter cabang + kalender, sheet detail, riwayat + filter riwayat + kembali ke detail, form tambah (picker produk, ringkasan selisih, baris detail, reset saat ditutup), dialog penyesuaian, drawer diskusi, tampilan mobile. Alur simpan koreksi/tambah/final **tidak** dijalankan di data lokal.
 
+**B4g (selesai): kode mati sisa.** Dihapus atas persetujuan: `ProductReceiptController::get_data` beserta route `receipt/data` (`receipt-data`; tak dipanggil view/JS/test mana pun), `ProductionController_temp.php`, `StockOpnameController.php.temp`, `PosController.php.temp` (tak direferensikan). Suite: 5 gagal yang sama seperti sebelumnya; allowlist 65 file.
+
 ### B5 — POS (50 view)
 
 - `pos/create2` + `segment/*` + `js/*`; `pos/payment` + `js-payment` + `payment-success2`
