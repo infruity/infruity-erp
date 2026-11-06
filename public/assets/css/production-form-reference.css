@@ -1,0 +1,174 @@
+/* Create-only reference skin; preserve the shared edit form and data controls. */
+#kt_content:has(.production-create-reference) { padding:0 !important; scroll-padding-bottom:calc(176px + env(safe-area-inset-bottom)); }
+.production-create-reference { width:100%; padding:16px; }
+.production-create-reference .production-form { width:100%; max-width:896px; gap:24px; margin-inline:auto; }
+.production-create-reference .production-card { border:1px solid rgba(229,231,235,.9); border-radius:16px; box-shadow:0 2px 8px rgba(0,0,0,.025); }
+.production-create-reference [aria-labelledby="production-info-title"] { padding:16px; }
+.production-create-reference [aria-labelledby="production-info-title"] .production-card__head { padding:0 0 14px; margin-bottom:16px; }
+.production-create-reference [aria-labelledby="production-info-title"] .production-card__body { padding:0; }
+.production-create-reference .production-card__title { gap:8px; }
+.production-create-reference .production-card__step { width:28px; height:28px; border-radius:8px; }
+.production-create-reference .production-card__title h2 { font-size:14px; line-height:20px; font-weight:800; letter-spacing:-.2px; }
+.production-create-reference .production-card__hint { font-size:11px; white-space:nowrap; }
+.production-create-reference .production-card__title small { font-size:12px; white-space:nowrap; }
+.production-create-reference .production-fields { gap:16px; }
+.production-create-reference .production-form .form-label { line-height:16px; }
+.production-create-reference .production-fields .is-wide { grid-column:auto; }
+.production-create-reference .form-control,
+.production-create-reference .form-select { height:44px; min-height:44px; padding:0 16px; border:1px solid #e5e7eb; border-radius:12px; background-color:rgba(249,250,251,.7); color:#1f2937; font-size:13px; }
+.production-create-reference .form-control:focus,
+.production-create-reference .form-select:focus { background-color:#fff; border-color:#10b981; box-shadow:0 0 0 1px #10b981; }
+.production-create-reference .select2-container { display:block; width:100% !important; min-width:0; }
+.production-create-reference .select2-container .select2-selection--single { position:relative; display:flex; align-items:center; height:44px; min-height:44px; padding:0 16px; border:1px solid #e5e7eb; border-radius:12px; background-color:rgba(249,250,251,.7); font-size:13px; }
+.production-create-reference .select2-container .select2-selection__rendered { padding-left:0; line-height:normal; color:#1f2937; }
+.production-create-reference .select2-container .select2-selection__arrow { position:absolute; top:1px; right:10px; width:20px; height:42px; pointer-events:none; }
+.production-create-reference .select2-selection__arrow b { position:absolute; top:50%; left:50%; display:block !important; width:6px; height:6px; border:solid #9ca3af; border-width:0 1.5px 1.5px 0; transform:translate(-50%,-70%) rotate(45deg); transition:transform .2s,border-color .2s; }
+body.erp-ui .production-create-reference #branch_id + .select2-container .select2-selection--single { background-color:rgba(249,250,251,.7) !important; border-color:#e5e7eb !important; color:#1f2937 !important; font:14px/1.5 var(--erp-font); box-shadow:none !important; transition:background-color .15s,border-color .15s,box-shadow .15s; }
+body.erp-ui .production-create-reference #branch_id + .select2-container:hover .select2-selection--single { background-color:#f9fafb !important; border-color:#a7f3d0 !important; }
+body.erp-ui .production-create-reference #branch_id + .select2-container--focus .select2-selection--single,
+body.erp-ui .production-create-reference #branch_id + .select2-container--open .select2-selection--single { outline:none !important; background-color:#fff !important; border-color:#10b981 !important; box-shadow:0 0 0 1px #10b981 !important; }
+body.erp-ui .production-create-reference #branch_id + .select2-container .select2-selection__rendered { color:#1f2937 !important; font-weight:600; }
+body.erp-ui .production-create-reference #branch_id + .select2-container .select2-selection__placeholder { color:#9ca3af !important; font-weight:500; }
+body.erp-ui .production-create-reference #branch_id + .select2-container--open .select2-selection__arrow b { border-color:#0b595b; transform:translate(-50%,-30%) rotate(225deg); }
+body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-dropdown { margin-top:6px; border:1px solid #f3f4f6; border-radius:12px; box-shadow:0 10px 24px rgba(17,24,39,.12); overflow:hidden; }
+body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__options { max-height:224px; padding:4px; overscroll-behavior:contain; }
+body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option { position:relative; border-radius:8px; padding:10px 14px; color:#374151; font-size:13px; line-height:18px; }
+body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option--highlighted { background:#f9fafb; color:#374151; }
+body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option[aria-selected="true"] { display:flex; align-items:center; justify-content:space-between; background:#ecfdf5; color:#047857; font-weight:600; }
+body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option[aria-selected="true"]::after { width:8px; height:8px; margin-left:8px; border-radius:50%; background:#10b981; content:""; flex:none; }
+body.erp-ui .production-create-reference #quantity:focus { outline:none !important; border-color:#10b981 !important; box-shadow:0 0 0 1px #10b981 !important; }
+.production-create-reference [aria-labelledby="production-ingredients-title"] { display:flex; flex-direction:column; min-height:260px; }
+.production-create-reference [aria-labelledby="production-ingredients-title"] .production-card__head { padding:16px 20px; }
+.production-create-reference [aria-labelledby="production-ingredients-title"] .production-card__body { display:flex; flex:1; flex-direction:column; padding:16px; }
+.production-create-reference .production-add { flex:none; gap:6px; padding:6px 14px; border:1px solid rgba(167,243,208,.8); border-radius:8px; font-size:12px; line-height:18px; }
+.production-create-reference .erp-cart { flex:1; border:0; background:transparent; }
+.production-create-reference .erp-cart-empty { display:flex; min-height:180px; height:100%; flex-direction:column; align-items:center; justify-content:center; padding:32px; text-align:center; }
+.production-create-reference .erp-cart-empty > i { display:flex; width:48px; height:48px; align-items:center; justify-content:center; margin-bottom:8px; border-radius:16px; background:#f9fafb; color:#9ca3af; font-size:24px; }
+.production-create-reference .erp-cart-empty > p { margin:0 0 4px; color:#1f2937; font-size:14px; font-weight:700; }
+.production-create-reference .erp-cart-empty > span { max-width:320px; color:#6b7280; font-size:12px; line-height:18px; }
+.production-create-reference .erp-cart-empty > span strong { color:#0b595b; font-weight:700; }
+.production-create-reference .production-reference-cart__items { border-top:0; }
+.production-create-reference .production-reference-cart__row { display:flex; align-items:center; gap:12px; min-width:0; padding:12px 0; border-bottom:1px solid #f3f4f6; }
+.production-create-reference .production-reference-cart__row:last-child { border-bottom:0; }
+.production-create-reference .production-reference-cart__icon { display:flex; width:32px; height:32px; flex:none; align-items:center; justify-content:center; border:1px solid #f3f4f6; border-radius:12px; background:#f3f4f6; color:#6b7280; font-size:16px; }
+.production-create-reference .production-reference-cart__identity { display:flex; min-width:0; flex:1; flex-direction:column; }
+.production-create-reference .production-reference-cart__controls { display:flex; flex:none; align-items:center; gap:8px; }
+.production-create-reference .production-reference-cart__identity > strong { overflow:hidden; color:#111827; font-size:12px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
+.production-create-reference .production-reference-cart__identity > span { display:flex; align-items:baseline; gap:4px; margin-top:2px; }
+.production-create-reference .production-reference-cart__identity small { color:#9ca3af; font-size:10px; font-weight:500; }
+.production-create-reference .production-reference-cart__identity b { color:#0b595b; font-size:12px; font-weight:800; }
+.production-create-reference .production-inline-quantity { display:flex; height:36px; flex:none; align-items:center; border:1px solid rgba(229,231,235,.9); border-radius:12px; background:#f9fafb; padding:0 10px; box-shadow:0 1px 2px rgba(0,0,0,.025); transition:background-color .15s,border-color .15s,box-shadow .15s; }
+.production-create-reference .production-inline-quantity:focus-within { border-color:#10b981; background:#fff; box-shadow:0 0 0 2px rgba(16,185,129,.1); }
+.production-create-reference .production-inline-quantity input { width:56px; border:0; outline:none; background:transparent; color:#111827; font-size:12px; font-weight:800; text-align:right; }
+.production-create-reference .production-inline-quantity > span { flex:none; padding-left:6px; color:#6b7280; font-size:12px; font-weight:700; }
+.production-create-reference .production-reference-cart__remove { display:flex; width:32px; height:32px; flex:none; align-items:center; justify-content:center; border:0; border-radius:8px; background:transparent; color:#d1d5db; font-size:14px; transition:color .15s,background-color .15s; }
+.production-create-reference .production-reference-cart__remove:hover { background:#fef2f2; color:#ef4444; }
+.production-create-reference .production-form-footer { margin:0 -16px -16px; padding:14px 16px calc(16px + env(safe-area-inset-bottom)); box-shadow:0 -4px 20px rgba(0,0,0,.03); }
+.production-create-reference .production-total { align-items:center; padding-bottom:14px; }
+.production-create-reference .production-total__label { flex-wrap:wrap; gap:8px; font-size:14px; line-height:20px; }
+.production-create-reference .production-total__value { flex:none; }
+.production-create-reference .production-total__value strong { font-size:16px; line-height:20px; }
+.production-create-reference .production-total__value span { display:block; margin-top:2px; font-size:11px; }
+.production-create-reference .production-actions { gap:12px; padding-top:14px; }
+.production-create-reference .production-actions > div { flex:1 1 0; min-width:0; }
+.production-create-reference .production-actions .btn { height:44px; min-height:44px; padding:0 8px; border-radius:12px; font-size:12px; }
+.production-create-reference .production-actions .btn-primary { border-color:#0b595b; background:#0b595b; color:#fff; }
+.production-create-reference .production-actions .btn-light { border-color:#e5e7eb !important; background:#fff; color:#1f2937; }
+@media (max-width:767px) {
+    .production-create-reference { padding-bottom:calc(160px + env(safe-area-inset-bottom)); }
+    .production-create-reference .production-form-footer { position:fixed; right:0; bottom:0; left:0; z-index:20; display:flex; align-items:center; min-height:calc(142px + env(safe-area-inset-bottom)); margin:0; }
+    .production-create-reference .production-form-footer__inner { width:100%; }
+}
+@media (max-width:639px) {
+    .production-create-reference .production-fields { grid-template-columns:minmax(0,1fr); }
+}
+@media (min-width:640px) {
+    .production-create-reference { padding:24px; }
+    .production-create-reference [aria-labelledby="production-info-title"] { padding:20px; }
+    .production-create-reference [aria-labelledby="production-ingredients-title"] .production-card__head { padding:16px 24px; }
+    .production-create-reference [aria-labelledby="production-ingredients-title"] .production-card__body { padding:24px; }
+    .production-create-reference .production-form-footer { margin:0 -24px -24px; padding-right:24px; padding-left:24px; }
+    .production-create-reference .production-total__label { font-size:16px; }
+    .production-create-reference .production-total__value strong { font-size:18px; line-height:22px; }
+    .production-create-reference .production-actions .btn { padding:0 16px; font-size:14px; }
+}
+/* Reference product picker button and modal. The native Select2 remains the form control. */
+.production-create-reference .production-product-picker-field { position:relative; }
+.production-create-reference .production-product-picker-field > .select2-container { display:none !important; }
+.production-create-reference .production-product-picker-trigger { display:flex; width:100%; height:44px; min-height:44px; align-items:center; gap:10px; border:1px solid #e5e7eb; border-radius:12px; background:rgba(249,250,251,.7); padding:0 14px; color:#1f2937; text-align:left; box-shadow:0 1px 2px rgba(0,0,0,.025); transition:background-color .15s,border-color .15s,box-shadow .15s; }
+.production-create-reference .production-product-picker-trigger:hover { border-color:#a7f3d0; background:#f9fafb; }
+.production-create-reference .production-product-picker-trigger:focus-visible { outline:none; border-color:#10b981; background:#fff; box-shadow:0 0 0 1px #10b981; }
+.production-create-reference .production-product-picker-icon { display:flex; width:28px; height:28px; flex:none; align-items:center; justify-content:center; border-radius:8px; background:#f3f4f6; color:#9ca3af; font-size:14px; }
+.production-create-reference .production-product-picker-label { min-width:0; flex:1; overflow:hidden; color:#9ca3af; font-size:12px; text-overflow:ellipsis; white-space:nowrap; }
+.production-create-reference .production-product-picker-label.is-selected { color:#111827; font-weight:600; }
+.production-create-reference .production-product-picker-action { display:flex; flex:none; align-items:center; gap:6px; color:#047857; font-size:12px; font-weight:600; }
+.production-create-reference .production-reference-picker { position:fixed; inset:0; z-index:1300; display:flex; align-items:center; justify-content:center; padding:16px; }
+.production-create-reference .production-reference-picker__backdrop { position:absolute; inset:0; background:rgba(0,0,0,.6); -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); }
+.production-create-reference .production-reference-picker__panel { position:relative; z-index:1; display:flex; width:100%; max-width:448px; max-height:85vh; flex-direction:column; overflow:hidden; border:1px solid #f3f4f6; border-radius:24px; background:#fff; box-shadow:0 24px 48px rgba(0,0,0,.22); }
+.production-create-reference .production-reference-picker__header { display:flex; flex:none; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f3f4f6; padding:20px; }
+.production-create-reference .production-reference-picker__header h3 { margin:0; color:#111827; font-size:14px; font-weight:700; }
+.production-create-reference .production-reference-picker__header p { margin:2px 0 0; color:#9ca3af; font-size:12px; }
+.production-create-reference .production-reference-picker__close { display:flex; width:32px; height:32px; flex:none; align-items:center; justify-content:center; border:0; border-radius:50%; background:#f3f4f6; color:#9ca3af; font-size:14px; }
+.production-create-reference .production-reference-picker__close:hover { background:#e5e7eb; color:#4b5563; }
+.production-create-reference .production-reference-picker__search { position:relative; display:flex; height:40px; flex:none; align-items:center; gap:10px; border-bottom:1px solid #f3f4f6; background:rgba(249,250,251,.5); padding:16px; box-sizing:content-box; }
+.production-create-reference .production-reference-picker__search > i { position:absolute; left:28px; z-index:1; color:#9ca3af; font-size:14px; pointer-events:none; }
+.production-create-reference .production-reference-picker__search input { width:100%; height:40px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; padding:0 36px; color:#1f2937; font-size:12px; outline:none; }
+.production-create-reference .production-reference-picker__search input:focus { border-color:#10b981; box-shadow:0 0 0 1px #10b981; }
+.production-create-reference .production-reference-picker__search input::-webkit-search-cancel-button { display:none; }
+.production-create-reference .production-reference-picker__search > button { position:absolute; right:26px; display:flex; width:24px; height:24px; align-items:center; justify-content:center; border:0; border-radius:50%; background:transparent; color:#9ca3af; }
+.production-create-reference .production-reference-picker__list { min-height:0; flex:1; overflow-y:auto; overscroll-behavior:contain; padding:8px; }
+.production-create-reference .production-reference-picker__option { display:flex; width:100%; min-height:60px; align-items:center; gap:12px; border:0; border-radius:12px; background:#fff; padding:12px; text-align:left; transition:background-color .15s; }
+.production-create-reference .production-reference-picker__option:hover { background:rgba(236,253,245,.6); }
+.production-create-reference .production-reference-picker__option.is-selected { background:#ecfdf5; }
+.production-create-reference .production-reference-picker__option-icon { display:flex; width:36px; height:36px; flex:none; align-items:center; justify-content:center; border:1px solid #f3f4f6; border-radius:12px; background:#f9fafb; color:#6b7280; font-size:16px; }
+.production-create-reference .production-reference-picker__option-text { display:flex; min-width:0; flex:1; flex-direction:column; }
+.production-create-reference .production-reference-picker__option-text strong { overflow:hidden; color:#111827; font-size:12px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
+.production-create-reference .production-reference-picker__option-text small { margin-top:2px; color:#9ca3af; font-size:11px; }
+.production-create-reference .production-reference-picker__check { display:none; flex:none; color:#059669; font-size:16px; }
+.production-create-reference .production-reference-picker__option.is-selected .production-reference-picker__check { display:block; }
+.production-create-reference .production-reference-picker__state { display:flex; min-height:96px; align-items:center; justify-content:center; gap:8px; color:#9ca3af; font-size:12px; }
+@media (min-width:640px) {
+    .production-create-reference .production-reference-picker__header h3 { font-size:16px; }
+    .production-create-reference .production-reference-picker__search input { font-size:14px; }
+    .production-create-reference .production-reference-picker__option-text strong { font-size:14px; }
+}
+/* Reference ingredient picker modal, scoped to the create route. */
+body:has(.production-reference-ingredient-modal.show) .modal-backdrop.show { background:#000; opacity:.6; -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); }
+.production-create-reference .production-reference-ingredient-modal .modal-dialog { width:calc(100% - 32px); max-width:448px; margin:16px auto; padding:0; }
+.production-create-reference .production-reference-ingredient-modal .modal-content { display:flex; max-height:85vh; flex-direction:column; overflow:hidden; border:1px solid #f3f4f6; border-radius:24px; background:#fff; box-shadow:0 24px 48px rgba(0,0,0,.22); }
+.production-create-reference .production-reference-ingredient-modal__header { display:flex; flex:none; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f3f4f6; padding:20px; }
+.production-create-reference .production-reference-ingredient-modal__header .modal-title { margin:0; color:#111827; font-size:14px; font-weight:700; }
+.production-create-reference .production-reference-ingredient-modal__header p { margin:2px 0 0; color:#9ca3af; font-size:12px; }
+.production-create-reference .production-reference-ingredient-modal__close { display:flex; width:32px; height:32px; flex:none; align-items:center; justify-content:center; border:0; border-radius:50%; background:#f3f4f6; color:#9ca3af; font-size:14px; }
+.production-create-reference .production-reference-ingredient-modal__close:hover { background:#e5e7eb; color:#4b5563; }
+.production-create-reference .production-reference-ingredient-modal__body { display:flex; min-height:0; flex:1; flex-direction:column; overflow:hidden; }
+.production-create-reference .production-reference-ingredient-modal__list { min-height:0; flex:1; overflow-y:auto; overscroll-behavior:contain; padding:8px; }
+.production-create-reference .production-reference-ingredient-option { display:flex; width:100%; min-height:56px; align-items:center; gap:12px; border:0; border-radius:12px; background:#fff; padding:10px; text-align:left; transition:background-color .15s; }
+.production-create-reference .production-reference-ingredient-option:hover,
+.production-create-reference .production-reference-ingredient-option:focus-visible { outline:none; background:rgba(236,253,245,.6); }
+.production-create-reference .production-reference-ingredient-option__icon { display:flex; width:36px; height:36px; flex:none; align-items:center; justify-content:center; border:1px solid #f3f4f6; border-radius:12px; background:#f9fafb; color:#6b7280; font-size:16px; }
+.production-create-reference .production-reference-ingredient-option__text { display:flex; min-width:0; flex:1; flex-direction:column; }
+.production-create-reference .production-reference-ingredient-option__text strong { overflow:hidden; color:#111827; font-size:14px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
+.production-create-reference .production-reference-ingredient-option__text small { margin-top:2px; color:#9ca3af; font-size:11px; }
+.production-create-reference .production-reference-ingredient-option__add { display:flex; width:28px; height:28px; flex:none; align-items:center; justify-content:center; border:1px solid rgba(167,243,208,.6); border-radius:50%; background:#ecfdf5; color:#047857; font-size:12px; transition:color .15s,background-color .15s; }
+.production-create-reference .production-reference-ingredient-option:hover .production-reference-ingredient-option__add { background:#059669; color:#fff; }
+.production-create-reference .production-reference-ingredient-modal__state { display:flex; min-height:96px; align-items:center; justify-content:center; gap:8px; color:#9ca3af; font-size:12px; }
+.production-create-reference .production-reference-ingredient-modal__search { position:relative; display:flex; flex:none; align-items:center; border-top:1px solid #f3f4f6; background:#fff; padding:16px; }
+.production-create-reference .production-reference-ingredient-modal__search > i { position:absolute; left:28px; z-index:1; color:#9ca3af; font-size:14px; pointer-events:none; }
+.production-create-reference .production-reference-ingredient-modal__search input { width:100%; height:44px; border:1px solid #e5e7eb; border-radius:12px; background:rgba(249,250,251,.8); padding:0 36px; color:#1f2937; font-size:12px; outline:none; }
+.production-create-reference .production-reference-ingredient-modal__search input:focus { border-color:#10b981; background:#fff; box-shadow:0 0 0 1px #10b981; }
+.production-create-reference .production-reference-ingredient-modal__search input::-webkit-search-cancel-button { display:none; }
+.production-create-reference .production-reference-ingredient-modal__search > button { position:absolute; right:26px; display:flex; width:24px; height:24px; align-items:center; justify-content:center; border:0; border-radius:50%; background:transparent; color:#9ca3af; }
+@media (min-width:640px) {
+    .production-create-reference .production-reference-ingredient-modal__header .modal-title { font-size:16px; }
+    .production-create-reference .production-reference-ingredient-modal__search input { font-size:14px; }
+}
+body.erp-ui .production-create-reference #branch_id + .select2-container .select2-selection__clear { display:none; }
+.production-create-reference .fv-row:has(#quantity) { position:relative; }
+.production-create-reference #quantity { padding-right:72px; font-size:14px; font-weight:700; }
+.production-create-reference .production-quantity-unit { position:absolute; top:38px; right:16px; color:#6b7280; font-size:11px; font-weight:600; text-transform:uppercase; pointer-events:none; }
+@media (min-width:640px) {
+    .production-create-reference .production-inline-quantity input { width:64px; font-size:14px; }
+    .production-create-reference .production-reference-cart__identity > strong { font-size:14px; }
+    .production-create-reference .production-product-picker-label { font-size:14px; }
+}

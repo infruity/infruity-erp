@@ -1,6 +1,7 @@
 @extends('template.root')
 @section('title', 'Produksi')
 @section('content')
+    <div class="production-list-page">
     <link rel="stylesheet" href="{{ asset('assets/css/erp-operations.css') }}?v={{ filemtime(public_path('assets/css/erp-operations.css')) }}">
     <style>
         .production-row { display:flex; min-width:0; align-items:center; gap:12px; }
@@ -44,10 +45,12 @@
             .production-qty { font-size:12px; }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('assets/css/production-list-reference.css') }}?v={{ filemtime(public_path('assets/css/production-list-reference.css')) }}">
     <x-erp.workspace title="Produksi" subtitle="Pantau produksi, bahan baku dan status pengerjaan." icon="cooking-pot">
         <x-slot:toolbar>
-            <label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-kt-ecommerce-product-filter="search" id="search" aria-label="Cari produksi" placeholder="Cari produksi..."></label>
-            <div class="erp-operations-toolbar-actions"><details class="erp-operations-filter"><summary class="erp-action"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></summary><div class="erp-operations-filter__body"><label for="production-status-filter">Status<select id="production-status-filter" class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Status" data-kt-ecommerce-product-filter="status"><option value="all">Semua Status</option>@foreach (['temp', 'draft', 'posting', 'complete'] as $statusOption)<option value="{{ $statusOption }}">{{ ucwords($statusOption) }}</option>@endforeach</select></label><label for="production-branch-filter">Cabang<select id="production-branch-filter" class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Cabang" data-kt-ecommerce-product-filter="cabang">@if(count($branches) > 1)<option value="all">Semua Cabang</option>@endif @foreach ($branches as $branch)<option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>@endforeach</select></label><label for="kt_ecommerce_sales_flatpickr">Rentang tanggal<div class="input-group"><input class="form-control" placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr"><button type="button" class="erp-action" id="kt_ecommerce_sales_flatpickr_clear" aria-label="Hapus rentang tanggal"><i class="ph ph-x" aria-hidden="true"></i></button></div></label></div></details><a href="{{ url('production/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Produksi</a></div>
+            <label class="erp-search production-desktop-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-production-search id="search-desktop" aria-label="Cari produksi" placeholder="Cari produksi..."></label>
+            <x-erp.mobile-search class="production-mobile-search"><x-slot:input><input type="search" data-production-search id="search" class="erp-mobile-search__input" aria-label="Cari produksi" placeholder="Cari..."></x-slot:input><x-slot:filter><button type="button" class="erp-mobile-search__filter" data-production-filter-toggle aria-label="Filter produksi" aria-controls="production-list-filter" aria-expanded="false"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></x-slot:filter></x-erp.mobile-search>
+            <div class="erp-operations-toolbar-actions production-list-tools"><details class="erp-operations-filter" id="production-list-filter"><summary class="erp-action"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></summary><div class="erp-operations-filter__body"><label for="production-status-filter">Status<select id="production-status-filter" class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Status" data-kt-ecommerce-product-filter="status"><option value="all">Semua Status</option>@foreach (['temp', 'draft', 'posting', 'complete'] as $statusOption)<option value="{{ $statusOption }}">{{ ucwords($statusOption) }}</option>@endforeach</select></label><label for="production-branch-filter">Cabang<select id="production-branch-filter" class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Cabang" data-kt-ecommerce-product-filter="cabang">@if(count($branches) > 1)<option value="all">Semua Cabang</option>@endif @foreach ($branches as $branch)<option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>@endforeach</select></label><label for="kt_ecommerce_sales_flatpickr">Rentang tanggal<div class="input-group"><input class="form-control" placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr"><button type="button" class="erp-action" id="kt_ecommerce_sales_flatpickr_clear" aria-label="Hapus rentang tanggal"><i class="ph ph-x" aria-hidden="true"></i></button></div></label></div></details><a href="{{ url('production/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Produksi</a></div>
         </x-slot:toolbar>
         <div class="erp-operations-collection production-list">
             <table class="table erp-operations-table align-middle" id="production-table" width="100%">
@@ -64,7 +67,9 @@
                 </table>
         </div>
     </x-erp.workspace>
+    </div>
 @section('script')
+    <script src="{{ asset('assets/js/production-list-reference.js') }}?v={{ filemtime(public_path('assets/js/production-list-reference.js')) }}"></script>
     <script type="text/javascript">
         var dataTable;
         $(document).ready(function() {
@@ -80,12 +85,16 @@
 
             dataTable = $('#production-table').DataTable({
                 language: { emptyTable: productionEmptyState, zeroRecords: productionEmptyState },
-                createdRow: function(row) {
+                createdRow: function(row, data) {
+                    ProductionListUi.enhanceRow(row, data);
                     const link = row.querySelector('a.production-copy');
                     if (link) {
                         row.classList.add('is-openable');
                         row.dataset.href = link.getAttribute('href');
                     }
+                },
+                drawCallback: function() {
+                    $(this.api().table().container()).toggleClass('production-single-page', this.api().page.info().pages <= 1);
                 },
                 pageLength: 100,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
@@ -152,8 +161,22 @@
             });
 
             // Search manual lewat input
-            $('#search').on('keyup', function() {
+            $('[data-production-search]').on('input', function() {
+                $('[data-production-search]').not(this).val(this.value);
                 dataTable.search(this.value).draw();
+            });
+            const filter = document.getElementById('production-list-filter');
+            const mobileFilter = document.querySelector('[data-production-filter-toggle]');
+            mobileFilter.addEventListener('click', () => { filter.open = !filter.open; });
+            filter.addEventListener('toggle', () => mobileFilter.setAttribute('aria-expanded', String(filter.open)));
+            document.addEventListener('click', event => {
+                if (event.target.closest('.select2-container, .flatpickr-calendar')) return;
+                if (filter.open && !filter.contains(event.target) && !mobileFilter.contains(event.target)) filter.open = false;
+            });
+            filter.addEventListener('keydown', event => {
+                if (event.key !== 'Escape') return;
+                filter.open = false;
+                (mobileFilter.getClientRects().length ? mobileFilter : filter.querySelector('summary')).focus();
             });
 
             $('[data-kt-ecommerce-product-filter="status"]').on('change', function() {

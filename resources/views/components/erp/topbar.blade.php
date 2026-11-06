@@ -3,9 +3,14 @@
     $sortirFormHeader = request()->routeIs('sortir.create', 'sortir.edit', 'sortir.show');
     $transferFormHeader = request()->routeIs('transfer-pengirim.create', 'transfer-pengirim.edit', 'transfer-pengirim.show', 'transfer-penerima.show');
     $arusKasFormHeader = request()->routeIs('arus-kas.create', 'arus-kas.edit');
-    $transactionFormHeader = $transferFormHeader || $sortirFormHeader || $arusKasFormHeader || request()->routeIs('wholesale.create', 'wholesale.edit');
+    $productionCreateHeader = request()->routeIs('production.create');
+    $transactionFormHeader = $productionCreateHeader || $transferFormHeader || $sortirFormHeader || $arusKasFormHeader || request()->routeIs('wholesale.create', 'wholesale.edit');
     $transactionBackRoute = $arusKasFormHeader ? 'arus-kas.index' : ($transferFormHeader ? request()->segment(1) . '.index' : ($sortirFormHeader ? 'sortir.index' : 'wholesale.index'));
     $transactionBackLabel = $arusKasFormHeader ? 'Kembali ke Arus Kas' : ($transferFormHeader ? 'Kembali ke Pindah Stok' : ($sortirFormHeader ? 'Kembali ke Sortir Barang' : 'Kembali ke Pengadaan'));
+    if ($productionCreateHeader) {
+        $transactionBackRoute = 'production.index';
+        $transactionBackLabel = 'Kembali ke Riwayat Produksi';
+    }
     $productStockDetailHeader = request()->routeIs('product-stock.show');
     $passwordUpdateHeader = request()->routeIs('change-password');
     $mobileBackHeader = $transactionFormHeader || $productStockDetailHeader || $passwordUpdateHeader;

@@ -22,6 +22,16 @@
             isLoadingIngredients: false,
             showAddIngredientModal: false,
             showSummaryDetails: false,
+            inlineQuantityDrafts: {},
+            referenceProductPickerOpen: false,
+            referenceProductSearch: '',
+            referenceProducts: [],
+            referenceProductsLoading: false,
+            referenceProductError: '',
+            referenceProductRequest: 0,
+            referenceRecipeRequest: 0,
+            referenceProductId: '',
+            referenceSelectedProductName: '',
 
             // Edit modal properties
             editingIngredient: null,
@@ -72,6 +82,7 @@
                 this.loadAvailableIngredients();
                 this.loadAvailableRecipes();
                 this.loadExistingData();
+                this.syncReferenceProductSelection();
 
                 // Initialize quantity from HTML input or from edit mode
                 const quantityInput = document.getElementById('quantity');
@@ -120,6 +131,115 @@
                     const numericValue = parseFloat(value.toString().replace(/[^\d]/g, '')) || 0;
                     this.sellPrice = numericValue;
                 });
+            },
+
+            syncReferenceProductSelection() {
+                if (!document.querySelector('.production-create-reference')) return;
+                const select = document.getElementById('product_id');
+                const option = select?.selectedOptions?.[0];
+                this.referenceProductId = option?.value || '';
+                this.referenceSelectedProductName = this.referenceProductId ? option.textContent.trim() : '';
+            },
+
+            openReferenceProductPicker() {
+                this.referenceProductPickerOpen = true;
+                this.referenceProductSearch = '';
+                this.referenceProductError = '';
+                this.loadReferenceProducts();
+                this.$nextTick(() => requestAnimationFrame(() => {
+                    const input = this.$refs.referenceProductSearchInput;
+                    if (input && input.getClientRects().length > 0) input.focus();
+                }));
+            },
+
+            closeReferenceProductPicker() {
+                this.referenceProductPickerOpen = false;
+                this.$nextTick(() => requestAnimationFrame(() => {
+                    const trigger = document.querySelector('.production-product-picker-trigger');
+                    if (trigger && trigger.getClientRects().length > 0) trigger.focus();
+                }));
+            },
+
+            async loadReferenceProducts() {
+                const root = document.querySelector('.production-create-reference');
+                const endpoint = root?.dataset.referenceProductUrl;
+                if (!endpoint) {
+                    this.referenceProducts = [];
+                    this.referenceProductError = 'Produk tidak dapat dimuat';
+                    return;
+                }
+
+                const requestId = ++this.referenceProductRequest;
+                const query = this.referenceProductSearch.trim();
+                this.referenceProductsLoading = true;
+                this.referenceProductError = '';
+
+                try {
+                    const url = new URL(endpoint, window.location.href);
+                    if (query) url.searchParams.set('search', query);
+                    else url.searchParams.delete('search');
+
+                    const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+                    if (!response.ok) throw new Error('Gagal memuat produk');
+
+                    const data = await response.json();
+                    if (requestId !== this.referenceProductRequest) return;
+                    this.referenceProducts = (Array.isArray(data) ? data : []).map(item => ({
+                        id: item.product_id ?? item.id,
+                        text: item.products?.name || item.name || '',
+                        subtitle: ''
+                    })).filter(product => product.id != null && product.text.trim());
+                } catch (error) {
+                    if (requestId !== this.referenceProductRequest) return;
+                    this.referenceProducts = [];
+                    this.referenceProductError = 'Gagal memuat produk. Coba lagi.';
+                    console.error('Error loading production products:', error);
+                } finally {
+                    if (requestId === this.referenceProductRequest) this.referenceProductsLoading = false;
+                }
+            },
+
+            isCurrentReferenceRecipeRequest(productId, requestId) {
+                return String(this.referenceProductId) === String(productId) && this.referenceRecipeRequest === requestId;
+            },
+
+            selectReferenceProduct(product) {
+                const select = document.getElementById('product_id');
+                if (!select || !product) return;
+
+                const productId = String(product.id);
+                const productChanged = String(this.referenceProductId || '') !== productId;
+                if (productChanged) {
+                    this.ingredients = [];
+                    this.baseRecipeIngredients = [];
+                    this.productionQuantity = 1;
+                    this.sellPrice = 0;
+                }
+                this.inlineQuantityDrafts = {};
+                const existingOption = Array.from(select.options).find(option => String(option.value) === productId);
+                if (existingOption) {
+                    existingOption.selected = true;
+                } else {
+                    select.add(new Option(product.text, productId, true, true));
+                }
+
+                this.referenceProductId = productId;
+                this.referenceRecipeRequest = (Number(this.referenceRecipeRequest) || 0) + 1;
+                this.referenceSelectedProductName = product.text;
+                const $select = window.jQuery ? window.jQuery(select) : null;
+                if ($select) {
+                    $select.val(productId).trigger('change');
+                    if ($select.data('select2')) {
+                        $select.trigger({ type: 'select2:select', params: { data: { id: product.id, text: product.text } } });
+                    } else {
+                        window.loadRecipeIngredients(product.id);
+                    }
+                } else {
+                    select.value = productId;
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                    window.loadRecipeIngredients(product.id);
+                }
+                this.closeReferenceProductPicker();
             },
 
             // Load existing data if editing
@@ -507,6 +627,61 @@
                 this.showNotification('Ingredient added successfully', 'success');
             },
 
+            // Accept a complete positive decimal quantity (dot or comma separator).
+            parseInlineQuantity(rawQuantity) {
+                const value = String(rawQuantity ?? '').trim();
+                if (!/^(?:\d+(?:[.,]\d+)?|[.,]\d+)$/.test(value)) return null;
+
+                const quantity = Number(value.replace(',', '.'));
+                return Number.isFinite(quantity) && quantity > 0 ? quantity : null;
+            },
+
+            // Update an inline ingredient quantity without changing its request shape.
+            updateIngredientInline(index, rawQuantity) {
+                const ingredient = this.ingredients[index];
+                if (!ingredient) return;
+
+                const drafts = this.inlineQuantityDrafts || (this.inlineQuantityDrafts = {});
+                drafts[ingredient.id] = String(rawQuantity ?? '');
+
+                const quantity = this.parseInlineQuantity(rawQuantity);
+                if (quantity === null) return;
+
+                ingredient.quantity = quantity;
+                ingredient.total = (Number(ingredient.hpp) || 0) * quantity;
+
+                const productionQuantity = Number(this.productionQuantity) || 1;
+                const baseIngredient = this.baseRecipeIngredients.find(item => item.id === ingredient.id);
+                if (baseIngredient) {
+                    baseIngredient.base_quantity = quantity / productionQuantity;
+                } else {
+                    this.baseRecipeIngredients.push({
+                        id: ingredient.id,
+                        name: ingredient.name,
+                        base_quantity: quantity / productionQuantity,
+                        hpp: ingredient.hpp,
+                        unit: ingredient.unit,
+                        from_recipe: false
+                    });
+                }
+            },
+
+            normalizeIngredientInline(index, input) {
+                const ingredient = this.ingredients[index];
+                if (!ingredient || !input) return;
+
+                const quantity = this.parseInlineQuantity(input.value);
+                if (quantity === null) {
+                    if (this.inlineQuantityDrafts) delete this.inlineQuantityDrafts[ingredient.id];
+                    input.value = String(ingredient.quantity ?? '');
+                    return;
+                }
+
+                this.updateIngredientInline(index, quantity);
+                if (this.inlineQuantityDrafts) delete this.inlineQuantityDrafts[ingredient.id];
+                input.value = String(quantity);
+            },
+
             // Update ingredient quantity
             updateQuantity(index, newQuantity) {
                 if (newQuantity < 0) return;
@@ -520,6 +695,7 @@
                 if (index >= 0 && index < this.ingredients.length) {
                     const ingredientId = this.ingredients[index].id;
                     this.ingredients.splice(index, 1);
+                    if (this.inlineQuantityDrafts) delete this.inlineQuantityDrafts[ingredientId];
                     this.baseRecipeIngredients = this.baseRecipeIngredients.filter(b => b.id !== ingredientId);
                     this.showNotification('Ingredient removed', 'info');
                 }
@@ -758,7 +934,7 @@
         // Initialize Select2 for product selection with a small delay to ensure Alpine is ready
         setTimeout(function() {
             $('#product_id').select2({
-                placeholder: 'Pilih Produk',
+                placeholder: $('#product_id').data('placeholder') || 'Pilih Produk',
                 ajax: {
                     url: '{{ route('products.get-receipt') }}',
                     dataType: 'json',
@@ -898,10 +1074,14 @@
     async function loadRecipeIngredients(productId) {
         console.log('Loading recipe ingredients for product ID:', productId);
 
-        try {
-            // Get Alpine.js component instance using a more reliable method
-            let productionApp = null;
+        let productionApp = null;
+        let isReferenceCreate = false;
+        let referenceRequestId = null;
+        const isCurrentReferenceRequest = () => !isReferenceCreate || (
+            productionApp && productionApp.isCurrentReferenceRecipeRequest(productId, referenceRequestId)
+        );
 
+        try {
             // Try multiple ways to get the Alpine component
             const alpineElement = document.querySelector('[x-data*="productionApp"]') || document.querySelector(
                 '[x-data]');
@@ -922,6 +1102,12 @@
                 return;
             }
 
+            isReferenceCreate = !!document.querySelector('.production-create-reference');
+            if (isReferenceCreate) {
+                referenceRequestId = productionApp.referenceRecipeRequest;
+                if (!isCurrentReferenceRequest()) return;
+            }
+
             // Set loading state
             if (typeof productionApp.setLoadingIngredients === 'function') {
                 productionApp.setLoadingIngredients(true);
@@ -934,19 +1120,25 @@
             // First, find the receipt ID for this product
             console.log('Fetching receipts...');
             const receiptResponse = await fetch(`{{ route('products.get-receipt') }}`);
+            if (!isCurrentReferenceRequest()) return;
 
             if (!receiptResponse.ok) {
                 throw new Error(`Failed to fetch receipts: ${receiptResponse.status}`);
             }
 
             const receipts = await receiptResponse.json();
+            if (!isCurrentReferenceRequest()) return;
             console.log('Available receipts:', receipts);
 
             // Find receipt for this product
             const receipt = receipts.find(r => r.product_id == productId);
             console.log('Found receipt for product:', receipt);
-
             if (!receipt) {
+                if (isReferenceCreate) {
+                    productionApp.ingredients = [];
+                    productionApp.baseRecipeIngredients = [];
+                    productionApp.inlineQuantityDrafts = {};
+                }
                 showInfoNotification('Produk ini tidak memiliki resep');
                 return;
             }
@@ -954,12 +1146,14 @@
             // Now fetch the recipe data
             console.log('Fetching recipe data for receipt ID:', receipt.id);
             const response = await fetch(`{{ url('production/get-recipe-data') }}/${receipt.id}`);
+            if (!isCurrentReferenceRequest()) return;
 
             if (!response.ok) {
                 throw new Error(`Failed to fetch recipe data: ${response.status}`);
             }
 
             const recipeData = await response.json();
+            if (!isCurrentReferenceRequest()) return;
             console.log('Recipe data received:', recipeData);
 
             if (recipeData.success && recipeData.ingredients && recipeData.ingredients.length > 0) {
@@ -1018,34 +1212,25 @@
             } else {
                 const message = recipeData.message || 'Produk ini tidak memiliki resep atau resep kosong';
                 console.log('No ingredients found:', message);
+                if (isReferenceCreate) {
+                    productionApp.ingredients = [];
+                    productionApp.baseRecipeIngredients = [];
+                    productionApp.inlineQuantityDrafts = {};
+                }
                 showInfoNotification(message);
             }
 
         } catch (error) {
+            if (!isCurrentReferenceRequest()) return;
             console.error('Error loading recipe ingredients:', error);
             showErrorNotification('Gagal memuat bahan dari resep: ' + error.message);
         } finally {
-            // Always clear loading state
-            try {
-                const alpineElement = document.querySelector('[x-data*="productionApp"]') || document.querySelector(
-                    '[x-data]');
-                let productionApp = null;
-
-                if (alpineElement && alpineElement._x_dataStack && alpineElement._x_dataStack[0]) {
-                    productionApp = alpineElement._x_dataStack[0];
-                } else if (alpineElement && alpineElement.__x && alpineElement.__x.$data) {
-                    productionApp = alpineElement.__x.$data;
+            if (productionApp && isCurrentReferenceRequest()) {
+                if (typeof productionApp.setLoadingIngredients === 'function') {
+                    productionApp.setLoadingIngredients(false);
+                } else {
+                    productionApp.isLoadingIngredients = false;
                 }
-
-                if (productionApp) {
-                    if (typeof productionApp.setLoadingIngredients === 'function') {
-                        productionApp.setLoadingIngredients(false);
-                    } else {
-                        productionApp.isLoadingIngredients = false;
-                    }
-                }
-            } catch (e) {
-                console.log('Could not clear loading state:', e);
             }
         }
     }

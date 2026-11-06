@@ -1,3 +1,47 @@
+@if($productionCreateReference ?? false)
+<!-- Create-route ingredient picker following the reference modal layout. -->
+<div class="modal fade production-reference-ingredient-modal" id="modal-add-ingredient" tabindex="-1" aria-labelledby="modalAddIngredientLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="production-reference-ingredient-modal__header">
+                <div>
+                    <h5 class="modal-title" id="modalAddIngredientLabel">Pilih Bahan Baku</h5>
+                    <p>Pilih buah atau bahan pelengkap produksi</p>
+                </div>
+                <button type="button" class="production-reference-ingredient-modal__close" data-bs-dismiss="modal" aria-label="Tutup pilihan bahan">
+                    <i class="ph-bold ph-x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="production-reference-ingredient-modal__body">
+                <div class="production-reference-ingredient-modal__list">
+                    <template x-for="ingredient in filteredIngredients" :key="ingredient.id">
+                        <button type="button" class="production-reference-ingredient-option" @click="selectIngredient(ingredient)">
+                            <span class="production-reference-ingredient-option__icon"><i class="ph ph-package" aria-hidden="true"></i></span>
+                            <span class="production-reference-ingredient-option__text">
+                                <strong x-text="ingredient.name"></strong>
+                                <small x-text="toRupiah(ingredient.hpp) + (ingredient.unit ? ' / ' + ingredient.unit : '')"></small>
+                            </span>
+                            <span class="production-reference-ingredient-option__add"><i class="ph-bold ph-plus" aria-hidden="true"></i></span>
+                        </button>
+                    </template>
+                    <div x-show="filteredIngredients.length === 0" class="production-reference-ingredient-modal__state">
+                        Bahan baku tidak ditemukan
+                    </div>
+                </div>
+                <div class="production-reference-ingredient-modal__search">
+                    <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+                    <input type="search" x-ref="ingredientPickerSearch" x-model="ingredientSearchTerm"
+                        placeholder="Cari bahan (misal: Stroberi, Susu)..." autocomplete="off">
+                    <button type="button" x-show="ingredientSearchTerm" aria-label="Hapus pencarian bahan"
+                        @click="ingredientSearchTerm = ''; $refs.ingredientPickerSearch.focus()">
+                        <i class="ph-bold ph-x" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@else
 <!-- Modal Add Ingredient -->
 <div class="modal fade" id="modal-add-ingredient" tabindex="-1" aria-labelledby="modalAddIngredientLabel" aria-hidden="true">
     <div class="modal-dialog erp-sheet-dialog modal-lg">
@@ -63,6 +107,7 @@
         </div>
     </div>
 </div>
+@endif
 
 <!-- Modal Input Quantity -->
 <div class="modal fade" id="modal-input-quantity" tabindex="-1" aria-labelledby="modalInputQuantityLabel" aria-hidden="true">
