@@ -231,11 +231,8 @@
                 </p>
             </div>
 
-            <div>
-                <label class="erp-label erp-label--required" for="adj-reason-input">Alasan Penyesuaian</label>
-                <textarea class="erp-textarea" id="adj-reason-input" name="reason"
-                    rows="3" placeholder="Contoh: Salah hitung saat audit awal" required></textarea>
-            </div>
+            <x-erp.field label="Alasan Penyesuaian" for="adj-reason-input" required><textarea class="erp-textarea" id="adj-reason-input" name="reason"
+                    rows="3" placeholder="Contoh: Salah hitung saat audit awal" required></textarea></x-erp.field>
         </form>
         <x-slot:footer>
             <div class="flex w-full justify-end gap-2">

@@ -249,14 +249,8 @@
             <x-erp.dialog id="modalInputQty" title="Input Product Details" size="sm">
                 <input type="hidden" id="inputProductId">
                 <input type="hidden" id="typeList">
-                <div class="mb-2.5">
-                    <label for="inputJumlah" class="erp-label">Jumlah</label>
-                    <input type="number" step="0.01" class="erp-input" id="inputJumlah" placeholder="Enter quantity">
-                </div>
-                <div class="mb-2.5">
-                    <label for="inputSellPrice" class="erp-label">Harga Jual</label>
-                    <input type="text" class="erp-input format-number" id="inputSellPrice" placeholder="Enter price" min="0">
-                </div>
+                <x-erp.field label="Jumlah" for="inputJumlah" class="mb-2.5"><input type="number" step="0.01" class="erp-input" id="inputJumlah" placeholder="Enter quantity"></x-erp.field>
+                <x-erp.field label="Harga Jual" for="inputSellPrice" class="mb-2.5"><input type="text" class="erp-input format-number" id="inputSellPrice" placeholder="Enter price" min="0"></x-erp.field>
                 <x-slot:footer>
                     <div class="ml-auto flex gap-2">
                         <x-erp.button data-erp-close>Cancel</x-erp.button>
@@ -286,14 +280,8 @@
         <form id="kt_modal_add_customer_form" action="{{ url(Request::segment(1)) }}">
             @csrf
             <input type="hidden" name="_method" id="methodField" value="">
-            <div class="mb-2.5">
-                <label for="inputJumlahEdit" class="erp-label">Jumlah</label>
-                <input type="number" class="erp-input" id="inputJumlahEdit" name="qty" placeholder="Enter quantity" step="0.01">
-            </div>
-            <div class="mb-2.5">
-                <label for="inputPriceEdit" class="erp-label">Harga Jual</label>
-                <input type="text" class="erp-input format-number" id="inputPriceEdit" name="sell_price" placeholder="Enter price" min="0">
-            </div>
+            <x-erp.field label="Jumlah" for="inputJumlahEdit" class="mb-2.5"><input type="number" class="erp-input" id="inputJumlahEdit" name="qty" placeholder="Enter quantity" step="0.01"></x-erp.field>
+            <x-erp.field label="Harga Jual" for="inputPriceEdit" class="mb-2.5"><input type="text" class="erp-input format-number" id="inputPriceEdit" name="sell_price" placeholder="Enter price" min="0"></x-erp.field>
         </form>
         <x-slot:footer>
             <div class="ml-auto flex gap-2">
@@ -310,18 +298,9 @@
             <input type="hidden" id="inputProductIdPrc" name="id">
             <input type="hidden" name="production_id" value="{{ $data->id }}">
             <input type="hidden" id="typeList">
-            <div class="mb-2.5">
-                <label for="inputPrice" class="erp-label">Masukkan Harga</label>
-                <input type="text" class="erp-input format-number" id="inputPrice" placeholder="Enter price" min="0">
-            </div>
-            <div class="mb-2.5">
-                <label for="inputJumlahPrc" class="erp-label">Jumlah</label>
-                <input type="number" name="qty" step="0.01" class="erp-input" id="inputJumlahPrc" placeholder="Enter quantity" readonly>
-            </div>
-            <div class="mb-2.5">
-                <label for="inputSellPricePrc" class="erp-label">Harga Jual</label>
-                <input type="text" name="sell_price" class="erp-input format-number" id="inputSellPricePrc" placeholder="Enter price" min="0" readonly>
-            </div>
+            <x-erp.field label="Masukkan Harga" for="inputPrice" class="mb-2.5"><input type="text" class="erp-input format-number" id="inputPrice" placeholder="Enter price" min="0"></x-erp.field>
+            <x-erp.field label="Jumlah" for="inputJumlahPrc" class="mb-2.5"><input type="number" name="qty" step="0.01" class="erp-input" id="inputJumlahPrc" placeholder="Enter quantity" readonly></x-erp.field>
+            <x-erp.field label="Harga Jual" for="inputSellPricePrc" class="mb-2.5"><input type="text" name="sell_price" class="erp-input format-number" id="inputSellPricePrc" placeholder="Enter price" min="0" readonly></x-erp.field>
         </form>
         <x-slot:footer>
             <div class="ml-auto flex gap-2">

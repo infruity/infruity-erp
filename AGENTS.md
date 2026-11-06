@@ -549,6 +549,7 @@ Source of truth: `docs/ui-design-system.md` (components, rules) and `docs/tailwi
   not attribute order. Put state variants in an exclusive `:class` ternary. `tests/js/class-conflicts-repo.test.cjs` enforces it.
 * Write full class names; never build them by string concatenation (Tailwind cannot see them).
 * Buttons and links styled as buttons use `<x-erp.button variant="primary|danger" icon="plus" :href="…">`; do not hand-write `class="erp-action …"` in Blade (`ErpButtonComponentTest` enforces it; HTML built in JS may still use the class).
+* A label + single control pair uses `<x-erp.field label="…" for="id" required help="…" error="…">` around the native control (`<input class="erp-input">`, `<select class="erp-select">`, `<textarea class="erp-textarea">`). The control itself stays a plain element (no input component: it only forwards attributes and fights Alpine/x-model); input groups, pickers, checkbox rows and custom layouts may stay hand-written.
 * DataTables HTML produced in controllers uses `x-erp.row-actions`, `x-erp.cell-title`, `x-erp.badge`, `x-erp.avatar`
   (escaped output), not hand-built PHP strings.
 * Build: `npm ci && npm run build` (Node ^20.19 or >=22.12). `public/build` is not committed. Use PHP 8.5.

@@ -163,20 +163,12 @@
                 </div>
                 <div class="production-card__body">
                     <div class="production-fields">
-                        <div class="fv-row">
-                            <label class="erp-label erp-label--required" for="branch_id">Cabang / Dapur</label>
-                            <select class="erp-select" id="branch_id" name="branch_id">
+                        <x-erp.field label="Cabang / Dapur" for="branch_id" required class="fv-row"><select class="erp-select" id="branch_id" name="branch_id">
                                 <option value="">Pilih Branch</option>
-                            </select>
-                        </div>
-                        <div class="fv-row">
-                            <label class="erp-label erp-label--required" for="production_date">Tanggal Produksi</label>
-                            <input type="date" class="erp-input" id="production_date" name="production_date"
-                                value="{{ old('production_date') ?? date('Y-m-d') }}">
-                        </div>
-                        <div class="fv-row">
-                            <label class="erp-label erp-label--required" for="product_id">Produk yang Diproduksi</label>
-                            <select name="product_id" id="product_id" class="erp-select">
+                            </select></x-erp.field>
+                        <x-erp.field label="Tanggal Produksi" for="production_date" required class="fv-row"><input type="date" class="erp-input" id="production_date" name="production_date"
+                                value="{{ old('production_date') ?? date('Y-m-d') }}"></x-erp.field>
+                        <x-erp.field label="Produk yang Diproduksi" for="product_id" required class="fv-row"><select name="product_id" id="product_id" class="erp-select">
                                 @if (isset($edit_product_id) && isset($edit_product_name))
                                     <option value="{{ $edit_product_id }}" selected>{{ $edit_product_name }}</option>
                                 @elseif (isset($receipt) && $receipt != null)
@@ -184,8 +176,7 @@
                                 @else
                                     <option value="">Pilih Produk</option>
                                 @endif
-                            </select>
-                        </div>
+                            </select></x-erp.field>
                         <div class="fv-row">
                             <label class="erp-label erp-label--required" for="quantity">Target Hasil Produksi</label>
                             <div class="production-input-unit">
@@ -203,26 +194,17 @@
                             <details class="production-extra" @if ((isset($edit_sell_price) && $edit_sell_price > 0) || (isset($edit_service_cost) && $edit_service_cost > 0)) open @endif>
                                 <summary>Harga &amp; Biaya <small>(opsional)</small></summary>
                                 <div class="production-fields">
-                                    <div class="fv-row">
-                                        <label class="erp-label" for="sell_price">Harga Jual</label>
-                                        <input type="text" inputmode="numeric" name="sell_price" id="sell_price" class="erp-input format-number"
+                                    <x-erp.field label="Harga Jual" for="sell_price" class="fv-row"><input type="text" inputmode="numeric" name="sell_price" id="sell_price" class="erp-input format-number"
                                             placeholder="Masukkan Harga Jual" x-model="sellPrice"
-                                            value="{{ isset($edit_sell_price) ? number_format($edit_sell_price, 0, ',', '.') : '' }}" />
-                                    </div>
-                                    <div class="fv-row">
-                                        <label class="erp-label" for="service_cost">Biaya Jasa Produksi per Unit</label>
-                                        <input type="text" inputmode="numeric" name="service_cost" id="service_cost" class="erp-input format-number"
+                                            value="{{ isset($edit_sell_price) ? number_format($edit_sell_price, 0, ',', '.') : '' }}" /></x-erp.field>
+                                    <x-erp.field label="Biaya Jasa Produksi per Unit" for="service_cost" class="fv-row"><input type="text" inputmode="numeric" name="service_cost" id="service_cost" class="erp-input format-number"
                                             placeholder="Masukkan Biaya Jasa" x-model="serviceCost"
-                                            value="{{ isset($edit_service_cost) ? number_format($edit_service_cost, 0, ',', '.') : '' }}" />
-                                    </div>
+                                            value="{{ isset($edit_service_cost) ? number_format($edit_service_cost, 0, ',', '.') : '' }}" /></x-erp.field>
                                 </div>
                             </details>
                         </div>
-                        <div class="fv-row is-wide">
-                            <label class="erp-label" for="production_notes">Catatan Produksi (Opsional)</label>
-                            <input type="text" class="erp-input" id="production_notes" name="notes"
-                                placeholder="Contoh: Batch pagi, untuk display etalase" x-model="notes">
-                        </div>
+                        <x-erp.field label="Catatan Produksi (Opsional)" for="production_notes" class="fv-row is-wide"><input type="text" class="erp-input" id="production_notes" name="notes"
+                                placeholder="Contoh: Batch pagi, untuk display etalase" x-model="notes"></x-erp.field>
                     </div>
                 </div>
             </section>

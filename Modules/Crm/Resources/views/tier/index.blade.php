@@ -24,9 +24,9 @@
                 <x-erp.image-input name="avatar" remove-name="avatar_remove" label="Pilih gambar" remove-label="Hapus ikon tier" />
                 <p class="erp-crm-help">PNG atau JPG untuk ikon tier.</p>
             </div>
-            <div class="erp-crm-field"><label for="crm-name" class="erp-label">Nama tier</label><input id="crm-name" type="text" name="name" class="erp-input" required></div>
-            <div class="erp-crm-field"><label for="crm-level" class="erp-label">Level</label><input id="crm-level" type="number" name="level" class="erp-input" inputmode="numeric" required></div>
-            <div class="erp-crm-field"><label for="crm-exp" class="erp-label">Minimal EXP</label><input id="crm-exp" type="text" name="exp" class="erp-input format-number" inputmode="numeric" required></div>
+            <x-erp.field label="Nama tier" for="crm-name" class="erp-crm-field"><input id="crm-name" type="text" name="name" class="erp-input" required></x-erp.field>
+            <x-erp.field label="Level" for="crm-level" class="erp-crm-field"><input id="crm-level" type="number" name="level" class="erp-input" inputmode="numeric" required></x-erp.field>
+            <x-erp.field label="Minimal EXP" for="crm-exp" class="erp-crm-field"><input id="crm-exp" type="text" name="exp" class="erp-input format-number" inputmode="numeric" required></x-erp.field>
             <div class="erp-crm-field">
                 <label for="style" class="erp-label">Warna label</label>
                 <div class="flex items-center gap-3">

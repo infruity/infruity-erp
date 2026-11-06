@@ -32,10 +32,10 @@
         <form id="crm-form" class="erp-crm-form" action="{{ url(Request::segment(1)) }}">@csrf
             <div class="erp-crm-fields">
                 <div class="erp-crm-form-error" data-crm-form-error role="alert" tabindex="-1" hidden></div>
-                <div class="erp-crm-field"><label for="product_id" class="erp-label erp-label--required">Produk</label><select name="product_id" id="product_id" class="erp-select"></select></div>
-                <div class="erp-crm-field"><label for="date" class="erp-label erp-label--required">Tanggal</label><input type="text" id="date" class="erp-input" name="date" value="{{ date('Y-m-d') }}"></div>
-                <div class="erp-crm-field"><label for="type" class="erp-label erp-label--required">Jenis</label><select name="type" id="type" class="erp-select">@foreach ($type as $item)<option value="{{ $item->id }}">{{ $item->name }}</option>@endforeach</select></div>
-                <div class="erp-crm-field"><label for="quantity" class="erp-label">Kuantitas</label><input type="number" step="0.01" id="quantity" class="erp-input" name="quantity"></div>
+                <x-erp.field label="Produk" for="product_id" required class="erp-crm-field"><select name="product_id" id="product_id" class="erp-select"></select></x-erp.field>
+                <x-erp.field label="Tanggal" for="date" required class="erp-crm-field"><input type="text" id="date" class="erp-input" name="date" value="{{ date('Y-m-d') }}"></x-erp.field>
+                <x-erp.field label="Jenis" for="type" required class="erp-crm-field"><select name="type" id="type" class="erp-select">@foreach ($type as $item)<option value="{{ $item->id }}">{{ $item->name }}</option>@endforeach</select></x-erp.field>
+                <x-erp.field label="Kuantitas" for="quantity" class="erp-crm-field"><input type="number" step="0.01" id="quantity" class="erp-input" name="quantity"></x-erp.field>
             </div>
         </form>
         <x-slot:footer>

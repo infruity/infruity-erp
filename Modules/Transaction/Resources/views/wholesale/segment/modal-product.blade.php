@@ -89,28 +89,13 @@
     <x-slot:title><span x-text="editTitle"></span></x-slot:title>
     <div x-show="editItem" class="space-y-3">
         <div class="grid grid-cols-3 gap-3">
-            <div class="col-span-2">
-                <label class="erp-label" for="edit-product-name">Nama Product</label>
-                <input id="edit-product-name" type="text" class="erp-input" x-model="editProductName" readonly>
-            </div>
-            <div>
-                <label class="erp-label" for="edit-product-unit">Satuan</label>
-                <input id="edit-product-unit" type="text" class="erp-input" x-model="editProductUnit" readonly>
-            </div>
+            <x-erp.field label="Nama Product" for="edit-product-name" class="col-span-2"><input id="edit-product-name" type="text" class="erp-input" x-model="editProductName" readonly></x-erp.field>
+            <x-erp.field label="Satuan" for="edit-product-unit"><input id="edit-product-unit" type="text" class="erp-input" x-model="editProductUnit" readonly></x-erp.field>
         </div>
         <div class="grid grid-cols-2 gap-3">
-            <div>
-                <label class="erp-label" for="edit-price">Harga Beli Satuan</label>
-                <input id="edit-price" type="text" class="erp-input" x-model="formattedEditPrice" @input="updateTotalFromEditQty">
-            </div>
-            <div>
-                <label class="erp-label" for="edit-sell">Harga Jual Nanti</label>
-                <input id="edit-sell" type="text" class="erp-input" x-model="formattedEditSell">
-            </div>
-            <div>
-                <label class="erp-label" for="edit-qty">Quantity</label>
-                <input id="edit-qty" type="number" class="erp-input" step="0.01" min="0" x-model="editQty" @input="updateTotalFromEditQty">
-            </div>
+            <x-erp.field label="Harga Beli Satuan" for="edit-price"><input id="edit-price" type="text" class="erp-input" x-model="formattedEditPrice" @input="updateTotalFromEditQty"></x-erp.field>
+            <x-erp.field label="Harga Jual Nanti" for="edit-sell"><input id="edit-sell" type="text" class="erp-input" x-model="formattedEditSell"></x-erp.field>
+            <x-erp.field label="Quantity" for="edit-qty"><input id="edit-qty" type="number" class="erp-input" step="0.01" min="0" x-model="editQty" @input="updateTotalFromEditQty"></x-erp.field>
             <div>
                 <label class="erp-label" for="edit-margin">Margin (%)</label>
                 <div class="erp-input-group">
@@ -119,10 +104,7 @@
                 </div>
             </div>
         </div>
-        <div>
-            <label class="erp-label" for="edit-total">Jumlah</label>
-            <input id="edit-total" type="text" class="erp-input" x-model="editTotalFormatted" @input="updateEditTotalFormatted" inputmode="numeric">
-        </div>
+        <x-erp.field label="Jumlah" for="edit-total"><input id="edit-total" type="text" class="erp-input" x-model="editTotalFormatted" @input="updateEditTotalFormatted" inputmode="numeric"></x-erp.field>
     </div>
     <x-slot:footer>
         <div class="flex w-full gap-2">
