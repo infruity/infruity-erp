@@ -13,8 +13,7 @@
 .so-reference-sheet button,.so-reference-sheet input,.so-reference-sheet textarea,
 .so-reference-history button { font-family:inherit; }
 .so-reference-sheet [hidden], .so-reference-history [hidden] { display:none!important; }
-.so-reference-sheet .modal-dialog { padding:0; display:flex; align-items:center; min-height:calc(100% - 32px); width:calc(100% - 32px); max-width:512px; margin:16px auto; }
-.so-reference-sheet .modal-content { display:flex; flex-direction:column; width:100%; max-height:92dvh; overflow:hidden; border:1px solid #e5e7eb; border-radius:24px; background:#fff; box-shadow:0 24px 72px #0b161f30; }
+.so-reference-sheet .so-sheet-panel { display:flex; flex-direction:column; width:100%; max-height:92dvh; overflow:hidden; border:1px solid #e5e7eb; border-radius:24px; background:#fff; box-shadow:0 24px 72px #0b161f30; }
 .so-reference-sheet .so-sheet-handle { display:none; }
 .so-reference-sheet .so-sheet-header { display:flex; flex:none; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f3f4f6; padding:20px; }
 .so-reference-sheet .so-sheet-header h2 { margin:0; color:#1f2937; font-size:16px; line-height:24px; font-weight:800; }
@@ -86,9 +85,7 @@
 .so-reference-sheet .so-history-button { position:relative; font-size:22px!important; }
 .so-reference-sheet .so-history-button span { position:absolute; right:-3px; top:-4px; min-width:16px; border-radius:999px; background:#0d9488; color:#fff; font-size:10px; }
 .so-reference-sheet .so-history-button span:empty { display:none; }
-#kt_stock_opname_history { z-index:1060; background:#fff!important; }
-#so-history-filter { z-index:1080; }
-.modal-backdrop.so-history-backdrop { z-index:1075; }
+dialog.erp-dialog.so-reference-history { max-width:760px; background:#fff; border-left:1px solid rgba(229,231,235,.5); box-shadow:-10px 0 30px rgba(0,0,0,.03); }
 .so-reference-history .so-history-page { display:flex; flex-direction:column; height:100dvh; width:100%; overflow:hidden; background:#fff; }
 .so-reference-history .so-history-topbar { display:grid; grid-template-columns:36px 1fr 36px; align-items:center; gap:8px; flex:none; height:60px; padding:10px 16px; border-bottom:1px solid #e5e7eb; }
 .so-reference-history .so-history-topbar button { display:flex; align-items:center; justify-content:center; width:32px; height:36px; padding:0; border:0; background:transparent; color:#0b595b; font-size:24px; }
@@ -122,7 +119,6 @@
 .so-reference-history .so-hist-side.is-reason { display:block; width:228px; }
 .so-reference-history .so-hist-reason-head { text-align:right; }
 @media(max-width:767px) {
-    #kt_content:has(.stock-opname-page) { padding:0; padding-inline:0!important; }
     .stock-opname-page { padding-bottom:0; width:100%; }
     .stock-opname-page .so-workspace { border:0; border-radius:0; box-shadow:none; }
     .stock-opname-page .erp-workspace-heading { display:none; }
@@ -139,8 +135,7 @@
     .stock-opname-page .erp-table-region { border:0; border-radius:0; }
     .stock-opname-page #transaction-table_wrapper :is(.dataTables_length,.dataTables_info) { display:none; }
     .stock-opname-page #transaction-table_wrapper.so-single-page .dataTables_paginate { display:none; }
-    .so-reference-sheet .modal-dialog { min-height:100%; width:100%; max-width:100%; margin:0; align-items:flex-end; }
-    .so-reference-sheet .modal-content { max-height:92dvh; border-radius:24px 24px 0 0; border-bottom:0; }
+    .so-reference-sheet .so-sheet-panel { max-height:92dvh; border-radius:24px 24px 0 0; border-bottom:0; }
     .so-reference-sheet .so-sheet-handle { display:flex; flex:none; justify-content:center; padding:12px 0 4px; }
     .so-reference-sheet .so-sheet-handle span { width:56px; height:6px; border-radius:999px; background:#d1d5db; }
     .so-reference-sheet .so-sheet-header { padding:16px 20px; }
@@ -149,7 +144,7 @@
     #kt_modal_stock_detail .so-sheet-body { padding:14px 22px 18px; }
     #kt_modal_stock_detail .so-sheet-header h2 { font-size:15px; }
     #kt_modal_stock_detail .so-sheet-header p { color:#6b7280; font-size:11px; }
-    #kt_stock_opname_history { width:100%!important; max-width:none; }
+    dialog.erp-dialog.so-reference-history { max-width:none; border-left:0; }
 }
 @media(max-width:375px) {
     .so-reference-history .so-hist-head__side,.so-reference-history .so-hist-side { grid-template-columns:54px 58px 54px; }
@@ -157,11 +152,10 @@
     .so-reference-sheet .so-detail-footer { gap:6px; padding-inline:14px; }
     .so-reference-sheet .so-detail-footer button { font-size:11px; }
 }
-@media(prefers-reduced-motion:reduce) { .so-reference-sheet.fade .modal-dialog, #kt_stock_opname_history { transition:none; } }
 
 /* The main filter follows the reference; detail and history sheets keep their own sizing. */
 #so-filter-sheet { font-size:16px; line-height:24px; }
-#so-filter-sheet .modal-content { max-height:88dvh; border:0; }
+#so-filter-sheet .so-sheet-panel { max-height:88dvh; border:0; }
 #so-filter-sheet .so-sheet-header { padding:14px 20px; }
 #so-filter-sheet .so-sheet-header h2 { font-weight:700; }
 #so-filter-sheet .so-sheet-header p { margin-top:2px; line-height:16.5px; }
@@ -183,9 +177,8 @@
 #so-filter-sheet .so-period-presets [data-so-period="week"] { background:#c5f037; border-color:#c5f037; color:#1f2937; }
 #so-filter-sheet .so-sheet-footer { padding:14px 20px calc(14px + env(safe-area-inset-bottom)); background:rgba(249,250,251,.7); }
 #so-filter-sheet .so-sheet-footer button { font-weight:600; line-height:16px; }
-@media(min-width:640px) {
-    #so-filter-sheet .modal-dialog { min-height:calc(100% - 32px); width:calc(100% - 32px); max-width:512px; margin:16px auto; align-items:center; }
-    #so-filter-sheet .modal-content { border-radius:24px; }
+@media(min-width:768px) {
+    #so-filter-sheet .so-sheet-panel { border-radius:24px; }
     #so-filter-sheet .so-sheet-handle { display:none; }
     #so-filter-sheet .so-filter-dates { grid-template-columns:repeat(2,minmax(0,1fr)); }
     #so-filter-sheet .so-sheet-footer { padding-bottom:14px; }

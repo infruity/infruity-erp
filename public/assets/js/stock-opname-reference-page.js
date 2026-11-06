@@ -4,8 +4,7 @@ function initStockOpnameReference() {
     const ui = window.StockOpnameUi;
     const $ = window.jQuery;
     const filterEl = document.getElementById('so-filter-sheet');
-    const filter = bootstrap.Modal.getOrCreateInstance(filterEl);
-    const branch = document.querySelector('[data-kt-ecommerce-product-filter="cabang"]');
+    const branch = document.querySelector('[data-erp-filter="cabang"]');
     const dateField = document.getElementById('kt_ecommerce_sales_flatpickr');
     const timezone = filterEl.dataset.soTimezone || 'Asia/Jakarta';
     let draft = ui.filterDraft({branch:branch.value});
@@ -74,7 +73,7 @@ function initStockOpnameReference() {
         $('[data-so-open-filter]').toggleClass('is-active',active);
         $('#active-branch-button-label').text(active ? 'Filter aktif' : 'Filter');
         dataTable.draw();
-        if (close !== false) filter.hide();
+        if (close !== false) erp.dialog.close(filterEl);
     }
     $('[data-so-open-filter]').on('click',function () {
         trigger = this;
@@ -83,14 +82,13 @@ function initStockOpnameReference() {
         $('#so-filter-branch-search').val('');searchBranches();
         document.getElementById('so-filter-main').hidden = false;
         document.getElementById('so-filter-calendar').hidden = true;
-        filter.show();
+        erp.dialog.open(filterEl,trigger);
     });
-    $(filterEl).on('hidden.bs.modal',function () {
-        $('[data-so-open-filter]').attr('aria-expanded','false');
-        if (trigger?.getClientRects().length) trigger.focus();
-    }).on('shown.bs.modal',function () {
-        $('[data-so-open-filter]').attr('aria-expanded','true');
-        filterEl.querySelector('.so-close').focus();
+    // dialog.js restores focus to the opener; only the aria state is ours.
+    $(filterEl).on('erp:dialog-close',function (event) {
+        if (event.target === filterEl) $('[data-so-open-filter]').attr('aria-expanded','false');
+    }).on('erp:dialog-open',function (event) {
+        if (event.target === filterEl) $('[data-so-open-filter]').attr('aria-expanded','true');
     });
     $('#so-filter-branch-search').on('input',searchBranches);
     $('input[name="so-filter-draft-branch"]').on('change',function () { draft.branch = this.value;syncBranches(); });
@@ -130,6 +128,11 @@ function initStockOpnameReference() {
         if (!row || $('#so-credit-plus').prop('disabled')) return null;
         return ui.correction({plus:$('#so-credit-plus').val(),minus:$('#so-credit-minus').val(),reason:$('#so-credit-reason').val(),physical:row.physical,pending:row.isPending});
     }
+    // A pending write must not be dismissed: static dialogs ignore Esc and backdrop clicks, and the close buttons are disabled.
+    function lockDetail(locked) {
+        $('#kt_modal_stock_detail').attr('data-static',locked ? '' : null);
+        $('#kt_modal_stock_detail [data-erp-close]').prop('disabled',locked);
+    }
     $('#so-credit-plus,#so-credit-minus,#so-credit-reason').on('input',function () {
         $('#so-correction-save').prop('disabled',busy || !correction());
         $('#kt_modal_stock_detail [data-so-action="finalize"]').prop('disabled',busy);
@@ -140,6 +143,7 @@ function initStockOpnameReference() {
         if (busy || !payload) return;
         const id=$('#kt_modal_stock_detail').data('stockOpnameId');
         busy=true;
+        lockDetail(true);
         $('#so-correction-save').prop('disabled',true).text('Menyimpan…');
         $('#kt_modal_stock_detail [data-so-action]').prop('disabled',true);
         $('#so-credit-plus,#so-credit-minus,#so-credit-reason').prop('readonly',true);
@@ -147,6 +151,7 @@ function initStockOpnameReference() {
         let committed=false;
         function finish() {
             busy=false;
+            lockDetail(false);
             $('#so-credit-plus,#so-credit-minus,#so-credit-reason').prop('readonly',false);
             $('#so-correction-save').text('Simpan Koreksi').prop('disabled',!correction());
             $('#kt_modal_stock_detail [data-so-action]').prop('disabled',false);
@@ -189,11 +194,8 @@ function initStockOpnameReference() {
             if (!committed) finish();
         }});
     });
-    // Do not dismiss a pending write. The request outcome belongs to this detail state.
-    $('#kt_modal_stock_detail').on('hide.bs.modal',event => { if (busy) event.preventDefault(); });
 
     const historyFilterEl=document.getElementById('so-history-filter');
-    const historyFilter=bootstrap.Modal.getOrCreateInstance(historyFilterEl);
     let historyDraft='all';
     function syncHistoryDraft() {
         $('[data-so-direction]').each(function () {
@@ -202,41 +204,20 @@ function initStockOpnameReference() {
         });
     }
     $('#so-history-filter-open').on('click',function () {
-        historyDraft=window.stockOpnameHistory?.direction || 'all';syncHistoryDraft();historyFilter.show();
+        historyDraft=window.stockOpnameHistory?.direction || 'all';syncHistoryDraft();erp.dialog.open(historyFilterEl,this);
     });
-    $(historyFilterEl).on('shown.bs.modal',function () {
-        $('.modal-backdrop').last().addClass('so-history-backdrop');
-        historyFilterEl.querySelector('.so-close').focus();
-    }).on('hidden.bs.modal',function () { document.getElementById('so-history-filter-open').focus(); });
     $('[data-so-direction]').on('click',function () { historyDraft=this.dataset.soDirection;syncHistoryDraft(); });
     function applyHistory(close = true) {
         if (window.stockOpnameHistory) window.stockOpnameHistory.direction=historyDraft;
-        renderStockOpnameHistory();if (close !== false) historyFilter.hide();
+        renderStockOpnameHistory();if (close !== false) erp.dialog.close(historyFilterEl);
     }
     $('#so-history-apply').on('click',applyHistory);
     $('#so-history-reset').on('click',function () {historyDraft='all';syncHistoryDraft();applyHistory(false);});
     const historyElement=document.getElementById('kt_stock_opname_history');
-    const historyDrawer=KTDrawer.getInstance(historyElement) || new KTDrawer(historyElement);
-    historyDrawer.on('kt.drawer.shown',function () {
-        historyElement.inert=false;
-        historyElement.setAttribute('aria-hidden','false');
-    });
-    historyDrawer.on('kt.drawer.after.hidden',function () {
-        historyElement.inert=true;
-        historyElement.setAttribute('aria-hidden','true');
+    // Closing the history returns to the detail sheet it was opened from.
+    $(historyElement).on('erp:dialog-close',function (event) {
+        if (event.target !== historyElement) return;
         const id=window.stockOpnameHistory?.id;
         if (id && window.stockOpnameRows[id]) setTimeout(() => openStockDetail(id),250);
-    });
-    function closeHistory() {
-        historyDrawer.hide();
-    }
-    document.getElementById('kt_stock_opname_history').addEventListener('keydown',function (event) {
-        if (document.querySelector('.so-reference-sheet.show')) return;
-        if (event.key === 'Escape') {event.preventDefault();closeHistory();return;}
-        if (event.key !== 'Tab') return;
-        const focusable=[...this.querySelectorAll('button,[tabindex="0"]')].filter(el => !el.disabled && el.getClientRects().length);
-        const first=focusable[0],last=focusable[focusable.length-1];
-        if (event.shiftKey && document.activeElement===first) {event.preventDefault();last?.focus();}
-        else if (!event.shiftKey && document.activeElement===last) {event.preventDefault();first?.focus();}
     });
 }

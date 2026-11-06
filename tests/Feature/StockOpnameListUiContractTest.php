@@ -52,7 +52,7 @@ final class StockOpnameListUiContractTest extends TestCase
         // separate edit/adjust/delete buttons: the correction fields and the save button follow `canCorrect`.
         $this->assertStringContainsString("const canCorrect = info.isPending && @json(check_access('stock-opname.update'));", $source);
         $this->assertStringContainsString("prop('disabled', !canCorrect)", $source);
-        $this->assertStringContainsString("find('[data-so-action=\"finalize\"]').toggleClass('d-none', !info.isPending)", $source);
+        $this->assertStringContainsString("find('[data-so-action=\"finalize\"]').prop('hidden', !info.isPending)", $source);
     }
 
     public function test_server_endpoints_and_filters_are_unchanged(): void

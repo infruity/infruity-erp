@@ -16,11 +16,6 @@
         .header-title { text-align: center; font-weight: bold; font-size: 20px; margin-bottom: 5px; color: #181c32; }
         .header-subtitle { text-align: center; font-size: 15px; margin-bottom: 30px; color: #7e8299; }
         .action-buttons { text-align: right; margin-bottom: 20px; }
-        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; transition: background-color 0.3s; }
-        .btn-primary { background: var(--erp-primary, #0b595b); color: white; }
-        .btn-primary:hover { background: var(--erp-primary-hover); }
-        .btn-light { background: var(--erp-canvas); color: #5e6278; margin-left: 8px; }
-        .btn-light:hover { background: #e4e6ef; color: #3f4254; }
         .preview-table { max-width:100%; overflow-x:auto; }
         .preview-table table { min-width:760px; }
         .preview-table :is(th,td):nth-child(2) { min-width:220px; }

@@ -38,7 +38,8 @@ final class StockOpnameHistoryUiContractTest extends TestCase
 
         $this->assertStringContainsString('/stock-opname/${id}/history', $source);
         $this->assertStringContainsString('id="kt_stock_opname_history"', $source);
-        $this->assertStringContainsString("KTDrawer.getInstance(drawerEl)", $source);
+        $this->assertStringContainsString("erp.dialog.open('kt_stock_opname_history')", $source);
+        $this->assertStringNotContainsString('KTDrawer', $source);
         $this->assertStringContainsString('id="history-transaction-code"', $source);
     }
 }

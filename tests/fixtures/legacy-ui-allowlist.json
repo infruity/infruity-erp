@@ -290,27 +290,8 @@
         "form-classes": 1,
         "select2": 5
     },
-    "Modules/Transaction/Resources/views/stock-opname/exports/preview.blade.php": {
-        "btn": 4
-    },
     "Modules/Transaction/Resources/views/stock-opname/index.blade.php": {
-        "data-bs": 8,
-        "data-kt": 34,
-        "keenicons": 10,
-        "bootstrap-icons": 2,
-        "form-classes": 17,
-        "btn": 25,
-        "badge-light": 1,
-        "modal-class": 15,
-        "select2": 10,
-        "bootstrap-js": 8,
-        "kt-js": 4,
-        "bs-utilities": 52,
-        "root-layout": 1
-    },
-    "Modules/Transaction/Resources/views/stock-opname/partials/reference-filters.blade.php": {
-        "data-bs": 2,
-        "modal-class": 6
+        "select2": 3
     },
     "Modules/Transaction/Resources/views/stock-out/index.blade.php": {
         "select2": 2
@@ -343,11 +324,6 @@
         "data-kt": 1,
         "badge-light": 1,
         "bs-utilities": 1
-    },
-    "public/assets/js/stock-opname-reference-page.js": {
-        "data-kt": 1,
-        "bootstrap-js": 2,
-        "kt-js": 2
     },
     "resources/js/erp/image-input.js": {
         "kt-js": 1

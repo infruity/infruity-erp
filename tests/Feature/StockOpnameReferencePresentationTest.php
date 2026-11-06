@@ -28,7 +28,7 @@ final class StockOpnameReferencePresentationTest extends TestCase
         $this->assertStringContainsString('ph-bold ph-arrow-down-left', $source);
         $this->assertStringContainsString('ph-bold ph-arrow-up-right', $source);
         $this->assertStringContainsString('#so-filter-sheet .so-filter-section', $css);
-        $this->assertStringContainsString('#so-filter-sheet .modal-content', $css);
+        $this->assertStringContainsString('#so-filter-sheet .so-sheet-panel', $css);
         $this->assertStringContainsString('max-height:88dvh', $css);
     }
 
@@ -39,6 +39,6 @@ final class StockOpnameReferencePresentationTest extends TestCase
         $this->assertStringContainsString('Status Opname', $source);
         $this->assertStringContainsString('disabled aria-describedby="so-filter-limit"', $source);
         $this->assertStringContainsString('so-filter-draft-branch', $source);
-        $this->assertStringNotContainsString('data-kt-ecommerce-product-filter="cabang"', $source);
+        $this->assertStringNotContainsString('data-erp-filter="cabang"', $source);
     }
 }

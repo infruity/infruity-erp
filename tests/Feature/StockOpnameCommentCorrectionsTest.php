@@ -9,7 +9,7 @@ final class StockOpnameCommentCorrectionsTest extends TestCase
     {
         $source = file_get_contents(base_path('Modules/Transaction/Resources/views/stock-opname/index.blade.php'));
         $this->assertStringContainsString('id="so-detail-done"', $source);
-        $this->assertMatchesRegularExpression('/id="so-detail-done"[^>]*data-bs-dismiss="modal"[^>]*>Selesaikan opname<\/button>/', $source);
+        $this->assertMatchesRegularExpression('/id="so-detail-done"[^>]*data-erp-close[^>]*>Selesaikan opname<\/button>/', $source);
         $this->assertStringContainsString('Simpan Koreksi', $source);
         $this->assertStringContainsString('[data-so-action="finalize"]', $source);
         $this->assertStringContainsString('/stock-opname/${id}/finalize', $source);
@@ -20,10 +20,13 @@ final class StockOpnameCommentCorrectionsTest extends TestCase
         $this->assertStringContainsString(".prop('disabled', !canCorrect)", $source);
     }
 
-    public function test_responsive_rules_override_bootstrap_gutters_only_on_this_page(): void
+    public function test_page_is_full_bleed_on_mobile_without_touching_other_pages(): void
     {
         $css = file_get_contents(public_path('assets/css/stock-opname-reference.css'));
-        $this->assertMatchesRegularExpression('/#kt_content:has\(\.stock-opname-page\)[^{]*\{[^}]*padding-inline:0!important/', $css);
+        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/stock-opname/index.blade.php'));
+        // layouts.erp drops the gutter for pages that ask for it; no global override of the shell.
+        $this->assertStringContainsString("@section('dashboard-fullscreen', '1')", $view);
+        $this->assertStringNotContainsString('#kt_content', $css);
         $this->assertStringContainsString('overflow-wrap:anywhere', $css);
         $this->assertStringContainsString('.so-row__side', $css);
         $this->assertStringContainsString('.so-correction-error:empty', $css);

@@ -856,9 +856,19 @@ Ukuran: L. Semua batch berikutnya bergantung pada batch ini.
 - CSS inline `create2` ditulis ulang: `.card/.row/.col/.form-*/.btn/.modal-*/.select2-*` diganti kelas halaman (`wholesale-card`, `wholesale-summary__actions`, `wholesale-btn-draft/submit`) dan `.erp-picker__trigger`; blok tampilan dropdown select2 dihapus. Header dialog kini putih standar (sebelumnya hijau tua).
 - Test: `WholesaleEditBranchArrowTest` ditulis ulang (kontrak picker/dialog, tanpa select2/bundel Metronic); `wholesale-buttons.test.cjs` memakai tiruan `erp.dialog` dan `ErpPicker`, ditambah satu test untuk halaman edit/show.
 - Diuji di browser dengan akun Master: create (cabang, dialog tambah item, daftar produk), show (10 item, status, total) dan edit (10 item, dialog ubah item membaca nama/qty/harga/margin sungguhan). Tidak ada simpan: autosave draf membuat record, jadi item tidak ditambahkan saat uji.
-- Sisa B4: HTML di controller (`ProductReceipt`, `Sortir`, `Transfer`, `Wholesale`), dan `stock-opname/*`.
+- Sisa B4: HTML di controller (`ProductReceipt`, `Sortir`, `Transfer`, `Wholesale`), dan `stock-opname/*` (lihat B4e, B4f).
 
 **B4e (selesai): HTML di controller Transaction.** `SortirController::get_data`, `TransferController::get_data`, `WholesaleController::get_product`, dan `ProductReceiptController::get_product` kini merender sel lewat `DataTableCells` (judul/sub escaped, badge, menu `row-actions`; menu transfer/sortir memakai `can` per izin). `SortirController::get_data_old` (tanpa route) dihapus. Diperiksa langsung ke endpoint dengan data sungguhan (sortir 110, transfer 265, produk pengadaan 10): tidak ada `dropstart`/`badge-light`/`btn` tersisa. **Tersisa di B4:** `stock-opname/*`; kandidat mati baru (perlu persetujuan): `ProductReceiptController::get_data` (route `receipt/data`, tak dipanggil view mana pun) dan `ProductionController_temp.php` / `*.php.temp`.
+
+**B4f (selesai): `stock-opname/*`.** `index` pindah ke `layouts.erp` (`dashboard-fullscreen` menggantikan override `#kt_content`), sehingga tidak ada lagi Bootstrap/Metronic/KT di kluster ini:
+- Empat modal Bootstrap menjadi `<dialog>` native: form tambah/edit dan penyesuaian lewat `x-erp.dialog` (tombol simpan di footer memakai `form=`), sheet detail/filter/filter riwayat lewat `<dialog class="erp-dialog erp-dialog--sheet so-reference-sheet">` dengan `.so-sheet-panel` (kartu lama `.modal-content`). Sheet di bawah 768px menjadi bottom sheet.
+- Dua `KTDrawer` menjadi dialog drawer: riwayat (`erp-dialog--drawer`, 760px di desktop, penuh di mobile) dan diskusi (`x-erp.drawer`). Fokus-trap, Esc, dan z-index ditangani `<dialog>`; hack `.modal-backdrop.so-history-backdrop` dan penjebak Tab/Esc dihapus. Menutup riwayat tetap membuka kembali sheet detail.
+- Penulisan koreksi yang sedang berjalan: `hide.bs.modal` + `busy` diganti `lockDetail()` (dialog `data-static` + tombol tutup `disabled`), karena `close()` tidak bisa dibatalkan.
+- select2 dibuang; `ErpPicker` tetap dan handler `select2:select` dipasang langsung pada `#product_id`. Hook filter `data-kt-ecommerce-product-filter="cabang"` menjadi `data-erp-filter="cabang"`. Avatar diskusi memakai inisial (bukan `assets/media/avatars/*` Metronic).
+- ±110 aturan CSS inline yang tidak punya pemakai (kartu lama, `so-btn-*`, `history-*`, `so-detail__*`) dihapus.
+- `exports/preview`: aturan `.btn*` mati dihapus. Allowlist: sisa 3 temuan `select2` pada `index` (nama event kontrak `ErpPicker`).
+- Test: `StockOpnameCommentCorrections/History/List/ReferencePresentation` dipindah ke kontrak baru. `stock-opname-reference.test.cjs` tidak berubah.
+- Diuji di browser dengan akun Master (tanpa menyimpan): daftar, filter cabang + kalender, sheet detail, riwayat + filter riwayat + kembali ke detail, form tambah (picker produk, ringkasan selisih, baris detail, reset saat ditutup), dialog penyesuaian, drawer diskusi, tampilan mobile. Alur simpan koreksi/tambah/final **tidak** dijalankan di data lokal.
 
 ### B5 — POS (50 view)
 
