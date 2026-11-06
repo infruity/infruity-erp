@@ -92,9 +92,9 @@
         <x-erp.workspace class="so-workspace" title="Stok Opname" subtitle="Cocokkan stok fisik dan stok sistem."><x-slot:toolbar>
             <div class="erp-search so-desktop-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-so-search placeholder="Cari produk…" aria-label="Cari produk"></div>
             <x-erp.mobile-search class="so-mobile-search"><x-slot:input><input type="search" id="search" data-so-search class="erp-mobile-search__input" placeholder="Cari produk…" aria-label="Cari produk"></x-slot:input><x-slot:clear><button type="button" id="so-search-clear" class="erp-mobile-search__clear" aria-label="Hapus pencarian" hidden><i class="ph ph-x" aria-hidden="true"></i></button></x-slot:clear><x-slot:filter><button type="button" class="erp-mobile-search__filter" data-so-open-filter aria-label="Filter stok opname" aria-haspopup="dialog" aria-controls="so-filter-sheet"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></x-slot:filter></x-erp.mobile-search>
-            <button type="button" class="erp-action so-desktop-filter" data-so-open-filter aria-controls="so-filter-sheet"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button>
+            <x-erp.button icon="sliders-horizontal" class="so-desktop-filter" data-so-open-filter aria-controls="so-filter-sheet"><span id="active-branch-button-label">Filter</span></x-erp.button>
             <div hidden><select data-erp-filter="cabang"><option value="all">Semua Cabang</option>@foreach($branches as $branch)<option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>@endforeach</select><input type="hidden" id="kt_ecommerce_sales_flatpickr"></div>
-            @if(check_access('stock-opname.create'))<button type="button" class="erp-action erp-action--primary so-desktop-create" data-erp-open="#kt_modal_add_customer"><i class="ph ph-plus" aria-hidden="true"></i>Tambah stok opname</button>@endif
+            @if(check_access('stock-opname.create'))<x-erp.button variant="primary" icon="plus" class="so-desktop-create" data-erp-open="#kt_modal_add_customer">Tambah stok opname</x-erp.button>@endif
         </x-slot:toolbar><div class="erp-table-region"><table id="transaction-table" width="100%">
                     <thead class="hidden">
                         <tr>
@@ -170,9 +170,7 @@
                 <span class="erp-label so-form-label">Detail Quantity</span>
                 <div id="detail-qty-container" class="flex flex-col gap-3">
                 </div>
-                <button type="button" class="erp-action mt-3" onclick="addDetailRow()">
-                    <i class="ph ph-plus" aria-hidden="true"></i>Tambah Detail
-                </button>
+                <x-erp.button icon="plus" class="mt-3" onclick="addDetailRow()">Tambah Detail</x-erp.button>
             </div>
 
             <div>
@@ -183,13 +181,12 @@
         </form>
         <x-slot:footer>
             <div class="flex w-full justify-end gap-2">
-                <button type="button" class="erp-action" data-erp-close>Batal</button>
-                <button type="submit" form="kt_modal_add_customer_form" id="kt_modal_add_customer_submit"
-                    class="erp-action erp-action--primary">
+                <x-erp.button data-erp-close>Batal</x-erp.button>
+                <x-erp.button type="submit" variant="primary" form="kt_modal_add_customer_form" id="kt_modal_add_customer_submit">
                     <span class="indicator-label">Simpan Final</span>
                     <span class="indicator-progress hidden">Mohon tunggu...
                         <i class="erp-spinner ml-2" aria-hidden="true"></i></span>
-                </button>
+                </x-erp.button>
             </div>
         </x-slot:footer>
     </x-erp.dialog>
@@ -242,8 +239,8 @@
         </form>
         <x-slot:footer>
             <div class="flex w-full justify-end gap-2">
-                <button type="button" class="erp-action" data-erp-close>Batal</button>
-                <button type="submit" form="kt_modal_stock_adjustment_form" class="erp-action erp-action--primary" id="adj-submit-btn">Simpan</button>
+                <x-erp.button data-erp-close>Batal</x-erp.button>
+                <x-erp.button type="submit" variant="primary" form="kt_modal_stock_adjustment_form" id="adj-submit-btn">Simpan</x-erp.button>
             </div>
         </x-slot:footer>
     </x-erp.dialog>
@@ -265,7 +262,7 @@
             <form id="kt_stock_opname_discussion_form" class="flex w-full items-center gap-2">
                 <input type="hidden" id="discussion-stock-opname-id" name="stock_opname_id">
                 <input type="text" class="erp-input" id="discussion-message-input" placeholder="Tulis pesan..." required autocomplete="off" aria-label="Pesan">
-                <button type="submit" class="erp-action erp-action--primary shrink-0" aria-label="Kirim pesan"><i class="ph-bold ph-paper-plane-tilt" aria-hidden="true"></i></button>
+                <x-erp.button type="submit" variant="primary" icon="paper-plane-tilt" bold class="shrink-0" aria-label="Kirim pesan" />
             </form>
         </x-slot:footer>
     </x-erp.drawer>

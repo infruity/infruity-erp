@@ -109,7 +109,7 @@ Catatan Blade: di template inline, slot bernama (`<x-slot:x>`) yang langsung dii
 
 ### Class form dan data
 
-`erp-label` (+ `--required`), `erp-help`, `erp-error` (hubungkan lewat `aria-describedby`; set `aria-invalid="true"` pada kontrol), `erp-input`, `erp-select`, `erp-textarea`, `erp-check`, `erp-radio`, `erp-input-group` (+ `__addon`), `erp-table`, `erp-panel`, `erp-badge--*`, `erp-avatar--*`. Kontrol 44px, radius 12px, teks 16px di bawah 768px (mencegah zoom iOS). `erp-action` (+ `--primary`, `--danger`) tetap untuk tombol.
+`erp-label` (+ `--required`), `erp-help`, `erp-error` (hubungkan lewat `aria-describedby`; set `aria-invalid="true"` pada kontrol), `erp-input`, `erp-select`, `erp-textarea`, `erp-check`, `erp-radio`, `erp-input-group` (+ `__addon`), `erp-table`, `erp-panel`, `erp-badge--*`, `erp-avatar--*`. Kontrol 44px, radius 12px, teks 16px di bawah 768px (mencegah zoom iOS). Tombol di Blade memakai `<x-erp.button variant="primary|danger" icon="plus" bold :href="…">teks</x-erp.button>` (`href` menghasilkan `<a>`, tanpa `href` menjadi `<button type=…>`; atribut lain diteruskan). Kelas `erp-action` (+ `--primary`, `--danger`) tetap dipakai untuk HTML yang dibangun JS/PHP.
 
 ### Alat bantu migrasi (`scripts/ui-migrate`)
 
