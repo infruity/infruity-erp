@@ -1,109 +1,39 @@
-{{-- Modal Add Product --}}
-<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true" x-show="showAddModal"
-    style="display: none;">
-    <div class="modal-dialog erp-sheet-dialog modal-fullscreen-sm-down">
-        <div class="modal-content" x-data>
-            <div class="erp-sheet-header" style="background-color: #ff000d; color: #fff;">
-                <h5 class="modal-title" style="color: #fff">Tambah Produk</h5>
-                <button type="button" class="btn-close" @click="closeAddModal()"></button>
-            </div>
-            <div class="erp-sheet-body">
-                <!-- Select Produk -->
-                <div class="mb-3">
-                    <label class="form-label">Nama Produk</label>
-                    {{-- <select id="select_product" class="form-select"></select> --}}
-                    <input type="text" class="form-control" x-model="addProduct.name">
-                </div>
-
-                <!-- Satuan -->
-                <div class="row">
-                    <div class="col-3 mb-3">
-                        <label class="form-label">Satuan</label>
-                        <input type="text" class="form-control" x-model="addProduct.unit">
-                    </div>
-
-                    <!-- Harga -->
-                    <div class="col-9 mb-3">
-                        <label class="form-label">Harga</label>
-                        <input type="text" inputmode="numeric" class="form-control" x-model="formattedAddPrice">
-                    </div>
-                </div>
-
-                <!-- Quantity -->
-                <div class="mb-3">
-                    <label class="form-label">Quantity</label>
-                    <input type="number" class="form-control" step="0.01" min="0" x-model="addProduct.qty"
-                        @input="updateAddTotalFromQty">
-                </div>
-
-                <!-- Diskon -->
-                <div class="mb-3">
-                    <label class="form-label">Diskon (Rp jika > 100, % jika ≤ 100)</label>
-                    <input type="text" class="form-control" inputmode="numeric" :value="formatRupiah(addProduct.discountNominal || 0)"
-                        @input="updateDiscountValue">
-                </div>
-
-
-                <!-- Jumlah Harga -->
-                <div class="mb-3">
-                    <label class="form-label">Jumlah Harga</label>
-                    <input type="text" class="form-control" inputmode="numeric" x-model="addProduct.formattedAddTotalInput"
-                        @input="updateQtyFromAddTotal">
-                </div>
-            </div>
-            <div class="erp-sheet-footer">
-                <button class="btn btn-secondary" @click="closeAddModal()">Tutup</button>
-                <button class="btn btn-primary" @click="saveAddToCart()">Simpan</button>
-            </div>
+{{-- Dialog tambah / ubah item. Dibuka lewat erp.dialog.open() dari openAddModal()/openEditModal(). --}}
+<x-erp.dialog id="addModal" title="Tambah Produk" size="md" variant="sheet">
+    <div class="space-y-3">
+        <x-erp.field label="Nama Produk" for="add-product-name"><input id="add-product-name" type="text" class="erp-input" x-model="addProduct.name"></x-erp.field>
+        <div class="grid grid-cols-4 gap-3">
+            <x-erp.field label="Satuan" for="add-product-unit"><input id="add-product-unit" type="text" class="erp-input" x-model="addProduct.unit"></x-erp.field>
+            <x-erp.field label="Harga" for="add-product-price" class="col-span-3"><input id="add-product-price" type="text" inputmode="numeric" class="erp-input" x-model="formattedAddPrice"></x-erp.field>
         </div>
+        <x-erp.field label="Quantity" for="add-product-qty"><input id="add-product-qty" type="number" class="erp-input" step="0.01" min="0" x-model="addProduct.qty" @input="updateAddTotalFromQty"></x-erp.field>
+        <x-erp.field label="Diskon (Rp jika > 100, % jika ≤ 100)" for="add-product-discount"><input id="add-product-discount" type="text" class="erp-input" inputmode="numeric" :value="formatRupiah(addProduct.discountNominal || 0)" @input="updateDiscountValue"></x-erp.field>
+        <x-erp.field label="Jumlah Harga" for="add-product-total"><input id="add-product-total" type="text" class="erp-input" inputmode="numeric" x-model="addProduct.formattedAddTotalInput" @input="updateQtyFromAddTotal"></x-erp.field>
     </div>
-</div>
-{{-- Modal Edit --}}
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true"
-    x-show="editModal" style="display: none;">
-    <div class="modal-dialog erp-sheet-dialog modal-fullscreen-sm-down">
-        <div class="modal-content" x-data>
-            <div class="erp-sheet-header" style="background-color: #ff000d; color: #fff;">
-                <span class="fs-4 text-white fw-bold" x-text="editTitle"></span>
-            </div>
-            <div class="erp-sheet-body">
-                <div x-show="editItem">
-                    <div class="mb-3">
-                        <label class="form-label">Nama Product</label>
-                        <input type="text" class="form-control" x-model="editProductName">
-                    </div>
-                    <!-- Input Qty -->
-                    <div class="row mb-3">
-                        <div class="col-4">
-                            <label class="form-label">Satuan</label>
-                            <input type="text" class="form-control" step="0.01" min="0"
-                                x-model="editProductUnit">
-                        </div>
-                        <div class="col-8">
-                            <label class="form-label">Quantity</label>
-                            <input type="number" class="form-control" step="0.01" min="0" x-model="editQty"
-                                @input="updateTotalFromEditQty">
-                        </div>
-                    </div>
-                    <!-- Input Mode Harga -->
-                    <div class="mb-3">
-                        <label class="form-label">Harga Jual (Rp)</label>
-                        <input type="text" inputmode="numeric" class="form-control" x-model="editTotalFormatted"
-                            @input="updateEditTotalFormatted">
-                    </div>
-                    <!-- Diskon -->
-                    <div class="mb-3">
-                        <label class="form-label">Diskon (Rp jika > 100, % jika ≤ 100)</label>
-                        <input type="number" class="form-control" x-model="editDiscount" min="0"
-                            @input="updateEditDiscount">
-                    </div>
-                </div>
-            </div>
-            <div class="erp-sheet-footer">
-                <button class="btn btn-danger me-auto" @click="deleteFromCart()">Hapus Produk</button>
-                <button class="btn btn-secondary" @click="closeEditModal()">Batal</button>
-                <button class="btn btn-primary" @click="saveEditToCart()">Simpan</button>
-            </div>
+    <x-slot:footer>
+        <div class="flex w-full justify-end gap-2">
+            <x-erp.button @click="closeAddModal()">Tutup</x-erp.button>
+            <x-erp.button variant="primary" @click="saveAddToCart()">Simpan</x-erp.button>
         </div>
+    </x-slot:footer>
+</x-erp.dialog>
+
+<x-erp.dialog id="editModal" size="md" variant="sheet">
+    <x-slot:title><span x-text="editTitle"></span></x-slot:title>
+    <div x-show="editItem" class="space-y-3">
+        <x-erp.field label="Nama Product" for="edit-product-name"><input id="edit-product-name" type="text" class="erp-input" x-model="editProductName"></x-erp.field>
+        <div class="grid grid-cols-3 gap-3">
+            <x-erp.field label="Satuan" for="edit-product-unit"><input id="edit-product-unit" type="text" class="erp-input" x-model="editProductUnit"></x-erp.field>
+            <x-erp.field label="Quantity" for="edit-qty" class="col-span-2"><input id="edit-qty" type="number" class="erp-input" step="0.01" min="0" x-model="editQty" @input="updateTotalFromEditQty"></x-erp.field>
+        </div>
+        <x-erp.field label="Harga Jual (Rp)" for="edit-total"><input id="edit-total" type="text" inputmode="numeric" class="erp-input" x-model="editTotalFormatted" @input="updateEditTotalFormatted"></x-erp.field>
+        <x-erp.field label="Diskon (Rp jika > 100, % jika ≤ 100)" for="edit-discount"><input id="edit-discount" type="number" class="erp-input" x-model="editDiscount" min="0" @input="updateEditDiscount"></x-erp.field>
     </div>
-</div>
+    <x-slot:footer>
+        <div class="flex w-full gap-2">
+            <x-erp.button variant="danger" class="mr-auto" @click="deleteFromCart()">Hapus Produk</x-erp.button>
+            <x-erp.button @click="closeEditModal()">Batal</x-erp.button>
+            <x-erp.button variant="primary" @click="saveEditToCart()">Simpan</x-erp.button>
+        </div>
+    </x-slot:footer>
+</x-erp.dialog>

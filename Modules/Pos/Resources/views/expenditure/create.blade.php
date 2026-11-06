@@ -1,5 +1,9 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Transaksi pengeluaran')
+@section('page-title', 'Transaksi Pengeluaran')
+@section('page-breadcrumb')
+    <span>Keuangan</span><i class="ph ph-caret-right text-[0.55rem]" aria-hidden="true"></i><span>Pengeluaran</span>
+@endsection
 
 @section('content')
     <style>
@@ -87,116 +91,39 @@
         }
     </style>
 
-    <!--begin::Aside column-->
-    <div class="w-100 flex-lg-row-auto" x-data="posApp()" x-init="init()">
+    <div class="w-full" x-data="posApp()" x-init="init()">
         <div class="erp-editor"><div class="erp-editor-main"><section class="erp-editor-section"><header><i class="ph ph-identification-card" aria-hidden="true"></i><h2>Informasi transaksi</h2></header><div class="erp-editor-body">
-            <div class="d-flex flex-column gap-10 mb-3">
-                <!--begin::Input group-->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Pilih Tipe</label>
-                            <!--end::Label-->
-                            {{-- <!--begin::Editor-->
-                            <select class="form-select" id="type" name="type">
-                                <option value="pemasukan"
-                                    {{ isset($data) && $data->type == 'pemasukan' ? 'selected' : '' }}>Pemasukan</option>
-                                <option value="pengeluaran"
-                                    {{ isset($data) && $data->type == 'pengeluaran' ? 'selected' : '' }}>Pengeluaran
-                                </option>
-                            </select>
-                            <!--end::Editor--> --}}
-                        </div>
-                        <div x-data="transactionInput()">
-                            <!-- Judul -->
-                            <!-- Hidden input untuk type -->
-                            <input type="hidden" id="type" name="type" :value="type">
-
-                            <!-- Input + Tombol -->
-                            <div class="d-flex align-items-center gap-2">
-                                <!-- Tombol toggle -->
-                                <button type="button" class="btn"
-                                    :class="type === 'pemasukan' ? 'btn-success' : 'btn-danger'" @click="toggleType()">
-                                    <template x-if="type === 'pemasukan'">
-                                        <i class="bi bi-plus-lg"></i>
-                                    </template>
-                                    <template x-if="type === 'pengeluaran'">
-                                        <i class="bi bi-dash-lg"></i>
-                                    </template>
-                                </button>
-
-                                <!-- Input nominal -->
-                                <input type="text" name="amount_formatted" class="form-control text-end"
-                                    x-model="amountFormatted" @input="formatAmount($event)"
-                                    :placeholder="type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'" readonly>
-
-                                <!-- Hidden input nilai asli -->
-                                <input type="hidden" name="amount" :value="amount">
-                            </div>
-                        </div>
+            <div class="mb-3 space-y-3">
+                <div x-data="transactionInput()">
+                    <span class="erp-label erp-label--required">Pilih Tipe</span>
+                    <input type="hidden" id="type" name="type" :value="type">
+                    <div class="flex items-center gap-2">
+                        <x-erp.button class="shrink-0" aria-label="Ubah tipe transaksi" ::class="type === 'pemasukan' ? 'text-emerald-700' : 'text-red-600'" @click="toggleType()">
+                            <template x-if="type === 'pemasukan'"><i class="ph-bold ph-plus" aria-hidden="true"></i></template>
+                            <template x-if="type === 'pengeluaran'"><i class="ph-bold ph-minus" aria-hidden="true"></i></template>
+                        </x-erp.button>
+                        <input type="text" name="amount_formatted" class="erp-input text-right"
+                            x-model="amountFormatted" @input="formatAmount($event)"
+                            :placeholder="type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'" aria-label="Nominal" readonly>
+                        <input type="hidden" name="amount" :value="amount">
                     </div>
                 </div>
-                <!--end::Input group-->
-            </div>
-            <div class="d-flex flex-column gap-10 mb-3">
-                <!--begin::Input group-->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Pilih Cabang</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <select class="form-select" id="branch_id" name="branch_id">
-                                <option value="">Pilih Cabang</option>
-                            </select>
-                            <!--end::Editor-->
-                        </div>
-                    </div>
+                <x-erp.field label="Pilih Cabang" for="branch_id" required>
+                    <select class="erp-select" id="branch_id" name="branch_id">
+                        <option value="">Pilih Cabang</option>
+                    </select>
+                </x-erp.field>
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <x-erp.field label="Tanggal Transaksi" for="expenditure-date" required><input type="date" id="expenditure-date" class="erp-input" name="date" value="{{ date('Y-m-d') }}"></x-erp.field>
+                    <x-erp.field label="Nomor Faktur" for="expenditure-invoice" required><input type="text" id="expenditure-invoice" class="erp-input" name="invoice_number" value="{{ $invoice_number }}" readonly></x-erp.field>
                 </div>
-                <!--end::Input group-->
             </div>
-            <div class="d-flex flex-column gap-10">
-                <!--begin::Input group-->
-                <div class="row">
-                    <div class="col">
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Tanggal Transaksi</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <input type="date" class="form-control" name="date" value="{{ date('Y-m-d') }}">
-                            <!--end::Editor-->
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="fv-row">
-                            <!--begin::Label-->
-                            <label class="required form-label">Nomor Faktur</label>
-                            <!--end::Label-->
-                            <!--begin::Editor-->
-                            <input type="text" class="form-control" name="invoice_number" value="{{ $invoice_number }}"
-                                readonly>
-                            <!--end::Editor-->
-                        </div>
-                    </div>
-                </div>
-                <!--end::Input group-->
-            </div>
-        </div></section><section class="erp-editor-section"><header><i class="ph ph-shopping-cart" aria-hidden="true"></i><h2>Item transaksi</h2><div style="margin-left:auto"><div class="btn-group">
-                        <button type="button" class="btn btn-outline btn-outline-dashed btn-outline-primary"
-                            @click="openAddModal()">
-                            <i class="fa fa-plus"></i>
-                        </button>
-                    </div></div></header>@include('pos::expenditure.segment.cart')</section></div><aside class="erp-editor-summary"><h2>Ringkasan transaksi</h2>
-                {{-- Ringkasan --}}
+        </div></section><section class="erp-editor-section"><header><i class="ph ph-shopping-cart" aria-hidden="true"></i><h2>Item transaksi</h2><div class="ml-auto"><x-erp.button icon="plus" aria-label="Tambah item" @click="openAddModal()" /></div></header>@include('pos::expenditure.segment.cart')</section></div><aside class="erp-editor-summary"><h2>Ringkasan transaksi</h2>
                 @include('pos::expenditure.segment.ringkasan')
             </aside></div>
 
             @include('pos::expenditure.segment.modal-product')
 
     </div>
-    <!--end::Aside column-->
     @include('pos::expenditure.js-create')
 @endsection

@@ -57,12 +57,9 @@
 
             init() {
                 const self = this; // simpan konteks Alpine
-                $('#customer_id').on('select2:select', function(e) {
-                    const data = e.params.data;
-                    self.setMinimalPurchase(data.minimalPurchase || 0);
-                    self.setVoucher(data.voucher || 0);
-                    self.setDiscountGlobal(data.discount || 0);
-                });
+                // Esc / klik latar menutup dialog tanpa lewat closeXModal(): samakan status Alpine.
+                document.getElementById('addModal').addEventListener('erp:dialog-close', () => { self.showAddModal = false; });
+                document.getElementById('editModal').addEventListener('erp:dialog-close', () => { self.editModal = false; });
 
                 let url = '{{ Request::segment(3) }}';
                 if (url == 'edit' && !this._loaded) {
@@ -193,11 +190,7 @@
 
 
                 this.editModal = true;
-
-                setTimeout(() => {
-                    const modal = new bootstrap.Modal(document.getElementById('editModal'));
-                    modal.show();
-                }, 0);
+                erp.dialog.open('editModal');
             },
 
             updateEditTotalFormatted(e) {
@@ -292,62 +285,17 @@
 
             closeEditModal() {
                 this.editModal = false;
-                const modalEl = document.getElementById('editModal');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) modal.hide();
+                erp.dialog.close('editModal');
             },
 
             // Add Product Section
             openAddModal() {
                 this.showAddModal = true;
-                setTimeout(() => {
-                    const modal = new bootstrap.Modal(document.getElementById('addModal'));
-                    modal.show();
-
-                    // Init select2
-                    $('#select_product').select2({
-                        placeholder: 'Pilih produk',
-                        dropdownParent: $('#addModal'),
-                        ajax: {
-                            url: '/ajax/listProduct', // ganti sesuai route
-                            dataType: 'json',
-                            delay: 250,
-                            data: function(params) {
-                                return {
-                                    search: params.term, // term dari select2 untuk pencarian
-                                    type: 'non-pos', // contoh ambil dari input lain
-                                    status: 'aktif', // contoh nilai statis
-                                    limit: 10 // contoh parameter tambahan
-                                };
-                            },
-                            processResults: data => ({
-                                results: data.map(item => ({
-                                    id: item.id,
-                                    text: item.name,
-                                    unit: item.unit,
-                                    price: item.price,
-                                    hpp: item.hpp,
-                                }))
-                            })
-                        }
-                    }).on('select2:select', (e) => {
-                        const data = e.params.data;
-                        this.addProduct.id = data.id;
-                        this.addProduct.name = data.text;
-                        this.addProduct.unit = data.unit.abbreviation;
-                        this.addProduct.price = data.price;
-                        this.addProduct.hpp = data.hpp ?? 0;
-                        subtotal = this.addProduct.qty * this.addProduct.price;
-                        this.addProduct.formattedAddTotalInput = this.formatRupiah(this.addProduct
-                            .total);
-                        this.updateAddTotalFromQty();
-                    });
-                }, 0);
+                erp.dialog.open('addModal');
             },
             closeAddModal() {
                 this.showAddModal = false;
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
-                if (modal) modal.hide();
+                erp.dialog.close('addModal');
             },
             updateAddTotalFromQty() {
                 const qty = parseFloat(this.addProduct.qty) || 0;
@@ -467,7 +415,6 @@
                     qty: 1
                 };
                 // Reset Select2 input juga
-                $('#select_product').val(null).trigger('change');
             },
             // End Add Product Section
 
@@ -482,22 +429,6 @@
                 }, 0).toLocaleString('id-ID');
             },
 
-
-            showCartModal: false, // di dalam return {...}
-            openCartModal() {
-                this.showCartModal = true;
-                setTimeout(() => {
-                    const modal = new bootstrap.Modal(document.getElementById('cartModal'));
-                    modal.show();
-                }, 0);
-            },
-
-            closeCartModal() {
-                this.showCartModal = false;
-                const modalEl = document.getElementById('cartModal');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) modal.hide();
-            },
 
             // Update quantity item di cart
             updateCartItemQty(itemId, newQty) {

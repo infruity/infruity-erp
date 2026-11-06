@@ -55,33 +55,6 @@
         "badge-light": 1,
         "bs-utilities": 5
     },
-    "Modules/Pos/Resources/views/expenditure/create.blade.php": {
-        "bootstrap-icons": 2,
-        "fontawesome": 1,
-        "form-classes": 5,
-        "btn": 3,
-        "bs-utilities": 4,
-        "root-layout": 1
-    },
-    "Modules/Pos/Resources/views/expenditure/js/js-header.blade.php": {
-        "select2": 2
-    },
-    "Modules/Pos/Resources/views/expenditure/js/js-product.blade.php": {
-        "select2": 5,
-        "bootstrap-js": 6
-    },
-    "Modules/Pos/Resources/views/expenditure/segment/modal-product.blade.php": {
-        "form-classes": 12,
-        "btn": 5,
-        "modal-class": 6,
-        "bs-utilities": 2
-    },
-    "Modules/Pos/Resources/views/expenditure/segment/ringkasan.blade.php": {
-        "data-bs": 3,
-        "form-classes": 2,
-        "btn": 2,
-        "bs-utilities": 7
-    },
     "Modules/Pos/Resources/views/order-book/create.blade.php": {
         "bootstrap-icons": 1,
         "form-classes": 5,
