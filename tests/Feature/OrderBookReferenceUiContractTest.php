@@ -36,7 +36,7 @@ class OrderBookReferenceUiContractTest extends TestCase
             'class="erp-mobile-search__input"',
             '<x-slot:filter>',
             'class="erp-mobile-search__filter order-book-filter-trigger"',
-            'class="erp-search hidden md:flex"',
+            'class="erp-search max-md:!hidden"',
             'id="search-desktop"',
             '$searchInputs = $(\'[data-erp-filter="search"]\');',
             '$searchInputs.on(\'input\', function() {',
