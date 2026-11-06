@@ -31,7 +31,7 @@
 
     function fromRow(row, data = {}, timezone = 'Asia/Jakarta') {
         const monthNames = { May: 'Mei', Aug: 'Agu', Oct: 'Okt', Dec: 'Des' };
-        const created = text(row.cells[1]?.querySelector('.text-muted')?.textContent)
+        const created = text(row.cells[1]?.querySelector('[data-ob-date]')?.textContent)
             .replace(/\b(May|Aug|Oct|Dec)\b/g, month => monthNames[month])
             .replace(/,?\s+(\d{2}:\d{2})$/, ', $1');
         let edited = '';
@@ -46,13 +46,13 @@
             }
         }
         return normalize({
-            customer_name: text(row.cells[0]?.querySelector('a.text-gray-800')?.textContent) || text(data.customer?.name),
+            customer_name: text(row.cells[0]?.querySelector('a[data-ob-name]')?.textContent) || text(data.customer?.name),
             customer_phone: text(data.customer?.whatsapp),
-            branch_name: text(row.cells[0]?.querySelector('.badge-light-primary')?.textContent),
+            branch_name: text(row.cells[0]?.querySelector('[data-ob-branch]')?.textContent),
             created_at: created,
             created_by_name: text(data.created_by_name),
             updated_at: edited,
-            locked: /\bLocked\b/i.test(row.cells[row.cells.length - 1]?.textContent || '')
+            locked: /\b(Locked|Terkunci)\b/i.test(row.cells[row.cells.length - 1]?.textContent || '')
         });
     }
 
@@ -93,7 +93,7 @@
                         .filter(row => !row.classList.contains('child') && row.cells.length > 1 && row.style.display !== 'none');
                     collection?.querySelectorAll('.erp-record-list > article.erp-record').forEach((record, index) => {
                         const row = rows[index];
-                        const name = row?.cells[0]?.querySelector('a.text-gray-800');
+                        const name = row?.cells[0]?.querySelector('a[data-ob-name]');
                         if (!row || text(name?.textContent) !== text(record.querySelector('.erp-record__title')?.textContent)) return;
                         // Bind once to the actual DOM row. A stale record must never resolve to a newer row at the same index.
                         if (!recordRows.has(record)) recordRows.set(record, row);
@@ -104,7 +104,7 @@
                         }
                     });
                     rows.forEach(row => {
-                        const name = row.cells[0]?.querySelector('a.text-gray-800');
+                        const name = row.cells[0]?.querySelector('a[data-ob-name]');
                         if (!name) return;
                         name.setAttribute('aria-haspopup', 'dialog');
                         name.setAttribute('aria-controls', 'order-book-detail-dialog');
@@ -114,7 +114,7 @@
                 clickHandler = event => {
                     if (event.button !== 0 || !(event.target instanceof Element)) return;
                     const head = event.target.closest('[data-erp-collection="pos-table"] .erp-record__head');
-                    const name = event.target.closest('#pos-table tbody a.text-gray-800');
+                    const name = event.target.closest('#pos-table tbody a[data-ob-name]');
                     if (!head && !name) return;
                     if (!head && (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)) return;
                     event.preventDefault();
@@ -158,7 +158,7 @@
             renderActions(row) {
                 const host = this.$refs.detailActions;
                 host.replaceChildren();
-                const originals = [...row.cells[row.cells.length - 1].querySelectorAll('.dropdown-menu a')];
+                const originals = [...row.cells[row.cells.length - 1].querySelectorAll('[data-erp-action-copies] a, [data-erp-action-copies] button')];
                 const posLink = row.cells[0].querySelector('a[title="Lihat POS"]');
                 if (posLink) originals.push(posLink);
                 originals.map(original => ({ original, action: actionFor(original, posLink, window.location.origin) }))
@@ -167,7 +167,7 @@
                     .forEach(({ original, action }) => {
                         const copy = document.createElement(action.isDelete ? 'button' : 'a');
                         const primary = !action.isDelete && !action.isEdit;
-                        const pending = primary && /^(draft|temp|pending)$/i.test(text(row.cells[1].querySelector('.badge')?.textContent));
+                        const pending = primary && /^(draft|temp|pending)$/i.test(text(row.cells[1].querySelector('.erp-badge')?.textContent));
                         copy.className = 'order-book-detail__action' + (action.isDelete ? ' order-book-detail__action--delete' : primary ? ' order-book-detail__action--primary' : '') + (pending ? ' order-book-detail__action--pending' : '');
                         copy.textContent = action.label;
                         if (action.isDelete) copy.type = 'button';
@@ -200,7 +200,7 @@
                 trigger?.setAttribute('aria-expanded', 'false');
                 if (restoreFocus) this.$nextTick(() => {
                     if (trigger?.isConnected && trigger.getClientRects().length) trigger.focus();
-                    else [...document.querySelectorAll('[data-kt-ecommerce-product-filter="search"]')]
+                    else [...document.querySelectorAll('[data-erp-filter="search"]')]
                         .find(input => input.getClientRects().length)?.focus();
                 });
             },

@@ -2,6 +2,7 @@
 
 namespace Modules\Pos\Http\Controllers;
 
+use App\Support\DataTableCells;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -458,113 +459,61 @@ class OrderBookController extends Controller
             ->addIndexColumn()
             ->addColumn('created_by_name', fn ($item) => $item->user?->nm_user)
             ->addColumn('name', function ($item) {
-                $warningIcon = $item->updated_at ? '<span class="text-warning mx-1" title="Terakhir diedit" style="font-size: 0.75rem;">⚠️</span>' : '';
                 $parcelBadge = $this->containsParcelKeyword($item->note ?? '')
-                    ? '<span class="badge badge-light-success p-1 ms-2" title="Ada Parcel" style="font-size: 1rem;"><i class="bi bi-box text-success" style="font-size: 1rem;"></i></span>'
+                    ? '<span class="erp-badge erp-badge--success" title="Ada Parcel"><i class="ph ph-package" aria-hidden="true"></i></span>'
                     : '';
 
                 $customerName = 'Pelanggan Umum';
                 if (isset($item->customer->name)) {
-                    $waLast4 = !empty($item->customer->whatsapp) ? ' (' . substr($item->customer->whatsapp, -4) . ')' : '';
+                    $waLast4 = ! empty($item->customer->whatsapp) ? ' (' . substr($item->customer->whatsapp, -4) . ')' : '';
                     $customerName = $item->customer->name . $waLast4;
                 }
 
                 $posLink = '';
                 if ($item->status == 'done' && $item->pos) {
-                    $posLink = '<a href="'.route('pos.show', $item->pos->id).'" class="badge badge-info mt-1 px-2 py-1" style="width: fit-content;" title="Lihat POS"><i class="bi bi-box-arrow-up-right text-white me-1"></i> POS</a>';
+                    $posLink = '<a href="' . e(route('pos.show', $item->pos->id)) . '" class="erp-badge erp-badge--info mt-1 w-fit" title="Lihat POS"><i class="ph ph-arrow-square-out" aria-hidden="true"></i>POS</a>';
                 }
 
-                $html = '<div class="d-flex flex-column">';
-                
-                // Row 1: Customer Name + Icons
-                $html .= '<div class="d-flex align-items-center mb-1">';
-                $html .= '<a href="javascript:void(0)" class="text-gray-800 text-hover-primary fs-6 fw-bold">' . $customerName . '</a>';
-                $html .= $parcelBadge;
-                $html .= '</div>';
+                $edited = $item->updated_at != null
+                    ? '<span class="text-[11px] text-gray-400">⚠️ Diedit: ' . e($item->updated_at->format('d/m/y H:i')) . '</span>'
+                    : '';
 
-                // Row 2: Metadata (Edit Date and Branch)
-                $html .= '<div class="d-flex align-items-center flex-wrap gap-2">';
-                if ($item->updated_at != null) {
-                    $html .= '<span class="text-muted" style="font-size: 0.7rem;">' . $warningIcon . ' Diedit: ' . $item->updated_at->format('d/m/y H:i') . '</span>';
-                }
-                $html .= '<span class="badge badge-light-primary px-2 py-1">' . e($item->branch->name) . '</span>';
-                $html .= '</div>';
-
-                if ($posLink != '') {
-                    $html .= $posLink;
-                }
-
-                $html .= '</div>';
-                return $html;
+                return '<div class="flex flex-col">'
+                    . '<div class="mb-1 flex items-center gap-1"><a href="javascript:void(0)" data-ob-name class="text-sm font-bold text-gray-800 hover:text-teal">' . e($customerName) . '</a>' . $parcelBadge . '</div>'
+                    . '<div class="flex flex-wrap items-center gap-2">' . $edited . '<span data-ob-branch>' . DataTableCells::badge((string) ($item->branch->name ?? ''), 'primary') . '</span></div>'
+                    . $posLink
+                    . '</div>';
             })
             ->addColumn('date', function ($item) {
-                $html = '<span class="text-muted d-block fs-8">' . date('d M Y H:i', strtotime($item->created_at)) . '</span>';
-                if ($item->status == 'draft') {
-                    $html .= '<span class="badge badge-light-danger">Draft</span>';
-                } else if ($item->status == 'done') {
-                    $html .= '<span class="badge badge-light-success">Selesai</span>';
-                } else if ($item->status == 'process') {
-                    $html .= '<span class="badge badge-light-warning">Proses</span>';
-                } else {
-                    $html .= '<span class="badge badge-light-warning">' . $item->status . '</span>';
-                }
-                return $html;
+                $status = match ($item->status) {
+                    'draft' => DataTableCells::badge('Draft', 'danger'),
+                    'done' => DataTableCells::badge('Selesai', 'success'),
+                    'process' => DataTableCells::badge('Proses', 'warning'),
+                    default => DataTableCells::badge((string) $item->status, 'warning'),
+                };
+
+                return '<span data-ob-date class="block text-xs text-gray-500">' . e(date('d M Y H:i', strtotime($item->created_at))) . '</span>' . $status;
             })
             ->editColumn('status', function ($item) {
-                $html = '';
-                if ($item->status == 'pending') {
-                    $html .= '<span class="badge badge-light-danger">Proses</span>';
-                } else if ($item->status == 'done') {
-                    $html .= '<span class="badge badge-light-success">Selesai</span>';
-                } else {
-                    $html .= '<span class="badge badge-light-warning">' . $item->status . '</span>';
-                }
-                return $html;
+                return match ($item->status) {
+                    'pending' => DataTableCells::badge('Proses', 'danger'),
+                    'done' => DataTableCells::badge('Selesai', 'success'),
+                    default => DataTableCells::badge((string) $item->status, 'warning'),
+                };
             })
             ->addColumn('action', function ($item) {
                 if ($item->status == 'done' && $item->pos) {
-                    return '<span class="badge badge-light-secondary"><i class="bi bi-lock-fill"></i> Locked</span>';
+                    return DataTableCells::locked('Terkunci');
                 }
 
-                $html = '';
-                $html .= '
-                    <div class="dropstart">
-                        <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
-                $isRecent = false;
-                $timeRef = isset($item->updated_at) ? $item->updated_at : (isset($item->created_at) ? $item->created_at : null);
-                if ($timeRef && \Carbon\Carbon::parse($timeRef)->diffInMinutes(now()) <= 30) {
-                    $isRecent = true;
-                }
+                $timeRef = $item->updated_at ?? $item->created_at ?? null;
+                $isRecent = $timeRef && \Carbon\Carbon::parse($timeRef)->diffInMinutes(now()) <= 30;
 
-                if (in_array($item->status, ['temp', 'draft']) || $isRecent) {
-                    $html .= '
-                            <li>
-                                <a class="dropdown-item" href="' . route('order-book.edit', $item->id) . '">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                            </li>';
-                }
-                $html .= '
-                            <li>
-                                <a class="dropdown-item" href="' . route('order-book.order', $item->id) . '" tooltip="Proses Pesanan" title="Proses Pesanan">
-                                    <i class="bi bi-box"></i>
-                                </a>
-                            </li>';
-                $html .= '
-                            <li>
-                                <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $item->id . ')">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </li>';
-
-                $html .= '
-                        </ul>
-                    </div>
-                    ';
-                return $html;
+                return DataTableCells::rowActions([
+                    ['label' => 'Edit', 'icon' => 'pencil-simple', 'href' => route('order-book.edit', $item->id), 'can' => in_array($item->status, ['temp', 'draft']) || $isRecent],
+                    ['label' => 'Proses Pesanan', 'icon' => 'package', 'href' => route('order-book.order', $item->id)],
+                    ['label' => 'Hapus', 'icon' => 'trash', 'onclick' => 'deleteProduct(' . (int) $item->id . ')', 'tone' => 'danger'],
+                ], 'Aksi pesanan');
             })
             ->rawColumns(['name', 'action', 'date'])
             // branch is eager-loaded only for the badge; keep it out of the JSON as before.

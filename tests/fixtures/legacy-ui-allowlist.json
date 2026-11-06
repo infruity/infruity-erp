@@ -25,13 +25,6 @@
         "badge-light": 9,
         "bs-utilities": 26
     },
-    "Modules/Pos/Http/Controllers/OrderBookController.php": {
-        "data-bs": 1,
-        "bootstrap-icons": 7,
-        "btn": 2,
-        "badge-light": 10,
-        "bs-utilities": 10
-    },
     "Modules/Pos/Http/Controllers/PosController.php": {
         "data-bs": 2,
         "bootstrap-icons": 5,
@@ -63,13 +56,6 @@
         "select2": 2,
         "bootstrap-js": 2,
         "root-layout": 1
-    },
-    "Modules/Pos/Resources/views/order-book/index.blade.php": {
-        "data-kt": 14,
-        "btn": 4,
-        "bs-utilities": 6,
-        "root-layout": 1,
-        "hex-class": 42
     },
     "Modules/Pos/Resources/views/order-book/order.blade.php": {
         "data-bs": 5,
@@ -216,11 +202,6 @@
     },
     "public/assets/js/erp-picker.js": {
         "select2": 12
-    },
-    "public/assets/js/order-book-detail.js": {
-        "data-kt": 1,
-        "badge-light": 1,
-        "bs-utilities": 1
     },
     "resources/js/erp/image-input.js": {
         "kt-js": 1

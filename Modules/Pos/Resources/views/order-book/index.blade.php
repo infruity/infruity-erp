@@ -1,5 +1,9 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Pesanan')
+@section('page-title', 'Pesanan')
+@section('page-breadcrumb')
+    <span>Penjualan</span><i class="ph ph-caret-right text-[0.55rem]" aria-hidden="true"></i><span>Pesanan</span>
+@endsection
 
 @php
     $orderBookFilterBranches = $branches->map(static fn ($branch) => [
@@ -62,14 +66,14 @@
 </style>
 <x-erp.workspace class="order-book-workspace" title="Pesanan" subtitle="Kelola pesanan dan lihat rincian transaksi."
     x-data="orderBookFilterSheet()"
-    @keydown.escape.window="closeFilter()"><x-slot:toolbar><div class="order-book-toolbar-controls"><div class="erp-search d-none d-md-flex"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-kt-ecommerce-product-filter="search" aria-label="Cari pesanan" placeholder="Cari..."></div><x-erp.mobile-search class="order-book-mobile-search erp-mobile-search-shell--fill"><x-slot:input><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari pesanan" placeholder="Cari..." class="erp-mobile-search__input"></x-slot:input><x-slot:filter><button type="button" class="erp-mobile-search__filter order-book-filter-trigger" aria-label="Filter pesanan" aria-haspopup="dialog" aria-controls="order-book-filter-sheet" :aria-expanded="filterOpen" :class="hasActiveFilters ? 'is-active' : ''" x-ref="filterTrigger" @click="openFilter()"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label" class="order-book-filter-label">Filter</span></button></x-slot:filter></x-erp.mobile-search></div><div hidden aria-hidden="true">
-                            <select id="order-book-status-filter" data-kt-ecommerce-product-filter="status">
+    @keydown.escape.window="closeFilter()"><x-slot:toolbar><div class="order-book-toolbar-controls"><div class="erp-search hidden md:flex"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-erp-filter="search" aria-label="Cari pesanan" placeholder="Cari..."></div><x-erp.mobile-search class="order-book-mobile-search erp-mobile-search-shell--fill"><x-slot:input><input type="search" id="search" data-erp-filter="search" aria-label="Cari pesanan" placeholder="Cari..." class="erp-mobile-search__input"></x-slot:input><x-slot:filter><button type="button" class="erp-mobile-search__filter order-book-filter-trigger" aria-label="Filter pesanan" aria-haspopup="dialog" aria-controls="order-book-filter-sheet" :aria-expanded="filterOpen" :class="hasActiveFilters ? 'is-active' : ''" x-ref="filterTrigger" @click="openFilter()"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label" class="order-book-filter-label">Filter</span></button></x-slot:filter></x-erp.mobile-search></div><div hidden aria-hidden="true">
+                            <select id="order-book-status-filter" data-erp-filter="status">
                                 <option value="all">Semua Status</option>
                                 <option value="draft">Pending</option>
                                 <option value="process">Proses</option>
                                 <option value="done">Selesai</option>
                             </select>
-                            <select id="order-book-branch-filter" data-kt-ecommerce-product-filter="cabang">
+                            <select id="order-book-branch-filter" data-erp-filter="cabang">
                                 <option value="all">Semua Cabang</option>
                                 @foreach ($orderBookFilterBranches as $branch)
                                     <option value="{{ $branch['id'] }}">{{ $branch['name'] }}</option>
@@ -78,18 +82,18 @@
                             <input type="hidden" id="kt_ecommerce_sales_flatpickr" value="">
                         </div>@if(check_access('order-book.create'))<x-erp.button variant="primary" icon="plus" bold :href="url('order-book/create')" class="order-book-create">Tambah Pesanan</x-erp.button>@endif</x-slot:toolbar>
 <script type="application/json" id="order-book-filter-config">@json(['branches' => $orderBookFilterBranches, 'timezone' => config('app.timezone')])</script>
-<x-erp.collection table="pos-table"><table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
+<x-erp.collection table="pos-table"><table class="erp-table" id="pos-table" width="100%">
                     <thead>
-                        <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
+                        <tr>
                             <th class="text-start min-w-150px">Nama Pelanggan</th>
                             <th class="text-start min-w-150px">Tanggal Proses</th>
                             <th></th>
                         </tr>
                     </thead>
-                    <tbody class="fw-semibold text-gray-600"></tbody>
+                    <tbody></tbody>
                 </table></x-erp.collection>
     <template x-teleport="body">
-    <div id="order-book-filter-sheet" class="fixed inset-0 z-[1100] flex items-end justify-center p-0 sm:items-center sm:p-[16px] font-sans text-[16px] leading-normal text-[#1f2937]" x-show="filterOpen" x-cloak x-transition:enter="transition-opacity duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+    <div id="order-book-filter-sheet" class="fixed inset-0 z-[1100] flex items-end justify-center p-0 sm:items-center sm:p-[16px] font-sans text-[16px] leading-normal text-gray-800" x-show="filterOpen" x-cloak x-transition:enter="transition-opacity duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
         <button type="button" class="absolute inset-0 bg-black/60 backdrop-blur-sm" aria-label="Tutup filter" @click="closeFilter()"></button>
 
         <section class="relative z-10 flex h-auto max-h-[88vh] max-h-[88dvh] w-full max-w-[512px] flex-col overflow-hidden rounded-t-[24px] bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl sm:rounded-[24px] sm:pb-0" role="dialog" aria-modal="true" aria-labelledby="order-book-filter-title" tabindex="-1" x-ref="filterPanel" @click.stop @keydown.tab="trapFilterFocus($event)" x-show="filterOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full sm:translate-y-4 sm:scale-95 sm:opacity-0" x-transition:enter-end="translate-y-0 sm:scale-100 sm:opacity-100" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 sm:scale-100 sm:opacity-100" x-transition:leave-end="translate-y-full sm:translate-y-4 sm:scale-95 sm:opacity-0">
@@ -97,22 +101,22 @@
 
             <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-[20px] py-[16px]">
                 <div>
-                    <h2 id="order-book-filter-title" class="text-[16px] leading-[24px] font-bold text-[#1f2937] sm:text-[18px] sm:leading-[28px]">Filter Pesanan</h2>
-                    <p class="mt-[2px] text-[11px] text-[#9ca3af]">Saring cabang, status, dan periode tanggal pesanan</p>
+                    <h2 id="order-book-filter-title" class="text-[16px] leading-[24px] font-bold text-gray-800 sm:text-[18px] sm:leading-[28px]">Filter Pesanan</h2>
+                    <p class="mt-[2px] text-[11px] text-gray-400">Saring cabang, status, dan periode tanggal pesanan</p>
                 </div>
-                <button type="button" class="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-gray-100 text-[#6b7280] transition-colors hover:bg-gray-200" aria-label="Tutup filter" x-ref="filterCloseButton" @click="closeFilter()"><i class="ph-bold ph-x text-[14px] leading-[20px]" aria-hidden="true"></i></button>
+                <button type="button" class="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200" aria-label="Tutup filter" x-ref="filterCloseButton" @click="closeFilter()"><i class="ph-bold ph-x text-[14px] leading-[20px]" aria-hidden="true"></i></button>
             </header>
 
             <div class="min-h-0 flex-1 space-y-[16px] overflow-y-auto overscroll-none p-[20px]">
                 <div x-show="!calOpen" class="space-y-[16px]">
                     <section>
                         <div class="mb-[6px] flex items-center justify-between">
-                            <h3 class="text-[10px] font-semibold uppercase tracking-wider text-[#6b7280]">Cabang Tujuan</h3>
+                            <h3 class="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Cabang Tujuan</h3>
                             <button type="button" x-show="draftBranch !== 'all'" @click="draftBranch = 'all'" class="text-[10px] font-semibold text-red-500 transition-colors hover:text-red-600">Reset</button>
                         </div>
                         <div class="flex flex-col overflow-hidden rounded-[12px] border-[1px] border-solid border-gray-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
                             <div class="relative shrink-0 border-b border-gray-100">
-                                <i class="ph-bold ph-magnifying-glass absolute left-[12px] top-1/2 -translate-y-1/2 text-[12px] leading-[16px] text-[#9ca3af]" aria-hidden="true"></i>
+                                <i class="ph-bold ph-magnifying-glass absolute left-[12px] top-1/2 -translate-y-1/2 text-[12px] leading-[16px] text-gray-400" aria-hidden="true"></i>
                                 <input type="search" x-model="branchSearchQuery" placeholder="Cari cabang..." aria-label="Cari cabang tujuan" autocomplete="off" class="w-full border-0 bg-transparent py-[8px] pl-[32px] pr-[12px] text-[16px] leading-[16px] outline-none transition-colors focus:bg-gray-50">
                             </div>
                             <div class="max-h-[128px] divide-y divide-gray-100/60 overflow-y-auto overscroll-none bg-gray-50/30">
@@ -121,7 +125,7 @@
                                         <input type="radio" name="orderBookDraftBranch" value="all" x-model="draftBranch" class="peer h-[16px] w-[16px] appearance-none rounded-full border-[2px] border-solid border-gray-300 transition-colors checked:border-emerald-500">
                                         <span class="absolute h-[8px] w-[8px] scale-0 rounded-full bg-emerald-500 transition-transform peer-checked:scale-100"></span>
                                     </span>
-                                    <span class="text-[12px] leading-[16px]" :class="draftBranch === 'all' ? 'font-bold text-[#111827]' : 'font-medium text-[#374151]'">Semua Cabang</span>
+                                    <span class="text-[12px] leading-[16px]" :class="draftBranch === 'all' ? 'font-bold text-gray-900' : 'font-medium text-gray-700'">Semua Cabang</span>
                                 </label>
                                 <template x-for="branch in filteredBranches" :key="branch.id">
                                     <label class="flex cursor-pointer items-center gap-[12px] px-[14px] py-[8px] transition-colors hover:bg-gray-50">
@@ -129,46 +133,46 @@
                                             <input type="radio" name="orderBookDraftBranch" :value="branch.id" x-model="draftBranch" class="peer h-[16px] w-[16px] appearance-none rounded-full border-[2px] border-solid border-gray-300 transition-colors checked:border-emerald-500">
                                             <span class="absolute h-[8px] w-[8px] scale-0 rounded-full bg-emerald-500 transition-transform peer-checked:scale-100"></span>
                                         </span>
-                                        <span class="text-[12px] leading-[16px]" :class="draftBranch === branch.id ? 'font-bold text-[#111827]' : 'font-medium text-[#374151]'" x-text="branch.name"></span>
+                                        <span class="text-[12px] leading-[16px]" :class="draftBranch === branch.id ? 'font-bold text-gray-900' : 'font-medium text-gray-700'" x-text="branch.name"></span>
                                     </label>
                                 </template>
-                                <div x-show="filteredBranches.length === 0" class="py-[12px] text-center text-[12px] leading-[16px] text-[#9ca3af]">Cabang tidak ditemukan</div>
+                                <div x-show="filteredBranches.length === 0" class="py-[12px] text-center text-[12px] leading-[16px] text-gray-400">Cabang tidak ditemukan</div>
                             </div>
                         </div>
                     </section>
 
                     <section>
                         <div class="mb-[6px] flex items-center justify-between">
-                            <h3 class="text-[10px] font-semibold uppercase tracking-wider text-[#6b7280]">Status Pesanan</h3>
+                            <h3 class="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Status Pesanan</h3>
                             <button type="button" x-show="draftStatus !== 'all'" @click="draftStatus = 'all'" class="text-[10px] font-semibold text-red-500 transition-colors hover:text-red-600">Reset</button>
                         </div>
                         <div class="mt-[4px] flex flex-wrap gap-[8px]">
                             <template x-for="status in statusOptions" :key="status.value">
-                                <button type="button" @click="draftStatus = status.value" :aria-pressed="draftStatus === status.value" class="cursor-pointer rounded-full border-[1px] border-solid px-[12px] py-[6px] text-[12px] leading-[16px] transition-colors" :class="draftStatus === status.value ? 'border-emerald-300 bg-emerald-50 font-semibold text-emerald-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'border-gray-200 bg-white font-medium text-[#4b5563] hover:border-emerald-300'" x-text="status.label"></button>
+                                <button type="button" @click="draftStatus = status.value" :aria-pressed="draftStatus === status.value" class="cursor-pointer rounded-full border-[1px] border-solid px-[12px] py-[6px] text-[12px] leading-[16px] transition-colors" :class="draftStatus === status.value ? 'border-emerald-300 bg-emerald-50 font-semibold text-emerald-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'border-gray-200 bg-white font-medium text-gray-600 hover:border-emerald-300'" x-text="status.label"></button>
                             </template>
                         </div>
                     </section>
 
                     <section>
                         <div class="mb-[6px] flex items-center justify-between">
-                            <h3 class="text-[10px] font-semibold uppercase tracking-wider text-[#6b7280]">Periode Tanggal</h3>
+                            <h3 class="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Periode Tanggal</h3>
                             <button type="button" x-show="draftStartDate || draftEndDate" @click="draftStartDate = ''; draftEndDate = ''" class="text-[10px] font-semibold text-red-500 transition-colors hover:text-red-600">Reset</button>
                         </div>
                         <div class="flex w-full flex-col gap-[8px] sm:flex-row">
-                            <button type="button" aria-label="Tanggal mulai" :aria-expanded="calOpen" x-ref="dateRangeStart" @click="toggleCalendar('start')" class="flex flex-1 cursor-pointer items-center gap-[8px] rounded-[12px] border-[1px] border-solid bg-white px-[12px] py-[10px] text-left text-[12px] leading-[16px] text-[#374151] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
-                                <span class="w-[32px] text-[10px] font-bold text-[#9ca3af]">DARI</span>
-                                <span class="text-[12px] leading-[16px] font-medium" :class="draftStartDate ? 'text-[#1f2937]' : 'text-[#9ca3af]'" x-text="draftStartDate ? formatDisplayDate(draftStartDate) : 'Pilih Tanggal'"></span>
+                            <button type="button" aria-label="Tanggal mulai" :aria-expanded="calOpen" x-ref="dateRangeStart" @click="toggleCalendar('start')" class="flex flex-1 cursor-pointer items-center gap-[8px] rounded-[12px] border-[1px] border-solid bg-white px-[12px] py-[10px] text-left text-[12px] leading-[16px] text-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
+                                <span class="w-[32px] text-[10px] font-bold text-gray-400">DARI</span>
+                                <span class="text-[12px] leading-[16px] font-medium" :class="draftStartDate ? 'text-gray-800' : 'text-gray-400'" x-text="draftStartDate ? formatDisplayDate(draftStartDate) : 'Pilih Tanggal'"></span>
                             </button>
-                            <button type="button" aria-label="Tanggal akhir" :aria-expanded="calOpen" x-ref="dateRangeEnd" @click="toggleCalendar('end')" class="flex flex-1 cursor-pointer items-center gap-[8px] rounded-[12px] border-[1px] border-solid bg-white px-[12px] py-[10px] text-left text-[12px] leading-[16px] text-[#374151] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
-                                <span class="w-[32px] text-[10px] font-bold text-[#9ca3af]">KE</span>
-                                <span class="text-[12px] leading-[16px] font-medium" :class="draftEndDate ? 'text-[#1f2937]' : 'text-[#9ca3af]'" x-text="draftEndDate ? formatDisplayDate(draftEndDate) : 'Pilih Tanggal'"></span>
+                            <button type="button" aria-label="Tanggal akhir" :aria-expanded="calOpen" x-ref="dateRangeEnd" @click="toggleCalendar('end')" class="flex flex-1 cursor-pointer items-center gap-[8px] rounded-[12px] border-[1px] border-solid bg-white px-[12px] py-[10px] text-left text-[12px] leading-[16px] text-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors" :class="calOpen ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
+                                <span class="w-[32px] text-[10px] font-bold text-gray-400">KE</span>
+                                <span class="text-[12px] leading-[16px] font-medium" :class="draftEndDate ? 'text-gray-800' : 'text-gray-400'" x-text="draftEndDate ? formatDisplayDate(draftEndDate) : 'Pilih Tanggal'"></span>
                             </button>
                         </div>
                         <div class="flex flex-col gap-[8px] pt-[8px]">
-                            <h4 class="text-[10px] font-semibold uppercase tracking-wider text-[#6b7280]">Pilihan Cepat</h4>
+                            <h4 class="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Pilihan Cepat</h4>
                             <div class="flex gap-[8px]">
-                                <button type="button" @click="setDraftWeek()" class="flex flex-1 cursor-pointer items-center justify-center rounded-[12px] px-[8px] py-[10px] text-[12px] leading-[16px] font-semibold text-[#111827] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors active:scale-95" style="background-color:#c5f037" title="Tampilkan Minggu Ini">Minggu Ini</button>
-                                <button type="button" @click="setDraftToday()" class="flex flex-1 cursor-pointer items-center justify-center rounded-[12px] border-[1px] border-solid border-gray-200 bg-white px-[8px] py-[10px] text-[12px] leading-[16px] font-semibold text-[#374151] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors hover:border-gray-300 hover:bg-gray-50 active:scale-95" title="Tampilkan Hari Ini">Hari Ini</button>
+                                <button type="button" @click="setDraftWeek()" class="flex flex-1 cursor-pointer items-center justify-center rounded-[12px] px-[8px] py-[10px] text-[12px] leading-[16px] font-semibold text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors active:scale-95" style="background-color:#c5f037" title="Tampilkan Minggu Ini">Minggu Ini</button>
+                                <button type="button" @click="setDraftToday()" class="flex flex-1 cursor-pointer items-center justify-center rounded-[12px] border-[1px] border-solid border-gray-200 bg-white px-[8px] py-[10px] text-[12px] leading-[16px] font-semibold text-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors hover:border-gray-300 hover:bg-gray-50 active:scale-95" title="Tampilkan Hari Ini">Hari Ini</button>
                             </div>
                         </div>
                     </section>
@@ -176,23 +180,23 @@
 
                 <section x-show="calOpen" x-cloak class="w-full rounded-[16px] border-[1px] border-solid border-gray-100 bg-white p-[16px] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
                     <div class="mb-[16px] flex items-center justify-between border-b border-gray-100 pb-[8px]">
-                        <button type="button" x-ref="calendarHeadingButton" @click="toggleCalendarView()" class="flex items-center gap-[6px] text-[14px] leading-[20px] font-bold text-[#1f2937] transition hover:text-emerald-600" :aria-label="'Tampilan kalender ' + calendarHeading">
-                            <span x-text="calendarHeading"></span><i class="ph-bold ph-caret-down text-[12px] leading-[16px] text-[#9ca3af]" aria-hidden="true"></i>
+                        <button type="button" x-ref="calendarHeadingButton" @click="toggleCalendarView()" class="flex items-center gap-[6px] text-[14px] leading-[20px] font-bold text-gray-800 transition hover:text-emerald-600" :aria-label="'Tampilan kalender ' + calendarHeading">
+                            <span x-text="calendarHeading"></span><i class="ph-bold ph-caret-down text-[12px] leading-[16px] text-gray-400" aria-hidden="true"></i>
                         </button>
                         <div class="flex gap-[6px]">
-                            <button type="button" @click="navigateCalendar(-1)" class="flex h-[32px] w-[32px] items-center justify-center rounded-[8px] bg-gray-50 text-[#4b5563] transition hover:bg-gray-100" aria-label="Bulan sebelumnya"><i class="ph-bold ph-caret-left text-[12px] leading-[16px]" aria-hidden="true"></i></button>
-                            <button type="button" @click="navigateCalendar(1)" class="flex h-[32px] w-[32px] items-center justify-center rounded-[8px] bg-gray-50 text-[#4b5563] transition hover:bg-gray-100" aria-label="Bulan berikutnya"><i class="ph-bold ph-caret-right text-[12px] leading-[16px]" aria-hidden="true"></i></button>
+                            <button type="button" @click="navigateCalendar(-1)" class="flex h-[32px] w-[32px] items-center justify-center rounded-[8px] bg-gray-50 text-gray-600 transition hover:bg-gray-100" aria-label="Bulan sebelumnya"><i class="ph-bold ph-caret-left text-[12px] leading-[16px]" aria-hidden="true"></i></button>
+                            <button type="button" @click="navigateCalendar(1)" class="flex h-[32px] w-[32px] items-center justify-center rounded-[8px] bg-gray-50 text-gray-600 transition hover:bg-gray-100" aria-label="Bulan berikutnya"><i class="ph-bold ph-caret-right text-[12px] leading-[16px]" aria-hidden="true"></i></button>
                         </div>
                     </div>
 
                     <div x-show="calendarView === 'date'">
-                        <div class="mb-[8px] grid grid-cols-7 gap-[4px] text-center text-[11px] font-bold text-[#9ca3af]"><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span></div>
+                        <div class="mb-[8px] grid grid-cols-7 gap-[4px] text-center text-[11px] font-bold text-gray-400"><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span></div>
                         <div class="grid min-h-[228px] grid-cols-7 items-center gap-y-[4px] text-center">
                             <template x-for="blankDay in blankDays" :key="'blank-' + blankDay"><span class="mx-auto h-[32px] w-[32px]"></span></template>
                             <template x-for="day in calendarDays" :key="day">
                                 <div class="relative flex h-[36px] w-full items-center justify-center">
                                     <span x-show="draftStartDate && draftEndDate && draftStartDate !== draftEndDate" class="pointer-events-none absolute bottom-0 top-0 transition-all" :class="{ 'left-1/2 right-0': getDateString(day) === draftStartDate, 'left-0 right-1/2': getDateString(day) === draftEndDate, 'left-0 right-0': isDateInRange(day), 'hidden': !isDateInRange(day) && getDateString(day) !== draftStartDate && getDateString(day) !== draftEndDate }" style="background-color:rgba(197,240,55,.28)"></span>
-                                    <button type="button" @click="selectDate(day)" class="relative z-10 flex h-[32px] w-[32px] cursor-pointer items-center justify-center rounded-full text-[12px] leading-[16px] transition-all" :class="{ 'font-bold text-[#111827] shadow-[0_1px_2px_rgba(0,0,0,0.05)]': isDateSelected(day), 'font-semibold text-[#111827]': isDateInRange(day) && !isDateSelected(day), 'text-[#374151] hover:bg-gray-100': !isDateSelected(day) && !isDateInRange(day) }" :style="isDateSelected(day) ? 'background-color:#c5f037' : ''" :aria-pressed="isDateSelected(day)" :aria-label="formatDisplayDate(getDateString(day))" x-text="day"></button>
+                                    <button type="button" @click="selectDate(day)" class="relative z-10 flex h-[32px] w-[32px] cursor-pointer items-center justify-center rounded-full text-[12px] leading-[16px] transition-all" :class="{ 'font-bold text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.05)]': isDateSelected(day), 'font-semibold text-gray-900': isDateInRange(day) && !isDateSelected(day), 'text-gray-700 hover:bg-gray-100': !isDateSelected(day) && !isDateInRange(day) }" :style="isDateSelected(day) ? 'background-color:#c5f037' : ''" :aria-pressed="isDateSelected(day)" :aria-label="formatDisplayDate(getDateString(day))" x-text="day"></button>
                                 </div>
                             </template>
                         </div>
@@ -200,21 +204,21 @@
 
                     <div x-show="calendarView === 'month'" x-cloak class="mt-[8px] grid grid-cols-3 gap-[8px]">
                         <template x-for="(month, index) in monthNames" :key="month">
-                            <button type="button" @click="selectCalendarMonth(index)" class="rounded-[12px] py-[10px] text-[12px] leading-[16px] transition-colors" :class="currentMonth === index ? 'font-bold text-[#111827] shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'font-medium text-[#374151] hover:bg-gray-50'" :style="currentMonth === index ? 'background-color:#c5f037' : ''" x-text="month"></button>
+                            <button type="button" @click="selectCalendarMonth(index)" class="rounded-[12px] py-[10px] text-[12px] leading-[16px] transition-colors" :class="currentMonth === index ? 'font-bold text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'font-medium text-gray-700 hover:bg-gray-50'" :style="currentMonth === index ? 'background-color:#c5f037' : ''" x-text="month"></button>
                         </template>
                     </div>
                     <div x-show="calendarView === 'year'" x-cloak class="mt-[8px] grid grid-cols-3 gap-[8px]">
                         <template x-for="year in calendarYears" :key="year">
-                            <button type="button" @click="selectCalendarYear(year)" class="rounded-[12px] py-[10px] text-[12px] leading-[16px] transition-colors" :class="currentYear === year ? 'font-bold text-[#111827] shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'font-medium text-[#374151] hover:bg-gray-50'" :style="currentYear === year ? 'background-color:#c5f037' : ''" x-text="year"></button>
+                            <button type="button" @click="selectCalendarYear(year)" class="rounded-[12px] py-[10px] text-[12px] leading-[16px] transition-colors" :class="currentYear === year ? 'font-bold text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'font-medium text-gray-700 hover:bg-gray-50'" :style="currentYear === year ? 'background-color:#c5f037' : ''" x-text="year"></button>
                         </template>
                     </div>
-                    <button type="button" @click="closeCalendar()" class="mt-[16px] flex w-full cursor-pointer items-center justify-center gap-[8px] rounded-[12px] bg-gray-50 py-[10px] text-[12px] leading-[16px] font-bold text-[#374151] transition-colors hover:bg-gray-100"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i>Kembali</button>
+                    <button type="button" @click="closeCalendar()" class="mt-[16px] flex w-full cursor-pointer items-center justify-center gap-[8px] rounded-[12px] bg-gray-50 py-[10px] text-[12px] leading-[16px] font-bold text-gray-700 transition-colors hover:bg-gray-100"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i>Kembali</button>
                 </section>
             </div>
 
             <footer class="flex shrink-0 items-center gap-[12px] border-t border-gray-100 bg-gray-50/70 px-[20px] py-[14px]">
-                <button type="button" @click="resetFilters()" class="h-[44px] flex-1 cursor-pointer rounded-[12px] border-[1px] border-solid border-gray-200 bg-white text-[12px] leading-[16px] font-semibold text-[#4b5563] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors hover:bg-gray-50 active:scale-95 sm:text-[14px] sm:leading-[20px]">Reset Filter</button>
-                <button type="button" @click="applyFilters()" class="h-[44px] flex-1 cursor-pointer rounded-[12px] bg-[#0b595b] text-[12px] leading-[16px] font-semibold text-[#ffffff] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors hover:bg-[#08484a] active:scale-95 sm:text-[14px] sm:leading-[20px]">Terapkan Filter</button>
+                <button type="button" @click="resetFilters()" class="h-[44px] flex-1 cursor-pointer rounded-[12px] border-[1px] border-solid border-gray-200 bg-white text-[12px] leading-[16px] font-semibold text-gray-600 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors hover:bg-gray-50 active:scale-95 sm:text-[14px] sm:leading-[20px]">Reset Filter</button>
+                <button type="button" @click="applyFilters()" class="h-[44px] flex-1 cursor-pointer rounded-[12px] bg-teal text-[12px] leading-[16px] font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors hover:bg-teal-hover active:scale-95 sm:text-[14px] sm:leading-[20px]">Terapkan Filter</button>
             </footer>
         </section>
     </div>
@@ -371,8 +375,8 @@
                 },
 
                 syncAppliedFilters() {
-                    const status = document.querySelector('[data-kt-ecommerce-product-filter="status"]');
-                    const branch = document.querySelector('[data-kt-ecommerce-product-filter="cabang"]');
+                    const status = document.querySelector('[data-erp-filter="status"]');
+                    const branch = document.querySelector('[data-erp-filter="cabang"]');
                     const range = document.getElementById('kt_ecommerce_sales_flatpickr');
                     const dates = String(range?.value || '').split(' to ');
 
@@ -532,8 +536,8 @@
                 },
 
                 applyFilters() {
-                    const status = document.querySelector('[data-kt-ecommerce-product-filter="status"]');
-                    const branch = document.querySelector('[data-kt-ecommerce-product-filter="cabang"]');
+                    const status = document.querySelector('[data-erp-filter="status"]');
+                    const branch = document.querySelector('[data-erp-filter="cabang"]');
                     const range = document.getElementById('kt_ecommerce_sales_flatpickr');
                     const startDate = this.draftStartDate;
                     const endDate = startDate ? (this.draftEndDate || startDate) : '';
@@ -558,7 +562,7 @@
         }
 
         $(document).ready(function() {
-            const $branchFilter = $('[data-kt-ecommerce-product-filter="cabang"]');
+            const $branchFilter = $('[data-erp-filter="cabang"]');
             const $activeBranchButtonLabel = $('#active-branch-button-label');
 
             function updateActiveFilterInfo() {
@@ -583,8 +587,8 @@
                     url: "{{ route('order-book.data') }}",
                     data: function(d) {
                         d.url = "{{ request()->segment(1) }}";
-                        d.status_filter = $('[data-kt-ecommerce-product-filter="status"]').val();
-                        d.cabang_filter = $('[data-kt-ecommerce-product-filter="cabang"]').val();
+                        d.status_filter = $('[data-erp-filter="status"]').val();
+                        d.cabang_filter = $('[data-erp-filter="cabang"]').val();
                         var range = $('#kt_ecommerce_sales_flatpickr').val();
                         if (range) {
                             var dates = range.split(' to ');
@@ -612,17 +616,17 @@
                 ]
             });
             // Search manual lewat input
-            const $searchInputs = $('[data-kt-ecommerce-product-filter="search"]');
+            const $searchInputs = $('[data-erp-filter="search"]');
             $searchInputs.on('input', function() {
                 $searchInputs.not(this).val(this.value);
                 dataTable.search(this.value).draw();
             });
 
-            $('[data-kt-ecommerce-product-filter="status"]').on('change', function() {
+            $('[data-erp-filter="status"]').on('change', function() {
                 dataTable.draw(); // trigger fetch ulang dari server
             });
 
-            $('[data-kt-ecommerce-product-filter="cabang"]').on('change', function() {
+            $('[data-erp-filter="cabang"]').on('change', function() {
                 updateActiveFilterInfo();
                 dataTable.draw(); // trigger fetch ulang dari server
             });
@@ -655,8 +659,8 @@
                     if (!row || !title || !avatar || !meta || !head) return;
 
                     const dateCell = row.cells[1];
-                    const date = dateCell.querySelector('.text-muted')?.textContent.trim() || '';
-                    const statusText = dateCell.querySelector('.badge')?.textContent.trim() || '';
+                    const date = dateCell.querySelector('[data-ob-date]')?.textContent.trim() || '';
+                    const statusText = dateCell.querySelector('.erp-badge')?.textContent.trim() || '';
                     const rowData = dataTable.row(row).data() || {};
                     const customerName = title.textContent.trim();
                     const formattedDate = orderBookReferenceUi.formatDate(date);
@@ -734,8 +738,8 @@
                 confirmButtonText: 'Ya, selesaikan!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--danger',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false
             }).then((result) => {
@@ -780,8 +784,8 @@
                 confirmButtonText: 'Ya, hapus!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--danger',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false
             }).then((result) => {

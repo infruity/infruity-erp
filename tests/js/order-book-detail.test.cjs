@@ -49,8 +49,8 @@ test('detail reads existing customer data and rendered branch without inventing 
     const { fromRow } = helpers();
     assert.equal(typeof fromRow, 'function', 'Existing DataTables rows must supply the detail data');
     const first = { querySelector: selector => ({
-        'a.text-gray-800': { textContent: 'Pelanggan & Uji (4311)' },
-        '.badge-light-primary': { textContent: 'Cabang & Uji' }
+        'a[data-ob-name]': { textContent: 'Pelanggan & Uji (4311)' },
+        '[data-ob-branch]': { textContent: 'Cabang & Uji' }
     })[selector] || null };
     const date = { querySelector: () => ({ textContent: '31 Jul 2026 17:27' }) };
     const action = { textContent: 'Locked' };
@@ -98,8 +98,8 @@ test('detail labels preserve text, not executable markup', () => {
 test('detail shows the real creator name when the list response provides it', () => {
     const { fromRow } = helpers();
     const first = { querySelector: selector => ({
-        'a.text-gray-800': { textContent: 'Pelanggan Uji' },
-        '.badge-light-primary': { textContent: 'Cabang Uji' }
+        'a[data-ob-name]': { textContent: 'Pelanggan Uji' },
+        '[data-ob-branch]': { textContent: 'Cabang Uji' }
     })[selector] || null };
     const date = { querySelector: () => ({ textContent: '31 Jul 2026 17:27' }) };
     const detail = fromRow({ cells: [first, date, { textContent: '' }] }, { created_by: 42, created_by_name: 'Pembuat Uji' }, 'Asia/Jakarta');

@@ -36,9 +36,9 @@ class OrderBookReferenceUiContractTest extends TestCase
             'class="erp-mobile-search__input"',
             '<x-slot:filter>',
             'class="erp-mobile-search__filter order-book-filter-trigger"',
-            'class="erp-search d-none d-md-flex"',
+            'class="erp-search hidden md:flex"',
             'id="search-desktop"',
-            '$searchInputs = $(\'[data-kt-ecommerce-product-filter="search"]\');',
+            '$searchInputs = $(\'[data-erp-filter="search"]\');',
             '$searchInputs.on(\'input\', function() {',
             '$searchInputs.not(this).val(this.value);',
             'dataTable.search(this.value).draw();',
@@ -163,7 +163,7 @@ class OrderBookReferenceUiContractTest extends TestCase
         $this->assertStringContainsString(':where(#order-book-filter-sheet, #order-book-filter-sheet *) { border-width:0; border-style:solid; border-color:#e5e7eb; }', $view);
         $this->assertStringContainsString('border-[1px] border-solid', $sheet);
         $this->assertStringContainsString('border-[2px] border-solid', $sheet);
-        $this->assertStringContainsString('text-[#ffffff]', $sheet);
+        $this->assertStringContainsString('text-white', $sheet);
         $this->assertStringContainsString('shadow-[0_1px_2px_rgba(0,0,0,0.05)]', $sheet);
         $this->assertDoesNotMatchRegularExpression('/(?:class="|\s)border(?:\s|")/', $sheet);
     }
