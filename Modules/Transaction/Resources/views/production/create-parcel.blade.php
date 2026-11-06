@@ -157,10 +157,9 @@
                                 <!--end::Total price-->
                             </div>
                             <!--end::Input group-->
-                            {{-- <button class="variant erp-action mb-8" type="button"
-                                onclick="addVariant()">
+                            {{-- <x-erp.button class="variant mb-8" onclick="addVariant()">
                                 <i class="ph ph-plus text-xl"></i>Tambah Product
-                            </button> --}}
+                            </x-erp.button> --}}
                             <!--end::Table-->
                         </div>
                     </div>
@@ -175,21 +174,20 @@
 
             <div class="flex justify-end">
                 <!--begin::Button-->
-                <a href="{{ url(Request::segment(1)) }}" id="kt_ecommerce_edit_order_cancel"
-                    class="erp-action me-4">Cancel</a>
+                <x-erp.button :href="url(Request::segment(1))" id="kt_ecommerce_edit_order_cancel" class="me-4">Cancel</x-erp.button>
                 <!--end::Button-->
 
                 @if (Request::segment(2) != 'show')
                     <input type="hidden" name="submit_type" id="submit_type" value="draft">
-                    <button type="submit" class="erp-action erp-action--primary me-1.5" onclick="setSubmitType('draft')">
+                    <x-erp.button variant="primary" type="submit" class="me-1.5" onclick="setSubmitType('draft')">
                         <span data-label>Draft</span>
                         <span data-progress hidden>Mohon tunggu...</span>
-                    </button>
+                    </x-erp.button>
 
-                    <button type="submit" class="erp-action erp-action--primary" onclick="setSubmitType('posting')">
+                    <x-erp.button variant="primary" type="submit" onclick="setSubmitType('posting')">
                         <span data-label>Posting</span>
                         <span data-progress hidden>Mohon tunggu...</span>
-                    </button>
+                    </x-erp.button>
                 @endif
                 <!--end::Button-->
             </div>

@@ -9,7 +9,7 @@
             <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
             <input id="search" type="search" placeholder="Cari cabang…" aria-label="Cari cabang" autocomplete="off">
         </label>
-        <button type="button" class="erp-action" onclick="reloadDataTable()"><i class="ph ph-arrow-clockwise" aria-hidden="true"></i>Muat ulang</button>
+        <x-erp.button icon="arrow-clockwise" onclick="reloadDataTable()">Muat ulang</x-erp.button>
     </x-slot:toolbar>
     <div class="erp-report-collection">
                 <table class="erp-table erp-report-table" data-erp-collection="transaction-table" id="transaction-table" width="100%">

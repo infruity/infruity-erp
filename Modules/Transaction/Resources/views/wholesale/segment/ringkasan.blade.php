@@ -8,19 +8,17 @@
     </div>
     <div class="wholesale-summary__actions">
         <div x-data="{ loadingDraft: false }">
-            <button type="button" class="erp-action wholesale-btn-draft w-full" @click="loadingDraft = true; saveTransaction(() => loadingDraft = false)"
-                :disabled="loadingDraft || isSubmitting">
+            <x-erp.button class="wholesale-btn-draft w-full" @click="loadingDraft = true; saveTransaction(() => loadingDraft = false)" ::disabled="loadingDraft || isSubmitting">
                 <template x-if="!loadingDraft">
                     <span>@unless (request()->routeIs('wholesale.edit'))<i class="ph ph-floppy-disk mr-2" aria-hidden="true"></i>@endunless{{ request()->routeIs('wholesale.edit') ? 'Simpan Perubahan' : 'Simpan sebagai Draf' }}</span>
                 </template>
                 <template x-if="loadingDraft">
                     <span class="erp-spinner" role="status" aria-hidden="true"></span>
                 </template>
-            </button>
+            </x-erp.button>
         </div>
         <div x-data="{ loadingFinal: false }">
-            <button type="button" class="erp-action wholesale-btn-submit w-full" @click="loadingFinal = true; saveToOrderBook(() => loadingFinal = false)"
-                :disabled="loadingFinal || isSubmitting">
+            <x-erp.button class="wholesale-btn-submit w-full" @click="loadingFinal = true; saveToOrderBook(() => loadingFinal = false)" ::disabled="loadingFinal || isSubmitting">
                 <template x-if="!loadingFinal">
                     <span>@unless (request()->routeIs('wholesale.edit'))<i class="ph-bold ph-check mr-2" aria-hidden="true"></i>@endunless Selesaikan Transaksi</span>
                 </template>
@@ -30,7 +28,7 @@
                         Memproses...
                     </span>
                 </template>
-            </button>
+            </x-erp.button>
         </div>
     </div>
 </div>

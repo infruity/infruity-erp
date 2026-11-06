@@ -9,7 +9,7 @@
 <x-erp.workspace title="Campaign" subtitle="Kelola periode dan nilai promo pelanggan." icon="ph-megaphone">
     <x-slot:toolbar><label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" placeholder="Cari campaign…" aria-label="Cari campaign"></label>
             @if (check_access('campaign.create'))
-            <button type="button" class="erp-action erp-action--primary" data-erp-open="#crm-dialog" data-crm-create><i class="ph-bold ph-plus" aria-hidden="true"></i><span>Tambah Campaign</span></button>
+            <x-erp.button variant="primary" icon="plus" bold data-erp-open="#crm-dialog" data-crm-create><span>Tambah Campaign</span></x-erp.button>
             @endif</x-slot:toolbar>
     <x-erp.collection table="transaction-table">
         <table id="transaction-table" class="erp-table erp-crm-table" width="100%"><thead><tr><th scope="col">Nama event</th><th scope="col">Mulai</th><th scope="col">Selesai</th><th scope="col">Jenis promo</th><th scope="col">Nilai</th><th scope="col">Aksi</th></tr></thead><tbody></tbody></table>
@@ -24,8 +24,8 @@
     </form>
     <x-slot:footer>
         <div class="ml-auto flex gap-3">
-            <button type="button" id="crm-cancel" class="erp-action">Batal</button>
-            <button type="submit" form="crm-form" id="crm-submit" class="erp-action erp-action--primary"><span data-label>Simpan</span><span data-progress hidden>Menyimpan…</span></button>
+            <x-erp.button id="crm-cancel">Batal</x-erp.button>
+            <x-erp.button variant="primary" type="submit" form="crm-form" id="crm-submit"><span data-label>Simpan</span><span data-progress hidden>Menyimpan…</span></x-erp.button>
         </div>
     </x-slot:footer>
 </x-erp.dialog>

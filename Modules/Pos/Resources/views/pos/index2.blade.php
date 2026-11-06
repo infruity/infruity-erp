@@ -48,7 +48,7 @@
         .pos-list-total { font-size:12px; }
     }
 </style>
-<x-erp.workspace title="Kasir / POS" subtitle="Kelola kasir / pos dan lihat rincian transaksi."><x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari kasir / pos" placeholder="Cari kasir / pos…"></div><button type="button" class="erp-action" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+<x-erp.workspace title="Kasir / POS" subtitle="Kelola kasir / pos dan lihat rincian transaksi."><x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari kasir / pos" placeholder="Cari kasir / pos…"></div><x-erp.button icon="sliders-horizontal" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end"><span id="active-branch-button-label">Filter</span></x-erp.button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
                             <!--begin::Header-->
                             <div class="px-7 py-5">
                                 <div class="fs-5 text-gray-900 fw-bold">Pilihan Filter</div>
@@ -117,7 +117,7 @@
                                 <!--end::Input group-->
                             </div>
                             <!--end::Content-->
-                        </div>@if(check_access('pos.create'))<a href="{{ url('pos/create') }}" class="erp-action erp-action--primary"><i class="ph-bold ph-plus" aria-hidden="true"></i>Tambah Kasir / POS</a>@endif</x-slot:toolbar><div class="pos-list"><table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
+                        </div>@if(check_access('pos.create'))<x-erp.button variant="primary" icon="plus" bold :href="url('pos/create')">Tambah Kasir / POS</x-erp.button>@endif</x-slot:toolbar><div class="pos-list"><table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
                     <thead>
                         <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
                             <th class="text-start min-w-150px">Name</th>

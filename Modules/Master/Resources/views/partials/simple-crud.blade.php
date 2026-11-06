@@ -14,7 +14,7 @@
 <x-erp.workspace :title="$title" :subtitle="$subtitle" :icon="$icon">
     <x-slot:toolbar>
         <label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" aria-label="Cari {{ $noun }}" placeholder="Cari {{ $noun }}..."></label>
-        <div class="erp-operations-toolbar-actions"><button type="button" class="erp-action erp-action--primary" data-erp-open="#{{ $dialogId }}"><i class="ph ph-plus" aria-hidden="true"></i>Tambah {{ $title }}</button></div>
+        <div class="erp-operations-toolbar-actions"><x-erp.button variant="primary" icon="plus" :data-erp-open="'#' . $dialogId">Tambah {{ $title }}</x-erp.button></div>
     </x-slot:toolbar>
     <div class="erp-operations-collection" data-erp-collection="{{ $resource }}-table" data-erp-empty="Belum ada {{ $noun }}" data-erp-empty-description="Data yang tersimpan akan muncul di sini.">
         <table class="erp-table" id="{{ $resource }}-table">
@@ -43,11 +43,11 @@
     </form>
     <x-slot:footer>
         <div class="ml-auto flex gap-3">
-            <button type="reset" form="{{ $formId }}" id="{{ $resource }}-cancel" class="erp-action">Batal</button>
-            <button type="submit" form="{{ $formId }}" id="{{ $resource }}-submit" class="erp-action erp-action--primary">
+            <x-erp.button type="reset" :form="$formId" :id="$resource . '-cancel'">Batal</x-erp.button>
+            <x-erp.button type="submit" variant="primary" :form="$formId" :id="$resource . '-submit'">
                 <span data-label>Simpan</span>
                 <span data-progress hidden>Menyimpan...</span>
-            </button>
+            </x-erp.button>
         </div>
     </x-slot:footer>
 </x-erp.dialog>

@@ -4,7 +4,7 @@
 @section('content')
 <x-erp.workspace title="Laporan" subtitle="Pilih laporan untuk meninjau operasional bisnis." icon="ph-chart-bar">
     <div class="px-4 py-6">
-        <a href="{{ route('reports.hub') }}" class="erp-action erp-action--primary"><i class="ph ph-chart-bar" aria-hidden="true"></i>Buka Pusat Laporan</a>
+        <x-erp.button variant="primary" icon="chart-bar" :href="route('reports.hub')">Buka Pusat Laporan</x-erp.button>
     </div>
 </x-erp.workspace>
 @endsection

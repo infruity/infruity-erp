@@ -126,9 +126,9 @@
     </div>
     <x-slot:footer>
         <div class="flex w-full gap-2">
-            <button type="button" class="erp-action erp-action--danger mr-auto" @click="deleteFromCart()">Hapus Produk</button>
-            <button type="button" class="erp-action" @click="closeEditModal()">Batal</button>
-            <button type="button" class="erp-action erp-action--primary" @click="saveEditToCart()">Simpan</button>
+            <x-erp.button variant="danger" class="mr-auto" @click="deleteFromCart()">Hapus Produk</x-erp.button>
+            <x-erp.button @click="closeEditModal()">Batal</x-erp.button>
+            <x-erp.button variant="primary" @click="saveEditToCart()">Simpan</x-erp.button>
         </div>
     </x-slot:footer>
 </x-erp.dialog>

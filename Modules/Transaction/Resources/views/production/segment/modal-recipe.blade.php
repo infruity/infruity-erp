@@ -84,10 +84,9 @@
     </div>
     <x-slot:footer>
         <div class="ml-auto flex gap-2">
-            <button type="button" class="erp-action" data-erp-close>Batal</button>
-            <button type="button" class="erp-action erp-action--primary" @click="loadRecipeToProduction()" :disabled="!selectedRecipe || !recipeMultiplier || recipeMultiplier <= 0">
-                <i class="ph ph-check" aria-hidden="true"></i>Muat Resep ke Produksi
-            </button>
+            <x-erp.button data-erp-close>Batal</x-erp.button>
+            <x-erp.button variant="primary" icon="check" @click="loadRecipeToProduction()" ::disabled="!selectedRecipe || !recipeMultiplier || recipeMultiplier <= 0">Muat Resep ke Produksi
+            </x-erp.button>
         </div>
     </x-slot:footer>
 </x-erp.dialog>

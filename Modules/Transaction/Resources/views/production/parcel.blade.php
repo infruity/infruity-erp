@@ -6,7 +6,7 @@
     <x-erp.workspace title="Produksi Parcel" subtitle="Pantau proses perakitan parcel." icon="gift">
         <x-slot:toolbar>
             <label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-erp-filter="search" id="search" aria-label="Cari parcel" placeholder="Cari parcel..."></label>
-            <div class="erp-operations-toolbar-actions"><label class="erp-operations-inline-select"><span class="sr-only">Status parcel</span><select class="erp-select" data-erp-filter="status"><option></option><option value="all">Semua Status</option><option value="processing">Diproses</option><option value="complete">Selesai</option></select></label><a href="{{ url('parcel/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Parcel</a></div>
+            <div class="erp-operations-toolbar-actions"><label class="erp-operations-inline-select"><span class="sr-only">Status parcel</span><select class="erp-select" data-erp-filter="status"><option></option><option value="all">Semua Status</option><option value="processing">Diproses</option><option value="complete">Selesai</option></select></label><x-erp.button variant="primary" icon="plus" :href="url('parcel/create')">Tambah Parcel</x-erp.button></div>
         </x-slot:toolbar>
         <div class="erp-operations-collection" data-erp-collection="parcel-table" data-erp-empty="Belum ada produksi parcel" data-erp-empty-description="Data yang tersimpan akan muncul di sini.">
             <table class="erp-table erp-operations-table" id="parcel-table" width="100%">

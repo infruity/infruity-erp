@@ -76,7 +76,7 @@
                                 @endforeach
                             </select>
                             <input type="hidden" id="kt_ecommerce_sales_flatpickr" value="">
-                        </div>@if(check_access('order-book.create'))<a href="{{ url('order-book/create') }}" class="erp-action erp-action--primary order-book-create"><i class="ph-bold ph-plus" aria-hidden="true"></i>Tambah Pesanan</a>@endif</x-slot:toolbar>
+                        </div>@if(check_access('order-book.create'))<x-erp.button variant="primary" icon="plus" bold :href="url('order-book/create')" class="order-book-create">Tambah Pesanan</x-erp.button>@endif</x-slot:toolbar>
 <script type="application/json" id="order-book-filter-config">@json(['branches' => $orderBookFilterBranches, 'timezone' => config('app.timezone')])</script>
 <x-erp.collection table="pos-table"><table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
                     <thead>

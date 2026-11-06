@@ -30,7 +30,7 @@
         </div>
     </div>
     <x-slot:footer>
-        <button type="button" class="erp-action ml-auto" data-erp-close>Tutup</button>
+        <x-erp.button class="ml-auto" data-erp-close>Tutup</x-erp.button>
     </x-slot:footer>
 </x-erp.dialog>
 
@@ -65,10 +65,9 @@
     </div>
     <x-slot:footer>
         <div class="ml-auto flex gap-2">
-            <button type="button" class="erp-action" data-erp-close>Batal</button>
-            <button type="button" class="erp-action erp-action--primary" @click="addIngredientToCart()" :disabled="!ingredientQuantity || ingredientQuantity <= 0">
-                <i class="ph ph-plus" aria-hidden="true"></i>Tambah ke Produksi
-            </button>
+            <x-erp.button data-erp-close>Batal</x-erp.button>
+            <x-erp.button variant="primary" icon="plus" @click="addIngredientToCart()" ::disabled="!ingredientQuantity || ingredientQuantity <= 0">Tambah ke Produksi
+            </x-erp.button>
         </div>
     </x-slot:footer>
 </x-erp.dialog>
@@ -112,9 +111,9 @@
     </div>
     <x-slot:footer>
         <div class="ml-auto flex gap-2">
-            <button type="button" class="erp-action" data-erp-close>Batal</button>
-            <button type="button" class="erp-action erp-action--danger" @click="removeIngredientFromEdit()" title="Hapus bahan ini"><i class="ph ph-trash" aria-hidden="true"></i>Hapus</button>
-            <button type="button" class="erp-action erp-action--primary" @click="updateIngredientQuantity()" :disabled="!editQuantity || editQuantity <= 0"><i class="ph ph-check" aria-hidden="true"></i>Update Jumlah</button>
+            <x-erp.button data-erp-close>Batal</x-erp.button>
+            <x-erp.button variant="danger" icon="trash" @click="removeIngredientFromEdit()" title="Hapus bahan ini">Hapus</x-erp.button>
+            <x-erp.button variant="primary" icon="check" @click="updateIngredientQuantity()" ::disabled="!editQuantity || editQuantity <= 0">Update Jumlah</x-erp.button>
         </div>
     </x-slot:footer>
 </x-erp.dialog>

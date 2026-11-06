@@ -13,7 +13,7 @@
                 @endforeach
             </select>
         </label>
-        <a href="{{ url('setting-nota/view-receipt') }}?cabang_filter={{ $selected_branch }}" class="erp-action"><i class="ph ph-eye" aria-hidden="true"></i>Pratinjau struk</a>
+        <x-erp.button icon="eye" :href="url('setting-nota/view-receipt') }}?cabang_filter={{ $selected_branch">Pratinjau struk</x-erp.button>
     </x-slot:toolbar>
     <form id="add_product_form" class="nota-settings" action="{{ isset($data) ? url(Request::segment(1) . '/' . $data->id) : url(Request::segment(1)) }}" method="POST" enctype="multipart/form-data">
         @if (isset($data)) @method('PUT') @endif
@@ -68,9 +68,9 @@
             </section>
         </div>
         <footer class="nota-settings__footer">
-            <a href="{{ url(Request::segment(1)) }}" id="kt_ecommerce_edit_order_cancel" class="erp-action">Batal</a>
+            <x-erp.button :href="url(Request::segment(1))" id="kt_ecommerce_edit_order_cancel">Batal</x-erp.button>
             @if (check_access(isset($data) ? 'setting-nota.update' : 'setting-nota.store'))
-                <button type="submit" id="kt_ecommerce_edit_order_submit" class="erp-action erp-action--primary"><i class="ph ph-check" aria-hidden="true"></i><span>Simpan perubahan</span></button>
+                <x-erp.button variant="primary" icon="check" type="submit" id="kt_ecommerce_edit_order_submit"><span>Simpan perubahan</span></x-erp.button>
             @endif
         </footer>
     </form>

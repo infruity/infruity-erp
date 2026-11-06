@@ -13,7 +13,7 @@
     <x-erp.workspace title="Stok Keluar" subtitle="Telusuri barang keluar dan jumlahnya." icon="package">
         <x-slot:toolbar>
             <label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" aria-label="Cari transaksi stok keluar" placeholder="Cari transaksi stok keluar..."></label>
-            <div class="erp-operations-toolbar-actions"><details class="erp-operations-filter"><summary class="erp-action"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i>Filter</summary><div class="erp-operations-filter__body"><label for="stock-out-type-filter">Jenis stok<select id="stock-out-type-filter" class="erp-select" data-erp-filter="stock"><option value="all">Semua</option>@foreach ($type as $item)<option value="{{ $item->id }}">{{ $item->name }}</option>@endforeach</select></label><label for="kt_ecommerce_sales_flatpickr">Rentang tanggal<div class="flex gap-2"><input class="erp-input" placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr"><button type="button" class="erp-action" id="kt_ecommerce_sales_flatpickr_clear" aria-label="Hapus rentang tanggal"><i class="ph ph-x" aria-hidden="true"></i></button></div></label></div></details><button type="button" class="erp-action erp-action--primary" data-erp-open="#crm-dialog" data-crm-create><i class="ph ph-plus" aria-hidden="true"></i>Tambah Transaksi</button></div>
+            <div class="erp-operations-toolbar-actions"><details class="erp-operations-filter"><summary class="erp-action"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i>Filter</summary><div class="erp-operations-filter__body"><label for="stock-out-type-filter">Jenis stok<select id="stock-out-type-filter" class="erp-select" data-erp-filter="stock"><option value="all">Semua</option>@foreach ($type as $item)<option value="{{ $item->id }}">{{ $item->name }}</option>@endforeach</select></label><label for="kt_ecommerce_sales_flatpickr">Rentang tanggal<div class="flex gap-2"><input class="erp-input" placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr"><x-erp.button icon="x" id="kt_ecommerce_sales_flatpickr_clear" aria-label="Hapus rentang tanggal" /></div></label></div></details><x-erp.button variant="primary" icon="plus" data-erp-open="#crm-dialog" data-crm-create>Tambah Transaksi</x-erp.button></div>
         </x-slot:toolbar>
         <div class="erp-operations-collection" data-erp-collection="transaction-table" data-erp-empty="Belum ada stok keluar" data-erp-empty-description="Data yang tersimpan akan muncul di sini.">
             <table class="erp-table erp-operations-table" id="transaction-table" width="100%">
@@ -40,8 +40,8 @@
         </form>
         <x-slot:footer>
             <div class="ml-auto flex gap-3">
-                <button type="button" id="crm-cancel" class="erp-action">Batal</button>
-                <button type="submit" form="crm-form" id="crm-submit" class="erp-action erp-action--primary"><span data-label>Simpan</span><span data-progress hidden>Menyimpan…</span></button>
+                <x-erp.button id="crm-cancel">Batal</x-erp.button>
+                <x-erp.button variant="primary" type="submit" form="crm-form" id="crm-submit"><span data-label>Simpan</span><span data-progress hidden>Menyimpan…</span></x-erp.button>
             </div>
         </x-slot:footer>
     </x-erp.dialog>

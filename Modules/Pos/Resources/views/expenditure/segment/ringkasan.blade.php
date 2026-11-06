@@ -72,7 +72,7 @@
         </div> --}}
     </div>
     <div class="erp-payment-actions mt-5" x-data="{ loadingDraft:false, loadingFinal:false }">
-        <button type="button" class="erp-action erp-action--primary" :disabled="loadingDraft || loadingFinal" @click="loadingFinal = true; saveToOrderBook(() => loadingFinal = false)"><span x-show="!loadingFinal">Submit</span><span x-show="loadingFinal">Menyimpan…</span></button>
-        <button type="button" class="erp-action" :disabled="loadingDraft || loadingFinal" @click="loadingDraft = true; saveTransaction(() => loadingDraft = false)"><span x-show="!loadingDraft">Simpan Draft</span><span x-show="loadingDraft">Menyimpan…</span></button>
+        <x-erp.button variant="primary" ::disabled="loadingDraft || loadingFinal" @click="loadingFinal = true; saveToOrderBook(() => loadingFinal = false)"><span x-show="!loadingFinal">Submit</span><span x-show="loadingFinal">Menyimpan…</span></x-erp.button>
+        <x-erp.button ::disabled="loadingDraft || loadingFinal" @click="loadingDraft = true; saveTransaction(() => loadingDraft = false)"><span x-show="!loadingDraft">Simpan Draft</span><span x-show="loadingDraft">Menyimpan…</span></x-erp.button>
     </div>
 </div>

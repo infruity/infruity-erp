@@ -130,16 +130,15 @@
 
             <div class="erp-editor-actions">
                 <!--begin::Button-->
-                <a href="{{ url(Request::segment(1)) }}" id="kt_ecommerce_edit_order_cancel"
-                    class="erp-action">Cancel</a>
+                <x-erp.button :href="url(Request::segment(1))" id="kt_ecommerce_edit_order_cancel">Cancel</x-erp.button>
                 <!--end::Button-->
                 <!--begin::Button-->
                 @if ($data->status != 'complete')
-                    <button type="button" id="kt_ecommerce_edit_order_submit" class="erp-action erp-action--primary"
-                        onclick="setSelesai({{ $data->id }})">
+                    <x-erp.button variant="primary" id="kt_ecommerce_edit_order_submit"
+                        :onclick="'setSelesai(' . (int) $data->id . ')'">
                         <span data-label>Selesaikan Pengadaan</span>
                     <span data-progress hidden>Mohon tunggu...</span>
-                    </button>
+                    </x-erp.button>
                 @endif
                 <!--end::Button-->
             </div>

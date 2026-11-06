@@ -548,7 +548,7 @@ Source of truth: `docs/ui-design-system.md` (components, rules) and `docs/tailwi
 * One element must not carry two utilities of the same group (`bg-white bg-emerald-50`): CSS order decides the winner,
   not attribute order. Put state variants in an exclusive `:class` ternary. `tests/js/class-conflicts-repo.test.cjs` enforces it.
 * Write full class names; never build them by string concatenation (Tailwind cannot see them).
-* Buttons and links styled as buttons use `<x-erp.button variant="primary|danger" icon="plus" :href="…">`; do not hand-write `class="erp-action …"` in Blade (JS-built HTML may still use the class).
+* Buttons and links styled as buttons use `<x-erp.button variant="primary|danger" icon="plus" :href="…">`; do not hand-write `class="erp-action …"` in Blade (`ErpButtonComponentTest` enforces it; HTML built in JS may still use the class).
 * DataTables HTML produced in controllers uses `x-erp.row-actions`, `x-erp.cell-title`, `x-erp.badge`, `x-erp.avatar`
   (escaped output), not hand-built PHP strings.
 * Build: `npm ci && npm run build` (Node ^20.19 or >=22.12). `public/build` is not committed. Use PHP 8.5.

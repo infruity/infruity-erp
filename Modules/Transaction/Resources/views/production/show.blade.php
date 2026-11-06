@@ -101,13 +101,13 @@
         <div class="production-detail__body pt-0">
             <div class="production-detail__actions">
                 @if(in_array($data->status, ['temp', 'draft']))
-                    <a href="{{ route('production.edit', $data->id) }}" class="erp-action"><i class="ph ph-pencil-simple me-1" aria-hidden="true"></i>Edit</a>
+                    <x-erp.button :href="route('production.edit', $data->id)"><i class="ph ph-pencil-simple me-1" aria-hidden="true"></i>Edit</x-erp.button>
                 @endif
                 @if($data->status == 'draft')
-                    <a href="{{ route('production.payment', $data->id) }}" class="erp-action erp-action--primary"><i class="ph ph-check me-1" aria-hidden="true"></i>Selesaikan Produksi</a>
+                    <x-erp.button variant="primary" :href="route('production.payment', $data->id)"><i class="ph ph-check me-1" aria-hidden="true"></i>Selesaikan Produksi</x-erp.button>
                 @endif
-                <a href="{{ route('production.print', $data->id) }}" class="erp-action"><i class="ph ph-printer me-1" aria-hidden="true"></i>Print</a>
-                <a href="{{ route('production.index') }}" class="erp-action"><i class="ph ph-arrow-left me-1" aria-hidden="true"></i>Kembali</a>
+                <x-erp.button :href="route('production.print', $data->id)"><i class="ph ph-printer me-1" aria-hidden="true"></i>Print</x-erp.button>
+                <x-erp.button :href="route('production.index')"><i class="ph ph-arrow-left me-1" aria-hidden="true"></i>Kembali</x-erp.button>
             </div>
         </div>
     </section>

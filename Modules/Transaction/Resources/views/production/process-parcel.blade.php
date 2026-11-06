@@ -259,8 +259,8 @@
                 </div>
                 <x-slot:footer>
                     <div class="ml-auto flex gap-2">
-                        <button type="button" class="erp-action" data-erp-close>Cancel</button>
-                        <button type="button" class="erp-action erp-action--primary" id="submitQty">Add Product</button>
+                        <x-erp.button data-erp-close>Cancel</x-erp.button>
+                        <x-erp.button variant="primary" id="submitQty">Add Product</x-erp.button>
                     </div>
                 </x-slot:footer>
             </x-erp.dialog>
@@ -268,15 +268,14 @@
             <input type="hidden" name="submit_type" id="submit_type" value="draft">
             <div class="flex justify-end">
                 <!--begin::Button-->
-                <a href="{{ url(Request::segment(1)) }}" id="kt_ecommerce_edit_order_cancel"
-                    class="erp-action me-4">Cancel</a>
+                <x-erp.button :href="url(Request::segment(1))" id="kt_ecommerce_edit_order_cancel" class="me-4">Cancel</x-erp.button>
                 <!--end::Button-->
 
-                <button type="button" id="kt_ecommerce_edit_order_submit" class="erp-action erp-action--primary"
-                    onclick="setSelesai({{ $data->id }})">
+                <x-erp.button variant="primary" id="kt_ecommerce_edit_order_submit"
+                    :onclick="'setSelesai(' . (int) $data->id . ')'">
                     <span data-label>Selesai</span>
                     <span data-progress hidden>Mohon tunggu...</span>
-                </button>
+                </x-erp.button>
                 <!--end::Button-->
             </div>
         </div>
@@ -298,8 +297,8 @@
         </form>
         <x-slot:footer>
             <div class="ml-auto flex gap-2">
-                <button type="button" class="erp-action" data-erp-close>Close</button>
-                <button type="submit" form="kt_modal_add_customer_form" id="kt_modal_add_customer_submit" class="erp-action erp-action--primary"><span data-label>Simpan</span><span data-progress hidden>Mohon tunggu...</span></button>
+                <x-erp.button data-erp-close>Close</x-erp.button>
+                <x-erp.button variant="primary" type="submit" form="kt_modal_add_customer_form" id="kt_modal_add_customer_submit"><span data-label>Simpan</span><span data-progress hidden>Mohon tunggu...</span></x-erp.button>
             </div>
         </x-slot:footer>
     </x-erp.dialog>
@@ -326,8 +325,8 @@
         </form>
         <x-slot:footer>
             <div class="ml-auto flex gap-2">
-                <button type="button" class="erp-action" data-erp-close>Close</button>
-                <button type="submit" form="modalInputPrcForm" id="kt_modal_add_customer_submit_prc" class="erp-action erp-action--primary"><span data-label>Simpan</span><span data-progress hidden>Mohon tunggu...</span></button>
+                <x-erp.button data-erp-close>Close</x-erp.button>
+                <x-erp.button variant="primary" type="submit" form="modalInputPrcForm" id="kt_modal_add_customer_submit_prc"><span data-label>Simpan</span><span data-progress hidden>Mohon tunggu...</span></x-erp.button>
             </div>
         </x-slot:footer>
     </x-erp.dialog>

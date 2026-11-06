@@ -9,7 +9,7 @@
 <x-erp.workspace title="Deposito" subtitle="Kelola deposito pelanggan dan tier yang digunakan." icon="ph-wallet">
     <x-slot:toolbar><label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" placeholder="Cari deposito…" aria-label="Cari deposito"></label>
             @if (check_access('deposito.create'))
-            <button type="button" class="erp-action erp-action--primary" data-erp-open="#crm-dialog" data-crm-create><i class="ph-bold ph-plus" aria-hidden="true"></i><span>Tambah Deposito</span></button>
+            <x-erp.button variant="primary" icon="plus" bold data-erp-open="#crm-dialog" data-crm-create><span>Tambah Deposito</span></x-erp.button>
             @endif</x-slot:toolbar>
     <x-erp.collection table="transaction-table">
         <table id="transaction-table" class="erp-table erp-crm-table" width="100%"><thead><tr><th scope="col">Pelanggan</th><th scope="col">Tanggal</th><th scope="col">Deposito</th><th scope="col">Aksi</th></tr></thead><tbody></tbody></table>
@@ -24,8 +24,8 @@
     </form>
     <x-slot:footer>
         <div class="ml-auto flex gap-3">
-            <button type="button" id="crm-cancel" class="erp-action">Batal</button>
-            <button type="submit" form="crm-form" id="crm-submit" class="erp-action erp-action--primary"><span data-label>Simpan</span><span data-progress hidden>Menyimpan…</span></button>
+            <x-erp.button id="crm-cancel">Batal</x-erp.button>
+            <x-erp.button variant="primary" type="submit" form="crm-form" id="crm-submit"><span data-label>Simpan</span><span data-progress hidden>Menyimpan…</span></x-erp.button>
         </div>
     </x-slot:footer>
 </x-erp.dialog>
