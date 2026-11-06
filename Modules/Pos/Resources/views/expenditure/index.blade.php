@@ -1,91 +1,31 @@
-@extends('template.root')
+@extends('layouts.erp')
 @section('title', 'Pengeluaran')
 
+@section('page-title', 'Pengeluaran')
+@section('page-breadcrumb')
+    <span>Keuangan</span><i class="ph ph-caret-right text-[0.55rem]" aria-hidden="true"></i><span>Pengeluaran</span>
+@endsection
+@push('styles')
+    @vite('resources/css/flatpickr.css')
+@endpush
 @section('content')
-<x-erp.workspace title="Pengeluaran" subtitle="Kelola pengeluaran dan lihat rincian transaksi."><x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari pengeluaran" placeholder="Cari pengeluaran…"></div><button type="button" class="erp-action" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                            <!--begin::Header-->
-                            <div class="px-7 py-5">
-                                <div class="fs-5 text-gray-900 fw-bold">Pilihan Filter</div>
-                            </div>
-                            <!--end::Header-->
-                            <!--begin::Separator-->
-                            <div class="separator border-gray-200"></div>
-                            <!--end::Separator-->
-                            <!--begin::Content-->
-                            <div class="px-7 py-2" data-kt-user-table-filter="form">
-                                <!--begin::Input group-->
-                                <div>
-                                    <label class="form-label fs-6 fw-semibold">Status:</label>
-                                    @php
-                                        $category = [
-                                            'draft' => 'Draft',
-                                            'paid' => 'Final',
-                                        ];
-                                    @endphp
-                                    <select class="form-select form-select-solid" data-control="select2"
-                                        data-hide-search="true" data-placeholder="Status"
-                                        data-kt-ecommerce-product-filter="status">
-                                        <option value="all">All</option>
-                                        @foreach ($category as $key => $value)
-                                            <option value="{{ $key }}">{{ ucwords($value) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <!--end::Input group-->
-                            </div>
-                            <!--end::Content-->
-                            <div class="px-7 py-2" data-kt-user-table-filter="form">
-                                <!--begin::Input group-->
-                                <div>
-                                    <label class="form-label fs-6 fw-semibold">Cabang:</label>
-                                    <select class="form-select form-select-solid" data-control="select2"
-                                        data-hide-search="true" data-placeholder="Cabang"
-                                        data-kt-ecommerce-product-filter="cabang">
-                                        @if (count($branches) > 1)
-                                            <option value="all">All</option>
-                                        @endif
-                                        @foreach ($branches as $branch)
-                                            <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <!--end::Input group-->
-                            </div>
-                            <!--begin::Separator-->
-                            <div class="separator border-gray-200"></div>
-                            <!--end::Separator-->
-                            <!--begin::Content-->
-                            <div class="px-7 py-5" data-kt-user-table-filter="form">
-                                <!--begin::Input group-->
-                                <div class="input-group mw-350px">
-                                    <input class="form-control form-control-solid rounded rounded-end-0"
-                                        placeholder="Pick date range" id="kt_ecommerce_sales_flatpickr" />
-                                    <button class="btn btn-icon btn-light" id="kt_ecommerce_sales_flatpickr_clear">
-                                        <i class="ki-duotone ki-cross fs-2">
-                                            <span class="path1"></span>
-                                            <span class="path2"></span>
-                                        </i>
-                                    </button>
-                                </div>
-                                <!--end::Input group-->
-                            </div>
-                            <!--end::Content-->
-                        </div>@if(check_access('expenditure.create'))<a href="{{ url('expenditure/create') }}" class="erp-action erp-action--primary"><i class="ph-bold ph-plus" aria-hidden="true"></i>Tambah Pengeluaran</a>@endif</x-slot:toolbar><x-erp.collection table="pos-table"><table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
+<link rel="stylesheet" href="{{ asset('assets/css/erp-operations.css') }}?v={{ filemtime(public_path('assets/css/erp-operations.css')) }}">
+<x-erp.workspace title="Pengeluaran" subtitle="Kelola pengeluaran dan lihat rincian transaksi."><x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-erp-filter="search" aria-label="Cari pengeluaran" placeholder="Cari pengeluaran…"></div><details class="erp-operations-filter"><summary class="erp-action"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></summary><div class="erp-operations-filter__body"><label for="pos-status-filter">Status<select id="pos-status-filter" class="erp-select" data-erp-filter="status"><option value="all">Semua Status</option><option value="draft">Draft</option><option value="paid">Final</option></select></label><label for="pos-branch-filter">Cabang<select id="pos-branch-filter" class="erp-select" data-erp-filter="cabang">@if (count($branches) > 1)<option value="all">Semua Cabang</option>@endif @foreach ($branches as $branch)<option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>@endforeach</select></label><label for="kt_ecommerce_sales_flatpickr">Periode<span class="erp-input-group"><input class="erp-input" placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr"><button type="button" class="erp-action" id="kt_ecommerce_sales_flatpickr_clear" aria-label="Hapus periode"><i class="ph ph-x" aria-hidden="true"></i></button></span></label></div></details>@if(check_access('expenditure.create'))<a href="{{ url('expenditure/create') }}" class="erp-action erp-action--primary"><i class="ph-bold ph-plus" aria-hidden="true"></i>Tambah Pengeluaran</a>@endif</x-slot:toolbar><x-erp.collection table="pos-table"><table class="erp-table" id="pos-table" width="100%">
                     <thead>
-                        <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                            <th class="text-start min-w-150px">Name</th>
-                            <th class="text-start min-w-150px">Date</th>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Tanggal</th>
                             <th></th>
                         </tr>
                     </thead>
-                    <tbody class="fw-semibold text-gray-600"></tbody>
+                    <tbody></tbody>
                 </table></x-erp.collection></x-erp.workspace>
 
 @section('script')
     <script type="text/javascript">
         var dataTable;
         $(document).ready(function() {
-            const $branchFilter = $('[data-kt-ecommerce-product-filter="cabang"]');
+            const $branchFilter = $('[data-erp-filter="cabang"]');
             const $activeBranchButtonLabel = $('#active-branch-button-label');
 
             function updateActiveFilterInfo() {
@@ -110,8 +50,8 @@
                     url: "{{ route('expenditure.data') }}",
                     data: function(d) {
                         d.url = "{{ request()->segment(1) }}";
-                        d.status_filter = $('[data-kt-ecommerce-product-filter="status"]').val();
-                        d.cabang_filter = $('[data-kt-ecommerce-product-filter="cabang"]').val();
+                        d.status_filter = $('[data-erp-filter="status"]').val();
+                        d.cabang_filter = $('[data-erp-filter="cabang"]').val();
                         var range = $('#kt_ecommerce_sales_flatpickr').val();
                         if (range) {
                             var dates = range.split(' to ');
@@ -143,11 +83,11 @@
                 dataTable.search(this.value).draw();
             });
 
-            $('[data-kt-ecommerce-product-filter="status"]').on('change', function() {
+            $('[data-erp-filter="status"]').on('change', function() {
                 dataTable.draw(); // trigger fetch ulang dari server
             });
 
-            $('[data-kt-ecommerce-product-filter="cabang"]').on('change', function() {
+            $('[data-erp-filter="cabang"]').on('change', function() {
                 updateActiveFilterInfo();
                 dataTable.draw(); // trigger fetch ulang dari server
             });
@@ -183,8 +123,8 @@
                 confirmButtonText: 'Ya, hapus!',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
+                    confirmButton: 'erp-action erp-action--danger',
+                    cancelButton: 'erp-action ml-3'
                 },
                 buttonsStyling: false
             }).then((result) => {

@@ -1,7 +1,11 @@
-@extends('template.root')
+@extends('layouts.erp')
 
 @section('title', $pageMode === 'edit' ? 'Edit Arus Kas' : ($pageMode === 'create' ? 'Tambah Arus Kas' : 'Arus Kas'))
 
+@section('page-title', 'Arus Kas')
+@section('page-breadcrumb')
+    <span>Keuangan</span><i class="ph ph-caret-right text-[0.55rem]" aria-hidden="true"></i><span>Arus Kas</span>
+@endsection
 @section('content')
 @php($branchOptions = $branches->map(fn ($branch) => ['id' => (string) $branch->id, 'name' => $branch->name])->values()->all())
 
@@ -164,7 +168,7 @@
         </div>
         <p class="hidden text-xs text-gray-500 md:block" x-text="filteredOrders.length + ' transaksi'"></p>
         @if (check_access('expenditure.create'))
-            <a href="{{ route('arus-kas.create') }}" class="hidden h-11 items-center gap-2 rounded-full bg-[#0b595b] px-5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#0a4e50] sm:inline-flex">
+            <a href="{{ route('arus-kas.create') }}" class="hidden h-11 items-center gap-2 rounded-full bg-teal px-5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-teal-hover sm:inline-flex">
                 <i class="ph-bold ph-plus text-sm" aria-hidden="true"></i><span>Tambah Arus Kas</span>
             </a>
         @endif
@@ -201,7 +205,7 @@
             <div class="arus-kas-empty__icon"><i class="ph-duotone ph-receipt" aria-hidden="true"></i></div>
             <h2 class="mt-4 text-sm font-bold text-gray-800 sm:text-base">Belum ada transaksi arus kas</h2>
             <p class="mt-2 max-w-xs text-xs leading-relaxed text-gray-500 sm:text-[13px]">
-                Klik tombol <a href="{{ route('arus-kas.create') }}" class="mx-1 inline-flex h-6 w-6 items-center justify-center rounded-lg border border-emerald-200/80 bg-emerald-50 text-[#0b595b] align-middle" title="Tambah Arus Kas" aria-label="Tambah Arus Kas"><i class="ph-bold ph-plus text-xs" aria-hidden="true"></i></a> untuk menambahkan<br>transaksi arus kas baru
+                Klik tombol <a href="{{ route('arus-kas.create') }}" class="mx-1 inline-flex h-6 w-6 items-center justify-center rounded-lg border border-emerald-200/80 bg-emerald-50 text-teal align-middle" title="Tambah Arus Kas" aria-label="Tambah Arus Kas"><i class="ph-bold ph-plus text-xs" aria-hidden="true"></i></a> untuk menambahkan<br>transaksi arus kas baru
             </p>
             <button type="button" x-show="hasActiveFilter || searchQuery.trim() !== ''" x-cloak @click="resetFilters()" class="mt-4 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-600 shadow-sm">
                 <i class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i>Reset Pencarian &amp; Filter
@@ -240,7 +244,7 @@
             </div>
             <footer class="flex shrink-0 gap-3 border-t border-gray-100 bg-white px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                 <button type="button" @click="resetMobileFilters()" class="h-11 flex-1 rounded-xl border border-gray-200 bg-white text-xs font-bold text-gray-600">Reset</button>
-                <button type="button" @click="applyMobileFilters()" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-xs font-bold text-white">Terapkan</button>
+                <button type="button" @click="applyMobileFilters()" class="h-11 flex-1 rounded-xl bg-teal text-xs font-bold text-white">Terapkan</button>
             </footer>
         </section>
     </div>
@@ -255,12 +259,12 @@
                 </span>
                 <div class="min-w-0"><h3 class="truncate text-sm font-bold text-gray-900" x-text="selectedOrder.activity"></h3><button type="button" @click="openInvoiceModal(selectedOrder)" class="mt-1 text-left text-[11px] font-medium text-gray-400" x-text="selectedOrder.poNumber" aria-label="Lihat alur status transaksi"></button></div>
             </div>
-            <div class="flex items-center gap-3"><span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-emerald-200/80 bg-emerald-50/80 text-[#0b595b]"><i class="ph-duotone ph-coins text-lg" aria-hidden="true"></i></span><div><p class="text-sm font-bold text-gray-900" x-text="formatRupiah(selectedOrder.grandTotal)"></p><p class="mt-0.5 text-[11px] text-gray-400">Total Nominal</p></div></div>
-            <div class="flex items-center gap-3"><span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-emerald-200/80 bg-emerald-50/80 text-[#0b595b]"><i class="ph-duotone ph-storefront text-lg" aria-hidden="true"></i></span><div><p class="text-sm font-bold text-gray-900" x-text="selectedOrder.targetBranch"></p><p class="mt-0.5 text-[11px] text-gray-400">Cabang Toko</p></div></div>
-            <div class="flex items-center gap-3"><span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-emerald-200/80 bg-emerald-50/80 text-[#0b595b]"><i class="ph-duotone ph-clock text-lg" aria-hidden="true"></i></span><div><p class="text-sm font-bold text-gray-900" x-text="selectedOrder.staffName"></p><p class="mt-0.5 text-[11px] text-gray-400" x-text="'Dibuat pada ' + formatDateTime(selectedOrder.date, selectedOrder.time)"></p></div></div>
+            <div class="flex items-center gap-3"><span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-emerald-200/80 bg-emerald-50/80 text-teal"><i class="ph-duotone ph-coins text-lg" aria-hidden="true"></i></span><div><p class="text-sm font-bold text-gray-900" x-text="formatRupiah(selectedOrder.grandTotal)"></p><p class="mt-0.5 text-[11px] text-gray-400">Total Nominal</p></div></div>
+            <div class="flex items-center gap-3"><span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-emerald-200/80 bg-emerald-50/80 text-teal"><i class="ph-duotone ph-storefront text-lg" aria-hidden="true"></i></span><div><p class="text-sm font-bold text-gray-900" x-text="selectedOrder.targetBranch"></p><p class="mt-0.5 text-[11px] text-gray-400">Cabang Toko</p></div></div>
+            <div class="flex items-center gap-3"><span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-emerald-200/80 bg-emerald-50/80 text-teal"><i class="ph-duotone ph-clock text-lg" aria-hidden="true"></i></span><div><p class="text-sm font-bold text-gray-900" x-text="selectedOrder.staffName"></p><p class="mt-0.5 text-[11px] text-gray-400" x-text="'Dibuat pada ' + formatDateTime(selectedOrder.date, selectedOrder.time)"></p></div></div>
         </div></template>
         <x-slot:actions>
-            <button type="button" @click="editSelectedOrder()" :disabled="!selectedOrder?.canEdit" class="flex h-[52px] flex-1 items-center justify-center gap-2 border-r border-gray-100 text-sm font-bold text-[#0b595b] disabled:cursor-not-allowed disabled:text-gray-300"><i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>Edit</button>
+            <button type="button" @click="editSelectedOrder()" :disabled="!selectedOrder?.canEdit" class="flex h-[52px] flex-1 items-center justify-center gap-2 border-r border-gray-100 text-sm font-bold text-teal disabled:cursor-not-allowed disabled:text-gray-300"><i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>Edit</button>
             <button type="button" @click="deleteSelectedOrder()" :disabled="!selectedOrder?.canDelete" class="flex h-[52px] flex-1 items-center justify-center gap-2 text-sm font-bold text-rose-500 disabled:cursor-not-allowed disabled:text-gray-300"><i class="ph-bold ph-trash" aria-hidden="true"></i>Hapus</button>
         </x-slot:actions>
     </x-erp.detail-dialog>
@@ -269,7 +273,7 @@
         <div class="arus-kas-modal-backdrop" @click="invoiceModalOpen = false"></div>
         <section id="arus-kas-printable" class="arus-kas-invoice-modal" @click.stop>
             <header class="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
-                <span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-emerald-50 text-[#0b595b]"><i class="ph-bold ph-receipt text-lg" aria-hidden="true"></i></span>
+                <span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-emerald-50 text-teal"><i class="ph-bold ph-receipt text-lg" aria-hidden="true"></i></span>
                 <div class="min-w-0 flex-1"><h2 id="arus-kas-invoice-title" class="break-words text-sm font-extrabold text-gray-900" x-text="selectedOrder?.poNumber"></h2><p class="mt-0.5 text-[11px] text-gray-500" x-text="'Oleh: ' + (selectedOrder?.staffName || '—')"></p><p class="text-[10px] text-gray-400" x-text="formatDateTime(selectedOrder?.date, selectedOrder?.time)"></p></div>
                 <span class="rounded-full border px-2 py-1 text-[10px] font-bold" :class="selectedOrder?.status === 'Draft' ? 'border-gray-200 bg-gray-50 text-gray-500' : 'border-emerald-100 bg-emerald-50 text-emerald-700'" x-text="selectedOrder?.status"></span>
                 <button type="button" @click="printOrder()" class="rounded-xl border border-gray-200 px-2.5 py-2 text-[11px] font-bold text-gray-700"><i class="ph-bold ph-printer mr-1" aria-hidden="true"></i>Cetak PO</button>
@@ -300,7 +304,7 @@
             </div>
             <footer class="flex shrink-0 flex-col gap-2 border-t border-gray-100 bg-white px-5 py-3">
                 <div class="flex gap-2"><button type="button" @click="deleteSelectedOrder()" :disabled="!selectedOrder?.canDelete" class="flex-1 rounded-xl border border-rose-100 py-2.5 text-[11px] font-bold text-rose-600 disabled:text-gray-300" x-text="selectedOrder?.status === 'Draft' ? 'Hapus Draft' : 'Hapus Transaksi'"></button><button type="button" @click="editSelectedOrder()" :disabled="!selectedOrder?.canEdit" class="flex-1 rounded-xl border border-gray-200 py-2.5 text-[11px] font-bold text-gray-700 disabled:text-gray-300" x-text="selectedOrder?.status === 'Draft' ? 'Lanjut Edit Draft' : 'Edit Transaksi'"></button></div>
-                <button type="button" @click="updateOrderStatus(selectedOrder?.status === 'Draft' ? 'completed' : 'draft')" :disabled="!selectedOrder?.canEdit || (selectedOrder?.status === 'Draft' && selectedOrder?.items?.length === 0)" class="rounded-xl bg-[#0b595b] py-2.5 text-[11px] font-bold text-white disabled:bg-gray-300" x-text="selectedOrder?.status === 'Draft' ? 'Posting ke Selesai' : 'Kembalikan ke Draft'"></button>
+                <button type="button" @click="updateOrderStatus(selectedOrder?.status === 'Draft' ? 'completed' : 'draft')" :disabled="!selectedOrder?.canEdit || (selectedOrder?.status === 'Draft' && selectedOrder?.items?.length === 0)" class="rounded-xl bg-teal py-2.5 text-[11px] font-bold text-white disabled:bg-gray-300" x-text="selectedOrder?.status === 'Draft' ? 'Posting ke Selesai' : 'Kembalikan ke Draft'"></button>
             </footer>
         </section>
     </div>
@@ -346,11 +350,11 @@
                 </section>
 
                 <section class="arus-kas-items-card">
-                    <header class="arus-kas-items-head"><h2 class="text-sm font-extrabold tracking-tight text-gray-900">Daftar Kebutuhan Kas</h2><button type="button" @click="openAddItemModal()" class="rounded-xl border border-emerald-200 bg-emerald-50/70 px-3.5 py-2 text-[11px] font-bold text-[#0b595b]">+ Tambah</button></header>
+                    <header class="arus-kas-items-head"><h2 class="text-sm font-extrabold tracking-tight text-gray-900">Daftar Kebutuhan Kas</h2><button type="button" @click="openAddItemModal()" class="rounded-xl border border-emerald-200 bg-emerald-50/70 px-3.5 py-2 text-[11px] font-bold text-teal">+ Tambah</button></header>
                     <div class="arus-kas-items-body">
                         <div x-show="form.items.length === 0" class="flex h-full min-h-[280px] flex-col items-center justify-center px-5 text-center">
                             <p class="text-sm font-bold text-gray-800">Belum ada item kebutuhan kas</p>
-                            <p class="mt-1 text-xs text-gray-500">Klik tombol <strong class="text-[#0b595b]">+ Tambah</strong> untuk melakukan input</p>
+                            <p class="mt-1 text-xs text-gray-500">Klik tombol <strong class="text-teal">+ Tambah</strong> untuk melakukan input</p>
                         </div>
                         <template x-for="(item, index) in form.items" :key="index">
                             <button type="button" @click="openEditItemModal(index)" class="arus-kas-form-item w-full text-left">
@@ -389,8 +393,8 @@
                 </div>
             </div>
             <footer class="arus-kas-item-modal__footer">
-                <div x-show="modalMode === 'add'"><button type="button" @click="saveModalItem()" class="flex h-12 w-full items-center justify-between rounded-xl bg-[#0b595b] px-5 text-xs font-bold text-white shadow-md"><span>Tambah</span><span x-text="formatRupiah(itemSubtotal(modalItem))"></span></button></div>
-                <div x-show="modalMode === 'edit'" class="flex gap-3"><button type="button" @click="deleteEditingItem()" class="h-12 rounded-xl border border-rose-100 px-4 text-xs font-bold text-rose-600"><i class="ph-bold ph-trash mr-1" aria-hidden="true"></i>Hapus</button><button type="button" @click="saveModalItem()" class="flex h-12 flex-1 items-center justify-between rounded-xl bg-[#0b595b] px-5 text-xs font-bold text-white shadow-md"><span>Simpan</span><span x-text="formatRupiah(itemSubtotal(modalItem))"></span></button></div>
+                <div x-show="modalMode === 'add'"><button type="button" @click="saveModalItem()" class="flex h-12 w-full items-center justify-between rounded-xl bg-teal px-5 text-xs font-bold text-white shadow-md"><span>Tambah</span><span x-text="formatRupiah(itemSubtotal(modalItem))"></span></button></div>
+                <div x-show="modalMode === 'edit'" class="flex gap-3"><button type="button" @click="deleteEditingItem()" class="h-12 rounded-xl border border-rose-100 px-4 text-xs font-bold text-rose-600"><i class="ph-bold ph-trash mr-1" aria-hidden="true"></i>Hapus</button><button type="button" @click="saveModalItem()" class="flex h-12 flex-1 items-center justify-between rounded-xl bg-teal px-5 text-xs font-bold text-white shadow-md"><span>Simpan</span><span x-text="formatRupiah(itemSubtotal(modalItem))"></span></button></div>
             </footer>
         </section>
     </div>

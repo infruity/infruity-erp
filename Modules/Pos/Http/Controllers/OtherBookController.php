@@ -2,6 +2,7 @@
 
 namespace Modules\Pos\Http\Controllers;
 
+use App\Support\DataTableCells;
 use DB;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -119,75 +120,33 @@ class OtherBookController extends Controller
         // dd($data);
         return DataTables::of($data)
             ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                $html = '<div class="d-flex align-items-center">';
-                $html .= '<div class="ms-5">';
-                if (isset($item->customer->name)) {
-                    $html .= '<a href="' . url('pos') . '/' . $item->id . '/show' . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $item->customer->name . '</a>';
-                    $html .= '<br><span class="text-muted d-block fs-7">' . ($item->customer->address) . '</span>';
-                } else {
-                    $html .= '<a href="' . url('pos') . '/' . $item->id . '/show' . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">Pelanggan Umum</a>';
-                }
-                $html .= '</div>';
-                $html .= '</div>';
-                return $html;
-            })
+            ->addColumn('name', fn ($item) => DataTableCells::title(
+                $item->customer->name ?? 'Pelanggan Umum',
+                $item->customer->address ?? null,
+                url('pos') . '/' . $item->id . '/show'
+            ))
             ->editColumn('ongkir', function ($item) {
                 return 'Rp. ' . number_format($item->ongkir, 0, ',', '.');
             })
             ->editColumn('process_status', function ($item) {
-                $html = '';
-                if ($item->process_status == 'pending') {
-                    $html .= '<span class="badge badge-light-danger">Proses</span>';
-                } else if ($item->process_status == 'done') {
-                    $html .= '<span class="badge badge-light-success">Selesai</span>';
-                } else {
-                    $html .= '<span class="badge badge-light-warning">' . $item->process_status . '</span>';
-                }
-                return $html;
+                return match ($item->process_status) {
+                    'pending' => DataTableCells::badge('Proses', 'danger'),
+                    'done' => DataTableCells::badge('Selesai', 'success'),
+                    default => DataTableCells::badge((string) $item->process_status, 'warning'),
+                };
             })
             ->addColumn('date', function ($item) {
-                $html = '<span class="text-muted d-block fs-8">' . date('d M Y', strtotime($item->process_date)) . '</span>';
-                $html .= '<span class="text-muted d-block fs-8">' . date('H:i', strtotime($item->process_date)) . '</span>';
-                return $html;
+                return '<span class="block text-xs text-gray-500">' . e(date('d M Y', strtotime($item->process_date))) . '</span>'
+                    . '<span class="block text-xs text-gray-500">' . e(date('H:i', strtotime($item->process_date))) . '</span>';
             })
             ->addColumn('action', function ($item) {
-                $html = '';
-                $html .= '
-                    <div class="dropstart">
-                        <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
-                if (check_access('pos.show')) {
-                    $html .= '
-                            <li>
-                                <a class="dropdown-item" href="' . route('pos.show', $item->id) . '">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </li>';
-                }
-                if (in_array($item->process_status, ['pending']) && check_access('pos.edit')) {
-                    $html .= '
-                            <li>
-                                <a class="dropdown-item" href="' . route('pos.edit', $item->id) . '">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                            </li>';
-                }
-                if (in_array($item->process_status, ['pending'])) {
-                    $html .= '
-                            <li>
-                            <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="setSelesai(' . $item->id . ')">
-                                <i class="bi bi-check2-circle"></i>
-                            </a>
-                        </li>';
-                }
-                $html .= '
-                        </ul>
-                    </div>
-                    ';
-                return $html;
+                $pending = $item->process_status === 'pending';
+
+                return DataTableCells::rowActions([
+                    ['label' => 'Lihat', 'icon' => 'eye', 'href' => route('pos.show', $item->id), 'can' => check_access('pos.show')],
+                    ['label' => 'Ubah', 'icon' => 'pencil-simple', 'href' => route('pos.edit', $item->id), 'can' => $pending && check_access('pos.edit')],
+                    ['label' => 'Selesaikan', 'icon' => 'check-circle', 'onclick' => 'setSelesai(' . (int) $item->id . ')', 'can' => $pending],
+                ], 'Aksi pemasukan');
             })
             ->rawColumns(['name', 'action', 'date', 'process_status'])
             ->make(true);

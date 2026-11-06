@@ -2,6 +2,7 @@
 
 namespace Modules\Pos\Http\Controllers;
 
+use App\Support\DataTableCells;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -257,64 +258,27 @@ class ExpenditureController extends Controller
         // dd($data);
         return DataTables::of($data)
             ->addIndexColumn()
-            ->addColumn('name', function ($item) {
-                $html = '<div class="d-flex align-items-center">';
-                $html .= '<div class="ms-5">';
-                if (isset($item->branch->name)) {
-                    $html .= '<a href="' . url('pos') . '/show' . '/' . $item->id . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $item->branch->name . '</a>';
-                } else {
-                    $html .= '<a href="' . url('pos') . '/show' . '/' . $item->id . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">Pelanggan Umum</a>';
-                }
-                $html .= '<br><span class="text-muted d-block fs-7">Total Rp' . tonumberround($item->total) . '</span>';
-                $html .= '<span class="text-muted d-block fs-7">Sisa Rp' . tonumberround($item->total - $item->paid) . '</span>';
-                return $html;
-            })
+            ->addColumn('name', fn ($item) => DataTableCells::title(
+                $item->branch->name ?? 'Pelanggan Umum',
+                'Total Rp' . tonumberround($item->total) . ' · Sisa Rp' . tonumberround($item->total - $item->paid),
+                url('pos') . '/show/' . $item->id
+            ))
             ->addColumn('date', function ($item) {
-                $html = '<span class="text-muted d-block fs-8">' . date('d M Y H:i', strtotime($item->created_at)) . '</span>';
-                if ($item->status == 'paid') {
-                    $html .= '<span class="badge badge-light-success">Final</span>';
-                } else if ($item->status == 'draft') {
-                    $html .= '<span class="badge badge-light-danger">Draft</span>';
-                } else {
-                    $html .= '<span class="badge badge-light-warning">' . $item->status . '</span>';
-                }
-                return $html;
+                return '<span class="block text-xs text-gray-500">' . e(date('d M Y H:i', strtotime($item->created_at))) . '</span>'
+                    . match ($item->status) {
+                        'paid' => DataTableCells::badge('Final', 'success'),
+                        'draft' => DataTableCells::badge('Draft', 'danger'),
+                        default => DataTableCells::badge((string) $item->status, 'warning'),
+                    };
             })
             ->addColumn('action', function ($item) {
-                $html = '';
-                $html .= '
-                    <div class="dropstart">
-                        <button class="btn btn-sm btn-light-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Aksi">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
-                $isRecent = false;
-                $timeRef = isset($item->updated_at) ? $item->updated_at : (isset($item->created_at) ? $item->created_at : null);
-                if ($timeRef && \Carbon\Carbon::parse($timeRef)->diffInMinutes(now()) <= 30) {
-                    $isRecent = true;
-                }
+                $timeRef = $item->updated_at ?? $item->created_at ?? null;
+                $isRecent = $timeRef && \Carbon\Carbon::parse($timeRef)->diffInMinutes(now()) <= 30;
 
-                if (in_array($item->status, ['temp', 'draft']) || $isRecent) {
-                    $html .= '
-                            <li>
-                                <a class="dropdown-item" href="' . route('expenditure.edit', $item->id) . '">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                            </li>';
-                }
-                if (!in_array($item->status, ['paid', 'debt'])) {
-                    $html .= '
-                            <li>
-                                <a class="dropdown-item text-primary d-flex justify-content-center" href="javascript:void(0)" onclick="deleteProduct(' . $item->id . ')">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </li>';
-                }
-                $html .= '
-                        </ul>
-                    </div>
-                    ';
-                return $html;
+                return DataTableCells::rowActions([
+                    ['label' => 'Ubah', 'icon' => 'pencil-simple', 'href' => route('expenditure.edit', $item->id), 'can' => in_array($item->status, ['temp', 'draft']) || $isRecent],
+                    ['label' => 'Hapus', 'icon' => 'trash', 'onclick' => 'deleteProduct(' . (int) $item->id . ')', 'tone' => 'danger', 'can' => ! in_array($item->status, ['paid', 'debt'])],
+                ], 'Aksi pengeluaran');
             })
             ->rawColumns(['name', 'action', 'date'])
             ->make(true);
