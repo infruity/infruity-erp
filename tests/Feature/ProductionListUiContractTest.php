@@ -26,13 +26,15 @@ final class ProductionListUiContractTest extends TestCase
         $this->assertStringContainsString('production-empty-state', $view);
     }
 
-    public function test_rows_open_the_existing_detail_page_and_keep_row_actions_reachable(): void
+    public function test_rows_open_the_detail_popup_and_keep_full_page_fallback_and_row_actions_reachable(): void
     {
         $view = $this->listView();
 
         $this->assertStringContainsString('createdRow', $view);
         $this->assertStringContainsString('is-openable', $view);
         $this->assertStringContainsString("closest('a, button, .dropdown, .dropdown-menu')", $view);
+        $this->assertStringContainsString('window.openProductionDetail(this.dataset.href)', $view);
+        $this->assertStringContainsString('else window.location.href = this.dataset.href', $view);
         // The action menu stays visible on small screens so delete/edit are not lost.
         $this->assertStringNotContainsString('#production-table tbody td:nth-child(4) { display:none', $view);
     }

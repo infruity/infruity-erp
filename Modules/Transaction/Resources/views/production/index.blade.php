@@ -46,6 +46,7 @@
         }
     </style>
     <link rel="stylesheet" href="{{ asset('assets/css/production-list-reference.css') }}?v={{ filemtime(public_path('assets/css/production-list-reference.css')) }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/production-detail-reference.css') }}?v={{ filemtime(public_path('assets/css/production-detail-reference.css')) }}">
     <x-erp.workspace title="Produksi" subtitle="Pantau produksi, bahan baku dan status pengerjaan." icon="cooking-pot">
         <x-slot:toolbar>
             <label class="erp-search production-desktop-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-production-search id="search-desktop" aria-label="Cari produksi" placeholder="Cari produksi..."></label>
@@ -67,6 +68,14 @@
                 </table>
         </div>
     </x-erp.workspace>
+    </div>
+    <div data-production-detail-modal x-data="ProductionListUi.createDetailModal('{{ route('production.index') }}')">
+        <template x-teleport="body">
+            <x-erp.detail-dialog open="productionDetailOpen" close="closeProductionDetail()" title="Detail Produksi" title-binding="productionDetailTitle" labelledby="production-detail-modal-title" closeLabel="Tutup detail produksi" id="production-detail-modal" class="production-detail-dialog" tabindex="-1" x-on:keydown.tab="trapProductionDetailFocus($event)">
+                <div x-show="productionDetailLoading" class="production-detail-dialog__loading" role="status" aria-live="polite">Memuat detail produksi…</div>
+                <div x-show="!productionDetailLoading" class="production-detail-dialog__body" x-html="productionDetailHtml"></div>
+            </x-erp.detail-dialog>
+        </template>
     </div>
 @section('script')
     <script src="{{ asset('assets/js/production-list-reference.js') }}?v={{ filemtime(public_path('assets/js/production-list-reference.js')) }}"></script>
@@ -154,10 +163,11 @@
                 ]
             });
 
-            // A tap on the row opens the existing detail page; row actions keep their own behaviour.
+            // A tap on the row opens the detail popup; the route remains the no-JS fallback.
             $('#production-table tbody').on('click', 'tr.is-openable', function(event) {
                 if ($(event.target).closest('a, button, .dropdown, .dropdown-menu').length) return;
-                window.location.href = this.dataset.href;
+                if (typeof window.openProductionDetail === 'function') window.openProductionDetail(this.dataset.href);
+                else window.location.href = this.dataset.href;
             });
 
             // Search manual lewat input
