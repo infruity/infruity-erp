@@ -81,10 +81,22 @@
         return {start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)};
     }
     function filterDraft(applied) {
-        return {branch:String(applied.branch || 'all'),start:applied.start || '',end:applied.end || ''};
+        return {
+            branch:String(applied.branch || 'all'),
+            start:applied.start || '',
+            end:applied.end || '',
+            status:String(applied.status || 'all'),
+            result:String(applied.result || 'all')
+        };
     }
     function filterRequest(draft) {
-        return {cabang_filter:draft.branch,start_date:draft.start,end_date:draft.end || draft.start};
+        return {
+            cabang_filter:draft.branch,
+            start_date:draft.start,
+            end_date:draft.end || draft.start,
+            status_filter:draft.status,
+            result_filter:draft.result
+        };
     }
     return {parseQuantity,quantity,history,filterHistory,correction,formatLongDateTime,period,filterDraft,filterRequest};
 });

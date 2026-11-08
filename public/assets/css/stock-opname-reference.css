@@ -36,7 +36,6 @@
 .so-reference-sheet .so-filter-chips { display:flex; flex-wrap:wrap; gap:8px; }
 .so-reference-sheet .so-filter-chips button { min-height:30px; padding:4px 14px; border:1px solid #e5e7eb; border-radius:999px; background:#fff; color:#4b5563; font-size:12px; }
 .so-reference-sheet :is(.so-filter-grid,.so-filter-chips) .is-selected { color:#047857; background:#ecfdf5; border-color:#6ee7b7; }
-.so-reference-sheet .so-filter-limit { margin:-8px 0 16px; color:#9ca3af; font-size:10px; }
 .so-reference-sheet .so-branch-picker { overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; }
 .so-reference-sheet .so-branch-search { display:flex; align-items:center; gap:8px; padding:8px 12px; margin:0; border-bottom:1px solid #f3f4f6; color:#9ca3af; }
 .so-reference-sheet .so-branch-search input { width:100%; min-width:0; height:20px; border:0; padding:0; background:transparent; outline:0; color:#374151; font-size:16px; }

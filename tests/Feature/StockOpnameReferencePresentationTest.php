@@ -44,13 +44,29 @@ final class StockOpnameReferencePresentationTest extends TestCase
         $this->assertStringContainsString('#so-filter-sheet .so-branch-options input[type=radio]:focus-visible { outline:2px solid #10b981', $css);
     }
 
-    public function test_filter_does_not_offer_unsupported_server_filters_as_working_controls(): void
+    public function test_result_and_status_filters_are_wired_to_the_existing_data_endpoint(): void
     {
         $source = file_get_contents(base_path('Modules/Transaction/Resources/views/stock-opname/partials/reference-filters.blade.php'));
+
         $this->assertStringContainsString('Hasil Opname', $source);
         $this->assertStringContainsString('Status Opname', $source);
-        $this->assertStringContainsString('disabled aria-describedby="so-filter-limit"', $source);
+        $this->assertStringContainsString('data-so-result="lebih"', $source);
+        $this->assertStringContainsString('data-so-status="draft"', $source);
+        $this->assertStringContainsString('id="so-filter-applied-status"', $source);
+        $this->assertStringContainsString('id="so-filter-applied-result"', $source);
+        $this->assertStringNotContainsString('disabled aria-describedby="so-filter-limit"', $source);
+        $this->assertStringNotContainsString('so-filter-limit', $source);
+        // Both fieldsets must stay interactive; a bare `disabled` would silently re-block them.
+        $this->assertStringNotContainsString('<fieldset class="so-filter-section" disabled', $source);
         $this->assertStringContainsString('so-filter-draft-branch', $source);
         $this->assertStringNotContainsString('data-kt-ecommerce-product-filter="cabang"', $source);
+    }
+
+    public function test_list_request_carries_the_result_and_status_filters(): void
+    {
+        $source = file_get_contents(base_path('Modules/Transaction/Resources/views/stock-opname/index.blade.php'));
+
+        $this->assertStringContainsString("d.status_filter = \$('#so-filter-applied-status').val()", $source);
+        $this->assertStringContainsString("d.result_filter = \$('#so-filter-applied-result').val()", $source);
     }
 }

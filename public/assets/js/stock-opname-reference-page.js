@@ -62,15 +62,36 @@ function initStockOpnameReference() {
         labels.forEach(label => { label.hidden = !label.textContent.toLocaleLowerCase('id-ID').includes(query); });
         filterEl.querySelector('.so-branch-empty').hidden = labels.some(label => !label.hidden);
     }
+    function syncChoices() {
+        $('[data-so-result]').each(function () {
+            const active = this.dataset.soResult === draft.result;
+            this.classList.toggle('is-selected',active);
+            this.setAttribute('aria-pressed',String(active));
+        });
+        $('[data-so-status]').each(function () {
+            const active = this.dataset.soStatus === draft.status;
+            this.classList.toggle('is-selected',active);
+            this.setAttribute('aria-pressed',String(active));
+        });
+    }
     function readApplied() {
         const [start='',end=''] = dateField.value.split(' to ');
-        return ui.filterDraft({branch:branch.value,start,end:end || start});
+        return ui.filterDraft({
+            branch:branch.value,
+            start,
+            end:end || start,
+            status:document.getElementById('so-filter-applied-status').value,
+            result:document.getElementById('so-filter-applied-result').value
+        });
     }
     function apply(close = true) {
         const fields = ui.filterRequest(draft);
         branch.value = fields.cabang_filter;
         dateField.value = fields.start_date ? `${fields.start_date} to ${fields.end_date}` : '';
-        const active = fields.cabang_filter !== 'all' || Boolean(fields.start_date || fields.end_date);
+        document.getElementById('so-filter-applied-status').value = fields.status_filter;
+        document.getElementById('so-filter-applied-result').value = fields.result_filter;
+        const active = fields.cabang_filter !== 'all' || Boolean(fields.start_date || fields.end_date)
+            || fields.status_filter !== 'all' || fields.result_filter !== 'all';
         $('[data-so-open-filter]').toggleClass('is-active',active);
         $('#active-branch-button-label').text(active ? 'Filter aktif' : 'Filter');
         dataTable.draw();
@@ -79,7 +100,7 @@ function initStockOpnameReference() {
     $('[data-so-open-filter]').on('click',function () {
         trigger = this;
         draft = readApplied();
-        syncBranches();syncDates();
+        syncBranches();syncDates();syncChoices();
         $('#so-filter-branch-search').val('');searchBranches();
         document.getElementById('so-filter-main').hidden = false;
         document.getElementById('so-filter-calendar').hidden = true;
@@ -94,6 +115,8 @@ function initStockOpnameReference() {
     });
     $('#so-filter-branch-search').on('input',searchBranches);
     $('input[name="so-filter-draft-branch"]').on('change',function () { draft.branch = this.value;syncBranches(); });
+    $('[data-so-result]').on('click',function () { draft.result = this.dataset.soResult;syncChoices(); });
+    $('[data-so-status]').on('click',function () { draft.status = this.dataset.soStatus;syncChoices(); });
     $('[data-so-reset="branch"]').on('click',function () {
         draft.branch='all';syncBranches();
         filterEl.querySelector('#so-filter-branch-search').focus();
@@ -110,7 +133,7 @@ function initStockOpnameReference() {
     });
     $('#so-calendar-back').on('click',() => showCalendar(false));
     $('#so-filter-apply').on('click',apply);
-    $('#so-filter-reset').on('click',function () { draft=ui.filterDraft({branch:'all'});syncBranches();syncDates();apply(false); });
+    $('#so-filter-reset').on('click',function () { draft=ui.filterDraft({branch:'all'});syncBranches();syncDates();syncChoices();apply(false); });
 
     $('[data-so-search]').on('input',function () {
         const text=this.value;

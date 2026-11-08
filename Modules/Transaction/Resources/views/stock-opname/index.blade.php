@@ -1191,7 +1191,12 @@
             const isPending = row?.status === 'pending';
             const stockSystem = isPending ? Number(row?.live_stock || 0) : Number(row?.stock || 0);
             const stockFisik = Number(row?.real_stock || 0);
-            const selisih = Math.round((stockFisik - stockSystem) * 100) / 100;
+            // The server rounds the difference and filters on that same value, so render it
+            // verbatim; recomputing here in binary floats could disagree at half-cent ties.
+            const serverDiff = row?.display_difference;
+            const selisih = serverDiff === null || serverDiff === undefined || !Number.isFinite(Number(serverDiff))
+                ? Math.round((stockFisik - stockSystem) * 100) / 100
+                : Number(serverDiff);
             const hpp = Number(row?.avg_hpp_calc || row?.avg_price || 0);
             return {
                 id: row?.id || 0,
@@ -1346,6 +1351,8 @@
                     data: function(d) {
                         d.url = "{{ request()->segment(1) }}";
                         d.cabang_filter = $('[data-kt-ecommerce-product-filter="cabang"]').val();
+                        d.status_filter = $('#so-filter-applied-status').val() || 'all';
+                        d.result_filter = $('#so-filter-applied-result').val() || 'all';
                         var range = $('#kt_ecommerce_sales_flatpickr').val();
                         if (range) {
                             var dates = range.split(' to ');

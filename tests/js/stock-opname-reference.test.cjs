@@ -175,9 +175,120 @@ test('date presets use application timezone and Monday-Sunday across month bound
     assert.deepEqual(ui.period('week','Asia/Jakarta',new Date('2026-11-01T12:00:00Z')), {start:'2026-10-26',end:'2026-11-01'});
 });
 
-test('filter request includes only supported existing fields; draft is copied', () => {
-    const applied={branch:'7',start:'2026-11-01',end:'2026-11-04'};
-    const draft=ui.filterDraft(applied); draft.branch='all';
-    assert.equal(applied.branch,'7');
-    assert.deepEqual(ui.filterRequest({...draft,status:'selesai',result:'plus'}), {cabang_filter:'all',start_date:'2026-11-01',end_date:'2026-11-04'});
+test('filter draft preserves branch, date, result and status choices and submits server filters', () => {
+    const applied={branch:'7',start:'2026-11-01',end:'2026-11-04',status:'draft',result:'kurang'};
+    const draft=ui.filterDraft(applied);
+    draft.branch='all';
+    draft.status='selesai';
+    assert.deepEqual(applied,{branch:'7',start:'2026-11-01',end:'2026-11-04',status:'draft',result:'kurang'});
+    assert.deepEqual(ui.filterRequest(draft),{
+        cabang_filter:'all',start_date:'2026-11-01',end_date:'2026-11-04',status_filter:'selesai',result_filter:'kurang'
+    });
+});
+
+test('filter draft defaults result and status to all and keeps the branch/date contract', () => {
+    const draft=ui.filterDraft({branch:'all'});
+    assert.deepEqual(draft,{branch:'all',start:'',end:'',status:'all',result:'all'});
+    assert.deepEqual(ui.filterRequest(draft),{
+        cabang_filter:'all',start_date:'',end_date:'',status_filter:'all',result_filter:'all'
+    });
+});
+
+// Execute the real filter sheet wiring, replacing only DOM/DataTables boundaries.
+function filterFixture() {
+    const source = fs.readFileSync(require.resolve('../../public/assets/js/stock-opname-reference-page.js'), 'utf8');
+    const start = source.indexOf('    function syncChoices()');
+    const end = source.indexOf('    $(\'[data-so-reset="branch"]\').on(\'click\'');
+    assert.ok(start > 0 && end > start, 'filter wiring block not found');
+
+    const button = (key, value) => {
+        const el = {dataset:{[key]:value}, classes:new Set(), attrs:{}};
+        el.classList = {toggle(name,on) { on ? el.classes.add(name) : el.classes.delete(name); }};
+        el.setAttribute = (name,val) => { el.attrs[name] = val; };
+        return el;
+    };
+    const results = ['all','lebih','kurang','sesuai'].map(v => button('soResult',v));
+    const statuses = ['all','selesai','draft'].map(v => button('soStatus',v));
+    const hidden = {'so-filter-applied-status':{value:'all'}, 'so-filter-applied-result':{value:'all'}};
+    const opener = {classes:new Set()};
+    const label = {value:''};
+    const $ = selector => {
+        if (selector === '[data-so-result]') return {each(fn) { results.forEach(b => fn.call(b)); }};
+        if (selector === '[data-so-status]') return {each(fn) { statuses.forEach(b => fn.call(b)); }};
+        if (selector === '[data-so-open-filter]') return {toggleClass(n,on) { on ? opener.classes.add(n) : opener.classes.delete(n); }};
+        if (selector === '#active-branch-button-label') return {text(v) { label.value = v; }};
+        return {each() {}, toggleClass() {}, text() {}, val() { return ''; }};
+    };
+    const handlers = new Map();
+    const bind = selector => {
+        const base = $(selector);
+        base.on = (event, fn) => { handlers.set(selector + ':' + event, fn); return base; };
+        return base;
+    };
+    let draws = 0, hides = 0;
+    const context = {
+        ui, $: bind, branch:{value:'all'}, dateField:{value:''},
+        filterEl:{querySelector:() => null},
+        bootstrap:{Modal:{getOrCreateInstance:() => ({show() {}, hide() {}})}},
+        searchBranches() {},
+        draft: ui.filterDraft({branch:'all'}),
+        dataTable:{draw() { draws++; }},
+        filter:{hide() { hides++; }},
+        document:{getElementById:id => hidden[id] || null}
+    };
+    vm.runInNewContext(source.slice(start, end), context);
+    return {context, hidden, results, statuses, opener, label, handlers, draws:() => draws, hides:() => hides};
+}
+
+test('choosing a chip only edits the draft and never redraws the list', () => {
+    const f = filterFixture();
+    const click = selector => f.handlers.get(selector + ':click');
+    assert.equal(typeof click('[data-so-result]'), 'function');
+    assert.equal(typeof click('[data-so-status]'), 'function');
+
+    click('[data-so-result]').call(f.results.find(b => b.dataset.soResult === 'kurang'));
+    click('[data-so-status]').call(f.statuses.find(b => b.dataset.soStatus === 'draft'));
+
+    assert.equal(f.context.draft.result, 'kurang');
+    assert.equal(f.context.draft.status, 'draft');
+    assert.equal(f.draws(), 0, 'draft/apply semantics: no draw before Terapkan Filter');
+    assert.equal(f.hidden['so-filter-applied-result'].value, 'all');
+    assert.equal(f.hidden['so-filter-applied-status'].value, 'all');
+    assert.deepEqual(f.results.filter(b => b.classes.has('is-selected')).map(b => b.dataset.soResult), ['kurang']);
+});
+
+test('applying the sheet writes the chosen result and status for the list request', () => {
+    const f = filterFixture();
+    f.context.draft.status = 'draft';
+    f.context.draft.result = 'kurang';
+    f.context.apply(false);
+
+    assert.equal(f.hidden['so-filter-applied-status'].value, 'draft');
+    assert.equal(f.hidden['so-filter-applied-result'].value, 'kurang');
+    assert.equal(f.draws(), 1);
+    assert.equal(f.hides(), 0, 'apply(false) must keep the sheet open');
+    assert.equal(f.opener.classes.has('is-active'), true);
+    assert.equal(f.label.value, 'Filter aktif');
+});
+
+test('opening the sheet reads the applied result and status back into the draft', () => {
+    const f = filterFixture();
+    f.hidden['so-filter-applied-status'].value = 'selesai';
+    f.hidden['so-filter-applied-result'].value = 'sesuai';
+
+    assert.deepEqual(f.context.readApplied(), {
+        branch:'all', start:'', end:'', status:'selesai', result:'sesuai'
+    });
+});
+
+test('choice buttons reflect the draft and keep aria-pressed in sync', () => {
+    const f = filterFixture();
+    f.context.draft.status = 'draft';
+    f.context.draft.result = 'lebih';
+    f.context.syncChoices();
+
+    const pressed = list => list.filter(b => b.attrs['aria-pressed'] === 'true').map(b => b.dataset.soResult || b.dataset.soStatus);
+    assert.deepEqual(pressed(f.results), ['lebih']);
+    assert.deepEqual(pressed(f.statuses), ['draft']);
+    assert.deepEqual(f.results.filter(b => b.classes.has('is-selected')).map(b => b.dataset.soResult), ['lebih']);
 });
