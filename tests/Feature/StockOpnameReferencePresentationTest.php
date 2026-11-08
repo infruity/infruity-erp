@@ -32,6 +32,18 @@ final class StockOpnameReferencePresentationTest extends TestCase
         $this->assertStringContainsString('max-height:88dvh', $css);
     }
 
+    public function test_branch_radio_uses_a_green_checked_stroke(): void
+    {
+        $css = file_get_contents(public_path('assets/css/stock-opname-reference.css'));
+
+        $this->assertStringContainsString('#so-filter-sheet .so-branch-options input[type=radio]', $css);
+        $this->assertStringContainsString('#so-filter-sheet .so-branch-options input[type=radio]:checked', $css);
+        $this->assertStringContainsString('appearance:none', $css);
+        $this->assertStringContainsString('border-color:#10b981', $css);
+        $this->assertStringContainsString('background-image:radial-gradient(circle,#10b981 0 4px,transparent 4px)', $css);
+        $this->assertStringContainsString('#so-filter-sheet .so-branch-options input[type=radio]:focus-visible { outline:2px solid #10b981', $css);
+    }
+
     public function test_filter_does_not_offer_unsupported_server_filters_as_working_controls(): void
     {
         $source = file_get_contents(base_path('Modules/Transaction/Resources/views/stock-opname/partials/reference-filters.blade.php'));
