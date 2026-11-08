@@ -53,7 +53,7 @@
     <section class="production-detail__card" aria-labelledby="production-detail-title">
         <div class="production-detail__head">
             <div class="production-detail__title">
-                <span class="production-detail__avatar" aria-hidden="true"><i class="ph ph-cooking-pot"></i></span>
+                <span class="production-detail__avatar" aria-hidden="true"><i class="ph ph-orange"></i></span>
                 <div>
                     <h1 id="production-detail-title">Detail Produksi #{{ $data->production_number }}</h1>
                     <p>{{ dateindo($data->production_date) }} {{ ($data->created_at?->format('H:i') ?? '—') }} WIB</p>

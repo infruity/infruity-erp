@@ -61,4 +61,20 @@ final class ProductionListUiContractTest extends TestCase
         // Cell markup must not trigger extra relation loads beyond what get_data already eager loads.
         $this->assertStringContainsString("Production::with(['products', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])", $controller);
     }
+
+    public function test_product_avatar_uses_a_fruit_glyph_in_the_list_and_the_detail(): void
+    {
+        $controller = $this->controller();
+        $detail = file_get_contents(base_path('Modules/Transaction/Resources/views/production/show.blade.php'));
+        $script = file_get_contents(public_path('assets/js/production-list-reference.js'));
+
+        // A fruit reads as the product; a cooking pot reads as the kitchen.
+        $this->assertStringContainsString('<i class="ph ph-orange"></i>', $controller);
+        $this->assertStringNotContainsString('ph-cooking-pot', $controller);
+        $this->assertStringContainsString('<i class="ph ph-orange"></i>', $detail);
+        $this->assertStringNotContainsString('ph-cooking-pot', $detail);
+        // The popup sanitizer drops unknown classes, so the glyph must be allowed explicitly.
+        $this->assertStringContainsString("'ph-orange'", $script);
+        $this->assertStringNotContainsString("'ph-cooking-pot'", $script);
+    }
 }

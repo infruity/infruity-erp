@@ -796,7 +796,7 @@ class ProductionController extends Controller
                         : '';
 
                     return '<div class="production-row">
-                                <span class="production-avatar" aria-hidden="true"><i class="ph ph-cooking-pot"></i></span>
+                                <span class="production-avatar" aria-hidden="true"><i class="ph ph-orange"></i></span>
                                 <a href="' . route('production.detail', $item->id) . '" class="production-copy">
                                     <span class="production-product">' . $productName . '</span>
                                     <span class="production-sub">' . $number . ' · ' . $createdAt . $ingredientLine . '</span>
