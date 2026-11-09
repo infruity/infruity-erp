@@ -43,7 +43,8 @@ final class PosListUiContractTest extends TestCase
         foreach (['status_filter', 'cabang_filter', 'start_date', 'end_date', "route('pos-data')", 'deleteProduct(', 'showStockAlert('] as $contract) {
             $this->assertStringContainsString($contract, $view);
         }
-        foreach (['data-kt-ecommerce-product-filter="status"', 'data-kt-ecommerce-product-filter="cabang"', 'kt_ecommerce_sales_flatpickr'] as $contract) {
+        // The filter sheet feeds the same request fields: status, branch and a date range.
+        foreach (['d.status_filter = applied.status', 'd.cabang_filter = applied.branch', 'd.start_date = start', 'd.end_date = end', 'data-pos-status="{{ $value }}"', 'id="pos-start-date"', 'id="pos-end-date"'] as $contract) {
             $this->assertStringContainsString($contract, $view);
         }
     }
@@ -60,5 +61,29 @@ final class PosListUiContractTest extends TestCase
         // Status mapping and the row actions keep their rules.
         $this->assertStringContainsString("route('pos.payment', \$item->id)", $controller);
         $this->assertStringContainsString("'canceled' => ['label' => 'Dihapus'", $controller);
+    }
+    public function test_list_follows_the_reference_toolbar_filter_sheet_and_load_more(): void
+    {
+        $view = $this->listView();
+
+        // Pill search with the filter trigger inside it, like the reference list.
+        foreach (['<x-erp.mobile-search', 'erp-mobile-search__filter', 'Cari pelanggan, HP, atau tanggal...', 'Tambah Transaksi'] as $contract) {
+            $this->assertStringContainsString($contract, $view);
+        }
+        // Draft/apply sheet with the reference sections and quick ranges.
+        foreach (['Filter Transaksi', 'Status Transaksi', 'Periode Tanggal', 'Pilihan Cepat', 'Minggu Ini', 'Hari Ini', 'Reset Filter', 'Terapkan Filter'] as $label) {
+            $this->assertStringContainsString($label, $view);
+        }
+        // Load more replaces the pager; the sheet no longer posts the old Metronic selects.
+        // Alpine initialises before DataTables, so the hooks must resolve lazily.
+        $this->assertStringContainsString('(applied) => window.posApplyFilters(applied)', $view);
+        $this->assertStringContainsString('<x-erp.load-more', $view);
+        $this->assertStringContainsString('PosListUi.nextLength', $view);
+        $this->assertStringNotContainsString('kt_ecommerce_sales_flatpickr', $view);
+        $this->assertStringNotContainsString('lengthMenu', $view);
+        // Reference columns and avatar tile.
+        foreach (['Pelanggan', 'Total &amp; Status', 'PosListUi.customerInitial'] as $contract) {
+            $this->assertStringContainsString($contract, $view);
+        }
     }
 }
