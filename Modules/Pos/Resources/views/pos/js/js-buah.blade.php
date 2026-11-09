@@ -43,6 +43,17 @@
         };
     }
     
+    // Tabs of the reference "tambah item" view: close the current sheet, then open the target one.
+    function posSwitchAddTab(target, from) {
+        const app = Alpine.$data(document.querySelector('[x-data="posApp()"]'));
+        const closers = {buah: 'closeAddModal', parcel: 'closeParcelModal', jus: 'closeJusModal'};
+        const openers = {buah: 'openAddModal', parcel: 'openParcelModal', jus: 'openJusModal'};
+        if (!app || target === from || !closers[from] || !openers[target]) return;
+        app[closers[from]]();
+        setTimeout(() => app[openers[target]](), 350);
+    }
+    window.posSwitchAddTab = posSwitchAddTab;
+
     function posApp() {
         return {
             products: [],
@@ -79,6 +90,11 @@
 
             // Add Product
             showAddModal: false,
+            // Reference "tambah item" list (only rendered when the form passes reference => true)
+            productSearch: '',
+            productList: [],
+            productListState: 'idle',
+            productListGuard: null,
             showGiftModal: false,
             showParcelModal: false,
             showJusModal: false,
@@ -899,6 +915,13 @@
                     const modal = new bootstrap.Modal(document.getElementById('addModal'));
                     modal.show();
 
+                    // Reference view: a searchable list replaces the select2 dropdown.
+                    if (document.getElementById('pos-product-list')) {
+                        this.productSearch = '';
+                        this.loadProductList();
+                        return;
+                    }
+
                     // Init select2
                     $('#select_product').select2({
                         placeholder: 'Pilih produk',
@@ -974,22 +997,63 @@
                             $('#select_product').val(null).trigger('change');
                             return;
                         }
-                        this.addProduct.id = data.id;
-                        this.addProduct.name = data.text;
-                        this.addProduct.unit = data.unit.abbreviation;
-                        this.addProduct.price = data.price;
-                        this.addProduct.hpp = data.hpp ?? 0;
-                        this.addProduct.stock_available = data.stock_available ?? 0;
-                        this.addProduct.original_stock = data.original_stock ?? 0;
-                        this.addProduct.parent_id = data.parent_id ?? data.id;
-                        subtotal = this.addProduct.qty * this.addProduct.price;
-                        // skip formatRupiah undefined, let updateAddTotalFromQty handle it
-                        this.updateAddTotalFromQty();
+                        this.applyPickedProduct(data);
                     });
                 }, 0);
             },
+            applyPickedProduct(data) {
+                this.addProduct.id = data.id;
+                this.addProduct.name = data.text;
+                this.addProduct.unit = data.unit.abbreviation;
+                this.addProduct.price = data.price;
+                this.addProduct.hpp = data.hpp ?? 0;
+                this.addProduct.stock_available = data.stock_available ?? 0;
+                this.addProduct.original_stock = data.original_stock ?? 0;
+                this.addProduct.parent_id = data.parent_id ?? data.id;
+                subtotal = this.addProduct.qty * this.addProduct.price;
+                // skip formatRupiah undefined, let updateAddTotalFromQty handle it
+                this.updateAddTotalFromQty();
+            },
+            rowStock(row) {
+                return PosAddItem.availableStock(row, typeof this.calculateUsedStock === 'function' ? this.calculateUsedStock(row.id) : 0);
+            },
+            async loadProductList() {
+                this.productListGuard = this.productListGuard || PosAddItem.createRequestGuard();
+                const ticket = this.productListGuard.next();
+                this.productListState = 'loading';
+                try {
+                    const query = PosAddItem.listQuery({term: this.productSearch, branch: $('#branch_id').val()});
+                    const response = await fetch('/ajax/listProduct?' + new URLSearchParams(query), {headers: {Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest'}});
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    const data = await response.json();
+                    if (!this.productListGuard.isCurrent(ticket)) return; // a newer search is already running
+                    window.productStockMap = window.productStockMap || {};
+                    data.forEach(item => {
+                        window.productStockMap[item.id] = item.parent_product ? item.parent_product.parent_id : item.id;
+                    });
+                    this.productList = data.map(PosAddItem.mapProductRow);
+                    this.productListState = 'ready';
+                } catch (error) {
+                    if (!this.productListGuard.isCurrent(ticket)) return;
+                    this.productList = [];
+                    this.productListState = 'error';
+                }
+            },
+            pickProduct(row) {
+                const stock = this.rowStock(row);
+                if (stock <= 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Stok tidak mencukupi',
+                        text: 'Produk ' + row.text + ' tidak memiliki stok yang cukup.',
+                    });
+                    return;
+                }
+                this.applyPickedProduct({...row, stock_available: stock});
+            },
             closeAddModal() {
                 this.showAddModal = false;
+                this.productSearch = '';
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
                 if (modal) modal.hide();
                 

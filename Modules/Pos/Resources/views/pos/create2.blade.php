@@ -134,11 +134,11 @@
             @include('pos::pos.segment.ringkasan')
         </div>
 
-            @include('pos::pos.segment.modal-product')
+            @include('pos::pos.segment.modal-product', ['reference' => true])
             @include('pos::pos.segment.modal-customer')
             @include('pos::pos.segment.modal-gift')
-            @include('pos::pos.segment.modal-parcel')
-            @include('pos::pos.segment.modal-jus')
+            @include('pos::pos.segment.modal-parcel', ['reference' => true])
+            @include('pos::pos.segment.modal-jus', ['reference' => true])
 
     </div>
     <!--end::Aside column-->

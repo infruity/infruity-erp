@@ -56,11 +56,11 @@ final class PosFormUiContractTest extends TestCase
             'openJusModal()',
             "@include('pos::pos.segment.cart')",
             "@include('pos::pos.segment.ringkasan')",
-            "@include('pos::pos.segment.modal-product')",
+            "@include('pos::pos.segment.modal-product', ['reference' => true])",
             "@include('pos::pos.segment.modal-customer')",
             "@include('pos::pos.segment.modal-gift')",
-            "@include('pos::pos.segment.modal-parcel')",
-            "@include('pos::pos.segment.modal-jus')",
+            "@include('pos::pos.segment.modal-parcel', ['reference' => true])",
+            "@include('pos::pos.segment.modal-jus', ['reference' => true])",
         ] as $contract) {
             $this->assertStringContainsString($contract, $form, "Hilang: {$contract}");
         }

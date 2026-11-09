@@ -1,12 +1,19 @@
 {{-- Modal Add Parcel --}}
 <div class="modal fade" id="parcelModal" tabindex="-1" aria-labelledby="parcelModalLabel" aria-hidden="true"
     x-show="showParcelModal" style="display: none;" x-data="parcelForm()" x-init="initSelect2">
-    <div class="modal-dialog erp-sheet-dialog pos-sheet modal-fullscreen-sm-down">
+    <div class="modal-dialog erp-sheet-dialog pos-sheet modal-fullscreen-sm-down {{ ! empty($reference) ? 'pos-sheet--ref' : '' }}">
         <div class="modal-content" x-data>
+            @if (! empty($reference))
+            <div class="erp-sheet-header pos-sheet-header pos-sheet-header--tabs">
+                <span class="visually-hidden">Tambah Parcel</span>
+                @include('pos::pos.segment.add-tabs', ['active' => 'parcel'])
+            </div>
+            @else
             <div class="erp-sheet-header pos-sheet-header">
                 <h5 class="modal-title">Tambah Parcel</h5>
                 <button type="button" class="btn-close" @click="closeParcelModal()"></button>
             </div>
+            @endif
             <div class="erp-sheet-body">
                 <!-- Select Produk -->
                 <div class="row">
@@ -76,10 +83,17 @@
                     </template>
                 </div>
             </div>
+            @if (! empty($reference))
+            <div class="erp-sheet-footer pos-ref-actions-bar">
+                <button type="button" class="pos-ref-back" @click="closeParcelModal()">Kembali</button>
+                <button type="button" class="pos-ref-add" @click="saveParcelToCart()">Tambah</button>
+            </div>
+            @else
             <div class="erp-sheet-footer">
                 <button type="button" class="btn btn-light" @click="closeParcelModal()">Tutup</button>
                 <button class="btn btn-primary" @click="saveParcelToCart()">Simpan</button>
             </div>
+            @endif
         </div>
     </div>
 </div>

@@ -78,4 +78,56 @@ final class PosSheetsUiContractTest extends TestCase
             $this->assertStringContainsString("assets/css/pos-form.css", file_get_contents(base_path($view)), "{$view} tidak memuat pos-form.css");
         }
     }
+    public function test_reference_add_item_views_are_opt_in_so_the_pesanan_page_keeps_its_modals(): void
+    {
+        foreach (['modal-product', 'modal-jus', 'modal-parcel'] as $name) {
+            $source = $this->segment($name);
+            $this->assertStringContainsString('@if (! empty($reference))', $source, "{$name} harus memakai flag reference");
+            $this->assertStringContainsString("@include('pos::pos.segment.add-tabs'", $source, "{$name} butuh tab Buah/Parcel/Jus");
+        }
+        $form = file_get_contents(base_path('Modules/Pos/Resources/views/pos/create2.blade.php'));
+        foreach (['modal-product', 'modal-jus', 'modal-parcel'] as $name) {
+            $this->assertStringContainsString("@include('pos::pos.segment.{$name}', ['reference' => true])", $form);
+        }
+        $order = file_get_contents(base_path('Modules/Pos/Resources/views/order-book/order.blade.php'));
+        $this->assertStringNotContainsString("'reference' => true", $order, 'Halaman Pesanan tidak boleh ikut berubah');
+    }
+
+    public function test_reference_buah_view_has_a_searchable_product_list_and_the_reference_fields(): void
+    {
+        $modal = $this->segment('modal-product');
+
+        foreach ([
+            'id="pos-product-list"', 'productSearch', 'loadProductList()', 'pickProduct(row)', 'PosAddItem.stockLabel',
+            'PosAddItem.priceLabel', 'PosAddItem.quantityLabel', 'PosAddItem.discountPrefix', 'Kembali', 'Tambah',
+            'saveAddToCart()', ':disabled="!addProduct.id"', 'Produk tidak ditemukan',
+        ] as $contract) {
+            $this->assertStringContainsString($contract, $modal, "Hilang: {$contract}");
+        }
+        // The old select2 markup stays for the Pesanan page.
+        $this->assertStringContainsString('id="select_product"', $modal);
+        // Discount keeps the existing "Rp above 100, % otherwise" input handler.
+        $this->assertStringContainsString('updateDiscountValue', $modal);
+    }
+
+    public function test_reference_jus_and_parcel_views_keep_their_ids_and_handlers(): void
+    {
+        $jus = $this->segment('modal-jus');
+        foreach (['id="select_jus"', 'id="receiptContainer"', 'saveJusToCart()', 'Komposisi Produk', 'Pilih Produk Jus di Atas', 'Kembali'] as $contract) {
+            $this->assertStringContainsString($contract, $jus, "Hilang: {$contract}");
+        }
+        $parcel = $this->segment('modal-parcel');
+        foreach (['saveParcelToCart()', 'id="select_kemasan"', 'id="parcel_budget"', 'Kembali'] as $contract) {
+            $this->assertStringContainsString($contract, $parcel, "Hilang: {$contract}");
+        }
+    }
+
+    public function test_add_item_script_is_loaded_with_the_form_and_wires_the_list(): void
+    {
+        $this->assertStringContainsString('pos-add-item.js', file_get_contents(base_path('Modules/Pos/Resources/views/pos/js-create2.blade.php')));
+        $js = file_get_contents(base_path('Modules/Pos/Resources/views/pos/js/js-buah.blade.php'));
+        foreach (['loadProductList()', 'pickProduct(row)', 'posSwitchAddTab(', "document.getElementById('pos-product-list')", 'PosAddItem.listQuery'] as $contract) {
+            $this->assertStringContainsString($contract, $js, "Hilang: {$contract}");
+        }
+    }
 }
