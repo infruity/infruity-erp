@@ -31,4 +31,12 @@ final class SearchWildcardEscapeTest extends TestCase
             $this->assertStringContainsString('use App\\Support\\Like;', $source, $path);
         }
     }
+
+    public function test_like_helpers_accept_a_missing_keyword_like_the_old_interpolation_did(): void
+    {
+        // An empty query-string value (?term=) arrives as null after ConvertEmptyStringsToNull.
+        $this->assertSame('%%', \App\Support\Like::contains(null));
+        $this->assertSame('', \App\Support\Like::escape(null));
+        $this->assertSame('%100\\%%', \App\Support\Like::contains('100%'));
+    }
 }
