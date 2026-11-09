@@ -63,6 +63,28 @@ final class ProductionListUiContractTest extends TestCase
         $this->assertStringContainsString("Production::with(['products', 'products.category', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])", $controller);
     }
 
+    public function test_list_replaces_pagination_with_a_load_more_button(): void
+    {
+        $view = $this->listView();
+        $listCss = file_get_contents(public_path('assets/css/production-list-reference.css'));
+
+        // Same pattern as the /products reference: one dashed button instead of page numbers.
+        $this->assertStringContainsString('id="production-load-more"', $view);
+        $this->assertStringContainsString('Muat Produk Lagi', $view);
+        $this->assertStringContainsString('ph ph-arrow-circle-down', $view);
+        $this->assertStringContainsString('<button type="button" class="production-load-more__button">', $view);
+        // Pagination and the page-size select are gone at every breakpoint, not only below 1280px.
+        $this->assertStringContainsString('#production-table_wrapper :is(.dataTables_paginate, .dataTables_length) { display:none !important; }', $view);
+        // The stylesheet used to force the pagination visible with a higher-specificity !important.
+        $this->assertStringNotContainsString('#production-table_wrapper .dataTables_paginate { display:block!important; }', $listCss);
+        // page.len() only sets the length in DataTables 1.13, so the draw call is required.
+        $this->assertStringContainsString('dataTable.page.len(Math.max(dataTable.page.len(), 50) + 50).draw()', $view);
+        // Clicking reveals the next batch; the button hides once everything is already shown.
+        $this->assertStringContainsString('info.end >= info.recordsDisplay', $view);
+        $this->assertStringContainsString("prop('hidden', done)", $view);
+        $this->assertStringContainsString('pageLength: 50,', $view);
+    }
+
     public function test_detail_popup_avatar_glyph_stays_allowed_by_the_sanitizer(): void
     {
         $detail = file_get_contents(base_path('Modules/Transaction/Resources/views/production/show.blade.php'));

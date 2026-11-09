@@ -1,6 +1,5 @@
 /* Production list only; retain legacy desktop columns and endpoint actions. */
 .production-list-page .production-mobile-search,.production-list-page .production-reference-time { display:none; }
-.production-list-page #production-table_wrapper .dataTables_paginate { display:block!important; }
 .production-list-page #production-table_wrapper.production-single-page .dataTables_paginate { display:none!important; }
 @media(max-width:767px) {
  #kt_content:has(.production-list-page) { padding-inline:0!important; }

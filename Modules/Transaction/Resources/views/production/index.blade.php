@@ -19,6 +19,13 @@
         .production-avatar.bg-green-50 { background:#f0fdf4; }
         .production-avatar.bg-stone-50 { background:#fafaf9; }
         .production-avatar.bg-gray-100 { background:#f3f4f6; }
+        /* Pagination and the page-size select are replaced by the load-more button everywhere. */
+        #production-table_wrapper :is(.dataTables_paginate, .dataTables_length) { display:none !important; }
+        .production-load-more { padding:16px 20px; }
+        .production-load-more[hidden] { display:none; }
+        .production-load-more__button { display:flex; width:100%; height:44px; align-items:center; justify-content:center; gap:8px; border:2px dashed #e5e7eb; border-radius:12px; background:transparent; color:#6b7280; font-size:14px; font-weight:600; cursor:pointer; transition:color .15s,border-color .15s,background-color .15s; }
+        .production-load-more__button:hover { border-color:#34d399; color:#047857; background:#ecfdf5; }
+        .production-load-more__button:focus-visible { outline:2px solid #0b595b; outline-offset:2px; }
         .production-copy { display:flex; min-width:0; flex-direction:column; gap:2px; text-decoration:none; }
         .production-product { overflow:hidden; color:#1f2937; font-size:14px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
         .production-copy:hover .production-product { color:#0b595b; }
@@ -79,6 +86,11 @@
                     </thead>
                     <tbody class=""></tbody>
                 </table>
+            <div id="production-load-more" class="production-load-more" hidden>
+                <button type="button" class="production-load-more__button">
+                    <i class="ph ph-arrow-circle-down" aria-hidden="true"></i> Muat Produk Lagi
+                </button>
+            </div>
         </div>
     </x-erp.workspace>
     </div>
@@ -116,9 +128,23 @@
                     }
                 },
                 drawCallback: function() {
-                    $(this.api().table().container()).toggleClass('production-single-page', this.api().page.info().pages <= 1);
+                    const info = this.api().page.info();
+                    $(this.api().table().container()).toggleClass('production-single-page', info.pages <= 1);
+                    // Hide the button once every matching row is already on screen; if it owned
+                    // focus, hand focus to the table so it does not fall back to <body>.
+                    const $more = $('#production-load-more');
+                    const hadFocus = $more.length && $more[0].contains(document.activeElement);
+                    const done = info.end >= info.recordsDisplay;
+                    $more.prop('hidden', done);
+                    if (done && hadFocus) {
+                        const table = document.getElementById('production-table');
+                        if (table) {
+                            table.setAttribute('tabindex', '-1');
+                            table.focus({preventScroll: true});
+                        }
+                    }
                 },
-                pageLength: 100,
+                pageLength: 50,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                 processing: true,
                 serverSide: true,
@@ -174,6 +200,13 @@
                         searchable: false
                     }
                 ]
+            });
+
+            // page.len() only sets the length in DataTables 1.13 (its own page-size select calls
+            // the setter and then draws), so the draw is required. Clamp the base so an
+            // unexpected length can never shrink the list instead of growing it.
+            $('#production-load-more button').on('click', function() {
+                dataTable.page.len(Math.max(dataTable.page.len(), 50) + 50).draw();
             });
 
             // A tap on the row opens the detail popup; the route remains the no-JS fallback.
