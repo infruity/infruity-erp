@@ -252,7 +252,7 @@ class SortirController extends Controller
             }
         }
         $products = Product::with('unit')->where('tipe', '!=', 'parcel')->whereNull('is_variant')
-            ->when(! empty($data['term']), fn ($q) => $q->where('name', 'like', '%' . $data['term'] . '%'))
+            ->when(! empty($data['term']), fn ($q) => $q->where('name', 'like', Like::contains((string) $data['term'])))
             ->orderBy('name')->get();
         $stock = DB::table('product_stock')->where('branch_id', $data['branch_id'])
             ->whereIn('id', $products->pluck('id'))->get()->keyBy('id');

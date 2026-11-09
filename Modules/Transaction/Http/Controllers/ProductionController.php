@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\Like;
 use App\Support\InventorySnapshot;
 use App\Support\ProductionCost;
 use Exception;
@@ -768,13 +769,13 @@ class ProductionController extends Controller
                     }
 
                     $q->where(function ($sub) use ($search) {
-                        $sub->where('production_number', 'LIKE', "%{$search}%")
-                            ->orWhere('status', 'LIKE', "%{$search}%")
+                        $sub->where('production_number', 'LIKE', Like::contains($search))
+                            ->orWhere('status', 'LIKE', Like::contains($search))
                             ->orWhereHas('products', function ($productQuery) use ($search) {
-                                $productQuery->where('name', 'LIKE', "%{$search}%");
+                                $productQuery->where('name', 'LIKE', Like::contains($search));
                             })
                             ->orWhereHas('branch', function ($branchQuery) use ($search) {
-                                $branchQuery->where('name', 'LIKE', "%{$search}%");
+                                $branchQuery->where('name', 'LIKE', Like::contains($search));
                             });
 
                         $possibleDates = [];

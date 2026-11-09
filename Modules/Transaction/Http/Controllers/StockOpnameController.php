@@ -2,6 +2,7 @@
 
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\Like;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -450,10 +451,10 @@ class StockOpnameController extends Controller
                 if ($request->has('search') && !empty($request->search['value'])) {
                     $search = $request->search['value'];
                     $q->where(function ($sub) use ($search) {
-                        $sub->where('stock_opname.code', 'like', "%{$search}%")
-                            ->orWhere('products.name', 'like', "%{$search}%")
-                            ->orWhere('users.nm_user', 'like', "%{$search}%")
-                            ->orWhere('branch.name', 'like', "%{$search}%");
+                        $sub->where('stock_opname.code', 'like', Like::contains($search))
+                            ->orWhere('products.name', 'like', Like::contains($search))
+                            ->orWhere('users.nm_user', 'like', Like::contains($search))
+                            ->orWhere('branch.name', 'like', Like::contains($search));
                     });
                 }
             })

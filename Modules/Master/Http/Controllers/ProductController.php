@@ -935,7 +935,7 @@ class ProductController extends Controller
         $search = $request->input('search', '');
         $query = Product::with(['unit', 'category'])
             ->where('status', 'receipt')
-            ->where('name', 'like', '%' . $search . '%')
+            ->where('name', 'like', Like::contains($search))
             ->select('id', 'name', 'hpp', 'product_unit', 'category_id')
             ->get()
             ->map(function ($product) {
@@ -959,7 +959,7 @@ class ProductController extends Controller
         $search = $request->input('search', '');
         $products = Product::with(['unit', 'category'])
             ->select('id', 'name', 'sku as code', 'hpp', 'price', 'stock', 'product_unit', 'category_id')
-            ->where('name', 'like', '%' . $search . '%')
+            ->where('name', 'like', Like::contains($search))
             ->where('tipe', '!=', 'parcel'); // Exclude parcel type
 
         if ($request->boolean('raw_materials')) {
@@ -999,7 +999,7 @@ class ProductController extends Controller
         }
 
         $query  = Product::with($with)
-            ->where('tipe', '!=', 'parcel')->where('name', 'like', '%' . $search . '%');
+            ->where('tipe', '!=', 'parcel')->where('name', 'like', Like::contains($search));
 
         if ($request->has('type') && ! empty($request->type)) {
             $query = $query->where('tipe', $request->type);
@@ -1546,8 +1546,8 @@ class ProductController extends Controller
                 }
 
                 $query->where(function ($subQuery) use ($search) {
-                    $subQuery->where('p.name', 'like', '%' . $search . '%')
-                        ->orWhere('p.sku', 'like', '%' . $search . '%');
+                    $subQuery->where('p.name', 'like', Like::contains($search))
+                        ->orWhere('p.sku', 'like', Like::contains($search));
                 });
             }, false)
             ->addIndexColumn()
@@ -1646,7 +1646,7 @@ class ProductController extends Controller
             ->whereIn('branch_id', $allowedBranches)
             ->whereNull('is_variant')
             // ->where('stock_available', '>', 0)
-            ->where('name', 'like', '%' . $request->search . '%')
+            ->where('name', 'like', Like::contains((string) $request->search))
             ->select('id', 'name', 'stock_available', 'avg_hpp as hpp');
 
         if ($request->filled('branch_id')) {
@@ -1710,8 +1710,8 @@ class ProductController extends Controller
             $search = is_array($request->search) ? ($request->search['value'] ?? '') : $request->search;
             if (!empty($search)) {
                 $query->where(function($q) use ($search) {
-                    $q->where('products.name', 'like', "%{$search}%")
-                      ->orWhere('transaction_stock.reff', 'like', "%{$search}%");
+                    $q->where('products.name', 'like', Like::contains($search))
+                      ->orWhere('transaction_stock.reff', 'like', Like::contains($search));
                 });
             }
         }

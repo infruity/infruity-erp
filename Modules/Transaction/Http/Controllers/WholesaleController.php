@@ -823,7 +823,7 @@ class WholesaleController extends Controller
         $query = Product::query()
             ->with('category')
             ->with('get_stock')
-            ->where('name', 'like', '%' . $searchValue . '%');
+            ->where('name', 'like', Like::contains($searchValue));
         if ($request->url != 'parcel') {
             $query = $query->whereNull('is_variant');
         }

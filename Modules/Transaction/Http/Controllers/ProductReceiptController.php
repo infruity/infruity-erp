@@ -395,7 +395,7 @@ class ProductReceiptController extends Controller
         $data = Receipt::with('products')
             ->when($search, function ($query) use ($search) {
                 return $query->whereHas('products', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%');
+                    $q->where('name', 'like', Like::contains($search));
                 });
             })
             ->get();
