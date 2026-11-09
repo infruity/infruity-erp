@@ -57,4 +57,27 @@ final class ProductionFormUiContractTest extends TestCase
         $this->assertStringContainsString("'production.create'", $root);
         $this->assertStringContainsString("'production.edit'", $root);
     }
+
+    public function test_save_validates_product_then_branch_then_quantity_then_ingredients(): void
+    {
+        $js = file_get_contents(base_path('Modules/Transaction/Resources/views/production/js-create.blade.php'));
+        $start = strpos($js, 'async saveProduction(');
+        $body = substr($js, $start, 2600);
+
+        $order = ['Pilih produk terlebih dahulu', 'Pilih cabang terlebih dahulu', 'Jumlah produksi harus lebih dari 0', 'Jumlah produksi maksimal 9.999', 'Minimal harus ada 1 bahan baku'];
+        $last = -1;
+        foreach ($order as $message) {
+            $pos = strpos($body, $message);
+            $this->assertNotFalse($pos, $message);
+            $this->assertGreaterThan($last, $pos, $message . ' is out of order');
+            $last = $pos;
+        }
+        // Branch is only required when the select actually offers a branch to pick.
+        $this->assertStringContainsString("branchSelect.options.length > 1", $body);
+    }
+
+    public function test_quantity_input_declares_the_same_upper_bound(): void
+    {
+        $this->assertStringContainsString('max="9999"', file_get_contents(base_path('Modules/Transaction/Resources/views/production/create.blade.php')));
+    }
 }

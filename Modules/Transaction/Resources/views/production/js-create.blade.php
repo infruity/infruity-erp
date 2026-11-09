@@ -800,22 +800,35 @@
             // Save production function (similar to POS saveTransaction)
             async saveProduction(submitType, callback) {
                 try {
-                    // Validate required fields
+                    // Validate required fields, in the order the form is filled in
+                    const productSelect = document.getElementById('product_id');
+                    if (!productSelect.value) {
+                        this.showNotification('Pilih produk terlebih dahulu', 'error');
+                        if (callback) callback();
+                        return;
+                    }
+
+                    const branchSelect = document.getElementById('branch_id');
+                    if (branchSelect.options.length > 1 && !branchSelect.value) {
+                        this.showNotification('Pilih cabang terlebih dahulu', 'error');
+                        if (callback) callback();
+                        return;
+                    }
+
                     if (!this.productionQuantity || this.productionQuantity <= 0) {
                         this.showNotification('Jumlah produksi harus lebih dari 0', 'error');
                         if (callback) callback();
                         return;
                     }
 
-                    if (this.ingredients.length === 0) {
-                        this.showNotification('Minimal harus ada 1 bahan baku', 'error');
+                    if (this.productionQuantity > 9999) {
+                        this.showNotification('Jumlah produksi maksimal 9.999', 'error');
                         if (callback) callback();
                         return;
                     }
 
-                    const productSelect = document.getElementById('product_id');
-                    if (!productSelect.value) {
-                        this.showNotification('Pilih produk terlebih dahulu', 'error');
+                    if (this.ingredients.length === 0) {
+                        this.showNotification('Minimal harus ada 1 bahan baku', 'error');
                         if (callback) callback();
                         return;
                     }
@@ -841,7 +854,6 @@
                         formData.append('id', productionIdInput.value);
                     }
 
-                    const branchSelect = document.getElementById('branch_id');
                     if (branchSelect.value) {
                         formData.append('branch_id', branchSelect.value);
                     }

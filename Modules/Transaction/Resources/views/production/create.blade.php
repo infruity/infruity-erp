@@ -195,7 +195,7 @@
                         <div class="fv-row">
                             <label class="required form-label" for="quantity">{{ $productionCreateReference ? 'Target Hasil Produksi' : 'Jumlah Produksi' }}</label>
                             <input type="number" inputmode="decimal" name="quantity" id="quantity" class="form-control"
-                                placeholder="Masukkan Jumlah" step="0.01" x-model="productionQuantity"
+                                placeholder="Masukkan Jumlah" step="0.01" max="9999" x-model="productionQuantity"
                                 value="{{ isset($data) ? $data->quantity : '' }}" />
                             @if($productionCreateReference)
                                 <span class="production-quantity-unit" aria-hidden="true">PORSI</span>
