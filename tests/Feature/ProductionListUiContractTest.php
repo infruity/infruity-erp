@@ -59,22 +59,34 @@ final class ProductionListUiContractTest extends TestCase
         }
         $this->assertStringContainsString("route('production.detail', \$item->id)", $controller);
         // Cell markup must not trigger extra relation loads beyond what get_data already eager loads.
-        $this->assertStringContainsString("Production::with(['products', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])", $controller);
+        // ProductIcon::resolve() reads category.name, so the category has to be eager loaded too.
+        $this->assertStringContainsString("Production::with(['products', 'products.category', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])", $controller);
     }
 
-    public function test_product_avatar_uses_a_fruit_glyph_in_the_list_and_the_detail(): void
+    public function test_detail_popup_avatar_glyph_stays_allowed_by_the_sanitizer(): void
     {
-        $controller = $this->controller();
         $detail = file_get_contents(base_path('Modules/Transaction/Resources/views/production/show.blade.php'));
         $script = file_get_contents(public_path('assets/js/production-list-reference.js'));
 
-        // A fruit reads as the product; a cooking pot reads as the kitchen.
-        $this->assertStringContainsString('<i class="ph ph-orange"></i>', $controller);
-        $this->assertStringNotContainsString('ph-cooking-pot', $controller);
         $this->assertStringContainsString('<i class="ph ph-orange"></i>', $detail);
-        $this->assertStringNotContainsString('ph-cooking-pot', $detail);
-        // The popup sanitizer drops unknown classes, so the glyph must be allowed explicitly.
+        // The popup sanitizer drops classes it does not know, so the glyph must stay allowlisted.
         $this->assertStringContainsString("'ph-orange'", $script);
-        $this->assertStringNotContainsString("'ph-cooking-pot'", $script);
+    }
+
+    public function test_product_avatar_uses_the_shared_product_emoji_tile(): void
+    {
+        $controller = $this->controller();
+        $view = $this->listView();
+
+        // Same resolver the /products list uses, so the glyph matches the product itself.
+        $this->assertStringContainsString('ProductIcon::resolve($item->products)', $controller);
+        $this->assertStringContainsString("e(\$iconClass)", $controller);
+        $this->assertStringContainsString("e(\$emoji)", $controller);
+        $this->assertStringNotContainsString('ph-cooking-pot', $controller);
+
+        // The tile carries the per-product tint the resolver returns, not one fixed colour.
+        $this->assertStringContainsString('.production-avatar.bg-lime-50', $view);
+        $this->assertStringContainsString('.production-avatar.bg-gray-100', $view);
+        $this->assertStringContainsString('.production-avatar.bg-emerald-50', $view);
     }
 }

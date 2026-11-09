@@ -5,7 +5,20 @@
     <link rel="stylesheet" href="{{ asset('assets/css/erp-operations.css') }}?v={{ filemtime(public_path('assets/css/erp-operations.css')) }}">
     <style>
         .production-row { display:flex; min-width:0; align-items:center; gap:12px; }
-        .production-avatar { display:flex; width:40px; height:40px; flex:none; align-items:center; justify-content:center; border:1px solid #d1fae5; border-radius:12px; background:#ecfdf5; color:#0b595b; font-size:19px; }
+        .production-avatar { display:flex; width:40px; height:40px; flex:none; align-items:center; justify-content:center; border:1px solid #f3f4f6; border-radius:12px; background:#f3f4f6; font-size:18px; line-height:1; }
+        /* Per-product tint from Modules\Master\Support\ProductIcon, matching the /products list. */
+        .production-avatar.bg-emerald-50 { background:#ecfdf5; }
+        .production-avatar.bg-rose-50 { background:#fff1f2; }
+        .production-avatar.bg-amber-50 { background:#fffbeb; }
+        .production-avatar.bg-pink-100 { background:#fce7f3; }
+        .production-avatar.bg-yellow-50 { background:#fefce8; }
+        .production-avatar.bg-orange-50 { background:#fff7ed; }
+        .production-avatar.bg-red-50 { background:#fef2f2; }
+        .production-avatar.bg-purple-50 { background:#faf5ff; }
+        .production-avatar.bg-lime-50 { background:#f7fee7; }
+        .production-avatar.bg-green-50 { background:#f0fdf4; }
+        .production-avatar.bg-stone-50 { background:#fafaf9; }
+        .production-avatar.bg-gray-100 { background:#f3f4f6; }
         .production-copy { display:flex; min-width:0; flex-direction:column; gap:2px; text-decoration:none; }
         .production-product { overflow:hidden; color:#1f2937; font-size:14px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
         .production-copy:hover .production-product { color:#0b595b; }
@@ -39,7 +52,7 @@
             #production-table td.dataTables_empty { grid-column:1 / -1; }
         }
         @media (max-width:767px) {
-            .production-avatar { width:36px; height:36px; border-radius:11px; font-size:17px; }
+            .production-avatar { width:36px; height:36px; border-radius:11px; font-size:16px; }
             .production-product { font-size:13px; }
             .production-sub { font-size:11px; }
             .production-qty { font-size:12px; }

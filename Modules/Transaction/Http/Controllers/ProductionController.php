@@ -730,7 +730,7 @@ class ProductionController extends Controller
     public function get_data(Request $request)
     {
         try {
-            $query = Production::with(['products', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])
+            $query = Production::with(['products', 'products.category', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])
                 ->whereNotNull('product_id');
 
             if ($request->has('status_filter') && $request->status_filter !== 'all' && ! empty($request->status_filter)) {
@@ -795,8 +795,10 @@ class ProductionController extends Controller
                         ? ' · ' . $ingredientCount . ' bahan'
                         : '';
 
+                    [$emoji, $iconClass] = \Modules\Master\Support\ProductIcon::resolve($item->products);
+
                     return '<div class="production-row">
-                                <span class="production-avatar" aria-hidden="true"><i class="ph ph-orange"></i></span>
+                                <span class="production-avatar ' . e($iconClass) . '" aria-hidden="true">' . e($emoji) . '</span>
                                 <a href="' . route('production.detail', $item->id) . '" class="production-copy">
                                     <span class="production-product">' . $productName . '</span>
                                     <span class="production-sub">' . $number . ' · ' . $createdAt . $ingredientLine . '</span>
