@@ -70,9 +70,8 @@
     <x-erp.workspace title="Produksi" subtitle="Pantau produksi, bahan baku dan status pengerjaan." icon="cooking-pot">
         <x-slot:toolbar>
             <label class="erp-search production-desktop-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-production-search id="search-desktop" aria-label="Cari produksi" placeholder="Cari produksi..."></label>
-            <x-erp.mobile-search class="production-mobile-search"><x-slot:input><input type="search" data-production-search id="search" class="erp-mobile-search__input" aria-label="Cari produksi" placeholder="Cari..."></x-slot:input><x-slot:filter><button type="button" class="erp-mobile-search__filter" data-production-filter-toggle aria-label="Filter produksi" aria-controls="production-list-filter" aria-expanded="false"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></x-slot:filter></x-erp.mobile-search>
-            @if(count($branches) > 1)<div class="production-branch-pill" x-data="{ open: false, value: 'all', label: 'Semua Cabang' }" x-init="$('#production-branch-filter').on('change', e => { value = e.target.value; label = $(e.target).find('option:selected').text().trim(); })" @click.outside="open = false" @keydown.escape="open = false"><button type="button" class="production-branch-pill__button" aria-haspopup="listbox" :aria-expanded="open" @click="open = !open"><i class="ph ph-storefront" aria-hidden="true"></i><span x-text="label"></span><i class="ph ph-caret-down" aria-hidden="true"></i></button><div class="production-branch-pill__menu" role="listbox" aria-label="Pilih cabang" x-show="open" x-cloak><button type="button" role="option" :aria-selected="value === 'all'" @click="$('#production-branch-filter').val('all').trigger('change'); open = false">Semua Cabang</button>@foreach ($branches as $branch)<button type="button" role="option" :aria-selected="value === '{{ $branch->id }}'" @click="$('#production-branch-filter').val('{{ $branch->id }}').trigger('change'); open = false">{{ ucwords($branch->name) }}</button>@endforeach</div></div>@endif
-            <div class="erp-operations-toolbar-actions production-list-tools"><details class="erp-operations-filter" id="production-list-filter"><summary class="erp-action"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></summary><div class="erp-operations-filter__body"><fieldset class="production-status-segments" role="radiogroup" aria-label="Status produksi"><legend>Status</legend><input type="hidden" id="production-status-filter" value="all" data-kt-ecommerce-product-filter="status">@foreach (['all' => 'Semua', 'temp' => 'Draf', 'draft' => 'Siap', 'posting' => 'Selesai'] as $statusValue => $statusLabel)<button type="button" role="radio" aria-checked="{{ $statusValue === 'all' ? 'true' : 'false' }}" class="production-status-segments__option" data-status-value="{{ $statusValue }}">{{ $statusLabel }}</button>@endforeach</fieldset><label for="production-branch-filter">Cabang<select id="production-branch-filter" class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Cabang" data-kt-ecommerce-product-filter="cabang">@if(count($branches) > 1)<option value="all">Semua Cabang</option>@endif @foreach ($branches as $branch)<option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>@endforeach</select></label><label for="kt_ecommerce_sales_flatpickr">Rentang tanggal<div class="input-group"><input class="form-control" placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr"><button type="button" class="erp-action" id="kt_ecommerce_sales_flatpickr_clear" aria-label="Hapus rentang tanggal"><i class="ph ph-x" aria-hidden="true"></i></button></div></label></div></details><a href="{{ url('production/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Produksi</a></div>
+            <x-erp.mobile-search class="production-mobile-search"><x-slot:input><input type="search" data-production-search id="search" class="erp-mobile-search__input" aria-label="Cari produksi" placeholder="Cari..."></x-slot:input></x-erp.mobile-search>
+            <div class="erp-operations-toolbar-actions production-list-tools"><a href="{{ url('production/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Produksi</a></div>
         </x-slot:toolbar>
         <div class="erp-operations-collection production-list">
             <table class="table erp-operations-table align-middle" id="production-table" width="100%">
@@ -108,14 +107,6 @@
     <script type="text/javascript">
         var dataTable;
         $(document).ready(function() {
-            const $branchFilter = $('[data-kt-ecommerce-product-filter="cabang"]');
-            const $activeBranchButtonLabel = $('#active-branch-button-label');
-
-            function updateActiveFilterInfo() {
-                const selectedBranch = $branchFilter.find('option:selected').text().trim() || 'Semua cabang';
-                $activeBranchButtonLabel.text(selectedBranch);
-            }
-
             const productionEmptyState = '<div class="production-empty-state"><i class="ph ph-cooking-pot" aria-hidden="true"></i><strong>Belum ada produksi</strong><span>Data produksi yang tersimpan akan muncul di sini.</span></div>';
 
             dataTable = $('#production-table').DataTable({
@@ -161,14 +152,6 @@
                     url: "{{ route('production-data') }}",
                     data: function(d) {
                         d.url = "{{ request()->segment(1) }}";
-                        d.status_filter = $('[data-kt-ecommerce-product-filter="status"]').val();
-                        d.cabang_filter = $('[data-kt-ecommerce-product-filter="cabang"]').val();
-                        var range = $('#kt_ecommerce_sales_flatpickr').val();
-                        if (range) {
-                            var dates = range.split(' to ');
-                            d.start_date = dates[0];
-                            d.end_date = dates[1] ?? dates[0];
-                        }
                     },
                     error: function(xhr, error, code) {
                         console.error('DataTable AJAX Error:', error, code);
@@ -222,54 +205,6 @@
                 $('[data-production-search]').not(this).val(this.value);
                 dataTable.search(this.value).draw();
             });
-            const filter = document.getElementById('production-list-filter');
-            const mobileFilter = document.querySelector('[data-production-filter-toggle]');
-            mobileFilter.addEventListener('click', () => { filter.open = !filter.open; });
-            filter.addEventListener('toggle', () => mobileFilter.setAttribute('aria-expanded', String(filter.open)));
-            document.addEventListener('click', event => {
-                if (event.target.closest('.select2-container, .flatpickr-calendar')) return;
-                if (filter.open && !filter.contains(event.target) && !mobileFilter.contains(event.target)) filter.open = false;
-            });
-            filter.addEventListener('keydown', event => {
-                if (event.key !== 'Escape') return;
-                filter.open = false;
-                (mobileFilter.getClientRects().length ? mobileFilter : filter.querySelector('summary')).focus();
-            });
-
-            $('.production-status-segments__option').on('click', function() {
-                const value = this.dataset.statusValue;
-                $('.production-status-segments__option').attr('aria-checked', 'false');
-                this.setAttribute('aria-checked', 'true');
-                $('[data-kt-ecommerce-product-filter="status"]').val(value).trigger('change');
-            });
-
-            $('[data-kt-ecommerce-product-filter="status"]').on('change', function() {
-                dataTable.draw();
-            });
-
-            $('[data-kt-ecommerce-product-filter="cabang"]').on('change', function() {
-                updateActiveFilterInfo();
-                dataTable.draw();
-            });
-
-            const salesFlatpickr = $("#kt_ecommerce_sales_flatpickr").flatpickr({
-                altInput: !0,
-                altFormat: "d/m/Y",
-                dateFormat: "Y-m-d",
-                mode: "range",
-                onChange: function() {
-                    updateActiveFilterInfo();
-                    dataTable.draw();
-                }
-            });
-
-            $('#kt_ecommerce_sales_flatpickr_clear').on('click', function() {
-                salesFlatpickr.clear(false);
-                updateActiveFilterInfo();
-                dataTable.draw();
-            });
-
-            updateActiveFilterInfo();
         });
 
         function reloadDataTable() {

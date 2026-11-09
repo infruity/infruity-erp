@@ -23,13 +23,9 @@ final class ProductionListReferenceTest extends TestCase
             'class="production-list-page"',
             'x-erp.mobile-search',
             'data-production-search',
-            'data-production-filter-toggle',
-            '.select2-container, .flatpickr-calendar',
             'production-list-reference.css',
             'production-list-reference.js',
             'ProductionListUi.enhanceRow',
-            'status_filter',
-            'cabang_filter',
             "route('production-data')",
             "data: 'action'",
         ] as $contract) {
@@ -37,25 +33,17 @@ final class ProductionListReferenceTest extends TestCase
         }
     }
 
-    public function test_status_filter_is_a_segmented_control_bound_to_the_existing_status_values(): void
+    public function test_list_has_no_filter_controls_and_keeps_search_and_add(): void
     {
         $view = file_get_contents(base_path('Modules/Transaction/Resources/views/production/index.blade.php'));
 
-        $this->assertStringContainsString('role="radiogroup"', $view);
-        $this->assertStringContainsString('<input type="hidden" id="production-status-filter" value="all" data-kt-ecommerce-product-filter="status">', $view);
-        $this->assertStringContainsString("['all' => 'Semua', 'temp' => 'Draf', 'draft' => 'Siap', 'posting' => 'Selesai']", $view);
-        $this->assertStringContainsString('data-status-value="{{ $statusValue }}"', $view);
-        $this->assertStringNotContainsString('<select id="production-status-filter"', $view);
-    }
-
-    public function test_desktop_branch_pill_drives_the_existing_branch_filter(): void
-    {
-        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/production/index.blade.php'));
-
-        $this->assertStringContainsString('production-branch-pill', $view);
-        $this->assertStringContainsString("$('#production-branch-filter').val(", $view);
-        $this->assertStringContainsString('aria-haspopup="listbox"', $view);
-        $this->assertStringContainsString('id="production-branch-filter"', $view);
+        foreach (['production-list-filter', 'erp-operations-filter', 'production-status-segments', 'production-branch-pill',
+            'data-production-filter-toggle', 'kt_ecommerce_sales_flatpickr', 'data-kt-ecommerce-product-filter',
+            'status_filter', 'cabang_filter', 'start_date', 'active-branch-button-label'] as $removed) {
+            $this->assertStringNotContainsString($removed, $view, $removed);
+        }
+        $this->assertStringContainsString('data-production-search', $view);
+        $this->assertStringContainsString("url('production/create')", $view);
     }
 
     public function test_production_css_has_no_low_contrast_faint_grey_or_green_status_text(): void

@@ -39,15 +39,18 @@ final class ProductionListUiContractTest extends TestCase
         $this->assertStringNotContainsString('#production-table tbody td:nth-child(4) { display:none', $view);
     }
 
-    public function test_existing_filters_and_server_contract_are_unchanged(): void
+    public function test_filters_are_off_in_the_view_but_the_server_contract_is_unchanged(): void
     {
         $view = $this->listView();
 
-        foreach (['status_filter', 'cabang_filter', 'start_date', 'end_date', "route('production-data')", 'deleteProduct('] as $contract) {
-            $this->assertStringContainsString($contract, $view . $this->controller());
+        // The list no longer shows or sends filters; the endpoint still accepts them.
+        foreach (['status_filter', 'cabang_filter', 'start_date', 'end_date'] as $param) {
+            $this->assertStringNotContainsString($param, $view);
+            $this->assertStringContainsString($param, $this->controller());
         }
-        $this->assertStringContainsString("data-kt-ecommerce-product-filter=\"status\"", $view);
-        $this->assertStringContainsString("data-kt-ecommerce-product-filter=\"cabang\"", $view);
+        foreach (["route('production-data')", 'deleteProduct('] as $contract) {
+            $this->assertStringContainsString($contract, $view);
+        }
     }
 
     public function test_cell_markup_exposes_product_status_and_quantity_without_new_queries(): void
