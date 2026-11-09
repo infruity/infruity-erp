@@ -57,4 +57,13 @@ final class ProductionDetailUiContractTest extends TestCase
             $this->assertStringContainsString($field, $show, "Field hilang: {$field}");
         }
     }
+
+    public function test_completed_pos_productions_show_the_same_done_label_as_the_list(): void
+    {
+        $detail = file_get_contents(base_path('Modules/Transaction/Resources/views/production/show.blade.php'));
+
+        // POS-linked productions are stored as "complete"; the list renders them as Selesai.
+        $this->assertStringContainsString("in_array(\$data->status, ['posting', 'complete'])", $detail);
+        $this->assertMatchesRegularExpression("/in_array\\(\\\$data->status, \\['posting', 'complete'\\]\\)\\)\\s*<span class=\"production-detail__badge is-done\">Selesai<\\/span>/", $detail);
+    }
 }
