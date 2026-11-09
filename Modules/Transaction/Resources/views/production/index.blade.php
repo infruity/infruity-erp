@@ -37,7 +37,7 @@
         .production-status.is-posting, .production-status.is-complete { background:#f0fdf4; color:#166534; }
         .production-status.is-muted { background:#f3f4f6; color:#4b5563; }
         .production-qty { color:#111827; font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; }
-        .production-pos { color:#9ca3af; font-size:11px; }
+        .production-pos { color:#6b7280; font-size:11px; }
         #production-table tbody tr.is-openable { cursor:pointer; }
         .production-empty-state { display:flex; min-height:260px; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center; }
         .production-empty-state i { display:flex; width:56px; height:56px; align-items:center; justify-content:center; border:1px solid #d1fae5; border-radius:20px; background:#ecfdf5; color:#0b595b; font-size:26px; }
@@ -53,7 +53,7 @@
             #production-table .production-status-cell { align-items:flex-end; }
             #production-table .production-status { padding:0; background:transparent !important; font-size:12px; }
             #production-table .production-status.is-draft { color:#b45309; }
-            #production-table .production-status.is-temp, #production-table .production-status.is-muted { color:#9ca3af; }
+            #production-table .production-status.is-temp, #production-table .production-status.is-muted { color:#6b7280; }
             #production-table .production-status.is-posting, #production-table .production-status.is-complete { color:#0b595b; }
             #production-table_wrapper .dataTables_info, #production-table_wrapper .dataTables_paginate { display:none !important; }
             #production-table td.dataTables_empty { grid-column:1 / -1; }
@@ -71,7 +71,8 @@
         <x-slot:toolbar>
             <label class="erp-search production-desktop-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-production-search id="search-desktop" aria-label="Cari produksi" placeholder="Cari produksi..."></label>
             <x-erp.mobile-search class="production-mobile-search"><x-slot:input><input type="search" data-production-search id="search" class="erp-mobile-search__input" aria-label="Cari produksi" placeholder="Cari..."></x-slot:input><x-slot:filter><button type="button" class="erp-mobile-search__filter" data-production-filter-toggle aria-label="Filter produksi" aria-controls="production-list-filter" aria-expanded="false"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></x-slot:filter></x-erp.mobile-search>
-            <div class="erp-operations-toolbar-actions production-list-tools"><details class="erp-operations-filter" id="production-list-filter"><summary class="erp-action"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></summary><div class="erp-operations-filter__body"><label for="production-status-filter">Status<select id="production-status-filter" class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Status" data-kt-ecommerce-product-filter="status"><option value="all">Semua Status</option>@foreach (['temp', 'draft', 'posting', 'complete'] as $statusOption)<option value="{{ $statusOption }}">{{ ucwords($statusOption) }}</option>@endforeach</select></label><label for="production-branch-filter">Cabang<select id="production-branch-filter" class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Cabang" data-kt-ecommerce-product-filter="cabang">@if(count($branches) > 1)<option value="all">Semua Cabang</option>@endif @foreach ($branches as $branch)<option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>@endforeach</select></label><label for="kt_ecommerce_sales_flatpickr">Rentang tanggal<div class="input-group"><input class="form-control" placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr"><button type="button" class="erp-action" id="kt_ecommerce_sales_flatpickr_clear" aria-label="Hapus rentang tanggal"><i class="ph ph-x" aria-hidden="true"></i></button></div></label></div></details><a href="{{ url('production/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Produksi</a></div>
+            @if(count($branches) > 1)<div class="production-branch-pill" x-data="{ open: false, value: 'all', label: 'Semua Cabang' }" x-init="$('#production-branch-filter').on('change', e => { value = e.target.value; label = $(e.target).find('option:selected').text().trim(); })" @click.outside="open = false" @keydown.escape="open = false"><button type="button" class="production-branch-pill__button" aria-haspopup="listbox" :aria-expanded="open" @click="open = !open"><i class="ph ph-storefront" aria-hidden="true"></i><span x-text="label"></span><i class="ph ph-caret-down" aria-hidden="true"></i></button><div class="production-branch-pill__menu" role="listbox" aria-label="Pilih cabang" x-show="open" x-cloak><button type="button" role="option" :aria-selected="value === 'all'" @click="$('#production-branch-filter').val('all').trigger('change'); open = false">Semua Cabang</button>@foreach ($branches as $branch)<button type="button" role="option" :aria-selected="value === '{{ $branch->id }}'" @click="$('#production-branch-filter').val('{{ $branch->id }}').trigger('change'); open = false">{{ ucwords($branch->name) }}</button>@endforeach</div></div>@endif
+            <div class="erp-operations-toolbar-actions production-list-tools"><details class="erp-operations-filter" id="production-list-filter"><summary class="erp-action"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></summary><div class="erp-operations-filter__body"><fieldset class="production-status-segments" role="radiogroup" aria-label="Status produksi"><legend>Status</legend><input type="hidden" id="production-status-filter" value="all" data-kt-ecommerce-product-filter="status">@foreach (['all' => 'Semua', 'temp' => 'Draf', 'draft' => 'Siap', 'posting' => 'Selesai'] as $statusValue => $statusLabel)<button type="button" role="radio" aria-checked="{{ $statusValue === 'all' ? 'true' : 'false' }}" class="production-status-segments__option" data-status-value="{{ $statusValue }}">{{ $statusLabel }}</button>@endforeach</fieldset><label for="production-branch-filter">Cabang<select id="production-branch-filter" class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Cabang" data-kt-ecommerce-product-filter="cabang">@if(count($branches) > 1)<option value="all">Semua Cabang</option>@endif @foreach ($branches as $branch)<option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>@endforeach</select></label><label for="kt_ecommerce_sales_flatpickr">Rentang tanggal<div class="input-group"><input class="form-control" placeholder="Pilih rentang tanggal" id="kt_ecommerce_sales_flatpickr"><button type="button" class="erp-action" id="kt_ecommerce_sales_flatpickr_clear" aria-label="Hapus rentang tanggal"><i class="ph ph-x" aria-hidden="true"></i></button></div></label></div></details><a href="{{ url('production/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Produksi</a></div>
         </x-slot:toolbar>
         <div class="erp-operations-collection production-list">
             <table class="table erp-operations-table align-middle" id="production-table" width="100%">
@@ -233,6 +234,13 @@
                 if (event.key !== 'Escape') return;
                 filter.open = false;
                 (mobileFilter.getClientRects().length ? mobileFilter : filter.querySelector('summary')).focus();
+            });
+
+            $('.production-status-segments__option').on('click', function() {
+                const value = this.dataset.statusValue;
+                $('.production-status-segments__option').attr('aria-checked', 'false');
+                this.setAttribute('aria-checked', 'true');
+                $('[data-kt-ecommerce-product-filter="status"]').val(value).trigger('change');
             });
 
             $('[data-kt-ecommerce-product-filter="status"]').on('change', function() {

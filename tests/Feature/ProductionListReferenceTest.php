@@ -36,4 +36,35 @@ final class ProductionListReferenceTest extends TestCase
             $this->assertStringContainsString($contract, $view);
         }
     }
+
+    public function test_status_filter_is_a_segmented_control_bound_to_the_existing_status_values(): void
+    {
+        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/production/index.blade.php'));
+
+        $this->assertStringContainsString('role="radiogroup"', $view);
+        $this->assertStringContainsString('<input type="hidden" id="production-status-filter" value="all" data-kt-ecommerce-product-filter="status">', $view);
+        $this->assertStringContainsString("['all' => 'Semua', 'temp' => 'Draf', 'draft' => 'Siap', 'posting' => 'Selesai']", $view);
+        $this->assertStringContainsString('data-status-value="{{ $statusValue }}"', $view);
+        $this->assertStringNotContainsString('<select id="production-status-filter"', $view);
+    }
+
+    public function test_desktop_branch_pill_drives_the_existing_branch_filter(): void
+    {
+        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/production/index.blade.php'));
+
+        $this->assertStringContainsString('production-branch-pill', $view);
+        $this->assertStringContainsString("$('#production-branch-filter').val(", $view);
+        $this->assertStringContainsString('aria-haspopup="listbox"', $view);
+        $this->assertStringContainsString('id="production-branch-filter"', $view);
+    }
+
+    public function test_production_css_has_no_low_contrast_faint_grey_or_green_status_text(): void
+    {
+        foreach (['production-list-reference', 'production-form-reference', 'production-detail-reference'] as $name) {
+            $this->assertStringNotContainsString('#9ca3af', file_get_contents(public_path("assets/css/{$name}.css")), $name);
+        }
+        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/production/index.blade.php'));
+        $this->assertStringNotContainsString('#9ca3af', $view);
+        $this->assertStringNotContainsString('color:#059669; }', file_get_contents(public_path('assets/css/production-list-reference.css')));
+    }
 }
