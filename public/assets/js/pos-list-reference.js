@@ -58,6 +58,32 @@
         return Math.abs(hash) % THEME_COUNT;
     }
 
+    function parseDetail(text) {
+        try {
+            const value = JSON.parse(text);
+            return value && typeof value === 'object' ? value : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    // Reference popup: Pending continues the draft, unpaid/partial pays, everything else shows the receipt.
+    function detailPrimary(row) {
+        if (row.status_key === 'pending' && row.edit_url) return {label: 'Lanjutkan Transaksi', url: row.edit_url};
+        if (['unpaid', 'partial'].includes(row.status_key) && row.pay_url) return {label: 'Bayar', url: row.pay_url};
+        return {label: 'Lihat Nota Transaksi', url: row.show_url};
+    }
+
+    // The server decides who may delete; settled and removed receipts never offer it.
+    function canDelete(row) {
+        return !!row.can_delete && !['paid', 'canceled'].includes(row.status_key);
+    }
+
+    function whatsappUrl(phone) {
+        const digits = String(phone || '').replace(/\D/g, '');
+        return digits ? `https://wa.me/${digits}` : '';
+    }
+
     function createFilters(config) {
         const cfg = config || {};
         const blank = () => ({status: 'all', branch: cfg.defaultBranch || 'all', start: '', end: ''});
@@ -115,6 +141,17 @@
                 this.filtersOpen = false;
                 if (typeof this.onApply === 'function') this.onApply({...this.applied});
             },
+            detail: null,
+            detailOpen: false,
+            detailPrimary,
+            canDelete,
+            whatsappUrl,
+            openDetail(row) {
+                if (!row) return;
+                this.detail = row;
+                this.detailOpen = true;
+            },
+            closeDetail() { this.detailOpen = false; },
             onDrawn(info) {
                 this.loading = false;
                 this.hasMore = (info.end || 0) < (info.recordsDisplay || 0);
@@ -128,5 +165,5 @@
         };
     }
 
-    return {createFilters, dateRange, formatDate, nextLength, remainingLabel, customerInitial, avatarTheme};
+    return {createFilters, parseDetail, detailPrimary, canDelete, whatsappUrl, dateRange, formatDate, nextLength, remainingLabel, customerInitial, avatarTheme};
 });

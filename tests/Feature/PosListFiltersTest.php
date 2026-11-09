@@ -195,4 +195,62 @@ final class PosListFiltersTest extends TestCase
     {
         $this->assertStringContainsString('27 Okt 2026, 09:05', strip_tags($this->cell(1)['name']));
     }
+    /** The detail popup reads one JSON blob per row, so it needs no extra request. */
+    private function detail(int $id): array
+    {
+        foreach ($this->fetch() as $row) {
+            if (str_contains($row['name'], '/show/' . $id . '"')) {
+                $this->assertSame(1, preg_match('/data-detail="([^"]*)"/', $row['name'], $match), "Row {$id} has no data-detail");
+
+                return json_decode(html_entity_decode($match[1], ENT_QUOTES), true, 512, JSON_THROW_ON_ERROR);
+            }
+        }
+        $this->fail("Row {$id} is not listed");
+    }
+
+    public function test_every_row_carries_the_detail_popup_data(): void
+    {
+        DB::table('pos_transaction')->where('id', 3)->update(['updated_at' => '2026-10-27 10:30:00']);
+
+        $paid = $this->detail(1);
+        $this->assertSame('paid', $paid['status_key']);
+        $this->assertSame('Lunas', $paid['status_label']);
+        $this->assertSame('Noorman', $paid['customer']);
+        $this->assertSame('6281230607050', $paid['phone']);
+        $this->assertSame('7050', $paid['phone_last4']);
+        $this->assertSame('27 Okt 2026, 09:05', $paid['date_label']);
+        $this->assertSame('Qa User', $paid['created_by']);
+        $this->assertSame(url('pos/show/1'), $paid['show_url']);
+        $this->assertNull($paid['pay_url'], 'A settled transaction cannot be paid again');
+        $this->assertNull($paid['edit_url']);
+        $this->assertSame('', $paid['edited_label'], 'Untouched rows show no edit time');
+
+        $partial = $this->detail(3);
+        $this->assertSame('partial', $partial['status_key']);
+        $this->assertSame(route('pos.payment', 3), $partial['pay_url']);
+        $this->assertNull($partial['edit_url']);
+        $this->assertSame('27 Okt 2026, 10:30', $partial['edited_label']);
+
+        $pending = $this->detail(4);
+        $this->assertSame('pending', $pending['status_key']);
+        $this->assertSame('Pelanggan Umum', $pending['customer']);
+        $this->assertSame('', $pending['phone']);
+        $this->assertSame(route('pos.edit', 4), $pending['edit_url']);
+        $this->assertSame(route('pos.payment', 4), $pending['pay_url']);
+        $this->assertSame('unpaid', $this->detail(2)['status_key']);
+        $this->assertSame('canceled', $this->detail(7)['status_key']);
+    }
+
+    public function test_delete_follows_the_old_menu_rule_per_role(): void
+    {
+        // Settled and debt transactions can only be deleted by the owner role.
+        $this->assertFalse($this->detail(1)['can_delete']);
+        $this->assertFalse($this->detail(2)['can_delete']);
+        $this->assertTrue($this->detail(4)['can_delete']);
+        $this->assertTrue($this->detail(7)['can_delete']);
+
+        $this->withSession(['role' => ['id_role' => 1]]);
+        $this->assertTrue($this->detail(1)['can_delete']);
+        $this->assertTrue($this->detail(2)['can_delete']);
+    }
 }

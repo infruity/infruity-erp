@@ -1451,13 +1451,32 @@ class PosController extends Controller
                 } else {
                     $customer = 'Pelanggan Umum';
                 }
-                $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                $day    = strtotime($item->date);
-                $when   = date('j', $day) . ' ' . $months[(int) date('n', $day) - 1] . ' ' . date('Y', $day) . ', ' . date('H:i', strtotime($item->created_at));
+                $when = $this->listWhen($item->date, $item->created_at);
+
+                $isOwner = Session('role')['id_role'] == 1;
+                $status  = $this->listStatus($item);
+                $edited  = $item->updated_at && $item->created_at && $item->updated_at->diffInSeconds($item->created_at, true) > 60;
+                $detail  = [
+                    'id'           => $item->id,
+                    'customer'     => $item->customer->name ?? 'Pelanggan Umum',
+                    'phone'        => $item->customer->whatsapp ?? '',
+                    'phone_last4'  => ! empty($item->customer->whatsapp) ? substr($item->customer->whatsapp, -4) : '',
+                    'date_label'   => $when,
+                    'branch'       => $item->branch ? ucwords($item->branch->name) : '',
+                    'created_by'   => $item->user ? ucwords(strtolower($item->user->nm_user)) : '',
+                    // updated_at also moves when a payment is recorded, so this is "last changed", not "edited by".
+                    'edited_label' => $edited ? $this->listWhen($item->updated_at->toDateString(), $item->updated_at->toDateTimeString()) : '',
+                    'status_key'   => $status['class'],
+                    'status_label' => $status['label'],
+                    'show_url'     => url('pos/show/' . $item->id),
+                    'pay_url'      => $item->status === 'paid' ? null : route('pos.payment', $item->id),
+                    'edit_url'     => in_array($item->status, ['temp', 'draft'], true) ? route('pos.edit', $item->id) : null,
+                    'can_delete'   => ! in_array($item->status, ['paid', 'debt'], true) || $isOwner,
+                ];
 
                 return '<div class="pos-list-row">
                             <span class="pos-list-avatar" aria-hidden="true"><i class="ph ph-receipt"></i></span>
-                            <a href="' . url('pos') . '/show/' . $item->id . '" class="pos-list-copy">
+                            <a href="' . url('pos') . '/show/' . $item->id . '" class="pos-list-copy" data-detail="' . e(json_encode($detail, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) . '">
                                 <span class="pos-list-customer">' . $iconHtml . '<span>' . $customer . '</span></span>
                                 <span class="pos-list-sub">' . $when . '</span>
                             </a>
@@ -1471,15 +1490,7 @@ class PosController extends Controller
             })
             ->addColumn('date', function ($item) {
                 $paid       = (float) $item->total_payment;
-                $debtLabel  = $paid > 0 ? ['label' => 'Kurang Bayar', 'class' => 'partial'] : ['label' => 'Belum Bayar', 'class' => 'unpaid'];
-                $statusLabels = [
-                    'paid'     => ['label' => 'Lunas', 'class' => 'paid'],
-                    'draft'    => ['label' => 'Pending', 'class' => 'pending'],
-                    'debt'     => $debtLabel,
-                    'canceled' => ['label' => 'Dihapus', 'class' => 'canceled'],
-                    'temp'     => ['label' => 'Pending', 'class' => 'pending'],
-                ];
-                $statusInfo = $statusLabels[$item->status] ?? ['label' => ucfirst($item->status), 'class' => 'other'];
+                $statusInfo = $this->listStatus($item);
                 // Reference amount line: the total alone once settled, otherwise paid / total.
                 $money = fn ($value) => number_format(round((float) $value), 0, ',', '.');
                 $amount = in_array($item->status, ['draft', 'temp', 'debt'], true)
@@ -1558,6 +1569,29 @@ class PosController extends Controller
             })
             ->rawColumns(['name', 'action', 'date'])
             ->make(true);
+    }
+
+    /** Label and CSS key of a list row, shared by the status cell and the detail popup data. */
+    private function listStatus(PosModel $item): array
+    {
+        return match ($item->status) {
+            'paid' => ['label' => 'Lunas', 'class' => 'paid'],
+            'draft', 'temp' => ['label' => 'Pending', 'class' => 'pending'],
+            'debt' => (float) $item->total_payment > 0
+                ? ['label' => 'Kurang Bayar', 'class' => 'partial']
+                : ['label' => 'Belum Bayar', 'class' => 'unpaid'],
+            'canceled' => ['label' => 'Dihapus', 'class' => 'canceled'],
+            default => ['label' => ucfirst($item->status), 'class' => 'other'],
+        };
+    }
+
+    /** Indonesian "27 Okt 2026, 09:05" used by the list rows and the detail popup. */
+    private function listWhen(string $date, string $time): string
+    {
+        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        $day    = strtotime($date);
+
+        return date('j', $day) . ' ' . $months[(int) date('n', $day) - 1] . ' ' . date('Y', $day) . ', ' . date('H:i', strtotime($time));
     }
 
     private function sumTotalPrice(array $items): int

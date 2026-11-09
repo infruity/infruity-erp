@@ -58,6 +58,12 @@
     .pos-toolbar-search { min-width:0; flex:1; padding:0; }
     .pos-toolbar-search .erp-mobile-search { height:44px; box-shadow:none; }
     .pos-toolbar-search .erp-mobile-search:not(:focus-within) { border-color:#868e98; }
+    /* The shell root is 12px and Metronic utilities are !important, so the shared dialog's rem sizes are pinned to the reference pixels. */
+    [data-pos-detail] > section { max-width:384px; border-radius:16px; }
+    [data-pos-detail] > section > div:first-child { padding:24px !important; }
+    [data-pos-detail] > section > div:first-child > div:first-child { margin-bottom:24px !important; }
+    [data-pos-detail] h2 { font-size:18px; line-height:28px; color:#1f2937; }
+    [data-pos-detail] button[aria-label^="Tutup detail"] { display:none; } /* the reference closes on backdrop or Esc */
     @media (max-width:1279px) {
         #pos-table, #pos-table tbody { display:block; width:100% !important; }
         #pos-table thead { display:none; }
@@ -189,6 +195,44 @@
         </section>
     </div>
 </template>
+
+<template x-teleport="body">
+    <x-erp.detail-dialog open="detailOpen" close="closeDetail()" title="Detail Transaksi" labelledby="pos-detail-title" close-label="Tutup detail transaksi" data-pos-detail>
+        <x-slot:subtitle><p class="mt-[4px] truncate text-[12px] font-medium text-[#6b7280]" x-show="detail && detail.branch" x-text="detail?.branch"></p></x-slot:subtitle>
+        <div class="flex flex-col gap-[16px] text-[14px]" x-show="detail">
+            <div class="flex items-center gap-[12px]">
+                <div class="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[12px] border border-emerald-200/80 bg-emerald-50 text-[#0b595b]"><i class="ph-duotone ph-user text-[18px]" aria-hidden="true"></i></div>
+                <div class="min-w-0 flex-1">
+                    <div class="text-[14px] font-bold leading-snug text-[#1f2937]"><span x-text="detail?.customer"></span><span class="text-[12px] font-normal text-[#6b7280]" x-show="detail?.phone_last4" x-text="' (' + detail?.phone_last4 + ')'"></span></div>
+                    <div class="mt-[2px]">
+                        <a x-show="detail?.phone" :href="whatsappUrl(detail?.phone)" target="_blank" rel="noopener" class="inline-block cursor-pointer border-b border-dashed border-gray-300 pb-[2px] text-[12px] font-semibold text-[#1f2937]"><span x-text="detail?.phone"></span></a>
+                        <span x-show="!detail?.phone" class="text-[12px] font-semibold text-[#6b7280]">Tidak ada nomor telepon</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-[12px]">
+                <div class="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[12px] border border-emerald-200/80 bg-emerald-50 text-[#0b595b]"><i class="ph-duotone ph-calendar-blank text-[18px]" aria-hidden="true"></i></div>
+                <div class="min-w-0 flex-1">
+                    <div class="text-[14px] font-bold leading-snug tabular-nums text-[#1f2937]" x-text="detail?.date_label"></div>
+                    <div class="mt-[2px] text-[11px] font-medium text-[#6b7280]" x-text="detail?.created_by ? 'Dibuat oleh ' + detail.created_by : 'Dibuat oleh -'"></div>
+                </div>
+            </div>
+            <div class="flex items-center gap-[12px]">
+                <div class="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[12px] border border-emerald-200/80 bg-emerald-50 text-[#0b595b]"><i class="ph-duotone ph-pencil-simple text-[18px]" aria-hidden="true"></i></div>
+                <div class="min-w-0 flex-1">
+                    <div class="text-[14px] leading-snug" :class="detail?.edited_label ? 'font-bold text-[#1f2937]' : 'font-normal text-[#6b7280]'" x-text="detail?.edited_label || '-'"></div>
+                    <div class="mt-[2px] text-[11px] font-medium text-[#6b7280]" x-text="detail?.edited_label ? 'Waktu transaksi terakhir diubah' : 'Diedit'"></div>
+                </div>
+            </div>
+        </div>
+        <x-slot:actions>
+            <div class="flex w-full items-center gap-[10px] px-[24px] py-[20px]" x-show="detail">
+                <button type="button" x-show="detail && canDelete(detail)" @click="const id = detail.id; closeDetail(); deleteProduct(id)" class="flex h-[44px] cursor-pointer items-center justify-center gap-[6px] rounded-[12px] border border-[#fecaca] px-[16px] text-[14px] font-semibold text-red-600 transition hover:bg-red-50 active:scale-95"><i class="ph-bold ph-trash text-[16px]" aria-hidden="true"></i><span>Hapus</span></button>
+                <a :href="detail ? detailPrimary(detail).url : '#'" class="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[12px] bg-[#0b595b] text-[14px] font-bold text-white shadow-md shadow-[#0b595b]/20 transition hover:bg-[#08484a] active:scale-95"><span x-text="detail ? detailPrimary(detail).label : ''"></span></a>
+            </div>
+        </x-slot:actions>
+    </x-erp.detail-dialog>
+</template>
 </div>
 
 
@@ -292,6 +336,7 @@
                     if (link) {
                         row.classList.add('is-openable');
                         row.dataset.href = link.getAttribute('href');
+                        row.dataset.detail = link.dataset.detail || '';
                     }
                     decoratePosRow(row);
                 },
@@ -347,10 +392,14 @@
                 dataTable.page.len(PosListUi.nextLength(info.end, POS_PAGE_STEP)).draw(false);
             };
 
-            // A tap on the row opens the existing detail page.
+            // A tap on a row opens the detail popup; the link stays a real URL for open-in-new-tab.
             $('#pos-table tbody').on('click', 'tr.is-openable', function(event) {
-                if ($(event.target).closest('a, button, .dropdown, .dropdown-menu').length) return;
-                window.location.href = this.dataset.href;
+                if ($(event.target).closest('button, .dropdown, .dropdown-menu').length) return;
+                if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+                const detail = PosListUi.parseDetail(this.dataset.detail || '');
+                if (!detail) return; // no popup data: let the link navigate as before
+                event.preventDefault();
+                posUi().openDetail(detail);
             });
 
             // Search manual lewat input

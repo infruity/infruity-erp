@@ -131,3 +131,46 @@ test('load more shows only while rows are hidden and ignores repeat taps while l
     f.loadMore();
     assert.equal(calls, 1);
 });
+
+const row = (over) => Object.assign({
+    id: 9, customer: 'Noorman', phone: '6281230607050', phone_last4: '7050', status_key: 'unpaid',
+    show_url: '/pos/show/9', pay_url: '/pos/payment/9', edit_url: null, can_delete: true, edited_label: '',
+}, over);
+
+test('detail primary action follows the reference per status', () => {
+    assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'pending', edit_url: '/pos/9/edit'})), {label: 'Lanjutkan Transaksi', url: '/pos/9/edit'});
+    assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'unpaid'})), {label: 'Bayar', url: '/pos/payment/9'});
+    assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'partial'})), {label: 'Bayar', url: '/pos/payment/9'});
+    assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'paid', pay_url: null})), {label: 'Lihat Nota Transaksi', url: '/pos/show/9'});
+    assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'canceled'})), {label: 'Lihat Nota Transaksi', url: '/pos/show/9'});
+});
+
+test('a pending row without an edit link falls back to the receipt instead of a dead button', () => {
+    assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'pending', edit_url: null})), {label: 'Lihat Nota Transaksi', url: '/pos/show/9'});
+});
+
+test('delete is offered only where the server allows it and never for settled receipts', () => {
+    assert.equal(PosListUi.canDelete(row({status_key: 'unpaid', can_delete: true})), true);
+    assert.equal(PosListUi.canDelete(row({status_key: 'unpaid', can_delete: false})), false);
+    assert.equal(PosListUi.canDelete(row({status_key: 'paid', can_delete: true})), false);
+    assert.equal(PosListUi.canDelete(row({status_key: 'canceled', can_delete: true})), false);
+});
+
+test('whatsapp link uses digits only and is empty without a number', () => {
+    assert.equal(PosListUi.whatsappUrl('+62 812-3060 7050'), 'https://wa.me/6281230607050');
+    assert.equal(PosListUi.whatsappUrl(''), '');
+    assert.equal(PosListUi.whatsappUrl(null), '');
+});
+
+test('parseDetail returns null for bad JSON, and the dialog opens and closes with the row', () => {
+    assert.equal(PosListUi.parseDetail('{oops'), null);
+    assert.equal(PosListUi.parseDetail(''), null);
+    const f = create();
+    f.openDetail(row());
+    assert.equal(f.detailOpen, true);
+    assert.equal(f.detail.id, 9);
+    f.closeDetail();
+    assert.equal(f.detailOpen, false);
+    f.openDetail(null);
+    assert.equal(f.detailOpen, false);
+});

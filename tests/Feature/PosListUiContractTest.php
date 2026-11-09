@@ -32,7 +32,7 @@ final class PosListUiContractTest extends TestCase
 
         $this->assertStringContainsString('createdRow', $view);
         $this->assertStringContainsString('is-openable', $view);
-        $this->assertStringContainsString("closest('a, button, .dropdown, .dropdown-menu')", $view);
+        $this->assertStringContainsString("closest('button, .dropdown, .dropdown-menu')", $view);
         $this->assertStringNotContainsString('#pos-table tbody td:nth-child(3) { display:none', $view);
     }
 
@@ -96,5 +96,15 @@ final class PosListUiContractTest extends TestCase
         }
         $this->assertSame(2, substr_count($view, '<th '), 'Header hanya Pelanggan dan Total & Status');
         $this->assertStringContainsString('grid-template-columns:minmax(0,1fr) auto;', $view);
+    }
+
+    public function test_row_tap_opens_the_reference_detail_popup_with_pay_and_delete(): void
+    {
+        $view = $this->listView();
+
+        foreach (['<x-erp.detail-dialog', 'Detail Transaksi', 'Dibuat oleh', 'openDetail(detail)', 'detailPrimary(detail)', 'canDelete(detail)', 'deleteProduct(id)', 'PosListUi.parseDetail'] as $contract) {
+            $this->assertStringContainsString($contract, $view, "Hilang: {$contract}");
+        }
+        $this->assertStringContainsString('data-detail', $this->controller());
     }
 }
