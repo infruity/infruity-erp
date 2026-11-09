@@ -225,7 +225,7 @@
                         </div>
                         <div class="wholesale-detail-line">
                             <i class="ph ph-clock" aria-hidden="true"></i>
-                            <div><strong x-text="item?.creator_name"></strong><span x-text="'Dibuat pada ' + item?.created_at_label"></span></div>
+                            <div><strong x-text="item?.creator_name"></strong><span x-text="'Tanggal pengadaan ' + item?.order_date_label"></span></div>
                         </div>
                     </div>
                     <footer class="wholesale-detail-actions" x-show="item?.can_edit || item?.can_delete" :class="item?.can_edit && item?.can_delete ? '' : 'is-single-action'">
@@ -353,6 +353,8 @@
         const wholesaleEmptyState = '<div class="wholesale-empty-state"><span class="wholesale-empty-icon"><i class="ph ph-receipt"></i></span><span class="wholesale-empty-title">Belum ada pengadaan</span><span class="wholesale-empty-copy">Pengadaan yang tersimpan akan muncul di sini.</span>'
             + (wholesaleCreateUrl ? '<a class="wholesale-empty-link" href="' + wholesaleCreateUrl + '"><i class="ph-bold ph-plus"></i>Tambah Pengadaan</a>' : '')
             + '</div>';
+        // A search or filter with no match is not the same as having no orders yet: no "Tambah" prompt.
+        const wholesaleNoMatchState = '<div class="wholesale-empty-state"><span class="wholesale-empty-icon"><i class="ph ph-magnifying-glass"></i></span><span class="wholesale-empty-title">Pengadaan tidak ditemukan</span><span class="wholesale-empty-copy">Coba kata pencarian lain atau sesuaikan filter.</span></div>';
         let wholesaleDataTable;
         let wholesaleLoadMorePending = false;
 
@@ -446,14 +448,14 @@
                 language: {
                     processing: 'Memuat pengadaan…',
                     emptyTable: wholesaleEmptyState,
-                    zeroRecords: wholesaleEmptyState,
+                    zeroRecords: wholesaleNoMatchState,
                     info: 'Menampilkan _START_–_END_ dari _TOTAL_ pengadaan',
                     infoEmpty: 'Belum ada pengadaan',
                     paginate: { previous: '‹', next: '›' }
                 },
                 drawCallback: function () {
                     const info = this.api().page.info();
-                    $('#wholesale-count').text(info.recordsDisplay ? `Menampilkan ${info.start + 1}–${info.end} dari ${info.recordsDisplay} pengadaan` : 'Belum ada pengadaan');
+                    $('#wholesale-count').text(info.recordsDisplay ? `Menampilkan ${info.start + 1}–${info.end} dari ${info.recordsDisplay} pengadaan` : (info.recordsTotal ? 'Pengadaan tidak ditemukan' : 'Belum ada pengadaan'));
                     this.api().rows({ page: 'current' }).every(function () {
                         $(this.node()).toggleClass('is-openable', Boolean(this.data()?.detail_payload));
                     });

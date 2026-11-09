@@ -117,7 +117,7 @@
                     this.rows = append ? [...this.rows,...json.data] : json.data;
                     this.total = Number(json.recordsTotal || 0); this.filtered = Number(json.recordsFiltered || 0);
                 } catch(error) {
-                    if (requestId === this.requestId) this.error = error.message || 'Periksa koneksi lalu coba lagi.';
+                    if (requestId === this.requestId) this.error = error.name === 'TypeError' ? 'Periksa koneksi lalu coba lagi.' : (error.message || 'Periksa koneksi lalu coba lagi.');
                 } finally { if (requestId === this.requestId) this.loading = false; }
             },
             async deleteSelected() {

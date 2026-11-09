@@ -10,6 +10,12 @@ final class Like
      */
     public static function contains(string $term): string
     {
-        return '%' . addcslashes($term, '\\%_') . '%';
+        return '%' . self::escape($term) . '%';
+    }
+
+    /** Escape LIKE wildcards in $term without adding any of its own. */
+    public static function escape(string $term): string
+    {
+        return addcslashes($term, '\\%_');
     }
 }

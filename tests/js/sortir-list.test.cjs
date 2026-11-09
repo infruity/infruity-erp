@@ -24,6 +24,10 @@ test('failed request shows retry state and resets loading',async()=>{
     const a=app();global.fetch=async()=>{throw Error('Offline')};await a.load();assert.equal(a.error,'Offline');assert.equal(a.loading,false);
     global.fetch=async()=>response({data:[],recordsFiltered:0});await a.load();assert.equal(a.error,'');
 });
+test('browser network failure shows a readable Indonesian message',async()=>{
+    const a=app();global.fetch=async()=>{throw new TypeError('Failed to fetch')};await a.load();
+    assert.equal(a.error,'Periksa koneksi lalu coba lagi.');assert.equal(a.loading,false);
+});
 test('filters apply only on confirmation; reversed date range is rejected',()=>{
     const a=app();let loaded=0;a.load=()=>loaded++;
     a.openFilter();a.pending.status='paid';assert.equal(a.filters.status,'all');

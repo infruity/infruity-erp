@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\Like;
 use App\Support\ProductHpp;
 use Exception;
 use Illuminate\Contracts\Support\Renderable;
@@ -1040,7 +1041,11 @@ class WholesaleController extends Controller
 
     public function get_data(Request $request)
     {
-        // dd($request->all());
+        // The built-in DataTables search builds its own LIKE, so escape the keyword first.
+        $keyword = $request->input('search.value');
+        if (is_string($keyword) && $keyword !== '') {
+            $request->merge(['search' => array_merge($request->input('search'), ['value' => Like::escape($keyword)])]);
+        }
         $data = Wholesale::getData($request);
         $canViewWholesale = function_exists('check_access') && check_access('wholesale.show');
         $canEditWholesale = function_exists('check_access') && check_access('wholesale.edit');
@@ -1159,6 +1164,12 @@ class WholesaleController extends Controller
                 }
 
                 $canEdit = $item->status !== 'complete' && $canEditWholesale;
+                // The list row shows the order date with the recorded time; the popup shows the same value.
+                $dateTime = \Carbon\Carbon::parse($item->order_date ?? $item->created_at);
+                if (! empty($item->created_at)) {
+                    $dateTime->setTimeFrom(\Carbon\Carbon::parse($item->created_at));
+                }
+                $mobileDate = $dateTime->locale('id')->translatedFormat('d M Y, H:i') . ' WIB';
 
                 return [
                     'id' => (int) $item->id,
@@ -1167,9 +1178,7 @@ class WholesaleController extends Controller
                     'total_label' => 'Rp ' . number_format((float) ($item->total_amount ?? 0), 0, ',', '.'),
                     'item_count_label' => (int) ($item->total_product ?? 0) . ' Bahan Baku',
                     'creator_name' => ucwords(strtolower((string) ($item->created_by ?? '—'))),
-                    'created_at_label' => \Carbon\Carbon::parse($item->created_at ?? $item->order_date)
-                        ->locale('id')
-                        ->translatedFormat('d M Y, H:i') . ' WIB',
+                    'order_date_label' => $mobileDate,
                     'edit_url' => $canEdit ? route('wholesale.edit', $item->id) : null,
                     'can_edit' => (bool) $canEdit,
                     'can_delete' => $item->status !== 'complete' && $canDeleteWholesale,
