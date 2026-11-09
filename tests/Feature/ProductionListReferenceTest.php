@@ -55,4 +55,12 @@ final class ProductionListReferenceTest extends TestCase
         $this->assertStringNotContainsString('#9ca3af', $view);
         $this->assertStringNotContainsString('color:#059669; }', file_get_contents(public_path('assets/css/production-list-reference.css')));
     }
+
+    public function test_branch_select_boundary_matches_the_other_form_fields(): void
+    {
+        $css = file_get_contents(public_path('assets/css/production-form-reference.css'));
+
+        // The branch select2 rule is !important, so it must carry the 3:1 boundary itself.
+        $this->assertMatchesRegularExpression('/#branch_id \+ \.select2-container \.select2-selection--single \{[^}]*border-color:#868e98 !important;/', $css);
+    }
 }
