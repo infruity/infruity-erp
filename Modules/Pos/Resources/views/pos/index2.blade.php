@@ -10,7 +10,7 @@
         'timezone' => config('app.timezone', 'Asia/Jakarta'),
         'step' => 50,
     ];
-    $posStatuses = ['all' => 'Semua Status', 'draft' => 'Pending', 'debt' => 'Piutang', 'paid' => 'Lunas', 'canceled' => 'Dihapus'];
+    $posStatuses = ['all' => 'Semua Status', 'draft' => 'Pending', 'unpaid' => 'Belum Bayar', 'partial' => 'Kurang Bayar', 'paid' => 'Lunas'];
 @endphp
 <style>
     .pos-list-row { display:flex; min-width:0; align-items:center; gap:12px; }
@@ -23,7 +23,7 @@
     .pos-list-avatar.is-theme-5 { border-color:#fecdd3; background:#fff1f2; color:#be123c; }
     .pos-list-avatar.is-theme-6 { border-color:#c7d2fe; background:#eef2ff; color:#4338ca; }
     .pos-list-parcel-badge { position:absolute; right:-4px; bottom:-4px; display:flex; width:18px; height:18px; align-items:center; justify-content:center; border-radius:999px; background:#fff; box-shadow:0 0 0 1px #fff, 0 1px 2px rgba(0,0,0,.12); }
-    .pos-list-parcel-badge i { display:flex; width:14px; height:14px; align-items:center; justify-content:center; border-radius:999px; background:#b45309; color:#fff; font-size:9px; }
+    .pos-list-parcel-badge i { display:flex; width:14px; height:14px; align-items:center; justify-content:center; border-radius:999px; background:#d97706; color:#fff; font-size:9px; }
     .pos-list-copy { display:flex; min-width:0; flex-direction:column; gap:2px; text-decoration:none; }
     .pos-list-customer { display:flex; min-width:0; align-items:baseline; gap:4px; color:#111827; font-size:14px; font-weight:600; }
     .pos-list-customer span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -34,11 +34,14 @@
     .pos-list-status { display:inline-flex; align-items:center; font-size:12px; font-weight:700; }
     .pos-list-status.is-paid { color:#047857; }
     .pos-list-status.is-pending { color:#6b7280; }
-    .pos-list-status.is-debt { color:#be123c; }
+    .pos-list-status.is-unpaid { color:#be123c; }
+    .pos-list-status.is-partial { color:#b45309; }
     .pos-list-status.is-canceled { color:#374151; }
     .pos-list-status.is-other { color:#b45309; }
-    .pos-list-total { color:#111827; font-size:14px; font-weight:700; }
-    .pos-list-due { color:#be123c; font-size:11px; }
+    .pos-list-total { display:inline-flex; align-items:baseline; gap:2px; color:#111827; font-size:13px; white-space:nowrap; }
+    .pos-list-total strong { font-weight:700; }
+    .pos-list-paid { color:#1f2937; font-weight:500; }
+    .pos-list-sep { margin:0 2px; color:#d1d5db; }
     .pos-list-meta { color:#6b7280; font-size:11px; }
     #pos-table thead th { color:#6b7280; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
     #pos-table tbody tr.is-openable { cursor:pointer; }
@@ -52,7 +55,7 @@
     .pos-list-empty span { max-width:280px; color:#6b7280; font-size:12px; line-height:1.55; }
     .pos-list-empty button { margin-top:6px; border:1px solid #d1d5db; border-radius:999px; background:#fff; padding:8px 16px; color:#374151; font-size:12px; font-weight:600; }
     .pos-list-empty button:hover { border-color:#34a684; color:#0b595b; }
-    .pos-toolbar-search { min-width:0; flex:1; }
+    .pos-toolbar-search { min-width:0; flex:1; padding:0; }
     .pos-toolbar-search .erp-mobile-search { height:44px; box-shadow:none; }
     .pos-toolbar-search .erp-mobile-search:not(:focus-within) { border-color:#868e98; }
     @media (max-width:1279px) {
@@ -65,19 +68,27 @@
         #pos-table td.dataTables_empty { grid-column:1 / -1; }
     }
     @media (max-width:767px) {
-        .pos-list-customer { font-size:13px; }
+        .pos-list-customer { font-size:12px; }
+        .pos-list-customer .pos-list-phone { font-size:11px; }
         .pos-list-sub { font-size:11px; }
-        .pos-list-total { font-size:12px; }
-        .erp-workspace-toolbar > .pos-add span { display:none; }
-        .erp-workspace-toolbar > .pos-add { width:44px; padding:0; margin-left:0; }
+        .pos-list-total { font-size:11px; }
+        #pos-table tbody tr { padding:13px 16px; }
+        #pos-table .dropstart > .btn { width:32px; height:32px; padding:0; border:0; background:transparent; color:#6b7280; }
+        #kt_content:has(.pos-list-page) { padding-inline:0 !important; }
+        .pos-list-page .erp-workspace { border:0; border-radius:0; }
+        .pos-list-page .erp-workspace-heading { display:none; }
+        .pos-list-page .erp-workspace-toolbar { position:sticky; top:0; z-index:25; padding:16px; background:#fff; }
+    }
+    @media (max-width:639px) {
+        .erp-workspace-toolbar > .pos-add { display:none; }
     }
 </style>
 <script src="{{ asset('assets/js/pos-list-reference.js') }}?v={{ filemtime(public_path('assets/js/pos-list-reference.js')) }}"></script>
-<div class="contents" data-pos-list x-data="PosListUi.createFilters(@js($posFilterConfig))" x-init="onApply = (applied) => window.posApplyFilters(applied); onLoadMore = () => window.posLoadMore()" @pos-list-drawn.window="onDrawn($event.detail)" @keydown.escape.window="close()">
+<div class="contents pos-list-page" data-pos-list x-data="PosListUi.createFilters(@js($posFilterConfig))" x-init="onApply = (applied) => window.posApplyFilters(applied); onLoadMore = () => window.posLoadMore()" @pos-list-drawn.window="onDrawn($event.detail)" @keydown.escape.window="close()">
 <x-erp.workspace title="Kasir / POS" subtitle="Kelola kasir / pos dan lihat rincian transaksi.">
     <x-slot:toolbar>
         <x-erp.mobile-search class="pos-toolbar-search erp-mobile-search-shell--always-visible erp-mobile-search-shell--flush">
-            <x-slot:input><input id="search" type="search" class="erp-mobile-search__input" placeholder="Cari pelanggan, HP, atau tanggal..." autocomplete="off" aria-label="Cari transaksi kasir"></x-slot:input>
+            <x-slot:input><input id="search" type="search" class="erp-mobile-search__input" placeholder="Cari..." autocomplete="off" aria-label="Cari transaksi kasir"></x-slot:input>
             <x-slot:clear><button id="search-clear" type="button" class="erp-mobile-search__clear hidden" aria-label="Hapus pencarian"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
             <x-slot:filter><button type="button" @click="open()" :aria-expanded="filtersOpen" aria-haspopup="dialog" aria-label="Buka filter transaksi" class="erp-mobile-search__filter" :class="(filtersOpen || hasActive) ? 'is-active' : ''"><i class="ph ph-sliders-horizontal text-xl leading-none" aria-hidden="true"></i><span x-show="hasActive" x-cloak class="erp-mobile-search__filter-dot"></span></button></x-slot:filter>
         </x-erp.mobile-search>

@@ -53,7 +53,7 @@ final class PosListUiContractTest extends TestCase
     {
         $controller = $this->controller();
 
-        foreach (['pos-list-row', 'pos-list-customer', 'pos-list-sub', 'pos-list-status-cell', 'pos-list-status', 'pos-list-total', 'pos-list-due'] as $class) {
+        foreach (['pos-list-row', 'pos-list-customer', 'pos-list-sub', 'pos-list-status-cell', 'pos-list-status', 'pos-list-total', 'pos-list-paid'] as $class) {
             $this->assertStringContainsString($class, $controller, "Kelas hilang: {$class}");
         }
         // Same eager loading as before: no per-row relation queries are introduced.
@@ -67,7 +67,7 @@ final class PosListUiContractTest extends TestCase
         $view = $this->listView();
 
         // Pill search with the filter trigger inside it, like the reference list.
-        foreach (['<x-erp.mobile-search', 'erp-mobile-search__filter', 'Cari pelanggan, HP, atau tanggal...', 'Tambah Transaksi'] as $contract) {
+        foreach (['<x-erp.mobile-search', 'erp-mobile-search__filter', 'placeholder="Cari..."', 'Tambah Transaksi'] as $contract) {
             $this->assertStringContainsString($contract, $view);
         }
         // Draft/apply sheet with the reference sections and quick ranges.

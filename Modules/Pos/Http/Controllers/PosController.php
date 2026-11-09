@@ -1392,7 +1392,13 @@ class PosController extends Controller
         });
 
         if ($request->has('status_filter') && $request->status_filter !== 'all') {
-            $query = $query->where('status', $request->status_filter);
+            $paidSum = '(select coalesce(sum(pos_payment.total), 0) from pos_payment where pos_payment.pos_id = pos_transaction.id and pos_payment.deleted_at is null)';
+            $query = match ($request->status_filter) {
+                'draft' => $query->whereIn('status', ['draft', 'temp']), // both render as "Pending"
+                'unpaid' => $query->where('status', 'debt')->whereRaw("{$paidSum} <= 0"),
+                'partial' => $query->where('status', 'debt')->whereRaw("{$paidSum} > 0"),
+                default => $query->where('status', $request->status_filter),
+            };
         }
         // if ($request->has('cabang_filter') && $request->cabang_filter !== 'all') {
         //     $query->whereHas('paymentDetails', function ($q) use ($request) {
@@ -1445,7 +1451,9 @@ class PosController extends Controller
                 } else {
                     $customer = 'Pelanggan Umum';
                 }
-                $when = date('d M Y', strtotime($item->date)) . ' ' . date('H:i', strtotime($item->created_at));
+                $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                $day    = strtotime($item->date);
+                $when   = date('j', $day) . ' ' . $months[(int) date('n', $day) - 1] . ' ' . date('Y', $day) . ', ' . date('H:i', strtotime($item->created_at));
 
                 return '<div class="pos-list-row">
                             <span class="pos-list-avatar" aria-hidden="true"><i class="ph ph-receipt"></i></span>
@@ -1462,18 +1470,21 @@ class PosController extends Controller
                 return $item->total_quantity;
             })
             ->addColumn('date', function ($item) {
+                $paid       = (float) $item->total_payment;
+                $debtLabel  = $paid > 0 ? ['label' => 'Kurang Bayar', 'class' => 'partial'] : ['label' => 'Belum Bayar', 'class' => 'unpaid'];
                 $statusLabels = [
                     'paid'     => ['label' => 'Lunas', 'class' => 'paid'],
                     'draft'    => ['label' => 'Pending', 'class' => 'pending'],
-                    'debt'     => ['label' => 'Piutang', 'class' => 'debt'],
+                    'debt'     => $debtLabel,
                     'canceled' => ['label' => 'Dihapus', 'class' => 'canceled'],
                     'temp'     => ['label' => 'Pending', 'class' => 'pending'],
                 ];
                 $statusInfo = $statusLabels[$item->status] ?? ['label' => ucfirst($item->status), 'class' => 'other'];
-                $due        = (float) ($item->total_due - ($item->voucher ?? 0));
-                $dueLine    = ($due > 0 && $item->status !== 'paid')
-                    ? '<span class="pos-list-due">Sisa Rp' . tonumberround($due) . '</span>'
-                    : '';
+                // Reference amount line: the total alone once settled, otherwise paid / total.
+                $money = fn ($value) => number_format(round((float) $value), 0, ',', '.');
+                $amount = in_array($item->status, ['draft', 'temp', 'debt'], true)
+                    ? '<span class="pos-list-total"><span class="pos-list-paid">Rp ' . $money($paid) . '</span><span class="pos-list-sep">/</span><strong>' . $money($item->total) . '</strong></span>'
+                    : '<span class="pos-list-total"><strong>Rp ' . $money($item->total) . '</strong></span>';
                 $meta = [];
                 if ($item->branch) {
                     $meta[] = e($item->branch->name);
@@ -1485,8 +1496,7 @@ class PosController extends Controller
 
                 return '<div class="pos-list-status-cell">
                             <span class="pos-list-status is-' . $statusInfo['class'] . '">' . $statusInfo['label'] . '</span>
-                            <span class="pos-list-total">Rp' . tonumberround($item->total) . '</span>
-                            ' . $dueLine . $metaLine . '
+                            ' . $amount . $metaLine . '
                         </div>';
             })
             ->addColumn('action', function ($item) {
