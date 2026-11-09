@@ -87,7 +87,7 @@
   const status=row.querySelector('.production-status');
   if(status){const label=[...status.classList].map(statusLabel).find(Boolean);if(label)status.textContent=label;}
   const qty=row.querySelector('.production-qty'),display=quantity(data.quantity);
-  if(qty&&display!==null){qty.textContent=display;qty.setAttribute('aria-label','Hasil produksi: '+display);}
+  if(qty&&display!==null){const unit=qty.dataset&&qty.dataset.unit,text=unit?display+' '+unit:display;qty.textContent=text;qty.setAttribute('aria-label','Hasil produksi: '+text);}
  }
  function createDetailModal(indexUrl,environment={}){
   const doc=environment.document||(typeof document!=='undefined'?document:null);

@@ -730,7 +730,7 @@ class ProductionController extends Controller
     public function get_data(Request $request)
     {
         try {
-            $query = Production::with(['products', 'products.category', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])
+            $query = Production::with(['products', 'products.category', 'products.unit', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])
                 ->whereNotNull('product_id');
 
             if ($request->has('status_filter') && $request->status_filter !== 'all' && ! empty($request->status_filter)) {
@@ -837,10 +837,11 @@ class ProductionController extends Controller
                     ];
                     [$label, $class] = $labels[$item->status] ?? [ucfirst($item->status ?? 'Unknown'), 'is-muted'];
                     $quantity        = number_format($item->quantity ?? 0, 0, ',', '.');
+                    $unit            = e($item->products->unit->abbreviation ?? '');
 
                     return '<div class="production-status-cell">
                                 <span class="production-status ' . $class . '">' . $label . '</span>
-                                <span class="production-qty">Qty: ' . $quantity . '</span>
+                                <span class="production-qty" data-unit="' . $unit . '">Qty: ' . $quantity . ($unit !== '' ? ' ' . $unit : '') . '</span>
                                 ' . $posBadge . '
                             </div>';
                 })

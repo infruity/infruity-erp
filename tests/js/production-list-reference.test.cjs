@@ -47,3 +47,18 @@ test('row enhancement reuses server clock and is idempotent without inventing mi
   global.document = previousDocument;
  }
 });
+test('row quantity appends the server-provided unit and stays unit-less when none is provided', () => {
+ const run = dataset => {
+  const attributes = {};
+  const qty = { textContent: 'Qty: 12', dataset, setAttribute: (key, value) => { attributes[key] = value; } };
+  const nodes = { '.production-qty': qty };
+  const row = { querySelector: selector => nodes[selector] };
+  const previousDocument = global.document;
+  global.document = { createElement: () => ({ setAttribute() {} }) };
+  try { ui.enhanceRow(row, { quantity: '12.25' }); } finally { global.document = previousDocument; }
+  return { text: qty.textContent, label: attributes['aria-label'] };
+ };
+ assert.deepEqual(run({ unit: 'pcs' }), { text: '12,25 pcs', label: 'Hasil produksi: 12,25 pcs' });
+ assert.deepEqual(run({}), { text: '12,25', label: 'Hasil produksi: 12,25' });
+ assert.deepEqual(run({ unit: '' }), { text: '12,25', label: 'Hasil produksi: 12,25' });
+});

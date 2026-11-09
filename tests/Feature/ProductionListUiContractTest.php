@@ -61,9 +61,12 @@ final class ProductionListUiContractTest extends TestCase
             $this->assertStringContainsString($class, $controller);
         }
         $this->assertStringContainsString("route('production.detail', \$item->id)", $controller);
+        // The unit comes from the already eager-loaded product unit and is exposed on the quantity span.
+        $this->assertStringContainsString('data-unit="', $controller);
+        $this->assertStringContainsString('products->unit->abbreviation', $controller);
         // Cell markup must not trigger extra relation loads beyond what get_data already eager loads.
         // ProductIcon::resolve() reads category.name, so the category has to be eager loaded too.
-        $this->assertStringContainsString("Production::with(['products', 'products.category', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])", $controller);
+        $this->assertStringContainsString("Production::with(['products', 'products.category', 'products.unit', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])", $controller);
     }
 
     public function test_list_replaces_pagination_with_a_load_more_button(): void
