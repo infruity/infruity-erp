@@ -61,7 +61,7 @@
     @media (max-width:1279px) {
         #pos-table, #pos-table tbody { display:block; width:100% !important; }
         #pos-table thead { display:none; }
-        #pos-table tbody tr { display:grid; grid-template-columns:minmax(0,1fr) auto 36px; align-items:center; gap:4px 12px; padding:12px 16px; border-bottom:1px solid #f1f3f5; }
+        #pos-table tbody tr { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:4px 12px; padding:12px 16px; border-bottom:1px solid #f1f3f5; }
         #pos-table tbody td { display:block; width:auto !important; border:0 !important; padding:0 !important; }
         #pos-table tbody td:nth-child(2) { text-align:right; }
         #pos-table .pos-list-meta { display:none; }
@@ -72,8 +72,7 @@
         .pos-list-customer .pos-list-phone { font-size:11px; }
         .pos-list-sub { font-size:11px; }
         .pos-list-total { font-size:11px; }
-        #pos-table tbody tr { padding:13px 16px; }
-        #pos-table .dropstart > .btn { width:32px; height:32px; padding:0; border:0; background:transparent; color:#6b7280; }
+        #pos-table tbody tr { padding:14.5px 16px; }
         #kt_content:has(.pos-list-page) { padding-inline:0 !important; }
         .pos-list-page .erp-workspace { border:0; border-radius:0; }
         .pos-list-page .erp-workspace-heading { display:none; }
@@ -99,7 +98,6 @@
             <tr class="text-start gs-0">
                 <th class="text-start min-w-150px">Pelanggan</th>
                 <th class="text-end">Total &amp; Status</th>
-                <th class="text-end"><span class="visually-hidden">Aksi</span></th>
             </tr>
         </thead>
         <tbody class="fw-semibold text-gray-600"></tbody>
@@ -308,10 +306,6 @@
                 pageLength: POS_PAGE_STEP,
                 processing: true,
                 serverSide: true,
-                fixedColumns: {
-                    leftColumns: 0,
-                    rightColumns: 1
-                },
                 ordering: false, // The server always returns newest transactions first.
                 ajax: {
                     url: "{{ route('pos-data') }}",
@@ -338,10 +332,6 @@
                         name: 'date',
                         className: 'text-end'
                     },
-                    {
-                        data: 'action',
-                        name: 'action'
-                    },
                 ]
             });
 
@@ -357,13 +347,7 @@
                 dataTable.page.len(PosListUi.nextLength(info.end, POS_PAGE_STEP)).draw(false);
             };
 
-            // Fix dropdown z-index in fixed columns
-            $('body').on('show.bs.dropdown', '.dropstart', function(e) {
-                $(e.target).closest('td').css('z-index', '1050');
-            }).on('hide.bs.dropdown', '.dropstart', function(e) {
-                $(e.target).closest('td').css('z-index', '');
-            });
-            // A tap on the row opens the existing detail page; row actions keep their own behaviour.
+            // A tap on the row opens the existing detail page.
             $('#pos-table tbody').on('click', 'tr.is-openable', function(event) {
                 if ($(event.target).closest('a, button, .dropdown, .dropdown-menu').length) return;
                 window.location.href = this.dataset.href;

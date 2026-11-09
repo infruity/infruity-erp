@@ -86,4 +86,15 @@ final class PosListUiContractTest extends TestCase
             $this->assertStringContainsString($contract, $view);
         }
     }
+    public function test_rows_have_no_action_menu_like_the_reference(): void
+    {
+        $view = $this->listView();
+
+        // The reference list opens a row on tap and has no per-row action button.
+        foreach (["data: 'action'", 'dropstart', 'dtfc-fixed-right', 'fixedColumns', 'visually-hidden">Aksi', 'show.bs.dropdown'] as $removed) {
+            $this->assertStringNotContainsString($removed, $view, "Masih ada sisa menu aksi: {$removed}");
+        }
+        $this->assertSame(2, substr_count($view, '<th '), 'Header hanya Pelanggan dan Total & Status');
+        $this->assertStringContainsString('grid-template-columns:minmax(0,1fr) auto;', $view);
+    }
 }
