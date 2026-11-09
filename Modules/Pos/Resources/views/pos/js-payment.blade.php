@@ -94,10 +94,22 @@
                     if (this.paymentAttempt.pending) {
                         const pending = this.paymentAttempt.pending;
                         this.payments = pending.payments;
+                        this.split = this.payments.length > 1;
                         document.querySelector('[name="date"]').value = pending.date;
                         this.retryPending = true;
                     }
                     this.payments.forEach((p, i) => this.formatAmount(i));
+                },
+
+                split: false,
+                setSplit(on) {
+                    this.split = on;
+                    if (!on) {
+                        // Extra rows only exist while split is on; the first row is the whole payment.
+                        this.payments.splice(1);
+                    } else if (this.payments.length < 2) {
+                        this.addPayment();
+                    }
                 },
 
                 payments: [{

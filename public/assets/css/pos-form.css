@@ -184,3 +184,43 @@
 .pos-ref-add:disabled { background:#e5e7eb; color:#6b7280; cursor:not-allowed; }
 .pos-sheet--ref .select2-container--bootstrap5 .select2-selection { min-height:44px; border:1px solid #868e98; border-radius:12px; background-color:#f9fafb; font-size:14px; }
 .pos-sheet--ref .select2-container--bootstrap5 .select2-selection--single { display:flex; align-items:center; padding:0 12px; }
+
+/* Pembayaran (payment.blade.php), matched to the reference. */
+.pos-pay-alert { margin:0 16px; border-radius:12px; background:#fffbeb; padding:12px 14px; color:#92400e; font-size:12px; font-weight:600; }
+.pos-pay-customer { padding-bottom:14px; border-bottom:1px solid #f1f3f5; }
+.pos-pay-customer__name { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px; }
+.pos-pay-customer__name strong { color:#111827; font-size:16px; font-weight:800; }
+.pos-pay-customer__name span { color:#6b7280; font-size:12px; font-weight:500; }
+.pos-pay-customer__address { margin:6px 0 0; color:#374151; font-size:13px; line-height:1.5; }
+.pos-pay-label { display:block; margin:0 0 8px; color:#374151; font-size:12px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; }
+.pos-pay-customer + .pos-field { margin-top:14px; border-top:0; padding-top:0; }
+.pos-pay-readonly { display:flex; min-height:44px; align-items:center; gap:6px; border:1px solid #868e98; border-radius:12px; background:#f9fafb; padding:0 14px; color:#111827; font-size:14px; }
+.pos-pay-readonly strong { font-weight:700; }
+.pos-pay-readonly span { color:#6b7280; font-size:13px; }
+.pos-pay-head { margin-bottom:12px; }
+.pos-pay-head .pos-pay-label { margin:0; }
+.pos-pay-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; }
+.pos-form--reference .pos-pay-method, .pos-pay-extra .form-select { min-height:44px; border:1px solid #868e98; border-radius:12px; background-color:#f9fafb; font-size:14px; font-weight:600; }
+.pos-pay-amount { display:flex; min-height:44px; overflow:hidden; border:1px solid #868e98; border-radius:12px; background:#fff; }
+.pos-pay-amount:focus-within { border-color:#0b595b; box-shadow:0 0 0 2px rgba(11,89,91,.12); }
+.pos-pay-amount > span { display:flex; align-items:center; padding:0 12px; border-right:1px solid #e5e7eb; background:#f9fafb; color:#4b5563; font-size:13px; font-weight:600; }
+.pos-pay-amount input { min-width:0; flex:1; border:0; background:transparent; padding:0 12px; color:#111827; font-size:15px; font-weight:700; outline:0; }
+.pos-pay-split { display:flex; align-items:center; justify-content:space-between; margin:14px 0; color:#374151; font-size:14px; font-weight:600; }
+.pos-switch { position:relative; width:44px; height:26px; border:0; border-radius:999px; background:#d1d5db; transition:background .15s; }
+.pos-switch span { position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .15s; }
+.pos-switch.is-on { background:#0b595b; }
+.pos-switch.is-on span { transform:translateX(18px); }
+.pos-switch:disabled { opacity:.6; }
+.pos-pay-composition { padding:0; overflow:hidden; background:#fff; }
+.pos-pay-composition h3 { margin:0; border-bottom:1px solid #f1f3f5; padding:14px; }
+.pos-pay-extra { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) 32px; align-items:center; gap:8px; padding:12px 14px 0; }
+.pos-pay-add { margin:12px 14px 0; border:0; background:transparent; color:#0b595b; font-size:13px; font-weight:700; }
+.pos-pay-total { display:grid; grid-template-columns:1fr auto; align-items:end; gap:2px 12px; margin-top:12px; border-top:1px solid #f1f3f5; background:#f9fafb; padding:12px 14px; }
+.pos-pay-total > span { color:#6b7280; font-size:12px; font-weight:800; letter-spacing:.04em; }
+.pos-pay-total strong { grid-column:1; color:#111827; font-size:14px; font-weight:800; }
+.pos-pay-status { grid-column:2; grid-row:1 / span 2; margin:0; color:#047857; font-size:12px; font-weight:700; text-align:right; }
+.pos-pay-date { margin-top:14px; }
+.pos-pay-date .form-control { min-height:44px; border:1px solid #868e98; border-radius:12px; font-size:14px; }
+.pos-pay-voucher { margin-top:12px; }
+.pos-pay-previous { padding:0; }
+.pos-pay-previous .accordion-item { border:0; }

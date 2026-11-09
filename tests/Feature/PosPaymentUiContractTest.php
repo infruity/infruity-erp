@@ -53,9 +53,41 @@ final class PosPaymentUiContractTest extends TestCase
     {
         $view = $this->read('Modules/Pos/Resources/views/pos/payment.blade.php');
 
-        foreach (['Total penjualan', 'Dibayar', 'paymentStatus.status', "route('pos.printDraftPayment', \$data->id)", "route('pos.edit', \$data->id)", "route('pos.index')"] as $contract) {
+        foreach (['Total Belanja', 'TOTAL TERBAYAR', 'paymentStatus.status', "route('pos.printDraftPayment', \$data->id)", "route('pos.edit', \$data->id)", "route('pos.index')"] as $contract) {
             $this->assertStringContainsString($contract, $view, "Hilang: {$contract}");
         }
+    }
+
+    public function test_payment_page_follows_the_reference_cards_and_footer(): void
+    {
+        $view = $this->read('Modules/Pos/Resources/views/pos/payment.blade.php');
+
+        foreach ([
+            'class="pos-form pos-form--reference"', 'METODE PEMBAYARAN', 'Split Pembayaran', 'Komposisi Pembayaran',
+            'PILIH KURIR', 'pos-ref-footer', 'pos-ref-pay__btn', 'aria-label="Kembali"', 'aria-label="Cetak draf"',
+            'assets/css/pos-form.css',
+        ] as $contract) {
+            $this->assertStringContainsString($contract, $view, "Hilang: {$contract}");
+        }
+        // Address and courier are read from the saved transaction; choosing them writes, so they stay read-only here.
+        // Whole rupiah in the footer, like the list (toNumber() prints ",00").
+        $this->assertStringContainsString("number_format(floor(\$data->total - \$data->paid), 0, ',', '.')", $view);
+        $this->assertStringContainsString('$data->ongkir_address', $view);
+        $this->assertStringContainsString('$data->courier', $view);
+        $this->assertStringNotContainsString('name="courier_id"', $view);
+        // Every money-affecting control keeps the lock while sending or waiting for a retry.
+        $this->assertGreaterThanOrEqual(6, substr_count($view, ':disabled="loading || retryPending"'));
+        $this->assertStringContainsString('@click="submitPayment()"', $view);
+    }
+
+    public function test_split_toggle_only_adds_or_drops_extra_rows_and_never_changes_the_payload_shape(): void
+    {
+        $js = $this->read('Modules/Pos/Resources/views/pos/js-payment.blade.php');
+
+        $this->assertStringContainsString('split: false', $js);
+        $this->assertStringContainsString('setSplit(', $js);
+        $this->assertStringContainsString('this.payments.splice(1)', $js);
+        $this->assertStringContainsString('this.split = this.payments.length > 1', $js);
     }
 
     public function test_receipt_and_confirmation_pages_keep_print_and_share_actions(): void
