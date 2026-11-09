@@ -26,28 +26,30 @@ final class PosFormUiContractTest extends TestCase
         return $this->read('Modules/Pos/Resources/views/pos/segment/ringkasan.blade.php');
     }
 
-    public function test_form_is_a_transaction_card_plus_a_shopping_list_card(): void
+    public function test_form_is_a_reference_transaction_card_plus_a_shopping_list_card(): void
     {
         $form = $this->form();
 
-        $this->assertStringContainsString('Informasi Transaksi', $form);
         $this->assertStringContainsString('Daftar Belanja', $form);
-        $this->assertStringContainsString('class="pos-form"', $form);
+        $this->assertStringContainsString('class="pos-form pos-form--reference"', $form);
         $this->assertStringNotContainsString('erp-editor-summary', $form);
+        // The first card only asks for branch and customer, like the reference.
+        $this->assertStringNotContainsString('Informasi Transaksi', $form);
+        foreach (['ph-storefront', 'Cabang Transaksi', 'ph-user', 'Pelanggan', '+ Tambah'] as $contract) {
+            $this->assertStringContainsString($contract, $form, "Hilang: {$contract}");
+        }
+        $this->assertStringNotContainsString('<span>Baru</span>', $form, 'Tombol tambah pelanggan hanya ikon +');
     }
 
     public function test_existing_fields_and_item_entry_points_are_kept(): void
     {
         $form = $this->form();
+        $both = $form . $this->summary();
 
         foreach ([
             'id="branch_id" name="branch_id"',
-            'id="branch_process_id" name="branch_process_id"',
             'id="customer_id" name="customer_id"',
             'id="tier_id"',
-            'name="date"',
-            'name="invoice_number"',
-            'readonly',
             'addCustomer()',
             'openAddModal()',
             'openParcelModal()',
@@ -61,6 +63,11 @@ final class PosFormUiContractTest extends TestCase
             "@include('pos::pos.segment.modal-jus')",
         ] as $contract) {
             $this->assertStringContainsString($contract, $form, "Hilang: {$contract}");
+        }
+        // Process branch, date and invoice number are still submitted; they live in the summary sheet.
+        foreach (['id="branch_process_id" name="branch_process_id"', 'name="date"', 'name="invoice_number"', 'readonly'] as $contract) {
+            $this->assertStringContainsString($contract, $both, "Hilang: {$contract}");
+            $this->assertStringNotContainsString($contract, $form, "Harus pindah ke ringkasan: {$contract}");
         }
     }
 
@@ -76,9 +83,16 @@ final class PosFormUiContractTest extends TestCase
             'item.discount > 0',
             'item.total_input',
             'id="cart-items-container"',
+            'Belum ada produk didaftar belanja',
+            'Klik tombol',
+            'Diskon -',
+            'ph-trash',
+            'deleteFromCart()',
         ] as $contract) {
             $this->assertStringContainsString($contract, $cart, "Hilang: {$contract}");
         }
+        $this->assertStringNotContainsString('ph-shopping-cart', $cart, 'Empty state reference has no icon');
+        $this->assertStringNotContainsString('<button type="button" class="pos-cart-row', $cart, 'Row holds a delete button, so it cannot be a button itself');
         // Row total keeps the same rule as before (total_input wins, else price*qty-discount).
         $this->assertStringContainsString('(item.total_input || ((item.price * item.qty) - item.discount))', $cart);
     }
@@ -102,6 +116,15 @@ final class PosFormUiContractTest extends TestCase
             'formatRupiah(totalHargaKeseluruhan)',
             'pos-form-footer',
             'id="modal_tambah_alamat"',
+            'Total Belanja',
+            "route('pos.index')",
+            'ph-bookmark-simple',
+            'sweepOpen',
+            'Diskon Nota',
+            'Ongkos Kirim',
+            'Subtotal Item',
+            'Diskon Transaksi',
+            ':disabled="loading || cart.length === 0"',
         ] as $contract) {
             $this->assertStringContainsString($contract, $summary, "Hilang: {$contract}");
         }

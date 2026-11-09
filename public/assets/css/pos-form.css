@@ -52,3 +52,87 @@
 .pos-form-actions { display:flex; gap:10px; }
 .pos-form-actions .btn { min-height:44px; border-radius:12px; font-size:13px; font-weight:700; }
 .pos-form-actions .btn-primary { flex:1; }
+
+/* Kasir / POS form, matched to the reference (create2 only; the Pesanan "Proses" page keeps the rules above). */
+.pos-form--reference { gap:16px; min-height:calc(100dvh - 60px); padding-top:24px; }
+.pos-form--reference > .pos-card--list { flex:1; }
+#kt_content:has(.pos-form--reference) { padding-inline:0 !important; }
+.pos-form--reference > .pos-card { margin-inline:16px; }
+@media (min-width:768px) { .pos-form--reference { min-height:calc(100dvh - 120px); } .pos-form--reference > .pos-card { margin-inline:0; } #kt_content:has(.pos-form--reference) { padding-inline:revert !important; } }
+.pos-form--reference .pos-card { border:0; box-shadow:0 1px 3px rgba(15,23,42,.06), 0 6px 16px rgba(15,23,42,.06); }
+.pos-card--fields { padding:16px; }
+.pos-field + .pos-field { margin-top:14px; border-top:1px solid #f1f3f5; padding-top:14px; }
+.pos-field__label { display:flex; align-items:center; gap:6px; margin-bottom:8px; color:#1f2937; font-size:12px; font-weight:700; }
+.pos-field__label i { color:#0b595b; font-size:14px; }
+.pos-field__req { color:#e11d48; }
+.pos-form--reference .pos-field .form-select,
+.pos-form--reference .pos-field .select2-container--bootstrap5 .select2-selection { min-height:44px; border:1px solid #868e98; border-radius:12px; background-color:#f9fafb; color:#111827; font-size:14px; font-weight:500; }
+.pos-form--reference .pos-field .select2-container { width:100% !important; }
+.pos-form--reference .pos-field .select2-container--bootstrap5 .select2-selection--single { display:flex; align-items:center; padding:0 12px; }
+.pos-form--reference .pos-customer { display:flex; align-items:stretch; border:1px solid #868e98; border-radius:12px; background:#f9fafb; }
+.pos-form--reference .pos-customer .select2-container--bootstrap5 .select2-selection { border:0; background:transparent; }
+.pos-form--reference .pos-customer__add { width:48px; border:0; border-left:1px solid #d1d5db; border-radius:0 12px 12px 0; background:transparent; color:#0b595b; font-size:16px; padding:0; }
+.pos-form--reference .pos-customer__add:hover { background:#ecfdf5; }
+.pos-card--list .pos-card__head { padding:18px 20px 14px; }
+.pos-card--list .pos-card__head h2 { font-size:14px; font-weight:700; }
+.pos-form--reference .pos-add { min-height:0; border-radius:6px; padding:2px 0; background:transparent; color:#0b595b; font-size:12px; font-weight:700; }
+.pos-form--reference .pos-add:hover { background:transparent; text-decoration:underline; }
+.pos-card--list .pos-card__body--list { min-height:300px; padding:4px 20px 12px; }
+.pos-cart-empty { display:flex; min-height:280px; flex-direction:column; align-items:center; justify-content:center; gap:4px; text-align:center; }
+.pos-cart-empty p { margin:0; color:#111827; font-size:14px; font-weight:700; }
+.pos-cart-empty span { color:#6b7280; font-size:12px; }
+.pos-cart-empty strong { color:#0b595b; }
+.pos-form--reference .pos-cart-row { display:flex; width:100%; cursor:pointer; flex-direction:column; gap:2px; border-bottom:1px solid #f1f3f5; padding:14px 0; }
+.pos-form--reference .pos-cart-row:hover { background:transparent; }
+.pos-form--reference .pos-cart-row:focus-visible { outline:2px solid #0b595b; outline-offset:2px; }
+.pos-form--reference .pos-cart-name strong { font-size:14px; font-weight:700; }
+.pos-cart-side { display:flex; flex:none; align-items:center; gap:8px; }
+.pos-form--reference .pos-cart-total { color:#0b595b; font-size:12px; font-weight:800; }
+.pos-cart-remove { display:flex; width:28px; height:28px; align-items:center; justify-content:center; border:0; border-radius:8px; background:transparent; color:#6b7280; font-size:15px; }
+.pos-cart-remove:hover { background:#fff1f2; color:#be123c; }
+.pos-form--reference .pos-cart-bottom { justify-content:flex-start; color:#6b7280; font-size:12px; }
+.pos-cart-discount { color:#6b7280; font-size:12px; }
+.pos-cart-discount.has-discount { color:#b91c1c; font-weight:600; }
+
+.pos-ref-footer { margin-top:auto; padding:0 16px calc(14px + env(safe-area-inset-bottom)); border-top:1px solid #eef0f3; border-radius:0; background:#fff; box-shadow:0 -8px 24px rgba(15,23,42,.06); }
+.pos-ref-root { display:contents; }
+.pos-ref-backdrop { position:fixed; inset:0; z-index:14; background:rgba(15,23,42,.45); }
+.pos-ref-handle { display:flex; width:100%; justify-content:center; border:0; background:transparent; padding:10px 0 8px; }
+.pos-ref-handle span { width:40px; height:4px; border-radius:999px; background:#d1d5db; }
+.pos-ref-sheet { max-height:min(56dvh, 460px); overflow-y:auto; overscroll-behavior:contain; padding-bottom:12px; }
+.pos-ref-summary { border:1px solid #e5e7eb; border-radius:16px; background:#f9fafb; padding:14px; }
+.pos-ref-summary__inputs { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+.pos-ref-money { display:flex; flex-direction:column; gap:6px; margin:0; }
+.pos-ref-money__title { color:#1f2937; font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; }
+.pos-ref-money__field { display:flex; overflow:hidden; border:1px solid #868e98; border-radius:12px; background:#fff; }
+.pos-ref-money__field > span { display:flex; align-items:center; padding:0 12px; border-right:1px solid #e5e7eb; background:#f9fafb; color:#4b5563; font-size:13px; font-weight:600; }
+.pos-ref-money__field .form-control { min-height:42px; border:0; border-radius:0; background:#fff; font-size:14px; font-weight:700; text-align:right; box-shadow:none; }
+.pos-ref-hint { margin:8px 0 0; color:#6b7280; font-size:11px; }
+.pos-ref-lines { margin:12px 0 0; border-top:1px solid #e5e7eb; padding-top:12px; }
+.pos-ref-lines > div { display:flex; justify-content:space-between; gap:12px; padding:2px 0; color:#4b5563; font-size:12px; }
+.pos-ref-lines dt { font-weight:500; }
+.pos-ref-lines dd { margin:0; color:#111827; font-weight:700; font-variant-numeric:tabular-nums; }
+.pos-ref-more { margin-top:12px; }
+.pos-ref-group { border-top:1px solid #f1f3f5; }
+.pos-ref-group > summary { display:flex; cursor:pointer; align-items:center; justify-content:space-between; padding:12px 2px; color:#1f2937; font-size:13px; font-weight:700; list-style:none; }
+.pos-ref-group > summary::-webkit-details-marker { display:none; }
+.pos-ref-group > summary::after { content:"+"; color:#0b595b; font-size:16px; }
+.pos-ref-group[open] > summary::after { content:"−"; }
+.pos-ref-group__body { padding:0 2px 14px; }
+.pos-ref-group .form-label { color:#374151; font-size:12px; font-weight:700; }
+.pos-ref-group .form-control, .pos-ref-group .form-select { min-height:42px; border-radius:12px; font-size:13px; }
+.pos-ref-total { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f1f3f5; padding:6px 0 14px; }
+.pos-ref-total__label { color:#111827; font-size:15px; font-weight:700; }
+.pos-ref-total__label span { color:#6b7280; font-weight:600; }
+.pos-ref-total__amount { color:#0b595b; font-size:16px; font-weight:800; font-variant-numeric:tabular-nums; }
+.pos-ref-actions { display:flex; align-items:center; gap:10px; padding-top:14px; }
+.pos-ref-icon { display:flex; width:44px; height:44px; flex:none; align-items:center; justify-content:center; border:1px solid #d1d5db; border-radius:12px; background:#fff; color:#1f2937; font-size:18px; text-decoration:none; }
+.pos-ref-icon:hover { border-color:#34a684; color:#0b595b; }
+.pos-ref-icon:disabled { opacity:.6; }
+.pos-ref-pay { flex:1; }
+.pos-ref-pay__btn { width:100%; min-height:44px; border:0; border-radius:12px; background:#0b595b; color:#fff; font-size:14px; font-weight:700; }
+.pos-ref-pay__btn:hover:not(:disabled) { background:#08484a; }
+.pos-ref-pay__btn:disabled { background:#e5e7eb; color:#6b7280; cursor:not-allowed; }
+@media (min-width:768px) { .pos-ref-footer { border-radius:20px 20px 0 0; } }
+.pos-form--reference .pos-cart-row:nth-last-child(2) { border-bottom:0; }
+.pos-form--reference .pos-field .select2-selection__rendered { padding:0 !important; color:#111827 !important; }
