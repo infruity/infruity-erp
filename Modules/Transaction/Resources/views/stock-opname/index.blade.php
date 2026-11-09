@@ -1573,6 +1573,15 @@
             $('#kt_modal_add_customer_form').on('submit', function(e) {
                 e.preventDefault();
 
+                if (!$('#product_id').val()) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Pilih produk',
+                        text: 'Pilih produk yang akan di-opname terlebih dahulu.'
+                    });
+                    return;
+                }
+
                 var form = $(this);
                 var url = form.attr('action');
                 var submitBtn = $('#kt_modal_add_customer_submit');

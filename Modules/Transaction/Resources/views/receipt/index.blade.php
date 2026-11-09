@@ -95,7 +95,7 @@
             <div class="flex items-center gap-3">
                 <i class="ph-duotone ph-coins shrink-0 text-2xl text-emerald-600"></i>
                 <div>
-                    <div class="font-bold text-gray-800" x-text="'Rp ' + Number(selectedRecipe?.product?.hpp || 0).toLocaleString('id-ID') + (selectedRecipe?.product?.unit ? ' / ' + selectedRecipe.product.unit : '')"></div>
+                    <div class="font-bold text-gray-800" x-text="'Rp ' + Math.round(Number(selectedRecipe?.product?.hpp || 0)).toLocaleString('id-ID') + (selectedRecipe?.product?.unit ? ' / ' + selectedRecipe.product.unit : '')"></div>
                     <div class="text-[11px] font-medium text-gray-400">Harga Pokok Produksi</div>
                 </div>
             </div>
