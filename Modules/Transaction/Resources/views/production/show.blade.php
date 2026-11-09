@@ -56,7 +56,7 @@
                 <span class="production-detail__avatar" aria-hidden="true"><i class="ph ph-orange"></i></span>
                 <div>
                     <h1 id="production-detail-title">Detail Produksi #{{ $data->production_number }}</h1>
-                    <p>{{ dateindo($data->production_date) }} {{ ($data->created_at?->format('H:i') ?? '—') }} WIB</p>
+                    <p>{{ dateindo($data->created_at) }} {{ ($data->created_at?->format('H:i') ?? '—') }} WIB</p>
                 </div>
             </div>
             <div class="production-detail__status">
@@ -80,7 +80,7 @@
                 <div><dt>Nomor Produksi</dt><dd>#{{ $data->production_number }}</dd></div>
                 <div><dt>Produk yang Diproduksi</dt><dd>{{ $data->products->name ?? 'N/A' }}</dd></div>
                 <div><dt>Jumlah Produksi</dt><dd>{{ tonumber($data->quantity) }} {{ $data->products->unit->abbreviation ?? 'pcs' }}</dd></div>
-                <div><dt>Tanggal Produksi</dt><dd>{{ dateindo($data->production_date) }} {{ ($data->created_at?->format('H:i') ?? '—') }} WIB</dd></div>
+                <div><dt>Tanggal Produksi</dt><dd>{{ dateindo($data->created_at) }} {{ ($data->created_at?->format('H:i') ?? '—') }} WIB</dd></div>
                 <div><dt>PIC / Penanggung Jawab</dt><dd>{{ $data->staff->name ?? $data->creator->nm_user ?? 'Tidak ada' }}</dd></div>
                 @if($data->pos_id)
                     <div>

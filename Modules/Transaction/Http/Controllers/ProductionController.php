@@ -64,6 +64,13 @@ class ProductionController extends Controller
             $data['data']              = $draft;
             $data['production_detail'] = ProductionDetail::with('products')->where('production_id', $draft->id)->get();
             $data['production_number'] = $draft->production_number;
+            // Restore the draft's product too, so resuming shows the whole draft instead of only its ingredients.
+            if ($draft->product_id && $draft->products) {
+                $data['edit_product_id']   = $draft->product_id;
+                $data['edit_product_name'] = $draft->products->name;
+            }
+            $data['edit_sell_price']   = $draft->sell_price;
+            $data['edit_service_cost'] = $draft->service_cost;
         } else {
             // Jika tidak ada draft, siapkan data kosong
             $data['data']              = null;

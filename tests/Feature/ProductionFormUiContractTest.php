@@ -80,4 +80,21 @@ final class ProductionFormUiContractTest extends TestCase
     {
         $this->assertStringContainsString('max="9999"', file_get_contents(base_path('Modules/Transaction/Resources/views/production/create.blade.php')));
     }
+
+    public function test_resuming_a_temp_draft_preselects_its_product_and_says_so(): void
+    {
+        $controller = file_get_contents(base_path('Modules/Transaction/Http/Controllers/ProductionController.php'));
+        $create = substr($controller, strpos($controller, 'public function create()'), 1700);
+
+        // The draft's quantity, branch and ingredients were restored but not its product, so re-picking it
+        // reloaded the recipe over the draft. Restore the product too.
+        foreach (['edit_product_id', 'edit_product_name', 'edit_sell_price', 'edit_service_cost'] as $key) {
+            $this->assertStringContainsString("\$data['{$key}']", $create, $key);
+        }
+
+        $form = file_get_contents(base_path('Modules/Transaction/Resources/views/production/create.blade.php'));
+        $this->assertStringContainsString('production-resume-note', $form);
+        $this->assertStringContainsString('Melanjutkan draf sementara', $form);
+        $this->assertStringContainsString('production-resume-note', file_get_contents(public_path('assets/css/production-form-reference.css')));
+    }
 }

@@ -53,7 +53,7 @@ final class ProductionDetailUiContractTest extends TestCase
     {
         $show = $this->show();
 
-        foreach (['production_number', 'products->name', 'production_date', 'staff->name', 'description', 'creator->nm_user', 'created_at', 'updated_at', 'production_detail->count()'] as $field) {
+        foreach (['production_number', 'products->name', 'staff->name', 'description', 'creator->nm_user', 'created_at', 'updated_at', 'production_detail->count()'] as $field) {
             $this->assertStringContainsString($field, $show, "Field hilang: {$field}");
         }
     }
@@ -65,5 +65,14 @@ final class ProductionDetailUiContractTest extends TestCase
         // POS-linked productions are stored as "complete"; the list renders them as Selesai.
         $this->assertStringContainsString("in_array(\$data->status, ['posting', 'complete'])", $detail);
         $this->assertMatchesRegularExpression("/in_array\\(\\\$data->status, \\['posting', 'complete'\\]\\)\\)\\s*<span class=\"production-detail__badge is-done\">Selesai<\\/span>/", $detail);
+    }
+
+    public function test_detail_dates_use_the_recorded_time_like_the_list(): void
+    {
+        $detail = file_get_contents(base_path('Modules/Transaction/Resources/views/production/show.blade.php'));
+
+        // The list shows created_at; the header and meta row must not mix production_date with its clock time.
+        $this->assertStringNotContainsString('dateindo($data->production_date)', $detail);
+        $this->assertSame(2, substr_count($detail, 'dateindo($data->created_at)'));
     }
 }
