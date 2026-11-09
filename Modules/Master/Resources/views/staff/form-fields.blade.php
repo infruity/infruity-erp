@@ -46,7 +46,7 @@
                     </div>
                     <div class="max-h-48 overflow-y-auto overscroll-none bg-white">
                         @forelse ($positions as $position)
-                            <label x-show='!pickerSearch || @js(mb_strtolower($position->name)).includes(pickerSearch.trim().toLocaleLowerCase("id"))' class="flex cursor-pointer items-center gap-3 border-b border-gray-100 px-3.5 py-3 transition-colors last:border-b-0 hover:bg-gray-50">
+                            <label x-show="!pickerSearch || @js(mb_strtolower($position->name)).includes(pickerSearch.trim().toLocaleLowerCase('id'))" class="flex cursor-pointer items-center gap-3 border-b border-gray-100 px-3.5 py-3 transition-colors last:border-b-0 hover:bg-gray-50">
                                 <input type="radio" name="position" value="{{ $position->id }}" @checked($selectedPosition === (string) $position->id) required class="h-4 w-4 shrink-0 accent-emerald-600">
                                 <span class="flex-1 text-[13px] font-medium text-gray-700">{{ $position->name }}</span>
                             </label>
@@ -67,7 +67,7 @@
                     </div>
                     <div class="max-h-48 overflow-y-auto overscroll-none bg-white">
                         @forelse ($branches as $branch)
-                            <label x-show='!pickerSearch || @js(mb_strtolower($branch->name)).includes(pickerSearch.trim().toLocaleLowerCase("id"))' class="flex cursor-pointer items-center gap-3 border-b border-gray-100 px-3.5 py-3 transition-colors last:border-b-0 hover:bg-gray-50">
+                            <label x-show="!pickerSearch || @js(mb_strtolower($branch->name)).includes(pickerSearch.trim().toLocaleLowerCase('id'))" class="flex cursor-pointer items-center gap-3 border-b border-gray-100 px-3.5 py-3 transition-colors last:border-b-0 hover:bg-gray-50">
                                 <input type="radio" name="branch_id" value="{{ $branch->id }}" @checked($selectedBranch === (string) $branch->id) required class="h-4 w-4 shrink-0 accent-emerald-600">
                                 <span class="flex-1 text-[13px] font-medium text-gray-700">{{ $branch->name }}</span>
                             </label>
