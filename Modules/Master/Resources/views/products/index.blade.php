@@ -554,7 +554,7 @@
             form.querySelector('#product-branch-prices').classList.remove('hidden');
             const pricing = window.Alpine?.$data(form.querySelector('[data-branch-pricing]'));
             if (pricing) pricing.priceRules = [{ id: Date.now(), price: '', branches: ['all'] }];
-            form.querySelector('#product-image-preview').src = '';
+            form.querySelector('#product-image-preview').removeAttribute('src');
             form.querySelector('#product-image-preview').classList.add('hidden');
             form.querySelector('#product-image-placeholder').classList.remove('hidden');
             form.querySelectorAll('[data-picker-option], [data-product-type-option]').forEach(option => {

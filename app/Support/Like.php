@@ -1,0 +1,15 @@
+<?php
+
+namespace App\Support;
+
+final class Like
+{
+    /**
+     * Build a LIKE pattern that matches $term literally, so a typed % or _ is not a wildcard.
+     * MySQL's default escape character is the backslash.
+     */
+    public static function contains(string $term): string
+    {
+        return '%' . addcslashes($term, '\\%_') . '%';
+    }
+}

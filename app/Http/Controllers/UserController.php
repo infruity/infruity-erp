@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Like;
 use App\Http\Requests\UserRequest;
 use App\Models\Role;
 use App\Models\RoleUser;
@@ -57,7 +58,7 @@ class UserController extends Controller
         $data['users'] = User::withoutGlobalScope('is_aktif')->with('roleAssignments.role.roleMenu', 'branches.branch', 'permissionOverrides', 'staff')
             ->when($selectedRoleId, fn ($query) => $query->whereHas('roleAssignments', fn ($assignment) => $assignment->where('id_role', $selectedRoleId)))
             ->when($request->filled('q'), function ($query) use ($request) {
-                $search = '%' . $request->input('q') . '%';
+                $search = Like::contains($request->input('q'));
                 $query->where(function ($users) use ($search) {
                     $users->where('nm_user', 'like', $search)
                         ->orWhere('email', 'like', $search);

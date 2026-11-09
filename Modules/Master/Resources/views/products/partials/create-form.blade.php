@@ -35,7 +35,7 @@
     <div class="product-create-content">
         <div class="flex flex-col items-center gap-2">
             <label for="product-avatar" class="group flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-white text-gray-300 transition hover:border-emerald-300 hover:bg-emerald-50/30">
-                <img id="product-image-preview" src="{{ isset($data) && $data->image ? asset('storage/' . $data->image) : '' }}" alt="Pratinjau foto produk" class="{{ isset($data) && $data->image ? '' : 'hidden' }} h-full w-full object-cover">
+                <img id="product-image-preview" @if(isset($data) && $data->image) src="{{ asset('storage/' . $data->image) }}" @endif alt="Pratinjau foto produk" class="{{ isset($data) && $data->image ? '' : 'hidden' }} h-full w-full object-cover">
                 <i id="product-image-placeholder" class="ph ph-image text-2xl {{ isset($data) && $data->image ? 'hidden' : '' }}"></i>
             </label>
             <input id="product-avatar" type="file" name="avatar" accept="image/png,image/jpeg,image/jpg" class="sr-only">

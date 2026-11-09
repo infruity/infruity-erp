@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Master\Http\Controllers;
 
+use App\Support\Like;
 use Exception;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -1222,7 +1223,7 @@ class ProductController extends Controller
                 if ($search !== '') {
                     $terms = preg_split('/\\s+/', $search, -1, PREG_SPLIT_NO_EMPTY);
                     foreach ($terms as $term) {
-                        $pattern = '%' . $term . '%';
+                        $pattern = Like::contains($term);
                         $q->where(function ($sub) use ($pattern) {
                             $sub->where('products.name', 'LIKE', $pattern)
                                 ->orWhereHas('category', fn($category) => $category->where('name', 'LIKE', $pattern))

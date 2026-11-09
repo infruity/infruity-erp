@@ -2,6 +2,7 @@
 
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\Like;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -66,8 +67,8 @@ class ProductReceiptController extends Controller
         ])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($matches) use ($search) {
-                    $matches->where('code', 'like', '%' . $search . '%')
-                        ->orWhereHas('products', fn ($product) => $product->where('name', 'like', '%' . $search . '%'));
+                    $matches->where('code', 'like', Like::contains($search))
+                        ->orWhereHas('products', fn ($product) => $product->where('name', 'like', Like::contains($search)));
                 });
             })
             ->when($type !== 'all', fn ($query) => $query->whereHas('products', fn ($product) => $product->where('tipe', $type)))
