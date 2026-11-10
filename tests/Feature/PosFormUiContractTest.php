@@ -108,7 +108,7 @@ final class PosFormUiContractTest extends TestCase
             '.pos-form--reference .pos-field:has(#branch_id):focus-within .select2-selection',
             $css
         );
-        $this->assertStringContainsString('border:1px solid #10b981 !important;', $css);
+        $this->assertStringContainsString('border:1px solid #10b981 !important; box-shadow:0 0 0 1px #10b981 !important;', $css);
     }
 
     public function test_existing_fields_and_item_entry_points_are_kept(): void
