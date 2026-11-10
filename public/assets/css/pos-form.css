@@ -280,7 +280,7 @@ body:has(.pos-form--reference) .select2-dropdown:has(#select2-branch_id-results)
 body:has(.pos-form--reference) .select2-dropdown:has(#select2-customer_id-results) {
     overflow:hidden;
     border:1px solid #d1d5db !important;
-    border-radius:14px !important;
+    border-radius:12px !important;
     background:#fff;
     box-shadow:0 12px 28px rgba(15,23,42,.16);
 }
@@ -298,17 +298,17 @@ body:has(.pos-form--reference) #select2-customer_id-results .select2-results__op
 .pos-ref-branch-option > i.is-selected { visibility:visible; }
 body:has(.pos-form--reference) #select2-branch_id-results .select2-results__option--selected { color:#0b595b; }
 body:has(.pos-form--reference) #select2-customer_id-results .select2-results__option { min-height:48px; }
-.pos-ref-customer-group { display:flex; min-height:42px; align-items:center; justify-content:space-between; background:#eef6fc; padding:0 14px; color:#0b595b; }
+.pos-ref-customer-group { display:flex; min-height:42px; align-items:center; justify-content:space-between; background:#ecfdf5; padding:0 14px; color:#1f2937; }
 .pos-ref-customer-group strong { font-size:13px; font-weight:700; }
-.pos-ref-customer-group > span { color:#64748b; font-size:18px; line-height:1; }
+.pos-ref-customer-group > span { color:#98a2b3; font-size:18px; line-height:1; }
 .pos-ref-customer-option { display:flex; min-height:48px; align-items:center; justify-content:space-between; gap:12px; padding:6px 14px; }
 .pos-ref-customer-option strong { color:#1f2937; font-size:13px; font-weight:600; }
-.pos-ref-customer-option small { color:#6b7280; font-size:12px; white-space:nowrap; }
+.pos-ref-customer-option small { color:#98a2b3; font-size:12px; white-space:nowrap; }
 body:has(.pos-form--reference) .select2-search--dropdown:has(input[aria-controls="select2-customer_id-results"]) { position:relative; border-bottom:1px solid #f1f3f5; padding:10px 12px; }
 body:has(.pos-form--reference) .select2-search--dropdown:has(input[aria-controls="select2-customer_id-results"])::before { position:absolute; top:24px; left:25px; z-index:1; width:10px; height:10px; border:1.5px solid #94a3b8; border-radius:50%; content:""; pointer-events:none; }
 body:has(.pos-form--reference) .select2-search--dropdown:has(input[aria-controls="select2-customer_id-results"])::after { position:absolute; top:35px; left:36px; width:5px; height:1.5px; transform:rotate(45deg); background:#94a3b8; content:""; pointer-events:none; }
-body:has(.pos-form--reference) .select2-search--dropdown input[aria-controls="select2-customer_id-results"] { min-height:44px; border:1px solid #cbd5e1 !important; border-radius:12px !important; background:#f9fafb; padding-left:34px !important; font-size:13px; }
-.pos-form--reference .pos-customer:has(.select2-container--open) { border-color:#0b8f82; box-shadow:0 0 0 1px rgba(11,143,130,.2); }
+body:has(.pos-form--reference) .select2-search--dropdown input[aria-controls="select2-customer_id-results"] { min-height:44px; border:2px solid #10b981 !important; border-radius:12px !important; background:#fff; padding-left:34px !important; font-size:13px; }
+.pos-form--reference .pos-customer:has(.select2-container--open) { border-color:#10b981; box-shadow:0 0 0 1px #10b981; }
 
 /* Reference composition panel proportions for Jus and Parcel; keep existing payload controls. */
 .pos-sheet--ref .pos-ref-card--jus,

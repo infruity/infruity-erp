@@ -48,12 +48,18 @@
 
             const resizeDropdown = () => {
                 const dropdown = document.querySelector('.select2-dropdown:has(#select2-customer_id-results)');
-                const width = $(this).closest('.pos-customer').outerWidth();
-                if (dropdown && width) dropdown.style.width = `${width}px`;
+                const customerField = $(this).closest('.pos-customer')[0];
+                const width = customerField?.getBoundingClientRect().width;
+                const searchField = dropdown?.querySelector('.select2-search__field[aria-controls="select2-customer_id-results"]');
+
+                if (dropdown && width) dropdown.style.setProperty('width', `${Math.round(width)}px`, 'important');
+                if (searchField) searchField.placeholder = 'Cari pelanggan / nomor HP...';
             };
 
             resizeDropdown();
-            setTimeout(resizeDropdown, 0);
+            requestAnimationFrame(resizeDropdown);
+            requestAnimationFrame(() => requestAnimationFrame(resizeDropdown));
+            setTimeout(resizeDropdown, 50);
         });
     }
 
