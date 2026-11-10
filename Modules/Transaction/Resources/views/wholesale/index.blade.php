@@ -115,15 +115,13 @@
         </section>
 
         <template x-teleport="body">
-            <div x-show="filtersOpen && window.matchMedia('(max-width: 767px)').matches" x-cloak class="fixed inset-0 z-[100] flex flex-col justify-end md:hidden" role="dialog" aria-modal="true" aria-label="Filter pengadaan">
+            <div x-show="filtersOpen && window.matchMedia('(max-width: 767px)').matches" x-cloak class="fixed inset-0 z-[100] flex flex-col justify-end md:hidden" role="dialog" aria-modal="true" aria-label="Filter pengadaan" aria-labelledby="wholesale-filter-title">
                 <button type="button" class="absolute inset-0 bg-black/70" @click="filtersOpen = false" aria-label="Tutup filter"></button>
-                <section x-show="filtersOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full" class="relative flex max-h-[85vh] flex-col overflow-hidden rounded-t-3xl bg-white pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl">
+                <section x-show="filtersOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full" class="relative flex max-h-[85vh] flex-col overflow-hidden rounded-t-3xl bg-white pb-0 shadow-2xl">
                     <div class="flex shrink-0 justify-center pt-3 pb-1"><div class="h-1.5 w-14 rounded-full bg-gray-300"></div></div>
-                    <div class="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-4">
-                        <div><h2 class="text-lg font-bold text-gray-900">Filter Pengadaan</h2><p class="mt-0.5 text-[11px] text-gray-400">Saring cabang tujuan, status, dan periode tanggal.</p></div>
-                        <button type="button" @click="filtersOpen = false" class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600" aria-label="Tutup"><i class="ph-bold ph-x"></i></button>
-                    </div>
-                    <div class="min-h-0 flex-1 overflow-y-auto overscroll-none p-5">
+                    <x-erp.filter-sheet-frame title="Filter Pengadaan" title-id="wholesale-filter-title" subtitle="Saring cabang tujuan, status, dan periode tanggal." body-class="min-h-0 flex-1 overflow-y-auto overscroll-none">
+                        <x-slot:close><button type="button" @click="filtersOpen = false" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
+                        <x-slot:body>
                         <div class="space-y-4">
                             <div>
                                 <div class="mb-1.5 flex items-center justify-between">
@@ -189,11 +187,12 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="flex shrink-0 gap-3 border-t border-gray-100 px-5 pt-4">
-                        <button type="button" data-wholesale-filter-reset @click="mobileBranch = 'all'; mobileStatus = 'all'; mobileStartDate = ''; mobileEndDate = ''; branchSearch = ''; filterWholesaleBranches('')" class="h-11 flex-1 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Reset</button>
-                        <button type="button" @click="applyWholesaleMobileFilters(mobileStatus, mobileBranch, mobileStartDate, mobileEndDate); filtersOpen = false" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white">Terapkan</button>
-                    </div>
+                        </x-slot:body>
+                        <x-slot:footer>
+                            <button type="button" data-wholesale-filter-reset @click="mobileBranch = 'all'; mobileStatus = 'all'; mobileStartDate = ''; mobileEndDate = ''; branchSearch = ''; filterWholesaleBranches('')">Reset</button>
+                            <button type="button" class="erp-filter-sheet__primary" @click="applyWholesaleMobileFilters(mobileStatus, mobileBranch, mobileStartDate, mobileEndDate); filtersOpen = false">Terapkan</button>
+                        </x-slot:footer>
+                    </x-erp.filter-sheet-frame>
                 </section>
             </div>
         </template>

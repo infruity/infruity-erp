@@ -219,14 +219,10 @@
     <button type="button" class="delivery-order-filter-sheet__backdrop bg-black/70" data-delivery-order-filter-close tabindex="-1" aria-label="Tutup filter pengiriman"></button>
     <section class="delivery-order-filter-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="delivery-order-mobile-filter-title" tabindex="-1">
         <button type="button" class="delivery-order-filter-sheet__handle" data-delivery-order-filter-close aria-label="Tutup filter pengiriman"><span aria-hidden="true"></span></button>
-        <header class="delivery-order-filter-sheet__header">
-            <div>
-                <h2 id="delivery-order-mobile-filter-title" class="delivery-order-filter-sheet__title">Filter Pengiriman</h2>
-                <p class="delivery-order-filter-sheet__subtitle">Saring cabang, status, dan periode pengiriman</p>
-            </div>
-            <button type="button" class="delivery-order-filter-sheet__close" data-delivery-order-filter-close aria-label="Tutup filter pengiriman"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
-        </header>
-        <div class="delivery-order-filter-sheet__body">
+        <x-erp.filter-sheet-frame title="Filter Pengiriman" title-id="delivery-order-mobile-filter-title" subtitle="Saring cabang, status, dan periode pengiriman" header-class="delivery-order-filter-sheet__header" body-class="delivery-order-filter-sheet__body" footer-class="delivery-order-filter-sheet__footer">
+            <x-slot:close><button type="button" class="delivery-order-filter-sheet__close" data-delivery-order-filter-close aria-label="Tutup filter pengiriman"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
+            <x-slot:body>
+
             <section class="delivery-order-filter-sheet__section" aria-labelledby="delivery-order-mobile-branch-label">
                 <h3 id="delivery-order-mobile-branch-label" class="delivery-order-filter-sheet__label">Cabang Tujuan</h3>
                 <div class="delivery-order-filter-sheet__branch-card">
@@ -268,11 +264,12 @@
                 </div>
             </section>
             @include('pos::delivery-order.partials.reference-dates')
-        </div>
-        <footer class="delivery-order-filter-sheet__footer">
-            <button type="button" class="delivery-order-filter-sheet__button" data-delivery-order-filter-reset>Reset</button>
-            <button type="button" class="delivery-order-filter-sheet__button delivery-order-filter-sheet__button--primary" data-delivery-order-filter-apply>Terapkan</button>
-        </footer>
+            </x-slot:body>
+            <x-slot:footer>
+                <button type="button" class="delivery-order-filter-sheet__button" data-delivery-order-filter-reset>Reset</button>
+                <button type="button" class="delivery-order-filter-sheet__button delivery-order-filter-sheet__button--primary erp-filter-sheet__primary" data-delivery-order-filter-apply>Terapkan</button>
+            </x-slot:footer>
+        </x-erp.filter-sheet-frame>
     </section>
 </div>
 <div id="delivery-order-detail-modal" class="delivery-order-detail-modal" hidden aria-hidden="true">

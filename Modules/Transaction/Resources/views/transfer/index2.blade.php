@@ -69,8 +69,10 @@
             <div x-show="filterOpen" x-cloak class="transfer-overlay is-filter" @click.self="closeFilter()" @keydown.escape.window="if (filterOpen) closeFilter()" @keydown.tab="trapFocus($event)">
                 <section class="transfer-dialog transfer-filter-dialog" id="transfer-filter-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="transfer-filter-title" aria-describedby="transfer-filter-description">
                     <button type="button" class="transfer-filter-handle" @click="closeFilter()" aria-label="Tutup filter"></button>
-                    <div class="transfer-dialog-head"><div><h2 id="transfer-filter-title">Filter Pindah Stok</h2><p id="transfer-filter-description">Saring cabang dan status {{ $receiving ? 'penerimaan' : 'pengiriman' }}</p></div><button type="button" class="transfer-icon-button" @click="closeFilter()" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
-                    <div class="transfer-filter-body">
+                    <x-erp.filter-sheet-frame title="Filter Pindah Stok" title-id="transfer-filter-title" subtitle-id="transfer-filter-description" subtitle="Saring cabang dan status {{ $receiving ? 'penerimaan' : 'pengiriman' }}" header-class="transfer-dialog-head" body-class="transfer-filter-body" footer-class="transfer-filter-foot">
+                        <x-slot:close><button type="button" class="transfer-icon-button" @click="closeFilter()" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
+                        <x-slot:body>
+
                         <div class="transfer-filter-section">
                             <div class="transfer-filter-section-head">
                                 <span class="transfer-filter-label" id="transfer-filter-branch-label">{{ $receiving ? 'Cabang Penerima' : 'Cabang Pengirim' }}</span>
@@ -113,8 +115,12 @@
                             </div>
                         </div>
                         <p class="transfer-filter-error" x-show="pendingDateError" x-cloak x-text="pendingDateError" role="alert"></p>
-                    </div>
-                    <div class="transfer-filter-foot"><button type="button" @click="resetFilters()">Reset</button><button type="button" @click="applyFilter()" :disabled="!!pendingDateError">Terapkan</button></div>
+                        </x-slot:body>
+                        <x-slot:footer>
+                            <button type="button" @click="resetFilters()">Reset</button>
+                            <button type="button" class="erp-filter-sheet__primary" @click="applyFilter()" :disabled="!!pendingDateError">Terapkan</button>
+                        </x-slot:footer>
+                    </x-erp.filter-sheet-frame>
                 </section>
             </div>
         </template>

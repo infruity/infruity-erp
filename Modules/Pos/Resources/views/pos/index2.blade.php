@@ -116,13 +116,12 @@
 <template x-teleport="body">
     <div x-show="filtersOpen" x-cloak class="fixed inset-0 z-[100] flex flex-col justify-end p-0 sm:items-center sm:justify-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="pos-filter-title">
         <button type="button" class="absolute inset-0 bg-black/60" @click="close()" aria-label="Tutup filter"></button>
-        <section x-show="filtersOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-full sm:translate-y-4 sm:opacity-0" x-transition:enter-end="translate-y-0 sm:opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0 sm:opacity-100" x-transition:leave-end="translate-y-full sm:translate-y-4 sm:opacity-0" class="relative flex max-h-[88vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl sm:rounded-3xl sm:pb-0">
+        <section x-show="filtersOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-full sm:translate-y-4 sm:opacity-0" x-transition:enter-end="translate-y-0 sm:opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0 sm:opacity-100" x-transition:leave-end="translate-y-full sm:translate-y-4 sm:opacity-0" class="relative flex max-h-[88vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white pb-0 shadow-2xl sm:rounded-3xl sm:pb-0">
             <div class="flex shrink-0 justify-center pb-1 pt-3 sm:hidden"><div class="h-1.5 w-14 rounded-full bg-gray-300"></div></div>
-            <div class="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-4">
-                <div><h3 id="pos-filter-title" class="text-base font-bold text-gray-800 sm:text-lg">Filter Transaksi</h3><p class="mt-0.5 text-[11px] text-gray-500">Saring cabang, status, dan periode tanggal transaksi.</p></div>
-                <button type="button" @click="close()" class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
-            </div>
-            <div class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-none p-5">
+            <x-erp.filter-sheet-frame title="Filter Transaksi" title-id="pos-filter-title" title-tag="h3" subtitle="Saring cabang, status, dan periode tanggal transaksi." body-class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-none">
+                <x-slot:close><button type="button" @click="close()" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
+                <x-slot:body>
+
                 <div>
                     <div class="mb-1.5 flex items-center justify-between">
                         <label for="pos-branch-search" class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Cabang</label>
@@ -185,11 +184,12 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-gray-50/70 px-5 py-3.5">
-                <button type="button" @click="reset()" class="h-11 flex-1 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 active:scale-95">Reset Filter</button>
-                <button type="button" @click="apply()" :disabled="!!dateError" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white transition-colors hover:bg-[#08484a] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">Terapkan Filter</button>
-            </div>
+                </x-slot:body>
+                <x-slot:footer>
+                    <button type="button" @click="reset()">Reset Filter</button>
+                    <button type="button" class="erp-filter-sheet__primary" @click="apply()" :disabled="!!dateError">Terapkan Filter</button>
+                </x-slot:footer>
+            </x-erp.filter-sheet-frame>
         </section>
     </div>
 </template>

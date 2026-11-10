@@ -95,15 +95,10 @@
         <section class="relative z-10 flex h-auto max-h-[88vh] max-h-[88dvh] w-full max-w-[512px] flex-col overflow-hidden rounded-t-[24px] bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl sm:rounded-[24px] sm:pb-0" role="dialog" aria-modal="true" aria-labelledby="order-book-filter-title" tabindex="-1" x-ref="filterPanel" @click.stop @keydown.tab="trapFilterFocus($event)" x-show="filterOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full sm:translate-y-4 sm:scale-95 sm:opacity-0" x-transition:enter-end="translate-y-0 sm:scale-100 sm:opacity-100" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 sm:scale-100 sm:opacity-100" x-transition:leave-end="translate-y-full sm:translate-y-4 sm:scale-95 sm:opacity-0">
             <button type="button" class="flex w-full shrink-0 justify-center pt-[12px] pb-[4px] sm:hidden" aria-label="Tutup filter" @click="closeFilter()"><span class="h-[6px] w-[64px] rounded-full bg-gray-300"></span></button>
 
-            <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-[20px] py-[16px]">
-                <div>
-                    <h2 id="order-book-filter-title" class="text-[16px] leading-[24px] font-bold text-[#1f2937] sm:text-[18px] sm:leading-[28px]">Filter Pesanan</h2>
-                    <p class="mt-[2px] text-[11px] text-[#9ca3af]">Saring cabang, status, dan periode tanggal pesanan</p>
-                </div>
-                <button type="button" class="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-gray-100 text-[#6b7280] transition-colors hover:bg-gray-200" aria-label="Tutup filter" x-ref="filterCloseButton" @click="closeFilter()"><i class="ph-bold ph-x text-[14px] leading-[20px]" aria-hidden="true"></i></button>
-            </header>
+            <x-erp.filter-sheet-frame title="Filter Pesanan" title-id="order-book-filter-title" subtitle="Saring cabang, status, dan periode tanggal pesanan" body-class="min-h-0 flex-1 space-y-[16px] overflow-y-auto overscroll-none">
+                <x-slot:close><button type="button" aria-label="Tutup filter" x-ref="filterCloseButton" @click="closeFilter()"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
+                <x-slot:body>
 
-            <div class="min-h-0 flex-1 space-y-[16px] overflow-y-auto overscroll-none p-[20px]">
                 <div x-show="!calOpen" class="space-y-[16px]">
                     <section>
                         <div class="mb-[6px] flex items-center justify-between">
@@ -210,12 +205,12 @@
                     </div>
                     <button type="button" @click="closeCalendar()" class="mt-[16px] flex w-full cursor-pointer items-center justify-center gap-[8px] rounded-[12px] bg-gray-50 py-[10px] text-[12px] leading-[16px] font-bold text-[#374151] transition-colors hover:bg-gray-100"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i>Kembali</button>
                 </section>
-            </div>
-
-            <footer class="flex shrink-0 items-center gap-[12px] border-t border-gray-100 bg-gray-50/70 px-[20px] py-[14px]">
-                <button type="button" @click="resetFilters()" class="h-[44px] flex-1 cursor-pointer rounded-[12px] border-[1px] border-solid border-gray-200 bg-white text-[12px] leading-[16px] font-semibold text-[#4b5563] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors hover:bg-gray-50 active:scale-95 sm:text-[14px] sm:leading-[20px]">Reset Filter</button>
-                <button type="button" @click="applyFilters()" class="h-[44px] flex-1 cursor-pointer rounded-[12px] bg-[#0b595b] text-[12px] leading-[16px] font-semibold text-[#ffffff] shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors hover:bg-[#08484a] active:scale-95 sm:text-[14px] sm:leading-[20px]">Terapkan Filter</button>
-            </footer>
+                </x-slot:body>
+                <x-slot:footer>
+                    <button type="button" @click="resetFilters()">Reset Filter</button>
+                    <button type="button" class="erp-filter-sheet__primary" @click="applyFilters()">Terapkan Filter</button>
+                </x-slot:footer>
+            </x-erp.filter-sheet-frame>
         </section>
     </div>
     </template>

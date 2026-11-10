@@ -10,11 +10,94 @@ body.erp-ui {
     --erp-filter-action-size:12px;
     --erp-filter-action-height:44px;
     --erp-filter-footer-padding:14px;
-    --erp-filter-footer-gutter:16px;
+    --erp-filter-footer-gutter:20px;
 }
 
 @media (min-width:640px) {
     body.erp-ui { --erp-filter-action-size:14px; }
+}
+
+/* Shared sheet frame: page-specific roots keep their own state and sizing. */
+body.erp-ui .erp-filter-sheet__header {
+    display:flex;
+    flex:none;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 20px;
+    border-bottom:1px solid #f3f4f6;
+    background:#fff;
+}
+body.erp-ui .erp-filter-sheet__heading { min-width:0; }
+body.erp-ui .erp-filter-sheet__title {
+    margin:0;
+    color:#1f2937;
+    font-family:inherit;
+    font-size:var(--erp-filter-title-size);
+    font-weight:700;
+    line-height:24px;
+}
+body.erp-ui .erp-filter-sheet__subtitle {
+    margin:2px 0 0;
+    color:#9ca3af;
+    font-size:11px;
+    line-height:16px;
+}
+body.erp-ui .erp-filter-sheet__header > button {
+    display:grid;
+    width:32px;
+    height:32px;
+    flex:none;
+    place-items:center;
+    border:0;
+    border-radius:50%;
+    padding:0;
+    background:#f3f4f6;
+    color:#6b7280;
+    font-size:16px;
+    cursor:pointer;
+}
+body.erp-ui .erp-filter-sheet__body {
+    min-width:0;
+    min-height:0;
+    flex:1 1 auto;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    padding:20px;
+    font-size:var(--erp-filter-body-size);
+}
+body.erp-ui .erp-filter-sheet__footer {
+    display:grid;
+    flex:none;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    padding:14px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+    border-top:1px solid #f3f4f6;
+    background:#fff;
+}
+body.erp-ui .erp-filter-sheet__footer > button {
+    min-width:0;
+    height:44px;
+    min-height:44px;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    padding:0 12px;
+    background:#fff;
+    color:#4b5563;
+    font-family:inherit;
+    font-size:var(--erp-filter-action-size);
+    font-weight:600;
+    line-height:16px;
+    cursor:pointer;
+}
+body.erp-ui .erp-filter-sheet__footer > button:is(.is-primary,.erp-filter-sheet__primary) {
+    border-color:#0b595b;
+    background:#0b595b;
+    color:#fff;
+}
+@media (min-width:640px) {
+    body.erp-ui .erp-filter-sheet__footer { padding-bottom:14px; }
 }
 
 /* Sheet titles */
@@ -73,7 +156,7 @@ body.erp-ui :is(
     [role="dialog"][aria-label="Filter pengadaan"] > section > div:has(h2),
     .report-mobile-sheet--filter > .report-mobile-sheet__head
 ) {
-    padding:16px !important;
+    padding:14px 20px !important;
 }
 
 /* Subtitles */
@@ -176,7 +259,7 @@ body.erp-ui :is(
     [role="dialog"][aria-label="Filter pengadaan"] > section > div.overflow-y-auto,
     .report-mobile-sheet--filter > .report-mobile-sheet__body
 ) {
-    padding:16px !important;
+    padding:20px !important;
     min-width:0;
     font-size:var(--erp-filter-body-size);
 }

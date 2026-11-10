@@ -226,14 +226,10 @@
                 <!--begin::Card toolbar-->
                 <div class="card-toolbar flex-wrap gap-3 justify-content-end" id="stock-detail-filters" aria-labelledby="stock-detail-filter-title">
                     <div class="stock-detail-filter-handle" aria-hidden="true"></div>
-                    <div class="stock-detail-filter-head">
-                        <div>
-                            <h2 id="stock-detail-filter-title">Filter Riwayat Stok</h2>
-                            <p id="stock-detail-filter-subtitle">Sesuaikan parameter riwayat pergerakan barang</p>
-                        </div>
-                        <button id="stock-detail-filter-close" class="stock-detail-filter-close" type="button" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
-                    </div>
-                    <div class="stock-detail-filter-fields">
+                    <x-erp.filter-sheet-frame title="Filter Riwayat Stok" title-id="stock-detail-filter-title" subtitle-id="stock-detail-filter-subtitle" subtitle="Sesuaikan parameter riwayat pergerakan barang" header-class="stock-detail-filter-head" body-class="stock-detail-filter-fields" footer-class="stock-detail-filter-footer">
+                        <x-slot:close><button id="stock-detail-filter-close" class="stock-detail-filter-close" type="button" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
+                        <x-slot:body>
+
                         <div class="stock-detail-filter-field stock-detail-search-filter">
                             <label class="stock-detail-filter-label" for="search">Cari aktivitas</label>
                             <input id="search" type="search" class="form-control form-control-solid" placeholder="Cari aktivitas atau referensi..." autocomplete="off">
@@ -340,12 +336,13 @@
                             <button type="button" data-stock-date-preset="week">Minggu Ini</button>
                             <button type="button" data-stock-date-preset="month">Bulan Ini</button>
                         </div>
-                    </div>
-                    </div>
-                    <div class="stock-detail-filter-footer">
-                        <button id="stock-detail-filter-reset" type="button" class="stock-detail-filter-cancel">Reset Filter</button>
-                        <button id="stock-detail-filter-apply" type="button" class="stock-detail-filter-apply">Terapkan Filter</button>
-                    </div>
+                        </div>
+                        </x-slot:body>
+                        <x-slot:footer>
+                            <button id="stock-detail-filter-reset" type="button" class="stock-detail-filter-cancel">Reset Filter</button>
+                            <button id="stock-detail-filter-apply" type="button" class="stock-detail-filter-apply erp-filter-sheet__primary">Terapkan Filter</button>
+                        </x-slot:footer>
+                    </x-erp.filter-sheet-frame>
                 </div>
                 <!--end::Card toolbar-->
             </div>

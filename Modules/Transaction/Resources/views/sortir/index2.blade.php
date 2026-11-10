@@ -63,8 +63,10 @@
         <template x-teleport="body">
             <div x-show="filterOpen" x-cloak class="sortir-overlay is-filter" @click.self="closeFilter()" @keydown.escape.window="if (filterOpen) closeFilter()" @keydown.tab="trapFocus($event)">
                 <section class="sortir-dialog is-filter-dialog" id="sortir-filter-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="sortir-filter-title">
-                    <div class="sortir-dialog-head"><h2 id="sortir-filter-title">Filter Sortir Barang</h2><button type="button" class="sortir-icon-button" @click="closeFilter()" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
-                    <div class="sortir-filter-body">
+                    <x-erp.filter-sheet-frame title="Filter Sortir Barang" title-id="sortir-filter-title" header-class="sortir-dialog-head" body-class="sortir-filter-body" footer-class="sortir-filter-foot">
+                        <x-slot:close><button type="button" class="sortir-icon-button" @click="closeFilter()" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
+                        <x-slot:body>
+
                         <div class="sortir-filter-section">
                             <div class="sortir-filter-section-head">
                                 <span id="sortir-filter-branch-label" class="sortir-filter-label">Cabang Tujuan</span>
@@ -129,8 +131,12 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="sortir-filter-foot"><button type="button" @click="resetFilters()">Reset</button><button type="button" @click="applyFilter()" :disabled="!!pendingDateError">Terapkan Filter</button></div>
+                        </x-slot:body>
+                        <x-slot:footer>
+                            <button type="button" @click="resetFilters()">Reset</button>
+                            <button type="button" class="erp-filter-sheet__primary" @click="applyFilter()" :disabled="!!pendingDateError">Terapkan Filter</button>
+                        </x-slot:footer>
+                    </x-erp.filter-sheet-frame>
                 </section>
             </div>
         </template>
