@@ -113,7 +113,7 @@ body.erp-ui .production-create-reference #quantity:focus { outline:none !importa
 .production-create-reference .production-reference-picker__search { position:relative; display:flex; height:40px; flex:none; align-items:center; gap:10px; border-bottom:1px solid #f3f4f6; background:rgba(249,250,251,.5); padding:16px; box-sizing:content-box; }
 .production-create-reference .production-reference-picker__search > i { position:absolute; left:28px; z-index:1; color:#6b7280; font-size:14px; pointer-events:none; }
 .production-create-reference .production-reference-picker__search input { width:100%; height:40px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; padding:0 36px; color:#1f2937; font-size:12px; outline:none; }
-.production-create-reference .production-reference-picker__search input:focus { border-color:#10b981; box-shadow:0 0 0 1px #10b981; }
+.production-create-reference #reference-product-picker .production-reference-picker__search input:focus { outline:none; border-color:#10b981; box-shadow:none; }
 .production-create-reference .production-reference-picker__search input::-webkit-search-cancel-button { display:none; }
 .production-create-reference .production-reference-picker__search > button { position:absolute; right:26px; display:flex; width:24px; height:24px; align-items:center; justify-content:center; border:0; border-radius:50%; background:transparent; color:#6b7280; }
 .production-create-reference .production-reference-picker__list { min-height:0; flex:1; overflow-y:auto; overscroll-behavior:contain; padding:8px; }

@@ -104,6 +104,8 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString('production-product-picker-action', $create);
         $this->assertStringContainsString('openReferenceProductPicker()', $create);
         $this->assertStringContainsString('reference-product-picker', $create);
+        $this->assertStringContainsString('x-text="referenceProductEmoji(product.text)"', $create);
+        $this->assertStringNotContainsString('<i class="ph ph-bag" aria-hidden="true"></i>', $create);
         $this->assertStringNotContainsString('production-product-picker-field', $edit);
         $this->assertStringNotContainsString('reference-product-picker', $edit);
         $this->assertStringNotContainsString('data-placeholder="Pilih produk olahan..."', $edit);
@@ -115,6 +117,8 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString("url.searchParams.set('search', query)", $script);
 
         $css = file_get_contents(public_path('assets/css/production-form-reference.css'));
+        $this->assertStringContainsString('.production-create-reference #reference-product-picker .production-reference-picker__search input:focus { outline:none; border-color:#10b981; box-shadow:none; }', $css);
+        $this->assertStringNotContainsString('.production-create-reference .production-reference-picker__search input:focus { border-color:#10b981; box-shadow:0 0 0 1px #10b981; }', $css);
         foreach (['.production-product-picker-trigger',
             '.production-product-picker-field > .select2-container { display:none !important; }',
             '.production-reference-picker__panel', '.production-reference-picker__option'] as $rule) {

@@ -165,6 +165,16 @@ test('create inline quantity rejects partial numeric input on input and blur', (
   assert.equal(context.inlineQuantityDrafts[7], undefined);
 });
 
+test('create product picker uses the same name-based fruit emoji as product avatars', () => {
+  const referenceProductEmoji = extractMethod('referenceProductEmoji');
+  const context = {};
+
+  assert.equal(referenceProductEmoji.call(context, 'Jus Stroberi'), '🍓');
+  assert.equal(referenceProductEmoji.call(context, 'Jus Alpukat'), '🥑');
+  assert.equal(referenceProductEmoji.call(context, 'Jus Mangga Manalagi'), '🥭');
+  assert.equal(referenceProductEmoji.call(context, 'Produk Olahan'), '📦');
+});
+
 test('create product picker loads searchable options from the existing endpoint contract', async (t) => {
   const loadReferenceProducts = extractMethod('loadReferenceProducts');
   const originalDocument = global.document;

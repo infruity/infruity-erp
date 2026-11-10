@@ -160,6 +160,23 @@
                 }));
             },
 
+            referenceProductEmoji(name) {
+                const needle = String(name || '').toLowerCase();
+                if (needle.includes('jambu air') && (needle.includes('hijau') || needle.includes('madu'))) return '🍏';
+                if (needle.includes('jambu air') || needle.includes('jambu biji')) return '🍎';
+                if (needle.includes('mangga') && (needle.includes('manalagi') || needle.includes('gincu'))) return '🥭';
+                if (needle.includes('jeruk pamelo') || needle.includes('jeruk bali')) return '🍈';
+
+                const emojis = {
+                    stroberi: '🍓', strawberry: '🍓', mangga: '🥭', jambu: '🍎', pisang: '🍌',
+                    jeruk: '🍊', 'apel hijau': '🍏', apel: '🍎', anggur: '🍇', nanas: '🍍',
+                    semangka: '🍉', melon: '🍈', alpukat: '🥑', nangka: '🟡', durian: '🟢',
+                    sirsak: '🟢', kelapa: '🥥'
+                };
+                const keyword = Object.keys(emojis).find(key => needle.includes(key));
+                return keyword ? emojis[keyword] : '📦';
+            },
+
             async loadReferenceProducts() {
                 const root = document.querySelector('.production-create-reference');
                 const endpoint = root?.dataset.referenceProductUrl;

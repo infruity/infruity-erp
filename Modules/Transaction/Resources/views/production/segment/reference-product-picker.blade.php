@@ -28,7 +28,7 @@
                 <button type="button" role="option" :aria-selected="String(referenceProductId) === String(product.id)"
                     class="production-reference-picker__option" :class="String(referenceProductId) === String(product.id) ? 'is-selected' : ''"
                     @click="selectReferenceProduct(product)">
-                    <span class="production-reference-picker__option-icon"><i class="ph ph-bag" aria-hidden="true"></i></span>
+                    <span class="production-reference-picker__option-icon" aria-hidden="true" x-text="referenceProductEmoji(product.text)"></span>
                     <span class="production-reference-picker__option-text">
                         <strong x-text="product.text"></strong>
                         <small x-show="product.subtitle" x-text="product.subtitle"></small>
