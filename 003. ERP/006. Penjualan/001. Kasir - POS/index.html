@@ -579,6 +579,12 @@
         /* PRINT STYLING            */
         /* ======================== */
         @media print {
+            body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
             body * {
                 visibility: hidden !important;
             }
@@ -594,11 +600,29 @@
             #pos-printable-receipt * {
                 overflow: visible !important;
                 max-height: none !important;
+                height: auto !important;
             }
 
-            #printable-po,
             #pos-printable-receipt {
-                position: fixed !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: auto !important;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 2mm 3mm !important;
+                margin: 0 !important;
+                background: white !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: flex-start !important;
+                z-index: 99999 !important;
+            }
+
+            #printable-po {
+                position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
                 width: 100% !important;
@@ -618,8 +642,23 @@
                 display: none !important;
             }
 
+            body.printing-pos-receipt #pos-receipt-view-container {
+                display: flex !important;
+            }
+
+            body.printing-pos-receipt,
+            body.printing-pos-receipt main,
+            body.printing-pos-receipt > div,
+            body.printing-pos-receipt .overflow-hidden,
+            body.printing-pos-receipt .overflow-y-auto {
+                overflow: visible !important;
+                height: auto !important;
+                max-height: none !important;
+            }
+
             @page {
                 margin: 0;
+                size: auto;
             }
         }
 
@@ -1065,14 +1104,14 @@
                     </button>
                     <div class="hidden sm:block">
                         <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-none mb-1.5"
-                            x-text="currentView === 'receipt' ? 'Nota Transaksi' : (currentView === 'address' ? 'Pilih Alamat Pengiriman' : (currentView === 'payment' ? 'Pembayaran Transaksi' : (currentView === 'parcel' ? (isEditParcelMode ? 'Edit Parcel' : (selectedAddCategory === 'buah' ? 'Tambah Buah & Olahan' : (selectedAddCategory === 'jus' ? 'Tambah Jus' : 'Tambah Parcel'))) : (currentView === 'form' ? (isEditMode ? 'Edit Kasir - POS' : 'Tambah Kasir - POS') : 'Kasir - POS'))))">
+                            x-text="currentView === 'payment-success' ? 'Transaksi Berhasil' : (currentView === 'receipt' ? 'Nota Transaksi' : (currentView === 'address' ? 'Pilih Alamat Pengiriman' : (currentView === 'payment' ? 'Pembayaran Transaksi' : (currentView === 'parcel' ? (isEditParcelMode ? 'Edit Parcel' : (selectedAddCategory === 'buah' ? 'Tambah Buah & Olahan' : (selectedAddCategory === 'jus' ? 'Tambah Jus' : 'Tambah Parcel'))) : (currentView === 'form' ? (isEditMode ? 'Edit Kasir - POS' : 'Tambah Kasir - POS') : 'Kasir - POS')))))">
                             Kasir - POS</h1>
                         <div class="flex items-center gap-1 text-[0.65rem] text-gray-400 leading-none">
                             <span>Penjualan</span>
                             <i class="ph ph-caret-right text-[0.55rem]"></i>
                             <span
-                                :class="(currentView === 'form' || currentView === 'parcel' || currentView === 'payment' || currentView === 'address' || currentView === 'receipt') ? 'cursor-pointer hover:underline hover:text-emerald-700' : ''"
-                                @click="if (currentView === 'receipt') { closeReceiptView(); closePaymentView(); closeFormView(); } else if (currentView === 'address') { closeAddressPickerView(); closePaymentView(); closeFormView(); } else if (currentView === 'parcel') { closeParcelView(); closeFormView(); } else if (currentView === 'payment') { closePaymentView(); closeFormView(); } else if (currentView === 'form') { closeFormView(); }">Kasir
+                                :class="(currentView === 'form' || currentView === 'parcel' || currentView === 'payment' || currentView === 'address' || currentView === 'receipt' || currentView === 'payment-success') ? 'cursor-pointer hover:underline hover:text-emerald-700' : ''"
+                                @click="if (currentView === 'payment-success') { closePaymentSuccessToList(); } else if (currentView === 'receipt') { closeReceiptView(); closePaymentView(); closeFormView(); } else if (currentView === 'address') { closeAddressPickerView(); closePaymentView(); closeFormView(); } else if (currentView === 'parcel') { closeParcelView(); closeFormView(); } else if (currentView === 'payment') { closePaymentView(); closeFormView(); } else if (currentView === 'form') { closeFormView(); }">Kasir
                                 / POS</span>
                             <template
                                 x-if="currentView === 'form' || currentView === 'parcel' || currentView === 'payment' || currentView === 'address' || currentView === 'receipt'">
@@ -1108,6 +1147,12 @@
                                 <div class="inline-flex items-center gap-1">
                                     <i class="ph ph-caret-right text-[0.55rem]"></i>
                                     <span class="text-gray-600 font-semibold">Nota Transaksi</span>
+                                </div>
+                            </template>
+                            <template x-if="currentView === 'payment-success'">
+                                <div class="inline-flex items-center gap-1">
+                                    <i class="ph ph-caret-right text-[0.55rem]"></i>
+                                    <span class="text-gray-600 font-semibold">Transaksi Berhasil</span>
                                 </div>
                             </template>
                         </div>
@@ -1146,6 +1191,13 @@
                         class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 ml-3 rounded-xl border border-gray-200 bg-white hover:bg-emerald-50 text-xs font-semibold text-gray-700 hover:text-[#0b595b] transition shadow-2xs cursor-pointer">
                         <i class="ph-bold ph-arrow-left"></i>
                         <span>Kembali ke Pembayaran</span>
+                    </button>
+
+                    <!-- Tombol Kembali Desktop (Saat di Payment Success View) -->
+                    <button x-show="currentView === 'payment-success'" x-cloak @click="closePaymentSuccessToList()"
+                        class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 ml-3 rounded-xl border border-gray-200 bg-white hover:bg-emerald-50 text-xs font-semibold text-gray-700 hover:text-[#0b595b] transition shadow-2xs cursor-pointer">
+                        <i class="ph-bold ph-arrow-left"></i>
+                        <span>Daftar Transaksi</span>
                     </button>
 
                     <!-- Cabang Dropdown (Top Header - Hanya tampil di List View) -->
@@ -2350,7 +2402,7 @@
                     <!-- ========================================================================= -->
                     <!-- VIEW 6: NOTA TRANSAKSI RESMI (1 HALAMAN PENUH / SPA VIEW)                 -->
                     <!-- ========================================================================= -->
-                    <div x-show="currentView === 'receipt'" x-cloak class="flex-1 flex flex-col min-h-0 overflow-y-auto">
+                    <div id="pos-receipt-view-container" x-show="currentView === 'receipt'" x-cloak class="flex-1 flex flex-col min-h-0 overflow-y-auto">
 
                         <!-- Mobile Header: Frosted Glass Effect dengan Caret Teal & Judul "Nota Transaksi" (Identik dengan Halaman Bayar) -->
                         <div
@@ -2531,6 +2583,89 @@
                                 </div>
 
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- ========================================================================= -->
+                    <!-- VIEW 7: HALAMAN TRANSAKSI BERHASIL (OPSI 1 - FIT MOBILE & DESKTOP CARD)  -->
+                    <!-- ========================================================================= -->
+                    <div x-show="currentView === 'payment-success'" x-cloak
+                        class="flex-1 flex flex-col min-h-0 relative bg-[#e5e9f3] sm:bg-transparent no-print">
+                        <div class="flex-1 flex flex-col justify-center p-4 sm:p-6 min-h-0 overflow-y-auto scrollbar-hide">
+
+                            <!-- Card Body (Semua Konten & 4 Tombol Aksi Berada di DALAM CARD) -->
+                            <div class="bg-white rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 w-full max-w-md mx-auto flex-1 sm:flex-initial sm:min-h-[450px] flex flex-col justify-between min-h-0 animate-fade-in-up">
+
+                                <div>
+                                    <!-- Header: Judul & Waktu -->
+                                    <div class="text-center pt-2 pb-5 border-b border-gray-100/90">
+                                        <h2 class="text-2xl font-black text-slate-800 tracking-tight leading-tight">Transaksi Berhasil</h2>
+                                        <p class="text-xs text-slate-500 font-medium mt-1.5" x-text="completedTx.dateTime"></p>
+                                    </div>
+
+                                    <!-- 4 Baris Informasi Esensial (Persis Referensi) -->
+                                    <div class="space-y-4 py-6 px-1 text-sm sm:text-base tabular-nums">
+                                        <div class="flex items-center justify-between gap-4">
+                                            <span class="text-slate-600 font-normal shrink-0">Pembayaran</span>
+                                            <span class="font-bold text-slate-900 text-right truncate" x-text="completedTx.paymentMethod || 'Tunai'"></span>
+                                        </div>
+                                        <div class="flex items-center justify-between gap-4">
+                                            <span class="text-slate-600 font-normal">Total Tagihan</span>
+                                            <span class="font-bold text-slate-900" x-text="formatSuccessRupiah(completedTx.grandTotal)"></span>
+                                        </div>
+                                        <div class="flex items-center justify-between gap-4">
+                                            <span class="text-slate-600 font-normal">Diterima</span>
+                                            <span class="font-bold text-slate-900" x-text="formatSuccessRupiah(completedTx.receivedAmount)"></span>
+                                        </div>
+                                        <div class="flex items-center justify-between gap-4">
+                                            <span class="text-slate-600 font-normal">Kembalian</span>
+                                            <span class="font-bold text-slate-900" x-text="formatSuccessRupiah(completedTx.changeAmount)"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 4 Action Buttons DI DALAM CARD:
+                                     - Kembali ke Daftar Transaksi: HANYA ICON
+                                     - Cetak Nota: HANYA ICON
+                                     - Kirim Nota: HANYA ICON (Chat Bubble)
+                                     - Transaksi Baru: TEKS SAJA TANPA ICON
+                                -->
+                                <div class="flex items-center gap-2 pt-4 border-t border-gray-100">
+                                    <!-- 1. Daftar Transaksi (HANYA ICON - LIST) -->
+                                    <button type="button" @click="closePaymentSuccessToList()"
+                                        class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl border border-gray-200 bg-white hover:bg-slate-50 text-gray-700 flex items-center justify-center transition active:scale-95 shadow-2xs shrink-0 cursor-pointer"
+                                        title="Daftar Transaksi">
+                                        <i class="ph-bold ph-list-bullets text-lg sm:text-xl"></i>
+                                    </button>
+
+                                    <!-- 2. Cetak Nota (HANYA ICON - OPSI 2 SLIM OUTLINE) -->
+                                    <button type="button" @click="printReceipt()"
+                                        class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl border border-gray-200 bg-white hover:bg-slate-50 text-gray-700 flex items-center justify-center transition active:scale-95 shadow-2xs shrink-0 cursor-pointer"
+                                        title="Cetak Nota">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M6 9V3h12v6"/>
+                                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                                            <rect x="6" y="14" width="12" height="7" rx="1"/>
+                                        </svg>
+                                    </button>
+
+                                    <!-- 3. Kirim Nota (HANYA ICON - CHAT BUBBLE) -->
+                                    <button type="button" @click="sendReceiptWhatsApp()"
+                                        :disabled="isGeneratingReceipt"
+                                        class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl border border-gray-200 bg-white hover:bg-slate-50 text-gray-700 hover:text-gray-900 flex items-center justify-center transition active:scale-95 shadow-2xs shrink-0 cursor-pointer disabled:opacity-60 disabled:cursor-wait"
+                                        title="Kirim Nota ke Chat">
+                                        <i x-show="!isGeneratingReceipt" class="ph-bold ph-chats-circle text-lg sm:text-xl"></i>
+                                        <i x-show="isGeneratingReceipt" class="ph-bold ph-spinner animate-spin text-lg sm:text-xl text-emerald-600" x-cloak></i>
+                                    </button>
+
+                                    <!-- 4. Transaksi Baru (TEKS SAJA TANPA ICON) -->
+                                    <button type="button" @click="startNewTransactionFromSuccess()"
+                                        class="flex-1 h-11 sm:h-12 px-3 bg-[#0b595b] hover:bg-[#08484a] text-white rounded-2xl font-bold text-xs sm:text-sm shadow-[0_6px_16px_-2px_rgba(11,89,91,0.28)] active:scale-95 transition flex items-center justify-center whitespace-nowrap cursor-pointer">
+                                        <span>Transaksi Baru</span>
+                                    </button>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
@@ -5176,7 +5311,7 @@
                     x-transition:leave-end="opacity-0 scale-90 translate-y-3" @click.outside="confirmModalOpen = false"
                     class="relative z-10 bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-sm overflow-hidden p-6 text-center">
 
-                    <h4 class="text-base font-bold text-gray-900 mb-1.5">Selesaikan Transaksi?</h4>
+                    <h4 class="text-base font-bold text-gray-900 mb-1.5">Bayar Transaksi?</h4>
                     <p class="text-xs text-gray-500 leading-relaxed mb-4">
                         Transaksi ini akan disimpan dan diproses<br>di Kasir / POS. Lanjutkan?
                     </p>
@@ -5229,7 +5364,7 @@
                         </button>
                         <button type="button" @click="executeSubmitPesanan()"
                             class="flex-1 h-10 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs font-bold shadow-md shadow-[#0b595b]/20 active:scale-95 transition flex items-center justify-center cursor-pointer">
-                            Selesaikan Transaksi
+                            Bayar
                         </button>
                     </div>
                 </div>
@@ -5820,11 +5955,20 @@
                 activeMenu: 'penjualan',
                 selectedBranch: 'Semua Cabang',
 
-                // Tampilan SPA: 'list' | 'form' | 'parcel'
+                // Tampilan SPA: 'list' | 'form' | 'parcel' | 'payment' | 'address' | 'receipt' | 'payment-success'
                 currentView: 'list',
                 isEditMode: false,
                 editingOrder: null,
                 receiptPaymentStatus: 'Belum Lunas',
+                completedTx: {
+                    dateTime: '',
+                    paymentMethod: 'Tunai',
+                    grandTotal: 0,
+                    receivedAmount: 0,
+                    changeAmount: 0,
+                    invoiceNumber: '',
+                    paymentStatus: 'Sudah Lunas'
+                },
 
                 // State Halaman Penuh Tambah / Edit Item (Buah / Parcel / Jus)
                 isEditParcelMode: false,
@@ -7072,10 +7216,47 @@
                     }
                 },
 
+                resetPaymentState() {
+                    this.isSplitPayment = false;
+                    this.splitPayments = [];
+                    this.selectedPaymentMethod = 'Tunai';
+                    this.isCashCustom = false;
+                    this.customCashAmount = 0;
+                    this.customCashString = '';
+                    this.paymentMethodDropdownOpen = false;
+                    this.receiptPaymentStatus = 'Belum Lunas';
+                    this.completedTx = {
+                        dateTime: '',
+                        paymentMethod: 'Tunai',
+                        grandTotal: 0,
+                        receivedAmount: 0,
+                        changeAmount: 0,
+                        invoiceNumber: '',
+                        paymentStatus: 'Sudah Lunas'
+                    };
+                },
+
+                formatSuccessDateTime(dateObj = new Date()) {
+                    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                    const dayName = days[dateObj.getDay()];
+                    const d = String(dateObj.getDate()).padStart(2, '0');
+                    const m = months[dateObj.getMonth()];
+                    const y = dateObj.getFullYear();
+                    const hh = String(dateObj.getHours()).padStart(2, '0');
+                    const mm = String(dateObj.getMinutes()).padStart(2, '0');
+                    return `${dayName}, ${d} ${m} ${y} ${hh}:${mm}`;
+                },
+
+                formatSuccessRupiah(val) {
+                    return 'Rp' + Math.round(Number(val || 0)).toLocaleString('id-ID');
+                },
+
                 // Buka Form Tambah Baru
                 openCreateForm() {
                     this.isEditMode = false;
                     this.editingOrder = null;
+                    this.resetPaymentState();
                     this.form = {
                         targetBranch: '',
                         customerName: 'Pelanggan Umum',
@@ -7108,6 +7289,10 @@
                     if (!order) return;
                     this.isEditMode = true;
                     this.editingOrder = order;
+                    this.resetPaymentState();
+                    if (order.paymentMethod && this.paymentMethods.some(m => m.name === order.paymentMethod)) {
+                        this.selectedPaymentMethod = order.paymentMethod;
+                    }
 
                     this.initBranchDefault();
 
@@ -7204,6 +7389,7 @@
                     this.currentView = 'list';
                     this.isEditMode = false;
                     this.editingOrder = null;
+                    this.resetPaymentState();
                     this.form = {
                         targetBranch: '',
                         customerName: 'Pelanggan Umum',
@@ -7238,6 +7424,14 @@
                             window.history.replaceState({}, '', window.location.pathname);
                         } catch (e) { }
                     }
+                },
+
+                closePaymentSuccessToList() {
+                    this.closeFormView();
+                },
+
+                startNewTransactionFromSuccess() {
+                    this.openCreateForm();
                 },
 
                 navigateToAdd() {
@@ -10433,7 +10627,14 @@
                 },
 
                 printReceipt() {
-                    window.print();
+                    this.syncReceiptData();
+                    document.body.classList.add('printing-pos-receipt');
+                    const cleanup = () => document.body.classList.remove('printing-pos-receipt');
+                    window.addEventListener('afterprint', cleanup, { once: true });
+                    this.$nextTick(() => {
+                        window.print();
+                        setTimeout(cleanup, 1200);
+                    });
                 },
 
                 async generateReceiptImageBlob() {
@@ -10576,6 +10777,7 @@
                 },
 
                 async sendReceiptWhatsApp() {
+                    this.syncReceiptData();
                     let phone = this.form?.customerPhone || this.selectedCustomer?.phone || '';
                     phone = String(phone).replace(/\D/g, '');
                     if (phone.startsWith('0')) {
@@ -11198,6 +11400,17 @@
                 },
 
                 executeSubmitPesanan() {
+                    const today = new Date();
+                    const grandTotal = this.calculateGrandTotal();
+                    const receivedAmount = Math.max(0, Number(this.getCurrentTotalPaid() || 0));
+                    const settledPaid = grandTotal > 0 ? Math.min(grandTotal, receivedAmount) : 0;
+                    const changeAmount = Math.max(0, receivedAmount - grandTotal);
+                    const paymentMethodLabel = this.getReceiptPaymentMethod();
+                    const txStatus = settledPaid <= 0 ? 'Belum Bayar' : (settledPaid < grandTotal ? 'Kurang Bayar' : 'Lunas');
+                    const txPaymentStatus = txStatus === 'Lunas' ? 'Sudah Lunas' : (txStatus === 'Kurang Bayar' ? 'Bayar Sebagian' : 'Belum Lunas');
+                    const timeStr = String(today.getHours()).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0');
+                    let finalPoNumber = this.form.posNumber || '';
+
                     try {
                         let orders = loadOrMigratePosOrders(STORAGE_KEY);
                         if (!Array.isArray(orders)) orders = [];
@@ -11205,10 +11418,7 @@
                         const itemsSubtotal = this.getItemsSubtotal();
                         const discountAmount = this.getDiscountAmount();
                         const shippingFee = Number(this.form.shippingFee || 0);
-                        const grandTotal = this.calculateGrandTotal();
-                        const today = new Date();
                         const dateStr = today.toISOString().split('T')[0];
-                        const timeStr = String(today.getHours()).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0');
                         const customerName = this.getCustomerDisplayName();
                         const customerPhone = (this.form.customerPhone && this.form.customerPhone.trim()) ? this.form.customerPhone.trim() : (this.editingOrder?.customerPhone || '');
                         const hasParcel = (this.form.items || []).some(it => it.isParcel || it.category === 'parcel' || String(it.name || '').toLowerCase().includes('parcel') || String(it.name || '').toLowerCase().includes('hamper'));
@@ -11222,8 +11432,11 @@
                             if (poNumber && poNumber.startsWith('POS-DRAFT-')) {
                                 poNumber = 'POS-' + today.getFullYear() + '-' + poNumber.replace('POS-DRAFT-', '');
                             }
+                            finalPoNumber = poNumber;
                             const resolvedTotal = grandTotal || this.editingOrder.grandTotal || 0;
-                            const resolvedPaid = Number(this.editingOrder.paidAmount || 0);
+                            const resolvedPaid = resolvedTotal > 0 ? Math.min(resolvedTotal, receivedAmount) : 0;
+                            const resolvedStatus = resolvedPaid <= 0 ? 'Belum Bayar' : (resolvedPaid < resolvedTotal ? 'Kurang Bayar' : 'Lunas');
+                            const resolvedPaymentStatus = resolvedStatus === 'Lunas' ? 'Sudah Lunas' : (resolvedStatus === 'Kurang Bayar' ? 'Bayar Sebagian' : 'Belum Lunas');
                             const updatedOrder = normalizePosOrder({
                                 ...this.editingOrder,
                                 poNumber: poNumber,
@@ -11245,9 +11458,11 @@
                                 shippingFee: shippingFee,
                                 courierName: this.form.courierName || this.getSelectedCourier().name,
                                 courierType: this.form.courierType || this.getSelectedCourier().type,
+                                paymentMethod: paymentMethodLabel,
                                 grandTotal: resolvedTotal,
                                 paidAmount: resolvedPaid,
-                                status: this.editingOrder.status === 'Pending' ? 'Belum Bayar' : this.editingOrder.status,
+                                status: resolvedStatus,
+                                paymentStatus: resolvedPaymentStatus,
                                 editedAt: new Date().toISOString(),
                                 editedBy: this.currentUser?.name || 'Achmad Noorman Setiawan'
                             });
@@ -11259,6 +11474,7 @@
                         } else {
                             const num = Math.floor(1000 + Math.random() * 9000);
                             const generatedNo = 'POS-' + today.getFullYear() + '-' + num;
+                            finalPoNumber = generatedNo;
                             const newOrder = {
                                 id: 'pos-' + Date.now(),
                                 poNumber: generatedNo,
@@ -11284,10 +11500,11 @@
                                 shippingFee: shippingFee,
                                 courierName: this.form.courierName || this.getSelectedCourier().name,
                                 courierType: this.form.courierType || this.getSelectedCourier().type,
+                                paymentMethod: paymentMethodLabel,
                                 grandTotal: grandTotal,
-                                paidAmount: 0,
-                                status: 'Belum Bayar',
-                                paymentStatus: 'Belum Lunas'
+                                paidAmount: settledPaid,
+                                status: txStatus,
+                                paymentStatus: txPaymentStatus
                             };
                             orders.unshift(newOrder);
                         }
@@ -11336,8 +11553,28 @@
                         console.error('Gagal menyimpan transaksi:', err);
                     }
 
+                    this.form.posNumber = finalPoNumber || this.form.posNumber;
+                    this.form.orderTime = timeStr;
+                    this.receiptPaymentStatus = txPaymentStatus;
+                    this.completedTx = {
+                        dateTime: this.formatSuccessDateTime(today),
+                        paymentMethod: paymentMethodLabel,
+                        grandTotal: grandTotal,
+                        receivedAmount: receivedAmount,
+                        changeAmount: changeAmount,
+                        invoiceNumber: finalPoNumber,
+                        paymentStatus: txPaymentStatus
+                    };
+                    this.syncReceiptData();
+                    try {
+                        localStorage.removeItem(EDIT_STORAGE_KEY);
+                        sessionStorage.removeItem(EDIT_STORAGE_KEY);
+                    } catch (e) { }
+
                     this.confirmModalOpen = false;
-                    this.closeFormView();
+                    this.sweepOpen = false;
+                    this.currentView = 'payment-success';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
 
                 // Detail Modal & Tracking
