@@ -83,6 +83,8 @@ final class ProductionListUiContractTest extends TestCase
         $this->assertStringContainsString('#production-table_wrapper :is(.dataTables_paginate, .dataTables_length) { display:none !important; }', $view);
         // The stylesheet used to force the pagination visible with a higher-specificity !important.
         $this->assertStringNotContainsString('#production-table_wrapper .dataTables_paginate { display:block!important; }', $listCss);
+        // On narrow screens those controls are hidden; collapse their otherwise empty DataTables row too.
+        $this->assertMatchesRegularExpression('/@media\\s*\\(max-width:\\s*1279px\\)\\s*\\{[^}]*\\.production-list-page #production-table_wrapper > \\.row:nth-of-type\\(2\\)\\s*\\{\\s*display:\\s*none\\s*!important;/s', $listCss);
         // page.len() only sets the length in DataTables 1.13, so the draw call is required.
         $this->assertStringContainsString('dataTable.page.len(Math.max(dataTable.page.len(), 50) + 50).draw()', $view);
         // Clicking reveals the next batch; the button hides once everything is already shown.

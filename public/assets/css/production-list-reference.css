@@ -1,6 +1,9 @@
 /* Production list only; retain legacy desktop columns and endpoint actions. */
 .production-list-page .production-mobile-search,.production-list-page .production-reference-time { display:none; }
 .production-list-page #production-table_wrapper.production-single-page .dataTables_paginate { display:none!important; }
+@media(max-width:1279px) {
+ .production-list-page #production-table_wrapper > .row:nth-of-type(2) { display:none!important; }
+}
 @media(max-width:767px) {
  #kt_content:has(.production-list-page) { padding-inline:0!important; }
  .production-list-page { width:100%; min-width:0; }
