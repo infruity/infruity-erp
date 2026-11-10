@@ -51,7 +51,7 @@
                     </label>
                     <label class="pos-ref-cell">
                         <span class="pos-ref-cell__label">TOTAL HARGA</span>
-                        <span class="pos-ref-cell__field"><span>Rp</span><input type="text" inputmode="numeric" x-model="addProduct.formattedAddTotalInput" @input="updateQtyFromAddTotal"></span>
+                        <span class="pos-ref-cell__field"><span>Rp</span><input type="text" inputmode="numeric" x-model="addProduct.formattedAddTotalInput" @input="updateQtyFromAddTotal" placeholder="0"></span>
                     </label>
                 </div>
               </section>

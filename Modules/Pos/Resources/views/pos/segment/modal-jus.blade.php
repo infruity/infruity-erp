@@ -16,9 +16,12 @@
                     <select id="select_jus" class="form-select"></select>
                 </div>
 
-                <section class="pos-ref-card" aria-labelledby="pos-jus-composition">
+                <section class="pos-ref-card pos-ref-card--jus" aria-labelledby="pos-jus-composition">
                     <h3 id="pos-jus-composition">Komposisi Produk</h3>
-                    <p class="pos-ref-card__empty" x-show="!addProduct.id">Pilih Produk Jus di Atas</p>
+                    <p class="pos-ref-card__empty" x-show="!addProduct.id">
+                        Pilih Produk Jus di Atas
+                        <span class="pos-ref-card__hint">Takaran bahan akan tampil setelah produk dipilih.</span>
+                    </p>
                     <div id="receiptContainer"></div>
                 </section>
 
@@ -37,7 +40,7 @@
                     </label>
                     <label class="pos-ref-cell">
                         <span class="pos-ref-cell__label">TOTAL HARGA</span>
-                        <span class="pos-ref-cell__field"><span>Rp</span><input type="text" inputmode="numeric" x-model="addProduct.formattedAddTotalInput" @input="updateQtyFromAddTotal"></span>
+                        <span class="pos-ref-cell__field"><span>Rp</span><input type="text" inputmode="numeric" x-model="addProduct.formattedAddTotalInput" @input="updateQtyFromAddTotal" placeholder="0"></span>
                     </label>
                 </div>
               </section>

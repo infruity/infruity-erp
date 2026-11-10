@@ -14,17 +14,21 @@
                 <button type="button" class="btn-close" @click="closeParcelModal()"></button>
             </div>
             @endif
-            <div class="erp-sheet-body">
+            <div class="erp-sheet-body {{ ! empty($reference) ? 'pos-ref-body' : '' }}">
+                @if (! empty($reference))
+                    <section class="pos-ref-panel">
+                        <header class="pos-ref-panel__head"><h3>Tambah Parcel</h3><p>Lengkapi detail parcel dan pilih komposisinya</p></header>
+                @endif
                 <!-- Select Produk -->
                 <div class="row">
-                    <div class="col-3 mb-3">
+                    <div class="{{ ! empty($reference) ? 'col-6' : 'col-3' }} mb-3">
                         <label class="form-label">Qty</label>
                         <input type="number" class="form-control" id="parcel_qty" name="parcel_qty" placeholder="1"
                             min="1" value="1">
                     </div>
 
                     <!-- Harga -->
-                    <div class="col-9 mb-3">
+                    <div class="{{ ! empty($reference) ? 'col-6' : 'col-9' }} mb-3">
                         <label class="form-label">Budget</label>
                         <input type="text" class="form-control format-number" id="parcel_budget" name="parcel_budget"
                             placeholder="Masukkan budget">
@@ -41,37 +45,57 @@
                             readonly placeholder="Rp. 0">
                     </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Biaya Jasa</label>
-                    <input type="text" class="form-control format-number" id="parcel_jasa" name="parcel_jasa"
-                        inputmode="numeric" @input="updateTotal" placeholder="Masukkan Biaya jasa">
-                </div>
-                <div class="pos-sheet-section">Isi Parcel</div>
+                @if (empty($reference))
+                    <div class="mb-3">
+                        <label class="form-label">Biaya Jasa</label>
+                        <input type="text" class="form-control format-number" id="parcel_jasa" name="parcel_jasa"
+                            inputmode="numeric" @input="updateTotal" placeholder="Masukkan Biaya jasa">
+                    </div>
+                @endif
+                @if (empty($reference))
+                    <div class="pos-sheet-section">Isi Parcel</div>
+                @endif
                 <div>
-                    <template x-for="(item, index) in parcels" :key="index">
-                        <div class="pos-sheet-row">
-                            <div class="row">
-                                <div class="col-9 mb-3">
-                                    <label class="form-label">Produk</label>
-                                    <select class="form-select parcel-select" :data-index="index" x-model="item.product" style="width: 100%">
-                                        <option :value="item.product" x-text="item.displayName || formatParcelProductName(item)"></option>
-                                    </select>
-                                </div>
-                                <div class="col-3 mb-3">
-                                    <label class="form-label">Qty</label>
-                                    <input type="number" class="form-control" min="1" x-model.number="item.qty"
-                                        @input="updateQty(index)">
-                                </div>
+                    <div class="{{ ! empty($reference) ? 'pos-ref-parcel-composition' : '' }}">
+                        @if (! empty($reference))
+                            <h3>Komposisi Produk</h3>
+                            <div class="pos-ref-parcel-composition__empty" x-show="parcels.length === 0">
+                                <strong>Tambahkan produk parcel untuk mulai mengisi komposisi</strong>
+                                <span>Produk yang dipilih akan tampil di sini.</span>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Harga Jual (Rp)</label>
-                                <input type="text" class="form-control" x-model="item.priceFormatted"
-                                    @input="updatePrice(index)" inputmode="numeric">
+                        @endif
+                        <template x-for="(item, index) in parcels" :key="index">
+                            <div class="pos-sheet-row">
+                                <div class="row">
+                                    <div class="col-9 mb-3">
+                                        <label class="form-label">Produk</label>
+                                        <select class="form-select parcel-select" :data-index="index" x-model="item.product" style="width: 100%">
+                                            <option :value="item.product" x-text="item.displayName || formatParcelProductName(item)"></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-3 mb-3">
+                                        <label class="form-label">Qty</label>
+                                        <input type="number" class="form-control" min="1" x-model.number="item.qty"
+                                            @input="updateQty(index)">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Harga Jual (Rp)</label>
+                                    <input type="text" class="form-control" x-model="item.priceFormatted"
+                                        @input="updatePrice(index)" inputmode="numeric">
+                                </div>
+                                <button type="button" class="btn btn-danger btn-sm"
+                                    @click="removeParcel(index)">Hapus</button>
                             </div>
-                            <button type="button" class="btn btn-danger btn-sm"
-                                @click="removeParcel(index)">Hapus</button>
+                        </template>
+                    </div>
+                    @if (! empty($reference))
+                        <div class="mb-3">
+                            <label class="form-label">Biaya Jasa</label>
+                            <input type="text" class="form-control format-number" id="parcel_jasa" name="parcel_jasa"
+                                inputmode="numeric" @input="updateTotal" placeholder="Masukkan Biaya jasa">
                         </div>
-                    </template>
+                    @endif
 
                     <button type="button" class="btn btn-light-primary mt-2" @click="addParcel()"><i class="ph-bold ph-plus me-1" aria-hidden="true"></i>Tambah Produk</button>
 
@@ -82,6 +106,9 @@
                         </div>
                     </template>
                 </div>
+                @if (! empty($reference))
+                    </section>
+                @endif
             </div>
             @if (! empty($reference))
             <div class="erp-sheet-footer pos-ref-actions-bar">

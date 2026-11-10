@@ -130,4 +130,44 @@ final class PosSheetsUiContractTest extends TestCase
             $this->assertStringContainsString($contract, $js, "Hilang: {$contract}");
         }
     }
+
+    public function test_reference_pos_select2_dropdowns_match_the_mobile_reference(): void
+    {
+        $header = file_get_contents(base_path('Modules/Pos/Resources/views/pos/js/js-header.blade.php'));
+        $css = file_get_contents(base_path('public/assets/css/pos-form.css'));
+
+        foreach (['minimumResultsForSearch', 'pos-form--reference', 'pos-ref-customer-option', 'pos-ref-customer-group', 'select2:open', 'setTimeout'] as $contract) {
+            $this->assertStringContainsString($contract, $header, "Dropdown reference belum: {$contract}");
+        }
+        foreach (['#select2-branch_id-results', '#select2-customer_id-results', '.select2-dropdown:has(#select2-branch_id-results) .select2-search--dropdown', '.pos-ref-customer-group', '.pos-ref-customer-option'] as $contract) {
+            $this->assertStringContainsString($contract, $css, "Gaya dropdown belum: {$contract}");
+        }
+        // The existing controls still own the submitted values; this is only a visual adapter.
+        $form = file_get_contents(base_path('Modules/Pos/Resources/views/pos/create2.blade.php'));
+        $this->assertStringContainsString('id="branch_id" name="branch_id"', $form);
+        $this->assertStringContainsString('id="customer_id" name="customer_id"', $form);
+    }
+
+    public function test_jus_and_parcel_reference_composition_panels_have_an_empty_state(): void
+    {
+        $jus = $this->segment('modal-jus');
+        $parcel = $this->segment('modal-parcel');
+        $fruit = $this->segment('modal-product');
+        $css = file_get_contents(base_path('public/assets/css/pos-form.css'));
+
+        $this->assertStringContainsString('pos-ref-card--jus', $jus);
+        $this->assertStringContainsString('pos-ref-card__hint', $jus);
+        $this->assertStringContainsString('placeholder="0"', $jus);
+        $this->assertStringContainsString('x-model="addProduct.formattedAddTotalInput" @input="updateQtyFromAddTotal" placeholder="0"', $fruit);
+        $this->assertStringContainsString('class="erp-sheet-body {{ ! empty($reference) ? \'pos-ref-body\' : \'\' }}"', $parcel);
+        $this->assertStringContainsString('Tambah Parcel', $parcel);
+        $this->assertStringContainsString('pos-ref-parcel-composition', $parcel);
+        $this->assertStringContainsString('Tambahkan produk parcel untuk mulai mengisi komposisi', $parcel);
+        $this->assertStringContainsString('id="parcel_qty" name="parcel_qty"', $parcel);
+        $this->assertStringContainsString('id="select_kemasan"', $parcel);
+        $this->assertStringContainsString('.pos-ref-card--jus .pos-ref-card__empty { display:flex; flex:1; flex-direction:column;', $css);
+        $this->assertStringContainsString('body:has(.modal.show .pos-sheet--ref) .modal.show .pos-sheet--ref { top:60px !important; bottom:0; height:auto !important; }', $css);
+        $this->assertStringContainsString('body:has(.modal.show .pos-sheet--ref) .modal-backdrop { top:60px; bottom:0; height:auto; }', $css);
+        $this->assertStringContainsString('.pos-ref-parcel-composition', $css);
+    }
 }

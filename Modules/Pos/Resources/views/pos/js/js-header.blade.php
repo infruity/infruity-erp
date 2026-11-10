@@ -42,6 +42,19 @@
             templateResult: formatCustomerOption, // render dropdown list
             templateSelection: formatCustomerSelection // render selected item
         });
+
+        $('#customer_id').on('select2:open', function() {
+            if (!$(this).closest('.pos-form--reference').length) return;
+
+            const resizeDropdown = () => {
+                const dropdown = document.querySelector('.select2-dropdown:has(#select2-customer_id-results)');
+                const width = $(this).closest('.pos-customer').outerWidth();
+                if (dropdown && width) dropdown.style.width = `${width}px`;
+            };
+
+            resizeDropdown();
+            setTimeout(resizeDropdown, 0);
+        });
     }
 
     $('#customer_id').on('select2:select', function(e) {
@@ -53,12 +66,38 @@
         $('#address_id').append(newOption).trigger('change');
     });
 
+    function formatBranchOption(branch) {
+        if (!branch.id || !$('#branch_id').closest('.pos-form--reference').length) return branch.text;
+
+        const $row = $('<span class="pos-ref-branch-option"><span></span><i aria-hidden="true"></i></span>');
+        $row.find('span').text(branch.text || '');
+        if (String($('#branch_id').val()) === String(branch.id)) {
+            $row.find('i').addClass('is-selected');
+        }
+        return $row;
+    }
+
     // Fungsi render untuk item di dropdown
     function formatCustomerOption(customer) {
         if (!customer.id) return customer.text;
 
+        const isReferenceForm = $('#customer_id').closest('.pos-form--reference').length > 0;
         const name = customer.name ?? 'Pelanggan Umum';
-        if (customer.id === '0') {
+        if (isReferenceForm) {
+            if (String(customer.id) === '0') {
+                const $group = $('<span class="pos-ref-customer-group"><strong></strong><span aria-hidden="true">−</span></span>');
+                $group.find('strong').text(name);
+                return $group;
+            }
+
+            const $row = $('<span class="pos-ref-customer-option"><strong></strong><small></small></span>');
+            $row.find('strong').text(name);
+            const phone = customer.whatsapp || '';
+            if (phone && phone !== '-') $row.find('small').text(phone);
+            return $row;
+        }
+
+        if (String(customer.id) === '0') {
             return $(`<div style="font-size: 13px;"><strong>${name}</strong></div>`);
         }
 
@@ -245,6 +284,8 @@
 
             $('#branch_id').select2({
                 placeholder: 'Pilih Cabang',
+                minimumResultsForSearch: $('#branch_id').closest('.pos-form--reference').length ? Infinity : 0,
+                templateResult: formatBranchOption,
                 ajax: {
                     url: '/ajax/getBranch',
                     dataType: 'json',
