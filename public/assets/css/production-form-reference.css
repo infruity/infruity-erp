@@ -172,6 +172,24 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
     .production-create-reference .production-reference-cart__identity > strong { font-size:14px; }
     .production-create-reference .production-product-picker-label { font-size:14px; }
 }
+/* Production create quantity sheet: match the neutral reference-card and form controls. */
+.production-create-reference .production-reference-quantity-modal .erp-sheet-body { display:flex; flex-direction:column; gap:16px; padding:16px !important; }
+.production-create-reference .production-reference-quantity-modal__ingredient { margin:0 !important; border:1px solid #e5e7eb; border-radius:16px; background:#fff !important; box-shadow:0 1px 3px rgba(17,24,39,.06); }
+.production-create-reference .production-reference-quantity-modal__ingredient .card-body { padding:12px !important; }
+.production-create-reference .production-reference-quantity-modal__ingredient .d-flex { gap:12px; }
+.production-create-reference .production-reference-quantity-modal__icon { display:flex; width:44px; height:44px; flex:none; align-items:center; justify-content:center; border:1px solid #f3f4f6; border-radius:12px; background:#f9fafb; font-size:22px; }
+.production-create-reference .production-reference-quantity-modal__ingredient .fw-bold { color:#111827 !important; font-size:14px; line-height:20px; }
+.production-create-reference .production-reference-quantity-modal__ingredient .text-muted { margin-top:2px; color:#6b7280 !important; font-size:11px; line-height:16px; }
+.production-create-reference .production-reference-quantity-modal__quantity { margin:0 !important; }
+.production-create-reference .production-reference-quantity-modal__quantity .form-label { display:block; margin:0 0 8px; color:#374151; font-size:12px; font-weight:700; line-height:16px; }
+.production-create-reference .production-reference-quantity-modal__quantity .input-group .form-control { height:44px; min-height:44px; border:1px solid #d1d5db; border-radius:12px 0 0 12px; padding:0 12px; color:#1f2937; font-size:14px; box-shadow:none; }
+.production-create-reference .production-reference-quantity-modal__quantity .input-group .form-control:focus { border-color:#10b981; box-shadow:inset 0 0 0 1px #10b981; }
+.production-create-reference .production-reference-quantity-modal__quantity .input-group-text { display:flex; height:44px; align-items:center; border:1px solid #d1d5db; border-left:0; border-radius:0 12px 12px 0; background:#f9fafb; padding:0 14px; color:#6b7280; font-size:12px; }
+.production-create-reference .production-reference-quantity-modal__quantity .form-text { margin-top:6px; color:#6b7280; font-size:11px; line-height:16px; }
+.production-create-reference .production-reference-quantity-modal__total { margin:0 !important; border:1px solid #a7f3d0; border-radius:12px; background:#ecfdf5 !important; }
+.production-create-reference .production-reference-quantity-modal__total .card-body { padding:12px !important; }
+.production-create-reference .production-reference-quantity-modal__total .text-gray-600 { color:#4b5563 !important; font-size:12px; }
+.production-create-reference .production-reference-quantity-modal__total .text-success { color:#047857 !important; font-size:14px !important; }
 /* Control boundaries need 3:1 against white (WCAG 1.4.11). Focus keeps its own green border. */
 .production-create-reference .form-control:not(:focus),
 .production-create-reference .form-select:not(:focus),

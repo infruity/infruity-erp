@@ -147,6 +147,20 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString('Tambah Bahan Baku', $edit);
     }
 
+    public function test_create_quantity_sheet_uses_reference_summary_and_control_styles_without_changing_edit(): void
+    {
+        $create = $this->renderForm('production.create', true);
+        $edit = $this->renderForm('production.edit', true);
+        $css = file_get_contents(public_path('assets/css/production-form-reference.css'));
+
+        $this->assertStringContainsString('production-reference-quantity-modal', $create);
+        $this->assertStringContainsString('x-text="referenceProductEmoji(selectedIngredient?.name)"', $create);
+        $this->assertStringNotContainsString('production-reference-quantity-modal', $edit);
+        $this->assertStringContainsString('.production-create-reference .production-reference-quantity-modal .erp-sheet-body', $css);
+        $this->assertStringContainsString('.production-reference-quantity-modal__ingredient', $css);
+        $this->assertStringContainsString('.production-reference-quantity-modal__quantity .input-group .form-control', $css);
+    }
+
     public function test_create_target_and_hpp_use_reference_unit_fallback_without_changing_edit(): void
     {
         $create = $this->renderForm('production.create');
