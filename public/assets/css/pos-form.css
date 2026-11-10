@@ -141,6 +141,33 @@
 .pos-form--reference .pos-cart-row:nth-last-child(2) { border-bottom:0; }
 .pos-form--reference .pos-field .select2-selection__rendered { padding:0 !important; color:#111827 !important; }
 
+/* Add-item steps open as a full-screen page state, not a category dropdown or centered popup. */
+body:has(.pos-form--reference) #addModal .modal-dialog,
+body:has(.pos-form--reference) #parcelModal .modal-dialog,
+body:has(.pos-form--reference) #jusModal .modal-dialog {
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100dvh;
+    max-width:none;
+    margin:0;
+    padding:0;
+    transform:none !important;
+}
+body:has(.pos-form--reference) #addModal .modal-content,
+body:has(.pos-form--reference) #parcelModal .modal-content,
+body:has(.pos-form--reference) #jusModal .modal-content {
+    display:flex;
+    height:100%;
+    max-height:none;
+    border:0;
+    border-radius:0;
+    background:#e5e9f3;
+}
+body:has(.pos-form--reference) #addModal .erp-sheet-body,
+body:has(.pos-form--reference) #parcelModal .erp-sheet-body,
+body:has(.pos-form--reference) #jusModal .erp-sheet-body { flex:1; min-height:0; overflow-y:auto; }
+
 /* "Tambah item" view (create2 passes reference => true; the Pesanan page keeps the plain sheets). */
 .pos-sheet--ref { max-width:560px; }
 .pos-sheet--ref .modal-content { height:100%; max-height:none; border-radius:0; }

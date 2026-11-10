@@ -116,14 +116,7 @@
             <section class="pos-card pos-card--list" aria-labelledby="pos-items-title">
                 <div class="pos-card__head">
                     <h2 id="pos-items-title">Daftar Belanja</h2>
-                    <div class="dropdown">
-                        <button type="button" class="pos-add" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Tambah item transaksi">+ Tambah</button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><button type="button" class="dropdown-item" @click="openAddModal()"><i class="ph ph-orange me-2" aria-hidden="true"></i>Buah</button></li>
-                            <li><button type="button" class="dropdown-item" @click="openParcelModal()"><i class="ph ph-gift me-2" aria-hidden="true"></i>Parcel</button></li>
-                            <li><button type="button" class="dropdown-item" @click="openJusModal()"><i class="ph ph-cup me-2" aria-hidden="true"></i>Jus</button></li>
-                        </ul>
-                    </div>
+                    <button type="button" class="pos-add" @click="openAddModal()" aria-label="Tambah item transaksi">+ Tambah</button>
                 </div>
                 <div class="pos-card__body pos-card__body--list">
                     @include('pos::pos.segment.cart')

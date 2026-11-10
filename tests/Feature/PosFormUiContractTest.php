@@ -41,6 +41,21 @@ final class PosFormUiContractTest extends TestCase
         $this->assertStringNotContainsString('<span>Baru</span>', $form, 'Tombol tambah pelanggan hanya ikon +');
     }
 
+    public function test_add_item_button_enters_fullscreen_add_flow_without_a_dropdown(): void
+    {
+        $form = $this->form();
+        $button = substr($form, strpos($form, '<section class="pos-card pos-card--list"'), 800);
+        $css = $this->read('public/assets/css/pos-form.css');
+
+        $this->assertStringContainsString('class="pos-add" @click="openAddModal()"', $button);
+        $this->assertStringNotContainsString('data-bs-toggle="dropdown"', $button);
+        $this->assertStringNotContainsString('<ul class="dropdown-menu dropdown-menu-end">', $button);
+        $this->assertStringContainsString('body:has(.pos-form--reference) #addModal .modal-dialog,', $css);
+        $this->assertStringContainsString('height:100%;', $css);
+        $this->assertStringContainsString('max-height:none;', $css);
+        $this->assertStringContainsString('border-radius:0;', $css);
+    }
+
     public function test_existing_fields_and_item_entry_points_are_kept(): void
     {
         $form = $this->form();
@@ -52,8 +67,6 @@ final class PosFormUiContractTest extends TestCase
             'id="tier_id"',
             'addCustomer()',
             'openAddModal()',
-            'openParcelModal()',
-            'openJusModal()',
             "@include('pos::pos.segment.cart')",
             "@include('pos::pos.segment.ringkasan')",
             "@include('pos::pos.segment.modal-product', ['reference' => true])",
