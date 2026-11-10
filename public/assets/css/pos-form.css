@@ -313,6 +313,8 @@ body:has(.pos-form--reference) .select2-search--dropdown:has(input[aria-controls
 body:has(.pos-form--reference) .select2-search--dropdown:has(input[aria-controls="select2-customer_id-results"])::after { position:absolute; top:35px; left:36px; width:5px; height:1.5px; transform:rotate(45deg); background:#94a3b8; content:""; pointer-events:none; }
 body:has(.pos-form--reference) .select2-search--dropdown input[aria-controls="select2-customer_id-results"] { min-height:44px; border:2px solid #10b981 !important; border-radius:12px !important; background:#fff; padding-left:34px !important; font-size:13px; }
 .pos-form--reference .pos-customer:has(.select2-container--open) { border-color:#10b981; box-shadow:0 0 0 1px #10b981; }
+.pos-form--reference .pos-customer:has(.select2-container--focus),
+.pos-form--reference .pos-customer:focus-within { border-color:#10b981; box-shadow:0 0 0 1px #10b981; }
 
 /* Reference composition panel proportions for Jus and Parcel; keep existing payload controls. */
 .pos-sheet--ref .pos-ref-card--jus,
