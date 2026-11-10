@@ -7,6 +7,15 @@
     $phoneLabel = $localPhone !== '' ? '(+62) ' . substr($localPhone, 0, 3) . (strlen($localPhone) > 3 ? '-' . substr($localPhone, 3, 4) : '') . (strlen($localPhone) > 7 ? '-' . substr($localPhone, 7) : '') : '';
     $isDraftLike = in_array($data->status, ['temp', 'draft', 'pending'], true);
     $dueLabel = ($data->paid ?? 0) > 0 ? 'Sisa Tagihan' : 'Total Belanja';
+    // Display-only figures for the confirmation; saveTransaction owns the real maths (100 or less = percent, above = rupiah).
+    // The header `subtotal` is empty on older drafts, so the item lines are the source.
+    $itemsSubtotal = (float) $detail->sum('subtotal');
+    $discountValue = (float) ($data->discount ?? 0);
+    $discountAmount = $discountValue > 0 && $discountValue <= 100 ? $itemsSubtotal * $discountValue / 100 : $discountValue;
+    $shippingDiscountValue = (float) ($data->ongkir_discount ?? 0);
+    $shippingDiscountAmount = $shippingDiscountValue > 0 && $shippingDiscountValue <= 100 ? (float) $data->ongkir * $shippingDiscountValue / 100 : $shippingDiscountValue;
+    $rupiah = fn ($n) => 'Rp ' . number_format((float) $n, 0, ',', '.');
+    $last4 = strlen($rawPhone) >= 4 ? substr($rawPhone, -4) : '';
 @endphp
 <link rel="stylesheet" href="{{ asset('assets/css/pos-form.css') }}?v={{ filemtime(public_path('assets/css/pos-form.css')) }}">
 <div x-data="posApp()" class="pos-form pos-form--reference">
@@ -130,6 +139,29 @@
                 </div>
             </div>
             <a href="{{ route('pos.index') }}" class="visually-hidden">Daftar POS</a>
+        </div>
+    </div>
+    <div x-show="confirmOpen" x-cloak class="pos-confirm" @keydown.escape.window="confirmOpen = false">
+        <div class="pos-confirm__backdrop" @click="confirmOpen = false"></div>
+        <div class="pos-confirm__card" role="dialog" aria-modal="true" aria-labelledby="pos-confirm-title">
+            <h2 id="pos-confirm-title">Selesaikan Transaksi?</h2>
+            <p>Transaksi ini akan disimpan dan diproses<br>di Kasir / POS. Lanjutkan?</p>
+            <dl class="pos-confirm__summary">
+                <div><dt>Cabang</dt><dd>{{ $data->branch?->name ?? '-' }}</dd></div>
+                <div><dt>Pelanggan</dt><dd>{{ $data->customer?->name ?? 'Pelanggan Umum' }}@if ($last4 !== '')<small> ({{ $last4 }})</small>@endif</dd></div>
+                <div><dt>Item Belanja</dt><dd>{{ $detail->count() }} item ({{ $rupiah($itemsSubtotal) }})</dd></div>
+                @if ($discountAmount > 0)<div><dt>Diskon Transaksi</dt><dd>-{{ $rupiah($discountAmount) }}</dd></div>@endif
+                @if ((float) $data->ongkir > 0)<div><dt>Ongkos Kirim</dt><dd>+{{ $rupiah($data->ongkir) }}</dd></div>@endif
+                @if ($shippingDiscountAmount > 0)<div><dt>Diskon Ongkir</dt><dd>-{{ $rupiah($shippingDiscountAmount) }}</dd></div>@endif
+                <div class="is-total"><dt>Total Belanja</dt><dd>{{ $rupiah($data->total) }}</dd></div>
+                <div class="is-paid"><dt>Dibayar</dt><dd><span x-text="'Rp ' + formatRupiah(totalPayment)"></span> · <span x-text="paymentStatus.status"></span></dd></div>
+            </dl>
+            <div class="pos-confirm__actions">
+                <button type="button" x-ref="confirmCancel" @click="confirmOpen = false" :disabled="loading">Batal</button>
+                <button type="button" class="is-primary" @click="confirmPayment()" :disabled="loading" :aria-busy="loading">
+                    <span x-show="loading" x-cloak class="spinner-border spinner-border-sm align-middle me-2" aria-hidden="true"></span>Selesaikan Transaksi
+                </button>
+            </div>
         </div>
     </div>
 </div>

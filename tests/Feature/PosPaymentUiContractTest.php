@@ -100,4 +100,47 @@ final class PosPaymentUiContractTest extends TestCase
         $this->assertStringContainsString("url('pos/printNota')", $success);
         $this->assertStringContainsString('cek-nota', $success);
     }
+    public function test_pay_asks_for_confirmation_before_anything_is_sent(): void
+    {
+        $view = $this->read('Modules/Pos/Resources/views/pos/payment.blade.php');
+        $js = $this->read('Modules/Pos/Resources/views/pos/js-payment.blade.php');
+
+        // The dialog from the reference: title, copy, summary, Batal / Selesaikan Transaksi.
+        foreach ([
+            'Selesaikan Transaksi?', 'Transaksi ini akan disimpan dan diproses', 'role="dialog"', 'aria-modal="true"',
+            'x-show="confirmOpen"', '@click="confirmOpen = false"', '@click="confirmPayment()"', '@keydown.escape.window="confirmOpen = false"',
+            'Cabang', 'Pelanggan', 'Item Belanja', 'Total Belanja', 'Dibayar', 'x-ref="confirmCancel"',
+        ] as $contract) {
+            $this->assertStringContainsString($contract, $view, "Hilang: {$contract}");
+        }
+        // The confirm button locks while the request is in flight, like every other money control.
+        $this->assertStringContainsString(':disabled="loading"', substr($view, strpos($view, 'confirmPayment()') - 200, 400));
+
+        // Bayar only opens the dialog; the request is built and sent from confirmPayment() alone.
+        $this->assertStringContainsString('confirmOpen: false', $js);
+        $this->assertStringContainsString('this.confirmOpen = true', $js);
+        $this->assertStringContainsString('confirmPayment() {', $js);
+        $submit = substr($js, strpos($js, 'submitPayment() {'), strpos($js, 'confirmPayment() {') - strpos($js, 'submitPayment() {'));
+        $this->assertStringNotContainsString('this.doSavePayment(payload);\n                },', $submit);
+        $confirm = substr($js, strpos($js, 'confirmPayment() {'), 400);
+        $this->assertStringContainsString('this.doSavePayment(this.buildPayload())', $confirm);
+        $this->assertStringContainsString('if (this.loading) return;', $confirm);
+        // A retry of an attempt the cashier already confirmed goes straight out with the same key.
+        $this->assertMatchesRegularExpression('/pending\)\s*\{\s*(?:\/\/[^\n]*\s*)?this\.loading = true;\s*this\.doSavePayment\(this\.paymentAttempt\.pending\)/', $js);
+    }
+
+    public function test_confirmation_summary_is_display_only_and_uses_the_stored_totals(): void
+    {
+        $view = $this->read('Modules/Pos/Resources/views/pos/payment.blade.php');
+
+        // Same rule as saveTransaction: 100 or less is a percentage, above is rupiah.
+        $this->assertStringContainsString('$discountAmount', $view);
+        $this->assertStringContainsString('<= 100', $view);
+        $this->assertStringContainsString('$data->branch?->name', $view);
+        $this->assertStringContainsString("\$detail->sum('subtotal')", $view);
+        $this->assertStringNotContainsString('$data->subtotal', $view);
+        $this->assertStringContainsString('$data->ongkir', $view);
+        $this->assertStringContainsString('$detail->count()', $view);
+        // The branch loads lazily from the model (one small query); the controller stays untouched.
+    }
 }

@@ -204,15 +204,10 @@
                     return `${day} ${month} ${year}`;
                 },
 
-                submitPayment() {
-                    if (this.loading) return;
-                    this.loading = true;
-                    if (this.paymentAttempt?.pending) {
-                        this.doSavePayment(this.paymentAttempt.pending);
-                        return;
-                    }
+                confirmOpen: false,
 
-                    const payload = {
+                buildPayload() {
+                    return {
                         date: document.querySelector('[name="date"]').value,
                         payments: this.payments,
                         // account_id: document.querySelector('[name="account_id"]').value,
@@ -221,25 +216,36 @@
                         customer_id: '{{ $data->customer_id ?? '' }}', // kalau tersedia dari server
                         transaction_id: '{{ $data->id ?? '' }}'
                     };
+                },
 
+                // Bayar validates and opens the confirmation; nothing is sent until confirmPayment().
+                submitPayment() {
+                    if (this.loading || this.confirmOpen) return;
+                    if (this.paymentAttempt?.pending) {
+                        // Retry of an attempt the cashier already confirmed: same payload, same key.
+                        this.loading = true;
+                        this.doSavePayment(this.paymentAttempt.pending);
+                        return;
+                    }
+
+                    const payload = this.buildPayload();
 
                     for (let p of this.payments) {
                         if (!p.payment_id || !p.payment_name) {
                             Swal.fire('Perhatian', 'Harus pilih metode pembayaran', 'warning');
-                            this.loading = false;
                             return;
                         }
                     }
 
                     if (!payload.payments || !payload.date) {
                         Swal.fire('Lengkapi data', 'Semua input wajib diisi.', 'warning');
-                        this.loading = false; // hentikan loading jika validasi gagal
                         return;
                     }
 
                     // Check if total penjualan is 0 and payment is 0
                     const totalPenjualan = {{ floor($data->total) }};
                     if (totalPenjualan == 0 && this.totalPayment == 0) {
+                        this.loading = true;
                         Swal.fire({
                             title: 'Peringatan',
                             text: 'Total Penjualan dan Jumlah Pembayaran adalah 0. Apakah Anda yakin ingin menyimpan?',
@@ -260,11 +266,19 @@
 
                     if (payload.total_payment === undefined || payload.total_payment === null) {
                         Swal.fire('Lengkapi data', 'Jumlah pembayaran wajib diisi.', 'warning');
-                        this.loading = false;
                         return;
                     }
 
-                    this.doSavePayment(payload);
+                    this.confirmOpen = true;
+                    // Focus Batal, not the primary button: Space released on Bayar must not confirm.
+                    this.$nextTick(() => setTimeout(() => this.$refs.confirmCancel?.focus(), 50));
+                },
+
+                confirmPayment() {
+                    if (this.loading) return;
+                    this.confirmOpen = false;
+                    this.loading = true;
+                    this.doSavePayment(this.buildPayload());
                 },
 
                 async doSavePayment(payload) {
