@@ -100,7 +100,8 @@ final class ProductionCreateReferenceTest extends TestCase
 
         $this->assertStringContainsString('production-product-picker-field', $create);
         $this->assertStringContainsString('data-placeholder="Pilih produk olahan..."', $create);
-        $this->assertStringContainsString('<i class="ph ph-bag"></i>', $create);
+        $this->assertStringContainsString('x-text="referenceProductEmoji(referenceSelectedProductName || \'Produk Olahan\')"', $create);
+        $this->assertStringNotContainsString('<i class="ph ph-bag"></i>', $create);
         $this->assertStringContainsString('production-product-picker-action', $create);
         $this->assertStringContainsString('openReferenceProductPicker()', $create);
         $this->assertStringContainsString('reference-product-picker', $create);
@@ -136,6 +137,8 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString('Pilih buah atau bahan pelengkap produksi', $create);
         $this->assertStringContainsString('Cari bahan (misal: Stroberi, Susu)...', $create);
         $this->assertStringContainsString('production-reference-ingredient-option', $create);
+        $this->assertStringContainsString('x-text="referenceProductEmoji(ingredient.name)"', $create);
+        $this->assertStringNotContainsString('<i class="ph ph-package" aria-hidden="true"></i>', $create);
         $this->assertStringContainsString('selectIngredient(ingredient)', $create);
         $this->assertStringContainsString('x-show="filteredIngredients.length === 0"', $create);
         $this->assertStringNotContainsString('Memuat bahan…', $create);
@@ -165,6 +168,8 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString('production-inline-quantity', $create);
         $this->assertStringContainsString(':value="inlineQuantityDrafts[ingredient.id] ?? ingredient.quantity"', $create);
         $this->assertStringContainsString('production-reference-cart__controls', $create);
+        $this->assertStringContainsString('aria-hidden="true" x-text="referenceProductEmoji(ingredient.name)"', $create);
+        $this->assertStringNotContainsString('<i class="ph ph-package" aria-hidden="true"></i>', $create);
         $this->assertStringContainsString('updateIngredientInline(index, $event.target.value)', $create);
         $this->assertStringContainsString('removeIngredient(index)', $create);
         $this->assertStringContainsString('openEditIngredientModal(ingredient,index)', $edit);

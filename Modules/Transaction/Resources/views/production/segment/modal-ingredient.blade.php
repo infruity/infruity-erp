@@ -16,7 +16,7 @@
                 <div class="production-reference-ingredient-modal__list">
                     <template x-for="ingredient in filteredIngredients" :key="ingredient.id">
                         <button type="button" class="production-reference-ingredient-option" @click="selectIngredient(ingredient)">
-                            <span class="production-reference-ingredient-option__icon"><i class="ph ph-package" aria-hidden="true"></i></span>
+                            <span class="production-reference-ingredient-option__icon" aria-hidden="true" x-text="referenceProductEmoji(ingredient.name)"></span>
                             <span class="production-reference-ingredient-option__text">
                                 <strong x-text="ingredient.name"></strong>
                                 <small x-text="toRupiah(ingredient.hpp) + (ingredient.unit ? ' / ' + ingredient.unit : '')"></small>

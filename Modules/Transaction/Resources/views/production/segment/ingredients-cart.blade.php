@@ -16,7 +16,7 @@
     <div class="production-reference-cart__items" id="ingredients-container">
         <template x-for="(ingredient,index) in ingredients" :key="ingredient.id">
             <div class="production-reference-cart__row">
-                <span class="production-reference-cart__icon"><i class="ph ph-package" aria-hidden="true"></i></span>
+                <span class="production-reference-cart__icon" aria-hidden="true" x-text="referenceProductEmoji(ingredient.name)"></span>
                 <span class="production-reference-cart__identity">
                     <strong x-text="ingredient.name"></strong>
                     <span><small>Biaya Modal:</small><b x-text="formatCurrency(ingredient.total)"></b></span>

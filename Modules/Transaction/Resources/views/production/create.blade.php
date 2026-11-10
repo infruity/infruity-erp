@@ -189,7 +189,7 @@
                                 <button type="button" class="production-product-picker-trigger" @click="openReferenceProductPicker()"
                                     aria-haspopup="dialog" aria-controls="reference-product-picker"
                                     :aria-label="referenceSelectedProductName ? 'Ganti produk: ' + referenceSelectedProductName : 'Pilih produk olahan'">
-                                    <span class="production-product-picker-icon" aria-hidden="true"><i class="ph ph-bag"></i></span>
+                                    <span class="production-product-picker-icon" aria-hidden="true" x-text="referenceProductEmoji(referenceSelectedProductName || 'Produk Olahan')"></span>
                                     <span class="production-product-picker-label" :class="referenceSelectedProductName ? 'is-selected' : ''" x-text="referenceSelectedProductName || 'Pilih produk olahan...'"></span>
                                     <span class="production-product-picker-action"><span x-text="referenceSelectedProductName ? 'Ganti' : 'Pilih'"></span><i class="ph-bold ph-caret-down" aria-hidden="true"></i></span>
                                 </button>
