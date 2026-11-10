@@ -68,8 +68,10 @@
 .pos-form--reference .pos-field .form-select,
 .pos-form--reference .pos-field .select2-container--bootstrap5 .select2-selection { min-height:44px; border:1px solid #868e98; border-radius:12px; background-color:#f9fafb; color:#111827; font-size:14px; font-weight:500; }
 .pos-form--reference .pos-field .select2-container { width:100% !important; }
+.pos-form--reference .pos-field:has(#branch_id) .select2-selection[aria-expanded="true"],
+.pos-form--reference .pos-field:has(#branch_id) .select2-selection:focus,
 .pos-form--reference .pos-field:has(#branch_id) .select2-container--open .select2-selection,
-.pos-form--reference .pos-field:has(#branch_id) .select2-container--focus .select2-selection { border-color:#10b981 !important; box-shadow:0 0 0 1px #10b981 !important; }
+.pos-form--reference .pos-field:has(#branch_id) .select2-container--focus .select2-selection { border:1px solid #10b981 !important; box-shadow:0 0 0 2px rgba(16,185,129,.18) !important; }
 .pos-form--reference .pos-field .select2-container--bootstrap5 .select2-selection--single { display:flex; align-items:center; padding:0 12px; }
 .pos-form--reference .pos-customer { display:flex; align-items:stretch; border:1px solid #868e98; border-radius:12px; background:#f9fafb; }
 .pos-form--reference .pos-customer .select2-container--bootstrap5 .select2-selection { border:0; background:transparent; }
