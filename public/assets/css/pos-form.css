@@ -277,6 +277,7 @@ body:has(.pos-form--reference) #jusModal .erp-sheet-body { flex:1; min-height:0;
 .pos-ref-panel > .pos-ref-listbox { margin-top:-8px; }
 .pos-ref-panel > .pos-ref-grid { border-top:1px solid #f1f3f5; padding-top:14px; }
 @media (max-width:575.98px) {
+  body:has(.pos-form--reference) .modal.show:has(.pos-sheet--ref) { top:60px; height:calc(100dvh - 60px); }
   body:has(.modal.show .pos-sheet--ref) .modal.show .pos-sheet--ref { top:60px !important; bottom:0; height:auto !important; }
   body:has(.modal.show .pos-sheet--ref) .modal-backdrop { top:60px; bottom:0; height:auto; }
   .pos-sheet--ref .modal-content { background:#e5e9f3; }

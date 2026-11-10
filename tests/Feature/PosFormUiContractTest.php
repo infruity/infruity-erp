@@ -56,6 +56,17 @@ final class PosFormUiContractTest extends TestCase
         $this->assertStringContainsString('border-radius:0;', $css);
     }
 
+    public function test_reference_add_item_modal_does_not_cover_mobile_back_navigation(): void
+    {
+        $css = $this->read('public/assets/css/pos-form.css');
+
+        $this->assertMatchesRegularExpression(
+            '/body:has\(\.pos-form--reference\)\s+\.modal\.show:has\(\.pos-sheet--ref\)\s*\{\s*top:60px;\s*height:calc\(100dvh - 60px\);\s*\}/',
+            $css
+        );
+        $this->assertStringContainsString('body:has(.modal.show .pos-sheet--ref) .modal-backdrop { top:60px;', $css);
+    }
+
     public function test_existing_fields_and_item_entry_points_are_kept(): void
     {
         $form = $this->form();
