@@ -1,14 +1,20 @@
 /* Shared filter role scale; preserve page models, states and responsive shells. */
 body.erp-ui {
-    --erp-filter-title-size:18px;
-    --erp-filter-label-size:12px;
-    --erp-filter-body-size:12px;
+    --erp-filter-title-size:16px;
+    --erp-filter-label-size:10px;
+    --erp-filter-body-size:16px;
     --erp-filter-search-size:16px;
     --erp-filter-control-size:16px;
-    --erp-filter-action-size:14px;
+    --erp-filter-option-size:12px;
+    --erp-filter-date-size:12px;
+    --erp-filter-action-size:12px;
     --erp-filter-action-height:44px;
     --erp-filter-footer-padding:14px;
     --erp-filter-footer-gutter:16px;
+}
+
+@media (min-width:640px) {
+    body.erp-ui { --erp-filter-action-size:14px; }
 }
 
 /* Sheet titles */
@@ -247,7 +253,7 @@ body.erp-ui :is(
     .report-mobile-sheet--history .report-mobile-history-filter-popover .report-mobile-history-option-menu button,
     #receipt-category-desktop-options [role="menuitemradio"]
 ) {
-    font-size:var(--erp-filter-body-size);
+    font-size:var(--erp-filter-option-size);
     line-height:16px;
 }
 
@@ -261,7 +267,7 @@ body.erp-ui :is(
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) label:has(input[name="cabangFilter"]) > span:last-child,
     #wholesale-mobile-branches > label[data-wholesale-mobile-branch] > span:last-child
 ) {
-    font-size:var(--erp-filter-body-size);
+    font-size:var(--erp-filter-option-size);
     line-height:16px;
 }
 
@@ -284,7 +290,7 @@ body.erp-ui :is(
     [role="dialog"][aria-label="Filter pengadaan"] > section button[\:aria-pressed],
     .report-mobile-sheet--filter .report-mobile-grouping button
 ) {
-    font-size:var(--erp-filter-body-size);
+    font-size:var(--erp-filter-option-size);
     line-height:16px;
 }
 
@@ -306,7 +312,7 @@ body.erp-ui :is(
     [x-show*="filtersOpen"].md\:block:has([data-wholesale-filter="status"]) input[type="date"]
 ) {
     min-width:0;
-    font-size:var(--erp-filter-control-size) !important;
+    font-size:var(--erp-filter-date-size) !important;
     font-weight:500;
     line-height:20px;
 }
@@ -323,7 +329,7 @@ body.erp-ui :is(
     [role="dialog"][aria-label="Filter pengadaan"] > section button[title="Tampilkan Hari Ini"],
     .report-mobile-sheet--filter .report-mobile-quick button
 ) {
-    font-size:var(--erp-filter-body-size);
+    font-size:var(--erp-filter-option-size);
     line-height:16px;
 }
 
