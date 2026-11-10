@@ -101,6 +101,16 @@ final class PosFormUiContractTest extends TestCase
         $this->assertStringContainsString('.pos-add-page[x-cloak] { display:none !important; }', $css);
     }
 
+    public function test_focused_branch_picker_has_the_same_green_outline_as_customer(): void
+    {
+        $css = $this->read('public/assets/css/pos-form.css');
+        $this->assertStringContainsString(
+            '.pos-form--reference .pos-field:has(#branch_id):focus-within .select2-selection',
+            $css
+        );
+        $this->assertStringContainsString('border:1px solid #10b981 !important;', $css);
+    }
+
     public function test_existing_fields_and_item_entry_points_are_kept(): void
     {
         $form = $this->form();
