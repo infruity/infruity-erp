@@ -60,3 +60,10 @@ test('a stale response is ignored when a newer search started', () => {
     assert.equal(guard.isCurrent(first), false);
     assert.equal(guard.isCurrent(second), true);
 });
+
+test('unit suffixes are separate so the view can print them lighter than the label', () => {
+    assert.equal(PosAddItem.priceUnit('Kg'), '/KG');
+    assert.equal(PosAddItem.priceUnit(''), '');
+    assert.equal(PosAddItem.quantityUnit('cup'), '(CUP)');
+    assert.equal(PosAddItem.quantityUnit(undefined), '');
+});

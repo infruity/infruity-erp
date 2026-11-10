@@ -99,7 +99,7 @@ final class PosSheetsUiContractTest extends TestCase
 
         foreach ([
             'id="pos-product-list"', 'productSearch', 'loadProductList()', 'pickProduct(row)', 'PosAddItem.stockLabel',
-            'PosAddItem.priceLabel', 'PosAddItem.quantityLabel', 'PosAddItem.discountPrefix', 'Kembali', 'Tambah',
+            'PosAddItem.priceUnit', 'PosAddItem.quantityUnit', 'PosAddItem.discountPrefix', 'Kembali', 'Tambah',
             'saveAddToCart()', ':disabled="!addProduct.id"', 'Produk tidak ditemukan',
         ] as $contract) {
             $this->assertStringContainsString($contract, $modal, "Hilang: {$contract}");

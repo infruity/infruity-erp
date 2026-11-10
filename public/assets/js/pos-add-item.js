@@ -44,6 +44,15 @@
         return unit ? `KUANTITAS (${String(unit).toUpperCase()})` : 'KUANTITAS';
     }
 
+    // The unit part alone, so the view can render it lighter than the label ("HARGA JUAL" + "/KG").
+    function priceUnit(unit) {
+        return unit ? `/${String(unit).toUpperCase()}` : '';
+    }
+
+    function quantityUnit(unit) {
+        return unit ? `(${String(unit).toUpperCase()})` : '';
+    }
+
     function listQuery(input) {
         return {term: String(input.term || '').trim(), branch: input.branch || '', status: 'aktif', limit: 50};
     }
@@ -56,5 +65,5 @@
         };
     }
 
-    return {mapProductRow, availableStock, stockLabel, discountPrefix, priceLabel, quantityLabel, listQuery, createRequestGuard};
+    return {mapProductRow, availableStock, stockLabel, discountPrefix, priceLabel, quantityLabel, priceUnit, quantityUnit, listQuery, createRequestGuard};
 });
