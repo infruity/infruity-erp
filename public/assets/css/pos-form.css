@@ -296,7 +296,7 @@ body:has(.pos-form--reference) #select2-customer_id-results .select2-results__op
 .pos-ref-branch-option { display:flex; min-height:42px; align-items:center; justify-content:space-between; padding:0 14px; }
 .pos-ref-branch-option > i { width:7px; height:7px; border-radius:50%; background:#10b981; visibility:hidden; }
 .pos-ref-branch-option > i.is-selected { visibility:visible; }
-body:has(.pos-form--reference) #select2-branch_id-results .select2-results__option--selected { color:#0b595b; }
+body:has(.pos-form--reference) #select2-branch_id-results .select2-results__option--selected { color:#10b981; background:#ecfdf5; }
 body:has(.pos-form--reference) #select2-customer_id-results .select2-results__option { min-height:48px; }
 .pos-ref-customer-group { display:flex; min-height:42px; align-items:center; justify-content:space-between; background:#ecfdf5; padding:0 14px; color:#1f2937; }
 .pos-ref-customer-group strong { font-size:13px; font-weight:700; }

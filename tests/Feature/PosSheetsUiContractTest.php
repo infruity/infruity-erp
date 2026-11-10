@@ -139,7 +139,7 @@ final class PosSheetsUiContractTest extends TestCase
         foreach (['minimumResultsForSearch', 'pos-form--reference', 'pos-ref-customer-option', 'pos-ref-customer-group', 'select2:open', 'requestAnimationFrame', 'Cari pelanggan / nomor HP...'] as $contract) {
             $this->assertStringContainsString($contract, $header, "Dropdown reference belum: {$contract}");
         }
-        foreach (['#select2-branch_id-results', '#select2-customer_id-results', '.select2-dropdown:has(#select2-branch_id-results) .select2-search--dropdown', '.pos-ref-customer-group', '.pos-ref-customer-option', 'border-radius:12px !important', 'border:2px solid #10b981 !important', 'background:#ecfdf5', 'color:#98a2b3'] as $contract) {
+        foreach (['#select2-branch_id-results', '#select2-customer_id-results', '.select2-dropdown:has(#select2-branch_id-results) .select2-search--dropdown', '.pos-ref-customer-group', '.pos-ref-customer-option', 'border-radius:12px !important', 'border:2px solid #10b981 !important', 'background:#ecfdf5', 'color:#98a2b3', 'body:has(.pos-form--reference) #select2-branch_id-results .select2-results__option--selected { color:#10b981; background:#ecfdf5; }'] as $contract) {
             $this->assertStringContainsString($contract, $css, "Gaya dropdown belum: {$contract}");
         }
         // The existing controls still own the submitted values; this is only a visual adapter.
