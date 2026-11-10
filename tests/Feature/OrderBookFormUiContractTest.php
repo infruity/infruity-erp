@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\User;
+use Modules\Pos\Entities\OrderBook;
 use Tests\TestCase;
 
 final class OrderBookFormUiContractTest extends TestCase
@@ -62,6 +64,15 @@ final class OrderBookFormUiContractTest extends TestCase
         $this->assertStringContainsString("orWhereHas('user'", $controller);
         $this->assertStringContainsString("->addColumn('created_by_name'", $controller);
         $this->assertStringContainsString("->removeColumn('user')", $controller);
+    }
+
+    public function test_order_book_creator_relation_resolves_the_actual_user_model_and_key(): void
+    {
+        $relation = (new OrderBook())->user();
+
+        $this->assertInstanceOf(User::class, $relation->getRelated());
+        $this->assertSame('created_by', $relation->getForeignKeyName());
+        $this->assertSame('id_user', $relation->getOwnerKeyName());
     }
 
     public function test_dock_is_hidden_on_the_form_routes(): void
