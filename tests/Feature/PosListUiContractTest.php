@@ -86,6 +86,18 @@ final class PosListUiContractTest extends TestCase
             $this->assertStringContainsString($contract, $view);
         }
     }
+    public function test_load_more_stays_in_the_scrollable_workspace_content_above_the_mobile_dock(): void
+    {
+        $view = $this->listView();
+        $shell = file_get_contents(base_path('public/assets/css/erp-shell.css'));
+
+        $this->assertMatchesRegularExpression('/<\/table><\/div>\s*<div class="pos-list-more"[\s\S]*?<\/x-erp\.workspace>/', $view);
+        $this->assertStringNotContainsString('<x-slot:footer>', $view);
+        $this->assertStringContainsString('@click="loadMore()"', $view);
+        $this->assertStringContainsString('.erp-workspace-content {', $shell);
+        $this->assertStringContainsString('padding-bottom: calc(88px + env(safe-area-inset-bottom));', $shell);
+    }
+
     public function test_rows_have_no_action_menu_like_the_reference(): void
     {
         $view = $this->listView();

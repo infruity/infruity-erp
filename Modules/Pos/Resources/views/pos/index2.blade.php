@@ -108,11 +108,9 @@
         </thead>
         <tbody class="fw-semibold text-gray-600"></tbody>
     </table></div>
-    <x-slot:footer>
-        <div class="pos-list-more" x-show="hasMore" x-cloak>
-            <x-erp.load-more @click="loadMore()" loading="loading"><span>Muat Lebih Banyak <span x-text="remaining"></span></span></x-erp.load-more>
-        </div>
-    </x-slot:footer>
+    <div class="pos-list-more" x-show="hasMore" x-cloak>
+        <x-erp.load-more @click="loadMore()" loading="loading"><span>Muat Lebih Banyak <span x-text="remaining"></span></span></x-erp.load-more>
+    </div>
 </x-erp.workspace>
 
 <template x-teleport="body">
