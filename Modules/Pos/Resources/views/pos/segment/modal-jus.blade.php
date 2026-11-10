@@ -51,7 +51,7 @@
             </div>
         </div>
     </div>
-</div>
+</section>
 @else
 {{-- Modal Add Product --}}
 <div class="modal fade" id="jusModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true" x-show="showJusModal"

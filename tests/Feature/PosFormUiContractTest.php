@@ -58,6 +58,25 @@ final class PosFormUiContractTest extends TestCase
         $this->assertStringContainsString('position:fixed;', $css);
     }
 
+    public function test_all_add_category_controls_remain_inside_the_pos_alpine_scope(): void
+    {
+        $html = '<!doctype html><html><body><div id="pos-test-root" x-data="posApp()">'
+            . view('pos::pos.segment.modal-product', ['reference' => true])->render()
+            . view('pos::pos.segment.modal-parcel', ['reference' => true])->render()
+            . view('pos::pos.segment.modal-jus', ['reference' => true])->render()
+            . '</div></body></html>';
+        $dom = new \DOMDocument();
+        $dom->loadHTML($html, LIBXML_NOERROR | LIBXML_NOWARNING);
+        $xpath = new \DOMXPath($dom);
+        foreach (['addModal', 'parcelModal', 'jusModal'] as $id) {
+            $this->assertSame(
+                1,
+                $xpath->query("//*[@id='{$id}' and ancestor::*[@id='pos-test-root']]")->length,
+                "{$id} must be a descendant of posApp(), otherwise its Alpine state and buttons cannot work."
+            );
+        }
+    }
+
     public function test_reference_add_page_back_returns_to_form_while_normal_back_keeps_route(): void
     {
         $topbar = $this->read('resources/views/components/erp/topbar.blade.php');

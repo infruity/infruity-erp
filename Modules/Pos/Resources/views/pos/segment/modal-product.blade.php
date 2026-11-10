@@ -62,7 +62,7 @@
             </div>
         </div>
     </div>
-</div>
+</section>
 @else
 {{-- Modal Add Product --}}
 <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true" x-show="showAddModal"
