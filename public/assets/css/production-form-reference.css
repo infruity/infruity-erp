@@ -18,6 +18,8 @@
 .production-create-reference .form-select { height:44px; min-height:44px; padding:0 16px; border:1px solid #e5e7eb; border-radius:12px; background-color:rgba(249,250,251,.7); color:#1f2937; font-size:13px; }
 .production-create-reference .form-control:focus,
 .production-create-reference .form-select:focus { background-color:#fff; border-color:#10b981; box-shadow:0 0 0 1px #10b981; }
+.production-create-reference #production_notes:focus,
+.production-create-reference #production_notes:focus-visible { outline:none; border-color:#10b981; box-shadow:none; }
 .production-create-reference .select2-container { display:block; width:100% !important; min-width:0; }
 .production-create-reference .select2-container .select2-selection--single { position:relative; display:flex; align-items:center; height:44px; min-height:44px; padding:0 16px; border:1px solid #e5e7eb; border-radius:12px; background-color:rgba(249,250,251,.7); font-size:13px; }
 .production-create-reference .select2-container .select2-selection__rendered { padding-left:0; line-height:normal; color:#1f2937; }

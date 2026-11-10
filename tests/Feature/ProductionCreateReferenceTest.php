@@ -147,6 +147,16 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString('Tambah Bahan Baku', $edit);
     }
 
+    public function test_create_notes_focus_uses_one_green_stroke(): void
+    {
+        $create = $this->renderForm('production.create');
+        $css = file_get_contents(public_path('assets/css/production-form-reference.css'));
+
+        $this->assertStringContainsString('id="production_notes" name="notes"', preg_replace('/\\s+/', ' ', $create));
+        $this->assertStringContainsString('.production-create-reference #production_notes:focus', $css);
+        $this->assertMatchesRegularExpression('/#production_notes:focus(?:,\\s*\\.production-create-reference #production_notes:focus-visible)?\\s*\\{[^}]*border-color:\\s*#10b981;[^}]*box-shadow:\\s*none;/s', $css);
+    }
+
     public function test_create_quantity_sheet_uses_reference_summary_and_control_styles_without_changing_edit(): void
     {
         $create = $this->renderForm('production.create', true);
