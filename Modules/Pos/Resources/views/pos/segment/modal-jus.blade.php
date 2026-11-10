@@ -1,11 +1,11 @@
 @if (! empty($reference))
 {{-- Modal Add Jus (reference view: tabs, product dropdown, composition card, 2x2 fields) --}}
-<div class="modal fade" id="jusModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true" x-show="showJusModal"
-    style="display: none;">
-    <div class="modal-dialog erp-sheet-dialog pos-sheet pos-sheet--ref modal-fullscreen-sm-down">
+<section id="jusModal" class="pos-add-page pos-add-page--jus" role="region" aria-labelledby="jusModalLabel"
+    x-show="showAddPage && activeAddCategory === 'jus'" x-cloak>
+    <div class="pos-add-page__content pos-sheet--ref">
         <div class="modal-content" x-data>
             <div class="erp-sheet-header pos-sheet-header pos-sheet-header--tabs">
-                <span class="visually-hidden">Tambah Jus</span>
+                <span id="jusModalLabel" class="visually-hidden">Tambah Jus</span>
                 @include('pos::pos.segment.add-tabs', ['active' => 'jus'])
             </div>
             <div class="erp-sheet-body pos-ref-body">

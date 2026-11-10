@@ -1,8 +1,8 @@
 @if (! empty($reference))
 {{-- Modal Add Product (reference view: tabs, searchable product list, 2x2 fields) --}}
-<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true" x-show="showAddModal"
-    style="display: none;">
-    <div class="modal-dialog erp-sheet-dialog pos-sheet pos-sheet--ref modal-fullscreen-sm-down">
+<section id="addModal" class="pos-add-page pos-add-page--buah" role="region" aria-labelledby="addModalLabel"
+    x-show="showAddPage && activeAddCategory === 'buah'" x-cloak>
+    <div class="pos-add-page__content pos-sheet--ref">
         <div class="modal-content" x-data>
             <div class="erp-sheet-header pos-sheet-header pos-sheet-header--tabs">
                 <span id="addModalLabel" class="visually-hidden">Tambah Produk</span>

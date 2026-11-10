@@ -41,30 +41,45 @@ final class PosFormUiContractTest extends TestCase
         $this->assertStringNotContainsString('<span>Baru</span>', $form, 'Tombol tambah pelanggan hanya ikon +');
     }
 
-    public function test_add_item_button_enters_fullscreen_add_flow_without_a_dropdown(): void
+    public function test_add_item_button_enters_a_same_page_add_view_without_a_dropdown_or_modal(): void
     {
         $form = $this->form();
         $button = substr($form, strpos($form, '<section class="pos-card pos-card--list"'), 800);
         $css = $this->read('public/assets/css/pos-form.css');
+        $fruit = $this->read('Modules/Pos/Resources/views/pos/segment/modal-product.blade.php');
+        $referenceBranch = explode('@else', $fruit, 2)[0];
 
         $this->assertStringContainsString('class="pos-add" @click="openAddModal()"', $button);
         $this->assertStringNotContainsString('data-bs-toggle="dropdown"', $button);
         $this->assertStringNotContainsString('<ul class="dropdown-menu dropdown-menu-end">', $button);
-        $this->assertStringContainsString('body:has(.pos-form--reference) #addModal .modal-dialog,', $css);
-        $this->assertStringContainsString('height:100%;', $css);
-        $this->assertStringContainsString('max-height:none;', $css);
-        $this->assertStringContainsString('border-radius:0;', $css);
+        $this->assertStringContainsString('class="pos-add-page', $referenceBranch);
+        $this->assertStringNotContainsString('class="modal fade"', $referenceBranch);
+        $this->assertStringContainsString('.pos-add-page {', $css);
+        $this->assertStringContainsString('position:fixed;', $css);
     }
 
-    public function test_reference_add_item_modal_does_not_cover_mobile_back_navigation(): void
+    public function test_reference_add_page_back_returns_to_form_while_normal_back_keeps_route(): void
     {
+        $topbar = $this->read('resources/views/components/erp/topbar.blade.php');
+        $js = $this->read('Modules/Pos/Resources/views/pos/js/js-buah.blade.php');
+
+        $this->assertStringContainsString('data-pos-create-back', $topbar);
+        $this->assertStringContainsString('closeAddPage()', $js);
+        $this->assertStringContainsString('showAddPage: false', $js);
+        $this->assertStringContainsString('activeAddCategory', $js);
+    }
+
+    public function test_reference_category_tabs_switch_the_same_page_without_modal_lifecycle(): void
+    {
+        $js = $this->read('Modules/Pos/Resources/views/pos/js/js-buah.blade.php');
         $css = $this->read('public/assets/css/pos-form.css');
 
         $this->assertMatchesRegularExpression(
-            '/body:has\(\.pos-form--reference\)\s+\.modal\.show:has\(\.pos-sheet--ref\)\s*\{\s*top:60px;\s*height:calc\(100dvh - 60px\);\s*\}/',
-            $css
+            "/if \\(document\\.querySelector\\('\\.pos-add-page'\\)\\) \\{\\s*app\\.switchAddPageTab\\(target\\);\\s*return;\\s*\\}/",
+            $js
         );
-        $this->assertStringContainsString('body:has(.modal.show .pos-sheet--ref) .modal-backdrop { top:60px;', $css);
+        $this->assertStringContainsString('setTimeout(() => app[openers[target]](), 350)', $js, 'Legacy modal flow remains for sibling pages.');
+        $this->assertStringContainsString('.pos-add-page[x-cloak] { display:none !important; }', $css);
     }
 
     public function test_existing_fields_and_item_entry_points_are_kept(): void

@@ -45,7 +45,7 @@
 
 <header class="erp-topbar-mobile {{ $transactionFormHeader ? 'erp-topbar-mobile--transaction-form' : '' }}">
     @if ($mobileBackHeader)
-        <a href="{{ route($mobileBackRoute) }}" aria-label="{{ $mobileBackLabel }}" class="erp-topbar-mobile__button">
+        <a href="{{ route($mobileBackRoute) }}" aria-label="{{ $mobileBackLabel }}" class="erp-topbar-mobile__button" @if ($posCreateHeader) data-pos-create-back @endif>
             <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
         </a>
     @else
@@ -95,6 +95,10 @@
         const notificationButton = header.querySelector('[data-erp-notification-toggle]');
         const notificationMenu = header.querySelector('[data-erp-notification-menu]');
         header.addEventListener('click', event => {
+            if (event.target.closest('[data-pos-create-back]') && window.closePosAddPage?.()) {
+                event.preventDefault();
+                return;
+            }
             if (event.target.closest('[data-erp-sidebar-toggle]')) {
                 window.dispatchEvent(new CustomEvent('erp-mobile-sidebar-toggle'));
             }

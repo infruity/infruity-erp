@@ -1,11 +1,17 @@
-{{-- Modal Add Parcel --}}
+{{-- Add Parcel: reference mode is an in-page category view; Pesanan retains its modal. --}}
+@if (! empty($reference))
+<section id="parcelModal" class="pos-add-page pos-add-page--parcel" role="region" aria-labelledby="parcelModalLabel"
+    x-show="showAddPage && activeAddCategory === 'parcel'" x-cloak x-data="parcelForm()" x-init="initSelect2">
+    <div class="pos-add-page__content pos-sheet--ref">
+@else
 <div class="modal fade" id="parcelModal" tabindex="-1" aria-labelledby="parcelModalLabel" aria-hidden="true"
     x-show="showParcelModal" style="display: none;" x-data="parcelForm()" x-init="initSelect2">
-    <div class="modal-dialog erp-sheet-dialog pos-sheet modal-fullscreen-sm-down {{ ! empty($reference) ? 'pos-sheet--ref' : '' }}">
+    <div class="modal-dialog erp-sheet-dialog pos-sheet modal-fullscreen-sm-down">
+@endif
         <div class="modal-content" x-data>
             @if (! empty($reference))
             <div class="erp-sheet-header pos-sheet-header pos-sheet-header--tabs">
-                <span class="visually-hidden">Tambah Parcel</span>
+                <span id="parcelModalLabel" class="visually-hidden">Tambah Parcel</span>
                 @include('pos::pos.segment.add-tabs', ['active' => 'parcel'])
             </div>
             @else
@@ -122,8 +128,13 @@
             </div>
             @endif
         </div>
+@if (! empty($reference))
+    </div>
+</section>
+@else
     </div>
 </div>
+@endif
 
 {{-- Modal Edit Parcel --}}
 <div class="modal fade" id="parcelEditModal" tabindex="-1" aria-labelledby="parcelModalLabel" aria-hidden="true"

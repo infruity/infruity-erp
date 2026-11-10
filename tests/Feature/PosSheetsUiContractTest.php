@@ -82,7 +82,10 @@ final class PosSheetsUiContractTest extends TestCase
     {
         foreach (['modal-product', 'modal-jus', 'modal-parcel'] as $name) {
             $source = $this->segment($name);
+            $referenceBranch = explode('@else', $source, 2)[0];
             $this->assertStringContainsString('@if (! empty($reference))', $source, "{$name} harus memakai flag reference");
+            $this->assertStringContainsString('class="pos-add-page', $referenceBranch, "{$name} harus dirender sebagai sibling page, bukan modal");
+            $this->assertStringNotContainsString('class="modal fade"', $referenceBranch, "{$name} reference tidak boleh membuat Bootstrap modal");
             $this->assertStringContainsString("@include('pos::pos.segment.add-tabs'", $source, "{$name} butuh tab Buah/Parcel/Jus");
         }
         $form = file_get_contents(base_path('Modules/Pos/Resources/views/pos/create2.blade.php'));
@@ -113,13 +116,28 @@ final class PosSheetsUiContractTest extends TestCase
     public function test_reference_jus_and_parcel_views_keep_their_ids_and_handlers(): void
     {
         $jus = $this->segment('modal-jus');
-        foreach (['id="select_jus"', 'id="receiptContainer"', 'saveJusToCart()', 'Komposisi Produk', 'Pilih Produk Jus di Atas', 'Kembali'] as $contract) {
+        foreach (['id="select_jus"', 'id="receiptContainer"', 'saveJusToCart()', 'Komposisi Produk', 'Pilih Produk Jus di Atas', 'Kembali', 'aria-labelledby="jusModalLabel"', 'id="jusModalLabel"'] as $contract) {
             $this->assertStringContainsString($contract, $jus, "Hilang: {$contract}");
         }
         $parcel = $this->segment('modal-parcel');
-        foreach (['saveParcelToCart()', 'id="select_kemasan"', 'id="parcel_budget"', 'Kembali'] as $contract) {
+        foreach (['saveParcelToCart()', 'id="select_kemasan"', 'id="parcel_budget"', 'Kembali', 'aria-labelledby="parcelModalLabel"', 'id="parcelModalLabel"'] as $contract) {
             $this->assertStringContainsString($contract, $parcel, "Hilang: {$contract}");
         }
+    }
+
+    public function test_reference_parcel_add_keeps_the_page_open_without_requiring_hidden_service_fee(): void
+    {
+        $js = file_get_contents(base_path('Modules/Pos/Resources/views/pos/js/js-parcel.blade.php'));
+        $start = strpos($js, 'saveParcelToCart() {');
+        $end = strpos($js, 'editParcelToCart(parcelId)', $start);
+        $save = substr($js, $start, $end - $start);
+
+        $this->assertStringContainsString("const feeInput = document.getElementById('parcel_jasa');", $save);
+        $this->assertStringContainsString("const fee = feeInput ? feeInput.value : '';", $save);
+        $this->assertStringContainsString("const referenceAddPage = !!document.querySelector('.pos-add-page--parcel');", $save);
+        $this->assertStringContainsString('if (feeInput) feeInput.value =', $save);
+        $this->assertStringContainsString('if (!referenceAddPage)', $save);
+        $this->assertStringNotContainsString("document.getElementById('parcel_jasa').value", $save);
     }
 
     public function test_add_item_script_is_loaded_with_the_form_and_wires_the_list(): void

@@ -141,37 +141,33 @@
 .pos-form--reference .pos-cart-row:nth-last-child(2) { border-bottom:0; }
 .pos-form--reference .pos-field .select2-selection__rendered { padding:0 !important; color:#111827 !important; }
 
-/* Add-item steps open as a full-screen page state, not a category dropdown or centered popup. */
-body:has(.pos-form--reference) #addModal .modal-dialog,
-body:has(.pos-form--reference) #parcelModal .modal-dialog,
-body:has(.pos-form--reference) #jusModal .modal-dialog {
+/* Reference add-item categories are sibling views under one Alpine state, not Bootstrap modals. */
+.pos-add-page {
     position:fixed;
-    inset:0;
-    width:100%;
-    height:100dvh;
-    max-width:none;
-    margin:0;
-    padding:0;
-    transform:none !important;
-}
-body:has(.pos-form--reference) #addModal .modal-content,
-body:has(.pos-form--reference) #parcelModal .modal-content,
-body:has(.pos-form--reference) #jusModal .modal-content {
+    z-index:40;
+    inset:60px 0 0;
     display:flex;
+    justify-content:center;
+    overflow:hidden;
+    background:#e5e9f3;
+}
+.pos-add-page[x-cloak] { display:none !important; }
+.pos-add-page__content { display:flex; width:100%; height:100%; min-height:0; }
+.pos-add-page .modal-content {
+    display:flex;
+    width:100%;
     height:100%;
     max-height:none;
     border:0;
     border-radius:0;
     background:#e5e9f3;
 }
-body:has(.pos-form--reference) #addModal .erp-sheet-body,
-body:has(.pos-form--reference) #parcelModal .erp-sheet-body,
-body:has(.pos-form--reference) #jusModal .erp-sheet-body { flex:1; min-height:0; overflow-y:auto; }
+.pos-add-page .erp-sheet-body { flex:1; min-height:0; overflow-y:auto; }
 
-/* "Tambah item" view (create2 passes reference => true; the Pesanan page keeps the plain sheets). */
+/* Legacy/edit sheets retain their existing capped modal geometry. */
 .pos-sheet--ref { max-width:560px; }
-.pos-sheet--ref .modal-content { height:100%; max-height:none; border-radius:0; }
-@media (min-width:576px) { .pos-sheet--ref .modal-content { height:auto; max-height:90dvh; border-radius:20px; } }
+.modal .pos-sheet--ref .modal-content { height:100%; max-height:none; border-radius:0; }
+@media (min-width:576px) { .modal .pos-sheet--ref .modal-content { height:auto; max-height:90dvh; border-radius:20px; } }
 .pos-sheet-header--tabs { padding:12px 16px; }
 .pos-tabs { width:100%; border-radius:16px; background:#fff; padding:8px; box-shadow:0 1px 3px rgba(15,23,42,.08), 0 6px 16px rgba(15,23,42,.04); }
 .pos-tabs__track { display:flex; gap:4px; border-radius:12px; background:#f3f4f6; padding:4px; }
@@ -280,9 +276,8 @@ body:has(.pos-form--reference) #jusModal .erp-sheet-body { flex:1; min-height:0;
   body:has(.pos-form--reference) .modal.show:has(.pos-sheet--ref) { top:60px; height:calc(100dvh - 60px); }
   body:has(.modal.show .pos-sheet--ref) .modal.show .pos-sheet--ref { top:60px !important; bottom:0; height:auto !important; }
   body:has(.modal.show .pos-sheet--ref) .modal-backdrop { top:60px; bottom:0; height:auto; }
-  .pos-sheet--ref .modal-content { background:#e5e9f3; }
-  .pos-sheet--ref .pos-sheet-header--tabs { border-bottom:0; background:#e5e9f3; padding:16px 16px 12px; }
-  .pos-sheet--ref .pos-ref-body { gap:0; background:#e5e9f3; padding:4px 16px 16px; }
+  .pos-add-page .pos-sheet-header--tabs { border-bottom:0; background:#e5e9f3; padding:16px 16px 12px; }
+  .pos-add-page .pos-ref-body { gap:0; background:#e5e9f3; padding:4px 16px 16px; }
   .pos-sheet--ref .pos-ref-panel { border-radius:16px; background:#fff; padding:16px; box-shadow:0 1px 3px rgba(15,23,42,.08), 0 6px 16px rgba(15,23,42,.04); }
 }
 
