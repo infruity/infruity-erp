@@ -142,4 +142,22 @@ final class PosFormUiContractTest extends TestCase
         $this->assertStringContainsString("'pos.create'", $root);
         $this->assertStringContainsString("'pos.edit'", $root);
     }
+
+    public function test_pos_create_mobile_topbar_returns_to_the_pos_list(): void
+    {
+        $topbar = $this->read('resources/views/components/erp/topbar.blade.php');
+
+        $this->assertStringContainsString(<<<'BLADE'
+$posCreateHeader = request()->routeIs('pos.create');
+BLADE, $topbar);
+        $this->assertStringContainsString(<<<'BLADE'
+$transactionBackRoute = $posCreateHeader ? 'pos.index' :
+BLADE, $topbar);
+        $this->assertStringContainsString(<<<'BLADE'
+$transactionBackLabel = $posCreateHeader ? 'Kembali ke Kasir / POS' :
+BLADE, $topbar);
+        $this->assertStringContainsString('href="{{ route($mobileBackRoute) }}" aria-label="{{ $mobileBackLabel }}"', $topbar);
+        $this->assertStringContainsString('<i class="ph-bold ph-caret-left" aria-hidden="true"></i>', $topbar);
+        $this->assertStringContainsString('<button type="button" data-erp-sidebar-toggle aria-label="Buka navigasi"', $topbar);
+    }
 }
