@@ -42,11 +42,11 @@ test('invalid date range keeps filter open without requesting data',()=>{
     const t=setup();t.app.filterOpen=true;t.app.pending.start='2026-10-24';t.app.pending.end='2026-10-01';t.app.applyFilter();
     assert.ok(t.app.pendingDateError);assert.equal(t.app.filterOpen,true);assert.equal(t.requests.length,0);
 });
-test('sender list gives Toko branches a distinct rose avatar accent',()=>{
+test('sender list gives GKB and GBA distinct avatar accents',()=>{
     const createTransferList=require('../../public/assets/js/transfer-list.js');
     const sender=createTransferList({receiving:false});
     assert.deepEqual(sender.branchTheme('Toko GKB'),{background:'#fff1f2',color:'#be123c',borderColor:'#fecdd3'});
-    assert.deepEqual(sender.branchTheme('Toko GBA'),{background:'#fff1f2',color:'#be123c',borderColor:'#fecdd3'});
+    assert.deepEqual(sender.branchTheme('Toko GBA'),{background:'#eef2ff',color:'#4338ca',borderColor:'#c7d2fe'});
 });
 test('receiving and generic branches retain their existing avatar accents',()=>{
     const createTransferList=require('../../public/assets/js/transfer-list.js');
