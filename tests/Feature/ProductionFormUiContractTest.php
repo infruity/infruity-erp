@@ -95,6 +95,7 @@ final class ProductionFormUiContractTest extends TestCase
         $form = file_get_contents(base_path('Modules/Transaction/Resources/views/production/create.blade.php'));
         $this->assertStringContainsString('production-resume-note', $form);
         $this->assertStringContainsString('Melanjutkan draf sementara', $form);
+        $this->assertStringContainsString('x-init="setTimeout(() => $el.remove(), 5000)"', $form);
         $css = file_get_contents(public_path('assets/css/production-form-reference.css'));
         $this->assertStringContainsString('production-resume-note', $css);
         $this->assertMatchesRegularExpression('/\.production-create-reference \.production-resume-note\\s*\\{[^}]*position:\s*fixed;[^}]*z-index:\s*1040;/s', $css);

@@ -148,7 +148,7 @@
     <div class="w-100 flex-lg-row-auto {{ $productionCreateReference ? 'production-create-reference' : '' }}" @if($productionCreateReference) data-reference-product-url="{{ route('products.get-receipt') }}" @endif x-data="productionApp()" x-init="init()">
         <div class="production-form">
             @if($productionCreateReference && isset($data) && $data?->status === 'temp')
-                <p class="production-resume-note" role="status">Melanjutkan draf sementara #{{ $data->production_number }}. Menyimpan akan memperbarui draf ini.</p>
+                <p class="production-resume-note" role="status" x-init="setTimeout(() => $el.remove(), 5000)">Melanjutkan draf sementara #{{ $data->production_number }}. Menyimpan akan memperbarui draf ini.</p>
             @endif
             <!-- Kartu 1: informasi hasil produksi -->
             <section class="production-card" aria-labelledby="production-info-title">
