@@ -157,6 +157,41 @@ final class PosListFiltersTest extends TestCase
         $this->fail("Row {$id} is not listed");
     }
 
+    public function test_detail_lookup_targets_the_related_pos_even_outside_the_first_page(): void
+    {
+        for ($id = 100; $id < 155; $id++) {
+            $this->insertPos($id, 'paid', 10000, 1);
+            DB::table('pos_transaction')->where('id', $id)->update(['date' => '2026-11-01']);
+        }
+
+        $this->assertNotContains(1, $this->ids(['length' => 50]));
+        $rows = $this->fetch(['detail_id' => '1', 'length' => 1]);
+        $this->assertCount(1, $rows);
+        $this->assertSame(1, preg_match('/data-detail="([^"]*)"/', $rows[0]['name'], $match));
+        $detail = json_decode(html_entity_decode($match[1], ENT_QUOTES), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame(1, $detail['id']);
+        $this->assertSame('Noorman', $detail['customer']);
+        $this->assertSame('paid', $detail['status_key']);
+    }
+
+    public function test_detail_lookup_preserves_branch_draft_and_permission_scope(): void
+    {
+        foreach ([6, 8, 9, 999] as $id) {
+            $this->assertSame([], $this->fetch(['detail_id' => (string) $id, 'length' => 1]));
+        }
+        DB::table('role_menu')->where('permission', 'pos.index')->delete();
+        $this->getJson('/_test/pos-data?detail_id=1')->assertForbidden();
+    }
+
+    public function test_detail_lookup_rejects_malformed_identifiers_instead_of_listing_other_transactions(): void
+    {
+        foreach (['0', '-1', '01', '1.5', 'abc', '', '1 OR 1=1'] as $id) {
+            $this->getJson('/_test/pos-data?' . http_build_query(['detail_id' => $id]))
+                ->assertUnprocessable()->assertJsonValidationErrors('detail_id');
+        }
+        $this->getJson('/_test/pos-data?detail_id[]=1')->assertUnprocessable();
+    }
+
     public function test_status_chips_match_the_labels_the_rows_render(): void
     {
         $this->assertSame([1, 2, 3, 4, 5, 7], $this->ids());

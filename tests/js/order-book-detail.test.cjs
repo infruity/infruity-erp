@@ -98,7 +98,7 @@ test('Lihat POS routes to the POS page with native anchor navigation', () => {
         click() { this.clickCount += 1; }
     };
     const action = actionFor(original, original, 'http://localhost', '/pos');
-    assert.equal(action.href, 'http://localhost/pos');
+    assert.equal(action.href, 'http://localhost/pos?detail=1316');
     assert.equal(action.label, 'Lihat POS');
 
     const previousWindow = global.window;
@@ -130,7 +130,7 @@ test('Lihat POS routes to the POS page with native anchor navigation', () => {
         ]});
 
         const link = appended[0];
-        assert.equal(link.href, 'http://localhost/pos');
+        assert.equal(link.href, 'http://localhost/pos?detail=1316');
         let prevented = false;
         link.onClick({button:0, metaKey:false, ctrlKey:false, shiftKey:false, altKey:false, preventDefault() { prevented = true; }});
         assert.equal(prevented, false);

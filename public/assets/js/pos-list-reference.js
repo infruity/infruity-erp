@@ -88,6 +88,7 @@
     function createFilters(config) {
         const cfg = config || {};
         const blank = () => ({status: 'all', branch: cfg.defaultBranch || 'all', start: '', end: ''});
+        let detailLinkVersion = 0;
         return {
             branches: Array.isArray(cfg.branches) ? cfg.branches : [],
             timezone: cfg.timezone || 'Asia/Jakarta',
@@ -258,11 +259,40 @@
             },
             detail: null,
             detailOpen: false,
+            detailLinkLoading: false,
+            detailLinkError: '',
             detailPrimary,
             canDelete,
             whatsappUrl,
+            async openLinkedDetail(search, load) {
+                const ids = new URLSearchParams(search).getAll('detail');
+                if (!ids.length) return;
+                const version = ++detailLinkVersion;
+                this.detailLinkError = '';
+                if (ids.length !== 1 || !/^[1-9][0-9]{0,18}$/.test(ids[0])) {
+                    this.detailLinkError = 'Tautan detail transaksi tidak valid.';
+                    return;
+                }
+                this.detailLinkLoading = true;
+                try {
+                    const detail = await load(ids[0]);
+                    if (version !== detailLinkVersion) return;
+                    if (!detail || String(detail.id) !== ids[0]) {
+                        this.detailLinkError = 'Transaksi POS tidak ditemukan atau tidak dapat diakses.';
+                        return;
+                    }
+                    this.openDetail(detail);
+                } catch (error) {
+                    if (version === detailLinkVersion) this.detailLinkError = 'Gagal memuat detail transaksi POS. Muat ulang halaman untuk mencoba lagi.';
+                } finally {
+                    if (version === detailLinkVersion) this.detailLinkLoading = false;
+                }
+            },
             openDetail(row) {
                 if (!row) return;
+                ++detailLinkVersion;
+                this.detailLinkLoading = false;
+                this.detailLinkError = '';
                 this.detail = row;
                 this.detailOpen = true;
             },

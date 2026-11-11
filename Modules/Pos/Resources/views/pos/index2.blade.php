@@ -162,6 +162,8 @@
         </x-erp.mobile-search>
         @if(check_access('pos.create'))<a href="{{ url('pos/create') }}" class="erp-action erp-action--primary pos-add" aria-label="Tambah Transaksi"><i class="ph-bold ph-plus" aria-hidden="true"></i><span>Tambah Transaksi</span></a>@endif
     </x-slot:toolbar>
+    <p role="status" class="px-[20px] py-[12px] text-[13px] text-[#6b7280]" x-show="detailLinkLoading" x-cloak>Memuat detail transaksi POS...</p>
+    <p role="alert" class="px-[20px] py-[12px] text-[13px] text-[#be123c]" x-show="detailLinkError" x-text="detailLinkError" x-cloak></p>
     <div class="pos-list"><table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
         <thead>
             <tr class="text-start gs-0">
@@ -345,6 +347,27 @@
         const posRoot = () => document.querySelector('[data-pos-list]');
         const posUi = () => Alpine.$data(posRoot());
 
+        async function loadLinkedPosDetail(id) {
+            const url = new URL("{{ route('pos-data') }}");
+            url.searchParams.set('detail_id', id);
+            url.searchParams.set('start', '0');
+            url.searchParams.set('length', '1');
+            const response = await fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+                signal: AbortSignal.timeout(15000),
+            });
+            if (!response.ok || response.redirected) throw new Error('POS lookup failed');
+            const payload = await response.json();
+            if (payload.error || !Array.isArray(payload.data)) throw new Error('Invalid POS response');
+            if (payload.data.length !== 1 || String(payload.data[0].id) !== id) return null;
+            // Parse the existing escaped metadata in an inert template; never mount response HTML.
+            const template = document.createElement('template');
+            template.innerHTML = payload.data[0].name || '';
+            return PosListUi.parseDetail(template.content.querySelector('a.pos-list-copy[data-detail]')?.getAttribute('data-detail') || '');
+        }
+
         // Reference avatar: initials on a tinted tile, with the parcel flag as a micro-badge.
         function decoratePosRow(row) {
             const label = row.querySelector('.pos-list-customer > span:last-child');
@@ -475,6 +498,7 @@
             });
 
             showStockAlert(lastBranch);
+            posUi().openLinkedDetail(window.location.search, loadLinkedPosDetail);
         });
 
         function reloadDataTable() {

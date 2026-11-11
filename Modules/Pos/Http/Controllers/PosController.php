@@ -1381,6 +1381,9 @@ class PosController extends Controller
     public function get_data(Request $request)
     {
         $this->authorizeAccess('pos.index');
+        if ($request->has('detail_id')) {
+            $request->validate(['detail_id' => ['required', 'string', 'regex:/\A[1-9][0-9]{0,18}\z/']]);
+        }
         $userId = auth()->id();
         // details.product:id keeps the parcel icon check from querying products per row.
         $query  = PosModel::with('customer', 'paymentDetails', 'details.product:id', 'branch', 'user')
@@ -1390,6 +1393,11 @@ class PosController extends Controller
             $q->where('status', '!=', 'temp')
                 ->orWhere('created_by', $userId);
         });
+
+        // Deep links reuse the list payload and all of its visibility restrictions.
+        if ($request->has('detail_id')) {
+            $query->whereKey($request->input('detail_id'));
+        }
 
         if ($request->has('status_filter') && $request->status_filter !== 'all') {
             $paidSum = '(select coalesce(sum(pos_payment.total), 0) from pos_payment where pos_payment.pos_id = pos_transaction.id and pos_payment.deleted_at is null)';

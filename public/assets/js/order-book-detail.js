@@ -67,8 +67,11 @@
         const isEdit = /\/edit\/?$/.test(url.pathname);
         const isPos = original === posLink;
         if (isPos && posIndexUrl) {
+            const posId = url.pathname.match(/\/pos\/show\/([1-9]\d*)\/?$/)?.[1];
+            if (!posId) return null;
             try { url = new URL(posIndexUrl, origin + '/'); } catch { return null; }
             if (!['http:', 'https:'].includes(url.protocol) || url.origin !== origin) return null;
+            url.searchParams.set('detail', posId);
         }
         return { href: url.href, isDelete: false, isEdit, isPos, label: isEdit ? 'Edit' : isPos ? 'Lihat POS' : 'Proses Pesanan' };
     }
