@@ -22,6 +22,6 @@ final class TransferReceiveFilterUiContractTest extends TestCase
         $this->assertStringContainsString("resetPendingFilter('date')", $view);
         $this->assertStringNotContainsString('<details class="transfer-filter-period"', $view);
         $this->assertDoesNotMatchRegularExpression('~@if\s*\(!\$receiving\)\s*\R\s*<button[^>]*class="transfer-filter-reset"~', $view);
-        $this->assertStringContainsString('.transfer-filter-date-cards { display:grid; grid-template-columns:minmax(0,1fr);', $styles);
+        $this->assertStringContainsString('.transfer-filter-date-cards { display:flex; flex-direction:column; gap:8px; }', $styles);
     }
 }
