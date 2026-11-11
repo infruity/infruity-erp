@@ -53,8 +53,9 @@
         .stock-detail-load-more[hidden] { display:none!important; }
         .stock-detail-load-more button { width:100%; min-height:44px; border:2px dashed #e5e7eb; border-radius:12px; background:#fff; color:#6b7280; font-size:14px; font-weight:600; }
         .stock-detail-load-more button:hover { border-color:#34d399; color:#047857; background:#ecfdf5; }
-        .stock-mobile-list { display:block; min-height:0; flex:1; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; background:#fff; }
-        .stock-mobile-list::-webkit-scrollbar { display:none; }
+        .stock-detail-scroll { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; background:#fff; }
+        .stock-detail-scroll::-webkit-scrollbar { display:none; }
+        .stock-mobile-list { display:block; }
         .product-stock-detail-card .card-body { display:flex; flex:1; min-height:0; flex-direction:column; overflow:hidden; padding:0!important; }
         #products-stock-table_wrapper { display:none!important; }
         .stock-mobile-empty { display:flex; min-height:220px; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; color:#6b7280; text-align:center; }
@@ -353,9 +354,11 @@
             </div>
             <!--begin::Card body-->
             <div class="card-body pt-0">
-                <div id="stock-mobile-list" class="stock-mobile-list" aria-live="polite"></div>
-                <div class="stock-detail-load-more" id="stock-detail-load-more" hidden>
-                    <button type="button"><i class="ph ph-arrow-circle-down" aria-hidden="true"></i> <span id="stock-detail-load-more-label">Muat Lebih Banyak</span></button>
+                <div class="stock-detail-scroll">
+                    <div id="stock-mobile-list" class="stock-mobile-list" aria-live="polite"></div>
+                    <div class="stock-detail-load-more" id="stock-detail-load-more" hidden>
+                        <button type="button"><i class="ph ph-arrow-circle-down" aria-hidden="true"></i> <span id="stock-detail-load-more-label">Muat Lebih Banyak</span></button>
+                    </div>
                 </div>
                 <!--begin::Table-->
                 <table class="table align-middle table-row-dashed fs-6 gy-5" id="products-stock-table" width="100%">
