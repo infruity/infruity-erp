@@ -82,7 +82,8 @@
             #kt_content { overflow:hidden!important; padding:0!important; }
             #kt_content_container { display:flex; flex:1; flex-direction:column; min-height:0; width:100%; max-width:none; padding:0; }
             .stock-card { border:0; border-radius:0; }
-            .stock-toolbar { padding:12px 16px; }
+            .stock-toolbar { padding:16px; }
+            .stock-search-shell .erp-mobile-search { height:44px; }
             .stock-filters { top:auto; right:0; bottom:0; left:0; width:100%; max-height:85dvh; padding:0; border:0; border-radius:24px 24px 0 0; box-shadow:0 -16px 40px rgba(0,0,0,.2); }
             .stock-filter-mobile { display:block; }
             .stock-filter-desktop { display:none; }
@@ -118,10 +119,11 @@
             .stock-filter-footer button { flex:1; min-height:44px; border:1px solid #e5e7eb; border-radius:12px; padding:10px 12px; background:#fff; color:#4b5563; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; }
             .stock-filter-footer button:last-child { border-color:#0b595b; background:#0b595b; color:#fff; }
             .stock-backdrop { background:rgba(0,0,0,.7); }
-            .stock-row { gap:12px; min-height:67px; padding:13px 20px; }
-            .stock-icon { width:40px; height:40px; font-size:19px; }
-            .stock-name { font-size:15px; }
-            .stock-hpp, .stock-unit { font-size:12px; }
+            .stock-row { gap:12px; min-height:64px; padding:14px 20px; }
+            .stock-icon { width:36px; height:36px; font-size:18px; }
+            .stock-name { font-size:14px; font-weight:600; }
+            .stock-hpp { font-size:12px; font-weight:600; }
+            .stock-unit { font-size:11px; font-weight:400; }
             .stock-balance { min-width:0; font-size:14px; }
             .stock-sku, .stock-dot { display:none; }
             .stock-results { padding-bottom:calc(6rem + env(safe-area-inset-bottom)); }
@@ -199,7 +201,6 @@
                     </label>
                 </section>
                 <section class="stock-mobile-status stock-filter-mobile"><label class="stock-filter-heading" for="stock-pending-status">Status Stok</label><select id="stock-pending-status"><option value="all">Semua stok</option><option value="ada">Ada</option><option value="kosong">Kosong atau minus</option></select></section>
-                </div>
                     </x-slot:body>
                     <x-slot:footer>
                         <button type="button" data-stock-filter-close>Batal</button>
