@@ -44,8 +44,13 @@ final class StockOpnameReferencePresentationTest extends TestCase
         $this->assertStringNotContainsString('so-draft-calendar', $source);
         $this->assertStringContainsString('calendar.open(draft[dateSide]', $script);
         $this->assertStringContainsString('data-so-calendar-day', $script);
+        $this->assertStringContainsString('ui.selectFilterDate(draft,dateSide,day.dataset.soCalendarDay)', $script);
+        $this->assertStringContainsString('syncDates(); showCalendar(false)', $script);
         $this->assertStringContainsString('#so-calendar-host .so-calendar-card', $styles);
         $this->assertStringContainsString('#so-calendar-host .so-calendar-day button.is-selected', $styles);
+        $this->assertStringContainsString('#so-calendar-host .so-calendar-day button.is-in-range', $styles);
+        $this->assertStringContainsString('#so-filter-calendar:not([hidden])', $styles);
+        $this->assertStringContainsString('height:36px; align-items:center; justify-content:center; color:#9ca3af;', $styles);
     }
 
     public function test_branch_radio_uses_a_green_checked_stroke(): void

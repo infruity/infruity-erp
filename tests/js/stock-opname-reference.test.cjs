@@ -198,15 +198,15 @@ test('stock opname calendar navigates dates, months and years from the selected 
     assert.equal(calendar.heading, 'Februari 2028');
 });
 
-test('stock opname date selection preserves the start/end-side behavior and ordered range', () => {
+test('stock opname date cards preserve endpoint selection and ordered-range behavior', () => {
     assert.equal(typeof ui.selectFilterDate, 'function');
-    const draft = {start:'2026-11-10',end:'2026-11-20'};
-    ui.selectFilterDate(draft,'start','2026-11-25');
-    assert.deepEqual(draft,{start:'2026-11-25',end:'2026-11-25'});
-    ui.selectFilterDate(draft,'end','2026-11-05');
-    assert.deepEqual(draft,{start:'2026-11-05',end:'2026-11-05'});
-    ui.selectFilterDate(draft,'end','2026-11-12');
-    assert.deepEqual(draft,{start:'2026-11-05',end:'2026-11-12'});
+    const draft = {start:'2026-11-10', end:'2026-11-20'};
+    ui.selectFilterDate(draft, 'start', '2026-11-25');
+    assert.deepEqual(draft, {start:'2026-11-25', end:'2026-11-25'});
+    ui.selectFilterDate(draft, 'end', '2026-11-05');
+    assert.deepEqual(draft, {start:'2026-11-05', end:'2026-11-05'});
+    ui.selectFilterDate(draft, 'end', '2026-11-12');
+    assert.deepEqual(draft, {start:'2026-11-05', end:'2026-11-12'});
 });
 
 test('filter draft preserves branch, date, result and status choices and submits server filters', () => {

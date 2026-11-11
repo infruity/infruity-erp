@@ -45,7 +45,7 @@ test('calendar supports month and year navigation and month selection', () => {
     assert.equal(state.calendarView, 'month');
 });
 
-test('selecting one day updates only its endpoint and preserves range validation', () => {
+test('selecting a POS date preserves endpoint semantics and invalid-range validation', () => {
     const state = filters();
     state.draft.start = '2026-11-10';
     state.draft.end = '2026-11-20';
@@ -62,6 +62,31 @@ test('selecting one day updates only its endpoint and preserves range validation
     assert.equal(state.calendarOpen, false);
     assert.deepEqual(state.applied, {status:'all', branch:'all', start:'2026-11-10', end:'2026-11-20'});
 });
+
+test('POS calendar matches the transfer date grid order and weekday labels', () => {
+    const state = filters();
+    state.openCalendar('start', null, now);
+
+    assert.deepEqual(state.calendarWeekdays, ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']);
+    assert.equal(state.calendarDays[0].date, '2026-11-01');
+    assert.equal(state.calendarDays[0].day, 1);
+});
+
+test('POS calendar marks the active endpoint and shades only a valid pending range', () => {
+    const state = filters();
+    state.draft.start = '2026-11-11';
+    state.draft.end = '2026-11-20';
+    state.openCalendar('start', null, now);
+
+    assert.equal(state.isCalendarDateSelected('2026-11-11'), true);
+    assert.equal(state.isCalendarDateSelected('2026-11-20'), false);
+    assert.equal(state.isCalendarDateInRange('2026-11-15'), true);
+    assert.equal(state.isCalendarDateInRange('2026-11-11'), false);
+    state.openCalendar('end', null, now);
+    assert.equal(state.isCalendarDateSelected('2026-11-11'), false);
+    assert.equal(state.isCalendarDateSelected('2026-11-20'), true);
+});
+
 
 test('quick-period selected state follows the actual pending date range', () => {
     const state = filters();

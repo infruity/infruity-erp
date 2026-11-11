@@ -52,7 +52,8 @@
 .so-reference-sheet .so-filter-dates span { width:24px; color:#9ca3af; font-size:10px; font-weight:700; }
 .so-reference-sheet .so-filter-dates strong { color:#6b7280; font-size:12px; font-weight:500; }
 .so-reference-sheet .so-period-presets button.is-selected { background:#c5f037; border-color:#c5f037; color:#1f2937; }
-.so-reference-sheet .so-calendar-back { display:inline-flex; min-height:36px; align-items:center; gap:8px; border:0; border-radius:8px; padding:4px 6px; margin:0 0 12px; background:transparent; color:#374151; font-size:14px; font-weight:600; }
+#so-filter-calendar:not([hidden]) { display:flex; flex-direction:column; gap:16px; }
+.so-reference-sheet .so-calendar-back { display:inline-flex; min-height:36px; align-items:center; gap:8px; align-self:flex-start; border:0; border-radius:8px; padding:4px 6px; margin:0; background:transparent; color:#374151; font-size:14px; font-weight:600; }
 .so-reference-sheet .so-calendar-back i { font-size:18px; }
 #so-calendar-host .so-calendar-card { max-width:100%; border:1px solid #f3f4f6; border-radius:20px; padding:16px; background:#fff; box-shadow:0 1px 4px rgba(15,23,42,.06); }
 #so-calendar-host .so-calendar-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
@@ -60,7 +61,7 @@
 #so-calendar-host .so-calendar-header button:hover { background:#f9fafb; }
 #so-calendar-host .so-calendar-header button:nth-child(2) { width:auto; border-radius:8px; padding:4px 10px; color:#1f2937; font-size:18px; font-weight:700; }
 #so-calendar-host .so-calendar-days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); text-align:center; }
-#so-calendar-host .so-calendar-weekday, #so-calendar-host .so-calendar-blank { display:flex; height:40px; align-items:center; justify-content:center; color:#94a3b8; font-size:12px; font-weight:600; }
+#so-calendar-host .so-calendar-weekday, #so-calendar-host .so-calendar-blank { display:flex; height:36px; align-items:center; justify-content:center; color:#9ca3af; font-size:12px; font-weight:600; }
 #so-calendar-host .so-calendar-day { position:relative; display:flex; height:40px; align-items:center; justify-content:center; }
 #so-calendar-host .so-calendar-day > i { position:absolute; inset:2px 0; background:#ecfdf5; }
 #so-calendar-host .so-calendar-day > i[hidden] { display:none; }

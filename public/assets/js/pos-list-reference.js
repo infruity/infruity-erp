@@ -128,10 +128,10 @@
                 if (this.calendarView === 'year') return `${this.calendarYear - 4} - ${this.calendarYear + 7}`;
                 return `${CALENDAR_MONTHS[this.calendarMonth]} ${this.calendarYear}`;
             },
-            get calendarWeekdays() { return ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']; },
+            get calendarWeekdays() { return ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']; },
             get calendarDays() {
                 const firstDay = new Date(Date.UTC(this.calendarYear, this.calendarMonth, 1));
-                const offset = (firstDay.getUTCDay() + 6) % 7;
+                const offset = firstDay.getUTCDay();
                 const count = new Date(Date.UTC(this.calendarYear, this.calendarMonth + 1, 0)).getUTCDate();
                 return [
                     ...Array.from({length:offset}, () => null),
@@ -175,9 +175,13 @@
                 const trigger = this.calendarTrigger;
                 this.calendarTrigger = null;
                 if (!trigger || typeof trigger.focus !== 'function') return;
-                const restore = () => trigger.focus();
-                if (typeof this.$nextTick === 'function') this.$nextTick(restore);
-                else restore();
+                const restore = () => {
+                    trigger.focus({preventScroll:true});
+                    trigger.scrollIntoView?.({block:'nearest'});
+                };
+                const frame = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : callback => callback();
+                if (typeof this.$nextTick === 'function') this.$nextTick(() => frame(restore));
+                else frame(restore);
             },
             setCalendarView(view) {
                 if (['date', 'month', 'year'].includes(view)) this.calendarView = view;
@@ -212,6 +216,13 @@
                 if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return;
                 this.draft[this.calendarSide] = value;
                 this.closeCalendar();
+            },
+            isCalendarDateSelected(value) {
+                return !!value && value === this.draft[this.calendarSide];
+            },
+            isCalendarDateInRange(value) {
+                const {start, end} = this.draft;
+                return !!start && !!end && start < end && value > start && value < end;
             },
             isDateRangeActive(period, now) {
                 if (!['today', 'week'].includes(period)) return false;

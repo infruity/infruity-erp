@@ -96,17 +96,21 @@
     .pos-filter-presets { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
     .pos-filter-presets button { min-width:0; min-height:38px; border:1px solid #e5e7eb; border-radius:12px; padding:6px 8px; background:#fff; color:#6b7280; font-size:12px; font-weight:700; cursor:pointer; }
     .pos-filter-presets button.is-selected { border-color:#c5f037; background:#c5f037; color:#1f2937; }
-    .pos-filter-calendar-back { display:inline-flex; min-height:36px; align-items:center; gap:8px; border:0; border-radius:8px; padding:4px 6px; margin:0 0 12px; background:transparent; color:#374151; font-size:14px; font-weight:600; cursor:pointer; }
+    .pos-filter-calendar { display:flex; flex-direction:column; gap:16px; }
+    .pos-filter-calendar-back { display:inline-flex; min-height:36px; align-items:center; gap:8px; align-self:flex-start; border:0; border-radius:8px; padding:4px 6px; margin:0; background:transparent; color:#374151; font-size:14px; font-weight:600; cursor:pointer; }
+    .pos-filter-calendar-back i { font-size:18px; }
     .pos-filter-calendar-card { max-width:100%; border:1px solid #f3f4f6; border-radius:20px; padding:16px; background:#fff; box-shadow:0 1px 4px rgba(15,23,42,.06); }
     .pos-filter-calendar-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
     .pos-filter-calendar-header button { display:flex; width:36px; height:36px; align-items:center; justify-content:center; border:0; border-radius:50%; padding:0; background:transparent; color:#6b7280; font-size:18px; cursor:pointer; }
     .pos-filter-calendar-header button:hover { background:#f9fafb; }
     .pos-filter-calendar-header button:nth-child(2) { width:auto; border-radius:8px; padding:4px 10px; color:#1f2937; font-size:18px; font-weight:700; }
     .pos-filter-calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); text-align:center; }
-    .pos-filter-calendar-weekday,.pos-filter-calendar-blank { display:flex; height:40px; align-items:center; justify-content:center; color:#94a3b8; font-size:12px; font-weight:600; }
-    .pos-filter-calendar-day { display:flex; height:40px; align-items:center; justify-content:center; }
-    .pos-filter-calendar-day button { width:36px; height:36px; border:0; border-radius:50%; padding:0; background:transparent; color:#374151; font-size:14px; cursor:pointer; }
+    .pos-filter-calendar-weekday,.pos-filter-calendar-blank { display:flex; height:36px; align-items:center; justify-content:center; color:#9ca3af; font-size:12px; font-weight:600; }
+    .pos-filter-calendar-day { position:relative; display:flex; height:40px; align-items:center; justify-content:center; }
+    .pos-filter-calendar-day > i { position:absolute; inset:2px 0; background:#ecfdf5; }
+    .pos-filter-calendar-day button { position:relative; z-index:1; width:36px; height:36px; border:0; border-radius:50%; padding:0; background:transparent; color:#374151; font-size:14px; cursor:pointer; }
     .pos-filter-calendar-day button:hover { background:#f3f4f6; }
+    .pos-filter-calendar-day button.is-in-range { color:#1f2937; font-weight:600; }
     .pos-filter-calendar-day button.is-selected,.pos-filter-calendar-options button.is-selected { background:#c5f037; color:#1f2937; font-weight:700; }
     .pos-filter-calendar-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:8px 0; }
     .pos-filter-calendar-options button { min-height:44px; border:0; border-radius:12px; padding:8px; background:transparent; color:#4b5563; font-size:12px; cursor:pointer; }
@@ -203,8 +207,8 @@
                         <fieldset class="pos-filter-section">
                             <legend class="pos-filter-heading"><span>Periode Tanggal</span><button type="button" class="pos-filter-reset" x-show="draft.start || draft.end" @click="draft.start = ''; draft.end = ''">Reset</button></legend>
                             <div class="pos-filter-dates">
-                                <button type="button" id="pos-start-date" aria-label="Pilih tanggal mulai transaksi" aria-controls="pos-filter-calendar" :aria-expanded="calendarOpen && calendarSide === 'start'" @click="openCalendar('start', $el); $nextTick(() => $refs.posCalendarBack?.focus())"><span>DARI</span><strong x-text="formatDate(draft.start)"></strong></button>
-                                <button type="button" id="pos-end-date" aria-label="Pilih tanggal akhir transaksi" aria-controls="pos-filter-calendar" :aria-expanded="calendarOpen && calendarSide === 'end'" @click="openCalendar('end', $el); $nextTick(() => $refs.posCalendarBack?.focus())"><span>KE</span><strong x-text="formatDate(draft.end)"></strong></button>
+                                <button type="button" id="pos-start-date" aria-label="Pilih tanggal mulai transaksi" aria-controls="pos-filter-calendar" :aria-expanded="calendarOpen && calendarSide === 'start'" @click="openCalendar('start', $el); $nextTick(() => requestAnimationFrame(() => { $refs.posCalendarBack?.focus({preventScroll:true}); $refs.posCalendarBack?.scrollIntoView({block:'nearest'}); }))"><span>DARI</span><strong x-text="formatDate(draft.start)"></strong></button>
+                                <button type="button" id="pos-end-date" aria-label="Pilih tanggal akhir transaksi" aria-controls="pos-filter-calendar" :aria-expanded="calendarOpen && calendarSide === 'end'" @click="openCalendar('end', $el); $nextTick(() => requestAnimationFrame(() => { $refs.posCalendarBack?.focus({preventScroll:true}); $refs.posCalendarBack?.scrollIntoView({block:'nearest'}); }))"><span>KE</span><strong x-text="formatDate(draft.end)"></strong></button>
                             </div>
                             <p x-show="dateError" x-cloak role="alert" class="mt-2 text-xs font-medium text-red-600" x-text="dateError"></p>
                             <div class="flex flex-col gap-2 pt-2">
@@ -216,8 +220,8 @@
                             </div>
                         </fieldset>
                     </div>
-                    <div id="pos-filter-calendar" data-pos-calendar x-show="calendarOpen" x-cloak @keydown.escape.stop="closeCalendar()">
-                        <button type="button" x-ref="posCalendarBack" class="pos-filter-calendar-back" @click="closeCalendar()"><i class="ph ph-arrow-left" aria-hidden="true"></i><span>Kembali ke filter</span></button>
+                    <div id="pos-filter-calendar" class="pos-filter-calendar" data-pos-calendar x-show="calendarOpen" x-cloak @keydown.escape.stop="closeCalendar()">
+                        <button type="button" x-ref="posCalendarBack" class="pos-filter-calendar-back" @click="closeCalendar()"><i class="ph ph-arrow-left" aria-hidden="true"></i><span>Kembali</span></button>
                         <div class="pos-filter-calendar-card">
                             <div class="pos-filter-calendar-header">
                                 <button type="button" @click="navigateCalendar(-1)" aria-label="Sebelumnya"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
@@ -225,8 +229,8 @@
                                 <button type="button" @click="navigateCalendar(1)" aria-label="Berikutnya"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
                             </div>
                             <div x-show="calendarView === 'date'" class="pos-filter-calendar-grid">
-                                <template x-for="(weekday, index) in calendarWeekdays" :key="'weekday-' + index"><span class="pos-filter-calendar-weekday" x-text="weekday"></span></template>
-                                <template x-for="(day, index) in calendarDays" :key="day ? day.date : 'blank-' + index"><span class="pos-filter-calendar-day"><button type="button" :disabled="!day" :aria-pressed="!!day && draft[calendarSide] === day.date" :class="day && draft[calendarSide] === day.date ? 'is-selected' : ''" @click="selectCalendarDate(day)" x-text="day ? day.day : ''"></button></span></template>
+                                <template x-for="(weekday, index) in calendarWeekdays" :key="'weekday-' + index"><span class="pos-filter-calendar-weekday" :aria-label="weekday" x-text="weekday[0]"></span></template>
+                                <template x-for="(day, index) in calendarDays" :key="day ? day.date : 'blank-' + index"><span class="pos-filter-calendar-day"><i x-show="day && isCalendarDateInRange(day.date)" aria-hidden="true"></i><button type="button" :disabled="!day" :aria-pressed="!!day && isCalendarDateSelected(day.date)" :class="day && isCalendarDateSelected(day.date) ? 'is-selected' : day && isCalendarDateInRange(day.date) ? 'is-in-range' : ''" @click="selectCalendarDate(day)" x-text="day ? day.day : ''"></button></span></template>
                             </div>
                             <div x-show="calendarView === 'month'" class="pos-filter-calendar-options">
                                 <template x-for="(month, index) in calendarMonths" :key="'month-' + index"><button type="button" :class="calendarMonth === index ? 'is-selected' : ''" :aria-pressed="calendarMonth === index" @click="selectCalendarMonth(index)" x-text="month"></button></template>
