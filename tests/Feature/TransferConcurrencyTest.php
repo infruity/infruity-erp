@@ -23,9 +23,16 @@ class TransferConcurrencyTest extends TestCase
     {
         parent::setUp();
 
-        // These tests exercise the real transfer tables; phpunit.xml uses an empty in-memory SQLite database.
-        if (! Schema::hasTable('users') || ! Schema::hasTable('transfers')) {
-            $this->markTestSkipped('Needs a migrated database (run with a real DB connection).');
+        // These tests exercise the real transfer tables; the default phpunit.xml uses an empty in-memory SQLite
+        // database. Run them with: php vendor/bin/phpunit -c phpunit.mysql.xml
+        if (! Schema::hasTable('users') || ! Schema::hasTable('transfer')) {
+            $this->markTestSkipped('Needs a migrated database (use phpunit.mysql.xml).');
+        }
+
+        // The tests write rows, so never let them run against anything but a dedicated *_test database.
+        $database = DB::connection()->getDatabaseName();
+        if (! str_ends_with((string) $database, '_test')) {
+            $this->markTestSkipped("Refusing to run against non-test database '{$database}'.");
         }
 
         $this->user = User::first() ?? User::create([
@@ -44,7 +51,47 @@ class TransferConcurrencyTest extends TestCase
             $this->branchB = $branches[1];
         }
 
-        $this->actingAs($this->user);
+        $this->seedOriginStock([1, 2, 3]);
+        $this->actAsSuperAdmin($this->user);
+    }
+
+    /**
+     * Saving a transfer checks the origin branch's stock, which is a ledger. Give the origin
+     * branch ample stock through a finished opname row (rolled back with the transaction).
+     */
+    private function seedOriginStock(array $productIds): void
+    {
+        foreach ($productIds as $productId) {
+            DB::table('stock_opname')->insert([
+                'code'        => 'SO-TEST-' . $productId,
+                'date'        => date('Y-m-d'),
+                'branch_id'   => $this->branchA->id,
+                'status'      => 'selesai',
+                'product_id'  => $productId,
+                'stock'       => 0,
+                'real_stock'  => 1000,
+                'difference'  => 1000,
+                'avg_price'   => 10000,
+                'created_by'  => $this->user->id_user,
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ]);
+        }
+    }
+
+    /**
+     * Account roles are read from role_user (the session only selects among assigned roles),
+     * so a super admin needs a real assignment, not just a session value.
+     */
+    private function actAsSuperAdmin(User $user): void
+    {
+        if (! DB::table('role')->where('id_role', 1)->exists()) {
+            DB::table('role')->insert(['id_role' => 1, 'nm_role' => 'Super Admin', 'id_creator' => $user->id_user]);
+        }
+
+        DB::table('role_user')->insertOrIgnore(['id_user' => $user->id_user, 'id_role' => 1]);
+
+        $this->actingAs($user);
         session(['role' => ['id_role' => 1, 'nm_role' => 'Super Admin']]);
     }
 
@@ -86,8 +133,7 @@ class TransferConcurrencyTest extends TestCase
             'email'    => 'userb_test1@example.com',
             'password' => bcrypt('password'),
         ]);
-        $this->actingAs($userB);
-        session(['role' => ['id_role' => 1, 'nm_role' => 'Super Admin']]);
+        $this->actAsSuperAdmin($userB);
 
         $payloadB = [
             'transfer_id'           => null,
@@ -234,8 +280,7 @@ class TransferConcurrencyTest extends TestCase
             'email'    => 'userb_test2@example.com',
             'password' => bcrypt('password'),
         ]);
-        $this->actingAs($userB);
-        session(['role' => ['id_role' => 1, 'nm_role' => 'Super Admin']]);
+        $this->actAsSuperAdmin($userB);
 
         $responseB = $this->get('/transfer-pengirim/create');
         $responseB->assertStatus(200);
