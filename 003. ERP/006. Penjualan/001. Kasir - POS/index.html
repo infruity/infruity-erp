@@ -638,8 +638,11 @@
 
             #printable-po button,
             #pos-printable-receipt button,
+            .receipt-internal-only,
+            .receipt-internal-only *,
             .no-print, header, aside, .sweep-container {
                 display: none !important;
+                visibility: hidden !important;
             }
 
             body.printing-pos-receipt #pos-receipt-view-container {
@@ -836,7 +839,7 @@
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45">
                                 <span>Pengadaan</span>
                             </a>
-                            <a href="../../005. Produksi/001. Produksi Barang/index.html"
+                            <a href="../../005. Produksi/index.html"
                                 class="submenu-link relative flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-white/45">
                                 <span>Produksi</span>
                             </a>
@@ -1111,15 +1114,15 @@
                             <i class="ph ph-caret-right text-[0.55rem]"></i>
                             <span
                                 :class="(currentView === 'form' || currentView === 'parcel' || currentView === 'payment' || currentView === 'address' || currentView === 'receipt' || currentView === 'payment-success') ? 'cursor-pointer hover:underline hover:text-emerald-700' : ''"
-                                @click="if (currentView === 'payment-success') { closePaymentSuccessToList(); } else if (currentView === 'receipt') { closeReceiptView(); closePaymentView(); closeFormView(); } else if (currentView === 'address') { closeAddressPickerView(); closePaymentView(); closeFormView(); } else if (currentView === 'parcel') { closeParcelView(); closeFormView(); } else if (currentView === 'payment') { closePaymentView(); closeFormView(); } else if (currentView === 'form') { closeFormView(); }">Kasir
+                                @click="if (currentView === 'payment-success') { closePaymentSuccessToList(); } else if (currentView === 'receipt') { closeFormView(); } else if (currentView === 'address') { closeAddressPickerView(); closePaymentView(); closeFormView(); } else if (currentView === 'parcel') { closeParcelView(); closeFormView(); } else if (currentView === 'payment') { closePaymentView(); closeFormView(); } else if (currentView === 'form') { closeFormView(); }">Kasir
                                 / POS</span>
                             <template
-                                x-if="currentView === 'form' || currentView === 'parcel' || currentView === 'payment' || currentView === 'address' || currentView === 'receipt'">
+                                x-if="currentView === 'form' || currentView === 'parcel' || (currentView === 'payment' && paymentReturnView !== 'list') || currentView === 'address' || (currentView === 'receipt' && receiptReturnView === 'payment' && paymentReturnView !== 'list')">
                                 <div class="inline-flex items-center gap-1">
                                     <i class="ph ph-caret-right text-[0.55rem]"></i>
                                     <span
                                         :class="(currentView === 'parcel' || currentView === 'payment' || currentView === 'address' || currentView === 'receipt') ? 'cursor-pointer hover:underline hover:text-emerald-700' : 'text-gray-600 font-semibold'"
-                                        @click="if (currentView === 'receipt') { closeReceiptView(); closePaymentView(); } else if (currentView === 'address') { closeAddressPickerView(); closePaymentView(); } else if (currentView === 'parcel') { closeParcelView(); } else if (currentView === 'payment') { closePaymentView(); }"
+                                        @click="if (currentView === 'receipt') { closeReceiptView(); if (currentView === 'payment') { paymentReturnView = 'form'; currentView = 'form'; } } else if (currentView === 'address') { closeAddressPickerView(); paymentReturnView = 'form'; currentView = 'form'; } else if (currentView === 'parcel') { closeParcelView(); } else if (currentView === 'payment') { paymentReturnView = 'form'; currentView = 'form'; }"
                                         x-text="isEditMode ? 'Edit Transaksi' : 'Tambah Transaksi'"></span>
                                 </div>
                             </template>
@@ -1130,11 +1133,18 @@
                                         x-text="isEditParcelMode ? 'Edit Parcel' : (selectedAddCategory === 'buah' ? 'Tambah Buah & Olahan' : (selectedAddCategory === 'jus' ? 'Tambah Jus' : 'Tambah Parcel'))"></span>
                                 </div>
                             </template>
-                            <template x-if="currentView === 'payment' || currentView === 'address' || currentView === 'receipt'">
+                            <template x-if="currentView === 'payment' || currentView === 'address' || (currentView === 'receipt' && receiptReturnView === 'payment')">
                                 <div class="inline-flex items-center gap-1">
                                     <i class="ph ph-caret-right text-[0.55rem]"></i>
                                     <span :class="(currentView === 'address' || currentView === 'receipt') ? 'cursor-pointer hover:underline hover:text-emerald-700' : 'text-gray-600 font-semibold'"
                                         @click="if (currentView === 'receipt') { closeReceiptView(); } else if (currentView === 'address') { closeAddressPickerView(); }">Pembayaran</span>
+                                </div>
+                            </template>
+                            <template x-if="currentView === 'payment-success' || (currentView === 'receipt' && receiptReturnView === 'payment-success')">
+                                <div class="inline-flex items-center gap-1">
+                                    <i class="ph ph-caret-right text-[0.55rem]"></i>
+                                    <span :class="currentView === 'receipt' ? 'cursor-pointer hover:underline hover:text-emerald-700' : 'text-gray-600 font-semibold'"
+                                        @click="if (currentView === 'receipt') closeReceiptView()">Transaksi Berhasil</span>
                                 </div>
                             </template>
                             <template x-if="currentView === 'address'">
@@ -1147,12 +1157,6 @@
                                 <div class="inline-flex items-center gap-1">
                                     <i class="ph ph-caret-right text-[0.55rem]"></i>
                                     <span class="text-gray-600 font-semibold">Nota Transaksi</span>
-                                </div>
-                            </template>
-                            <template x-if="currentView === 'payment-success'">
-                                <div class="inline-flex items-center gap-1">
-                                    <i class="ph ph-caret-right text-[0.55rem]"></i>
-                                    <span class="text-gray-600 font-semibold">Transaksi Berhasil</span>
                                 </div>
                             </template>
                         </div>
@@ -1176,7 +1180,7 @@
                     <button x-show="currentView === 'payment'" x-cloak @click="closePaymentView()"
                         class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 ml-3 rounded-xl border border-gray-200 bg-white hover:bg-emerald-50 text-xs font-semibold text-gray-700 hover:text-[#0b595b] transition shadow-2xs cursor-pointer">
                         <i class="ph-bold ph-arrow-left"></i>
-                        <span>Kembali ke Transaksi</span>
+                        <span x-text="paymentReturnView === 'list' ? 'Kembali ke Daftar' : 'Kembali ke Transaksi'"></span>
                     </button>
 
                     <!-- Tombol Kembali Desktop (Saat di Address Picker View) -->
@@ -1190,7 +1194,7 @@
                     <button x-show="currentView === 'receipt'" x-cloak @click="closeReceiptView()"
                         class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 ml-3 rounded-xl border border-gray-200 bg-white hover:bg-emerald-50 text-xs font-semibold text-gray-700 hover:text-[#0b595b] transition shadow-2xs cursor-pointer">
                         <i class="ph-bold ph-arrow-left"></i>
-                        <span>Kembali ke Pembayaran</span>
+                        <span x-text="receiptReturnView === 'list' ? 'Kembali ke Daftar' : (receiptReturnView === 'payment-success' ? 'Kembali ke Rincian' : 'Kembali ke Pembayaran')"></span>
                     </button>
 
                     <!-- Tombol Kembali Desktop (Saat di Payment Success View) -->
@@ -1885,7 +1889,7 @@
                                 </div>
 
                                 <!-- BODY CARD 2: KONTEN LIST ATAU EMPTY STATE -->
-                                <div class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-card-scroll">
+                                <div class="flex-1 min-h-0 overflow-y-auto custom-card-scroll">
 
                                     <!-- STATE 1: EMPTY STATE -->
                                     <div x-show="form.items.length === 0"
@@ -1900,71 +1904,105 @@
                                         </p>
                                     </div>
 
-                                    <!-- STATE 2: LIST PRODUK TERISI (3 BARIS: NAMA PRODUK, HARGA x QTY, DISKON STATIS) -->
-                                    <div x-show="form.items.length > 0">
-                                        <template x-for="(item, idx) in form.items" :key="idx">
-                                            <div @click="openEditItemModal(idx)"
-                                                :class="idx === 0 ? 'pt-1 pb-3' : 'border-t border-gray-100 py-3'"
-                                                class="flex flex-col justify-center gap-1 cursor-pointer hover:bg-gray-50/80 -mx-2 px-2.5 rounded-lg transition-colors group">
+                                    <!-- STATE 2: LIST PRODUK TERISI (3 BARIS DENGAN SWIPE TO DELETE) -->
+                                    <div x-show="form.items.length > 0" class="divide-y divide-gray-100">
+                                        <template x-for="(item, idx) in form.items" :key="item.cartItemId || (item.name + '_' + idx)">
+                                            <div x-data="{
+                                                    startX: 0,
+                                                    startY: 0,
+                                                    hasSwiped: false,
+                                                    isRevealed: false,
+                                                    onTouchStart(e) {
+                                                        if (e.target && (e.target.tagName === 'INPUT' || e.target.closest('input') || e.target.closest('button') || e.target.closest('[data-no-swipe]'))) return;
+                                                        const t = e.touches ? e.touches[0] : e;
+                                                        this.startX = t.clientX;
+                                                        this.startY = t.clientY;
+                                                        this.hasSwiped = false;
+                                                    },
+                                                    onTouchMove(e) {
+                                                        if (!this.startX) return;
+                                                        const t = e.touches ? e.touches[0] : e;
+                                                        const dx = this.startX - t.clientX;
+                                                        const dy = Math.abs(this.startY - t.clientY);
+                                                        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                                                            this.hasSwiped = true;
+                                                        }
+                                                        if (dx > 35 && dx > dy) {
+                                                            this.isRevealed = true;
+                                                        } else if (dx < -25 && Math.abs(dx) > dy) {
+                                                            this.isRevealed = false;
+                                                        }
+                                                    },
+                                                    onTouchEnd() {
+                                                        this.startX = 0;
+                                                        this.startY = 0;
+                                                        setTimeout(() => { this.hasSwiped = false; }, 300);
+                                                    },
+                                                    close() {
+                                                        this.isRevealed = false;
+                                                    },
+                                                    handleClick() {
+                                                        if (this.hasSwiped) return;
+                                                        if (this.isRevealed) {
+                                                            this.close();
+                                                            return;
+                                                        }
+                                                        openEditItemModal(idx);
+                                                    }
+                                                }"
+                                                @click.outside="close()"
+                                                class="relative overflow-hidden group select-none bg-red-500">
 
-                                                <!-- BARIS 1: Nama Produk (Kiri) & Total Belanja + Tombol Hapus (Kanan -> Sejajar Horizontal) -->
-                                                <div class="flex items-center justify-between gap-2">
-                                                    <div class="flex items-center gap-2 min-w-0">
-                                                        <h4 class="text-sm font-bold text-gray-900 truncate group-hover:text-[#0b595b] transition-colors"
-                                                            x-text="item.name"></h4>
-                                                        <span
-                                                            x-show="item.category === 'jus' && item.isAutoProduce && (!item.qtyReady || item.qtyReady === 0)"
-                                                            class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 shrink-0">Auto-Produksi</span>
-                                                        <span
-                                                            x-show="item.category === 'jus' && item.isAutoProduce && item.qtyReady > 0"
-                                                            class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-100 text-teal-800 border border-teal-200 shrink-0">Hybrid</span>
-                                                    </div>
-                                                    <div class="flex items-center gap-2 shrink-0">
-                                                        <span
-                                                            class="text-xs sm:text-sm font-extrabold text-[#0b595b] font-poppins"
-                                                            x-text="'Rp ' + getItemSubtotal(item).toLocaleString('id-ID')"></span>
-                                                        <!-- Tombol Hapus: Sejajar Horizontal dengan Total Belanja (Gaya Parcel) -->
-                                                        <button type="button" @click.stop="removeItemFromCart(idx)"
-                                                            class="w-6 h-6 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-md flex items-center justify-center transition cursor-pointer shrink-0"
-                                                            title="Hapus Produk">
-                                                            <i class="ph ph-trash text-sm"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
+                                                <!-- Tombol Aksi Hapus Merah di Belakang (Muncul Saat Baris di-Swipe / Geser Kiri) -->
+                                                <button type="button"
+                                                    @click.stop="close(); removeItemFromCart(idx)"
+                                                    class="absolute inset-y-0 right-0 w-[68px] bg-red-500 hover:bg-red-600 active:bg-red-700 flex flex-col items-center justify-center text-white transition-colors cursor-pointer z-0"
+                                                    title="Hapus Produk">
+                                                    <i class="ph-bold ph-trash text-base"></i>
+                                                    <span class="text-[10px] font-bold mt-0.5 tracking-tight">Hapus</span>
+                                                </button>
 
-                                                <!-- BARIS 2: Harga Satuan x Kuantitas (Tanpa tanda kurung) -->
-                                                <div class="text-xs text-gray-500 font-poppins mt-0.5">
-                                                    <span
-                                                        x-text="(Number(item.basePrice || item.price || 0).toLocaleString('id-ID')) + '  x  ' + (item.qty !== undefined && item.qty !== null ? String(item.qty).replace('.', ',') : '0') + ' ' + (item.unit || 'Kg')"></span>
-                                                </div>
+                                                <!-- Konten Baris Utama (Layer Atas Berlatar Putih Bersih) -->
+                                                <div class="relative bg-white py-3 px-5 sm:px-6 transition-transform duration-200 ease-out z-10 flex flex-col justify-center gap-1 cursor-pointer hover:bg-gray-50/80"
+                                                    :class="isRevealed ? '-translate-x-[68px]' : 'translate-x-0'"
+                                                    @click="handleClick()"
+                                                    @touchstart.passive="onTouchStart($event)"
+                                                    @touchmove="onTouchMove($event)"
+                                                    @touchend="onTouchEnd()"
+                                                    @mousedown="onTouchStart($event)"
+                                                    @mousemove="if (startX) onTouchMove($event)"
+                                                    @mouseup="onTouchEnd()"
+                                                    @mouseleave="onTouchEnd()">
 
-                                                <!-- BARIS 3: Informasi Diskon (Statis: Diskon 10% (-7.200) / Diskon (-1.000) / Diskon -) -->
-                                                <div class="text-xs font-poppins"
-                                                    :class="(item.discountPerUnit && item.discountPerUnit > 0) ? 'text-gray-500 font-medium' : 'text-gray-400'">
-                                                    <span x-text="getCartItemDiscountText(item)"></span>
-                                                </div>
-
-                                                <!-- Jika Item adalah PARCEL: Tampilkan Rincian Komposisi Isi Buahnya (Mini BOM) -->
-                                                <div x-show="(item.isParcel || item.category === 'parcel') && item.subItems && item.subItems.length > 0"
-                                                    class="mt-2 p-2.5 bg-amber-50/50 rounded-xl border border-amber-100 text-[11px] space-y-1">
-                                                    <div
-                                                        class="font-bold text-amber-900 flex items-center justify-between">
-                                                        <span class="flex items-center gap-1">
-                                                            <i class="ph-bold ph-basket text-xs text-amber-700"></i>
-                                                            <span>Komposisi Rangkaian Isi:</span>
-                                                        </span>
-                                                        <span class="text-[10px] text-amber-700 font-medium"
-                                                            x-text="item.subItems.length + ' komponen'"></span>
-                                                    </div>
-                                                    <div class="flex flex-wrap gap-1.5 pt-1">
-                                                        <template x-for="(sub, sIdx) in item.subItems" :key="sIdx">
+                                                    <!-- BARIS 1: Nama Produk (Kiri) & Total Belanja (Kanan -> Sejajar Horizontal) -->
+                                                    <div class="flex items-center justify-between gap-2">
+                                                        <div class="flex items-center gap-2 min-w-0">
+                                                            <h4 class="text-sm font-bold text-gray-900 truncate group-hover:text-[#0b595b] transition-colors"
+                                                                x-text="item.name"></h4>
                                                             <span
-                                                                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white border border-amber-200/70 text-gray-700 font-medium text-[10.5px]">
-                                                                <span x-text="sub.name"></span>
-                                                                <strong class="text-amber-800"
-                                                                    x-text="'(' + sub.qty + ' ' + (sub.unit || 'Pcs') + ')'"></strong>
-                                                            </span>
-                                                        </template>
+                                                                x-show="item.category === 'jus' && item.isAutoProduce && (!item.qtyReady || item.qtyReady === 0)"
+                                                                class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 shrink-0">Auto-Produksi</span>
+                                                            <span
+                                                                x-show="item.category === 'jus' && item.isAutoProduce && item.qtyReady > 0"
+                                                                class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-100 text-teal-800 border border-teal-200 shrink-0">Hybrid</span>
+                                                        </div>
+                                                        <div class="flex items-center gap-2 shrink-0">
+                                                            <span
+                                                                class="text-xs sm:text-sm font-extrabold text-[#0b595b] font-poppins"
+                                                                x-text="'Rp ' + getItemSubtotal(item).toLocaleString('id-ID')"></span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- BARIS 2: Harga Satuan x Kuantitas (Tanpa tanda kurung) -->
+                                                    <div class="text-xs text-gray-500 font-poppins mt-0.5">
+                                                        <span
+                                                            x-text="(Number(item.basePrice || item.price || 0).toLocaleString('id-ID')) + '  x  ' + (item.qty !== undefined && item.qty !== null ? String(item.qty).replace('.', ',') : '0') + ' ' + (item.unit || 'Kg')"></span>
+                                                    </div>
+
+                                                    <!-- BARIS 3: Informasi Diskon (Statis: Diskon 10% (-7.200) / Diskon (-1.000) / Diskon -) -->
+                                                    <div class="text-xs font-poppins"
+                                                        :class="(item.discountPerUnit && item.discountPerUnit > 0) ? 'text-gray-500 font-medium' : 'text-gray-400'">
+                                                        <span x-text="getCartItemDiscountText(item)"></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1989,7 +2027,7 @@
                             <!-- Tombol Kiri: Kembali -->
                             <button type="button" @click="closePaymentView()"
                                 class="w-9 h-9 rounded-xl flex items-center justify-center text-[#0b595b] hover:bg-emerald-50 active:scale-95 transition-all shrink-0 cursor-pointer"
-                                title="Kembali ke Transaksi">
+                                :title="paymentReturnView === 'list' ? 'Kembali ke Daftar' : 'Kembali ke Transaksi'">
                                 <i class="ph-bold ph-caret-left text-[24px] text-[#0b595b]"></i>
                             </button>
 
@@ -2259,13 +2297,18 @@
                                                                     <div class="text-[10px] text-gray-400 font-normal mt-0.5 leading-tight"
                                                                         x-text="p.dateTime || getSplitPaymentDateTime(p)"></div>
                                                                 </div>
-                                                                <!-- Tombol Hapus Pembayaran -->
-                                                                <button type="button"
-                                                                    @click="removeSplitPaymentMethod(pIdx)"
-                                                                    class="w-6 h-6 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition cursor-pointer shrink-0"
-                                                                    title="Hapus Pembayaran Ini">
-                                                                    <i class="ph-bold ph-trash text-xs"></i>
-                                                                </button>
+                                                                <!-- Tombol Hapus Pembayaran (Tidak tampil jika pembayaran awal / DP) -->
+                                                                <template x-if="!p.isLocked && !(p.id && String(p.id).startsWith('prev-'))">
+                                                                    <button type="button"
+                                                                        @click="removeSplitPaymentMethod(pIdx)"
+                                                                        class="w-6 h-6 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition cursor-pointer shrink-0"
+                                                                        title="Hapus Pembayaran Ini">
+                                                                        <i class="ph-bold ph-trash text-xs"></i>
+                                                                    </button>
+                                                                </template>
+                                                                <template x-if="p.isLocked || (p.id && String(p.id).startsWith('prev-'))">
+                                                                    <div class="w-6 h-6 shrink-0"></div>
+                                                                </template>
                                                             </div>
                                                         </div>
                                                     </template>
@@ -2409,7 +2452,7 @@
                             class="sm:hidden px-4 py-3 bg-white/80 backdrop-blur-md backdrop-saturate-180 border-b border-gray-200/60 flex items-center justify-between z-20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] shrink-0 sticky top-0 no-print">
                             <button type="button" @click="closeReceiptView()"
                                 class="w-9 h-9 rounded-xl flex items-center justify-center text-[#0b595b] hover:bg-emerald-50 active:scale-95 transition-all shrink-0 cursor-pointer"
-                                title="Kembali ke Pembayaran">
+                                :title="receiptReturnView === 'list' ? 'Kembali ke Daftar' : (receiptReturnView === 'payment-success' ? 'Kembali ke Rincian' : 'Kembali ke Pembayaran')">
                                 <i class="ph-bold ph-caret-left text-[24px] text-[#0b595b]"></i>
                             </button>
                             <h1 class="text-base sm:text-lg font-bold text-gray-900 flex-1 text-center pr-9 select-none">
@@ -2501,6 +2544,17 @@
                                                 <span class="text-xs sm:text-sm font-bold text-gray-900 font-poppins"
                                                     x-text="'Rp ' + formatReceiptRupiah(getReceiptItemGross(item))"></span>
                                             </div>
+                                            <!-- Rincian Komposisi Parcel (Khusus Tampilan Internal Toko / Kasir) -->
+                                            <template x-if="getParcelSubItems(item).length > 0">
+                                                <div class="receipt-internal-only pl-2 pt-1 text-[10.5px] text-gray-600 font-sans space-y-0.5">
+                                                    <template x-for="(sub, sIdx) in getParcelSubItems(item)" :key="sIdx">
+                                                        <div class="flex items-center justify-between">
+                                                            <span x-text="'- ' + sub.name"></span>
+                                                            <span class="font-bold text-gray-800" x-text="sub.qty + ' ' + (sub.unit || 'Kg')"></span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
                                             <template x-if="getReceiptItemDiscount(item) > 0">
                                                 <div class="flex items-center justify-between text-[10.5px] text-gray-400 mt-0.5">
                                                     <span x-text="getReceiptItemDiscountLabel(item)"></span>
@@ -2597,8 +2651,12 @@
                             <div class="bg-white rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 w-full max-w-md mx-auto flex-1 sm:flex-initial sm:min-h-[450px] flex flex-col justify-between min-h-0 animate-fade-in-up">
 
                                 <div>
-                                    <!-- Header: Judul & Waktu -->
-                                    <div class="text-center pt-2 pb-5 border-b border-gray-100/90">
+                                    <!-- Header: Icon Sukses Hijau, Judul & Waktu -->
+                                    <div class="text-center pt-1 pb-5 border-b border-gray-100/90 flex flex-col items-center">
+                                        <!-- Icon Centang Hijau Lembut (Opsi 1) -->
+                                        <div class="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-200/90 text-[#0b595b] flex items-center justify-center shadow-xs mb-3.5">
+                                            <i class="ph-bold ph-check text-2xl"></i>
+                                        </div>
                                         <h2 class="text-2xl font-black text-slate-800 tracking-tight leading-tight">Transaksi Berhasil</h2>
                                         <p class="text-xs text-slate-500 font-medium mt-1.5" x-text="completedTx.dateTime"></p>
                                     </div>
@@ -2638,10 +2696,10 @@
                                         <i class="ph-bold ph-list-bullets text-lg sm:text-xl"></i>
                                     </button>
 
-                                    <!-- 2. Cetak Nota (HANYA ICON - OPSI 2 SLIM OUTLINE) -->
-                                    <button type="button" @click="printReceipt()"
+                                    <!-- 2. Cetak Nota (HANYA ICON - MASUK KE HALAMAN NOTA TRANSAKSI) -->
+                                    <button type="button" @click="openReceiptView(completedTx.paymentStatus || 'Sudah Lunas', 'payment-success')"
                                         class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl border border-gray-200 bg-white hover:bg-slate-50 text-gray-700 flex items-center justify-center transition active:scale-95 shadow-2xs shrink-0 cursor-pointer"
-                                        title="Cetak Nota">
+                                        title="Lihat & Cetak Nota">
                                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                             <path d="M6 9V3h12v6"/>
                                             <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
@@ -2830,41 +2888,57 @@
                                                 <span class="text-red-500">*</span>
                                             </label>
                                             <div
-                                                class="relative flex items-center h-10 sm:h-11 bg-white border border-gray-200 focus-within:border-gray-300 rounded-xl transition shadow-2xs">
+                                                class="relative flex items-center h-10 sm:h-11 bg-white border border-gray-200 focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-500/20 rounded-xl transition shadow-2xs">
                                                 <div
                                                     class="w-11 h-full flex items-center justify-center text-xs font-bold text-gray-500 border-r border-gray-200 bg-gray-50 select-none shrink-0 rounded-l-xl">
                                                     <span>Rp</span>
                                                 </div>
-                                                <input type="text" inputmode="numeric" :value="parcelBudgetString"
+                                                <input id="parcelBudgetInput" type="text" inputmode="numeric" :value="parcelBudgetString"
                                                     @input="handleParcelBudgetFieldInput($event)" placeholder="0"
                                                     class="w-full h-full px-3 bg-transparent text-xs sm:text-sm font-bold text-gray-800 font-poppins outline-none placeholder:text-gray-300 placeholder:font-normal">
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Seksi 1: Dropdown Pilih Produk Parcel di Posisi Atas (Persis seperti Jus) -->
+                                    <!-- Seksi 1: Dropdown Pilih Produk Parcel di Posisi Atas (Terkunci jika Budget Belum Diisi) -->
                                     <div class="relative shrink-0 mb-3" @click.outside="parcelDropdownOpen = false">
                                         <label
-                                            class="block text-[11px] sm:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 shrink-0">
+                                            class="block text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-1.5 shrink-0 transition-colors"
+                                            :class="(!parcelItem.budget || parcelItem.budget <= 0) ? 'text-gray-400' : 'text-gray-700'">
                                             <span>PILIH PRODUK</span>
-                                            <span class="text-red-500">*</span>
+                                            <span :class="(!parcelItem.budget || parcelItem.budget <= 0) ? 'text-gray-400' : 'text-red-500'">*</span>
                                         </label>
 
-                                        <!-- Trigger Button Selector -->
-                                        <div @click="parcelDropdownOpen = !parcelDropdownOpen; if(parcelDropdownOpen) { parcelSearchQuery = ''; $nextTick(() => $refs.parcelDropdownSearch?.focus()); }"
-                                            class="min-h-11 px-3.5 py-2 bg-white border border-gray-200 hover:border-gray-300 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition shadow-2xs select-none">
+                                        <!-- Trigger Button Selector: Terkunci jika budget belum diisi -->
+                                        <div @click="if(!parcelItem.budget || parcelItem.budget <= 0) { const el = document.getElementById('parcelBudgetInput'); if(el) { el.focus(); el.select(); } return; } parcelDropdownOpen = !parcelDropdownOpen; if(parcelDropdownOpen) { parcelSearchQuery = ''; $nextTick(() => $refs.parcelDropdownSearch?.focus()); }"
+                                            :class="(!parcelItem.budget || parcelItem.budget <= 0)
+                                                ? 'bg-gray-100/80 border-gray-200 cursor-not-allowed opacity-80'
+                                                : 'bg-white border-gray-200 hover:border-gray-300 cursor-pointer shadow-2xs'"
+                                            class="min-h-11 px-3.5 py-2 border rounded-xl flex items-center justify-between gap-3 transition select-none">
+                                            
+                                            <!-- State 1: Ada Komponen Terpilih & Budget Ada -->
                                             <div class="min-w-0 flex-1"
-                                                x-show="parcelItem.items && parcelItem.items.length > 0">
+                                                x-show="parcelItem.budget > 0 && parcelItem.items && parcelItem.items.length > 0">
                                                 <div class="text-xs sm:text-sm font-bold text-gray-900 truncate"
                                                     x-text="parcelItem.items.length + ' Komponen Terpilih'"></div>
                                                 <div class="text-[11px] font-normal text-gray-400 font-poppins mt-0.5">
                                                     Klik untuk menambah buah atau keranjang lain
                                                 </div>
                                             </div>
+
+                                            <!-- State 2: Budget Ada tapi Belum Pilih Komponen -->
                                             <div class="text-xs sm:text-sm font-medium text-gray-400"
-                                                x-show="!parcelItem.items || parcelItem.items.length === 0">
+                                                x-show="parcelItem.budget > 0 && (!parcelItem.items || parcelItem.items.length === 0)">
                                                 Pilih buah atau keranjang...
                                             </div>
+
+                                            <!-- State 3: Budget Belum Diisi (Terkunci) -->
+                                            <div class="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-400"
+                                                x-show="!parcelItem.budget || parcelItem.budget <= 0">
+                                                <i class="ph-bold ph-lock-simple text-gray-400 text-sm"></i>
+                                                <span>Input budget terlebih dahulu...</span>
+                                            </div>
+
                                             <div class="flex items-center gap-2.5 shrink-0">
                                                 <i class="ph-bold ph-caret-down text-gray-400 text-xs shrink-0 transition-transform duration-200"
                                                     :class="parcelDropdownOpen ? 'rotate-180' : ''"></i>
@@ -2949,10 +3023,18 @@
                                                 <!-- State A: Belum Pilih Buah / Keranjang -->
                                                 <div x-show="!parcelItem.items || parcelItem.items.length === 0"
                                                     class="h-full min-h-[140px] flex flex-col items-center justify-center text-center p-4">
-                                                    <span class="text-xs font-bold text-gray-700">Pilih Buah atau
-                                                        Keranjang di Atas</span>
-                                                    <span class="text-[11px] text-gray-400 mt-1 max-w-[260px]">Daftar
-                                                        buah dan keranjang akan ditampilkan secara otomatis</span>
+                                                    <!-- Sub-state 1: Budget Belum Diisi -->
+                                                    <div x-show="!parcelItem.budget || parcelItem.budget <= 0" class="flex flex-col items-center">
+                                                        <span class="text-xs font-bold text-gray-700">Input Budget</span>
+                                                        <span class="text-[11px] text-gray-400 mt-1 max-w-[260px] text-center">Untuk bisa tambahkan produk ke<br>dalam komposisi parcel</span>
+                                                    </div>
+                                                    <!-- Sub-state 2: Budget Sudah Diisi -->
+                                                    <div x-show="parcelItem.budget && parcelItem.budget > 0" class="flex flex-col items-center">
+                                                        <span class="text-xs font-bold text-gray-700">Pilih Buah atau
+                                                            Keranjang di Atas</span>
+                                                        <span class="text-[11px] text-gray-400 mt-1 max-w-[260px]">Daftar
+                                                            buah dan keranjang akan ditampilkan secara otomatis</span>
+                                                    </div>
                                                 </div>
 
                                                 <!-- State B: Sudah Pilih Buah / Keranjang -> Tampilkan List Komposisi Rapi & Hemat Ruang -->
@@ -2960,100 +3042,145 @@
                                                     class="divide-y divide-gray-100">
                                                     <template x-for="(comp, cIdx) in (parcelItem.items || [])"
                                                         :key="cIdx">
-                                                        <div
-                                                            class="py-2.5 px-3 sm:px-3.5 hover:bg-gray-50/70 transition flex items-center gap-2.5">
-                                                            <!-- Konten 2 Baris: Nama & Harga (Atas) + Total HPP, Slash, Qty (Bawah) -->
-                                                            <div class="flex-1 min-w-0 space-y-1.5">
-                                                                <!-- Baris 1: Nama Produk (Kiri) & Harga Satuan Asli (Kanan) -->
-                                                                <div class="flex items-center justify-between gap-3">
-                                                                    <div class="text-xs sm:text-sm font-bold text-gray-800 truncate"
-                                                                        x-text="comp.name"></div>
-                                                                    <div
-                                                                        class="flex items-center select-none text-[11px] font-poppins text-gray-400 shrink-0">
-                                                                        <span
-                                                                            x-text="'Rp ' + (comp.buyPrice || comp.price || 0).toLocaleString('id-ID') + ' /'"></span>
-                                                                        <span
-                                                                            class="w-7 text-[11px] font-poppins font-medium text-gray-400 ml-1 text-left select-none truncate shrink-0"
-                                                                            x-text="comp.unit || 'Pcs'"></span>
-                                                                    </div>
-                                                                </div>
+                                                        <div x-data="{
+                                                                startX: 0,
+                                                                startY: 0,
+                                                                isRevealed: false,
+                                                                onTouchStart(e) {
+                                                                    if (e.target && (e.target.tagName === 'INPUT' || e.target.closest('input') || e.target.closest('button') || e.target.closest('[data-no-swipe]'))) return;
+                                                                    const t = e.touches ? e.touches[0] : e;
+                                                                    this.startX = t.clientX;
+                                                                    this.startY = t.clientY;
+                                                                },
+                                                                onTouchMove(e) {
+                                                                    if (!this.startX) return;
+                                                                    const t = e.touches ? e.touches[0] : e;
+                                                                    const dx = this.startX - t.clientX;
+                                                                    const dy = Math.abs(this.startY - t.clientY);
+                                                                    if (dx > 35 && dx > dy) {
+                                                                        this.isRevealed = true;
+                                                                    } else if (dx < -25 && Math.abs(dx) > dy) {
+                                                                        this.isRevealed = false;
+                                                                    }
+                                                                },
+                                                                onTouchEnd() {
+                                                                    this.startX = 0;
+                                                                    this.startY = 0;
+                                                                },
+                                                                close() {
+                                                                    this.isRevealed = false;
+                                                                }
+                                                            }"
+                                                            @click.outside="close()"
+                                                            class="relative overflow-hidden group select-none bg-red-500">
 
-                                                                <!-- Baris 2: Total HPP (Kiri) & Pcs / Kuantitas (Kanan) - Click-to-Edit Statis Tanpa Shape -->
-                                                                <div
-                                                                    class="flex items-center justify-between gap-3 min-h-[24px]">
-                                                                    <!-- Kiri: Total HPP (Rp Diam Statis di Kiri, Lebar Tetap w-14) -->
-                                                                    <div class="flex items-center select-none shrink-0">
-                                                                        <span
-                                                                            class="text-xs font-bold text-gray-400 font-poppins mr-1 shrink-0">Rp</span>
-                                                                        <!-- Display Mode: w-14, h-[22px], border-b-2 -->
-                                                                        <div x-show="editingParcelModalIdx !== cIdx"
-                                                                            @click.stop="startEditParcelModal(cIdx)"
-                                                                            class="cursor-pointer w-14 h-[22px] shrink-0 border-b-2 border-dashed border-gray-300 hover:border-emerald-600 flex items-center"
-                                                                            title="Klik untuk ubah Total HPP">
-                                                                            <span
-                                                                                class="w-full text-xs font-bold text-gray-700 hover:text-emerald-700 font-poppins text-left truncate"
-                                                                                x-text="Math.round((comp.buyPrice || 0) * Number(comp.qty || 0)).toLocaleString('id-ID')"></span>
-                                                                        </div>
-
-                                                                        <!-- Edit Mode: Persis w-14 dan h-[22px], Border-b-2 Identik -->
-                                                                        <div x-show="editingParcelModalIdx === cIdx"
-                                                                            x-cloak
-                                                                            class="w-14 h-[22px] shrink-0 border-b-2 border-emerald-500 flex items-center"
-                                                                            @click.stop
-                                                                            @click.outside="saveParcelModal(cIdx)">
-                                                                            <input :id="'inlineParcelModal_' + cIdx"
-                                                                                type="text" inputmode="numeric"
-                                                                                :value="editingParcelModalValue"
-                                                                                @input="handleLiveParcelModalInput(cIdx, $event)"
-                                                                                @keydown.enter="saveParcelModal(cIdx)"
-                                                                                @keydown.escape="cancelEditParcelModal()"
-                                                                                class="w-full min-w-0 text-xs font-bold text-emerald-800 font-poppins bg-transparent outline-none p-0 text-left">
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <!-- Kanan: Pcs / Kuantitas (Sejajar Persis dengan Satuan Baris 1, Limit 5 Karakter) -->
-                                                                    <div
-                                                                        class="flex items-center justify-end select-none shrink-0">
-                                                                        <!-- Display Mode: w-11, h-[22px], border-b-2, text-right -->
-                                                                        <div x-show="editingParcelQtyIdx !== cIdx"
-                                                                            @click.stop="startEditParcelQty(cIdx)"
-                                                                            class="cursor-pointer w-11 h-[22px] shrink-0 border-b-2 border-dashed border-gray-300 hover:border-emerald-600 flex items-center justify-end"
-                                                                            title="Klik untuk ubah Kuantitas">
-                                                                            <span
-                                                                                class="w-full text-xs font-bold text-gray-700 hover:text-emerald-700 font-poppins text-right truncate"
-                                                                                x-text="String(comp.qty || 0).replace('.', ',')"></span>
-                                                                        </div>
-
-                                                                        <!-- Edit Mode: Persis w-11 dan h-[22px], Border-b-2 Identik, Maxlength 5 -->
-                                                                        <div x-show="editingParcelQtyIdx === cIdx"
-                                                                            x-cloak
-                                                                            class="w-11 h-[22px] shrink-0 border-b-2 border-emerald-500 flex items-center justify-end"
-                                                                            @click.stop
-                                                                            @click.outside="saveParcelQty(cIdx)">
-                                                                            <input :id="'inlineParcelQty_' + cIdx"
-                                                                                type="text" inputmode="decimal"
-                                                                                maxlength="5"
-                                                                                :value="editingParcelQtyValue"
-                                                                                @input="handleLiveParcelQtyInput(cIdx, $event)"
-                                                                                @keydown.enter="saveParcelQty(cIdx)"
-                                                                                @keydown.escape="cancelEditParcelQty()"
-                                                                                class="w-full min-w-0 text-xs font-bold text-emerald-800 font-poppins text-right bg-transparent outline-none p-0">
-                                                                        </div>
-
-                                                                        <!-- Satuan: Lebar Tetap w-7 ml-1 Sejajar Persis dengan Baris 1 -->
-                                                                        <span
-                                                                            class="w-7 text-[11px] font-poppins font-medium text-gray-400 ml-1 text-left select-none truncate shrink-0"
-                                                                            x-text="comp.unit || 'Pcs'"></span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Tombol Hapus: Align Vertical Center Tepat di Tengah Dua Baris -->
-                                                            <button type="button" @click.stop="removeParcelItem(cIdx)"
-                                                                class="w-6 h-6 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-md flex items-center justify-center transition cursor-pointer shrink-0"
+                                                            <!-- Tombol Aksi Hapus Merah di Belakang (Muncul Saat Baris di-Swipe / Geser Kiri) -->
+                                                            <button type="button"
+                                                                @click.stop="removeParcelItem(cIdx)"
+                                                                class="absolute inset-y-0 right-0 w-[68px] bg-red-500 hover:bg-red-600 active:bg-red-700 flex flex-col items-center justify-center text-white transition-colors cursor-pointer z-0"
                                                                 title="Hapus Produk">
-                                                                <i class="ph ph-trash text-sm"></i>
+                                                                <i class="ph-bold ph-trash text-base"></i>
+                                                                <span class="text-[10px] font-bold mt-0.5 tracking-tight">Hapus</span>
                                                             </button>
+
+                                                            <!-- Konten Baris Utama (Layer Atas Berlatar Putih Bersih) -->
+                                                            <div class="relative bg-white py-2.5 px-3 sm:px-3.5 transition-transform duration-200 ease-out z-10 flex items-center justify-between"
+                                                                :class="isRevealed ? '-translate-x-[68px]' : 'translate-x-0'"
+                                                                @touchstart.passive="onTouchStart($event)"
+                                                                @touchmove="onTouchMove($event)"
+                                                                @touchend="onTouchEnd()"
+                                                                @mousedown="onTouchStart($event)"
+                                                                @mousemove="if (startX) onTouchMove($event)"
+                                                                @mouseup="onTouchEnd()"
+                                                                @mouseleave="onTouchEnd()">
+
+                                                                <!-- Konten 2 Baris: Nama & Harga (Atas) + Total HPP, Slash, Qty (Bawah) -->
+                                                                <div class="flex-1 min-w-0 space-y-1.5">
+                                                                    <!-- Baris 1: Nama Produk (Kiri) & Harga Satuan Asli (Kanan) -->
+                                                                    <div class="flex items-center justify-between gap-3">
+                                                                        <div class="text-xs sm:text-sm font-bold text-gray-800 truncate"
+                                                                            x-text="comp.name"></div>
+                                                                        <div
+                                                                            class="flex items-center select-none text-[11px] font-poppins text-gray-400 shrink-0">
+                                                                            <span
+                                                                                x-text="'Rp ' + (comp.buyPrice || comp.price || 0).toLocaleString('id-ID') + ' /'"></span>
+                                                                            <span
+                                                                                class="w-7 text-[11px] font-poppins font-medium text-gray-400 ml-1 text-left select-none truncate shrink-0"
+                                                                                x-text="comp.unit || 'Pcs'"></span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <!-- Baris 2: Total HPP (Kiri) & Pcs / Kuantitas (Kanan) - Click-to-Edit Statis Tanpa Shape -->
+                                                                    <div
+                                                                        class="flex items-center justify-between gap-3 min-h-[24px]">
+                                                                        <!-- Kiri: Total HPP (Rp Diam Statis di Kiri, Lebar Tetap w-14) -->
+                                                                        <div class="flex items-center select-none shrink-0" data-no-swipe>
+                                                                            <span
+                                                                                class="text-xs font-bold text-gray-400 font-poppins mr-1 shrink-0">Rp</span>
+                                                                            <!-- Display Mode: w-14, h-[22px], border-b-2 -->
+                                                                            <div x-show="editingParcelModalIdx !== cIdx"
+                                                                                @click.stop="startEditParcelModal(cIdx)"
+                                                                                class="cursor-pointer w-14 h-[22px] shrink-0 border-b-2 border-dashed border-gray-300 hover:border-emerald-600 flex items-center"
+                                                                                title="Klik untuk ubah Total HPP">
+                                                                                <span
+                                                                                    class="w-full text-xs font-bold text-gray-700 hover:text-emerald-700 font-poppins text-left truncate"
+                                                                                    x-text="Math.round((comp.buyPrice || 0) * Number(comp.qty || 0)).toLocaleString('id-ID')"></span>
+                                                                            </div>
+
+                                                                            <!-- Edit Mode: Persis w-14 dan h-[22px], Border-b-2 Identik -->
+                                                                            <div x-show="editingParcelModalIdx === cIdx"
+                                                                                x-cloak
+                                                                                class="w-14 h-[22px] shrink-0 border-b-2 border-emerald-500 flex items-center"
+                                                                                @click.stop
+                                                                                @click.outside="saveParcelModal(cIdx)">
+                                                                                <input :id="'inlineParcelModal_' + cIdx"
+                                                                                    type="text" inputmode="numeric"
+                                                                                    :value="editingParcelModalValue"
+                                                                                    @input="handleLiveParcelModalInput(cIdx, $event)"
+                                                                                    @keydown.enter="saveParcelModal(cIdx)"
+                                                                                    @keydown.escape="cancelEditParcelModal()"
+                                                                                    class="w-full min-w-0 text-xs font-bold text-emerald-800 font-poppins bg-transparent outline-none p-0 text-left">
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <!-- Kanan: Pcs / Kuantitas (Sejajar Persis dengan Satuan Baris 1, Limit 5 Karakter) -->
+                                                                        <div
+                                                                            class="flex items-center justify-end select-none shrink-0" data-no-swipe>
+                                                                            <!-- Display Mode: w-11, h-[22px], border-b-2, text-right -->
+                                                                            <div x-show="editingParcelQtyIdx !== cIdx"
+                                                                                @click.stop="startEditParcelQty(cIdx)"
+                                                                                class="cursor-pointer w-11 h-[22px] shrink-0 border-b-2 border-dashed border-gray-300 hover:border-emerald-600 flex items-center justify-end"
+                                                                                title="Klik untuk ubah Kuantitas">
+                                                                                <span
+                                                                                    class="w-full text-xs font-bold text-gray-700 hover:text-emerald-700 font-poppins text-right truncate"
+                                                                                    x-text="String(comp.qty || 0).replace('.', ',')"></span>
+                                                                            </div>
+
+                                                                            <!-- Edit Mode: Persis w-11 dan h-[22px], Border-b-2 Identik, Maxlength 5 -->
+                                                                            <div x-show="editingParcelQtyIdx === cIdx"
+                                                                                x-cloak
+                                                                                class="w-11 h-[22px] shrink-0 border-b-2 border-emerald-500 flex items-center justify-end"
+                                                                                @click.stop
+                                                                                @click.outside="saveParcelQty(cIdx)">
+                                                                                <input :id="'inlineParcelQty_' + cIdx"
+                                                                                    type="text" inputmode="decimal"
+                                                                                    maxlength="5"
+                                                                                    :value="editingParcelQtyValue"
+                                                                                    @input="handleLiveParcelQtyInput(cIdx, $event)"
+                                                                                    @keydown.enter="saveParcelQty(cIdx)"
+                                                                                    @keydown.escape="cancelEditParcelQty()"
+                                                                                    class="w-full min-w-0 text-xs font-bold text-emerald-800 font-poppins text-right bg-transparent outline-none p-0">
+                                                                            </div>
+
+                                                                            <!-- Satuan: Lebar Tetap w-7 ml-1 Sejajar Persis dengan Baris 1 -->
+                                                                            <span
+                                                                                class="w-7 text-[11px] font-poppins font-medium text-gray-400 ml-1 text-left select-none truncate shrink-0"
+                                                                                x-text="comp.unit || 'Pcs'"></span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
                                                         </div>
                                                     </template>
                                                 </div>
@@ -3432,99 +3559,143 @@
                                                 <div x-show="jusItem.name && getJusRecipe().length > 0"
                                                     class="divide-y divide-gray-100">
                                                     <template x-for="(comp, cIdx) in getJusRecipe()" :key="cIdx">
-                                                        <div
-                                                            class="py-2.5 px-3 sm:px-3.5 hover:bg-gray-50/70 transition flex items-center gap-2.5">
-                                                            <!-- Konten 2 Baris: Nama & Harga (Atas) + Total HPP, Qty (Bawah) -->
-                                                            <div class="flex-1 min-w-0 space-y-1.5">
-                                                                <!-- Baris 1: Nama Bahan Baku (Kiri) & Harga Satuan Asli (Kanan) -->
-                                                                <div class="flex items-center justify-between gap-3">
-                                                                    <div class="text-xs sm:text-sm font-bold text-gray-800 truncate"
-                                                                        x-text="comp.name"></div>
-                                                                    <div
-                                                                        class="flex items-center select-none text-[11px] font-poppins text-gray-400 shrink-0">
-                                                                        <span
-                                                                            x-text="'Rp ' + (comp.buyPrice || comp.price || 0).toLocaleString('id-ID') + ' /'"></span>
-                                                                        <span
-                                                                            class="w-7 text-[11px] font-poppins font-medium text-gray-400 ml-1 text-left select-none truncate shrink-0"
-                                                                            x-text="comp.unit || 'gr'"></span>
-                                                                    </div>
-                                                                </div>
+                                                        <div x-data="{
+                                                                startX: 0,
+                                                                startY: 0,
+                                                                isRevealed: false,
+                                                                onTouchStart(e) {
+                                                                    if (e.target && (e.target.tagName === 'INPUT' || e.target.closest('input') || e.target.closest('button') || e.target.closest('[data-no-swipe]'))) return;
+                                                                    const t = e.touches ? e.touches[0] : e;
+                                                                    this.startX = t.clientX;
+                                                                    this.startY = t.clientY;
+                                                                },
+                                                                onTouchMove(e) {
+                                                                    if (!this.startX) return;
+                                                                    const t = e.touches ? e.touches[0] : e;
+                                                                    const dx = this.startX - t.clientX;
+                                                                    const dy = Math.abs(this.startY - t.clientY);
+                                                                    if (dx > 35 && dx > dy) {
+                                                                        this.isRevealed = true;
+                                                                    } else if (dx < -25 && Math.abs(dx) > dy) {
+                                                                        this.isRevealed = false;
+                                                                    }
+                                                                },
+                                                                onTouchEnd() {
+                                                                    this.startX = 0;
+                                                                    this.startY = 0;
+                                                                },
+                                                                close() {
+                                                                    this.isRevealed = false;
+                                                                }
+                                                            }"
+                                                            @click.outside="close()"
+                                                            class="relative overflow-hidden group select-none bg-red-500">
 
-                                                                <!-- Baris 2: Total HPP (Kiri) & Takaran / Kuantitas (Kanan) - Click-to-Edit Statis Tanpa Shape -->
-                                                                <div
-                                                                    class="flex items-center justify-between gap-3 min-h-[24px]">
-                                                                    <!-- Kiri: Total HPP (Rp Diam Statis di Kiri, Lebar Tetap w-14) -->
-                                                                    <div class="flex items-center select-none shrink-0">
-                                                                        <span
-                                                                            class="text-xs font-bold text-gray-400 font-poppins mr-1 shrink-0">Rp</span>
-                                                                        <!-- Display Mode: w-14, h-[22px], border-b-2 -->
-                                                                        <div x-show="editingJusModalIdx !== cIdx"
-                                                                            @click.stop="startEditJusModal(cIdx)"
-                                                                            class="cursor-pointer w-14 h-[22px] shrink-0 border-b-2 border-dashed border-gray-300 hover:border-emerald-600 flex items-center"
-                                                                            title="Klik untuk ubah Total HPP">
+                                                            <!-- Tombol Aksi Hapus Merah di Belakang (Muncul Saat Baris di-Swipe / Geser Kiri) -->
+                                                            <button type="button"
+                                                                @click.stop="removeJusItem(cIdx)"
+                                                                class="absolute inset-y-0 right-0 w-[68px] bg-red-500 hover:bg-red-600 active:bg-red-700 flex flex-col items-center justify-center text-white transition-colors cursor-pointer z-0"
+                                                                title="Hapus Bahan">
+                                                                <i class="ph-bold ph-trash text-base"></i>
+                                                                <span class="text-[10px] font-bold mt-0.5 tracking-tight">Hapus</span>
+                                                            </button>
+
+                                                            <!-- Konten Baris Utama (Layer Atas Berlatar Putih Bersih) -->
+                                                            <div class="relative bg-white py-2.5 px-3 sm:px-3.5 transition-transform duration-200 ease-out z-10 flex items-center justify-between"
+                                                                :class="isRevealed ? '-translate-x-[68px]' : 'translate-x-0'"
+                                                                @touchstart.passive="onTouchStart($event)"
+                                                                @touchmove="onTouchMove($event)"
+                                                                @touchend="onTouchEnd()"
+                                                                @mousedown="onTouchStart($event)"
+                                                                @mousemove="if (startX) onTouchMove($event)"
+                                                                @mouseup="onTouchEnd()"
+                                                                @mouseleave="onTouchEnd()">
+
+                                                                <!-- Konten 2 Baris: Nama & Harga (Atas) + Total HPP, Qty (Bawah) -->
+                                                                <div class="flex-1 min-w-0 space-y-1.5">
+                                                                    <!-- Baris 1: Nama Bahan Baku (Kiri) & Harga Satuan Asli (Kanan) -->
+                                                                    <div class="flex items-center justify-between gap-3">
+                                                                        <div class="text-xs sm:text-sm font-bold text-gray-800 truncate"
+                                                                            x-text="comp.name"></div>
+                                                                        <div
+                                                                            class="flex items-center select-none text-[11px] font-poppins text-gray-400 shrink-0">
                                                                             <span
-                                                                                class="w-full text-xs font-bold text-gray-700 hover:text-emerald-700 font-poppins text-left truncate"
-                                                                                x-text="Math.round((comp.buyPrice || 0) * Number(comp.amount || 0)).toLocaleString('id-ID')"></span>
-                                                                        </div>
-
-                                                                        <!-- Edit Mode: Persis w-14 dan h-[22px], Border-b-2 Identik -->
-                                                                        <div x-show="editingJusModalIdx === cIdx"
-                                                                            x-cloak
-                                                                            class="w-14 h-[22px] shrink-0 border-b-2 border-emerald-500 flex items-center"
-                                                                            @click.stop
-                                                                            @click.outside="saveJusModal(cIdx)">
-                                                                            <input :id="'inlineJusModal_' + cIdx"
-                                                                                type="text" inputmode="numeric"
-                                                                                :value="editingJusModalValue"
-                                                                                @input="handleLiveJusModalInput(cIdx, $event)"
-                                                                                @keydown.enter="saveJusModal(cIdx)"
-                                                                                @keydown.escape="cancelEditJusModal()"
-                                                                                class="w-full min-w-0 text-xs font-bold text-emerald-800 font-poppins bg-transparent outline-none p-0 text-left">
+                                                                                x-text="'Rp ' + (comp.buyPrice || comp.price || 0).toLocaleString('id-ID') + ' /'"></span>
+                                                                            <span
+                                                                                class="w-7 text-[11px] font-poppins font-medium text-gray-400 ml-1 text-left select-none truncate shrink-0"
+                                                                                x-text="comp.unit || 'gr'"></span>
                                                                         </div>
                                                                     </div>
 
-                                                                    <!-- Kanan: Takaran / Kuantitas (Sejajar Persis dengan Satuan Baris 1, Limit 5 Karakter) -->
+                                                                    <!-- Baris 2: Total HPP (Kiri) & Takaran / Kuantitas (Kanan) - Click-to-Edit Statis Tanpa Shape -->
                                                                     <div
-                                                                        class="flex items-center justify-end select-none shrink-0">
-                                                                        <!-- Display Mode: w-11, h-[22px], border-b-2, text-right -->
-                                                                        <div x-show="editingJusQtyIdx !== cIdx"
-                                                                            @click.stop="startEditJusQty(cIdx)"
-                                                                            class="cursor-pointer w-11 h-[22px] shrink-0 border-b-2 border-dashed border-gray-300 hover:border-emerald-600 flex items-center justify-end"
-                                                                            title="Klik untuk ubah Takaran">
+                                                                        class="flex items-center justify-between gap-3 min-h-[24px]">
+                                                                        <!-- Kiri: Total HPP (Rp Diam Statis di Kiri, Lebar Tetap w-14) -->
+                                                                        <div class="flex items-center select-none shrink-0" data-no-swipe>
                                                                             <span
-                                                                                class="w-full text-xs font-bold text-gray-700 hover:text-emerald-700 font-poppins text-right truncate"
-                                                                                x-text="String(comp.amount || 0).replace('.', ',')"></span>
+                                                                                class="text-xs font-bold text-gray-400 font-poppins mr-1 shrink-0">Rp</span>
+                                                                            <!-- Display Mode: w-14, h-[22px], border-b-2 -->
+                                                                            <div x-show="editingJusModalIdx !== cIdx"
+                                                                                @click.stop="startEditJusModal(cIdx)"
+                                                                                class="cursor-pointer w-14 h-[22px] shrink-0 border-b-2 border-dashed border-gray-300 hover:border-emerald-600 flex items-center"
+                                                                                title="Klik untuk ubah Total HPP">
+                                                                                <span
+                                                                                    class="w-full text-xs font-bold text-gray-700 hover:text-emerald-700 font-poppins text-left truncate"
+                                                                                    x-text="Math.round((comp.buyPrice || 0) * Number(comp.amount || 0)).toLocaleString('id-ID')"></span>
+                                                                            </div>
+
+                                                                            <!-- Edit Mode: Persis w-14 dan h-[22px], Border-b-2 Identik -->
+                                                                            <div x-show="editingJusModalIdx === cIdx"
+                                                                                x-cloak
+                                                                                class="w-14 h-[22px] shrink-0 border-b-2 border-emerald-500 flex items-center"
+                                                                                @click.stop
+                                                                                @click.outside="saveJusModal(cIdx)">
+                                                                                <input :id="'inlineJusModal_' + cIdx"
+                                                                                    type="text" inputmode="numeric"
+                                                                                    :value="editingJusModalValue"
+                                                                                    @input="handleLiveJusModalInput(cIdx, $event)"
+                                                                                    @keydown.enter="saveJusModal(cIdx)"
+                                                                                    @keydown.escape="cancelEditJusModal()"
+                                                                                    class="w-full min-w-0 text-xs font-bold text-emerald-800 font-poppins bg-transparent outline-none p-0 text-left">
+                                                                            </div>
                                                                         </div>
 
-                                                                        <!-- Edit Mode: Persis w-11 dan h-[22px], Border-b-2 Identik, Maxlength 5 -->
-                                                                        <div x-show="editingJusQtyIdx === cIdx" x-cloak
-                                                                            class="w-11 h-[22px] shrink-0 border-b-2 border-emerald-500 flex items-center justify-end"
-                                                                            @click.stop
-                                                                            @click.outside="saveJusQty(cIdx)">
-                                                                            <input :id="'inlineJusQty_' + cIdx"
-                                                                                type="text" inputmode="decimal"
-                                                                                maxlength="5"
-                                                                                :value="editingJusQtyValue"
-                                                                                @input="handleLiveJusQtyInput(cIdx, $event)"
-                                                                                @keydown.enter="saveJusQty(cIdx)"
-                                                                                @keydown.escape="cancelEditJusQty()"
-                                                                                class="w-full min-w-0 text-xs font-bold text-emerald-800 font-poppins text-right bg-transparent outline-none p-0">
-                                                                        </div>
+                                                                        <!-- Kanan: Takaran / Kuantitas (Sejajar Persis dengan Satuan Baris 1, Limit 5 Karakter) -->
+                                                                        <div
+                                                                            class="flex items-center justify-end select-none shrink-0" data-no-swipe>
+                                                                            <!-- Display Mode: w-11, h-[22px], border-b-2, text-right -->
+                                                                            <div x-show="editingJusQtyIdx !== cIdx"
+                                                                                @click.stop="startEditJusQty(cIdx)"
+                                                                                class="cursor-pointer w-11 h-[22px] shrink-0 border-b-2 border-dashed border-gray-300 hover:border-emerald-600 flex items-center justify-end"
+                                                                                title="Klik untuk ubah Takaran">
+                                                                                <span
+                                                                                    class="w-full text-xs font-bold text-gray-700 hover:text-emerald-700 font-poppins text-right truncate"
+                                                                                    x-text="String(comp.amount || 0).replace('.', ',')"></span>
+                                                                            </div>
 
-                                                                        <!-- Satuan: Lebar Tetap w-7 ml-1 Sejajar Persis dengan Baris 1 -->
-                                                                        <span
-                                                                            class="w-7 text-[11px] font-poppins font-medium text-gray-400 ml-1 text-left select-none truncate shrink-0"
-                                                                            x-text="comp.unit || 'gr'"></span>
+                                                                            <!-- Edit Mode: Persis w-11 dan h-[22px], Border-b-2 Identik, Maxlength 5 -->
+                                                                            <div x-show="editingJusQtyIdx === cIdx" x-cloak
+                                                                                class="w-11 h-[22px] shrink-0 border-b-2 border-emerald-500 flex items-center justify-end"
+                                                                                @click.stop
+                                                                                @click.outside="saveJusQty(cIdx)">
+                                                                                <input :id="'inlineJusQty_' + cIdx"
+                                                                                    type="text" inputmode="decimal"
+                                                                                    maxlength="5"
+                                                                                    :value="editingJusQtyValue"
+                                                                                    @input="handleLiveJusQtyInput(cIdx, $event)"
+                                                                                    @keydown.enter="saveJusQty(cIdx)"
+                                                                                    @keydown.escape="cancelEditJusQty()"
+                                                                                    class="w-full min-w-0 text-xs font-bold text-emerald-800 font-poppins text-right bg-transparent outline-none p-0">
+                                                                            </div>
+
+                                                                            <!-- Satuan: Lebar Tetap w-7 ml-1 Sejajar Persis dengan Baris 1 -->
+                                                                            <span
+                                                                                class="w-7 text-[11px] font-poppins font-medium text-gray-400 ml-1 text-left select-none truncate shrink-0"
+                                                                                x-text="comp.unit || 'gr'"></span>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-
-                                                            <!-- Tombol Hapus: Align Vertical Center Tepat di Tengah Dua Baris -->
-                                                            <button type="button" @click.stop="removeJusItem(cIdx)"
-                                                                class="w-6 h-6 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-md flex items-center justify-center transition cursor-pointer shrink-0"
-                                                                title="Hapus Bahan">
-                                                                <i class="ph ph-trash text-sm"></i>
-                                                            </button>
                                                         </div>
                                                     </template>
                                                 </div>
@@ -3786,7 +3957,7 @@
                             <!-- 1. Icon Back -->
                             <button type="button" @click="closePaymentView()"
                                 class="w-11 h-11 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 flex items-center justify-center transition active:scale-95 shadow-2xs shrink-0 cursor-pointer"
-                                title="Kembali ke Keranjang">
+                                :title="paymentReturnView === 'list' ? 'Kembali ke Daftar Transaksi' : 'Kembali ke Keranjang'">
                                 <i class="ph-bold ph-arrow-left text-lg"></i>
                             </button>
                             <!-- 2. Icon Nota (Buka Halaman Nota Transaksi) -->
@@ -3795,10 +3966,10 @@
                                 title="Lihat / Cetak Nota Transaksi">
                                 <i class="ph-bold ph-receipt text-lg"></i>
                             </button>
-                            <!-- 3. Tombol Bayar (Tetap di Kanan) -->
+                            <!-- 3. Tombol Bayar (Terkunci jika belum ada penambahan transaksi pembayaran) -->
                             <button type="button" @click="submitPesanan()"
-                                :disabled="!form.items || form.items.length === 0"
-                                :class="(!form.items || form.items.length === 0) ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none pointer-events-none' : 'bg-[#0b595b] hover:bg-[#08484a] text-white shadow-md shadow-[#0b595b]/15 active:scale-95 cursor-pointer'"
+                                :disabled="!canSubmitPayment()"
+                                :class="!canSubmitPayment() ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none pointer-events-none' : 'bg-[#0b595b] hover:bg-[#08484a] text-white shadow-md shadow-[#0b595b]/15 active:scale-95 cursor-pointer'"
                                 class="flex-1 h-11 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center">
                                 <span>Bayar</span>
                             </button>
@@ -3820,8 +3991,8 @@
                         class="flex-1 h-11 px-3 sm:px-6 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-800 text-xs sm:text-sm font-bold shadow-2xs transition active:scale-95 flex items-center justify-center cursor-pointer">
                         <span>Kembali</span>
                     </button>
-                    <button type="button" @click="saveCurrentItemView()" :disabled="isCurrentItemViewDisabled()"
-                        :class="isCurrentItemViewDisabled() ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none' : 'bg-[#0b595b] hover:bg-[#08484a] text-white shadow-md shadow-[#0b595b]/15 cursor-pointer'"
+                    <button type="button" @click="if(!isCurrentItemViewDisabled()) { saveCurrentItemView(); }" :disabled="isCurrentItemViewDisabled()"
+                        :class="isCurrentItemViewDisabled() ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none pointer-events-none' : 'bg-[#0b595b] hover:bg-[#08484a] text-white shadow-md shadow-[#0b595b]/15 cursor-pointer'"
                         class="flex-1 h-11 px-3 sm:px-7 rounded-xl text-xs sm:text-sm font-bold transition active:scale-95 flex items-center justify-center gap-1.5">
                         <span x-text="(isEditParcelMode || modalMode === 'edit') ? 'Simpan' : 'Tambah'"></span>
                     </button>
@@ -4327,54 +4498,81 @@
                             <div class="px-6 sm:px-7 py-5 sm:py-5.5 border-t border-gray-100 bg-white">
                                 <!-- Status Pending: Transaksi belum diselesaikan -->
                                 <template x-if="selectedOrder.status === 'Pending'">
-                                    <div class="flex items-center gap-2.5">
+                                    <div class="flex items-center gap-2">
                                         <button type="button" @click="confirmDeleteOrder(selectedOrder)"
-                                            class="h-11 sm:h-12 px-4 rounded-xl border border-red-200 hover:bg-red-50 text-red-600 text-sm font-semibold active:scale-98 transition flex items-center justify-center gap-1.5 cursor-pointer">
-                                            <i class="ph-bold ph-trash text-base"></i>
-                                            <span>Hapus</span>
+                                            class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl border border-red-200 bg-white hover:bg-red-50 text-red-600 active:scale-95 transition flex items-center justify-center shrink-0 cursor-pointer"
+                                            title="Hapus Transaksi">
+                                            <i class="ph-bold ph-trash text-lg"></i>
+                                        </button>
+                                        <button type="button" @click="openOrderReceiptFromDetail(selectedOrder)"
+                                            class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 active:scale-95 transition flex items-center justify-center shrink-0 cursor-pointer"
+                                            title="Cetak Nota Belum Lunas">
+                                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M6 9V3h12v6"/>
+                                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                                                <rect x="6" y="14" width="12" height="7" rx="1"/>
+                                            </svg>
                                         </button>
                                         <button type="button" @click="closeDetailModal(); openEditForm(selectedOrder)"
-                                            class="flex-1 h-11 sm:h-12 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-sm font-bold shadow-md shadow-[#0b595b]/20 active:scale-98 transition flex items-center justify-center cursor-pointer">
+                                            class="flex-1 h-11 sm:h-12 px-3 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0b595b]/20 active:scale-98 transition flex items-center justify-center whitespace-nowrap cursor-pointer">
                                             <span>Lanjutkan Transaksi</span>
                                         </button>
                                     </div>
                                 </template>
 
-                                <!-- Status Belum Bayar: Bayar -->
+                                <!-- Status Belum Bayar: Hapus (Icon) + Cetak Nota Belum Lunas (Icon) + Bayar -->
                                 <template x-if="selectedOrder.status === 'Belum Bayar'">
-                                    <div class="flex items-center gap-2.5">
+                                    <div class="flex items-center gap-2">
                                         <button type="button" @click="confirmDeleteOrder(selectedOrder)"
-                                            class="h-11 sm:h-12 px-4 rounded-xl border border-red-200 hover:bg-red-50 text-red-600 text-sm font-semibold active:scale-98 transition flex items-center justify-center gap-1.5 cursor-pointer">
-                                            <i class="ph-bold ph-trash text-base"></i>
-                                            <span>Hapus</span>
+                                            class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl border border-red-200 bg-white hover:bg-red-50 text-red-600 active:scale-95 transition flex items-center justify-center shrink-0 cursor-pointer"
+                                            title="Hapus Transaksi">
+                                            <i class="ph-bold ph-trash text-lg"></i>
                                         </button>
-                                        <button type="button" @click="openOrderInPOS(selectedOrder)"
-                                            class="flex-1 h-11 sm:h-12 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-sm font-bold shadow-md shadow-[#0b595b]/20 active:scale-98 transition flex items-center justify-center cursor-pointer">
+                                        <button type="button" @click="openOrderReceiptFromDetail(selectedOrder)"
+                                            class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 active:scale-95 transition flex items-center justify-center shrink-0 cursor-pointer"
+                                            title="Cetak Nota Belum Lunas">
+                                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M6 9V3h12v6"/>
+                                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                                                <rect x="6" y="14" width="12" height="7" rx="1"/>
+                                            </svg>
+                                        </button>
+                                        <button type="button" @click="openPaymentForOrder(selectedOrder)"
+                                            class="flex-1 h-11 sm:h-12 px-3 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0b595b]/20 active:scale-98 transition flex items-center justify-center whitespace-nowrap cursor-pointer">
                                             <span>Bayar</span>
                                         </button>
                                     </div>
                                 </template>
 
-                                <!-- Status Kurang Bayar: Bayar -->
+                                <!-- Status Kurang Bayar: Hapus (Icon) + Cetak Nota (Icon) + Bayar -->
                                 <template x-if="selectedOrder.status === 'Kurang Bayar'">
-                                    <div class="flex items-center gap-2.5">
+                                    <div class="flex items-center gap-2">
                                         <button type="button" @click="confirmDeleteOrder(selectedOrder)"
-                                            class="h-11 sm:h-12 px-4 rounded-xl border border-red-200 hover:bg-red-50 text-red-600 text-sm font-semibold active:scale-98 transition flex items-center justify-center gap-1.5 cursor-pointer">
-                                            <i class="ph-bold ph-trash text-base"></i>
-                                            <span>Hapus</span>
+                                            class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl border border-red-200 bg-white hover:bg-red-50 text-red-600 active:scale-95 transition flex items-center justify-center shrink-0 cursor-pointer"
+                                            title="Hapus Transaksi">
+                                            <i class="ph-bold ph-trash text-lg"></i>
                                         </button>
-                                        <button type="button" @click="openOrderInPOS(selectedOrder)"
-                                            class="flex-1 h-11 sm:h-12 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-sm font-bold shadow-md shadow-[#0b595b]/20 active:scale-98 transition flex items-center justify-center cursor-pointer">
+                                        <button type="button" @click="openOrderReceiptFromDetail(selectedOrder)"
+                                            class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 active:scale-95 transition flex items-center justify-center shrink-0 cursor-pointer"
+                                            title="Cetak Nota">
+                                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M6 9V3h12v6"/>
+                                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                                                <rect x="6" y="14" width="12" height="7" rx="1"/>
+                                            </svg>
+                                        </button>
+                                        <button type="button" @click="openPaymentForOrder(selectedOrder)"
+                                            class="flex-1 h-11 sm:h-12 px-3 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0b595b]/20 active:scale-98 transition flex items-center justify-center whitespace-nowrap cursor-pointer">
                                             <span>Bayar</span>
                                         </button>
                                     </div>
                                 </template>
 
-                                <!-- Status Lunas: Lihat Nota -->
+                                <!-- Status Lunas: Lihat Transaksi -->
                                 <template x-if="selectedOrder.status === 'Lunas'">
-                                    <button type="button" @click="openOrderInPOS(selectedOrder)"
+                                    <button type="button" @click="openOrderReceiptFromDetail(selectedOrder)"
                                         class="w-full h-11 sm:h-12 rounded-xl bg-[#0b595b] hover:bg-[#08484a] text-white text-sm font-bold shadow-md shadow-[#0b595b]/20 active:scale-98 transition flex items-center justify-center cursor-pointer">
-                                        <span>Lihat Nota Transaksi</span>
+                                        <span>Lihat Transaksi</span>
                                     </button>
                                 </template>
                             </div>
@@ -4578,15 +4776,27 @@
                                             <tbody class="divide-y divide-gray-100">
                                                 <template x-for="(it, i) in (selectedOrder.items || [])" :key="i">
                                                     <tr class="hover:bg-gray-50/40">
-                                                        <td class="px-4 py-2.5 text-gray-400 font-medium"
+                                                        <td class="px-4 py-2.5 text-gray-400 font-medium align-top"
                                                             x-text="i + 1"></td>
-                                                        <td class="px-4 py-2.5 font-bold text-gray-900"
-                                                            x-text="it.name"></td>
-                                                        <td class="px-4 py-2.5 text-center text-gray-600 font-medium"
+                                                        <td class="px-4 py-2.5 align-top">
+                                                            <div class="font-bold text-gray-900" x-text="it.name"></div>
+                                                            <!-- Rincian Komposisi Parcel (Khusus Internal Kasir / POS) -->
+                                                            <template x-if="getParcelSubItems(it).length > 0">
+                                                                <div class="mt-1.5 pl-2 text-[10.5px] text-gray-600 font-sans space-y-0.5 max-w-xs">
+                                                                    <template x-for="(sub, sIdx) in getParcelSubItems(it)" :key="sIdx">
+                                                                        <div class="flex items-center justify-between">
+                                                                            <span x-text="'- ' + sub.name"></span>
+                                                                            <span class="font-bold text-gray-800 ml-2" x-text="sub.qty + ' ' + (sub.unit || 'Kg')"></span>
+                                                                        </div>
+                                                                    </template>
+                                                                </div>
+                                                            </template>
+                                                        </td>
+                                                        <td class="px-4 py-2.5 text-center text-gray-600 font-medium align-top"
                                                             x-text="it.unit || 'Pcs'"></td>
-                                                        <td class="px-4 py-2.5 text-right font-bold text-gray-900"
+                                                        <td class="px-4 py-2.5 text-right font-bold text-gray-900 align-top"
                                                             x-text="Number(it.qty || 0).toLocaleString('id-ID')"></td>
-                                                        <td class="px-4 py-2.5 text-right text-gray-600">
+                                                        <td class="px-4 py-2.5 text-right text-gray-600 align-top">
                                                             <div x-show="it.discountPerUnit > 0"
                                                                 class="text-[10px] line-through text-gray-400"
                                                                 x-text="'Rp ' + Number(it.sellPrice || it.price || 0).toLocaleString('id-ID')">
@@ -5312,49 +5522,9 @@
                     class="relative z-10 bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-sm overflow-hidden p-6 text-center">
 
                     <h4 class="text-base font-bold text-gray-900 mb-1.5">Bayar Transaksi?</h4>
-                    <p class="text-xs text-gray-500 leading-relaxed mb-4">
+                    <p class="text-xs text-gray-500 leading-relaxed mb-6">
                         Transaksi ini akan disimpan dan diproses<br>di Kasir / POS. Lanjutkan?
                     </p>
-
-                    <!-- Ringkasan Singkat Transaksi -->
-                    <div class="bg-gray-50 rounded-2xl p-3.5 border border-gray-100 mb-5 text-left text-xs space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-500 font-medium">Cabang</span>
-                            <span class="font-bold text-gray-800 truncate max-w-[170px]"
-                                x-text="form.targetBranch || '-'"></span>
-                        </div>
-                        <div class="flex items-center justify-between pt-1.5 border-t border-gray-200/60">
-                            <span class="text-gray-500 font-medium">Pelanggan</span>
-                            <span
-                                class="font-bold text-gray-800 truncate max-w-[170px] flex items-center justify-end gap-1">
-                                <span x-text="getCustomerDisplayName()"></span>
-                                <span class="text-gray-400 font-normal text-xs shrink-0"
-                                    x-show="getCustomerDisplayPhoneLast4()"
-                                    x-text="' (' + getCustomerDisplayPhoneLast4() + ')'"></span>
-                            </span>
-                        </div>
-                        <div class="flex items-center justify-between pt-1.5 border-t border-gray-200/60">
-                            <span class="text-gray-500 font-medium">Item Belanja</span>
-                            <span class="font-bold text-gray-800"
-                                x-text="(form.items ? form.items.length : 0) + ' item (' + formatCurrency(getItemsSubtotal()) + ')'"></span>
-                        </div>
-                        <div x-show="getDiscountAmount() > 0"
-                            class="flex items-center justify-between pt-1.5 border-t border-gray-200/60 text-gray-600">
-                            <span class="font-medium">Diskon Transaksi</span>
-                            <span class="font-bold text-gray-800"
-                                x-text="'-' + formatCurrency(getDiscountAmount())"></span>
-                        </div>
-                        <div x-show="Number(form.shippingFee || 0) > 0"
-                            class="flex items-center justify-between pt-1.5 border-t border-gray-200/60 text-gray-600">
-                            <span class="font-medium">Ongkos Kirim</span>
-                            <span class="font-bold text-gray-800" x-text="'+' + formatCurrency(form.shippingFee)"></span>
-                        </div>
-                        <div class="flex items-center justify-between pt-1.5 border-t border-gray-200/60 font-bold">
-                            <span class="text-gray-700">Total Belanja</span>
-                            <span class="text-[#0b595b] text-sm font-bold"
-                                x-text="formatCurrency(calculateGrandTotal())"></span>
-                        </div>
-                    </div>
 
                     <!-- 2 Tombol Aksi: Batal & Selesaikan Transaksi -->
                     <div class="flex items-center gap-2.5">
@@ -5589,30 +5759,7 @@
 
 
 
-            <!-- ======================================================== -->
-            <!-- FLOATING TOAST NOTIFICATION                              -->
-            <!-- ======================================================== -->
-            <div x-show="toastOpen" x-cloak
-                x-transition:enter="transition ease-out duration-300 transform"
-                x-transition:enter-start="opacity-0 -translate-y-4 scale-95"
-                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                x-transition:leave="transition ease-in duration-200 transform"
-                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                x-transition:leave-end="opacity-0 -translate-y-4 scale-95"
-                class="fixed top-5 left-1/2 -translate-x-1/2 z-[250] max-w-md w-full px-4 pointer-events-none no-print">
-                <div class="pointer-events-auto bg-slate-900/95 backdrop-blur-md text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-700/60 flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                        :class="toastType === 'error' ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'">
-                        <i class="ph-bold text-base" :class="toastType === 'error' ? 'ph-warning' : 'ph-check'"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-xs font-semibold leading-snug" x-text="toastMessage"></p>
-                    </div>
-                    <button type="button" @click="toastOpen = false" class="text-slate-400 hover:text-white p-1 cursor-pointer">
-                        <i class="ph-bold ph-x text-xs"></i>
-                    </button>
-                </div>
-            </div>
+
 
         </div><!-- /flex-1 flex flex-col -->
     </div><!-- /x-data erpApp() -->
@@ -5696,6 +5843,23 @@
                 const numItems = shouldHaveParcel ? Math.max(2, 1 + (i % 3)) : (1 + (i % 3));
                 const orderItems = [];
                 let subtotal = 0;
+                const parcelComps = [
+                    { id: 302, name: 'Apel Fuji Wangishan', unit: 'Kg', buyPrice: 28000, price: 35000, qty: 1.5, stock: 24.5, isPackaging: false, emoji: '🍎' },
+                    { id: 303, name: 'Jeruk Sunkist Navel', unit: 'Kg', buyPrice: 24000, price: 30000, qty: 1.0, stock: 18.0, isPackaging: false, emoji: '🍊' },
+                    { id: 301, name: 'Buah Naga Merah Super', unit: 'Pcs', buyPrice: 12000, price: 16000, qty: 1.0, stock: 14.5, isPackaging: false, emoji: '🐉' },
+                    { id: 315, name: 'Pisang Cavendish Sunpride', unit: 'Sisir', buyPrice: 14000, price: 18000, qty: 1.0, stock: 14.0, isPackaging: false, emoji: '🍌' },
+                    { id: 'pack-4', name: 'Keranjang Anyam Bambu Premium', unit: 'Pcs', buyPrice: 10000, price: 15000, qty: 1.0, stock: 12, isPackaging: true, emoji: '🧺' },
+                    { id: 'pack-acc', name: 'Pita Satin & Kartu Ucapan Spesial', unit: 'Set', buyPrice: 8000, price: 12000, qty: 1.0, stock: 25, isPackaging: true, emoji: '🎀' }
+                ];
+                const parcelSubItems = [
+                    { name: 'Apel Fuji Wangishan', qty: '1,5', unit: 'Kg' },
+                    { name: 'Jeruk Sunkist Navel', qty: '1', unit: 'Kg' },
+                    { name: 'Buah Naga Merah Super', qty: '1', unit: 'Pcs' },
+                    { name: 'Pisang Cavendish Sunpride', qty: '1', unit: 'Sisir' },
+                    { name: 'Keranjang Anyam Bambu Premium', qty: '1', unit: 'Pcs' },
+                    { name: 'Pita Satin & Kartu Ucapan Spesial', qty: '1', unit: 'Set' }
+                ];
+
                 for (let j = 0; j < numItems; j++) {
                     const item = (shouldHaveParcel && j === 0)
                         ? fruitItems[fruitItems.length - 1] // Paket Hampers Buah Segar Premium
@@ -5703,6 +5867,7 @@
                     const qty = 1 + ((i + j) % 3);
                     const itemTotal = qty * item.price;
                     subtotal += itemTotal;
+                    const isParcel = item.name.includes('Hampers') || item.name.includes('Parcel');
                     orderItems.push({
                         name: item.name,
                         unit: item.unit,
@@ -5710,7 +5875,12 @@
                         price: item.price,
                         unitPrice: item.price,
                         subtotal: itemTotal,
-                        isParcel: item.name.includes('Hampers') || item.name.includes('Parcel')
+                        category: isParcel ? 'parcel' : 'buah',
+                        isParcel: isParcel,
+                        budget: isParcel ? item.price : 0,
+                        buyPrice: isParcel ? 110000 : Math.round(item.price * 0.7),
+                        items: isParcel ? JSON.parse(JSON.stringify(parcelComps)) : [],
+                        subItems: isParcel ? JSON.parse(JSON.stringify(parcelSubItems)) : []
                     });
                 }
 
@@ -5846,14 +6016,58 @@
                     return name.includes('parcel') || name.includes('hamper') || Boolean(it?.isParcel) || it?.category === 'parcel';
                 }));
 
+            let normalizedItems = raw.items;
+            if (Array.isArray(raw.items)) {
+                normalizedItems = raw.items.map(it => {
+                    const isParcel = Boolean(it?.isParcel || it?.category === 'parcel' || String(it?.name || '').toLowerCase().includes('parcel') || String(it?.name || '').toLowerCase().includes('hamper'));
+                    if (isParcel) {
+                        const hasItems = Array.isArray(it.items) && it.items.length > 0;
+                        const hasSub = Array.isArray(it.subItems) && it.subItems.length > 0;
+                        return {
+                            ...it,
+                            isParcel: true,
+                            category: it.category || 'parcel',
+                            budget: it.budget || it.price || 150000,
+                            buyPrice: it.buyPrice || 110000,
+                            items: hasItems ? it.items : getDefaultParcelComposition(),
+                            subItems: hasSub ? it.subItems : getDefaultParcelSubItems()
+                        };
+                    }
+                    return it;
+                });
+            }
+
             return {
                 ...raw,
+                items: normalizedItems,
                 grandTotal: grandTotal,
                 paidAmount: paidAmount,
                 status: status,
                 paymentStatus: paymentStatus,
                 hasParcel: hasParcel
             };
+        }
+
+        function getDefaultParcelComposition() {
+            return [
+                { id: 302, name: 'Apel Fuji Wangishan', unit: 'Kg', buyPrice: 28000, price: 35000, qty: 1.5, stock: 24.5, isPackaging: false, emoji: '🍎' },
+                { id: 303, name: 'Jeruk Sunkist Navel', unit: 'Kg', buyPrice: 24000, price: 30000, qty: 1.0, stock: 18.0, isPackaging: false, emoji: '🍊' },
+                { id: 301, name: 'Buah Naga Merah Super', unit: 'Pcs', buyPrice: 12000, price: 16000, qty: 1.0, stock: 14.5, isPackaging: false, emoji: '🐉' },
+                { id: 315, name: 'Pisang Cavendish Sunpride', unit: 'Sisir', buyPrice: 14000, price: 18000, qty: 1.0, stock: 14.0, isPackaging: false, emoji: '🍌' },
+                { id: 'pack-4', name: 'Keranjang Anyam Bambu Premium', unit: 'Pcs', buyPrice: 10000, price: 15000, qty: 1.0, stock: 12, isPackaging: true, emoji: '🧺' },
+                { id: 'pack-acc', name: 'Pita Satin & Kartu Ucapan Spesial', unit: 'Set', buyPrice: 8000, price: 12000, qty: 1.0, stock: 25, isPackaging: true, emoji: '🎀' }
+            ];
+        }
+
+        function getDefaultParcelSubItems() {
+            return [
+                { name: 'Apel Fuji Wangishan', qty: '1,5', unit: 'Kg' },
+                { name: 'Jeruk Sunkist Navel', qty: '1', unit: 'Kg' },
+                { name: 'Buah Naga Merah Super', qty: '1', unit: 'Pcs' },
+                { name: 'Pisang Cavendish Sunpride', qty: '1', unit: 'Sisir' },
+                { name: 'Keranjang Anyam Bambu Premium', qty: '1', unit: 'Pcs' },
+                { name: 'Pita Satin & Kartu Ucapan Spesial', qty: '1', unit: 'Set' }
+            ];
         }
 
         function loadOrMigratePosOrders(storageKey) {
@@ -5866,9 +6080,11 @@
                             String(o?.id || '').startsWith('pos-seed-') &&
                             (o.status === 'Proses' || o.status === 'Selesai' || o.status === 'Bayar' || o.paidAmount === undefined)
                         );
-                        // Re-seed jika format lama atau belum memiliki variasi satuan (Pack, Pcs, Sisir)
+                        const hasLunasParcel = parsed.some(o => o.status === 'Lunas' && o.hasParcel);
+                        // Re-seed jika format lama atau belum memiliki variasi satuan (Pack, Pcs, Sisir) atau belum memiliki item komposisi parcel
                         const hasVariedUnits = parsed.some(o => Array.isArray(o.items) && o.items.some(it => it.unit === 'Pack' || it.unit === 'Pcs' || it.unit === 'Sisir'));
-                        if (hasLegacySeed || !hasLunasParcel || !hasVariedUnits) {
+                        const hasParcelItems = parsed.some(o => Array.isArray(o.items) && o.items.some(it => (it.isParcel || String(it.name).toLowerCase().includes('hamper')) && Array.isArray(it.items) && it.items.length > 0));
+                        if (hasLegacySeed || !hasLunasParcel || !hasVariedUnits || !hasParcelItems) {
                             const customOrders = parsed
                                 .filter(o => !String(o?.id || '').startsWith('pos-seed-'))
                                 .map(normalizePosOrder);
@@ -5960,6 +6176,8 @@
                 isEditMode: false,
                 editingOrder: null,
                 receiptPaymentStatus: 'Belum Lunas',
+                receiptReturnView: 'payment',
+                paymentReturnView: 'form',
                 completedTx: {
                     dateTime: '',
                     paymentMethod: 'Tunai',
@@ -6662,6 +6880,9 @@
 
                 get cashReceivedAmount() {
                     if (this.isCashCustom) return this.customCashAmount;
+                    if (this.isSplitPayment) {
+                        return Math.max(0, this.calculateGrandTotal() - this.getSplitTotalPaid());
+                    }
                     return this.calculateGrandTotal();
                 },
                 set cashReceivedAmount(v) {
@@ -6670,6 +6891,10 @@
 
                 get cashReceivedString() {
                     if (this.isCashCustom) return this.customCashString;
+                    if (this.isSplitPayment) {
+                        const remaining = Math.max(0, this.calculateGrandTotal() - this.getSplitTotalPaid());
+                        return remaining > 0 ? remaining.toLocaleString('id-ID') : '0';
+                    }
                     const total = this.calculateGrandTotal();
                     return total > 0 ? total.toLocaleString('id-ID') : '';
                 },
@@ -6794,7 +7019,6 @@
                         this.splitPayments[idx].amount = remaining;
                         this.splitPayments[idx].amountString = remaining > 0 ? remaining.toLocaleString('id-ID') : '0';
                     }
-                    this.showNotification('Sisa tagihan otomatis terisi');
                 },
 
                 autoFillSplit2Remaining() { this.autoFillSplitRemaining(1); },
@@ -6832,19 +7056,19 @@
                     // Ketika sudah ditambah, default baris atas tetap Tunai
                     this.selectedPaymentMethod = 'Tunai';
 
-                    // Reset input nominal baris atas ke sisa tagihan yang baru
-                    const newPaid = this.getSplitTotalPaid();
-                    const newRemaining = Math.max(0, total - newPaid);
-                    this.isCashCustom = true;
-                    this.customCashAmount = newRemaining;
-                    this.customCashString = newRemaining > 0 ? newRemaining.toLocaleString('id-ID') : '';
-
-                    this.showNotification("Metode " + methodToAdd + " ditambahkan", "success");
+                    // Reset input nominal baris atas ke default 0
+                    this.isCashCustom = false;
+                    this.customCashAmount = 0;
+                    this.customCashString = '';
                 },
 
                 removeSplitPaymentMethod(idx) {
                     if (!this.splitPayments || !this.splitPayments[idx]) return;
-                    const removedName = this.splitPayments[idx].method || this.splitPayments[idx].name || 'Pembayaran';
+                    const target = this.splitPayments[idx];
+                    if (target.isLocked || (target.id && String(target.id).startsWith('prev-'))) {
+                        return;
+                    }
+                    const removedName = target.method || target.name || 'Pembayaran';
                     this.splitPayments.splice(idx, 1);
 
                     // Update sisa tagihan pada baris atas & default tetap Tunai
@@ -6852,17 +7076,9 @@
                     const currentPaid = this.getSplitTotalPaid();
                     const remaining = Math.max(0, total - currentPaid);
                     this.selectedPaymentMethod = 'Tunai';
-                    if (this.splitPayments.length === 0) {
-                        this.isCashCustom = false;
-                        this.customCashAmount = 0;
-                        this.customCashString = '';
-                    } else {
-                        this.isCashCustom = true;
-                        this.customCashAmount = remaining;
-                        this.customCashString = remaining > 0 ? remaining.toLocaleString('id-ID') : '';
-                    }
-
-                    this.showNotification("Metode " + removedName + " dihapus", "info");
+                    this.isCashCustom = false;
+                    this.customCashAmount = 0;
+                    this.customCashString = '';
                 },
 
                 getCurrentTotalPaid() {
@@ -6914,14 +7130,7 @@
                 },
 
                 showNotification(msg, type = 'success') {
-                    console.log('[Notification]', type, msg);
-                    this.toastMessage = msg;
-                    this.toastType = type;
-                    this.toastOpen = true;
-                    if (this._toastTimer) clearTimeout(this._toastTimer);
-                    this._toastTimer = setTimeout(() => {
-                        this.toastOpen = false;
-                    }, 5000);
+                    // Pop-up notifikasi dinonaktifkan
                 },
 
                 selectCourierById(id) {
@@ -7225,6 +7434,8 @@
                     this.customCashString = '';
                     this.paymentMethodDropdownOpen = false;
                     this.receiptPaymentStatus = 'Belum Lunas';
+                    this.receiptReturnView = 'payment';
+                    this.paymentReturnView = 'form';
                     this.completedTx = {
                         dateTime: '',
                         paymentMethod: 'Tunai',
@@ -7284,13 +7495,13 @@
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
 
-                // Buka Form Edit
-                openEditForm(order) {
+                // Isi state form dari objek transaksi (dipakai oleh Edit maupun Cetak Nota Pending)
+                hydrateOrderToForm(order) {
                     if (!order) return;
                     this.isEditMode = true;
                     this.editingOrder = order;
                     this.resetPaymentState();
-                    if (order.paymentMethod && this.paymentMethods.some(m => m.name === order.paymentMethod)) {
+                    if (order.paymentMethod && order.paymentMethod !== 'Belum Bayar' && this.paymentMethods.some(m => m.name === order.paymentMethod)) {
                         this.selectedPaymentMethod = order.paymentMethod;
                     }
 
@@ -7315,6 +7526,17 @@
                     this.customerSearchQuery = '';
                     this.addressModalOpen = false;
                     this.form.notes = order.notes || '';
+                    this.form.posNumber = order.posNumber || order.poNumber || '';
+                    this.form.orderDate = order.orderDate || '';
+                    this.form.orderTime = order.orderTime || '';
+                    this.form.cashierName = order.staffName || order.createdBy || '';
+
+                    if (order.courierName) {
+                        const matchedCourier = (this.courierList || []).find(c => c.name === order.courierName);
+                        if (matchedCourier) {
+                            this.selectedCourierId = matchedCourier.id;
+                        }
+                    }
 
                     if (Array.isArray(order.items) && order.items.length > 0) {
                         this.form.items = order.items.map(it => {
@@ -7332,17 +7554,31 @@
                                 marginPercent = sellPrice > 0 ? Number((((sellPrice - buyPrice) / sellPrice) * 100).toFixed(1)) : 0;
                             }
 
+                            const isParcel = Boolean(it.isParcel || it.category === 'parcel' || String(it.name || '').toLowerCase().includes('parcel') || String(it.name || '').toLowerCase().includes('hamper'));
+
+                            const compItems = (Array.isArray(it.items) && it.items.length > 0)
+                                ? JSON.parse(JSON.stringify(it.items))
+                                : (isParcel ? getDefaultParcelComposition() : []);
+
+                            const subItems = (Array.isArray(it.subItems) && it.subItems.length > 0)
+                                ? JSON.parse(JSON.stringify(it.subItems))
+                                : (isParcel ? getDefaultParcelSubItems() : []);
+
                             return {
                                 productId: it.productId || (this.masterItems.find(m => m.name.toLowerCase() === (it.name || '').toLowerCase())?.id) || null,
-                                category: it.category || (it.isParcel ? 'parcel' : 'buah'),
+                                category: it.category || (isParcel ? 'parcel' : 'buah'),
                                 name: it.name || 'Produk',
                                 unit: it.unit || 'Pcs',
-                                buyPrice: buyPrice,
+                                buyPrice: buyPrice || (isParcel ? 110000 : 0),
                                 sellPrice: sellPrice,
                                 price: sellPrice || buyPrice,
                                 marginPercent: marginPercent,
                                 qty: qty,
-                                isParcel: Boolean(it.isParcel || it.category === 'parcel'),
+                                isParcel: isParcel,
+                                budget: it.budget || (isParcel ? (sellPrice || 150000) : 0),
+                                serviceFee: it.serviceFee || 0,
+                                items: compItems,
+                                subItems: subItems,
                                 discount: it.discount || 0,
                                 discountType: it.discountType || null,
                                 discountPerUnit: it.discountPerUnit || 0,
@@ -7364,9 +7600,57 @@
                     this.form.shippingFee = Number(order.shippingFee || 0);
                     this.form.shippingFeeString = this.form.shippingFee > 0 ? Number(this.form.shippingFee).toLocaleString('id-ID') : '';
                     this.sweepOpen = false;
+                },
 
+                // Buka Form Edit
+                openEditForm(order) {
+                    if (!order) return;
+                    this.hydrateOrderToForm(order);
                     this.currentView = 'form';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                // Buka Pratinjau & Cetak Nota dari Modal Detail Transaksi (Pending / Belum Bayar)
+                openOrderReceiptFromDetail(order) {
+                    if (!order) return;
+                    this.hydrateOrderToForm(order);
+                    const receiptStatus = (order.status === 'Lunas')
+                        ? 'Sudah Lunas'
+                        : (order.status === 'Kurang Bayar' ? 'Bayar Sebagian' : 'Belum Lunas');
+                    this.closeDetailModal();
+                    this.openReceiptView(receiptStatus, 'list');
+                },
+
+                // Buka Halaman Bayar dari Modal Detail Transaksi (Belum Bayar / Kurang Bayar)
+                openPaymentForOrder(order) {
+                    if (!order) return;
+                    this.hydrateOrderToForm(order);
+                    this.closeDetailModal();
+                    this.paymentReturnView = 'list';
+                    const total = this.calculateGrandTotal();
+                    let prevPaid = Math.max(0, Number(order.paidAmount || 0));
+                    if (order.status === 'Kurang Bayar') {
+                        if (prevPaid <= 0 && total > 0) {
+                            prevPaid = Math.floor((total * 0.5) / 1000) * 1000;
+                        }
+                        this.isSplitPayment = true;
+                        const prevMethod = (order.paymentMethod && order.paymentMethod !== 'Belum Bayar') ? order.paymentMethod : 'Transfer BCA';
+                        this.splitPayments = [{
+                            id: 'prev-' + (order.id || Date.now()),
+                            name: prevMethod,
+                            method: prevMethod,
+                            amount: prevPaid,
+                            amountString: prevPaid.toLocaleString('id-ID'),
+                            userName: order.staffName || this.currentUser?.name || 'Kasir',
+                            dateTime: this.formatDateTime(order.orderDate, order.orderTime),
+                            dropdownOpen: false,
+                            isLocked: true
+                        }];
+                        this.isCashCustom = false;
+                        this.customCashAmount = 0;
+                        this.customCashString = '';
+                    }
+                    this.openPaymentView();
                 },
 
                 openEditFormById(queryId) {
@@ -7870,6 +8154,10 @@
                     };
                     this.currentView = 'parcel';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                    this.$nextTick(() => {
+                        const el = document.getElementById('parcelBudgetInput');
+                        if (el) { el.focus(); }
+                    });
                 },
 
                 openEditParcelView(idx) {
@@ -7886,8 +8174,30 @@
                     this.parcelCompositionSearchQuery = '';
                     this.selectedParcelComposition = null;
                     this.parcelItem = { ...item };
-                    this.parcelItem.items = Array.isArray(item.items) ? JSON.parse(JSON.stringify(item.items)) : [];
-                    this.parcelItem.budget = item.budget || item.basePrice || item.price || item.sellPrice || 0;
+                    let compItems = [];
+                    if (Array.isArray(item.items) && item.items.length > 0) {
+                        compItems = JSON.parse(JSON.stringify(item.items));
+                    } else if (Array.isArray(item.subItems) && item.subItems.length > 0) {
+                        compItems = item.subItems.map((sub, sIdx) => {
+                            const rawQty = parseFloat(String(sub.qty || 1).replace(',', '.'));
+                            const matched = this.getDefaultParcelCompItem ? this.getDefaultParcelCompItem(sub.name) : null;
+                            return {
+                                id: matched?.id || ('comp-' + sIdx),
+                                name: sub.name,
+                                unit: sub.unit || matched?.unit || 'Pcs',
+                                buyPrice: sub.buyPrice || matched?.buyPrice || 10000,
+                                price: sub.price || matched?.price || 15000,
+                                qty: !isNaN(rawQty) && rawQty > 0 ? rawQty : 1,
+                                stock: matched?.stock !== undefined ? matched.stock : 20,
+                                isPackaging: !!matched?.isPackaging,
+                                emoji: matched?.emoji || this.getFruitEmoji(sub.name)
+                            };
+                        });
+                    } else {
+                        compItems = this.getDefaultParcelComposition ? this.getDefaultParcelComposition() : getDefaultParcelComposition();
+                    }
+                    this.parcelItem.items = compItems;
+                    this.parcelItem.budget = item.budget || item.basePrice || item.price || item.sellPrice || (this.parcelSelectedProduct?.price || 150000);
                     this.parcelBudgetString = this.parcelItem.budget > 0 ? this.parcelItem.budget.toLocaleString('id-ID') : '';
                     if (this.parcelItem.stock === undefined) {
                         const foundMaster = (this.masterProducts || []).find(p => p.name === item.name || p.id === item.productId);
@@ -7896,7 +8206,7 @@
                         }
                     }
                     if (!this.parcelItem.basePrice) {
-                        this.parcelItem.basePrice = this.parcelItem.price || this.parcelItem.sellPrice || 0;
+                        this.parcelItem.basePrice = this.parcelItem.price || this.parcelItem.sellPrice || this.parcelItem.budget || 0;
                     }
                     this.parcelLastEdited = 'qty';
                     if (this.parcelItem.qty !== null && this.parcelItem.qty !== undefined) {
@@ -8074,6 +8384,10 @@
 
                 closePaymentView() {
                     this.sweepOpen = false;
+                    if (this.paymentReturnView === 'list') {
+                        this.closeFormView();
+                        return;
+                    }
                     this.currentView = 'form';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
@@ -8093,9 +8407,9 @@
                         const data = {
                             customerName: this.getCustomerDisplayName(),
                             customerPhone: this.form.customerPhone || '',
-                            posNumber: this.form.posNumber || ('INV' + new Date().getFullYear() + String(new Date().getMonth() + 1).padStart(2, '0') + String(new Date().getDate()).padStart(2, '0') + '142'),
-                            time: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + (this.form.orderTime || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })),
-                            cashier: this.currentUser?.name || 'Administrator',
+                            posNumber: this.getReceiptNumber(),
+                            time: this.getReceiptTime(),
+                            cashier: this.getReceiptCashierName(),
                             paymentMethod: paymentMethodStr,
                             items: (this.form.items && this.form.items.length > 0) ? this.form.items : [],
                             subtotal: this.getItemsSubtotal(),
@@ -8213,22 +8527,32 @@
                 },
 
                 isCurrentItemViewDisabled() {
-                    if (this.selectedAddCategory === 'parcel') {
+                    if (this.selectedAddCategory === 'parcel' || this.isEditParcelMode) {
                         const hasBudget = Number(this.parcelItem?.budget || 0) > 0;
-                        const hasItems = Array.isArray(this.parcelItem?.items) && this.parcelItem.items.length > 0;
+                        const compItems = Array.isArray(this.parcelItem?.items) ? this.parcelItem.items : [];
+                        const hasItems = compItems.length > 0 && compItems.some(it => Number(it.qty || 0) > 0);
                         return !hasBudget || !hasItems;
                     }
                     if (this.selectedAddCategory === 'buah') {
-                        return !this.modalItem.name || this.isFruitModalOverStock() || (this.modalItem.name && this.modalItem.stock === 0);
+                        const normalized = String(this.modalQtyString || '').replace(/\./g, '').replace(',', '.');
+                        const qty = parseFloat(normalized);
+                        const hasQty = !isNaN(qty) && qty > 0;
+                        return !this.modalItem.name || !hasQty || this.isFruitModalOverStock() || (this.modalItem.name && this.modalItem.stock === 0);
                     }
                     if (this.selectedAddCategory === 'jus') {
-                        return !this.jusItem.name || this.isJusOverStock() || (this.jusItem.name && this.getJusTotalAvailable(this.jusItem) === 0);
+                        const qStr = String(this.jusQtyString || '').replace(/\./g, '').replace(',', '.');
+                        const q = parseFloat(qStr);
+                        const hasQty = !isNaN(q) && q > 0;
+                        return !this.jusItem.name || !hasQty || this.isJusOverStock() || (this.jusItem.name && this.getJusTotalAvailable(this.jusItem) === 0);
                     }
                     return false;
                 },
 
                 saveCurrentItemView() {
-                    if (this.selectedAddCategory === 'parcel') {
+                    if (this.isCurrentItemViewDisabled()) {
+                        return;
+                    }
+                    if (this.selectedAddCategory === 'parcel' || this.isEditParcelMode) {
                         this.saveParcelView();
                     } else if (this.selectedAddCategory === 'buah') {
                         this.saveFruitView();
@@ -8349,6 +8673,66 @@
                     return '🍎';
                 },
 
+                getDefaultParcelComposition() {
+                    return typeof getDefaultParcelComposition === 'function' ? getDefaultParcelComposition() : [
+                        { id: 302, name: 'Apel Fuji Wangishan', unit: 'Kg', buyPrice: 28000, price: 35000, qty: 1.5, stock: 24.5, isPackaging: false, emoji: '🍎' },
+                        { id: 303, name: 'Jeruk Sunkist Navel', unit: 'Kg', buyPrice: 24000, price: 30000, qty: 1.0, stock: 18.0, isPackaging: false, emoji: '🍊' },
+                        { id: 301, name: 'Buah Naga Merah Super', unit: 'Pcs', buyPrice: 12000, price: 16000, qty: 1.0, stock: 14.5, isPackaging: false, emoji: '🐉' },
+                        { id: 315, name: 'Pisang Cavendish Sunpride', unit: 'Sisir', buyPrice: 14000, price: 18000, qty: 1.0, stock: 14.0, isPackaging: false, emoji: '🍌' },
+                        { id: 'pack-4', name: 'Keranjang Anyam Bambu Premium', unit: 'Pcs', buyPrice: 10000, price: 15000, qty: 1.0, stock: 12, isPackaging: true, emoji: '🧺' },
+                        { id: 'pack-acc', name: 'Pita Satin & Kartu Ucapan Spesial', unit: 'Set', buyPrice: 8000, price: 12000, qty: 1.0, stock: 25, isPackaging: true, emoji: '🎀' }
+                    ];
+                },
+
+                getDefaultParcelSubItems() {
+                    return typeof getDefaultParcelSubItems === 'function' ? getDefaultParcelSubItems() : [
+                        { name: 'Apel Fuji Wangishan', qty: '1,5', unit: 'Kg' },
+                        { name: 'Jeruk Sunkist Navel', qty: '1', unit: 'Kg' },
+                        { name: 'Buah Naga Merah Super', qty: '1', unit: 'Pcs' },
+                        { name: 'Pisang Cavendish Sunpride', qty: '1', unit: 'Sisir' },
+                        { name: 'Keranjang Anyam Bambu Premium', qty: '1', unit: 'Pcs' },
+                        { name: 'Pita Satin & Kartu Ucapan Spesial', qty: '1', unit: 'Set' }
+                    ];
+                },
+
+                getDefaultParcelCompItem(name) {
+                    const list = this.getDefaultParcelComposition();
+                    const clean = String(name || '').toLowerCase().trim();
+                    const found = list.find(it => {
+                        const n = it.name.toLowerCase();
+                        return n.includes(clean) || clean.includes(n);
+                    });
+                    if (found) return found;
+
+                    const foundMaster = (this.masterProducts || []).find(p => p.name.toLowerCase().includes(clean) || clean.includes(p.name.toLowerCase()));
+                    if (foundMaster) {
+                        return {
+                            id: foundMaster.id,
+                            name: foundMaster.name,
+                            unit: foundMaster.unit || 'Kg',
+                            buyPrice: foundMaster.buyPrice || 10000,
+                            price: foundMaster.price || 15000,
+                            stock: foundMaster.stock !== undefined ? foundMaster.stock : 20,
+                            isPackaging: !!foundMaster.isPackaging,
+                            emoji: this.getFruitEmoji(foundMaster.name)
+                        };
+                    }
+                    const foundPack = (this.parcelPackagingList || []).find(p => p.name.toLowerCase().includes(clean) || clean.includes(p.name.toLowerCase()));
+                    if (foundPack) {
+                        return {
+                            id: foundPack.id,
+                            name: foundPack.name,
+                            unit: foundPack.unit || 'Pcs',
+                            buyPrice: foundPack.buyPrice || 10000,
+                            price: foundPack.price || 15000,
+                            stock: foundPack.stock !== undefined ? foundPack.stock : 20,
+                            isPackaging: true,
+                            emoji: foundPack.emoji || '🧺'
+                        };
+                    }
+                    return null;
+                },
+
                 getParcelAvailableComponents() {
                     const packs = this.parcelPackagingList || [];
                     const fruits = (this.masterProducts || []).filter(p => (p.category || '').toLowerCase() === 'buah');
@@ -8364,6 +8748,15 @@
 
                 addParcelCompositionItem(item) {
                     if (!item || item.stock === 0) return;
+                    if (!this.parcelItem.budget || this.parcelItem.budget <= 0) {
+                        alert('Silakan tentukan budget parcel terlebih dahulu.');
+                        this.parcelDropdownOpen = false;
+                        this.$nextTick(() => {
+                            const el = document.getElementById('parcelBudgetInput');
+                            if (el) { el.focus(); el.select(); }
+                        });
+                        return;
+                    }
                     if (!this.parcelItem.items) {
                         this.parcelItem.items = [];
                     }
@@ -8446,6 +8839,11 @@
                 },
 
                 startEditParcelModal(idx) {
+                    if (!this.parcelItem.budget || this.parcelItem.budget <= 0) {
+                        const el = document.getElementById('parcelBudgetInput');
+                        if (el) { el.focus(); el.select(); }
+                        return;
+                    }
                     if (this.editingParcelQtyIdx !== null) {
                         this.saveParcelQty(this.editingParcelQtyIdx);
                     }
@@ -8567,6 +8965,11 @@
                 },
 
                 startEditParcelQty(idx) {
+                    if (!this.parcelItem.budget || this.parcelItem.budget <= 0) {
+                        const el = document.getElementById('parcelBudgetInput');
+                        if (el) { el.focus(); el.select(); }
+                        return;
+                    }
                     if (this.editingParcelModalIdx !== null) {
                         this.saveParcelModal(this.editingParcelModalIdx);
                     }
@@ -8727,7 +9130,10 @@
 
                 getParcelTotalModal() {
                     const fee = Number(this.parcelItem?.serviceFee || 0);
-                    if (this.parcelItem && Array.isArray(this.parcelItem.items) && this.parcelItem.items.length > 0) {
+                    if (this.parcelItem && Array.isArray(this.parcelItem.items)) {
+                        if (this.parcelItem.items.length === 0) {
+                            return fee;
+                        }
                         const itemsModal = this.parcelItem.items.reduce((acc, it) => {
                             const q = Number(it.qty || 0);
                             const buy = Number(it.buyPrice || 0);
@@ -8829,11 +9235,18 @@
                         this.parcelItem.stock = item.stock !== undefined ? item.stock : 0;
                         this.parcelItem.recipe = item.recipe ? JSON.parse(JSON.stringify(item.recipe)) : [];
 
+                        // Jika komposisi produk kosong, isi dengan komposisi default
+                        if (!this.parcelItem.items || this.parcelItem.items.length === 0) {
+                            this.parcelItem.items = this.getDefaultParcelComposition ? this.getDefaultParcelComposition() : getDefaultParcelComposition();
+                        }
+
                         // Field Produk (Otomatis dari Budget jika budget diisi) & Budget di atas tetap dipertahankan
                         if (this.parcelItem.budget >= 1000) {
                             this.parcelItem.name = this.getGeneratedParcelName(this.parcelItem.budget);
                         } else if (!this.parcelItem.name) {
                             this.parcelItem.name = item.name;
+                            this.parcelItem.budget = item.price || 150000;
+                            this.parcelBudgetString = this.parcelItem.budget > 0 ? this.parcelItem.budget.toLocaleString('id-ID') : '';
                         }
 
                         if (!this.parcelQtyString || this.parcelQtyString === '0') {
@@ -8857,6 +9270,10 @@
                     this.parcelItem.sellPrice = num;
                     this.parcelBudgetString = num > 0 ? num.toLocaleString('id-ID') : '';
                     event.target.value = this.parcelBudgetString;
+
+                    if (num <= 0) {
+                        this.parcelDropdownOpen = false;
+                    }
 
                     // Otomatis hasilkan nama produk dari budget (Terkunci / Read-only)
                     this.parcelItem.name = this.getGeneratedParcelName(num);
@@ -9005,99 +9422,52 @@
 
                 saveParcelView() {
                     const budget = Number(this.parcelItem.budget || 0);
-                    const compItems = this.parcelItem.items || [];
+                    const compItems = (this.parcelItem.items || []).filter(it => Number(it.qty || 0) > 0);
 
-                    // Skenario 1: Custom Parcel Berdasarkan Budget & Komposisi Buah + Kemasan
-                    if (budget > 0 || compItems.length > 0) {
-                        if (budget <= 0) {
-                            alert('Silakan tentukan budget parcel terlebih dahulu.');
-                            return;
-                        }
-                        if (compItems.length === 0) {
-                            alert('Silakan pilih minimal 1 buah atau keranjang untuk komposisi parcel.');
-                            return;
-                        }
-
-                        const finalName = this.parcelItem.name || this.getGeneratedParcelName(budget) || 'Parcel Custom';
-                        const totalSellPrice = budget;
-                        const totalModal = this.getParcelTotalModal();
-                        const serviceFee = Number(this.parcelItem.serviceFee || 0);
-
-                        const itemToSave = {
-                            id: 'parcel-' + Date.now(),
-                            productId: null,
-                            name: finalName,
-                            category: 'parcel',
-                            isParcel: true,
-                            unit: 'Paket',
-                            qty: 1,
-                            budget: budget,
-                            serviceFee: serviceFee,
-                            buyPrice: totalModal,
-                            basePrice: totalSellPrice,
-                            price: totalSellPrice,
-                            finalUnitPrice: totalSellPrice,
-                            sellPrice: totalSellPrice,
-                            subtotal: totalSellPrice,
-                            items: JSON.parse(JSON.stringify(compItems)),
-                            totalModal: totalModal
-                        };
-
-                        if (this.modalMode === 'edit' && this.editingIndex !== null) {
-                            this.form.items[this.editingIndex] = itemToSave;
-                            this.closeParcelView();
-                        } else if (this.isEditParcelMode && this.editingParcelIndex !== null) {
-                            this.form.items[this.editingParcelIndex] = itemToSave;
-                            this.closeParcelView();
-                        } else {
-                            this.form.items.push(itemToSave);
-                            this.resetParcelForm();
-                        }
+                    if (budget <= 0) {
+                        alert('Silakan tentukan budget parcel terlebih dahulu.');
+                        return;
+                    }
+                    if (!compItems || compItems.length === 0) {
+                        alert('Silakan pilih minimal 1 buah atau keranjang untuk komposisi parcel.');
                         return;
                     }
 
-
-                    // Skenario 2: Fallback Pre-made Parcel
-                    if (!this.parcelItem.name) {
-                        alert('Silakan tentukan budget dan pilih komposisi parcel terlebih dahulu.');
-                        return;
-                    }
-                    const totalAvail = this.getParcelTotalAvailable(this.parcelItem);
-                    if (totalAvail <= 0) {
-                        alert('Stok produk parcel dan bahan resep sedang habis.');
-                        return;
-                    }
-                    const q = this.getParcelQtyNumber() || 1;
-                    if (this.isParcelOverStock()) {
-                        alert('Kuantitas melebihi kapasitas yang tersedia (' + totalAvail + ' ' + (this.parcelItem.unit || 'Paket') + ')');
-                        return;
-                    }
-
-                    this.calculateParcelDiscount();
-                    const finalUnit = this.getParcelFinalUnitPrice();
-                    const totalSellPrice = Number(this.parcelItem.sellPrice || Math.round(q * finalUnit));
-
-                    if (!this.parcelItem.buyPrice) {
-                        this.parcelItem.buyPrice = Math.round(finalUnit * 0.7);
-                    }
+                    const finalName = this.parcelItem.name || this.getGeneratedParcelName(budget) || 'Parcel Custom';
+                    const totalSellPrice = budget;
+                    const totalModal = this.getParcelTotalModal();
+                    const serviceFee = Number(this.parcelItem.serviceFee || 0);
 
                     const itemToSave = {
-                        ...this.parcelItem,
-                        qty: q,
-                        basePrice: this.parcelItem.basePrice || this.parcelItem.price || 0,
-                        finalUnitPrice: finalUnit,
-                        finalPrice: finalUnit,
-                        discount: this.parcelItem.discount || 0,
-                        discountType: this.parcelItem.discountType || null,
-                        discountPerUnit: this.parcelItem.discountPerUnit || 0,
+                        id: (this.parcelItem.id && String(this.parcelItem.id).startsWith('parcel-')) ? this.parcelItem.id : ('parcel-' + Date.now()),
+                        productId: this.parcelItem.productId || null,
+                        name: finalName,
+                        category: 'parcel',
+                        isParcel: true,
+                        unit: 'Paket',
+                        qty: 1,
+                        budget: budget,
+                        serviceFee: serviceFee,
+                        buyPrice: totalModal,
+                        basePrice: totalSellPrice,
+                        price: totalSellPrice,
+                        finalUnitPrice: totalSellPrice,
                         sellPrice: totalSellPrice,
-                        price: finalUnit,
                         subtotal: totalSellPrice,
-                        recipe: this.getParcelRecipe()
+                        items: JSON.parse(JSON.stringify(compItems)),
+                        subItems: compItems.map(c => ({
+                            name: c.name,
+                            qty: String(c.qty || 1).replace('.', ','),
+                            unit: c.unit || 'Pcs'
+                        })),
+                        totalModal: totalModal
                     };
 
                     if (this.modalMode === 'edit' && this.editingIndex !== null) {
                         this.form.items[this.editingIndex] = itemToSave;
+                        this.closeParcelView();
+                    } else if (this.isEditParcelMode && this.editingParcelIndex !== null) {
+                        this.form.items[this.editingParcelIndex] = itemToSave;
                         this.closeParcelView();
                     } else {
                         this.form.items.push(itemToSave);
@@ -9839,6 +10209,10 @@
                 },
 
                 saveParcelToCart() {
+                    if (!this.parcelDraft.items || this.parcelDraft.items.length === 0) {
+                        alert('Silakan pilih minimal 1 buah untuk parcel.');
+                        return;
+                    }
                     const parcelName = this.getGeneratedParcelName(this.parcelDraft.sellingPrice);
                     const subList = [];
                     if (this.parcelDraft.packaging && this.parcelDraft.packaging.name && this.parcelDraft.packaging.name !== 'Tanpa Kemasan / Custom') {
@@ -9880,7 +10254,7 @@
 
                 openAddItemModal(category = 'all') {
                     if (category === 'parcel') {
-                        this.openAddParcelView();
+                        this.openAddParcelView('parcel');
                         return;
                     }
                     this.modalMode = 'add';
@@ -10298,7 +10672,9 @@
                             subtotal: budget,
                             discount: 0,
                             discountPerUnit: 0,
-                            discountType: 'nominal'
+                            discountType: 'nominal',
+                            items: getDefaultParcelComposition(),
+                            subItems: getDefaultParcelSubItems()
                         };
                         if (this.modalMode === 'add') {
                             this.form.items.push(parcelItem);
@@ -10614,7 +10990,8 @@
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
 
-                openReceiptView(status = 'Belum Lunas') {
+                openReceiptView(status = 'Belum Lunas', returnView = 'payment') {
+                    this.receiptReturnView = returnView || 'payment';
                     this.receiptPaymentStatus = status;
                     this.syncReceiptData();
                     this.currentView = 'receipt';
@@ -10622,6 +10999,17 @@
                 },
 
                 closeReceiptView() {
+                    if (this.receiptReturnView === 'list') {
+                        this.closeFormView();
+                        return;
+                    }
+                    if (this.receiptReturnView === 'payment-success') {
+                        this.receiptReturnView = 'payment';
+                        this.currentView = 'payment-success';
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        return;
+                    }
+                    this.receiptReturnView = 'payment';
                     this.currentView = 'payment';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
@@ -10672,6 +11060,10 @@
                     // PENTING: Hapus elemen <template> dan bersihkan semua directive Alpine (x-*, :*, @*)
                     // agar MutationObserver Alpine tidak mereset/mengosongkan nilai teks yang sudah terisi di DOM
                     clone.querySelectorAll('template').forEach(t => t.remove());
+
+                    // Customer-facing share: Bersihkan rincian komposisi buah khusus internal agar nota pelanggan 100% bersih
+                    clone.querySelectorAll('.receipt-internal-only').forEach(el => el.remove());
+
                     const allNodes = [clone, ...clone.querySelectorAll('*')];
                     allNodes.forEach(el => {
                         const attrs = Array.from(el.attributes || []);
@@ -10871,6 +11263,36 @@
                     ];
                 },
 
+                // Ambil daftar komponen parcel (khusus untuk tampilan internal kasir / struk arsip toko)
+                getParcelSubItems(item) {
+                    if (!item) return [];
+                    if (Array.isArray(item.subItems) && item.subItems.length > 0) {
+                        return item.subItems;
+                    }
+                    if (Array.isArray(item.items) && item.items.length > 0) {
+                        return item.items.map(it => ({
+                            name: it.name,
+                            qty: String(it.qty || 1).replace('.', ','),
+                            unit: it.unit || 'Pcs'
+                        }));
+                    }
+                    const isParcel = item.isParcel || item.category === 'parcel' ||
+                        String(item.name || '').toLowerCase().includes('parcel') ||
+                        String(item.name || '').toLowerCase().includes('hamper');
+
+                    if (isParcel) {
+                        return typeof getDefaultParcelSubItems === 'function' ? getDefaultParcelSubItems() : [
+                            { name: 'Apel Fuji Wangishan', qty: '1,5', unit: 'Kg' },
+                            { name: 'Jeruk Sunkist Navel', qty: '1', unit: 'Kg' },
+                            { name: 'Buah Naga Merah Super', qty: '1', unit: 'Pcs' },
+                            { name: 'Pisang Cavendish Sunpride', qty: '1', unit: 'Sisir' },
+                            { name: 'Keranjang Anyam Bambu Premium', qty: '1', unit: 'Pcs' },
+                            { name: 'Pita Satin & Kartu Ucapan Spesial', qty: '1', unit: 'Set' }
+                        ];
+                    }
+                    return [];
+                },
+
                 getReceiptCustomerName() {
                     const name = (this.getCustomerDisplayName() || '').trim();
                     return name || 'Pelanggan Umum';
@@ -10912,15 +11334,20 @@
 
                 getReceiptTime() {
                     const now = new Date();
-                    const d = String(now.getDate()).padStart(2, '0');
-                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                    const dateStr = `${d} ${months[now.getMonth()]} ${now.getFullYear()}`;
-                    const timeStr = this.form.orderTime || `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                    let dateStr = '';
+                    if (this.form && this.form.orderDate) {
+                        dateStr = this.formatDate(this.form.orderDate);
+                    } else {
+                        const d = String(now.getDate()).padStart(2, '0');
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                        dateStr = `${d} ${months[now.getMonth()]} ${now.getFullYear()}`;
+                    }
+                    const timeStr = (this.form && this.form.orderTime) ? this.form.orderTime : `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
                     return `${dateStr}, ${timeStr}`;
                 },
 
                 getReceiptCashierName() {
-                    return this.currentUser?.name || 'Dimas Pratama';
+                    return (this.form && this.form.cashierName) || this.currentUser?.name || 'Dimas Pratama';
                 },
 
                 getReceiptPaymentMethod() {
@@ -10958,10 +11385,10 @@
 
                 formatReceiptItemQtyPrice(item) {
                     const qty = Number(item.qty || 1);
-                    const qtyStr = Number.isInteger(qty) ? qty.toString() : qty.toFixed(2);
-                    const unit = item.unit ? ` (${item.unit})` : '';
+                    const qtyStr = Number.isInteger(qty) ? qty.toString() : String(qty).replace('.', ',');
+                    const unit = item.unit ? ` ${item.unit}` : '';
                     const basePrice = Number(item.basePrice || item.sellPrice || item.price || 0);
-                    return `${Number(basePrice).toLocaleString('id-ID')} x ${qtyStr}${unit}`;
+                    return `${qtyStr}${unit} x Rp ${Number(basePrice).toLocaleString('id-ID')}`;
                 },
 
                 getReceiptItemDiscount(item) {
@@ -11384,12 +11811,35 @@
                     this.closeFormView();
                 },
 
+                // Kunci tombol bayar jika belum ada penambahan transaksi pembayaran
+                canSubmitPayment() {
+                    if (!this.form.items || this.form.items.length === 0) return false;
+
+                    if (this.isSplitPayment) {
+                        // Jika ada pembayaran sebelumnya yang terkunci (transaksi Kurang Bayar lanjutan)
+                        const hasLockedPrev = (this.splitPayments || []).some(p => p.isLocked || (p.id && String(p.id).startsWith('prev-')));
+                        if (hasLockedPrev) {
+                            // Wajib ada penambahan transaksi baru (minimal 1 baris split baru dengan nominal > 0)
+                            const newPayments = (this.splitPayments || []).filter(p => !p.isLocked && !(p.id && String(p.id).startsWith('prev-')));
+                            return newPayments.length > 0 && newPayments.some(p => Number(p.amount || 0) > 0);
+                        }
+                        // Jika split payment baru biasa, wajib ada minimal 1 pembayaran ditambahkan
+                        return (this.splitPayments || []).length > 0 && this.getSplitTotalPaid() > 0;
+                    }
+
+                    // Single payment: nominal bayar harus lebih dari 0
+                    return Number(this.cashReceivedAmount || 0) > 0;
+                },
+
                 submitPesanan() {
                     if (!this.form.items || this.form.items.length === 0) {
                         return;
                     }
                     if (this.currentView === 'form') {
                         this.openPaymentView();
+                        return;
+                    }
+                    if (!this.canSubmitPayment()) {
                         return;
                     }
                     if (!this.form.targetBranch) {
@@ -11409,6 +11859,7 @@
                     const txStatus = settledPaid <= 0 ? 'Belum Bayar' : (settledPaid < grandTotal ? 'Kurang Bayar' : 'Lunas');
                     const txPaymentStatus = txStatus === 'Lunas' ? 'Sudah Lunas' : (txStatus === 'Kurang Bayar' ? 'Bayar Sebagian' : 'Belum Lunas');
                     const timeStr = String(today.getHours()).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0');
+                    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                     let finalPoNumber = this.form.posNumber || '';
 
                     try {
@@ -11418,7 +11869,6 @@
                         const itemsSubtotal = this.getItemsSubtotal();
                         const discountAmount = this.getDiscountAmount();
                         const shippingFee = Number(this.form.shippingFee || 0);
-                        const dateStr = today.toISOString().split('T')[0];
                         const customerName = this.getCustomerDisplayName();
                         const customerPhone = (this.form.customerPhone && this.form.customerPhone.trim()) ? this.form.customerPhone.trim() : (this.editingOrder?.customerPhone || '');
                         const hasParcel = (this.form.items || []).some(it => it.isParcel || it.category === 'parcel' || String(it.name || '').toLowerCase().includes('parcel') || String(it.name || '').toLowerCase().includes('hamper'));
@@ -11554,6 +12004,7 @@
                     }
 
                     this.form.posNumber = finalPoNumber || this.form.posNumber;
+                    this.form.orderDate = dateStr;
                     this.form.orderTime = timeStr;
                     this.receiptPaymentStatus = txPaymentStatus;
                     this.completedTx = {
