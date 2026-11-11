@@ -1,11 +1,17 @@
 (function (root) {
     function sortirList(config) {
+        const onNextFrame = callback => {
+            if (typeof root.requestAnimationFrame === 'function') root.requestAnimationFrame(callback);
+            else callback();
+        };
         return {
             rows: [], total: 0, filtered: 0, search: '', loading: false, error: '', requestId: 0,
             branches: Array.isArray(config.branches) ? config.branches : [], branchSearch: '',
             filters: {status: 'all', branch: 'all', start: '', end: ''},
             pending: {status: 'all', branch: 'all', start: '', end: ''},
-            filterOpen: false, selected: null, deleting: false, returnFocus: null,
+            filterOpen: false, calendarOpen: false, calendarView: 'date', calendarMonth: new Date().getMonth(), calendarYear: new Date().getFullYear(),
+            filterCalendarTrigger: null, filterCalendarMonths: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
+            selected: null, deleting: false, returnFocus: null,
             init() { this.load(); },
             money(value) { return 'Rp ' + Number(value || 0).toLocaleString('id-ID', {maximumFractionDigits: 2}); },
             statusLabel(status) { return ['paid', 'debt'].includes(status) ? 'Selesai' : (status === 'canceled' ? 'Dibatalkan' : 'Draf'); },
@@ -42,12 +48,104 @@
                 return !query || 'semua cabang'.includes(query);
             },
             get pendingDateError() { return this.pending.start && this.pending.end && this.pending.start > this.pending.end ? 'Tanggal akhir harus sama atau setelah tanggal mulai.' : ''; },
+            get filterCalendarHeading() {
+                if (this.calendarView === 'month') return String(this.calendarYear);
+                if (this.calendarView === 'year') return `${this.calendarYear - 4} - ${this.calendarYear + 7}`;
+                return `${this.filterCalendarMonths[this.calendarMonth]} ${this.calendarYear}`;
+            },
+            get filterCalendarBlankDays() {
+                return Array.from({length:new Date(this.calendarYear, this.calendarMonth, 1).getDay()}, (_, index) => index);
+            },
+            get filterCalendarDays() {
+                return Array.from({length:new Date(this.calendarYear, this.calendarMonth + 1, 0).getDate()}, (_, index) => index + 1);
+            },
+            get filterCalendarYears() {
+                return Array.from({length:12}, (_, index) => this.calendarYear - 4 + index);
+            },
             openFilter(event) {
                 this.returnFocus = event?.currentTarget || null;
-                this.pending = {...this.filters}; this.branchSearch = ''; this.filterOpen = true;
+                this.pending = {...this.filters}; this.branchSearch = ''; this.calendarOpen = false; this.calendarView = 'date'; this.filterOpen = true;
                 this.$nextTick(() => document.getElementById('sortir-filter-dialog')?.focus());
             },
-            closeFilter() { this.filterOpen = false; this.returnFocus?.focus(); },
+            openFilterCalendar(trigger) {
+                this.filterCalendarTrigger = trigger;
+                const value = trigger?.id === 'sortir-date-end'
+                    ? (this.pending.end || this.pending.start)
+                    : (this.pending.start || this.pending.end);
+                if (value) {
+                    const [year, month] = value.split('-').map(Number);
+                    this.calendarYear = year;
+                    this.calendarMonth = month - 1;
+                } else {
+                    const today = new Date();
+                    this.calendarYear = today.getFullYear();
+                    this.calendarMonth = today.getMonth();
+                }
+                this.calendarView = 'date';
+                this.calendarOpen = true;
+                this.$nextTick(() => onNextFrame(() => {
+                    const target = this.$refs.filterCalendarBack;
+                    if (!target || !target.getClientRects().length) return;
+                    target.focus({preventScroll:true});
+                    target.scrollIntoView({block:'nearest'});
+                }));
+            },
+            closeFilterCalendar() {
+                if (!this.calendarOpen) return;
+                this.calendarOpen = false;
+                this.calendarView = 'date';
+                this.$nextTick(() => onNextFrame(() => {
+                    const target = this.filterCalendarTrigger;
+                    if (!target || !target.getClientRects().length) return;
+                    target.focus({preventScroll:true});
+                    target.scrollIntoView({block:'nearest'});
+                }));
+            },
+            moveFilterCalendar(step) {
+                if (this.calendarView === 'date') {
+                    const date = new Date(this.calendarYear, this.calendarMonth + step, 1);
+                    this.calendarMonth = date.getMonth();
+                    this.calendarYear = date.getFullYear();
+                } else if (this.calendarView === 'month') {
+                    this.calendarYear += step;
+                } else {
+                    this.calendarYear += step * 12;
+                }
+            },
+            getFilterCalendarDate(day) {
+                return `${this.calendarYear}-${String(this.calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            },
+            selectFilterCalendarDate(day) {
+                if (!Number.isInteger(Number(day)) || Number(day) < 1 || Number(day) > this.filterCalendarDays.length) return;
+                const date = this.getFilterCalendarDate(Number(day));
+                if (!this.pending.start || (this.pending.start && this.pending.end)) {
+                    this.pending.start = date;
+                    this.pending.end = '';
+                } else if (date < this.pending.start) {
+                    this.pending.end = this.pending.start;
+                    this.pending.start = date;
+                } else {
+                    this.pending.end = date;
+                }
+            },
+            isFilterCalendarDateSelected(day) {
+                const date = this.getFilterCalendarDate(day);
+                return date === this.pending.start || date === this.pending.end;
+            },
+            isFilterCalendarDateInRange(day) {
+                if (!this.pending.start || !this.pending.end) return false;
+                const date = this.getFilterCalendarDate(day);
+                return date > this.pending.start && date < this.pending.end;
+            },
+            chooseFilterCalendarMonth(month) {
+                this.calendarMonth = month;
+                this.calendarView = 'date';
+            },
+            chooseFilterCalendarYear(year) {
+                this.calendarYear = year;
+                this.calendarView = 'month';
+            },
+            closeFilter() { this.calendarOpen = false; this.calendarView = 'date'; this.filterOpen = false; this.returnFocus?.focus(); },
             openDetail(row, event) {
                 this.returnFocus = event?.currentTarget || null; this.selected = row;
                 this.$nextTick(() => document.getElementById('sortir-detail-dialog')?.focus());
@@ -110,7 +208,7 @@
                     this.rows = append ? [...this.rows,...json.data] : json.data;
                     this.total = Number(json.recordsTotal || 0); this.filtered = Number(json.recordsFiltered || 0);
                 } catch(error) {
-                    if (requestId === this.requestId) this.error = error.message || 'Periksa koneksi lalu coba lagi.';
+                    if (requestId === this.requestId) this.error = error.name === 'TypeError' ? 'Periksa koneksi lalu coba lagi.' : (error.message || 'Periksa koneksi lalu coba lagi.');
                 } finally { if (requestId === this.requestId) this.loading = false; }
             },
             async deleteSelected() {

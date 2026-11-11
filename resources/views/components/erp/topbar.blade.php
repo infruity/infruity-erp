@@ -3,9 +3,15 @@
     $sortirFormHeader = request()->routeIs('sortir.create', 'sortir.edit', 'sortir.show');
     $transferFormHeader = request()->routeIs('transfer-pengirim.create', 'transfer-pengirim.edit', 'transfer-pengirim.show', 'transfer-penerima.show');
     $arusKasFormHeader = request()->routeIs('arus-kas.create', 'arus-kas.edit');
-    $transactionFormHeader = $transferFormHeader || $sortirFormHeader || $arusKasFormHeader || request()->routeIs('wholesale.create', 'wholesale.edit');
-    $transactionBackRoute = $arusKasFormHeader ? 'arus-kas.index' : ($transferFormHeader ? request()->segment(1) . '.index' : ($sortirFormHeader ? 'sortir.index' : 'wholesale.index'));
-    $transactionBackLabel = $arusKasFormHeader ? 'Kembali ke Arus Kas' : ($transferFormHeader ? 'Kembali ke Pindah Stok' : ($sortirFormHeader ? 'Kembali ke Sortir Barang' : 'Kembali ke Pengadaan'));
+    $productionCreateHeader = request()->routeIs('production.create');
+    $posCreateHeader = request()->routeIs('pos.create');
+    $transactionFormHeader = $productionCreateHeader || $posCreateHeader || $transferFormHeader || $sortirFormHeader || $arusKasFormHeader || request()->routeIs('wholesale.create', 'wholesale.edit');
+    $transactionBackRoute = $posCreateHeader ? 'pos.index' : ($arusKasFormHeader ? 'arus-kas.index' : ($transferFormHeader ? request()->segment(1) . '.index' : ($sortirFormHeader ? 'sortir.index' : 'wholesale.index')));
+    $transactionBackLabel = $posCreateHeader ? 'Kembali ke Kasir / POS' : ($arusKasFormHeader ? 'Kembali ke Arus Kas' : ($transferFormHeader ? 'Kembali ke Pindah Stok' : ($sortirFormHeader ? 'Kembali ke Sortir Barang' : 'Kembali ke Pengadaan')));
+    if ($productionCreateHeader) {
+        $transactionBackRoute = 'production.index';
+        $transactionBackLabel = 'Kembali ke Riwayat Produksi';
+    }
     $productStockDetailHeader = request()->routeIs('product-stock.show');
     $passwordUpdateHeader = request()->routeIs('change-password');
     $mobileBackHeader = $transactionFormHeader || $productStockDetailHeader || $passwordUpdateHeader;
@@ -39,7 +45,7 @@
 
 <header class="erp-topbar-mobile {{ $transactionFormHeader ? 'erp-topbar-mobile--transaction-form' : '' }}">
     @if ($mobileBackHeader)
-        <a href="{{ route($mobileBackRoute) }}" aria-label="{{ $mobileBackLabel }}" class="erp-topbar-mobile__button">
+        <a href="{{ route($mobileBackRoute) }}" aria-label="{{ $mobileBackLabel }}" class="erp-topbar-mobile__button" @if ($posCreateHeader) data-pos-create-back @endif>
             <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
         </a>
     @else
@@ -89,6 +95,10 @@
         const notificationButton = header.querySelector('[data-erp-notification-toggle]');
         const notificationMenu = header.querySelector('[data-erp-notification-menu]');
         header.addEventListener('click', event => {
+            if (event.target.closest('[data-pos-create-back]') && window.closePosAddPage?.()) {
+                event.preventDefault();
+                return;
+            }
             if (event.target.closest('[data-erp-sidebar-toggle]')) {
                 window.dispatchEvent(new CustomEvent('erp-mobile-sidebar-toggle'));
             }

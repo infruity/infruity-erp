@@ -8,6 +8,7 @@
         var defaultKemasanId = '{{ $defaultKemasan->id ?? "" }}';
         var defaultKemasanName = '{{ $defaultKemasan->name ?? "" }}';
     </script>
+    <script src="{{ asset('assets/js/pos-add-item.js') }}?v={{ filemtime(public_path('assets/js/pos-add-item.js')) }}"></script>
     @include('pos::pos.js.js-allowed')
     @include('pos::pos.js.js-header')
     @include('pos::pos.js.js-buah')

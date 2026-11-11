@@ -53,8 +53,9 @@
         .stock-detail-load-more[hidden] { display:none!important; }
         .stock-detail-load-more button { width:100%; min-height:44px; border:2px dashed #e5e7eb; border-radius:12px; background:#fff; color:#6b7280; font-size:14px; font-weight:600; }
         .stock-detail-load-more button:hover { border-color:#34d399; color:#047857; background:#ecfdf5; }
-        .stock-mobile-list { display:block; min-height:0; flex:1; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; background:#fff; }
-        .stock-mobile-list::-webkit-scrollbar { display:none; }
+        .stock-detail-scroll { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; background:#fff; }
+        .stock-detail-scroll::-webkit-scrollbar { display:none; }
+        .stock-mobile-list { display:block; }
         .product-stock-detail-card .card-body { display:flex; flex:1; min-height:0; flex-direction:column; overflow:hidden; padding:0!important; }
         #products-stock-table_wrapper { display:none!important; }
         .stock-mobile-empty { display:flex; min-height:220px; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; color:#6b7280; text-align:center; }
@@ -179,6 +180,9 @@
             .stock-detail-history-value:last-child { width:64px; }
             .stock-detail-load-more { padding:12px 16px 18px; }
             .stock-mobile-list { padding:0 16px; }
+            .stock-detail-scroll:has(.stock-detail-history-row:nth-child(6)):has(#stock-detail-load-more[hidden]) { display:flex; flex-direction:column; }
+            .stock-detail-scroll:has(.stock-detail-history-row:nth-child(6)):has(#stock-detail-load-more[hidden]) .stock-mobile-list { display:flex; flex:1 0 auto; flex-direction:column; }
+            .stock-detail-scroll:has(.stock-detail-history-row:nth-child(6)):has(#stock-detail-load-more[hidden]) .stock-mobile-list > .stock-detail-history-row { flex:1 0 auto; }
             .stock-mobile-row { padding:15px 20px; border-bottom:1px solid #f1f3f5; background:#fff; }
             .stock-mobile-row:active, .stock-mobile-row:focus-within { background:#f0fdf4; }
             .stock-mobile-row__top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
@@ -226,14 +230,10 @@
                 <!--begin::Card toolbar-->
                 <div class="card-toolbar flex-wrap gap-3 justify-content-end" id="stock-detail-filters" aria-labelledby="stock-detail-filter-title">
                     <div class="stock-detail-filter-handle" aria-hidden="true"></div>
-                    <div class="stock-detail-filter-head">
-                        <div>
-                            <h2 id="stock-detail-filter-title">Filter Riwayat Stok</h2>
-                            <p id="stock-detail-filter-subtitle">Sesuaikan parameter riwayat pergerakan barang</p>
-                        </div>
-                        <button id="stock-detail-filter-close" class="stock-detail-filter-close" type="button" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
-                    </div>
-                    <div class="stock-detail-filter-fields">
+                    <x-erp.filter-sheet-frame title="Filter Riwayat Stok" title-id="stock-detail-filter-title" subtitle-id="stock-detail-filter-subtitle" subtitle="Sesuaikan parameter riwayat pergerakan barang" header-class="stock-detail-filter-head" body-class="stock-detail-filter-fields" footer-class="stock-detail-filter-footer">
+                        <x-slot:close><button id="stock-detail-filter-close" class="stock-detail-filter-close" type="button" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
+                        <x-slot:body>
+
                         <div class="stock-detail-filter-field stock-detail-search-filter">
                             <label class="stock-detail-filter-label" for="search">Cari aktivitas</label>
                             <input id="search" type="search" class="form-control form-control-solid" placeholder="Cari aktivitas atau referensi..." autocomplete="off">
@@ -340,12 +340,13 @@
                             <button type="button" data-stock-date-preset="week">Minggu Ini</button>
                             <button type="button" data-stock-date-preset="month">Bulan Ini</button>
                         </div>
-                    </div>
-                    </div>
-                    <div class="stock-detail-filter-footer">
-                        <button id="stock-detail-filter-reset" type="button" class="stock-detail-filter-cancel">Reset Filter</button>
-                        <button id="stock-detail-filter-apply" type="button" class="stock-detail-filter-apply">Terapkan Filter</button>
-                    </div>
+                        </div>
+                        </x-slot:body>
+                        <x-slot:footer>
+                            <button id="stock-detail-filter-reset" type="button" class="stock-detail-filter-cancel">Reset Filter</button>
+                            <button id="stock-detail-filter-apply" type="button" class="stock-detail-filter-apply erp-filter-sheet__primary">Terapkan Filter</button>
+                        </x-slot:footer>
+                    </x-erp.filter-sheet-frame>
                 </div>
                 <!--end::Card toolbar-->
             </div>
@@ -356,9 +357,11 @@
             </div>
             <!--begin::Card body-->
             <div class="card-body pt-0">
-                <div id="stock-mobile-list" class="stock-mobile-list" aria-live="polite"></div>
-                <div class="stock-detail-load-more" id="stock-detail-load-more" hidden>
-                    <button type="button"><i class="ph ph-arrow-circle-down" aria-hidden="true"></i> <span id="stock-detail-load-more-label">Muat Lebih Banyak</span></button>
+                <div class="stock-detail-scroll">
+                    <div id="stock-mobile-list" class="stock-mobile-list" aria-live="polite"></div>
+                    <div class="stock-detail-load-more" id="stock-detail-load-more" hidden>
+                        <button type="button"><i class="ph ph-arrow-circle-down" aria-hidden="true"></i> <span id="stock-detail-load-more-label">Muat Lebih Banyak</span></button>
+                    </div>
                 </div>
                 <!--begin::Table-->
                 <table class="table align-middle table-row-dashed fs-6 gy-5" id="products-stock-table" width="100%">

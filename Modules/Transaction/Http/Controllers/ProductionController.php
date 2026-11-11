@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\Like;
 use App\Support\InventorySnapshot;
 use App\Support\ProductionCost;
 use Exception;
@@ -64,6 +65,13 @@ class ProductionController extends Controller
             $data['data']              = $draft;
             $data['production_detail'] = ProductionDetail::with('products')->where('production_id', $draft->id)->get();
             $data['production_number'] = $draft->production_number;
+            // Restore the draft's product too, so resuming shows the whole draft instead of only its ingredients.
+            if ($draft->product_id && $draft->products) {
+                $data['edit_product_id']   = $draft->product_id;
+                $data['edit_product_name'] = $draft->products->name;
+            }
+            $data['edit_sell_price']   = $draft->sell_price;
+            $data['edit_service_cost'] = $draft->service_cost;
         } else {
             // Jika tidak ada draft, siapkan data kosong
             $data['data']              = null;
@@ -730,7 +738,7 @@ class ProductionController extends Controller
     public function get_data(Request $request)
     {
         try {
-            $query = Production::with(['products', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])
+            $query = Production::with(['products', 'products.category', 'products.unit', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])
                 ->whereNotNull('product_id');
 
             if ($request->has('status_filter') && $request->status_filter !== 'all' && ! empty($request->status_filter)) {
@@ -761,13 +769,13 @@ class ProductionController extends Controller
                     }
 
                     $q->where(function ($sub) use ($search) {
-                        $sub->where('production_number', 'LIKE', "%{$search}%")
-                            ->orWhere('status', 'LIKE', "%{$search}%")
+                        $sub->where('production_number', 'LIKE', Like::contains($search))
+                            ->orWhere('status', 'LIKE', Like::contains($search))
                             ->orWhereHas('products', function ($productQuery) use ($search) {
-                                $productQuery->where('name', 'LIKE', "%{$search}%");
+                                $productQuery->where('name', 'LIKE', Like::contains($search));
                             })
                             ->orWhereHas('branch', function ($branchQuery) use ($search) {
-                                $branchQuery->where('name', 'LIKE', "%{$search}%");
+                                $branchQuery->where('name', 'LIKE', Like::contains($search));
                             });
 
                         $possibleDates = [];
@@ -795,8 +803,10 @@ class ProductionController extends Controller
                         ? ' · ' . $ingredientCount . ' bahan'
                         : '';
 
+                    [$emoji, $iconClass] = \Modules\Master\Support\ProductIcon::resolve($item->products);
+
                     return '<div class="production-row">
-                                <span class="production-avatar" aria-hidden="true"><i class="ph ph-cooking-pot"></i></span>
+                                <span class="production-avatar ' . e($iconClass) . '" aria-hidden="true">' . e($emoji) . '</span>
                                 <a href="' . route('production.detail', $item->id) . '" class="production-copy">
                                     <span class="production-product">' . $productName . '</span>
                                     <span class="production-sub">' . $number . ' · ' . $createdAt . $ingredientLine . '</span>
@@ -835,10 +845,11 @@ class ProductionController extends Controller
                     ];
                     [$label, $class] = $labels[$item->status] ?? [ucfirst($item->status ?? 'Unknown'), 'is-muted'];
                     $quantity        = number_format($item->quantity ?? 0, 0, ',', '.');
+                    $unit            = e($item->products->unit->abbreviation ?? '');
 
                     return '<div class="production-status-cell">
                                 <span class="production-status ' . $class . '">' . $label . '</span>
-                                <span class="production-qty">Qty: ' . $quantity . '</span>
+                                <span class="production-qty" data-unit="' . $unit . '">Qty: ' . $quantity . ($unit !== '' ? ' ' . $unit : '') . '</span>
                                 ' . $posBadge . '
                             </div>';
                 })

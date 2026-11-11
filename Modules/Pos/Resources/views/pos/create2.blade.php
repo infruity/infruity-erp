@@ -91,79 +91,47 @@
     <link rel="stylesheet" href="{{ asset('assets/css/pos-form.css') }}?v={{ filemtime(public_path('assets/css/pos-form.css')) }}">
     <!--begin::Aside column-->
     <div class="w-100 flex-lg-row-auto" x-data="posApp()" x-init="init()">
-        <div class="pos-form">
-            <section class="pos-card" aria-labelledby="pos-info-title">
-                <div class="pos-card__head">
-                    <h2 id="pos-info-title">Informasi Transaksi</h2>
-                    <span class="pos-card__hint">* Wajib diisi</span>
+        <div class="pos-form pos-form--reference">
+            <section class="pos-card pos-card--fields" aria-label="Cabang dan pelanggan">
+                <div class="pos-field">
+                    <label class="pos-field__label" for="branch_id"><i class="ph-bold ph-storefront" aria-hidden="true"></i>Cabang Transaksi <span class="pos-field__req" aria-hidden="true">*</span></label>
+                    <select class="form-select" id="branch_id" name="branch_id">
+                        <option value="">Pilih Branch</option>
+                    </select>
                 </div>
-                <div class="pos-card__body">
-                    <div class="pos-fields">
-                        <div class="fv-row">
-                            <label class="required form-label" for="branch_id">Cabang Transaksi</label>
-                            <select class="form-select" id="branch_id" name="branch_id">
-                                <option value="">Pilih Branch</option>
-                            </select>
-                        </div>
-                        <div class="fv-row">
-                            <label class="required form-label" for="branch_process_id">Di Proses oleh:</label>
-                            <select class="form-select" id="branch_process_id" name="branch_process_id">
-                                <option value="">Pilih Branch</option>
-                            </select>
-                        </div>
-                        <div class="fv-row is-wide">
-                            <label class="required form-label" for="customer_id">Pelanggan</label>
-                            <div class="pos-customer">
-                                <select class="form-select" id="customer_id" name="customer_id">
-                                    <option value="">Pilih Pelanggan</option>
-                                </select>
-                                <button type="button" @click="addCustomer()" aria-label="Tambah pelanggan" class="pos-customer__add">
-                                    <i class="ph-bold ph-plus" aria-hidden="true"></i><span>Baru</span>
-                                </button>
-                            </div>
-                            <input type="hidden" name="tier_id" id="tier_id">
-                        </div>
-                        <div class="fv-row">
-                            <label class="required form-label" for="pos_date">Tanggal Transaksi</label>
-                            <input type="date" class="form-control" id="pos_date" name="date" value="{{ date('Y-m-d') }}">
-                        </div>
-                        <div class="fv-row">
-                            <label class="required form-label" for="invoice_number">Nomor Faktur</label>
-                            <input type="text" class="form-control" id="invoice_number" name="invoice_number" value="{{ $invoice_number }}"
-                                readonly>
-                        </div>
+                <div class="pos-field">
+                    <label class="pos-field__label" for="customer_id"><i class="ph-bold ph-user" aria-hidden="true"></i>Pelanggan <span class="pos-field__req" aria-hidden="true">*</span></label>
+                    <div class="pos-customer">
+                        <select class="form-select" id="customer_id" name="customer_id">
+                            <option value="">Pilih Pelanggan</option>
+                        </select>
+                        <button type="button" @click="addCustomer()" aria-label="Tambah pelanggan" class="pos-customer__add">
+                            <i class="ph-bold ph-plus" aria-hidden="true"></i>
+                        </button>
                     </div>
+                    <input type="hidden" name="tier_id" id="tier_id">
                 </div>
             </section>
 
-            <section class="pos-card" aria-labelledby="pos-items-title">
+            <section class="pos-card pos-card--list" aria-labelledby="pos-items-title">
                 <div class="pos-card__head">
                     <h2 id="pos-items-title">Daftar Belanja</h2>
-                    <div class="dropdown">
-                        <button type="button" class="pos-add" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Tambah item transaksi">
-                            <i class="ph-bold ph-plus" aria-hidden="true"></i><span>Tambah</span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><button type="button" class="dropdown-item" @click="openAddModal()"><i class="ph ph-orange me-2" aria-hidden="true"></i>Buah</button></li>
-                            <li><button type="button" class="dropdown-item" @click="openParcelModal()"><i class="ph ph-gift me-2" aria-hidden="true"></i>Parcel</button></li>
-                            <li><button type="button" class="dropdown-item" @click="openJusModal()"><i class="ph ph-cup me-2" aria-hidden="true"></i>Jus</button></li>
-                        </ul>
-                    </div>
+                    <button type="button" class="pos-add" @click="openAddModal()" aria-label="Tambah item transaksi">+ Tambah</button>
                 </div>
                 <div class="pos-card__body pos-card__body--list">
                     @include('pos::pos.segment.cart')
                 </div>
             </section>
 
-            {{-- Rincian total (diskon, catatan, ongkir) dan footer simpan/bayar --}}
+            {{-- Footer total + simpan/bayar; lembar ringkasan memuat diskon, catatan, ongkir, dan pengaturan transaksi --}}
             @include('pos::pos.segment.ringkasan')
         </div>
 
-            @include('pos::pos.segment.modal-product')
+            @include('pos::pos.segment.modal-product', ['reference' => true])
             @include('pos::pos.segment.modal-customer')
             @include('pos::pos.segment.modal-gift')
-            @include('pos::pos.segment.modal-parcel')
-            @include('pos::pos.segment.modal-jus')
+            @include('pos::pos.segment.modal-parcel', ['reference' => true])
+            @include('pos::pos.segment.modal-jus', ['reference' => true])
 
     </div>
     <!--end::Aside column-->

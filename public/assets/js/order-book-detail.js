@@ -56,7 +56,7 @@
         });
     }
 
-    function actionFor(original, posLink, origin) {
+    function actionFor(original, posLink, origin, posIndexUrl = '') {
         const isDelete = /^deleteProduct\(\d+\);?$/.test(original.getAttribute('onclick') || '');
         if (isDelete) return { isDelete, label: 'Hapus Pesanan' };
         const href = original.getAttribute('href') || '';
@@ -66,6 +66,13 @@
         if (!['http:', 'https:'].includes(url.protocol) || url.origin !== origin) return null;
         const isEdit = /\/edit\/?$/.test(url.pathname);
         const isPos = original === posLink;
+        if (isPos && posIndexUrl) {
+            const posId = url.pathname.match(/\/pos\/show\/([1-9]\d*)\/?$/)?.[1];
+            if (!posId) return null;
+            try { url = new URL(posIndexUrl, origin + '/'); } catch { return null; }
+            if (!['http:', 'https:'].includes(url.protocol) || url.origin !== origin) return null;
+            url.searchParams.set('detail', posId);
+        }
         return { href: url.href, isDelete: false, isEdit, isPos, label: isEdit ? 'Edit' : isPos ? 'Lihat POS' : 'Proses Pesanan' };
     }
 
@@ -79,11 +86,13 @@
             trigger: null,
             sourceRow: null,
             timezone: 'Asia/Jakarta',
+            posIndexUrl: '',
             previousBodyOverflow: '',
             previousMainOverflow: '',
 
             init() {
                 this.timezone = this.$el.dataset.orderBookTimezone || 'Asia/Jakarta';
+                this.posIndexUrl = this.$el.dataset.posIndexUrl || '';
                 const table = document.getElementById('pos-table');
                 if (!table) return;
                 const collection = document.querySelector('[data-erp-collection="pos-table"]');
@@ -161,7 +170,7 @@
                 const originals = [...row.cells[row.cells.length - 1].querySelectorAll('.dropdown-menu a')];
                 const posLink = row.cells[0].querySelector('a[title="Lihat POS"]');
                 if (posLink) originals.push(posLink);
-                originals.map(original => ({ original, action: actionFor(original, posLink, window.location.origin) }))
+                originals.map(original => ({ original, action: actionFor(original, posLink, window.location.origin, this.posIndexUrl) }))
                     .filter(item => item.action)
                     .sort((a, b) => Number(b.action.isDelete) - Number(a.action.isDelete))
                     .forEach(({ original, action }) => {
@@ -173,6 +182,11 @@
                         if (action.isDelete) copy.type = 'button';
                         else copy.href = action.href;
                         copy.addEventListener('click', event => {
+                            if (action.isPos) {
+                                if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                                this.closeDetail(false);
+                                return;
+                            }
                             if (!action.isDelete && (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)) return;
                             event.preventDefault();
                             this.closeDetail(false);

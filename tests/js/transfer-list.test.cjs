@@ -7,6 +7,7 @@ test('list sends side, search, filters and paginates without losing loaded rows'
 test('list status and counterpart branch correspond to receiving workflow',()=>{const {app}=setup();assert.equal(app.statusLabel('pending'),'Dalam Perjalanan');assert.equal(app.statusLabel('selesai'),'Sudah Diterima');assert.equal(app.branchName({origin:'GKB',destination:'GBA'}),'GKB');});
 test('latest search wins when old request finishes later',async()=>{const t=setup();let a,b;t.context.fetch=()=>new Promise(r=>{if(!a)a=r;else b=r});const first=t.app.load();t.app.search='Naga';const second=t.app.load();b({ok:true,json:async()=>({data:[{id:2}],recordsFiltered:1})});await second;a({ok:true,json:async()=>({data:[{id:1}],recordsFiltered:1})});await first;assert.equal(t.app.rows[0].id,2);assert.equal(t.app.loading,false);});
 test('network failure shows error and can be retried',async()=>{const t=setup();t.context.fetch=async()=>{throw new Error('Koneksi putus')};await t.app.load();assert.equal(t.app.error,'Koneksi putus');assert.equal(t.app.loading,false);t.context.fetch=async()=>({ok:true,json:async()=>({data:[],recordsFiltered:0})});await t.app.load();assert.equal(t.app.error,'');assert.equal(t.app.rows.length,0);});
+test('browser network failure shows a readable Indonesian message',async()=>{const t=setup();t.context.fetch=async()=>{const e=new Error('Failed to fetch');e.name='TypeError';throw e};await t.app.load();assert.equal(t.app.error,'Periksa koneksi lalu coba lagi.');assert.equal(t.app.loading,false);})
 test('document view preserves selected transfer, respects permission and restores detail on back',()=>{
     const t=setup();let focused=0,printed=0;
     t.context.document={getElementById:()=>({focus(){focused++}})};t.context.window={print(){printed++}};t.app.$nextTick=fn=>fn();
@@ -40,4 +41,18 @@ test('reset clears branch, status, dates and search before reloading',()=>{
 test('invalid date range keeps filter open without requesting data',()=>{
     const t=setup();t.app.filterOpen=true;t.app.pending.start='2026-10-24';t.app.pending.end='2026-10-01';t.app.applyFilter();
     assert.ok(t.app.pendingDateError);assert.equal(t.app.filterOpen,true);assert.equal(t.requests.length,0);
+});
+test('sender list gives GKB and GBA distinct avatar accents',()=>{
+    const createTransferList=require('../../public/assets/js/transfer-list.js');
+    const sender=createTransferList({receiving:false});
+    assert.deepEqual(sender.branchTheme('Toko GKB'),{background:'#fff1f2',color:'#be123c',borderColor:'#fecdd3'});
+    assert.deepEqual(sender.branchTheme('Toko GBA'),{background:'#eef2ff',color:'#4338ca',borderColor:'#c7d2fe'});
+});
+test('receiver uses the same GKB and GBA accents without changing other branch themes',()=>{
+    const createTransferList=require('../../public/assets/js/transfer-list.js');
+    const receiver=createTransferList({receiving:true});
+    assert.deepEqual(receiver.branchTheme('Toko GKB'),{background:'#fff1f2',color:'#be123c',borderColor:'#fecdd3'});
+    assert.deepEqual(receiver.branchTheme('Toko GBA'),{background:'#eef2ff',color:'#4338ca',borderColor:'#c7d2fe'});
+    assert.deepEqual(receiver.branchTheme('Cabang Baru'),{background:'#ecfdf5',color:'#0b595b',borderColor:'#a7f3d0'});
+    assert.deepEqual(receiver.branchTheme('Rungkut'),{background:'#eff6ff',color:'#1d4ed8',borderColor:'#bfdbfe'});
 });

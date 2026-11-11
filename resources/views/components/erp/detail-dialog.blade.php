@@ -2,6 +2,7 @@
     'open',
     'close',
     'title',
+    'titleBinding' => null,
     'labelledby',
     'closeLabel' => 'Tutup detail',
 ])
@@ -12,7 +13,7 @@
         <div class="flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
             <div class="mb-6 flex items-center justify-between">
                 <div>
-                    <h2 id="{{ $labelledby }}" class="text-lg font-bold text-gray-800">{{ $title }}</h2>
+                    <h2 id="{{ $labelledby }}" class="text-lg font-bold text-gray-800" @if ($titleBinding) x-text="{{ $titleBinding }}" @endif>{{ $title }}</h2>
                     {{ $subtitle ?? '' }}
                 </div>
                 <button type="button" @click="{{ $close }}" aria-label="{{ $closeLabel }}" class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"><i class="ph-bold ph-x"></i></button>

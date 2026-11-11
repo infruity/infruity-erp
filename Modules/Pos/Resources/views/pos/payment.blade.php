@@ -1,14 +1,86 @@
 @extends('template.root')
 @section('title', 'Pembayaran')
 @section('content')
-<div x-data="posApp()" class="erp-editor erp-payment-editor">
- <div class="erp-editor-main">
- <section class="erp-editor-section"><header><i class="ph ph-credit-card" aria-hidden="true"></i><h2>Metode pembayaran</h2></header><div class="erp-editor-body">
- <div x-show="retryPending" x-cloak role="status" class="alert alert-warning">Status percobaan sebelumnya belum dipastikan. Coba ulang mengirim pembayaran yang sama.</div>
- <div class="mb-5"><label for="payment-date" class="form-label required">Tanggal pembayaran</label><input id="payment-date" type="date" :disabled="loading || retryPending" class="form-control" name="date" value="{{ date('Y-m-d') }}"></div>
- <template x-for="(payment,index) in payments" :key="index"><fieldset class="erp-payment-method"><legend>Metode <span x-text="index + 1"></span></legend><div class="erp-payment-fields"><label><span class="form-label">Tipe pembayaran</span><select :disabled="loading || retryPending" class="form-select" x-model="payment.payment_id" @change="setPaymentName(index)"><option value="">Pilih metode</option><template x-for="method in paymentMethods" :key="method.id"><option :value="method.id" x-text="method.name"></option></template></select></label><label><span class="form-label">Jumlah pembayaran</span><div class="input-group"><span class="input-group-text">Rp</span><input type="text" inputmode="numeric" :disabled="loading || retryPending" class="form-control" x-model="payment.amount" @input="formatAmount(index)"></div></label><button type="button" class="erp-action erp-action--danger" @click="removePayment(index)" :disabled="loading || retryPending" aria-label="Hapus metode pembayaran"><i class="ph ph-trash" aria-hidden="true"></i></button></div></fieldset></template>
- <button type="button" class="erp-action" @click="addPayment()" :disabled="loading || retryPending"><i class="ph ph-plus" aria-hidden="true"></i>Tambah metode</button>
- </div></section><section class="erp-editor-section"><div class="accordion mb-4" id="accordionPembayaranSebelumnya" x-show="previousPayments.length > 0"
+@php
+    $rawPhone = preg_replace('/\D/', '', (string) ($data->customer?->whatsapp ?? ''));
+    $localPhone = preg_replace('/^(62|0)/', '', $rawPhone);
+    $phoneLabel = $localPhone !== '' ? '(+62) ' . substr($localPhone, 0, 3) . (strlen($localPhone) > 3 ? '-' . substr($localPhone, 3, 4) : '') . (strlen($localPhone) > 7 ? '-' . substr($localPhone, 7) : '') : '';
+    $isDraftLike = in_array($data->status, ['temp', 'draft', 'pending'], true);
+    $dueLabel = ($data->paid ?? 0) > 0 ? 'Sisa Tagihan' : 'Total Belanja';
+    // Display-only figures for the confirmation; saveTransaction owns the real maths (100 or less = percent, above = rupiah).
+    // The header `subtotal` is empty on older drafts, so the item lines are the source.
+    $itemsSubtotal = (float) $detail->sum('subtotal');
+    $discountValue = (float) ($data->discount ?? 0);
+    $discountAmount = $discountValue > 0 && $discountValue <= 100 ? $itemsSubtotal * $discountValue / 100 : $discountValue;
+    $shippingDiscountValue = (float) ($data->ongkir_discount ?? 0);
+    $shippingDiscountAmount = $shippingDiscountValue > 0 && $shippingDiscountValue <= 100 ? (float) $data->ongkir * $shippingDiscountValue / 100 : $shippingDiscountValue;
+    $rupiah = fn ($n) => 'Rp ' . number_format((float) $n, 0, ',', '.');
+    $last4 = strlen($rawPhone) >= 4 ? substr($rawPhone, -4) : '';
+@endphp
+<link rel="stylesheet" href="{{ asset('assets/css/pos-form.css') }}?v={{ filemtime(public_path('assets/css/pos-form.css')) }}">
+<div x-data="posApp()" class="pos-form pos-form--reference">
+    <div x-show="retryPending" x-cloak role="status" class="pos-pay-alert">Status percobaan sebelumnya belum dipastikan. Coba ulang mengirim pembayaran yang sama.</div>
+
+    <section class="pos-card pos-card--fields" aria-label="Pelanggan dan pengiriman">
+        <div class="pos-pay-customer">
+            <div class="pos-pay-customer__name"><strong>{{ $data->customer?->name ?? 'Pelanggan Umum' }}</strong>@if ($phoneLabel !== '')<span>{{ $phoneLabel }}</span>@endif</div>
+            <p class="pos-pay-customer__address">{{ $data->ongkir_address ?: 'Tidak ada alamat pengiriman' }}</p>
+        </div>
+        <div class="pos-field">
+            <span class="pos-pay-label">PILIH KURIR</span>
+            <div class="pos-pay-readonly">
+                @if ($data->courier)
+                    <strong>{{ $data->courier->name }}</strong>@if ($data->courier_type)<span>({{ $data->courier_type }})</span>@endif
+                @else
+                    <span>Tanpa kurir</span>
+                @endif
+            </div>
+        </div>
+    </section>
+
+    <section class="pos-card pos-card--fields" aria-labelledby="pos-pay-method-title">
+        <div class="pos-pay-head"><h2 id="pos-pay-method-title" class="pos-pay-label">METODE PEMBAYARAN</h2></div>
+        <div class="pos-pay-row">
+            <select :disabled="loading || retryPending" class="form-select pos-pay-method" x-model="payments[0].payment_id" @change="setPaymentName(0)" aria-label="Metode pembayaran">
+                <option value="">Pilih metode</option>
+                <template x-for="method in paymentMethods" :key="method.id"><option :value="method.id" x-text="method.name"></option></template>
+            </select>
+            <div class="pos-pay-amount"><span>Rp</span><input type="text" inputmode="numeric" :disabled="loading || retryPending" x-model="payments[0].amount" @input="formatAmount(0)" aria-label="Jumlah pembayaran"></div>
+        </div>
+        <div class="pos-pay-split">
+            <label for="pos-pay-split">Split Pembayaran</label>
+            <button type="button" id="pos-pay-split" role="switch" :aria-checked="split" class="pos-switch" :class="split ? 'is-on' : ''" :disabled="loading || retryPending" @click="setSplit(!split)"><span></span></button>
+        </div>
+        <div class="pos-ref-card pos-pay-composition">
+            <h3>Komposisi Pembayaran</h3>
+            <template x-for="(payment, index) in payments" :key="index">
+                <div class="pos-pay-extra" x-show="index > 0">
+                    <select :disabled="loading || retryPending" class="form-select" x-model="payment.payment_id" @change="setPaymentName(index)" :aria-label="'Metode pembayaran ' + (index + 1)">
+                        <option value="">Pilih metode</option>
+                        <template x-for="method in paymentMethods" :key="method.id"><option :value="method.id" x-text="method.name"></option></template>
+                    </select>
+                    <div class="pos-pay-amount"><span>Rp</span><input type="text" inputmode="numeric" :disabled="loading || retryPending" x-model="payment.amount" @input="formatAmount(index)" :aria-label="'Jumlah pembayaran ' + (index + 1)"></div>
+                    <button type="button" class="pos-cart-remove" @click="removePayment(index)" :disabled="loading || retryPending" aria-label="Hapus metode pembayaran"><i class="ph ph-trash" aria-hidden="true"></i></button>
+                </div>
+            </template>
+            <button type="button" class="pos-pay-add" x-show="split" x-cloak @click="addPayment()" :disabled="loading || retryPending"><i class="ph ph-plus" aria-hidden="true"></i>Tambah metode</button>
+            <div class="pos-pay-total">
+                <span>TOTAL TERBAYAR:</span>
+                <strong>Rp <span x-text="formatRupiah(totalPayment)"></span></strong>
+                <p class="pos-pay-status" aria-live="polite"><span x-text="paymentStatus.status"></span><span x-show="paymentStatus.selisih > 0"> · Rp <span x-text="paymentStatus.selisih.toLocaleString('id-ID')"></span></span></p>
+            </div>
+        </div>
+        <div class="pos-pay-date">
+            <label for="payment-date" class="pos-pay-label">TANGGAL PEMBAYARAN</label>
+            <input id="payment-date" type="date" :disabled="loading || retryPending" class="form-control" name="date" value="{{ date('Y-m-d') }}">
+        </div>
+        @if(isset($deposito) && $data->total >= $deposito->voucher)
+            <dl class="pos-ref-lines pos-pay-voucher"><div><dt>Voucher</dt><dd>−Rp {{ toNumber($deposito->voucher ?? 0) }}</dd></div><div><dt>Sisa voucher</dt><dd>{{ $deposito->quantity ?? 0 }}</dd></div></dl>
+        @endif
+    </section>
+
+    <section class="pos-card pos-pay-previous" aria-label="Pembayaran sebelumnya" x-show="previousPayments.length > 0" x-cloak>
+        <div class="accordion mb-4" id="accordionPembayaranSebelumnya" x-show="previousPayments.length > 0"
                 x-init="loadPreviousPayments()">
                 <div class="accordion-item border-0 shadow-sm rounded">
                     <h2 class="accordion-header" id="headingPembayaran">
@@ -47,11 +119,51 @@
                         </div>
                     </div>
                 </div>
-            </div></section>
- </div><aside class="erp-editor-summary"><h2>Ringkasan pembayaran</h2><dl class="erp-payment-bill"><div><dt>Pelanggan</dt><dd>{{ $data->customer?->name ?? 'Pelanggan Umum' }}</dd></div><div><dt>Total penjualan</dt><dd>Rp {{ toNumber(floor($data->total)) }}</dd></div>
- @if(isset($deposito) && $data->total >= $deposito->voucher)<div><dt>Voucher</dt><dd>−Rp {{ toNumber($deposito->voucher ?? 0) }}</dd></div><div><dt>Sisa voucher</dt><dd>{{ $deposito->quantity ?? 0 }}</dd></div>@endif
- <div class="erp-payment-bill-total"><dt>Dibayar</dt><dd>Rp <span x-text="formatRupiah(totalPayment)"></span></dd></div></dl><p class="erp-payment-status" aria-live="polite"><span x-text="paymentStatus.status"></span><span x-show="paymentStatus.selisih > 0"> · Rp <span x-text="paymentStatus.selisih.toLocaleString('id-ID')"></span></span></p>
- <div class="erp-payment-actions"><button type="button" class="erp-action erp-action--primary" :disabled="loading" :aria-busy="loading" :aria-label="loading ? 'Memproses...' : (retryPending ? 'Coba ulang pembayaran' : 'Bayar')" @click="submitPayment()"><i x-show="!loading" class="ph ph-credit-card" aria-hidden="true"></i><span x-show="loading" class="spinner-border spinner-border-sm" aria-hidden="true"></span><span x-text="loading ? 'Memproses...' : (retryPending ? 'Coba ulang pembayaran' : 'Bayar')"></span></button><a href="{{ route('pos.printDraftPayment', $data->id) }}" class="erp-action"><i class="ph ph-printer" aria-hidden="true"></i>Cetak draf</a><a href="{{ route('pos.edit', $data->id) }}" class="erp-action">Kembali / Edit Lagi</a><a href="{{ route('pos.index') }}" class="erp-action">Daftar POS</a></div></aside>
+            
+    </section>
+
+    <div class="pos-form-footer pos-ref-footer">
+        <div class="pos-form-footer__inner">
+            <span class="pos-ref-handle" aria-hidden="true"><span></span></span>
+            <div class="pos-ref-total">
+                <div class="pos-ref-total__label">{{ $dueLabel }} <span>({{ $detail->count() }})</span></div>
+                <div class="pos-ref-total__amount">Rp {{ number_format(floor($data->total - $data->paid), 0, ',', '.') }}</div>
+            </div>
+            <div class="pos-ref-actions">
+                <a href="{{ $isDraftLike ? route('pos.edit', $data->id) : route('pos.index') }}" class="pos-ref-icon" aria-label="Kembali" title="{{ $isDraftLike ? 'Kembali / Edit Lagi' : 'Daftar POS' }}"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a>
+                <a href="{{ route('pos.printDraftPayment', $data->id) }}" class="pos-ref-icon" aria-label="Cetak draf" title="Cetak draf"><i class="ph-bold ph-note" aria-hidden="true"></i></a>
+                <div class="pos-ref-pay">
+                    <button type="button" class="pos-ref-pay__btn" :disabled="loading" :aria-busy="loading" :aria-label="loading ? 'Memproses...' : (retryPending ? 'Coba ulang pembayaran' : 'Bayar')" @click="submitPayment()">
+                        <span x-show="loading" x-cloak class="spinner-border spinner-border-sm align-middle me-2" aria-hidden="true"></span><span x-text="loading ? 'Memproses...' : (retryPending ? 'Coba ulang pembayaran' : 'Bayar')">Bayar</span>
+                    </button>
+                </div>
+            </div>
+            <a href="{{ route('pos.index') }}" class="visually-hidden">Daftar POS</a>
+        </div>
+    </div>
+    <div x-show="confirmOpen" x-cloak class="pos-confirm" @keydown.escape.window="confirmOpen = false">
+        <div class="pos-confirm__backdrop" @click="confirmOpen = false"></div>
+        <div class="pos-confirm__card" role="dialog" aria-modal="true" aria-labelledby="pos-confirm-title">
+            <h2 id="pos-confirm-title">Selesaikan Transaksi?</h2>
+            <p>Transaksi ini akan disimpan dan diproses<br>di Kasir / POS. Lanjutkan?</p>
+            <dl class="pos-confirm__summary">
+                <div><dt>Cabang</dt><dd>{{ $data->branch?->name ?? '-' }}</dd></div>
+                <div><dt>Pelanggan</dt><dd>{{ $data->customer?->name ?? 'Pelanggan Umum' }}@if ($last4 !== '')<small> ({{ $last4 }})</small>@endif</dd></div>
+                <div><dt>Item Belanja</dt><dd>{{ $detail->count() }} item ({{ $rupiah($itemsSubtotal) }})</dd></div>
+                @if ($discountAmount > 0)<div><dt>Diskon Transaksi</dt><dd>-{{ $rupiah($discountAmount) }}</dd></div>@endif
+                @if ((float) $data->ongkir > 0)<div><dt>Ongkos Kirim</dt><dd>+{{ $rupiah($data->ongkir) }}</dd></div>@endif
+                @if ($shippingDiscountAmount > 0)<div><dt>Diskon Ongkir</dt><dd>-{{ $rupiah($shippingDiscountAmount) }}</dd></div>@endif
+                <div class="is-total"><dt>Total Belanja</dt><dd>{{ $rupiah($data->total) }}</dd></div>
+                <div class="is-paid"><dt>Dibayar</dt><dd><span x-text="'Rp ' + formatRupiah(totalPayment)"></span> · <span x-text="paymentStatus.status"></span></dd></div>
+            </dl>
+            <div class="pos-confirm__actions">
+                <button type="button" x-ref="confirmCancel" @click="confirmOpen = false" :disabled="loading">Batal</button>
+                <button type="button" class="is-primary" @click="confirmPayment()" :disabled="loading" :aria-busy="loading">
+                    <span x-show="loading" x-cloak class="spinner-border spinner-border-sm align-middle me-2" aria-hidden="true"></span>Selesaikan Transaksi
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 @include('pos::pos.js-payment')
 @endsection

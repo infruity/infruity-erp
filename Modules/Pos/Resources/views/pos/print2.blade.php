@@ -292,8 +292,8 @@
         }
 
         .item-total {
-            /* font-weight: 500; */
-            color: #6b7280;
+            color: #1f2937;
+            font-weight: 700;
         }
 
         .item-price {
@@ -524,10 +524,37 @@
                 display: none;
             }
         }
+
+        .nota-topbar, .nota-bar { display:none; }
+        @media (max-width: 575.98px) {
+            body.has-nota-bar { padding:64px 0 calc(88px + env(safe-area-inset-bottom)); background:#e5e9f3; }
+            body.has-nota-bar .container { min-height:calc(100dvh - 152px - env(safe-area-inset-bottom)); align-items:flex-start; }
+            body.has-nota-bar .receipt { border-radius:16px; box-shadow:0 2px 10px rgba(15,23,42,.08); }
+            .nota-topbar { position:fixed; z-index:1050; inset:0 0 auto; display:flex; height:56px; align-items:center; justify-content:center; border-bottom:1px solid rgba(229,231,235,.8); background:rgba(255,255,255,.92); padding:0 16px; backdrop-filter:blur(12px); }
+            .nota-topbar h1 { margin:0; color:#111827; font-size:16px; font-weight:700; }
+            .nota-topbar__back { position:absolute; left:16px; display:grid; width:36px; height:36px; place-items:center; border:0; border-radius:12px; background:transparent; color:#0b595b; font-size:22px; }
+            .nota-bar { position:fixed; z-index:1050; inset:auto 0 0; display:flex; align-items:center; gap:10px; border-top:1px solid #e5e7eb; background:#fff; padding:12px 16px calc(14px + env(safe-area-inset-bottom)); }
+            .nota-bar__icon { display:grid; width:44px; height:44px; flex:none; place-items:center; border:1px solid #d1d5db; border-radius:12px; background:#fff; color:#1f2937; font-size:18px; }
+            .nota-bar__print { display:flex; min-width:0; height:44px; flex:1; align-items:center; justify-content:center; gap:8px; border:0; border-radius:12px; background:#0b595b; color:#fff; font-size:14px; font-weight:700; }
+            .nota-desktop-actions { display:none; }
+        }
+        @media print {
+            .nota-topbar, .nota-bar, .nota-desktop-actions { display:none !important; }
+            body.has-nota-bar { padding:0; }
+            body.has-nota-bar .container { min-height:auto; }
+        }
     </style>
 <link rel="stylesheet" href="{{ asset('assets/fonts/infruity/fonts.css') }}"><link rel="stylesheet" href="{{ asset('assets/plugins/phosphor/phosphor.css') }}"><link rel="stylesheet" href="{{ asset('assets/css/erp-theme.css') }}"></head>
 
-<body class="erp-ui">
+<body class="erp-ui {{ Request::segment(1) != 'cek-nota' ? 'has-nota-bar' : '' }}">
+    @if (Request::segment(1) != 'cek-nota')
+        <header class="nota-topbar" aria-label="Navigasi nota">
+            <button type="button" class="nota-topbar__back" onclick="notaBack()" aria-label="Kembali" title="Kembali">
+                <i class="ph-bold ph-arrow-left" aria-hidden="true"></i>
+            </button>
+            <h1>Nota Transaksi</h1>
+        </header>
+    @endif
     <div class="container">
         <div class="receipt">
             <!-- Header -->
@@ -850,7 +877,21 @@
         </div>
     </div>
     @if (Request::segment(1) != 'cek-nota')
-        <div class="button-group">
+        <nav class="nota-bar" aria-label="Aksi nota">
+            <button type="button" class="nota-bar__icon" onclick="notaBack()" aria-label="Kembali" title="Kembali">
+                <i class="ph-bold ph-arrow-left" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="nota-bar__icon" onclick="sendReceiptToWA()" aria-label="Kirim ke WhatsApp" title="Kirim nota via WhatsApp">
+                <i class="ph-bold ph-chats-circle" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="nota-bar__icon" onclick="downloadReceiptAsPNG()" aria-label="Unduh PNG" title="Unduh PNG">
+                <i class="ph-bold ph-download-simple" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="nota-bar__print" onclick="window.print()">
+                <i class="ph-bold ph-printer" aria-hidden="true"></i><span>Cetak Nota</span>
+            </button>
+        </nav>
+        <div class="button-group nota-desktop-actions">
             <button class="print-button" onclick="window.print()">Cetak Receipt</button>
             <button class="print-button" onclick="window.location.href='{{ route('pos.index') }}'">Kembali</button>
             <button class="print-button" onclick="downloadReceiptAsPNG()">Download PNG</button>
@@ -859,6 +900,14 @@
     @endif
 
     <script>
+        function notaBack() {
+            if (window.history.length > 1 && document.referrer && new URL(document.referrer).origin === window.location.origin) {
+                window.history.back();
+            } else {
+                window.location.href = @json(route('pos.index'));
+            }
+        }
+
         // Auto print jika ada parameter print=true di URL
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('print') === 'true') {

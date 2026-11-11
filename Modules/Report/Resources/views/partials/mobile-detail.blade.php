@@ -91,8 +91,10 @@
             <div class="report-mobile-backdrop" @click="calendarOpen = false; filterOpen = false"></div>
             <div class="report-mobile-sheet report-mobile-sheet--filter" :class="config.type === 'asset' ? 'report-mobile-sheet--asset' : ''" role="dialog" aria-modal="true" aria-label="Filter Laporan" @keydown.escape.window="calendarOpen = false; filterOpen = false">
                 <button type="button" class="report-mobile-sheet__handle" @click="calendarOpen = false; filterOpen = false" aria-label="Tutup filter"></button>
-                <div class="report-mobile-sheet__head"><div><h2>Filter Laporan</h2><p>Sesuaikan parameter data laporan</p></div><button type="button" class="report-mobile-sheet__close" @click="calendarOpen = false; filterOpen = false" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
-                <div class="report-mobile-sheet__body">
+                <x-erp.filter-sheet-frame title="Filter Laporan" title-id="report-mobile-filter-title" subtitle="Sesuaikan parameter data laporan" header-class="report-mobile-sheet__head" body-class="report-mobile-sheet__body" footer-class="report-mobile-sheet__foot">
+                    <x-slot:close><button type="button" class="report-mobile-sheet__close" @click="calendarOpen = false; filterOpen = false" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
+                    <x-slot:body>
+
                     <div class="report-mobile-filter-controls" x-show="!calendarOpen">
                         <div class="report-mobile-field" x-show="config.type !== 'asset'">
                             <span class="report-mobile-field__label">Grup Berdasarkan</span>
@@ -183,8 +185,12 @@
                         <button type="button" class="report-mobile-calendar__done" @click="calendarOpen = false"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i>Selesai Memilih Tanggal</button>
                     </div>
                     <p x-show="filterError" x-cloak role="alert" style="margin:12px 0 0;color:#dc2626;font-size:12px" x-text="filterError"></p>
-                </div>
-                <div class="report-mobile-sheet__foot"><button type="button" class="report-mobile-sheet__cancel" @click="resetFilter()">Reset Filter</button><button type="button" class="report-mobile-sheet__apply" @click="applyFilter()">Terapkan Filter</button></div>
+                    </x-slot:body>
+                    <x-slot:footer>
+                        <button type="button" class="report-mobile-sheet__cancel" @click="resetFilter()">Reset Filter</button>
+                        <button type="button" class="report-mobile-sheet__apply erp-filter-sheet__primary" @click="applyFilter()">Terapkan Filter</button>
+                    </x-slot:footer>
+                </x-erp.filter-sheet-frame>
             </div>
         </div>
     </template>

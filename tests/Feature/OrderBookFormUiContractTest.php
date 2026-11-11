@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\User;
+use Modules\Pos\Entities\OrderBook;
 use Tests\TestCase;
 
 final class OrderBookFormUiContractTest extends TestCase
@@ -64,12 +66,11 @@ final class OrderBookFormUiContractTest extends TestCase
         $this->assertStringContainsString("->removeColumn('user')", $controller);
     }
 
-    public function test_creator_relation_resolves_to_the_real_user_model(): void
+    public function test_order_book_creator_relation_resolves_the_actual_user_model_and_key(): void
     {
-        // The list endpoint eager loads `user`; a relation pointing at a missing class made /order-book/data answer 500.
-        $relation = (new \Modules\Pos\Entities\OrderBook())->user();
+        $relation = (new OrderBook())->user();
 
-        $this->assertInstanceOf(\App\Models\User::class, $relation->getRelated());
+        $this->assertInstanceOf(User::class, $relation->getRelated());
         $this->assertSame('created_by', $relation->getForeignKeyName());
         $this->assertSame('id_user', $relation->getOwnerKeyName());
     }

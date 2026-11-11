@@ -1381,6 +1381,9 @@ class PosController extends Controller
     public function get_data(Request $request)
     {
         $this->authorizeAccess('pos.index');
+        if ($request->has('detail_id')) {
+            $request->validate(['detail_id' => ['required', 'string', 'regex:/\A[1-9][0-9]{0,18}\z/']]);
+        }
         $userId = auth()->id();
         // details.product:id keeps the parcel icon check from querying products per row.
         $query  = PosModel::with('customer', 'paymentDetails', 'details.product:id', 'branch', 'user')
@@ -1391,8 +1394,19 @@ class PosController extends Controller
                 ->orWhere('created_by', $userId);
         });
 
+        // Deep links reuse the list payload and all of its visibility restrictions.
+        if ($request->has('detail_id')) {
+            $query->whereKey($request->input('detail_id'));
+        }
+
         if ($request->has('status_filter') && $request->status_filter !== 'all') {
-            $query = $query->where('status', $request->status_filter);
+            $paidSum = '(select coalesce(sum(pos_payment.total), 0) from pos_payment where pos_payment.pos_id = pos_transaction.id and pos_payment.deleted_at is null)';
+            $query = match ($request->status_filter) {
+                'draft' => $query->whereIn('status', ['draft', 'temp']), // both render as "Pending"
+                'unpaid' => $query->where('status', 'debt')->whereRaw("{$paidSum} <= 0"),
+                'partial' => $query->where('status', 'debt')->whereRaw("{$paidSum} > 0"),
+                default => $query->where('status', $request->status_filter),
+            };
         }
         // if ($request->has('cabang_filter') && $request->cabang_filter !== 'all') {
         //     $query->whereHas('paymentDetails', function ($q) use ($request) {
@@ -1445,11 +1459,32 @@ class PosController extends Controller
                 } else {
                     $customer = 'Pelanggan Umum';
                 }
-                $when = date('d M Y', strtotime($item->date)) . ' ' . date('H:i', strtotime($item->created_at));
+                $when = $this->listWhen($item->date, $item->created_at);
+
+                $isOwner = Session('role')['id_role'] == 1;
+                $status  = $this->listStatus($item);
+                $edited  = $item->updated_at && $item->created_at && $item->updated_at->diffInSeconds($item->created_at, true) > 60;
+                $detail  = [
+                    'id'           => $item->id,
+                    'customer'     => $item->customer->name ?? 'Pelanggan Umum',
+                    'phone'        => $item->customer->whatsapp ?? '',
+                    'phone_last4'  => ! empty($item->customer->whatsapp) ? substr($item->customer->whatsapp, -4) : '',
+                    'date_label'   => $when,
+                    'branch'       => $item->branch ? ucwords($item->branch->name) : '',
+                    'created_by'   => $item->user ? ucwords(strtolower($item->user->nm_user)) : '',
+                    // updated_at also moves when a payment is recorded, so this is "last changed", not "edited by".
+                    'edited_label' => $edited ? $this->listWhen($item->updated_at->toDateString(), $item->updated_at->toDateTimeString()) : '',
+                    'status_key'   => $status['class'],
+                    'status_label' => $status['label'],
+                    'show_url'     => url('pos/show/' . $item->id),
+                    'pay_url'      => $item->status === 'paid' ? null : route('pos.payment', $item->id),
+                    'edit_url'     => in_array($item->status, ['temp', 'draft'], true) ? route('pos.edit', $item->id) : null,
+                    'can_delete'   => ! in_array($item->status, ['paid', 'debt'], true) || $isOwner,
+                ];
 
                 return '<div class="pos-list-row">
                             <span class="pos-list-avatar" aria-hidden="true"><i class="ph ph-receipt"></i></span>
-                            <a href="' . url('pos') . '/show/' . $item->id . '" class="pos-list-copy">
+                            <a href="' . url('pos') . '/show/' . $item->id . '" class="pos-list-copy" data-detail="' . e(json_encode($detail, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) . '">
                                 <span class="pos-list-customer">' . $iconHtml . '<span>' . $customer . '</span></span>
                                 <span class="pos-list-sub">' . $when . '</span>
                             </a>
@@ -1462,18 +1497,13 @@ class PosController extends Controller
                 return $item->total_quantity;
             })
             ->addColumn('date', function ($item) {
-                $statusLabels = [
-                    'paid'     => ['label' => 'Lunas', 'class' => 'paid'],
-                    'draft'    => ['label' => 'Pending', 'class' => 'pending'],
-                    'debt'     => ['label' => 'Piutang', 'class' => 'debt'],
-                    'canceled' => ['label' => 'Dihapus', 'class' => 'canceled'],
-                    'temp'     => ['label' => 'Pending', 'class' => 'pending'],
-                ];
-                $statusInfo = $statusLabels[$item->status] ?? ['label' => ucfirst($item->status), 'class' => 'other'];
-                $due        = (float) ($item->total_due - ($item->voucher ?? 0));
-                $dueLine    = ($due > 0 && $item->status !== 'paid')
-                    ? '<span class="pos-list-due">Sisa Rp' . tonumberround($due) . '</span>'
-                    : '';
+                $paid       = (float) $item->total_payment;
+                $statusInfo = $this->listStatus($item);
+                // Reference amount line: the total alone once settled, otherwise paid / total.
+                $money = fn ($value) => number_format(round((float) $value), 0, ',', '.');
+                $amount = in_array($item->status, ['draft', 'temp', 'debt'], true)
+                    ? '<span class="pos-list-total"><span class="pos-list-paid">Rp ' . $money($paid) . '</span><span class="pos-list-sep">/</span><strong>' . $money($item->total) . '</strong></span>'
+                    : '<span class="pos-list-total"><strong>Rp ' . $money($item->total) . '</strong></span>';
                 $meta = [];
                 if ($item->branch) {
                     $meta[] = e($item->branch->name);
@@ -1485,8 +1515,7 @@ class PosController extends Controller
 
                 return '<div class="pos-list-status-cell">
                             <span class="pos-list-status is-' . $statusInfo['class'] . '">' . $statusInfo['label'] . '</span>
-                            <span class="pos-list-total">Rp' . tonumberround($item->total) . '</span>
-                            ' . $dueLine . $metaLine . '
+                            ' . $amount . $metaLine . '
                         </div>';
             })
             ->addColumn('action', function ($item) {
@@ -1548,6 +1577,29 @@ class PosController extends Controller
             })
             ->rawColumns(['name', 'action', 'date'])
             ->make(true);
+    }
+
+    /** Label and CSS key of a list row, shared by the status cell and the detail popup data. */
+    private function listStatus(PosModel $item): array
+    {
+        return match ($item->status) {
+            'paid' => ['label' => 'Lunas', 'class' => 'paid'],
+            'draft', 'temp' => ['label' => 'Pending', 'class' => 'pending'],
+            'debt' => (float) $item->total_payment > 0
+                ? ['label' => 'Kurang Bayar', 'class' => 'partial']
+                : ['label' => 'Belum Bayar', 'class' => 'unpaid'],
+            'canceled' => ['label' => 'Dihapus', 'class' => 'canceled'],
+            default => ['label' => ucfirst($item->status), 'class' => 'other'],
+        };
+    }
+
+    /** Indonesian "27 Okt 2026, 09:05" used by the list rows and the detail popup. */
+    private function listWhen(string $date, string $time): string
+    {
+        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        $day    = strtotime($date);
+
+        return date('j', $day) . ' ' . $months[(int) date('n', $day) - 1] . ' ' . date('Y', $day) . ', ' . date('H:i', strtotime($time));
     }
 
     private function sumTotalPrice(array $items): int

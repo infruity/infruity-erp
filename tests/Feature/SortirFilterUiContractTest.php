@@ -46,14 +46,20 @@ final class SortirFilterUiContractTest extends TestCase
             "setPendingDateRange('today')",
             "value:'draft',label:'Draf'",
             "value:'paid',label:'Selesai'",
-            'x-model="pending.start"',
-            'x-model="pending.end"',
-            ':min="pending.start"',
+            '@click="openFilterCalendar($event.currentTarget)"',
             "resetPendingFilter('status')",
             "resetPendingFilter('date')",
             'applyFilter()',
         ] as $contract) {
             $this->assertStringContainsString($contract, $view);
+        }
+
+        foreach ([
+            'selectFilterCalendarDate(day)',
+            'moveFilterCalendar(step)',
+            'isFilterCalendarDateSelected(day)',
+        ] as $contract) {
+            $this->assertStringContainsString($contract, $script);
         }
 
         $this->assertStringContainsString('status_filter:this.filters.status,cabang_filter:this.filters.branch,start_date:this.filters.start,end_date:this.filters.end', $script);
@@ -88,5 +94,49 @@ final class SortirFilterUiContractTest extends TestCase
         $view = file_get_contents(base_path('Modules/Transaction/Resources/views/sortir/index2.blade.php'));
 
         $this->assertStringContainsString("timezone: @js(config('app.timezone'))", $view);
+    }
+
+    public function test_date_cards_use_the_wholesale_custom_range_calendar(): void
+    {
+        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/sortir/index2.blade.php'));
+        $script = file_get_contents(base_path('public/assets/js/sortir-list.js'));
+        $styles = file_get_contents(base_path('public/assets/css/sortir-mobile.css'));
+
+        foreach ([
+            'id="sortir-date-start"',
+            'id="sortir-date-end"',
+            '@click="openFilterCalendar($event.currentTarget)"',
+            'aria-controls="sortir-filter-calendar"',
+            'id="sortir-filter-calendar"',
+            'id="sortir-filter-calendar-back"',
+            'Kembali',
+            'filterCalendarBack',
+            'filterCalendarHeading',
+            'filterCalendarBlankDays',
+            'filterCalendarDays',
+            'filterCalendarMonths',
+            'chooseFilterCalendarMonth(index)',
+            'chooseFilterCalendarYear(year)',
+            'selectFilterCalendarDate(day)',
+            'isFilterCalendarDateSelected(day)',
+            'isFilterCalendarDateInRange(day)',
+            'formatFilterDate(pending.start)',
+            'Minggu Ini',
+            'Hari Ini',
+        ] as $contract) {
+            $this->assertStringContainsString($contract, $view . $script);
+        }
+
+        $this->assertSame(3, substr_count($view, 'class="sortir-filter-section" x-show="!calendarOpen"'));
+        $this->assertSame(2, substr_count($view, '@click="openFilterCalendar($event.currentTarget)"'));
+        $this->assertStringNotContainsString('type="date"', $view);
+        $this->assertStringNotContainsString('flatpickr', $view . $script . $styles);
+        $this->assertStringNotContainsString('ph-calendar-blank', $view);
+        $this->assertStringContainsString('rounded-2xl border border-gray-100 bg-white p-4 shadow-sm', $view);
+        $this->assertStringContainsString('rounded-xl border border-gray-200 bg-white px-3 py-2.5', $view);
+        $this->assertStringContainsString('#sortir-filter-dialog .sortir-filter-date-card:focus-visible, #sortir-filter-dialog #sortir-filter-calendar button:focus-visible { outline:none; }', $styles);
+        $this->assertStringNotContainsString('.sortir-filter-dates { display:grid;', $styles);
+        $this->assertStringContainsString('#sortir-filter-dialog .sortir-branch-option:has(input[type=radio]:focus-visible) { outline:2px solid #10b981; outline-offset:-2px; }', $styles);
+        $this->assertStringNotContainsString('#sortir-filter-dialog .sortir-branch-option:focus-within { outline:2px solid', $styles);
     }
 }

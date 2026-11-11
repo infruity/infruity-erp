@@ -400,6 +400,9 @@
 
                 const budget = document.getElementById('parcel_budget').value;
                 const qty = document.getElementById('parcel_qty').value;
+                const feeInput = document.getElementById('parcel_jasa');
+                const fee = feeInput ? feeInput.value : '';
+                const referenceAddPage = !!document.querySelector('.pos-add-page--parcel');
                 if (parseFloat(qty) <= 0 || !qty) {
                     Swal.fire({
                         icon: 'warning',
@@ -408,7 +411,6 @@
                     });
                     return;
                 }
-                const fee = document.getElementById('parcel_jasa').value;
                 let kemasan = $('#select_kemasan option:selected').text();
                 let kemasanId = $('#select_kemasan option:selected').val();
                 if (!kemasanId) {
@@ -497,14 +499,14 @@
                     posAppInstance.parcel.push(posParcel);
                     document.getElementById('parcel_budget').value = '';
                     document.getElementById('parcel_qty').value = 1;
-                    document.getElementById('parcel_jasa').value = '';
+                    if (feeInput) feeInput.value = '';
                     $('#select_kemasan').val(null).trigger('change');
                     this.parcels = [];
                     
-                    const modalEl = document.getElementById('parcelModal');
-                    if(modalEl) {
-                        const modal = bootstrap.Modal.getInstance(modalEl);
-                        if(modal) modal.hide();
+                    if (!referenceAddPage) {
+                        const modalEl = document.getElementById('parcelModal');
+                        const modal = modalEl ? bootstrap.Modal.getInstance(modalEl) : null;
+                        if (modal) modal.hide();
                     }
                 };
 
