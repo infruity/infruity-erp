@@ -467,8 +467,7 @@
 @if (check_access('pos.index') ||
         check_access('delivery-order.index') ||
         check_access('order-book.index') ||
-        check_access('setting-nota.index') ||
-        check_access('expenditure.index'))
+        check_access('setting-nota.index'))
     <div class="menu-item pt-5">
         <!--begin:Menu content-->
         <div class="menu-content">
@@ -520,22 +519,6 @@
                 </i>
             </span>
             <span class="menu-title">Pesanan Masuk</span>
-        </a>
-        <!--end:Menu link-->
-    </div>
-@endif
-@if (check_access('expenditure.index'))
-    <div class="menu-item">
-        <!--begin:Menu link-->
-        <a class="menu-link {{ Request::segment(1) == 'expenditure' ? 'active' : '' }}"
-            href="{{ url('expenditure') }}">
-            <span class="menu-icon">
-                <i class="ki-duotone ki-security-user">
-                    <span class="path1"></span>
-                    <span class="path2"></span>
-                </i>
-            </span>
-            <span class="menu-title">Pemasukan / Pengeluaran</span>
         </a>
         <!--end:Menu link-->
     </div>
