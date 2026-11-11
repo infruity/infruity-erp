@@ -23,6 +23,18 @@ JAVASCRIPT;
         $this->assertStringContainsString($endApply, $view);
     }
 
+    public function test_mobile_filter_renders_the_reference_calendar_state(): void
+    {
+        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/wholesale/index.blade.php'));
+
+        $this->assertStringContainsString('id="wholesale-mobile-calendar"', $view);
+        $this->assertStringContainsString('data-wholesale-calendar-day', $view);
+        $this->assertStringContainsString('openMobileCalendar($event.currentTarget)', $view);
+        $this->assertStringContainsString('backToMobileFilters()', $view);
+        $this->assertStringContainsString('moveMobileCalendar(-1)', $view);
+        $this->assertStringContainsString('moveMobileCalendar(1)', $view);
+    }
+
     private function inputTag(string $view, string $id): string
     {
         $idPosition = strpos($view, 'id="' . $id . '"');

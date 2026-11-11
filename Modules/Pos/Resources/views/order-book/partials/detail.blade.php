@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="{{ asset('assets/css/order-book-detail.css') }}?v={{ filemtime(public_path('assets/css/order-book-detail.css')) }}">
 <script src="{{ asset('assets/js/order-book-detail.js') }}?v={{ filemtime(public_path('assets/js/order-book-detail.js')) }}"></script>
-<div x-data="orderBookDetailDialog()" data-order-book-timezone="{{ config('app.timezone') }}">
+<div x-data="orderBookDetailDialog()" data-pos-index-url="{{ route('pos.index') }}" data-order-book-timezone="{{ config('app.timezone') }}">
     <template x-teleport="body">
         <x-erp.detail-dialog open="detailOpen" close="closeDetail()" title="Detail Pesanan" labelledby="order-book-detail-title"
             id="order-book-detail-dialog" x-ref="detailDialog" @keydown.tab.window="trapDetailFocus($event)">

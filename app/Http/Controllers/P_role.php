@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Like;
 use Illuminate\Http\Request;
 use Exception;
 use Response;
@@ -42,11 +43,14 @@ class P_role extends Controller
             ->withCount('roleMenu')
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($roles) use ($search) {
-                    $roles->where('nm_role', 'like', '%' . $search . '%')
-                        ->orWhere('description', 'like', '%' . $search . '%');
+                    $roles->where('nm_role', 'like', Like::contains($search))
+                        ->orWhere('description', 'like', Like::contains($search));
 
+                    // The list shows each role as ROLE-0003, so that text (or the bare number) finds it.
                     if (ctype_digit($search)) {
                         $roles->orWhere('id_role', (int) $search);
+                    } elseif (preg_match('/^role-?0*(\d+)$/i', $search, $code)) {
+                        $roles->orWhere('id_role', (int) $code[1]);
                     }
                 });
             })

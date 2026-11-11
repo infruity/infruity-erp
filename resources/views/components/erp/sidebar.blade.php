@@ -182,13 +182,11 @@
         </div>
 
         <div class="erp-sidebar__group">
-            <a href="#" data-type="header" @click.prevent="if (sidebarCollapsed) sidebarCollapsed = false" class="sidebar-link {{ request()->routeIs('arus-kas.*', 'other-book', 'expenditure.*') ? 'active' : '' }}">
+            <a href="#" data-type="header" @click.prevent="if (sidebarCollapsed) sidebarCollapsed = false" class="sidebar-link {{ request()->routeIs('arus-kas.*') ? 'active' : '' }}">
                 <span class="erp-sidebar__link-label"><i class="ph ph-currency-circle-dollar sidebar-icon" aria-hidden="true"></i><span class="font-medium">Keuangan</span></span>
             </a>
             <div class="submenu-wrapper" x-show="!sidebarCollapsed"><div class="py-1 space-y-0.5">
                 <a href="{{ route('arus-kas.index') }}" class="submenu-link {{ request()->routeIs('arus-kas.*') ? 'active' : '' }}"><span>Arus Kas</span></a>
-                <a href="{{ route('other-book') }}" class="submenu-link {{ request()->routeIs('other-book') ? 'active' : '' }}"><span>Pemasukan</span></a>
-                <a href="{{ route('expenditure.index') }}" class="submenu-link {{ request()->routeIs('expenditure.*') ? 'active' : '' }}"><span>Pengeluaran</span></a>
             </div></div>
         </div>
 

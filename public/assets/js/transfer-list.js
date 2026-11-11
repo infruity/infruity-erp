@@ -1,10 +1,16 @@
 (function (root) {
     function transferList(config) {
+        const onNextFrame = callback => {
+            if (typeof root.requestAnimationFrame === 'function') root.requestAnimationFrame(callback);
+            else callback();
+        };
         return {
             rows: [], total: 0, filtered: 0, search: '', loading: false, error: '', requestId: 0,
             filters: {status: 'all', branch: 'all', start: '', end: ''},
             pending: {status: 'all', branch: 'all', start: '', end: ''},
-            branchSearchQuery: '', filterOpen: false, selected: null, documentOpen: false, deleting: false, returnFocus: null,
+            branchSearchQuery: '', filterOpen: false, calendarOpen: false, calendarView: 'date', calendarMonth: new Date().getMonth(), calendarYear: new Date().getFullYear(), filterCalendarTrigger: null,
+            filterCalendarMonths: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
+            selected: null, documentOpen: false, deleting: false, returnFocus: null,
             init() { this.load(); },
             money(value) { return 'Rp ' + Number(value || 0).toLocaleString('id-ID', {maximumFractionDigits: 2}); },
             statusLabel(status) { return ({temp:'Draf',draft:'Draf',pending:'Dalam Perjalanan',proses:'Sedang Diperiksa',selesai:'Sudah Diterima'})[status] || status; },
@@ -25,6 +31,8 @@
             },
             branchTheme(name) {
                 const branch = String(name || '').toUpperCase();
+                if (branch.includes('TOKO GKB')) return {background:'#fff1f2',color:'#be123c',borderColor:'#fecdd3'};
+                if (branch.includes('TOKO GBA')) return {background:'#eef2ff',color:'#4338ca',borderColor:'#c7d2fe'};
                 if (branch.includes('RUNGKUT')) return {background:'#eff6ff',color:'#1d4ed8',borderColor:'#bfdbfe'};
                 if (branch.includes('BARAT')) return {background:'#faf5ff',color:'#7e22ce',borderColor:'#e9d5ff'};
                 if (branch.includes('SIDOARJO') || branch.includes('WARU')) return {background:'#fffbeb',color:'#b45309',borderColor:'#fde68a'};
@@ -39,12 +47,67 @@
                 return [{id:'all', name:'Semua Cabang'}, ...(config.branches || [])]
                     .filter(branchOption => branchOption.name.toLocaleLowerCase('id-ID').includes(query));
             },
+            get filterCalendarHeading() {
+                if (this.calendarView === 'month') return String(this.calendarYear);
+                if (this.calendarView === 'year') return `${this.calendarYear - 4} - ${this.calendarYear + 7}`;
+                return `${this.filterCalendarMonths[this.calendarMonth]} ${this.calendarYear}`;
+            },
+            get filterCalendarBlankDays() { return Array.from({length:new Date(this.calendarYear, this.calendarMonth, 1).getDay()}, (_, index) => index); },
+            get filterCalendarDays() { return Array.from({length:new Date(this.calendarYear, this.calendarMonth + 1, 0).getDate()}, (_, index) => index + 1); },
+            get filterCalendarYears() { return Array.from({length:12}, (_, index) => this.calendarYear - 4 + index); },
             openFilter(event) {
                 this.returnFocus = event?.currentTarget || null;
-                this.pending = {...this.filters}; this.branchSearchQuery = ''; this.filterOpen = true;
+                this.pending = {...this.filters}; this.branchSearchQuery = ''; this.calendarOpen = false; this.calendarView = 'date'; this.filterOpen = true;
                 this.$nextTick(() => document.getElementById('transfer-filter-dialog')?.focus());
             },
-            closeFilter() { this.filterOpen = false; this.returnFocus?.focus(); },
+            openFilterCalendar(trigger) {
+                this.filterCalendarTrigger = trigger;
+                const value = trigger?.id === 'transfer-date-end' ? (this.pending.end || this.pending.start) : (this.pending.start || this.pending.end);
+                if (value) {
+                    const [year, month] = value.split('-').map(Number);
+                    this.calendarYear = year; this.calendarMonth = month - 1;
+                } else {
+                    const today = new Date(); this.calendarYear = today.getFullYear(); this.calendarMonth = today.getMonth();
+                }
+                this.calendarView = 'date'; this.calendarOpen = true;
+                this.$nextTick(() => onNextFrame(() => {
+                    const target = this.$refs.filterCalendarBack;
+                    if (!target || !target.getClientRects().length) return;
+                    target.focus({preventScroll:true}); target.scrollIntoView({block:'nearest'});
+                }));
+            },
+            closeFilterCalendar() {
+                if (!this.calendarOpen) return;
+                this.calendarOpen = false; this.calendarView = 'date';
+                this.$nextTick(() => onNextFrame(() => {
+                    const target = this.filterCalendarTrigger;
+                    if (!target || !target.getClientRects().length) return;
+                    target.focus({preventScroll:true}); target.scrollIntoView({block:'nearest'});
+                }));
+            },
+            moveFilterCalendar(step) {
+                if (this.calendarView === 'date') {
+                    const date = new Date(this.calendarYear, this.calendarMonth + step, 1);
+                    this.calendarMonth = date.getMonth(); this.calendarYear = date.getFullYear();
+                } else if (this.calendarView === 'month') this.calendarYear += step;
+                else this.calendarYear += step * 12;
+            },
+            getFilterCalendarDate(day) { return `${this.calendarYear}-${String(this.calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; },
+            selectFilterCalendarDate(day) {
+                if (!Number.isInteger(Number(day)) || Number(day) < 1 || Number(day) > this.filterCalendarDays.length) return;
+                const date = this.getFilterCalendarDate(Number(day));
+                if (!this.pending.start || (this.pending.start && this.pending.end)) { this.pending.start = date; this.pending.end = ''; }
+                else if (date < this.pending.start) { this.pending.end = this.pending.start; this.pending.start = date; }
+                else this.pending.end = date;
+            },
+            isFilterCalendarDateSelected(day) { const date = this.getFilterCalendarDate(day); return date === this.pending.start || date === this.pending.end; },
+            isFilterCalendarDateInRange(day) {
+                if (!this.pending.start || !this.pending.end) return false;
+                const date = this.getFilterCalendarDate(day); return date > this.pending.start && date < this.pending.end;
+            },
+            chooseFilterCalendarMonth(month) { this.calendarMonth = month; this.calendarView = 'date'; },
+            chooseFilterCalendarYear(year) { this.calendarYear = year; this.calendarView = 'month'; },
+            closeFilter() { this.calendarOpen = false; this.calendarView = 'date'; this.filterOpen = false; this.returnFocus?.focus(); },
             openDetail(row, event) {
                 this.returnFocus = event?.currentTarget || null; this.selected = row; this.documentOpen = false;
                 this.$nextTick(() => document.getElementById('transfer-detail-dialog')?.focus());
@@ -65,6 +128,12 @@
                 if (!value) return '—';
                 const date = new Date(String(value).slice(0,10) + 'T00:00:00');
                 return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString('id-ID', {day:'2-digit',month:'long',year:'numeric'});
+            },
+            formatFilterDate(value) {
+                if (!value) return 'Pilih Tanggal';
+                const [year, month, day] = value.split('-').map(Number);
+                if (!year || !month || !day) return value;
+                return new Intl.DateTimeFormat('id-ID', {day:'numeric',month:'short',year:'numeric'}).format(new Date(year, month - 1, day));
             },
             trapFocus(event) {
                 const controls = [...event.currentTarget.querySelectorAll('button:not(:disabled), a[href], input, select, [tabindex="0"]')].filter(el => el.getClientRects().length);
@@ -117,7 +186,7 @@
                     this.rows = append ? [...this.rows,...json.data] : json.data;
                     this.total = Number(json.recordsTotal || 0); this.filtered = Number(json.recordsFiltered || 0);
                 } catch(error) {
-                    if (requestId === this.requestId) this.error = error.message || 'Periksa koneksi lalu coba lagi.';
+                    if (requestId === this.requestId) this.error = error.name === 'TypeError' ? 'Periksa koneksi lalu coba lagi.' : (error.message || 'Periksa koneksi lalu coba lagi.');
                 } finally { if (requestId === this.requestId) this.loading = false; }
             },
             async deleteSelected() {

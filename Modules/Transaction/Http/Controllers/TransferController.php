@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\Like;
 use App\Support\InventorySnapshot;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -587,7 +588,7 @@ class TransferController extends Controller
             ->where('product_stock.branch_id', $request->branch_id)
             ->where(fn ($q) => $q->where('product_stock.stock_available', '>', 0)->orWhereIn('products.id', $ownQty->keys()->all()))
             ->where('products.tipe', '!=', 'parcel')->whereNull('products.is_variant')
-            ->where('products.name', 'like', '%' . $request->input('term', '') . '%')->orderBy('products.name')->limit(200)->get();
+            ->where('products.name', 'like', Like::contains((string) $request->input('term', '')))->orderBy('products.name')->limit(200)->get();
         return response()->json($products->map(fn ($product) => [
             'id' => $product->id, 'name' => $product->name, 'unit' => $product->unit?->abbreviation ?? '',
             'price' => round((float) ($product->avg_hpp ?? $product->hpp ?? 0), 2),
@@ -611,11 +612,12 @@ class TransferController extends Controller
         if ($request->filled('start_date')) $query->whereDate('date', '>=', $request->start_date);
         if ($request->filled('end_date')) $query->whereDate('date', '<=', $request->end_date);
         if ($search = trim($request->input('search', ''))) {
-            $query->where(function ($q) use ($search) {
-                $q->where('invoice_number', 'like', "%{$search}%")
-                    ->orWhereHas('branch', fn ($b) => $b->where('name', 'like', "%{$search}%"))
-                    ->orWhereHas('branchDestination', fn ($b) => $b->where('name', 'like', "%{$search}%"))
-                    ->orWhereHas('detail.product', fn ($p) => $p->where('name', 'like', "%{$search}%"));
+            $like = Like::contains($search);
+            $query->where(function ($q) use ($like) {
+                $q->where('invoice_number', 'like', $like)
+                    ->orWhereHas('branch', fn ($b) => $b->where('name', 'like', $like))
+                    ->orWhereHas('branchDestination', fn ($b) => $b->where('name', 'like', $like))
+                    ->orWhereHas('detail.product', fn ($p) => $p->where('name', 'like', $like));
             });
         }
         $filtered = (clone $query)->count();
@@ -689,10 +691,11 @@ class TransferController extends Controller
                 $search = trim($request->input('search.value'));
 
                 if (! empty($search)) {
-                    $query->where(function ($q) use ($search) {
-                        $q->where('invoice_number', 'LIKE', "%{$search}%")
-                            ->orWhereHas('createdBy', function ($sub) use ($search) {
-                                $sub->where('nm_user', 'LIKE', "%{$search}%");
+                    $like = Like::contains($search);
+                    $query->where(function ($q) use ($like) {
+                        $q->where('invoice_number', 'LIKE', $like)
+                            ->orWhereHas('createdBy', function ($sub) use ($like) {
+                                $sub->where('nm_user', 'LIKE', $like);
                             });
                     });
                 }

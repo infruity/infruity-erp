@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\Customer;
-use App\Models\User;
+use App\User;
 
 class OrderBook extends Model
 {

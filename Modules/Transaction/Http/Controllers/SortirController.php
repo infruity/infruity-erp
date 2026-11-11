@@ -2,6 +2,7 @@
 
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\Like;
 use Exception;
 use App\Models\RoleMenu;
 use Illuminate\Contracts\Support\Renderable;
@@ -251,7 +252,7 @@ class SortirController extends Controller
             }
         }
         $products = Product::with('unit')->where('tipe', '!=', 'parcel')->whereNull('is_variant')
-            ->when(! empty($data['term']), fn ($q) => $q->where('name', 'like', '%' . $data['term'] . '%'))
+            ->when(! empty($data['term']), fn ($q) => $q->where('name', 'like', Like::contains((string) $data['term'])))
             ->orderBy('name')->get();
         $stock = DB::table('product_stock')->where('branch_id', $data['branch_id'])
             ->whereIn('id', $products->pluck('id'))->get()->keyBy('id');
@@ -467,11 +468,12 @@ class SortirController extends Controller
         $search = trim((string) (is_array($request->input('search'))
             ? $request->input('search.value', '') : $request->input('search', '')));
         if ($search !== '') {
-            $query->where(function ($q) use ($search) {
-                $q->where('invoice_number', 'like', "%{$search}%")
-                    ->orWhereHas('createdBy', fn ($sub) => $sub->where('nm_user', 'like', "%{$search}%"))
-                    ->orWhereHas('branch', fn ($sub) => $sub->where('name', 'like', "%{$search}%"))
-                    ->orWhereHas('detail.product', fn ($sub) => $sub->where('name', 'like', "%{$search}%"));
+            $like = Like::contains($search);
+            $query->where(function ($q) use ($like) {
+                $q->where('invoice_number', 'like', $like)
+                    ->orWhereHas('createdBy', fn ($sub) => $sub->where('nm_user', 'like', $like))
+                    ->orWhereHas('branch', fn ($sub) => $sub->where('name', 'like', $like))
+                    ->orWhereHas('detail.product', fn ($sub) => $sub->where('name', 'like', $like));
             });
         }
         $query->orderByDesc('id');

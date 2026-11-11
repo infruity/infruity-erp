@@ -139,17 +139,17 @@ class OrderBookReferenceUiContractTest extends TestCase
             'max-w-[512px]',
             'min-h-0 flex-1',
             'overflow-y-auto',
-            'p-[20px]',
             'space-y-[16px]',
             'text-[12px] leading-[16px]',
             'text-[16px] leading-[16px]',
-            'h-[44px]',
-            '<header class="flex shrink-0',
-            '<footer class="flex shrink-0',
+            '<x-erp.filter-sheet-frame',
+            '<x-slot:footer>',
         ] as $filterSheetContract) {
             $this->assertStringContainsString($filterSheetContract, $sheet, "Missing reference filter sizing: {$filterSheetContract}");
         }
 
+        // Footer action height (44px) is owned by the shared filter sheet stylesheet.
+        $this->assertStringContainsString('--erp-filter-action-height:44px;', file_get_contents(base_path('public/assets/css/erp-filters.css')));
         $this->assertDoesNotMatchRegularExpression('/(?<!max-)h-\[\d+(?:d)?vh\]/', $sheet);
         $this->assertStringContainsString('#order-book-filter-sheet :is(h2, h3, h4, p) { margin-bottom:0; }', $view);
     }
@@ -163,7 +163,8 @@ class OrderBookReferenceUiContractTest extends TestCase
         $this->assertStringContainsString(':where(#order-book-filter-sheet, #order-book-filter-sheet *) { border-width:0; border-style:solid; border-color:#e5e7eb; }', $view);
         $this->assertStringContainsString('border-[1px] border-solid', $sheet);
         $this->assertStringContainsString('border-[2px] border-solid', $sheet);
-        $this->assertStringContainsString('text-[#ffffff]', $sheet);
+        // The primary action's colour now comes from the shared Stock Opname sheet frame, not inline utilities.
+        $this->assertStringContainsString('class="erp-filter-sheet__primary"', $sheet);
         $this->assertStringContainsString('shadow-[0_1px_2px_rgba(0,0,0,0.05)]', $sheet);
         $this->assertDoesNotMatchRegularExpression('/(?:class="|\s)border(?:\s|")/', $sheet);
     }

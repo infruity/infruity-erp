@@ -14,9 +14,17 @@
         mobileStatus: 'all',
         mobileStartDate: '',
         mobileEndDate: '',
+        calendarOpen: false,
+        calendarView: 'date',
+        calendarMonth: new Date().getMonth(),
+        calendarYear: new Date().getFullYear(),
+        mobileCalendarTrigger: null,
+        mobileCalendarMonths: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
         toggleFilters() {
             this.filtersOpen = !this.filtersOpen;
             if (!this.filtersOpen) return;
+            this.calendarOpen = false;
+            this.calendarView = 'date';
             this.mobileStatus = getWholesaleFilter('status') || 'all';
             this.mobileBranch = getWholesaleFilter('branch') || 'all';
             this.mobileStartDate = getWholesaleFilter('start');
@@ -36,6 +44,96 @@
             const toInputDate = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
             this.mobileStartDate = toInputDate(start);
             this.mobileEndDate = toInputDate(end);
+        },
+        get mobileCalendarHeading() {
+            if (this.calendarView === 'month') return String(this.calendarYear);
+            if (this.calendarView === 'year') return `${this.calendarYear - 4} - ${this.calendarYear + 7}`;
+            return `${this.mobileCalendarMonths[this.calendarMonth]} ${this.calendarYear}`;
+        },
+        get mobileCalendarBlankDays() {
+            return Array.from({ length: new Date(this.calendarYear, this.calendarMonth, 1).getDay() }, (_, index) => index);
+        },
+        get mobileCalendarDays() {
+            return Array.from({ length: new Date(this.calendarYear, this.calendarMonth + 1, 0).getDate() }, (_, index) => index + 1);
+        },
+        get mobileCalendarYears() {
+            return Array.from({ length: 12 }, (_, index) => this.calendarYear - 4 + index);
+        },
+        openMobileCalendar(trigger) {
+            this.mobileCalendarTrigger = trigger;
+            const value = trigger?.id === 'wholesale-mobile-end-date-trigger'
+                ? (this.mobileEndDate || this.mobileStartDate)
+                : (this.mobileStartDate || this.mobileEndDate);
+            if (value) {
+                const [year, month] = value.split('-').map(Number);
+                this.calendarYear = year;
+                this.calendarMonth = month - 1;
+            } else {
+                const today = new Date();
+                this.calendarYear = today.getFullYear();
+                this.calendarMonth = today.getMonth();
+            }
+            this.calendarView = 'date';
+            this.calendarOpen = true;
+            this.$nextTick(() => requestAnimationFrame(() => {
+                const target = this.$refs.mobileCalendarBack;
+                if (!target || !target.getClientRects().length) return;
+                target.focus({ preventScroll: true });
+                target.scrollIntoView({ block: 'nearest' });
+            }));
+        },
+        backToMobileFilters() {
+            this.calendarOpen = false;
+            this.calendarView = 'date';
+            this.$nextTick(() => requestAnimationFrame(() => {
+                const target = this.mobileCalendarTrigger;
+                if (!target || !target.getClientRects().length) return;
+                target.focus({ preventScroll: true });
+                target.scrollIntoView({ block: 'nearest' });
+            }));
+        },
+        moveMobileCalendar(step) {
+            if (this.calendarView === 'date') {
+                const date = new Date(this.calendarYear, this.calendarMonth + step, 1);
+                this.calendarMonth = date.getMonth();
+                this.calendarYear = date.getFullYear();
+            } else if (this.calendarView === 'month') {
+                this.calendarYear += step;
+            } else {
+                this.calendarYear += step * 12;
+            }
+        },
+        getMobileCalendarDate(day) {
+            return `${this.calendarYear}-${String(this.calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        },
+        selectMobileCalendarDate(day) {
+            const date = this.getMobileCalendarDate(day);
+            if (!this.mobileStartDate || (this.mobileStartDate && this.mobileEndDate)) {
+                this.mobileStartDate = date;
+                this.mobileEndDate = '';
+            } else if (date < this.mobileStartDate) {
+                this.mobileEndDate = this.mobileStartDate;
+                this.mobileStartDate = date;
+            } else {
+                this.mobileEndDate = date;
+            }
+        },
+        isMobileCalendarDateSelected(day) {
+            const date = this.getMobileCalendarDate(day);
+            return date === this.mobileStartDate || date === this.mobileEndDate;
+        },
+        isMobileCalendarDateInRange(day) {
+            if (!this.mobileStartDate || !this.mobileEndDate) return false;
+            const date = this.getMobileCalendarDate(day);
+            return date > this.mobileStartDate && date < this.mobileEndDate;
+        },
+        chooseMobileCalendarMonth(month) {
+            this.calendarMonth = month;
+            this.calendarView = 'date';
+        },
+        chooseMobileCalendarYear(year) {
+            this.calendarYear = year;
+            this.calendarView = 'month';
         },
         formatMobileDate(value) {
             if (!value) return 'Pilih Tanggal';
@@ -115,16 +213,14 @@
         </section>
 
         <template x-teleport="body">
-            <div x-show="filtersOpen && window.matchMedia('(max-width: 767px)').matches" x-cloak class="fixed inset-0 z-[100] flex flex-col justify-end md:hidden" role="dialog" aria-modal="true" aria-label="Filter pengadaan">
+            <div x-show="filtersOpen && window.matchMedia('(max-width: 767px)').matches" x-cloak class="fixed inset-0 z-[100] flex flex-col justify-end md:hidden" role="dialog" aria-modal="true" aria-label="Filter pengadaan" aria-labelledby="wholesale-filter-title">
                 <button type="button" class="absolute inset-0 bg-black/70" @click="filtersOpen = false" aria-label="Tutup filter"></button>
-                <section x-show="filtersOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full" class="relative flex max-h-[85vh] flex-col overflow-hidden rounded-t-3xl bg-white pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl">
+                <section x-show="filtersOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full" class="relative flex max-h-[85vh] flex-col overflow-hidden rounded-t-3xl bg-white pb-0 shadow-2xl">
                     <div class="flex shrink-0 justify-center pt-3 pb-1"><div class="h-1.5 w-14 rounded-full bg-gray-300"></div></div>
-                    <div class="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-4">
-                        <div><h2 class="text-lg font-bold text-gray-900">Filter Pengadaan</h2><p class="mt-0.5 text-[11px] text-gray-400">Saring cabang tujuan, status, dan periode tanggal.</p></div>
-                        <button type="button" @click="filtersOpen = false" class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600" aria-label="Tutup"><i class="ph-bold ph-x"></i></button>
-                    </div>
-                    <div class="min-h-0 flex-1 overflow-y-auto overscroll-none p-5">
-                        <div class="space-y-4">
+                    <x-erp.filter-sheet-frame title="Filter Pengadaan" title-id="wholesale-filter-title" subtitle="Saring cabang tujuan, status, dan periode tanggal." body-class="min-h-0 flex-1 overflow-y-auto overscroll-none">
+                        <x-slot:close><button type="button" @click="filtersOpen = false" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
+                        <x-slot:body>
+                        <div x-show="!calendarOpen" class="space-y-4">
                             <div>
                                 <div class="mb-1.5 flex items-center justify-between">
                                     <label for="wholesale-mobile-branch-search" class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Cabang Tujuan</label>
@@ -169,16 +265,16 @@
                                     <button type="button" x-show="mobileStartDate || mobileEndDate" @click="mobileStartDate = ''; mobileEndDate = ''" class="cursor-pointer text-[10px] font-semibold text-red-500 transition-colors hover:text-red-600">Reset</button>
                                 </div>
                                 <div class="flex w-full flex-col gap-2 sm:flex-row">
-                                    <label class="relative flex flex-1 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs text-gray-700 shadow-xs transition-colors focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
-                                        <span class="w-8 text-[10px] font-bold text-gray-400">DARI</span>
+                                    <button id="wholesale-mobile-start-date-trigger" type="button" @click="openMobileCalendar($event.currentTarget)" :aria-expanded="calendarOpen" aria-controls="wholesale-mobile-calendar" class="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-left text-xs text-gray-700 shadow-xs transition-colors hover:border-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+                                        <span class="w-8 shrink-0 text-[10px] font-bold text-gray-400">DARI</span>
                                         <span class="min-w-0 truncate text-xs font-medium" :class="mobileStartDate ? 'text-gray-800' : 'text-gray-400'" x-text="formatMobileDate(mobileStartDate)"></span>
-                                        <input id="wholesale-mobile-start-date" type="date" x-model="mobileStartDate" aria-label="Tanggal mulai pengadaan" class="absolute inset-0 h-full w-full cursor-pointer opacity-0">
-                                    </label>
-                                    <label class="relative flex flex-1 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs text-gray-700 shadow-xs transition-colors focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
-                                        <span class="w-8 text-[10px] font-bold text-gray-400">KE</span>
+                                    </button>
+                                    <button id="wholesale-mobile-end-date-trigger" type="button" @click="openMobileCalendar($event.currentTarget)" :aria-expanded="calendarOpen" aria-controls="wholesale-mobile-calendar" class="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-left text-xs text-gray-700 shadow-xs transition-colors hover:border-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+                                        <span class="w-8 shrink-0 text-[10px] font-bold text-gray-400">KE</span>
                                         <span class="min-w-0 truncate text-xs font-medium" :class="mobileEndDate ? 'text-gray-800' : 'text-gray-400'" x-text="formatMobileDate(mobileEndDate)"></span>
-                                        <input id="wholesale-mobile-end-date" type="date" x-model="mobileEndDate" aria-label="Tanggal akhir pengadaan" class="absolute inset-0 h-full w-full cursor-pointer opacity-0">
-                                    </label>
+                                    </button>
+                                    <input id="wholesale-mobile-start-date" type="hidden" x-model="mobileStartDate" aria-label="Tanggal mulai pengadaan">
+                                    <input id="wholesale-mobile-end-date" type="hidden" x-model="mobileEndDate" aria-label="Tanggal akhir pengadaan">
                                 </div>
                                 <div class="flex flex-col gap-2 pt-2">
                                     <label class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Pilihan Cepat</label>
@@ -189,11 +285,46 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="flex shrink-0 gap-3 border-t border-gray-100 px-5 pt-4">
-                        <button type="button" data-wholesale-filter-reset @click="mobileBranch = 'all'; mobileStatus = 'all'; mobileStartDate = ''; mobileEndDate = ''; branchSearch = ''; filterWholesaleBranches('')" class="h-11 flex-1 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Reset</button>
-                        <button type="button" @click="applyWholesaleMobileFilters(mobileStatus, mobileBranch, mobileStartDate, mobileEndDate); filtersOpen = false" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white">Terapkan</button>
-                    </div>
+                        <section id="wholesale-mobile-calendar" x-show="calendarOpen" x-cloak class="space-y-4" aria-label="Pilih periode tanggal">
+                            <button x-ref="mobileCalendarBack" type="button" data-mobile-calendar-back @click="backToMobileFilters()" class="inline-flex min-h-9 items-center gap-2 rounded-lg px-1 text-sm font-semibold text-gray-700 transition-colors hover:text-gray-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+                                <i class="ph-bold ph-arrow-left" aria-hidden="true"></i><span>Kembali</span>
+                            </button>
+                            <div class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                                <div class="mb-4 flex items-center justify-between">
+                                    <button type="button" @click="moveMobileCalendar(-1)" aria-label="Sebelumnya" class="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button>
+                                    <button id="wholesale-mobile-calendar-heading" type="button" data-mobile-calendar-heading @click="calendarView = calendarView === 'date' ? 'month' : (calendarView === 'month' ? 'year' : 'date')" class="rounded-lg px-3 py-1.5 text-base font-bold text-gray-800 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" x-text="mobileCalendarHeading"></button>
+                                    <button type="button" @click="moveMobileCalendar(1)" aria-label="Berikutnya" class="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"><i class="ph-bold ph-caret-right" aria-hidden="true"></i></button>
+                                </div>
+                                <div x-show="calendarView === 'date'" class="grid grid-cols-7 gap-y-1 text-center">
+                                    <template x-for="(weekday, index) in ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']" :key="weekday">
+                                        <span class="flex h-9 items-center justify-center text-[11px] font-semibold text-gray-400" :aria-label="weekday" x-text="weekday[0]"></span>
+                                    </template>
+                                    <template x-for="blank in mobileCalendarBlankDays" :key="'blank-' + blank"><span class="h-9"></span></template>
+                                    <template x-for="day in mobileCalendarDays" :key="getMobileCalendarDate(day)">
+                                        <div class="relative flex h-9 items-center justify-center">
+                                            <span x-show="isMobileCalendarDateInRange(day)" class="absolute inset-0 bg-emerald-50"></span>
+                                            <button type="button" data-wholesale-calendar-day @click="selectMobileCalendarDate(day)" :aria-label="formatMobileDate(getMobileCalendarDate(day))" :aria-pressed="isMobileCalendarDateSelected(day)" :class="isMobileCalendarDateSelected(day) ? 'relative z-10 rounded-full bg-[#c5f037] font-bold text-gray-900 shadow-sm' : (isMobileCalendarDateInRange(day) ? 'relative z-10 font-semibold text-gray-800' : 'relative z-10 rounded-full text-gray-700 hover:bg-gray-100')" class="flex h-9 w-9 cursor-pointer items-center justify-center text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" x-text="day"></button>
+                                        </div>
+                                    </template>
+                                </div>
+                                <div x-show="calendarView === 'month'" x-cloak class="grid grid-cols-3 gap-2 py-2">
+                                    <template x-for="(month, index) in mobileCalendarMonths" :key="month">
+                                        <button type="button" @click="chooseMobileCalendarMonth(index)" :class="calendarMonth === index ? 'bg-[#c5f037] font-bold text-gray-900' : 'text-gray-600 hover:bg-gray-100'" class="rounded-xl px-2 py-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" x-text="month"></button>
+                                    </template>
+                                </div>
+                                <div x-show="calendarView === 'year'" x-cloak class="grid grid-cols-3 gap-2 py-2">
+                                    <template x-for="year in mobileCalendarYears" :key="year">
+                                        <button type="button" @click="chooseMobileCalendarYear(year)" :class="calendarYear === year ? 'bg-[#c5f037] font-bold text-gray-900' : 'text-gray-600 hover:bg-gray-100'" class="rounded-xl px-2 py-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" x-text="year"></button>
+                                    </template>
+                                </div>
+                            </div>
+                        </section>
+                        </x-slot:body>
+                        <x-slot:footer>
+                            <button type="button" data-wholesale-filter-reset @click="mobileBranch = 'all'; mobileStatus = 'all'; mobileStartDate = ''; mobileEndDate = ''; branchSearch = ''; filterWholesaleBranches('')">Reset</button>
+                            <button type="button" class="erp-filter-sheet__primary" @click="applyWholesaleMobileFilters(mobileStatus, mobileBranch, mobileStartDate, mobileEndDate); filtersOpen = false">Terapkan</button>
+                        </x-slot:footer>
+                    </x-erp.filter-sheet-frame>
                 </section>
             </div>
         </template>
@@ -225,7 +356,7 @@
                         </div>
                         <div class="wholesale-detail-line">
                             <i class="ph ph-clock" aria-hidden="true"></i>
-                            <div><strong x-text="item?.creator_name"></strong><span x-text="'Dibuat pada ' + item?.created_at_label"></span></div>
+                            <div><strong x-text="item?.creator_name"></strong><span x-text="'Tanggal pengadaan ' + item?.order_date_label"></span></div>
                         </div>
                     </div>
                     <footer class="wholesale-detail-actions" x-show="item?.can_edit || item?.can_delete" :class="item?.can_edit && item?.can_delete ? '' : 'is-single-action'">
@@ -310,6 +441,11 @@
             #wholesale-table thead { display:none; }
             #wholesale-table tbody tr { display:grid; grid-template-columns:minmax(0,1fr) minmax(126px,auto); grid-template-areas:'order status'; align-items:center; gap:4px 14px; border-bottom:1px solid #f1f3f5; padding:14px clamp(16px,3vw,24px); transition:background-color .16s ease; }
             #wholesale-table tbody td { display:block; width:auto !important; border:0 !important; padding:0 !important; }
+            .mobile-list-edge-fade.has-wholesale-empty-state { position:relative; }
+            #wholesale-table_wrapper.has-wholesale-empty-state { position:static; }
+            #wholesale-table_wrapper.has-wholesale-empty-state #wholesale-table tbody tr { display:block; height:0; padding:0; border:0; }
+            #wholesale-table_wrapper.has-wholesale-empty-state #wholesale-table td.dataTables_empty { height:0; padding:0 !important; border:0 !important; }
+            #wholesale-table_wrapper.has-wholesale-empty-state .wholesale-empty-state { position:absolute; top:50%; left:50%; width:calc(100% - 32px); max-width:380px; min-height:0; transform:translate(-50%, -50%); }
             #wholesale-table tbody td:nth-child(1) { grid-area:order; min-width:0; }
             #wholesale-table tbody td:nth-child(2), #wholesale-table tbody td:nth-child(3), #wholesale-table tbody td:nth-child(4) { display:none; }
             #wholesale-table tbody td:nth-child(5) { grid-area:status; }
@@ -353,6 +489,8 @@
         const wholesaleEmptyState = '<div class="wholesale-empty-state"><span class="wholesale-empty-icon"><i class="ph ph-receipt"></i></span><span class="wholesale-empty-title">Belum ada pengadaan</span><span class="wholesale-empty-copy">Pengadaan yang tersimpan akan muncul di sini.</span>'
             + (wholesaleCreateUrl ? '<a class="wholesale-empty-link" href="' + wholesaleCreateUrl + '"><i class="ph-bold ph-plus"></i>Tambah Pengadaan</a>' : '')
             + '</div>';
+        // A search or filter with no match is not the same as having no orders yet: no "Tambah" prompt.
+        const wholesaleNoMatchState = '<div class="wholesale-empty-state"><span class="wholesale-empty-icon"><i class="ph ph-magnifying-glass"></i></span><span class="wholesale-empty-title">Pengadaan tidak ditemukan</span><span class="wholesale-empty-copy">Coba kata pencarian lain atau sesuaikan filter.</span></div>';
         let wholesaleDataTable;
         let wholesaleLoadMorePending = false;
 
@@ -382,12 +520,21 @@
             if (branch) showStockAlert(branch);
         }
 
+        function hasWholesaleFilterCriteria(filters) {
+            const status = filters.status || 'all';
+            const branch = filters.branch || 'all';
+            return status !== 'all'
+                || (branch !== '' && branch !== 'all')
+                || Boolean(filters.start || filters.end)
+                || Boolean(String(filters.search || '').trim());
+        }
+
         function updateWholesaleFilterSummary() {
             const status = getWholesaleFilter('status') || 'all';
             const branch = getWholesaleFilter('branch') || 'all';
             const start = getWholesaleFilter('start');
             const end = getWholesaleFilter('end');
-            const hasFilter = status !== 'all' || (branch && branch !== 'all') || start || end;
+            const hasFilter = hasWholesaleFilterCriteria({ status, branch, start, end });
             $('#wholesale-filter-dot').toggleClass('hidden', !hasFilter);
             const labels = [];
             if (status !== 'all') labels.push($('[data-wholesale-filter="status"] option[value="' + status + '"]').first().text());
@@ -446,14 +593,26 @@
                 language: {
                     processing: 'Memuat pengadaan…',
                     emptyTable: wholesaleEmptyState,
-                    zeroRecords: wholesaleEmptyState,
+                    zeroRecords: wholesaleNoMatchState,
                     info: 'Menampilkan _START_–_END_ dari _TOTAL_ pengadaan',
                     infoEmpty: 'Belum ada pengadaan',
                     paginate: { previous: '‹', next: '›' }
                 },
                 drawCallback: function () {
                     const info = this.api().page.info();
-                    $('#wholesale-count').text(info.recordsDisplay ? `Menampilkan ${info.start + 1}–${info.end} dari ${info.recordsDisplay} pengadaan` : 'Belum ada pengadaan');
+                    document.querySelector('.mobile-list-edge-fade')?.classList.toggle('has-wholesale-empty-state', !info.recordsDisplay);
+                    $('#wholesale-table_wrapper').toggleClass('has-wholesale-empty-state', !info.recordsDisplay);
+                    const hasCriteria = hasWholesaleFilterCriteria({
+                        status: getWholesaleFilter('status'),
+                        branch: getWholesaleFilter('branch'),
+                        start: getWholesaleFilter('start'),
+                        end: getWholesaleFilter('end'),
+                        search: this.api().search()
+                    });
+                    if (!info.recordsDisplay) {
+                        $('#wholesale-table td.dataTables_empty').html(hasCriteria ? wholesaleNoMatchState : wholesaleEmptyState);
+                    }
+                    $('#wholesale-count').text(info.recordsDisplay ? `Menampilkan ${info.start + 1}–${info.end} dari ${info.recordsDisplay} pengadaan` : (hasCriteria ? 'Pengadaan tidak ditemukan' : 'Belum ada pengadaan'));
                     this.api().rows({ page: 'current' }).every(function () {
                         $(this.node()).toggleClass('is-openable', Boolean(this.data()?.detail_payload));
                     });

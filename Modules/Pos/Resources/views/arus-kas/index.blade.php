@@ -217,11 +217,10 @@
         <div class="arus-kas-sheet-backdrop" @click="filterOpen = false"></div>
         <section class="arus-kas-filter-sheet" role="dialog" aria-modal="true" aria-labelledby="arus-kas-filter-title" @click.stop>
             <div class="arus-kas-sheet-handle" aria-hidden="true"></div>
-            <header class="flex items-center justify-between border-b border-gray-100 px-5 pb-4 pt-1">
-                <div><h2 id="arus-kas-filter-title" class="text-lg font-bold text-gray-800">Filter Arus Kas</h2><p class="mt-0.5 text-[11px] text-gray-400">Saring cabang dan status arus kas</p></div>
-                <button type="button" @click="filterOpen = false" aria-label="Tutup filter" class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
-            </header>
-            <div class="arus-kas-filter-scroll">
+            <x-erp.filter-sheet-frame title="Filter Arus Kas" title-id="arus-kas-filter-title" subtitle="Saring cabang dan status arus kas" body-class="arus-kas-filter-scroll">
+                <x-slot:close><button type="button" @click="filterOpen = false" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
+                <x-slot:body>
+
                 <section>
                     <h3 class="mb-2 text-[11px] font-bold uppercase tracking-wide text-gray-500">Cabang Tujuan</h3>
                     <label class="flex h-11 items-center gap-2 rounded-t-lg border border-gray-200 px-3 text-gray-400"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" x-model="branchSearchQuery" placeholder="Cari cabang..." class="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm outline-none focus:ring-0"></label>
@@ -237,11 +236,12 @@
                         <template x-for="status in statusOptions" :key="status"><button type="button" @click="tempFilterStatus = status" :aria-pressed="tempFilterStatus === status" :class="tempFilterStatus === status ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-gray-200 bg-white text-gray-600'" class="rounded-full border px-3 py-2 text-xs font-semibold" x-text="status === 'Semua' ? 'Semua Status' : status"></button></template>
                     </div>
                 </section>
-            </div>
-            <footer class="flex shrink-0 gap-3 border-t border-gray-100 bg-white px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-                <button type="button" @click="resetMobileFilters()" class="h-11 flex-1 rounded-xl border border-gray-200 bg-white text-xs font-bold text-gray-600">Reset</button>
-                <button type="button" @click="applyMobileFilters()" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-xs font-bold text-white">Terapkan</button>
-            </footer>
+                </x-slot:body>
+                <x-slot:footer>
+                    <button type="button" @click="resetMobileFilters()">Reset</button>
+                    <button type="button" class="erp-filter-sheet__primary" @click="applyMobileFilters()">Terapkan</button>
+                </x-slot:footer>
+            </x-erp.filter-sheet-frame>
         </section>
     </div>
 

@@ -11,9 +11,11 @@ function helpers() {
 
 test('Order Book mounts the shared detail dialog independently of its filter and collection rewrite', () => {
     const view = fs.readFileSync(path.join(__dirname, '../../Modules/Pos/Resources/views/order-book/index.blade.php'), 'utf8');
-    assert.match(view, /@section\('content'\)\s+@include\('pos::order-book.partials.detail'\)/);
+    assert.match(view, /@section\('content'\)/);
+    assert.match(view, /@include\('pos::order-book\.partials\.detail'\)/);
     const partial = fs.readFileSync(path.join(__dirname, '../../Modules/Pos/Resources/views/order-book/partials/detail.blade.php'), 'utf8');
     assert.match(partial, /x-data="orderBookDetailDialog\(\)"/);
+    assert.match(partial, /data-pos-index-url="\{\{ route\('pos\.index'\) \}\}"/);
     assert.match(partial, /<x-erp\.detail-dialog/);
     assert.match(partial, /x-teleport="body"/);
     for (const field of ['customerDisplay', 'phone', 'branch', 'createdAt', 'createdBy', 'editedAt', 'editedBy']) {
@@ -86,6 +88,60 @@ test('action proxies allow only same-origin links and the existing delete comman
         assert.equal(actionFor(original(href), null, 'http://localhost'), null);
     }
     assert.equal(actionFor(original('javascript:void(0)', 'deleteProduct(9);alert(1)'), null, 'http://localhost'), null);
+});
+
+test('Lihat POS routes to the POS page with native anchor navigation', () => {
+    const {actionFor, create} = helpers();
+    const original = {
+        clickCount: 0,
+        getAttribute(name) { return name === 'href' ? '/pos/show/1316' : null; },
+        click() { this.clickCount += 1; }
+    };
+    const action = actionFor(original, original, 'http://localhost', '/pos');
+    assert.equal(action.href, 'http://localhost/pos?detail=1316');
+    assert.equal(action.label, 'Lihat POS');
+
+    const previousWindow = global.window;
+    const previousDocument = global.document;
+    const appended = [];
+    global.window = {location:{origin:'http://localhost'}};
+    global.document = {
+        body:{style:{overflow:'hidden'}},
+        querySelector:() => ({style:{overflow:'hidden'}}),
+        createElement(tag) {
+            return {tagName:tag, addEventListener(_type, handler) { this.onClick = handler; }};
+        }
+    };
+    try {
+        const state = create();
+        state.posIndexUrl = '/pos';
+        state.$refs = {detailActions:{
+            replaceChildren() { appended.length = 0; },
+            append(element) { appended.push(element); },
+            get childElementCount() { return appended.length; }
+        }};
+        state.detailOpen = true;
+        state.previousBodyOverflow = '';
+        state.previousMainOverflow = '';
+        state.renderActions({cells:[
+            {querySelector:() => original},
+            {querySelector:() => ({textContent:'Selesai'})},
+            {querySelectorAll:() => []}
+        ]});
+
+        const link = appended[0];
+        assert.equal(link.href, 'http://localhost/pos?detail=1316');
+        let prevented = false;
+        link.onClick({button:0, metaKey:false, ctrlKey:false, shiftKey:false, altKey:false, preventDefault() { prevented = true; }});
+        assert.equal(prevented, false);
+        assert.equal(original.clickCount, 0);
+        assert.equal(state.detailOpen, false);
+    } finally {
+        if (previousWindow === undefined) delete global.window;
+        else global.window = previousWindow;
+        if (previousDocument === undefined) delete global.document;
+        else global.document = previousDocument;
+    }
 });
 
 test('detail labels preserve text, not executable markup', () => {

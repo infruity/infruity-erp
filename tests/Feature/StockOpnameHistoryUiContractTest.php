@@ -15,8 +15,8 @@ final class StockOpnameHistoryUiContractTest extends TestCase
     {
         $source = $this->source();
 
-        $this->assertStringContainsString('data-so-history-tab="credit"', $source);
-        $this->assertStringContainsString('data-so-history-tab="reason"', $source);
+        $this->assertStringContainsString('data-so-history-toggle', $source);
+        $this->assertStringContainsString("state.tab === 'reason'", $source);
         $this->assertStringContainsString('function renderStockOpnameHistory(', $source);
     }
 
@@ -24,7 +24,7 @@ final class StockOpnameHistoryUiContractTest extends TestCase
     {
         $source = $this->source();
 
-        foreach (['Awal', 'Mutasi', 'Saldo', 'Kredit Lebih', 'Kredit Kurang', 'Alasan Pergerakan'] as $label) {
+        foreach (['Awal', 'Kredit', 'Saldo', 'Stok Awal', 'Kredit Lebih', 'Kredit Kurang', 'Alasan Pergerakan'] as $label) {
             $this->assertStringContainsString($label, $source, "Label hilang: {$label}");
         }
         $this->assertStringContainsString('so-hist-row', $source);

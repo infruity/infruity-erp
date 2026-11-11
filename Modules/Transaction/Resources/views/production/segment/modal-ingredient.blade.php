@@ -1,3 +1,47 @@
+@if($productionCreateReference ?? false)
+<!-- Create-route ingredient picker following the reference modal layout. -->
+<div class="modal fade production-reference-ingredient-modal" id="modal-add-ingredient" tabindex="-1" aria-labelledby="modalAddIngredientLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="production-reference-ingredient-modal__header">
+                <div>
+                    <h5 class="modal-title" id="modalAddIngredientLabel">Pilih Bahan Baku</h5>
+                    <p>Pilih buah atau bahan pelengkap produksi</p>
+                </div>
+                <button type="button" class="production-reference-ingredient-modal__close" data-bs-dismiss="modal" aria-label="Tutup pilihan bahan">
+                    <i class="ph-bold ph-x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="production-reference-ingredient-modal__body">
+                <div class="production-reference-ingredient-modal__list">
+                    <template x-for="ingredient in filteredIngredients" :key="ingredient.id">
+                        <button type="button" class="production-reference-ingredient-option" @click="selectIngredient(ingredient)">
+                            <span class="production-reference-ingredient-option__icon" aria-hidden="true" x-text="referenceProductEmoji(ingredient.name)"></span>
+                            <span class="production-reference-ingredient-option__text">
+                                <strong x-text="ingredient.name"></strong>
+                                <small x-text="toRupiah(ingredient.hpp) + (ingredient.unit ? ' / ' + ingredient.unit : '')"></small>
+                            </span>
+                            <span class="production-reference-ingredient-option__add"><i class="ph-bold ph-plus" aria-hidden="true"></i></span>
+                        </button>
+                    </template>
+                    <div x-show="filteredIngredients.length === 0" class="production-reference-ingredient-modal__state">
+                        Bahan baku tidak ditemukan
+                    </div>
+                </div>
+                <div class="production-reference-ingredient-modal__search">
+                    <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+                    <input type="search" x-ref="ingredientPickerSearch" x-model="ingredientSearchTerm"
+                        placeholder="Cari bahan (misal: Stroberi, Susu)..." autocomplete="off">
+                    <button type="button" x-show="ingredientSearchTerm" aria-label="Hapus pencarian bahan"
+                        @click="ingredientSearchTerm = ''; $refs.ingredientPickerSearch.focus()">
+                        <i class="ph-bold ph-x" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@else
 <!-- Modal Add Ingredient -->
 <div class="modal fade" id="modal-add-ingredient" tabindex="-1" aria-labelledby="modalAddIngredientLabel" aria-hidden="true">
     <div class="modal-dialog erp-sheet-dialog modal-lg">
@@ -63,9 +107,10 @@
         </div>
     </div>
 </div>
+@endif
 
 <!-- Modal Input Quantity -->
-<div class="modal fade" id="modal-input-quantity" tabindex="-1" aria-labelledby="modalInputQuantityLabel" aria-hidden="true">
+<div class="modal fade {{ ($productionCreateReference ?? false) ? 'production-reference-quantity-modal' : '' }}" id="modal-input-quantity" tabindex="-1" aria-labelledby="modalInputQuantityLabel" aria-hidden="true">
     <div class="modal-dialog erp-sheet-dialog">
         <div class="modal-content">
             <div class="erp-sheet-header">
@@ -80,18 +125,22 @@
             </div>
             <div class="erp-sheet-body">
                 <!-- Selected Ingredient Info -->
-                <div class="card card-flush bg-light-primary mb-4" x-show="selectedIngredient">
+                <div class="card card-flush bg-light-primary mb-4 {{ ($productionCreateReference ?? false) ? 'production-reference-quantity-modal__ingredient' : '' }}" x-show="selectedIngredient">
                     <div class="card-body py-3">
                         <div class="d-flex align-items-center">
-                            <div class="symbol symbol-40px me-3">
-                                <div class="symbol-label bg-primary">
-                                    <i class="ki-duotone ki-package fs-2 text-white">
-                                        <span class="path1"></span>
-                                        <span class="path2"></span>
-                                        <span class="path3"></span>
-                                    </i>
+                            @if($productionCreateReference ?? false)
+                                <span class="production-reference-quantity-modal__icon" aria-hidden="true" x-text="referenceProductEmoji(selectedIngredient?.name)"></span>
+                            @else
+                                <div class="symbol symbol-40px me-3">
+                                    <div class="symbol-label bg-primary">
+                                        <i class="ki-duotone ki-package fs-2 text-white">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                        </i>
+                                    </div>
                                 </div>
-                            </div>
+                            @endif
                             <div>
                                 <div class="fw-bold text-gray-800" x-text="selectedIngredient?.name"></div>
                                 <div class="text-muted fs-7">
@@ -104,7 +153,7 @@
                 </div>
                 
                 <!-- Quantity Input -->
-                <div class="mb-4">
+                <div class="mb-4 {{ ($productionCreateReference ?? false) ? 'production-reference-quantity-modal__quantity' : '' }}">
                     <label class="form-label required">Jumlah yang Digunakan:</label>
                     <div class="input-group">
                         <input type="number" class="form-control form-control-lg" 
@@ -116,7 +165,7 @@
                 </div>
                 
                 <!-- Total Cost Preview -->
-                <div class="card card-flush bg-light-success" x-show="ingredientQuantity > 0">
+                <div class="card card-flush bg-light-success {{ ($productionCreateReference ?? false) ? 'production-reference-quantity-modal__total' : '' }}" x-show="ingredientQuantity > 0">
                     <div class="card-body py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-gray-600">Total Biaya Bahan:</span>

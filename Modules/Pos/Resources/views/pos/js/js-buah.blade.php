@@ -43,6 +43,25 @@
         };
     }
     
+    function posSwitchAddTab(target, from) {
+        const app = Alpine.$data(document.querySelector('[x-data="posApp()"]'));
+        const closers = {buah: 'closeAddModal', parcel: 'closeParcelModal', jus: 'closeJusModal'};
+        const openers = {buah: 'openAddModal', parcel: 'openParcelModal', jus: 'openJusModal'};
+        if (!app || target === from || !closers[from] || !openers[target]) return;
+        if (document.querySelector('.pos-add-page')) {
+            app.switchAddPageTab(target);
+            return;
+        }
+        app[closers[from]]();
+        setTimeout(() => app[openers[target]](), 350);
+    }
+    window.posSwitchAddTab = posSwitchAddTab;
+    window.closePosAddPage = function() {
+        const root = document.querySelector('[x-data="posApp()"]');
+        if (!root || !window.Alpine) return false;
+        return window.Alpine.$data(root).closeAddPage();
+    };
+
     function posApp() {
         return {
             products: [],
@@ -79,6 +98,13 @@
 
             // Add Product
             showAddModal: false,
+            showAddPage: false,
+            activeAddCategory: 'buah',
+            // Reference "tambah item" list (only rendered when the form passes reference => true)
+            productSearch: '',
+            productList: [],
+            productListState: 'idle',
+            productListGuard: null,
             showGiftModal: false,
             showParcelModal: false,
             showJusModal: false,
@@ -938,11 +964,43 @@
             },
 
             // Add Product Section
+            isReferenceAddPage() {
+                return !!document.querySelector('.pos-add-page');
+            },
+            switchAddPageTab(target) {
+                const openers = {buah: 'openAddModal', parcel: 'openParcelModal', jus: 'openJusModal'};
+                if (!this.isReferenceAddPage() || !openers[target] || target === this.activeAddCategory) return;
+                this.activeAddCategory = target;
+                this.showAddPage = true;
+                this[openers[target]]();
+            },
+            closeAddPage() {
+                if (!this.showAddPage) return false;
+                const closers = {buah: 'closeAddModal', parcel: 'closeParcelModal', jus: 'closeJusModal'};
+                const close = closers[this.activeAddCategory];
+                if (!close) return false;
+                this[close]();
+                return true;
+            },
             openAddModal() {
+                if (this.isReferenceAddPage()) {
+                    this.showAddPage = true;
+                    this.activeAddCategory = 'buah';
+                    this.productSearch = '';
+                    this.loadProductList();
+                    return;
+                }
                 this.showAddModal = true;
                 setTimeout(() => {
                     const modal = new bootstrap.Modal(document.getElementById('addModal'));
                     modal.show();
+
+                    // Reference view: a searchable list replaces the select2 dropdown.
+                    if (document.getElementById('pos-product-list')) {
+                        this.productSearch = '';
+                        this.loadProductList();
+                        return;
+                    }
 
                     // Init select2
                     $('#select_product').select2({
@@ -1019,17 +1077,7 @@
                             $('#select_product').val(null).trigger('change');
                             return;
                         }
-                        this.addProduct.id = data.id;
-                        this.addProduct.name = data.text;
-                        this.addProduct.unit = data.unit.abbreviation;
-                        this.addProduct.price = data.price;
-                        this.addProduct.hpp = data.hpp ?? 0;
-                        this.addProduct.stock_available = data.stock_available ?? 0;
-                        this.addProduct.original_stock = data.original_stock ?? 0;
-                        this.addProduct.parent_id = data.parent_id ?? data.id;
-                        subtotal = this.addProduct.qty * this.addProduct.price;
-                        // skip formatRupiah undefined, let updateAddTotalFromQty handle it
-                        this.updateAddTotalFromQty();
+                        this.applyPickedProduct(data);
                     });
                     this.attachListProductPicker({
                         selector: '#select_product',
@@ -1039,9 +1087,65 @@
                     });
                 }, 0);
             },
+            applyPickedProduct(data) {
+                this.addProduct.id = data.id;
+                this.addProduct.name = data.text;
+                this.addProduct.unit = data.unit.abbreviation;
+                this.addProduct.price = data.price;
+                this.addProduct.hpp = data.hpp ?? 0;
+                this.addProduct.stock_available = data.stock_available ?? 0;
+                this.addProduct.original_stock = data.original_stock ?? 0;
+                this.addProduct.parent_id = data.parent_id ?? data.id;
+                subtotal = this.addProduct.qty * this.addProduct.price;
+                // skip formatRupiah undefined, let updateAddTotalFromQty handle it
+                this.updateAddTotalFromQty();
+            },
+            rowStock(row) {
+                return PosAddItem.availableStock(row, typeof this.calculateUsedStock === 'function' ? this.calculateUsedStock(row.id) : 0);
+            },
+            async loadProductList() {
+                this.productListGuard = this.productListGuard || PosAddItem.createRequestGuard();
+                const ticket = this.productListGuard.next();
+                this.productListState = 'loading';
+                try {
+                    const query = PosAddItem.listQuery({term: this.productSearch, branch: $('#branch_id').val()});
+                    const response = await fetch('/ajax/listProduct?' + new URLSearchParams(query), {headers: {Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest'}});
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    const data = await response.json();
+                    if (!this.productListGuard.isCurrent(ticket)) return; // a newer search is already running
+                    window.productStockMap = window.productStockMap || {};
+                    data.forEach(item => {
+                        window.productStockMap[item.id] = item.parent_product ? item.parent_product.parent_id : item.id;
+                    });
+                    this.productList = data.map(PosAddItem.mapProductRow);
+                    this.productListState = 'ready';
+                } catch (error) {
+                    if (!this.productListGuard.isCurrent(ticket)) return;
+                    this.productList = [];
+                    this.productListState = 'error';
+                }
+            },
+            pickProduct(row) {
+                const stock = this.rowStock(row);
+                if (stock <= 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Stok tidak mencukupi',
+                        text: 'Produk ' + row.text + ' tidak memiliki stok yang cukup.',
+                    });
+                    return;
+                }
+                this.applyPickedProduct({...row, stock_available: stock});
+            },
             closeAddModal() {
+                const referenceAddPage = this.isReferenceAddPage();
                 this.showAddModal = false;
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+                if (referenceAddPage) {
+                    this.showAddPage = false;
+                    this.activeAddCategory = 'buah';
+                }
+                this.productSearch = '';
+                const modal = referenceAddPage ? null : bootstrap.Modal.getInstance(document.getElementById('addModal'));
                 if (modal) modal.hide();
                 
                 this.addProduct = {
@@ -2118,15 +2222,24 @@
 
             // Parcel Modal
             openParcelModal() {
-                this.showParcelModal = true;
+                const referenceAddPage = this.isReferenceAddPage();
+                if (referenceAddPage) {
+                    this.showAddPage = true;
+                    this.activeAddCategory = 'parcel';
+                } else {
+                    this.showParcelModal = true;
+                }
                 setTimeout(() => {
                     const jasaEl = document.getElementById('parcel_edit_jasa');
                     if (jasaEl) jasaEl.value = 0;
 
                     const kemasanEl = document.getElementById('kemasan_edit_price');
                     if (kemasanEl) kemasanEl.value = 0;
-                    const modal = new bootstrap.Modal(document.getElementById('parcelModal'));
-                    modal.show();
+                    if (!referenceAddPage) {
+                        const modal = new bootstrap.Modal(document.getElementById('parcelModal'));
+                        modal.show();
+                    }
+                    if ($('#select_kemasan').hasClass('select2-hidden-accessible')) return;
 
                     // Init select2
                     $('#select_kemasan').select2({
@@ -2215,8 +2328,13 @@
                 }, 0);
             },
             closeParcelModal() {
+                const referenceAddPage = this.isReferenceAddPage();
                 this.showParcelModal = false;
-                const modal = bootstrap.Modal.getInstance(document.getElementById('parcelModal'));
+                if (referenceAddPage) {
+                    this.showAddPage = false;
+                    this.activeAddCategory = 'buah';
+                }
+                const modal = referenceAddPage ? null : bootstrap.Modal.getInstance(document.getElementById('parcelModal'));
                 if (modal) modal.hide();
                 
                 let parcelFormNodes = document.querySelectorAll('[x-data="parcelForm()"]');
@@ -2230,9 +2348,12 @@
                     }
                 });
                 
-                document.getElementById('parcel_budget').value = '';
-                document.getElementById('parcel_qty').value = 1;
-                document.getElementById('parcel_jasa').value = '';
+                const budgetInput = document.getElementById('parcel_budget');
+                const quantityInput = document.getElementById('parcel_qty');
+                const serviceFeeInput = document.getElementById('parcel_jasa');
+                if (budgetInput) budgetInput.value = '';
+                if (quantityInput) quantityInput.value = 1;
+                if (serviceFeeInput) serviceFeeInput.value = '';
                 $('#select_kemasan').val(null).trigger('change');
             },
 
@@ -2728,10 +2849,19 @@
 
             // Open Jus
             openJusModal() {
-                this.showJusModal = true;
+                const referenceAddPage = this.isReferenceAddPage();
+                if (referenceAddPage) {
+                    this.showAddPage = true;
+                    this.activeAddCategory = 'jus';
+                } else {
+                    this.showJusModal = true;
+                }
                 setTimeout(() => {
-                    const modal = new bootstrap.Modal(document.getElementById('jusModal'));
-                    modal.show();
+                    if (!referenceAddPage) {
+                        const modal = new bootstrap.Modal(document.getElementById('jusModal'));
+                        modal.show();
+                    }
+                    if ($('#select_jus').hasClass('select2-hidden-accessible')) return;
 
                     // Init select2
                     $('#select_jus').select2({
@@ -3090,8 +3220,13 @@
                 }
             },
             closeJusModal() {
+                const referenceAddPage = this.isReferenceAddPage();
                 this.showJusModal = false;
-                const modal = bootstrap.Modal.getInstance(document.getElementById('jusModal'));
+                if (referenceAddPage) {
+                    this.showAddPage = false;
+                    this.activeAddCategory = 'buah';
+                }
+                const modal = referenceAddPage ? null : bootstrap.Modal.getInstance(document.getElementById('jusModal'));
                 if (modal) modal.hide();
                 
                 this.addProduct = {

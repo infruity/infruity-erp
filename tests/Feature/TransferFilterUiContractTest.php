@@ -21,8 +21,12 @@ final class TransferFilterUiContractTest extends TestCase
             "resetPendingFilter('branch')",
             "resetPendingFilter('status')",
             "resetPendingFilter('date')",
-            'x-model="pending.start"',
-            'x-model="pending.end"',
+            'openFilterCalendar($event.currentTarget)',
+            ':aria-label="\'Dari tanggal: \' + formatFilterDate(pending.start)"',
+            ':aria-label="\'Sampai tanggal: \' + formatFilterDate(pending.end)"',
+            'id="transfer-filter-calendar"',
+            'x-show="!calendarOpen"',
+            'x-show="calendarOpen"',
         ] as $contract) {
             $this->assertStringContainsString($contract, $view);
         }
@@ -38,7 +42,9 @@ final class TransferFilterUiContractTest extends TestCase
     {
         $styles = file_get_contents(base_path('public/assets/css/transfer-mobile.css'));
 
-        $this->assertStringContainsString('.transfer-filter-date-cards { display:grid; grid-template-columns:minmax(0,1fr);', $styles);
+        $this->assertStringContainsString('.transfer-filter-date-cards { display:flex; flex-direction:column;', $styles);
         $this->assertStringContainsString('.transfer-filter-quick-actions button.is-week', $styles);
+        $this->assertStringContainsString('.transfer-filter-calendar-days { display:grid; grid-template-columns:repeat(7', $styles);
+        $this->assertStringContainsString('max-height:128px', $styles);
     }
 }

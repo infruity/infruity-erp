@@ -22,7 +22,7 @@ final class StockOpnameListUiContractTest extends TestCase
         $this->assertStringNotContainsString('<div class="so-card d-flex', $source);
     }
 
-    public function test_tapping_a_row_opens_a_detail_sheet_that_keeps_every_existing_action(): void
+    public function test_tapping_a_row_opens_a_detail_sheet_with_history_and_completion(): void
     {
         $source = $this->source();
 
@@ -39,19 +39,19 @@ final class StockOpnameListUiContractTest extends TestCase
         ] as $action) {
             $this->assertStringContainsString($action, $source, "Aksi hilang: {$action}");
         }
-        foreach (['adjust-up', 'adjust-down', 'finalize', 'history', 'discussion', 'delete', 'edit'] as $action) {
+        foreach (['finalize', 'history'] as $action) {
             $this->assertStringContainsString('data-so-action="' . $action . '"', $source, "Tombol hilang: {$action}");
         }
     }
 
-    public function test_detail_sheet_hides_edit_adjust_and_delete_once_the_record_is_finished(): void
+    public function test_detail_sheet_locks_corrections_and_finalize_once_the_record_is_finished(): void
     {
         $source = $this->source();
 
-        // update / adjust / destroy all answer 422 for a finished record, so the sheet must not offer them.
-        $this->assertStringContainsString("find('.so-detail__adjust').toggleClass('d-none', !info.isPending)", $source);
-        $this->assertStringContainsString("find('[data-so-action=\"edit\"]').toggleClass('d-none', !info.isPending)", $source);
-        $this->assertStringContainsString("find('[data-so-action=\"delete\"]').toggleClass('d-none', !info.isPending)", $source);
+        // update / adjust / finalize answer 422 for a finished record, so the sheet must not offer them.
+        $this->assertStringContainsString("find('[data-so-action=\"finalize\"]').toggleClass('d-none', !info.isPending)", $source);
+        $this->assertStringContainsString("const canCorrect = info.isPending &&", $source);
+        $this->assertStringContainsString(".prop('disabled', !canCorrect)", $source);
     }
 
     public function test_server_endpoints_and_filters_are_unchanged(): void

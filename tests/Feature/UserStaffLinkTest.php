@@ -520,11 +520,12 @@ class UserStaffLinkTest extends TestCase
         $this->assertDatabaseHas('staff', ['id' => 10, 'user_id' => 2]);
     }
 
-    public function test_role_index_lists_all_roles_assigned_to_an_account(): void
+    public function test_account_index_lists_all_roles_assigned_to_an_account(): void
     {
         DB::table('role_user')->insert(['id_user' => 2, 'id_role' => 3]);
 
-        $this->get('/roles')
+        // The account list (not the role list) shows which roles each account holds.
+        $this->get('/user')
             ->assertOk()
             ->assertSee('first@example.test')
             ->assertSee('Operator · User Manager');

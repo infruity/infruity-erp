@@ -72,11 +72,18 @@
         .stock-more { display:flex; justify-content:center; padding:16px 20px 24px; }
         .stock-more button { width:100%; min-height:44px; padding:0 24px; border:2px dashed #e5e7eb; border-radius:12px; background:#fff; color:#6b7280; font-size:14px; font-weight:700; transition:all .15s; }
         .stock-more button:hover { border-color:#34d399; color:#047857; background:#ecfdf5; }
+        #stock-filters > .erp-filter-sheet__header.stock-filter-mobile, #stock-filters > .erp-filter-sheet__footer.stock-filter-mobile { display:none!important; }
+        @media (min-width:768px) { body.erp-ui #stock-filters .erp-filter-sheet__body { padding:8px 0!important; } }
+        @media (max-width:767.98px) {
+            #stock-filters > .erp-filter-sheet__header.stock-filter-mobile { display:flex!important; }
+            #stock-filters > .erp-filter-sheet__footer.stock-filter-mobile { display:grid!important; grid-template-columns:repeat(2,minmax(0,1fr)); }
+        }
         @media (max-width:767.98px) {
             #kt_content { overflow:hidden!important; padding:0!important; }
             #kt_content_container { display:flex; flex:1; flex-direction:column; min-height:0; width:100%; max-width:none; padding:0; }
             .stock-card { border:0; border-radius:0; }
-            .stock-toolbar { padding:12px 16px; }
+            .stock-toolbar { padding:16px; }
+            .stock-search-shell .erp-mobile-search { height:44px; }
             .stock-filters { top:auto; right:0; bottom:0; left:0; width:100%; max-height:85dvh; padding:0; border:0; border-radius:24px 24px 0 0; box-shadow:0 -16px 40px rgba(0,0,0,.2); }
             .stock-filter-mobile { display:block; }
             .stock-filter-desktop { display:none; }
@@ -112,10 +119,11 @@
             .stock-filter-footer button { flex:1; min-height:44px; border:1px solid #e5e7eb; border-radius:12px; padding:10px 12px; background:#fff; color:#4b5563; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; }
             .stock-filter-footer button:last-child { border-color:#0b595b; background:#0b595b; color:#fff; }
             .stock-backdrop { background:rgba(0,0,0,.7); }
-            .stock-row { gap:12px; min-height:67px; padding:13px 20px; }
-            .stock-icon { width:40px; height:40px; font-size:19px; }
-            .stock-name { font-size:15px; }
-            .stock-hpp, .stock-unit { font-size:12px; }
+            .stock-row { gap:12px; min-height:64px; padding:14px 20px; }
+            .stock-icon { width:36px; height:36px; font-size:18px; }
+            .stock-name { font-size:14px; font-weight:600; }
+            .stock-hpp { font-size:12px; font-weight:600; }
+            .stock-unit { font-size:11px; font-weight:400; }
             .stock-balance { min-width:0; font-size:14px; }
             .stock-sku, .stock-dot { display:none; }
             .stock-results { padding-bottom:calc(6rem + env(safe-area-inset-bottom)); }
@@ -141,8 +149,10 @@
             <div id="stock-backdrop" class="stock-backdrop" hidden></div>
             <div id="stock-filters" class="stock-filters" role="dialog" aria-labelledby="stock-filter-title" tabindex="-1" hidden>
                 <button type="button" class="stock-filter-handle stock-filter-mobile" data-stock-filter-close aria-label="Tutup filter"><span aria-hidden="true"></span></button>
-                <div class="stock-filter-header stock-filter-mobile"><h2 id="stock-filter-title">Filter</h2><button type="button" class="stock-filter-close" data-stock-filter-close aria-label="Tutup panel filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
-                <div class="stock-filter-body">
+                <x-erp.filter-sheet-frame title="Filter" title-id="stock-filter-title" header-class="stock-filter-header stock-filter-mobile" body-class="stock-filter-body" footer-class="stock-filter-footer stock-filter-mobile">
+                    <x-slot:close><button type="button" class="stock-filter-close" data-stock-filter-close aria-label="Tutup panel filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
+                    <x-slot:body>
+
                 <section class="stock-filter-section stock-filter-mobile">
                     <label class="stock-filter-heading" for="stock-branch-search">Cabang</label>
                     <div class="stock-branch-picker">
@@ -191,8 +201,12 @@
                     </label>
                 </section>
                 <section class="stock-mobile-status stock-filter-mobile"><label class="stock-filter-heading" for="stock-pending-status">Status Stok</label><select id="stock-pending-status"><option value="all">Semua stok</option><option value="ada">Ada</option><option value="kosong">Kosong atau minus</option></select></section>
-                </div>
-                <div class="stock-filter-footer stock-filter-mobile"><button type="button" data-stock-filter-close>Batal</button><button type="button" id="stock-filter-apply">Terapkan</button></div>
+                    </x-slot:body>
+                    <x-slot:footer>
+                        <button type="button" data-stock-filter-close>Batal</button>
+                        <button type="button" id="stock-filter-apply">Terapkan</button>
+                    </x-slot:footer>
+                </x-erp.filter-sheet-frame>
                 <select id="stock-category" class="stock-hidden-filter" aria-hidden="true" tabindex="-1">
                     <option value="all">Semua kategori</option>
                     @foreach ($category as $item)

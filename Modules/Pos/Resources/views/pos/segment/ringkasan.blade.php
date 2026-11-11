@@ -1,67 +1,43 @@
-<div class="pos-card pos-card--flush">
-<div class="accordion" id="accordionTotal">
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="headingTotal">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                data-bs-target="#collapseTotal" aria-expanded="false" aria-controls="collapseTotal">
-                Rincian Total
-            </button>
-        </h2>
-        <div id="collapseTotal" class="accordion-collapse collapse" aria-labelledby="headingTotal"
-            data-bs-parent="#accordionTotal">
-            <div class="accordion-body">
-                <!-- Subtotal -->
-                <div class="mb-3 d-flex justify-content-between">
-                    <span class="fw-semibold">Subtotal</span>
-                    <span class="text-end">Rp <span x-text="formatRupiah(subtotal)"></span></span>
+<div class="pos-ref-root" x-data="{ sweepOpen: false }" @keydown.escape.window="sweepOpen = false">
+<div class="pos-ref-backdrop" x-show="sweepOpen" x-cloak x-transition.opacity @click="sweepOpen = false"></div>
+<div class="pos-form-footer pos-ref-footer">
+    <div class="pos-form-footer__inner">
+        <button type="button" class="pos-ref-handle" @click="sweepOpen = !sweepOpen" :aria-expanded="sweepOpen" aria-controls="collapseTotal" aria-label="Rincian total"><span></span></button>
+
+        {{-- Lembar ringkasan: diskon nota, ongkos kirim, rincian, lalu catatan, pengiriman dan pengaturan transaksi --}}
+        <div id="collapseTotal" class="pos-ref-sheet" x-show="sweepOpen" x-cloak x-transition>
+            <div class="pos-ref-summary">
+                <div class="pos-ref-summary__inputs">
+                    <label class="pos-ref-money">
+                        <span class="pos-ref-money__title">Diskon Nota</span>
+                        <span class="pos-ref-money__field"><span>Rp</span><input type="text" class="form-control" inputmode="numeric" placeholder="0" :value="diskonGlobal ? formatRupiah(diskonGlobal) : ''" @input="updateDiskonGlobal" @focus="$event.target.select()" aria-describedby="pos-discount-hint"></span>
+                    </label>
+                    <label class="pos-ref-money">
+                        <span class="pos-ref-money__title">Ongkos Kirim</span>
+                        <span class="pos-ref-money__field"><span>Rp</span><input type="text" class="form-control" inputmode="numeric" placeholder="0" :value="ongkirGlobal ? formatRupiah(ongkirGlobal) : ''" @input="updateOngkirGlobal" @focus="$event.target.select()"></span>
+                    </label>
                 </div>
+                <p id="pos-discount-hint" class="pos-ref-hint">Diskon nota: Rp jika lebih dari 100, persen jika 100 atau kurang.</p>
+                <dl class="pos-ref-lines">
+                    <div><dt>Subtotal Item (<span x-text="totalProduk"></span>)</dt><dd>Rp <span x-text="formatRupiah(subtotal)"></span></dd></div>
+                    <div><dt>Diskon Transaksi</dt><dd>Rp <span x-text="formatRupiah((diskonGlobal > 0 && diskonGlobal <= 100) ? subtotal * diskonGlobal / 100 : diskonGlobal)"></span></dd></div>
+                    <div><dt>Ongkos Kirim</dt><dd>+Rp <span x-text="formatRupiah(Math.max(0, (diskonOngkir > 0 && diskonOngkir <= 100) ? ongkirGlobal * (1 - diskonOngkir / 100) : ongkirGlobal - diskonOngkir))"></span></dd></div>
+                </dl>
+            </div>
 
-                <!-- Input Diskon -->
-                <div class="mb-3">
-                    <label class="form-label mb-1">Diskon (Rp jika > 100, % jika ≤ 100)</label>
-                    <input type="text" class="form-control text-end" :value="formatRupiah(diskonGlobal)"
-                        @input="updateDiskonGlobal" @focus="$event.target.select()">
-                </div>
-
-                <!-- Note -->
-                <div x-data="{ showNote: false }" class="mb-3">
-                    <!-- Tombol Toggle -->
-                    <button type="button" class="btn btn-sm" :class="showNote ? 'btn-danger' : 'btn-outline-primary'"
-                        @click="showNote = !showNote">
-                        <template x-if="!showNote">
-                            <span><i class="fa fa-plus"></i> Tambah Catatan</span>
-                        </template>
-                        <template x-if="showNote">
-                            <span><i class="fa fa-times"></i> Sembunyikan Catatan</span>
-                        </template>
-                    </button>
-
-                    <!-- Input Note -->
-                    <div x-show="showNote" x-transition class="mt-2">
-                        <label class="form-label mb-1">Note</label>
-                        <textarea name="note" id="note" cols="30" rows="5" class="form-control"></textarea>
+            <div class="pos-ref-more">
+                <details class="pos-ref-group">
+                    <summary>Catatan</summary>
+                    <div class="pos-ref-group__body">
+                        <label class="form-label" for="note">Note</label>
+                        <textarea name="note" id="note" cols="30" rows="4" class="form-control"></textarea>
                     </div>
-                </div>
-
-                <div x-data="{ showOngkir: false }" class="mb-3">
-                    <!-- Tombol Toggle -->
-                    <button type="button" class="btn btn-sm" :class="showOngkir ? 'btn-danger' : 'btn-outline-primary'"
-                        @click="showOngkir = !showOngkir">
-                        <template x-if="!showOngkir">
-                            <span><i class="fa fa-plus"></i> Tambah Ongkir</span>
-                        </template>
-                        <template x-if="showOngkir">
-                            <span><i class="fa fa-times"></i> Sembunyikan Ongkir</span>
-                        </template>
-                    </button>
-
-                    <!-- Input Note -->
-                    <div x-show="showOngkir" x-transition class="mt-2">
-                        <!-- Input Ongkir -->
+                </details>
+                <details class="pos-ref-group">
+                    <summary>Pengiriman</summary>
+                    <div class="pos-ref-group__body">
                         <div class="mb-3">
                             <label class="form-label mb-1">Alamat Pengiriman</label>
-                            {{-- <textarea name="ongkir_address" id="ongkir_address" cols="30" rows="5" class="form-control"></textarea>
-                            <br> --}}
                             <select class="form-control" name="ongkir_address" id="address_id"></select>
                         </div>
                         <div class="mb-3">
@@ -73,82 +49,64 @@
                         </div>
                         <div class="mb-3 row">
                             <div class="col">
-                                <label class="form-label mb-1">Jadwal</label>
-                                <input type="date" class="form-control" name="ongkir_date" id="ongkir_date"
-                                    value="{{ date('Y-m-d') }}">
+                                <label class="form-label mb-1" for="ongkir_date">Jadwal</label>
+                                <input type="date" class="form-control" name="ongkir_date" id="ongkir_date" value="{{ date('Y-m-d') }}">
                             </div>
                             <div class="col mt-1">
-                                <label class="form-label mb-1"></label>
+                                <label class="form-label mb-1" for="ongkir_time"></label>
                                 <input type="time" class="form-control" name="ongkir_time" id="ongkir_time">
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="mb-3 col">
-                                <label class="form-label mb-1">Biaya Pengiriman</label>
-                                <input type="text" class="form-control text-end" inputmode="numeric"
-                                    :value="formatRupiah(ongkirGlobal)" @input="updateOngkirGlobal" @focus="$event.target.select()">
-                            </div>
-                            <div class="mb-3 col">
-                                <label class="form-label mb-1">Diskon Ongkir</label>
-                                <input type="text" class="form-control text-end" inputmode="numeric"
-                                    :value="formatRupiah(diskonOngkir)" @input="updateDiskonOngkir" @focus="$event.target.select()">
-                            </div>
+                        <div>
+                            <label class="form-label mb-1">Diskon Ongkir</label>
+                            <input type="text" class="form-control text-end" inputmode="numeric" :value="formatRupiah(diskonOngkir)" @input="updateDiskonOngkir" @focus="$event.target.select()">
                         </div>
                     </div>
-                </div>
-
-                {{-- <!-- Total Setelah Diskon -->
-                <div class="pt-2 border-top mt-3 d-flex justify-content-between">
-                    <span class="fw-bold">Total Setelah Diskon</span>
-                    <span class="fw-bold text-end">Rp <span x-text="formatRupiah(totalHargaKeseluruhan)"></span></span>
-                </div> --}}
+                </details>
+                <details class="pos-ref-group">
+                    <summary>Pengaturan Transaksi</summary>
+                    <div class="pos-ref-group__body">
+                        <div class="mb-3">
+                            <label class="form-label" for="branch_process_id">Di Proses oleh</label>
+                            <select class="form-select" id="branch_process_id" name="branch_process_id">
+                                <option value="">Pilih Branch</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="pos_date">Tanggal Transaksi</label>
+                            <input type="date" class="form-control" id="pos_date" name="date" value="{{ date('Y-m-d') }}">
+                        </div>
+                        <div>
+                            <label class="form-label" for="invoice_number">Nomor Faktur</label>
+                            <input type="text" class="form-control" id="invoice_number" name="invoice_number" value="{{ $invoice_number }}" readonly>
+                        </div>
+                    </div>
+                </details>
             </div>
+        </div>
 
+        <div class="pos-ref-total">
+            <div class="pos-ref-total__label">Total Belanja <span>(<span x-text="totalProduk"></span>)</span></div>
+            <div class="pos-ref-total__amount">Rp <span x-text="formatRupiah(totalHargaKeseluruhan)"></span></div>
+        </div>
+        <div class="pos-ref-actions">
+            <a href="{{ route('pos.index') }}" class="pos-ref-icon" aria-label="Kembali ke daftar transaksi" title="Kembali"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a>
+            <div x-data="{ loading: false }">
+                <button type="button" class="pos-ref-icon" @click="loading = true; saveTransaction(() => loading = false)" :disabled="loading" aria-label="Simpan sebagai draf" title="Simpan draf">
+                    <i class="ph-bold ph-bookmark-simple" x-show="!loading" aria-hidden="true"></i>
+                    <span class="spinner-border spinner-border-sm" x-show="loading" x-cloak role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+            <div class="pos-ref-pay" x-data="{ loading: false }">
+                <button type="button" class="pos-ref-pay__btn" @click="loading = true; goToPayment(() => loading = false)" :disabled="loading || cart.length === 0">
+                    <span x-show="!loading">Bayar</span>
+                    <span x-show="loading" x-cloak><span class="spinner-border spinner-border-sm align-middle me-2" aria-hidden="true"></span>Memproses...</span>
+                </button>
+            </div>
         </div>
     </div>
-</div>
-
-</div>
-
-<div class="pos-form-footer"><div class="pos-form-footer__inner">
-    <div class="d-flex justify-content-between">
-        <div>
-            <span>Total</span> <span x-text="totalProduk"></span><span> Item</span>
-        </div>
-        <div class="fw-bold">
-            <span>Rp</span>
-            <span x-text="formatRupiah(totalHargaKeseluruhan)"></span>
-        </div>
-    </div>
-    <div class="row mt-3 gap-2">
-        <div class="col" x-data="{ loading: false }">
-            <button class="btn btn-primary w-100" @click="loading = true; saveTransaction(() => loading = false)"
-                :disabled="loading">
-                <template x-if="!loading">
-                    <span><i class="bi bi-save me-2"></i> Simpan</span>
-                </template>
-                <template x-if="loading">
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                </template>
-            </button>
-        </div>
-        <div class="col" x-data="{ loading: false }">
-            <button class="btn btn-success w-100" @click="loading = true; goToPayment(() => loading = false)"
-                :disabled="loading">
-                <template x-if="!loading">
-                    <span><i class="bi bi-cash-stack me-2"></i> Bayar</span>
-                </template>
-                <template x-if="loading">
-                    <span>
-                        <span class="spinner-border spinner-border-sm align-middle me-2"></span>
-                        Memproses...
-                    </span>
-                </template>
-            </button>
-        </div>
-    </div>
-</div>
 </div><!-- /pos-form-footer -->
+</div><!-- /pos-ref-root -->
 
 <!-- Modal Tambah Alamat -->
 <div class="modal fade" id="modal_tambah_alamat" tabindex="-1" aria-labelledby="modalTambahAlamatLabel"

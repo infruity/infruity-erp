@@ -141,6 +141,9 @@ class ArusKasUiContractTest extends TestCase
         $mobileAction = file_get_contents(app_path('Support/ErpMobileAction.php'));
 
         $this->assertStringContainsString("route('arus-kas.index')", $sidebar);
+        $this->assertStringNotContainsString("route('other-book')", $sidebar);
+        $this->assertStringNotContainsString("route('expenditure.index')", $sidebar);
+        $this->assertStringNotContainsString("request()->routeIs('arus-kas.*', 'other-book', 'expenditure.*')", $sidebar);
         $this->assertStringContainsString('arus-kas.index', $mobileAction);
         $this->assertStringContainsString('arus-kas.create', $mobileAction);
     }

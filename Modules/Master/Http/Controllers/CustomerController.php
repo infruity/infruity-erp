@@ -2,6 +2,7 @@
 
 namespace Modules\Master\Http\Controllers;
 
+use App\Support\Like;
 use Exception;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -44,10 +45,10 @@ class CustomerController extends Controller
             ->select('id', 'name', 'code', 'whatsapp', 'email', 'address', 'gender', 'birth_of_date')
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('code', 'like', "%{$search}%")
-                        ->orWhere('whatsapp', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
+                    $query->where('name', 'like', Like::contains($search))
+                        ->orWhere('code', 'like', Like::contains($search))
+                        ->orWhere('whatsapp', 'like', Like::contains($search))
+                        ->orWhere('email', 'like', Like::contains($search));
                 });
             })
             ->orderByDesc('id')
@@ -435,7 +436,7 @@ class CustomerController extends Controller
         if (!empty($searchValue)) {
             $searchValue = trim($searchValue);
             if ($searchValue !== '') {
-                $query->where('name', 'like', '%' . $searchValue . '%');
+                $query->where('name', 'like', Like::contains($searchValue));
             }
         }
 
@@ -519,7 +520,7 @@ class CustomerController extends Controller
         $customer = Customer::when($search !== '' || !empty($phoneKeywords), function ($query) use ($search, $phoneKeywords) {
             $query->where(function ($q) use ($search, $phoneKeywords) {
                 if ($search !== '') {
-                    $q->where('customer.name', 'like', '%' . $search . '%');
+                    $q->where('customer.name', 'like', Like::contains($search));
                 }
 
                 foreach ($phoneKeywords as $keyword) {

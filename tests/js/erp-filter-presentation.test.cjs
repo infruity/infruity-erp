@@ -44,14 +44,18 @@ test('filter presentation uses explicit shared role sizes without changing the a
     assert.ok(fs.existsSync(asset), 'Shared scoped filter presentation is missing');
     const css = fs.readFileSync(asset, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
     for (const [name, value] of Object.entries({
-        'title-size': '18px', 'label-size': '12px', 'body-size': '12px',
-        'search-size': '16px', 'action-size': '14px', 'action-height': '44px',
+        'title-size': '16px', 'label-size': '10px', 'body-size': '16px',
+        'search-size': '16px', 'control-size': '16px', 'option-size': '12px',
+        'date-size': '12px', 'action-size': '12px', 'action-height': '44px',
     })) {
         assert.match(css, new RegExp(`--erp-filter-${name}:\\s*${value}`));
     }
     for (const selector of ['.arus-kas-filter-sheet', '#order-book-filter-sheet', '#delivery-order-mobile-filter-sheet']) {
         assert.ok(css.includes(selector), `Missing core family ${selector}`);
     }
+    assert.equal((css.match(/font-size:var\(--erp-filter-option-size\)/g) || []).length, 4);
+    assert.match(css, /font-size:var\(--erp-filter-date-size\) !important/);
+    assert.match(css, /@media\s*\(min-width:\s*640px\)[\s\S]*?--erp-filter-action-size:14px/);
     assert.doesNotMatch(css, /(?:^|})\s*(?:html|:root|body)\s*\{/m, 'Do not compensate by changing the global root');
     assert.doesNotMatch(css, /(?:^|})\s*(?:input|button|select|h2|h3)\s*\{/m, 'Do not leak presentation into unrelated forms');
     assert.doesNotMatch(css, /(?:^|[;{])\s*(?:height|min-height):\s*(?:88|96|100)(?:d?vh)/, 'No forced full-height filter sheets');

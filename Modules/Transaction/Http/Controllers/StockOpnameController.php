@@ -2,6 +2,7 @@
 
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\Like;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -23,6 +24,37 @@ class StockOpnameController extends Controller
     private function allowedOpname($id): StockOpname
     {
         return StockOpname::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
+    }
+
+    /**
+     * A decimal column value as exact thousandths. Parsing the string avoids binary float noise,
+     * which is what makes half-cent ties like 12.35 - 12.345 land on the wrong side of zero.
+     * A fourth decimal rounds away from zero, so this matches SQL ROUND(value * 1000) exactly.
+     */
+    private static function thousandths($value): int
+    {
+        $text = trim((string) $value);
+        $negative = str_starts_with($text, '-');
+        [$whole, $fraction] = array_pad(explode('.', ltrim($text, '+-'), 2), 2, '');
+        $fraction = str_pad($fraction, 4, '0');
+        $amount = (int) $whole * 1000 + (int) substr($fraction, 0, 3);
+        if ((int) $fraction[3] >= 5) {
+            $amount++;
+        }
+
+        return $negative ? -$amount : $amount;
+    }
+
+    /**
+     * (real - system) rounded to 2 decimals, matching MySQL ROUND on DECIMAL: half away from zero.
+     * The result filter compares this same value, so the list never shows a row in another bucket.
+     */
+    private static function difference($realStock, $systemStock): float
+    {
+        $thousandths = self::thousandths($realStock) - self::thousandths($systemStock);
+        $hundredths = intdiv(abs($thousandths) + 5, 10);
+
+        return ($thousandths < 0 ? -$hundredths : $hundredths) / 100;
     }
 
     /**
@@ -356,6 +388,10 @@ class StockOpnameController extends Controller
     public function get_data(Request $request)
     {
         $this->authorizeAccess('stock-opname.index');
+        $request->validate([
+            'status_filter' => ['nullable', 'in:all,draft,selesai'],
+            'result_filter' => ['nullable', 'in:all,lebih,kurang,sesuai'],
+        ]);
         $userBranches = UserBranch::getUserBranch();
         $query = StockOpname::with('product.unit')
             ->leftJoin('users', 'stock_opname.created_by', '=', 'users.id_user')
@@ -383,6 +419,31 @@ class StockOpnameController extends Controller
             $query->whereDate('stock_opname.date', '<=', $request->end_date);
         }
 
+        // "Draf" is the pending status; the label the list renders is the same one filtered here.
+        if ($request->filled('status_filter') && $request->status_filter !== 'all') {
+            $query->where('stock_opname.status', $request->status_filter === 'draft' ? 'pending' : 'selesai');
+        }
+
+        // The row's difference uses live stock while pending and the recorded stock once finalized.
+        // Filter on that same expression so a filtered list never contradicts the numbers it shows.
+        $resultFilter = $request->input('result_filter', 'all');
+        if (in_array($resultFilter, ['lebih', 'kurang', 'sesuai'], true)) {
+            $query->leftJoin('product_stock as so_live_stock', function ($join) {
+                $join->on('so_live_stock.id', '=', 'stock_opname.product_id')
+                    ->on('so_live_stock.branch_id', '=', 'stock_opname.branch_id');
+            });
+
+            $systemStock = "CASE WHEN stock_opname.status = 'pending' THEN COALESCE(so_live_stock.stock_available, 0) ELSE stock_opname.stock END";
+            // Compare in exact thousandths, exactly like self::difference(): rounding the plain
+            // subtraction is ambiguous at half-cent ties, where SQL and binary floats disagree.
+            $gap = "ROUND(stock_opname.real_stock * 1000) - ROUND(({$systemStock}) * 1000)";
+            $query->whereRaw(match ($resultFilter) {
+                'lebih' => "{$gap} >= 5",
+                'kurang' => "{$gap} <= -5",
+                'sesuai' => "{$gap} BETWEEN -4 AND 4",
+            });
+        }
+
         $query->orderBy('stock_opname.created_at', 'desc');
 
         $response = DataTables::of($query)
@@ -390,10 +451,10 @@ class StockOpnameController extends Controller
                 if ($request->has('search') && !empty($request->search['value'])) {
                     $search = $request->search['value'];
                     $q->where(function ($sub) use ($search) {
-                        $sub->where('stock_opname.code', 'like', "%{$search}%")
-                            ->orWhere('products.name', 'like', "%{$search}%")
-                            ->orWhere('users.nm_user', 'like', "%{$search}%")
-                            ->orWhere('branch.name', 'like', "%{$search}%");
+                        $sub->where('stock_opname.code', 'like', Like::contains($search))
+                            ->orWhere('products.name', 'like', Like::contains($search))
+                            ->orWhere('users.nm_user', 'like', Like::contains($search))
+                            ->orWhere('branch.name', 'like', Like::contains($search));
                     });
                 }
             })
@@ -420,6 +481,12 @@ class StockOpnameController extends Controller
                 $stock = $byKey[$row['product_id'] . '|' . $row['branch_id']] ?? null;
                 $rows[$i]['avg_hpp_calc'] = $stock?->getRawOriginal('avg_hpp');
                 $rows[$i]['live_stock'] = $stock?->getRawOriginal('stock_available');
+                // One rounding authority: the list renders this difference and the result filter
+                // compares the same expression, so a row cannot land in a bucket it contradicts.
+                $systemStock = $row['status'] === 'pending'
+                    ? ($stock?->getRawOriginal('stock_available') ?? 0)
+                    : $row['stock'];
+                $rows[$i]['display_difference'] = self::difference($row['real_stock'], $systemStock);
             }
             $payload['data'] = $rows;
         }
