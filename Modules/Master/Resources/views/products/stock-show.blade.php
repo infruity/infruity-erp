@@ -180,6 +180,9 @@
             .stock-detail-history-value:last-child { width:64px; }
             .stock-detail-load-more { padding:12px 16px 18px; }
             .stock-mobile-list { padding:0 16px; }
+            .stock-detail-scroll:has(.stock-detail-history-row:nth-child(6)):has(#stock-detail-load-more[hidden]) { display:flex; flex-direction:column; }
+            .stock-detail-scroll:has(.stock-detail-history-row:nth-child(6)):has(#stock-detail-load-more[hidden]) .stock-mobile-list { display:flex; flex:1 0 auto; flex-direction:column; }
+            .stock-detail-scroll:has(.stock-detail-history-row:nth-child(6)):has(#stock-detail-load-more[hidden]) .stock-mobile-list > .stock-detail-history-row { flex:1 0 auto; }
             .stock-mobile-row { padding:15px 20px; border-bottom:1px solid #f1f3f5; background:#fff; }
             .stock-mobile-row:active, .stock-mobile-row:focus-within { background:#f0fdf4; }
             .stock-mobile-row__top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
