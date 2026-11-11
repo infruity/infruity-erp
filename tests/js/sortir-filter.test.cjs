@@ -81,89 +81,104 @@ test('filter date card has a placeholder and formats selected dates in Indonesia
     assert.match(value.formatFilterDate('2026-11-04'), /2026/);
 });
 
-test('opening the full date card selects an inline calendar and updates only its pending date', () => {
+test('opening either date card opens the selected calendar month without changing the draft range', () => {
     const value = app();
-    value.filters = {status:'all', branch:'all', start:'2026-11-01', end:'2026-11-15'};
+    value.filters = {status:'all', branch:'all', start:'2026-11-01', end:'2026-12-15'};
     value.openFilter();
 
-    value.openFilterCalendar('end');
+    value.openFilterCalendar({id:'sortir-date-end'});
+
     assert.equal(value.calendarOpen, true);
-    assert.equal(value.filterCalendarSide, 'end');
-    value.selectFilterCalendarDate('2026-11-06');
-
+    assert.equal(value.calendarView, 'date');
+    assert.equal(value.calendarMonth, 11);
+    assert.equal(value.calendarYear, 2026);
+    assert.equal(value.filterCalendarTrigger.id, 'sortir-date-end');
     assert.equal(value.pending.start, '2026-11-01');
-    assert.equal(value.pending.end, '2026-11-06');
-    assert.equal(value.calendarOpen, false);
-    assert.deepEqual(value.filters, {status:'all', branch:'all', start:'2026-11-01', end:'2026-11-15'});
-    assert.equal(value.loadCount || 0, 0);
+    assert.equal(value.pending.end, '2026-12-15');
+    assert.deepEqual(value.filters, {status:'all', branch:'all', start:'2026-11-01', end:'2026-12-15'});
 });
 
-test('returning from the inline calendar preserves pending dates', () => {
+test('calendar range selection sorts endpoints and keeps changes pending until Apply', () => {
     const value = app();
-    value.pending.start = '2026-11-03';
-    value.openFilterCalendar('start');
+    value.filters = {status:'all', branch:'all', start:'', end:''};
+    value.pending = {...value.filters};
+    value.calendarMonth = 10;
+    value.calendarYear = 2026;
+    value.calendarOpen = true;
 
-    value.closeFilterCalendar();
-
-    assert.equal(value.calendarOpen, false);
-    assert.equal(value.pending.start, '2026-11-03');
+    value.selectFilterCalendarDate(20);
+    assert.equal(value.pending.start, '2026-11-20');
     assert.equal(value.pending.end, '');
+    value.selectFilterCalendarDate(11);
+    assert.equal(value.pending.start, '2026-11-11');
+    assert.equal(value.pending.end, '2026-11-20');
+    assert.equal(value.isFilterCalendarDateInRange(15), true);
+    assert.equal(value.isFilterCalendarDateSelected(11), true);
+    assert.equal(value.isFilterCalendarDateSelected(20), true);
+    assert.equal(value.calendarOpen, true);
+    assert.deepEqual(value.filters, {status:'all', branch:'all', start:'', end:''});
+    assert.equal(value.loadCount || 0, 0);
+
+    value.applyFilter();
+    assert.deepEqual(value.filters, {status:'all', branch:'all', start:'2026-11-11', end:'2026-11-20'});
+    assert.equal(value.loadCount, 1);
+    assert.equal(value.calendarOpen, false);
+
+    value.openFilter();
+    value.openFilterCalendar({id:'sortir-date-start'});
+    value.selectFilterCalendarDate(24);
+    assert.equal(value.pending.start, '2026-11-24');
+    assert.equal(value.pending.end, '');
+    assert.deepEqual(value.filters, {status:'all', branch:'all', start:'2026-11-11', end:'2026-11-20'});
 });
 
-test('inline calendar uses the pending value and enforces the end-date minimum', () => {
-    const previous = {
-        document: global.document,
-        flatpickr: global.flatpickr,
-        requestAnimationFrame: global.requestAnimationFrame,
-        hadDocument: Object.prototype.hasOwnProperty.call(global, 'document'),
-        hadFlatpickr: Object.prototype.hasOwnProperty.call(global, 'flatpickr'),
-        hadAnimationFrame: Object.prototype.hasOwnProperty.call(global, 'requestAnimationFrame'),
-    };
+test('calendar navigation spans month/year boundaries and supports month/year selection', () => {
+    const value = app();
+    value.calendarMonth = 0;
+    value.calendarYear = 2027;
+    assert.equal(value.filterCalendarHeading, 'Januari 2027');
+
+    value.moveFilterCalendar(-1);
+    assert.equal(value.calendarMonth, 11);
+    assert.equal(value.calendarYear, 2026);
+    assert.equal(Array.from(value.filterCalendarDays).length, 31);
+    assert.equal(Array.from(value.filterCalendarBlankDays).length, 2);
+
+    value.calendarView = 'year';
+    value.chooseFilterCalendarYear(2028);
+    assert.equal(value.calendarView, 'month');
+    assert.equal(value.calendarYear, 2028);
+    value.chooseFilterCalendarMonth(1);
+    assert.equal(value.calendarView, 'date');
+    assert.equal(value.calendarMonth, 1);
+});
+
+test('returning from the calendar preserves pending dates and restores its trigger', () => {
+    const value = app();
     const calls = {focused:[]};
-    const elements = Object.fromEntries(['sortir-draft-calendar', 'sortir-calendar-host', 'sortir-filter-calendar-back', 'sortir-date-end'].map(id => [id, {
-        id,
-        getClientRects: () => [{}],
-        focus: () => calls.focused.push(id),
-        scrollIntoView: () => {},
-    }]));
+    const trigger = {id:'sortir-date-start', getClientRects:() => [{}], focus:() => calls.focused.push('trigger'), scrollIntoView:() => {}};
+    const hadAnimationFrame = Object.prototype.hasOwnProperty.call(global, 'requestAnimationFrame');
+    const previousAnimationFrame = global.requestAnimationFrame;
 
     try {
-        global.document = {getElementById: id => elements[id] || null};
         global.requestAnimationFrame = callback => callback();
-        global.flatpickr = (input, options) => {
-            calls.input = input;
-            calls.options = options;
-            return {
-                set: (name, value) => { calls[name] = value; },
-                setDate: (value, trigger) => { calls.date = value; calls.trigger = trigger; },
-            };
-        };
-
-        const value = app();
         value.$nextTick = callback => callback();
-        value.pending.start = '2026-11-02';
-        value.pending.end = '2026-11-08';
-        value.openFilterCalendar('end');
+        value.$refs = {filterCalendarBack:{getClientRects:() => [{}], focus:() => calls.focused.push('back'), scrollIntoView:() => {}}};
+        value.pending.start = '2026-11-03';
+        value.filterCalendarTrigger = trigger;
+        value.openFilterCalendar(trigger);
+        value.closeFilterCalendar();
 
-        assert.equal(calls.options.inline, true);
-        assert.equal(calls.options.disableMobile, true);
-        assert.equal(calls.options.dateFormat, 'Y-m-d');
-        assert.equal(calls.options.appendTo, elements['sortir-calendar-host']);
-        assert.equal(calls.minDate, '2026-11-02');
-        assert.equal(calls.date, '2026-11-08');
-        assert.equal(calls.trigger, false);
-        assert.deepEqual(calls.focused, ['sortir-filter-calendar-back']);
-
-        calls.options.onChange([], '2026-11-06');
-        assert.equal(value.pending.end, '2026-11-06');
         assert.equal(value.calendarOpen, false);
-        assert.deepEqual(calls.focused, ['sortir-filter-calendar-back', 'sortir-date-end']);
+        assert.equal(value.pending.start, '2026-11-03');
+        assert.equal(value.pending.end, '');
+        assert.deepEqual(calls.focused, ['back', 'trigger']);
     } finally {
-        if (previous.hadDocument) global.document = previous.document; else delete global.document;
-        if (previous.hadFlatpickr) global.flatpickr = previous.flatpickr; else delete global.flatpickr;
-        if (previous.hadAnimationFrame) global.requestAnimationFrame = previous.requestAnimationFrame; else delete global.requestAnimationFrame;
+        if (hadAnimationFrame) global.requestAnimationFrame = previousAnimationFrame;
+        else delete global.requestAnimationFrame;
     }
 });
+
 
 test('quick presets use the Laravel timezone when browser timezone differs', () => {
     const value = app();
