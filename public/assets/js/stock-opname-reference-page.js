@@ -80,8 +80,13 @@ function initStockOpnameReference() {
         if (event.target.closest('[data-so-calendar-toggle]')) { calendar.toggleView(); renderCalendar(); return; }
         const day=event.target.closest('[data-so-calendar-day]');
         if (day) {
-            ui.selectFilterDate(draft,dateSide,day.dataset.soCalendarDay);
-            syncDates(); showCalendar(false); return;
+            const date=day.dataset.soCalendarDay;
+            ui.selectFilterRangeDate(draft,date);
+            syncDates(); renderCalendar();
+            const selected=calendarHost.querySelector(`[data-so-calendar-day="${date}"]`);
+            if (selected?.getClientRects().length) selected.focus({preventScroll:true});
+            selected?.scrollIntoView({block:'nearest'});
+            return;
         }
         const month=event.target.closest('[data-so-calendar-month]');
         if (month) { calendar.chooseMonth(month.dataset.soCalendarMonth); renderCalendar(); calendarHeading.focus({preventScroll:true}); return; }

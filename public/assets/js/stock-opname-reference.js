@@ -116,13 +116,20 @@
             chooseMonth(value) { const selected=Number(value); if (!Number.isInteger(selected) || selected<0 || selected>11) return; month=selected; view='date'; }
         };
     }
-    function selectFilterDate(draft, side, value) {
-        if (!['start','end'].includes(side) || !/^(\d{4})-(\d{2})-(\d{2})$/.test(String(value || ''))) return draft;
-        draft[side]=value;
-        if (side==='end' && !draft.start) draft.start=value;
-        if (draft.start && draft.end && draft.start>draft.end) {
-            if (side==='start') draft.end=value;
-            else draft.start=value;
+    function selectFilterRangeDate(draft, value) {
+        const text = String(value ?? '');
+        const fields = text.split('-').map(Number);
+        if (fields.length !== 3 || fields.some(field => !Number.isInteger(field))) return draft;
+        const date = new Date(Date.UTC(fields[0], fields[1] - 1, fields[2]));
+        if (date.toISOString().slice(0, 10) !== text) return draft;
+        if (!draft.start || draft.end) {
+            draft.start = text;
+            draft.end = '';
+        } else if (text < draft.start) {
+            draft.end = draft.start;
+            draft.start = text;
+        } else {
+            draft.end = text;
         }
         return draft;
     }
@@ -144,5 +151,5 @@
             result_filter:draft.result
         };
     }
-    return {parseQuantity,quantity,history,filterHistory,correction,formatLongDateTime,period,filterCalendar,selectFilterDate,filterDraft,filterRequest};
+    return {parseQuantity,quantity,history,filterHistory,correction,formatLongDateTime,period,filterCalendar,selectFilterRangeDate,filterDraft,filterRequest};
 });

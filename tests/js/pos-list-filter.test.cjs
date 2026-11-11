@@ -45,22 +45,42 @@ test('calendar supports month and year navigation and month selection', () => {
     assert.equal(state.calendarView, 'month');
 });
 
-test('selecting a POS date preserves endpoint semantics and invalid-range validation', () => {
+test('POS date period uses the reference two-click ordered range and stays pending until Apply', () => {
     const state = filters();
     state.draft.start = '2026-11-10';
     state.draft.end = '2026-11-20';
     state.applied = {...state.draft};
     state.openCalendar('end', null, now);
 
-    const day = state.calendarDays.find(item => item && item.date === '2026-11-05');
-    assert.ok(day);
-    state.selectCalendarDate(day);
+    const first = state.calendarDays.find(item => item && item.date === '2026-11-05');
+    assert.ok(first);
+    state.selectCalendarDate(first);
+    assert.equal(state.draft.start, '2026-11-05');
+    assert.equal(state.draft.end, '');
+    assert.equal(state.calendarOpen, true);
 
-    assert.equal(state.draft.start, '2026-11-10');
-    assert.equal(state.draft.end, '2026-11-05');
-    assert.equal(state.dateError, 'Tanggal akhir harus sama atau setelah tanggal mulai.');
-    assert.equal(state.calendarOpen, false);
+    const second = state.calendarDays.find(item => item && item.date === '2026-11-10');
+    assert.ok(second);
+    state.selectCalendarDate(second);
+    assert.equal(state.draft.start, '2026-11-05');
+    assert.equal(state.draft.end, '2026-11-10');
+    assert.equal(state.dateError, '');
+    assert.equal(state.calendarOpen, true);
     assert.deepEqual(state.applied, {status:'all', branch:'all', start:'2026-11-10', end:'2026-11-20'});
+});
+
+test('POS date period sorts reverse clicks exactly like the transfer reference', () => {
+    const state = filters();
+    state.openCalendar('start', null, now);
+    const later = state.calendarDays.find(item => item && item.date === '2026-11-20');
+    state.selectCalendarDate(later);
+    const earlier = state.calendarDays.find(item => item && item.date === '2026-11-11');
+    state.selectCalendarDate(earlier);
+    assert.equal(state.draft.start, '2026-11-11');
+    assert.equal(state.draft.end, '2026-11-20');
+    assert.equal(state.isCalendarDateInRange('2026-11-15'), true);
+    assert.equal(state.isCalendarDateSelected('2026-11-11'), true);
+    assert.equal(state.isCalendarDateSelected('2026-11-20'), true);
 });
 
 test('POS calendar matches the transfer date grid order and weekday labels', () => {
@@ -72,18 +92,18 @@ test('POS calendar matches the transfer date grid order and weekday labels', () 
     assert.equal(state.calendarDays[0].day, 1);
 });
 
-test('POS calendar marks the active endpoint and shades only a valid pending range', () => {
+test('POS calendar marks both ordered range endpoints and shades only interior dates', () => {
     const state = filters();
     state.draft.start = '2026-11-11';
     state.draft.end = '2026-11-20';
     state.openCalendar('start', null, now);
 
     assert.equal(state.isCalendarDateSelected('2026-11-11'), true);
-    assert.equal(state.isCalendarDateSelected('2026-11-20'), false);
+    assert.equal(state.isCalendarDateSelected('2026-11-20'), true);
     assert.equal(state.isCalendarDateInRange('2026-11-15'), true);
     assert.equal(state.isCalendarDateInRange('2026-11-11'), false);
     state.openCalendar('end', null, now);
-    assert.equal(state.isCalendarDateSelected('2026-11-11'), false);
+    assert.equal(state.isCalendarDateSelected('2026-11-11'), true);
     assert.equal(state.isCalendarDateSelected('2026-11-20'), true);
 });
 

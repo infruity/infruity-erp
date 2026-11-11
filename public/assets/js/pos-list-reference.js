@@ -215,11 +215,18 @@
             selectCalendarDate(day) {
                 const value = day && typeof day === 'object' ? day.date : '';
                 if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return;
-                this.draft[this.calendarSide] = value;
-                this.closeCalendar();
+                if (!this.draft.start || this.draft.end) {
+                    this.draft.start = value;
+                    this.draft.end = '';
+                } else if (value < this.draft.start) {
+                    this.draft.end = this.draft.start;
+                    this.draft.start = value;
+                } else {
+                    this.draft.end = value;
+                }
             },
             isCalendarDateSelected(value) {
-                return !!value && value === this.draft[this.calendarSide];
+                return !!value && (value === this.draft.start || value === this.draft.end);
             },
             isCalendarDateInRange(value) {
                 const {start, end} = this.draft;

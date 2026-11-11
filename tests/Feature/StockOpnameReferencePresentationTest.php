@@ -44,8 +44,8 @@ final class StockOpnameReferencePresentationTest extends TestCase
         $this->assertStringNotContainsString('so-draft-calendar', $source);
         $this->assertStringContainsString('calendar.open(draft[dateSide]', $script);
         $this->assertStringContainsString('data-so-calendar-day', $script);
-        $this->assertStringContainsString('ui.selectFilterDate(draft,dateSide,day.dataset.soCalendarDay)', $script);
-        $this->assertStringContainsString('syncDates(); showCalendar(false)', $script);
+        $this->assertStringContainsString('ui.selectFilterRangeDate(draft,date)', $script);
+        $this->assertStringContainsString('syncDates(); renderCalendar()', $script);
         $this->assertStringContainsString('#so-calendar-host .so-calendar-card', $styles);
         $this->assertStringContainsString('#so-calendar-host .so-calendar-day button.is-selected', $styles);
         $this->assertStringContainsString('#so-calendar-host .so-calendar-day button.is-in-range', $styles);
