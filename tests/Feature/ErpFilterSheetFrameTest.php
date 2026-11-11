@@ -55,7 +55,7 @@ class ErpFilterSheetFrameTest extends TestCase
     {
         $contracts = [
             'Modules/Pos/Resources/views/order-book/index.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
-            'Modules/Pos/Resources/views/delivery-order/index.blade.php' => ['data-delivery-order-filter-apply', 'data-delivery-order-filter-reset'],
+            'Modules/Pos/Resources/views/delivery-order/index.blade.php' => ['applySheetFilters(', '<x-erp.filter-sheet'],
             'Modules/Pos/Resources/views/pos/index2.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
             'Modules/Pos/Resources/views/arus-kas/index.blade.php' => ['applyMobileFilters(', '<x-erp.filter-sheet'],
             'Modules/Transaction/Resources/views/wholesale/index.blade.php' => ['applyWholesaleMobileFilters(', 'data-wholesale-filter-reset', '<x-erp.filter-sheet'],
@@ -78,7 +78,6 @@ class ErpFilterSheetFrameTest extends TestCase
     {
         $views = [
             'resources/views/components/erp/filter-sheet.blade.php',
-            'Modules/Pos/Resources/views/delivery-order/index.blade.php',
             'resources/views/components/erp/filter-sheet.blade.php',
             'Modules/Report/Resources/views/partials/mobile-detail.blade.php',
             'Modules/Master/Resources/views/products/stock.blade.php',

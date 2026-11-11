@@ -125,24 +125,26 @@ class DeliveryOrderListTest extends TestCase
         $this->assertStringContainsString('class="erp-mobile-search__input"', $html);
         $this->assertStringContainsString('data-delivery-order-mobile-search-clear', $html);
         $this->assertStringContainsString('class="erp-mobile-search__filter"', $html);
-        $this->assertStringContainsString('id="delivery-order-mobile-filter-sheet"', $html);
+        // The phone filter is the shared sheet: status penerimaan is its status group, pembayaran an extra group.
+        $this->assertStringContainsString('id="delivery-order-filter-sheet"', $html);
         $this->assertStringContainsString('role="dialog" aria-modal="true"', $html);
         $this->assertStringContainsString('bg-black/70', $html);
         $this->assertStringContainsString('placeholder="Cari cabang..."', $html);
-        $this->assertStringContainsString('name="delivery-order-mobile-branch"', $html);
-        $this->assertStringContainsString('value="1" data-delivery-order-mobile-branch', $html);
-        $this->assertStringNotContainsString('value="all" data-delivery-order-mobile-branch', $html);
         $this->assertStringContainsString('Terapkan', $html);
+        $this->assertStringContainsString('Belum Lunas', $html);
+        $this->assertStringContainsString('Minggu Ini', $html);
+        $this->assertStringContainsString('Hari Ini', $html);
+        // A single-branch user has no "Semua Cabang" row and keeps their branch as the default.
+        $this->assertStringNotContainsString('data-delivery-order-mobile-branch="all"', $html);
+        $this->assertStringContainsString('\\u0022showBranchAll\\u0022:false', $html);
+        $this->assertStringContainsString('\\u0022defaultBranch\\u0022:\\u00221\\u0022', $html);
+        $this->assertStringContainsString("new CustomEvent('erp-filter-open', { detail: { id: 'delivery-order'", $html);
+        $this->assertStringContainsString("window.addEventListener('erp-filter-apply'", $html);
         $this->assertStringContainsString('searchDebounce.cancel();', $html);
-        $this->assertStringContainsString('bindDesktopDismissal(', $html);
-        $this->assertStringContainsString("window.addEventListener('resize', dismissMobileFilterForDesktop)", $html);
-        $this->assertStringContainsString('focusTarget: mobileViewport.matches ? $mobileFilterTrigger[0] : $desktopFilterTrigger[0]', $html);
-        $this->assertStringContainsString('filterSheetClosing = true;', $html);
-        $this->assertSame(2, substr_count($html, "if (\$filterSheet.prop('hidden') || filterSheetClosing) return;"));
-        $this->assertStringContainsString('data-delivery-date="start"', $html);
-        $this->assertStringContainsString('data-delivery-date="end"', $html);
-        $this->assertStringContainsString('data-delivery-date-preset="week"', $html);
-        $this->assertStringContainsString('data-delivery-date-preset="today"', $html);
+        // The page's own sheet, calendar and viewport juggling are gone.
+        foreach (['filterSheetClosing', 'bindDesktopDismissal', 'data-delivery-date="start"', 'delivery-order-mobile-filter-sheet', 'delivery-order-filter-sheet__'] as $gone) {
+            $this->assertStringNotContainsString($gone, $html, "Sisa implementasi lama: {$gone}");
+        }
         $this->assertStringNotContainsString('mobileSalesFlatpickr', $html);
         $this->assertStringContainsString('id="kt_ecommerce_sales_flatpickr"', $html);
         $this->assertStringContainsString('#delivery-order-page .erp-workspace-heading { display:none; }', $html);

@@ -14,6 +14,9 @@
  * component). Their chosen values travel as values.extra = {key: value}; the key is absent from
  * the event when no group is configured, so pages without groups see the same shape as before.
  *
+ * With desktop 'hidden' (the default) the sheet is a phone sheet only: it refuses to open from 768px up
+ * and closes itself when the window grows past that, so a page's own desktop filter never fights it.
+ *
  * Config: id, branches, showBranchAll, defaultBranch (what "no branch filter" means, e.g. the one
  * branch of a single-branch user; Reset returns to it), timezone (dates for "Hari Ini" / "Minggu Ini"
  * are read in this zone, not the browser's), weekStart ('sunday' | 'monday'),
@@ -23,6 +26,7 @@
     const MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     const WEEKDAYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const DESKTOP_QUERY = '(min-width: 768px)';
     const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
     const pad = (number) => String(number).padStart(2, '0');
@@ -84,6 +88,7 @@
             weekStart,
             resetApplies: Boolean(config.resetApplies),
             defaultBranch: String(config.defaultBranch || 'all'),
+            desktop: config.desktop === 'modal' ? 'modal' : 'hidden',
             open: false,
             branch: String(config.defaultBranch || 'all'),
             status: 'all',
@@ -108,9 +113,20 @@
             previousBodyOverflow: '',
             previousMainOverflow: '',
 
+            init() {
+                if (this.desktop === 'modal' || typeof root.matchMedia !== 'function') return;
+                const viewport = root.matchMedia(DESKTOP_QUERY);
+                const onChange = (event) => { if (event.matches && this.open) this.close(); };
+                if (viewport.addEventListener) viewport.addEventListener('change', onChange);
+                else if (viewport.addListener) viewport.addListener(onChange);
+            },
+            get phoneOnlyAndDesktopNow() {
+                return this.desktop !== 'modal' && typeof root.matchMedia === 'function' && root.matchMedia(DESKTOP_QUERY).matches;
+            },
             onOpen(event) {
                 const detail = event.detail || {};
                 if (detail.id !== this.id) return;
+                if (this.phoneOnlyAndDesktopNow) return;
                 const values = detail.values || {};
                 this.branch = values.branch || this.defaultBranch;
                 this.status = values.status || 'all';

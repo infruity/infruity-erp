@@ -59,6 +59,7 @@
         'timezone' => $timezone,
         'weekStart' => $weekStart,
         'resetApplies' => (bool) $resetApplies,
+        'desktop' => $desktop,
         'groups' => collect($groups)->map(fn ($group) => ['key' => (string) $group['key'], 'default' => (string) ($group['default'] ?? 'all')])->values()->all(),
     ];
     $quickLabels = ['week' => 'Minggu Ini', 'today' => 'Hari Ini', 'month' => 'Bulan Ini'];

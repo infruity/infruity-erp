@@ -415,3 +415,58 @@ test('"Bulan Ini" fills the whole current month in the application timezone', ()
     assert.equal(sheet.end.slice(0, 7), sheet.start.slice(0, 7));
     assert.deepEqual([sheet.calendarYear, sheet.calendarMonth], [Number(sheet.start.slice(0, 4)), Number(sheet.start.slice(5, 7)) - 1]);
 });
+
+function stubViewport(matches) {
+    const listeners = [];
+    globalThis.matchMedia = (query) => ({ matches, media: query, addEventListener: (type, fn) => listeners.push(fn) });
+    return { listeners, restore: () => { delete globalThis.matchMedia; } };
+}
+
+test('a phone-only sheet refuses to open on a desktop viewport and never locks scroll', () => {
+    const { body } = stubBrowser();
+    const viewport = stubViewport(true);
+    const sheet = createSheet();
+
+    try {
+        sheet.onOpen({ detail: { id: 'wholesale', values: {} } });
+    } finally {
+        viewport.restore();
+        restoreBrowser();
+    }
+
+    assert.equal(sheet.open, false);
+    assert.equal(body.style.overflow, '');
+});
+
+test('a modal sheet opens on any viewport', () => {
+    stubBrowser();
+    const viewport = stubViewport(true);
+    const sheet = createSheet({ desktop: 'modal' });
+
+    try {
+        sheet.onOpen({ detail: { id: 'wholesale', values: {} } });
+    } finally {
+        viewport.restore();
+        restoreBrowser();
+    }
+
+    assert.equal(sheet.open, true);
+});
+
+test('a phone-only sheet closes itself when the window grows to desktop width', () => {
+    stubBrowser();
+    const viewport = stubViewport(false);
+    const sheet = createSheet();
+
+    try {
+        sheet.init();
+        sheet.onOpen({ detail: { id: 'wholesale', values: {} } });
+        assert.equal(sheet.open, true);
+
+        viewport.listeners[0]({ matches: true });
+        assert.equal(sheet.open, false);
+    } finally {
+        viewport.restore();
+        restoreBrowser();
+    }
+});
