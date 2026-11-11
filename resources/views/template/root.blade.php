@@ -65,9 +65,6 @@
 <link rel="stylesheet" href="{{ asset('assets/css/erp-picker.css') }}?v={{ filemtime(public_path('assets/css/erp-picker.css')) }}">
 <script defer src="{{ asset('assets/js/erp-picker.js') }}?v={{ filemtime(public_path('assets/js/erp-picker.js')) }}"></script>
 <link rel="stylesheet" href="{{ asset('assets/css/erp-shell.css') }}?v={{ filemtime(public_path('assets/css/erp-shell.css')) }}">
-@if(request()->is('arus-kas'))
-    <link rel="stylesheet" href="{{ asset('assets/css/arus-kas-filter.css') }}?v={{ filemtime(public_path('assets/css/arus-kas-filter.css')) }}">
-@endif
 <link rel="stylesheet" href="{{ asset('assets/css/erp-filters.css') }}?v={{ filemtime(public_path('assets/css/erp-filters.css')) }}">
 </head>
 <!--end::Head-->

@@ -169,6 +169,16 @@
 
 /* Legacy/edit sheets retain their existing capped modal geometry. */
 .pos-sheet--ref { max-width:560px; }
+/* Short forms (tambah pelanggan): a small popup as tall as its fields, centred on every screen size. */
+.modal .pos-sheet--compact { max-width:420px; }
+.modal .pos-sheet--compact .modal-content { height:auto; max-height:90dvh; border-radius:20px; }
+.pos-sheet--compact .erp-sheet-header { padding:16px 20px; }
+.pos-sheet--compact .erp-sheet-body { flex:none; padding:16px 20px 4px; }
+.pos-sheet--compact .erp-sheet-footer { padding:12px 20px 16px; }
+@media (max-width:767px) {
+  /* The shared sheet rules pin dialogs to the bottom edge; this one stays a popup with a margin around it. */
+  .modal .pos-sheet--compact.modal-dialog { position:relative; inset:auto; width:calc(100% - 32px); max-width:420px; margin:0 auto; padding:0; }
+}
 .modal .pos-sheet--ref .modal-content { height:100%; max-height:none; border-radius:0; }
 @media (min-width:576px) { .modal .pos-sheet--ref .modal-content { height:auto; max-height:90dvh; border-radius:20px; } }
 .pos-sheet-header--tabs { padding:12px 16px; }
@@ -314,6 +324,7 @@ body:has(.pos-form--reference) .select2-dropdown:has(#select2-customer_id-result
     background:#fff;
     box-shadow:0 12px 28px rgba(15,23,42,.16);
 }
+body:has(.pos-form--reference) .select2-dropdown:has(#select2-customer_id-results) { width:var(--pos-customer-dropdown-width, 100%) !important; box-sizing:border-box; }
 body:has(.pos-form--reference) .select2-dropdown:has(#select2-branch_id-results) .select2-search--dropdown { display:none !important; }
 body:has(.pos-form--reference) #select2-branch_id-results,
 body:has(.pos-form--reference) #select2-customer_id-results { max-height:200px; padding:4px 0; }

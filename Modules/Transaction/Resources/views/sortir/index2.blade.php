@@ -17,7 +17,7 @@
             return ['id' => (string) $branch->id, 'name' => ucwords((string) $branch->name)];
         })->values();
     @endphp
-    <section class="sortir-list-page" x-data="sortirList({ endpoint: @js(route('sortir-data')), csrf: @js(csrf_token()), timezone: @js(config('app.timezone')), branches: @js($sortirFilterBranches) })" aria-label="Daftar Sortir Barang">
+    <section class="sortir-list-page" x-data="sortirList({ endpoint: @js(route('sortir-data')), csrf: @js(csrf_token()) })" @erp-filter-apply.window="if ($event.detail.id === 'sortir') applyFilters($event.detail.values)" @erp-filter-close.window="if ($event.detail.id === 'sortir') closeFilter()" aria-label="Daftar Sortir Barang">
         <div class="sortir-toolbar">
             <div class="sortir-search">
                 <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
@@ -60,116 +60,20 @@
             </div>
             <p class="sortir-list-count" x-show="rows.length && !hasMore" x-cloak x-text="rows.length + ' dari ' + filtered + ' transaksi sortir'"></p>
         </div>
-        <template x-teleport="body">
-            <div x-show="filterOpen" x-cloak class="sortir-overlay is-filter" @click.self="closeFilter()" @keydown.escape.window="if (filterOpen) closeFilter()" @keydown.tab="trapFocus($event)">
-                <section class="sortir-dialog is-filter-dialog" id="sortir-filter-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="sortir-filter-title">
-                    <x-erp.filter-sheet-frame title="Filter Sortir Barang" title-id="sortir-filter-title" header-class="sortir-dialog-head" body-class="sortir-filter-body" footer-class="sortir-filter-foot">
-                        <x-slot:close><button type="button" class="sortir-icon-button" @click="closeFilter()" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
-                        <x-slot:body>
-
-                        <div class="sortir-filter-section" x-show="!calendarOpen">
-                            <div class="sortir-filter-section-head">
-                                <span id="sortir-filter-branch-label" class="sortir-filter-label">Cabang Tujuan</span>
-                                <button type="button" class="sortir-filter-reset" x-show="pending.branch !== 'all' || branchSearch.trim()" x-cloak @click="resetPendingFilter('branch')">Reset</button>
-                            </div>
-                            <div class="sortir-branch-picker">
-                                <label class="sortir-branch-search" for="sortir-filter-branch-search">
-                                    <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
-                                    <input id="sortir-filter-branch-search" type="search" x-model.debounce.150ms="branchSearch" placeholder="Cari cabang..." autocomplete="off" aria-label="Cari cabang tujuan">
-                                </label>
-                                <div class="sortir-branch-options" role="radiogroup" aria-labelledby="sortir-filter-branch-label">
-                                    <label class="sortir-branch-option" x-show="showAllBranchOption">
-                                        <input type="radio" name="sortirBranchFilter" value="all" x-model="pending.branch">
-                                        <span class="sortir-branch-radio" aria-hidden="true"></span>
-                                        <span>Semua Cabang</span>
-                                    </label>
-                                    <template x-for="branch in visibleBranches" :key="branch.id">
-                                        <label class="sortir-branch-option">
-                                            <input type="radio" name="sortirBranchFilter" :value="String(branch.id)" x-model="pending.branch">
-                                            <span class="sortir-branch-radio" aria-hidden="true"></span>
-                                            <span x-text="branch.name"></span>
-                                        </label>
-                                    </template>
-                                    <p class="sortir-branch-empty" x-show="visibleBranches.length === 0 && !showAllBranchOption" x-cloak>Cabang tidak ditemukan</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="sortir-filter-section" x-show="!calendarOpen">
-                            <div class="sortir-filter-section-head">
-                                <span class="sortir-filter-label">Status Sortir</span>
-                                <button type="button" class="sortir-filter-reset" x-show="pending.status !== 'all'" x-cloak @click="resetPendingFilter('status')">Reset</button>
-                            </div>
-                            <div class="sortir-filter-chips" role="group" aria-label="Status sortir">
-                                <template x-for="status in [{value:'all',label:'Semua Status'},{value:'draft',label:'Draf'},{value:'paid',label:'Selesai'}]" :key="status.value"><button type="button" @click="pending.status = status.value" :class="pending.status === status.value ? 'is-active' : ''" :aria-pressed="pending.status === status.value" x-text="status.label"></button></template>
-                            </div>
-                        </div>
-                        <div class="sortir-filter-section" x-show="!calendarOpen">
-                            <div class="sortir-filter-section-head">
-                                <span class="sortir-filter-label">Periode Tanggal</span>
-                                <button type="button" class="sortir-filter-reset" x-show="pending.start || pending.end" x-cloak @click="resetPendingFilter('date')">Reset</button>
-                            </div>
-                            <div class="sortir-filter-dates flex w-full flex-col gap-2 sm:flex-row">
-                                <button type="button" id="sortir-date-start" class="sortir-filter-date-card flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-left text-xs text-gray-700 shadow-xs transition-colors hover:border-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" @click="openFilterCalendar($event.currentTarget)" :aria-expanded="calendarOpen" aria-controls="sortir-filter-calendar" :aria-label="'Dari tanggal: ' + formatFilterDate(pending.start)">
-                                    <span class="w-8 shrink-0 text-[10px] font-bold text-gray-400">DARI</span>
-                                    <span class="min-w-0 truncate text-xs font-medium" :class="pending.start ? 'text-gray-800' : 'text-gray-400'" x-text="formatFilterDate(pending.start)"></span>
-                                </button>
-                                <button type="button" id="sortir-date-end" class="sortir-filter-date-card flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-left text-xs text-gray-700 shadow-xs transition-colors hover:border-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" @click="openFilterCalendar($event.currentTarget)" :aria-expanded="calendarOpen" aria-controls="sortir-filter-calendar" :aria-label="'Sampai tanggal: ' + formatFilterDate(pending.end)">
-                                    <span class="w-8 shrink-0 text-[10px] font-bold text-gray-400">KE</span>
-                                    <span class="min-w-0 truncate text-xs font-medium" :class="pending.end ? 'text-gray-800' : 'text-gray-400'" x-text="formatFilterDate(pending.end)"></span>
-                                </button>
-                            </div>
-                            <p class="sortir-filter-error" x-show="pendingDateError" x-text="pendingDateError" role="alert"></p>
-                            <div class="sortir-filter-quick flex flex-col gap-2 pt-2">
-                                <span class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Pilihan Cepat</span>
-                                <div class="sortir-filter-quick-actions flex flex-row gap-2">
-                                    <button type="button" @click="setPendingDateRange('week')" class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs font-semibold shadow-xs transition-colors active:scale-95" style="background-color:#c5f037;color:#1f2937" title="Tampilkan Minggu Ini">Minggu Ini</button>
-                                    <button type="button" @click="setPendingDateRange('today')" class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white px-2 py-2.5 text-xs font-semibold text-gray-700 shadow-xs transition-colors hover:border-gray-300 hover:bg-gray-50 active:scale-95" title="Tampilkan Hari Ini">Hari Ini</button>
-                                </div>
-                            </div>
-                        </div>
-                        <section id="sortir-filter-calendar" x-show="calendarOpen" x-cloak class="sortir-filter-calendar space-y-4" aria-label="Pilih periode tanggal">
-                            <button id="sortir-filter-calendar-back" x-ref="filterCalendarBack" type="button" data-sortir-calendar-back @click="closeFilterCalendar()" class="inline-flex min-h-9 items-center gap-2 rounded-lg px-1 text-sm font-semibold text-gray-700 transition-colors hover:text-gray-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
-                                <i class="ph-bold ph-arrow-left" aria-hidden="true"></i><span>Kembali</span>
-                            </button>
-                            <div class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-                                <div class="mb-4 flex items-center justify-between">
-                                    <button type="button" @click="moveFilterCalendar(-1)" aria-label="Sebelumnya" class="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button>
-                                    <button id="sortir-filter-calendar-heading" type="button" @click="calendarView = calendarView === 'date' ? 'month' : (calendarView === 'month' ? 'year' : 'date')" class="rounded-lg px-3 py-1.5 text-base font-bold text-gray-800 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" x-text="filterCalendarHeading"></button>
-                                    <button type="button" @click="moveFilterCalendar(1)" aria-label="Berikutnya" class="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"><i class="ph-bold ph-caret-right" aria-hidden="true"></i></button>
-                                </div>
-                                <div x-show="calendarView === 'date'" class="grid grid-cols-7 gap-y-1 text-center">
-                                    <template x-for="(weekday, index) in ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']" :key="weekday">
-                                        <span class="flex h-9 items-center justify-center text-[11px] font-semibold text-gray-400" :aria-label="weekday" x-text="weekday[0]"></span>
-                                    </template>
-                                    <template x-for="blank in filterCalendarBlankDays" :key="'blank-' + blank"><span class="h-9"></span></template>
-                                    <template x-for="day in filterCalendarDays" :key="getFilterCalendarDate(day)">
-                                        <div class="relative flex h-9 items-center justify-center">
-                                            <span x-show="isFilterCalendarDateInRange(day)" class="absolute inset-0 bg-emerald-50"></span>
-                                            <button type="button" data-sortir-calendar-day @click="selectFilterCalendarDate(day)" :aria-label="formatFilterDate(getFilterCalendarDate(day))" :aria-pressed="isFilterCalendarDateSelected(day)" :class="isFilterCalendarDateSelected(day) ? 'relative z-10 rounded-full bg-[#c5f037] font-bold text-gray-900 shadow-sm' : (isFilterCalendarDateInRange(day) ? 'relative z-10 font-semibold text-gray-800' : 'relative z-10 rounded-full text-gray-700 hover:bg-gray-100')" class="flex h-9 w-9 cursor-pointer items-center justify-center text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" x-text="day"></button>
-                                        </div>
-                                    </template>
-                                </div>
-                                <div x-show="calendarView === 'month'" x-cloak class="grid grid-cols-3 gap-2 py-2">
-                                    <template x-for="(month, index) in filterCalendarMonths" :key="month">
-                                        <button type="button" @click="chooseFilterCalendarMonth(index)" :class="calendarMonth === index ? 'bg-[#c5f037] font-bold text-gray-900' : 'text-gray-600 hover:bg-gray-100'" class="rounded-xl px-2 py-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" x-text="month"></button>
-                                    </template>
-                                </div>
-                                <div x-show="calendarView === 'year'" x-cloak class="grid grid-cols-3 gap-2 py-2">
-                                    <template x-for="year in filterCalendarYears" :key="year">
-                                        <button type="button" @click="chooseFilterCalendarYear(year)" :class="calendarYear === year ? 'bg-[#c5f037] font-bold text-gray-900' : 'text-gray-600 hover:bg-gray-100'" class="rounded-xl px-2 py-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" x-text="year"></button>
-                                    </template>
-                                </div>
-                            </div>
-                        </section>
-                        </x-slot:body>
-                        <x-slot:footer>
-                            <button type="button" @click="resetFilters()">Reset</button>
-                            <button type="button" class="erp-filter-sheet__primary" @click="applyFilter()" :disabled="!!pendingDateError">Terapkan Filter</button>
-                        </x-slot:footer>
-                    </x-erp.filter-sheet-frame>
-                </section>
-            </div>
-        </template>
+        <x-erp.filter-sheet
+            id="sortir"
+            title="Filter Sortir Barang"
+            aria-label="Filter sortir barang"
+            branch-label="Cabang Tujuan"
+            branch-all-label="Semua Cabang"
+            status-label="Status Sortir"
+            :branches="$sortirFilterBranches"
+            :statuses="['all' => 'Semua Status', 'draft' => 'Draf', 'paid' => 'Selesai']"
+            :timezone="config('app.timezone')"
+            desktop="modal"
+            reset-applies
+            apply-label="Terapkan Filter"
+        />
         <template x-teleport="body">
             <div x-show="selected" x-cloak class="sortir-overlay" @click.self="closeDetail()" @keydown.escape.window="if (selected) closeDetail()" @keydown.tab="trapFocus($event)">
                 <section class="sortir-dialog" id="sortir-detail-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="sortir-detail-title">

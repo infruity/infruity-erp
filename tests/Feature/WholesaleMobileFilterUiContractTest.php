@@ -2,63 +2,99 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Support\Facades\Blade;
 use Tests\TestCase;
 
 class WholesaleMobileFilterUiContractTest extends TestCase
 {
-    public function test_mobile_date_changes_stay_temporary_until_apply(): void
+    private function wholesale(): string
     {
-        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/wholesale/index.blade.php'));
-
-        $this->assertStringNotContainsString('data-wholesale-filter=', $this->inputTag($view, 'wholesale-mobile-start-date'));
-        $this->assertStringNotContainsString('data-wholesale-filter=', $this->inputTag($view, 'wholesale-mobile-end-date'));
-        $startApply = <<<'JAVASCRIPT'
-$('[data-wholesale-filter="start"]').val(start || '');
-JAVASCRIPT;
-        $endApply = <<<'JAVASCRIPT'
-$('[data-wholesale-filter="end"]').val(end || '');
-JAVASCRIPT;
-
-        $this->assertStringContainsString($startApply, $view);
-        $this->assertStringContainsString($endApply, $view);
+        return file_get_contents(base_path('Modules/Transaction/Resources/views/wholesale/index.blade.php'));
     }
 
-    public function test_mobile_filter_renders_the_reference_calendar_state(): void
+    private function sheet(): string
     {
-        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/wholesale/index.blade.php'));
-
-        $this->assertStringContainsString('id="wholesale-mobile-calendar"', $view);
-        $this->assertStringContainsString('data-wholesale-calendar-day', $view);
-        $this->assertStringContainsString('openMobileCalendar($event.currentTarget)', $view);
-        $this->assertStringContainsString('backToMobileFilters()', $view);
-        $this->assertStringContainsString('moveMobileCalendar(-1)', $view);
-        $this->assertStringContainsString('moveMobileCalendar(1)', $view);
+        return Blade::render(
+            '<x-erp.filter-sheet id="wholesale" title="Filter Pengadaan" aria-label="Filter pengadaan" branch-label="Cabang Tujuan" status-label="Status Pengadaan" :branches="$branches" :show-branch-all="true" :statuses="$statuses" />',
+            [
+                'branches' => [(object) ['id' => 1, 'name' => 'toko gkb'], (object) ['id' => 2, 'name' => 'toko gba']],
+                'statuses' => ['all' => 'Semua Status', 'draft' => 'Pending'],
+            ]
+        );
     }
 
-    private function inputTag(string $view, string $id): string
+    public function test_wholesale_uses_the_shared_sheet_instead_of_its_own_mobile_markup(): void
     {
-        $idPosition = strpos($view, 'id="' . $id . '"');
-        $this->assertNotFalse($idPosition);
-        $tagStart = strrpos(substr($view, 0, $idPosition), '<input');
-        $tagEnd = strpos($view, '>', $idPosition);
+        $view = $this->wholesale();
 
-        return substr($view, $tagStart, $tagEnd - $tagStart + 1);
+        $this->assertStringContainsString('<x-erp.filter-sheet', $view);
+        $this->assertStringContainsString('id="wholesale"', $view);
+        // The calendar, branch list and draft state now live in the component.
+        foreach (['wholesale-mobile-calendar', 'mobileStartDate', 'mobileBranch', 'filterWholesaleBranches', 'toggleFilters()'] as $gone) {
+            $this->assertStringNotContainsString($gone, $view, "Sisa implementasi lama: {$gone}");
+        }
     }
 
-    public function test_mobile_filter_exposes_the_reference_date_controls_without_replacing_wholesale_filter_contracts(): void
+    public function test_the_page_opens_the_sheet_with_its_applied_values_and_listens_for_apply(): void
     {
-        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/wholesale/index.blade.php'));
+        $view = $this->wholesale();
 
-        $this->assertStringContainsString('id="wholesale-mobile-start-date"', $view);
-        $this->assertStringContainsString('x-model="mobileStartDate"', $view);
-        $this->assertStringContainsString('id="wholesale-mobile-end-date"', $view);
-        $this->assertStringContainsString('x-model="mobileEndDate"', $view);
-        $this->assertStringContainsString('Periode Tanggal', $view);
-        $this->assertStringContainsString('Pilihan Cepat', $view);
-        $this->assertStringContainsString("setMobileDateRange('week')", $view);
-        $this->assertStringContainsString("setMobileDateRange('today')", $view);
-        $this->assertStringContainsString('applyWholesaleMobileFilters(mobileStatus, mobileBranch, mobileStartDate, mobileEndDate)', $view);
+        $this->assertStringContainsString("this.\$dispatch('erp-filter-open', { id: 'wholesale'", $view);
+        foreach (['branch', 'status', 'start', 'end'] as $filter) {
+            $this->assertStringContainsString("getWholesaleFilter('{$filter}')", $view);
+        }
+        $this->assertStringContainsString('@erp-filter-apply.window', $view);
+        $this->assertStringContainsString('applyWholesaleMobileFilters($event.detail.values.status, $event.detail.values.branch, $event.detail.values.start, $event.detail.values.end)', $view);
+    }
+
+    public function test_applied_dates_still_reach_the_server_through_the_page_filters(): void
+    {
+        $view = $this->wholesale();
+
+        $this->assertStringContainsString("\$('[data-wholesale-filter=\"start\"]').val(start || '');", $view);
+        $this->assertStringContainsString("\$('[data-wholesale-filter=\"end\"]').val(end || '');", $view);
         $this->assertStringContainsString("data.start_date = getWholesaleFilter('start') || null;", $view);
         $this->assertStringContainsString("data.end_date = getWholesaleFilter('end') || null;", $view);
+    }
+
+    public function test_sheet_renders_branch_status_and_date_sections_with_the_page_labels(): void
+    {
+        $html = $this->sheet();
+
+        $this->assertStringContainsString('role="dialog"', $html);
+        $this->assertStringContainsString('aria-label="Filter pengadaan"', $html);
+        $this->assertStringContainsString('Filter Pengadaan', $html);
+        $this->assertStringContainsString('Cabang Tujuan', $html);
+        $this->assertStringContainsString('Status Pengadaan', $html);
+        $this->assertStringContainsString('Semua Status', $html);
+        $this->assertStringContainsString('Pending', $html);
+        $this->assertStringContainsString('Periode Tanggal', $html);
+        $this->assertStringContainsString('Pilihan Cepat', $html);
+        $this->assertStringContainsString("setDateRange('week')", $html);
+        $this->assertStringContainsString("setDateRange('today')", $html);
+        $this->assertStringContainsString('Terapkan', $html);
+    }
+
+    public function test_sheet_keeps_the_hooks_the_filter_stylesheet_targets(): void
+    {
+        $html = $this->sheet();
+
+        foreach (['id="wholesale-mobile-branch-search"', 'id="wholesale-mobile-branches"', 'data-wholesale-mobile-branch="all"', 'id="wholesale-mobile-calendar"'] as $hook) {
+            $this->assertStringContainsString($hook, $html, "Hook hilang: {$hook}");
+        }
+        // Dates are a draft: the hidden inputs carry no page-level filter hook.
+        foreach (['wholesale-mobile-start-date', 'wholesale-mobile-end-date'] as $id) {
+            $this->assertMatchesRegularExpression('/<input id="' . $id . '" type="hidden"(?![^>]*data-wholesale-filter)/', $html);
+        }
+    }
+
+    public function test_sheet_state_is_seeded_with_the_branches_of_the_page(): void
+    {
+        $html = $this->sheet();
+
+        $this->assertStringContainsString('erpFilterSheet(', $html);
+        $this->assertStringContainsString('Toko Gkb', $html);
+        $this->assertStringContainsString('Toko Gba', $html);
+        $this->assertStringContainsString('assets/js/erp-filter-sheet.js', $html);
     }
 }

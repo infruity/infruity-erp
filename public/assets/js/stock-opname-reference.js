@@ -70,69 +70,6 @@
         const month={May:'Mei',Aug:'Agu',Oct:'Okt',Dec:'Des'}[parts.month] || parts.month;
         return `${parts.day} ${month} ${parts.year}, ${parts.hour}:${parts.minute}`;
     }
-    function period(preset, timezone, now = new Date()) {
-        const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
-            timeZone:timezone,year:'numeric',month:'2-digit',day:'2-digit'
-        }).formatToParts(now).map(part => [part.type,part.value]));
-        const start = new Date(Date.UTC(Number(parts.year),Number(parts.month)-1,Number(parts.day)));
-        if (preset === 'week') start.setUTCDate(start.getUTCDate() - (start.getUTCDay() || 7) + 1);
-        const end = new Date(start);
-        if (preset === 'week') end.setUTCDate(end.getUTCDate()+6);
-        return {start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)};
-    }
-    function filterCalendar(now = new Date()) {
-        const months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-        const initialYear=now.getFullYear(), initialMonth=now.getMonth();
-        let year=initialYear, month=initialMonth, view='date';
-        return {
-            months,
-            get year() { return year; },
-            get month() { return month; },
-            get view() { return view; },
-            get heading() { return view === 'month' ? String(year) : view === 'year' ? `${year-4} - ${year+7}` : `${months[month]} ${year}`; },
-            get days() { return Array.from({length:new Date(year,month+1,0).getDate()},(_,index)=>index+1); },
-            get blankDays() { return Array.from({length:new Date(year,month,1).getDay()},(_,index)=>index); },
-            get years() { return Array.from({length:12},(_,index)=>year-4+index); },
-            open(value) {
-                const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
-                let selected=false;
-                if (match) {
-                    const candidate=new Date(Number(match[1]),Number(match[2])-1,Number(match[3]));
-                    if (candidate.getFullYear()===Number(match[1]) && candidate.getMonth()===Number(match[2])-1 && candidate.getDate()===Number(match[3])) {
-                        year=candidate.getFullYear(); month=candidate.getMonth(); selected=true;
-                    }
-                }
-                if (!selected) { year=initialYear; month=initialMonth; }
-                view='date';
-            },
-            move(step) {
-                if (view === 'date') {
-                    const candidate=new Date(year,month+step,1); year=candidate.getFullYear(); month=candidate.getMonth();
-                } else if (view === 'month') year+=step;
-                else year+=step*12;
-            },
-            toggleView() { view=view==='date' ? 'month' : view==='month' ? 'year' : 'date'; },
-            chooseYear(value) { const selected=Number(value); if (!Number.isInteger(selected)) return; year=selected; view='month'; },
-            chooseMonth(value) { const selected=Number(value); if (!Number.isInteger(selected) || selected<0 || selected>11) return; month=selected; view='date'; }
-        };
-    }
-    function selectFilterRangeDate(draft, value) {
-        const text = String(value ?? '');
-        const fields = text.split('-').map(Number);
-        if (fields.length !== 3 || fields.some(field => !Number.isInteger(field))) return draft;
-        const date = new Date(Date.UTC(fields[0], fields[1] - 1, fields[2]));
-        if (date.toISOString().slice(0, 10) !== text) return draft;
-        if (!draft.start || draft.end) {
-            draft.start = text;
-            draft.end = '';
-        } else if (text < draft.start) {
-            draft.end = draft.start;
-            draft.start = text;
-        } else {
-            draft.end = text;
-        }
-        return draft;
-    }
     function filterDraft(applied) {
         return {
             branch:String(applied.branch || 'all'),
@@ -141,6 +78,14 @@
             status:String(applied.status || 'all'),
             result:String(applied.result || 'all')
         };
+    }
+    // The shared filter sheet speaks {branch, status, start, end, extra:{result}}.
+    function sheetValues(draft) {
+        return {branch:draft.branch, status:draft.status, start:draft.start, end:draft.end, extra:{result:draft.result}};
+    }
+    function draftFromSheet(values) {
+        const sheet = values || {};
+        return filterDraft({branch:sheet.branch, start:sheet.start, end:sheet.end, status:sheet.status, result:sheet.extra?.result});
     }
     function filterRequest(draft) {
         return {
@@ -151,5 +96,5 @@
             result_filter:draft.result
         };
     }
-    return {parseQuantity,quantity,history,filterHistory,correction,formatLongDateTime,period,filterCalendar,selectFilterRangeDate,filterDraft,filterRequest};
+    return {parseQuantity,quantity,history,filterHistory,correction,formatLongDateTime,filterDraft,sheetValues,draftFromSheet,filterRequest};
 });

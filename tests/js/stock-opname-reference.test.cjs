@@ -170,47 +170,6 @@ test('date formatter rejects invalid and normalized dates with a safe unavailabl
     assert.equal(ui.formatLongDateTime('2026-11-01','Asia/Jakarta'),'01 Nov 2026, 00:00');
 });
 
-test('date presets use application timezone and Monday-Sunday across month boundary', () => {
-    assert.deepEqual(ui.period('today','Asia/Jakarta',new Date('2026-11-01T20:00:00Z')), {start:'2026-11-02',end:'2026-11-02'});
-    assert.deepEqual(ui.period('week','Asia/Jakarta',new Date('2026-11-01T12:00:00Z')), {start:'2026-10-26',end:'2026-11-01'});
-});
-
-test('stock opname calendar navigates dates, months and years from the selected draft month', () => {
-    assert.equal(typeof ui.filterCalendar, 'function');
-    const calendar = ui.filterCalendar(new Date('2026-11-11T12:00:00Z'));
-    calendar.open('2027-01-15');
-    assert.equal(calendar.heading, 'Januari 2027');
-    assert.equal(calendar.month, 0);
-    assert.equal(calendar.year, 2027);
-    assert.equal(calendar.days.length, 31);
-    assert.equal(calendar.blankDays.length, 5);
-    calendar.move(-1);
-    assert.equal(calendar.heading, 'Desember 2026');
-    calendar.toggleView();
-    assert.equal(calendar.view, 'month');
-    calendar.toggleView();
-    assert.equal(calendar.view, 'year');
-    calendar.chooseYear(2028);
-    assert.equal(calendar.view, 'month');
-    assert.equal(calendar.year, 2028);
-    calendar.chooseMonth(1);
-    assert.equal(calendar.view, 'date');
-    assert.equal(calendar.heading, 'Februari 2028');
-});
-
-test('stock opname date period uses the reference two-click ordered range', () => {
-    assert.equal(typeof ui.selectFilterRangeDate, 'function');
-    const draft = {start:'2026-11-10', end:'2026-11-20'};
-    ui.selectFilterRangeDate(draft, '2026-11-25');
-    assert.deepEqual(draft, {start:'2026-11-25', end:''});
-    ui.selectFilterRangeDate(draft, '2026-11-05');
-    assert.deepEqual(draft, {start:'2026-11-05', end:'2026-11-25'});
-    ui.selectFilterRangeDate(draft, '2026-11-12');
-    assert.deepEqual(draft, {start:'2026-11-12', end:''});
-    ui.selectFilterRangeDate(draft, '2026-11-12');
-    assert.deepEqual(draft, {start:'2026-11-12', end:'2026-11-12'});
-});
-
 test('filter draft preserves branch, date, result and status choices and submits server filters', () => {
     const applied={branch:'7',start:'2026-11-01',end:'2026-11-04',status:'draft',result:'kurang'};
     const draft=ui.filterDraft(applied);
@@ -230,101 +189,107 @@ test('filter draft defaults result and status to all and keeps the branch/date c
     });
 });
 
-// Execute the real filter sheet wiring, replacing only DOM/DataTables boundaries.
-function filterFixture() {
-    const source = fs.readFileSync(require.resolve('../../public/assets/js/stock-opname-reference-page.js'), 'utf8');
-    const start = source.indexOf('    function syncChoices()');
-    const end = source.indexOf('    $(\'[data-so-reset="branch"]\').on(\'click\'');
-    assert.ok(start > 0 && end > start, 'filter wiring block not found');
+test('the shared sheet gets the applied result as an extra group and sends it back the same way', () => {
+    const applied = ui.filterDraft({branch:'7', start:'2026-11-01', end:'2026-11-04', status:'draft', result:'kurang'});
+    const values = ui.sheetValues(applied);
 
-    const button = (key, value) => {
-        const el = {dataset:{[key]:value}, classes:new Set(), attrs:{}};
-        el.classList = {toggle(name,on) { on ? el.classes.add(name) : el.classes.delete(name); }};
-        el.setAttribute = (name,val) => { el.attrs[name] = val; };
-        return el;
-    };
-    const results = ['all','lebih','kurang','sesuai'].map(v => button('soResult',v));
-    const statuses = ['all','selesai','draft'].map(v => button('soStatus',v));
-    const hidden = {'so-filter-applied-status':{value:'all'}, 'so-filter-applied-result':{value:'all'}};
-    const opener = {classes:new Set()};
-    const label = {value:''};
-    const $ = selector => {
-        if (selector === '[data-so-result]') return {each(fn) { results.forEach(b => fn.call(b)); }};
-        if (selector === '[data-so-status]') return {each(fn) { statuses.forEach(b => fn.call(b)); }};
-        if (selector === '[data-so-open-filter]') return {toggleClass(n,on) { on ? opener.classes.add(n) : opener.classes.delete(n); }};
-        if (selector === '#active-branch-button-label') return {text(v) { label.value = v; }};
-        return {each() {}, toggleClass() {}, text() {}, val() { return ''; }};
-    };
-    const handlers = new Map();
-    const bind = selector => {
-        const base = $(selector);
-        base.on = (event, fn) => { handlers.set(selector + ':' + event, fn); return base; };
-        return base;
-    };
-    let draws = 0, hides = 0;
-    const context = {
-        ui, $: bind, branch:{value:'all'}, dateField:{value:''},
-        filterEl:{querySelector:() => null},
-        bootstrap:{Modal:{getOrCreateInstance:() => ({show() {}, hide() {}})}},
-        searchBranches() {},
-        draft: ui.filterDraft({branch:'all'}),
-        dataTable:{draw() { draws++; }},
-        filter:{hide() { hides++; }},
-        document:{getElementById:id => hidden[id] || null}
-    };
-    vm.runInNewContext(source.slice(start, end), context);
-    return {context, hidden, results, statuses, opener, label, handlers, draws:() => draws, hides:() => hides};
-}
-
-test('choosing a chip only edits the draft and never redraws the list', () => {
-    const f = filterFixture();
-    const click = selector => f.handlers.get(selector + ':click');
-    assert.equal(typeof click('[data-so-result]'), 'function');
-    assert.equal(typeof click('[data-so-status]'), 'function');
-
-    click('[data-so-result]').call(f.results.find(b => b.dataset.soResult === 'kurang'));
-    click('[data-so-status]').call(f.statuses.find(b => b.dataset.soStatus === 'draft'));
-
-    assert.equal(f.context.draft.result, 'kurang');
-    assert.equal(f.context.draft.status, 'draft');
-    assert.equal(f.draws(), 0, 'draft/apply semantics: no draw before Terapkan Filter');
-    assert.equal(f.hidden['so-filter-applied-result'].value, 'all');
-    assert.equal(f.hidden['so-filter-applied-status'].value, 'all');
-    assert.deepEqual(f.results.filter(b => b.classes.has('is-selected')).map(b => b.dataset.soResult), ['kurang']);
+    assert.deepEqual(values, {branch:'7', status:'draft', start:'2026-11-01', end:'2026-11-04', extra:{result:'kurang'}});
+    assert.deepEqual(ui.draftFromSheet(values), applied);
 });
 
-test('applying the sheet writes the chosen result and status for the list request', () => {
-    const f = filterFixture();
-    f.context.draft.status = 'draft';
-    f.context.draft.result = 'kurang';
-    f.context.apply(false);
+test('a sheet result without extra falls back to all results', () => {
+    assert.deepEqual(ui.draftFromSheet({branch:'all', status:'all', start:'', end:''}), {branch:'all', start:'', end:'', status:'all', result:'all'});
+    assert.deepEqual(ui.draftFromSheet(undefined), {branch:'all', start:'', end:'', status:'all', result:'all'});
+});
+
+// Execute the real page wiring for the shared sheet, replacing only DOM/DataTables boundaries.
+function pageFixture() {
+    const source = fs.readFileSync(require.resolve('../../public/assets/js/stock-opname-reference-page.js'), 'utf8');
+    const start = source.indexOf('    function readApplied()');
+    const end = source.indexOf("    $('[data-so-search]').on('input'");
+    assert.ok(start > 0 && end > start, 'filter wiring block not found');
+
+    const hidden = {'so-filter-applied-status':{value:'all'}, 'so-filter-applied-result':{value:'all'}};
+    const opener = {classes:new Set(), attrs:{}};
+    const label = {value:''};
+    const handlers = new Map();
+    const $ = selector => {
+        const api = {
+            toggleClass(name, on) { on ? opener.classes.add(name) : opener.classes.delete(name); return api; },
+            attr(name, value) { opener.attrs[name] = value; return api; },
+            text(value) { label.value = value; return api; },
+            on(event, fn) { handlers.set(selector + ':' + event, fn); return api; },
+        };
+        return api;
+    };
+    const windowEvents = new Map();
+    const dispatched = [];
+    let draws = 0;
+    const context = {
+        ui, $, branch:{value:'all'}, dateField:{value:''},
+        dataTable:{draw() { draws++; }},
+        document:{getElementById:id => hidden[id] || null},
+        CustomEvent: class { constructor(type, init) { this.type = type; this.detail = init.detail; } },
+        window:{
+            addEventListener:(type, fn) => windowEvents.set(type, fn),
+            dispatchEvent:event => { dispatched.push(event); return true; },
+        },
+    };
+    vm.runInNewContext(source.slice(start, end), context);
+    return {context, hidden, opener, label, handlers, windowEvents, dispatched, draws:() => draws};
+}
+
+test('opening the sheet hands it the applied filters, including the result group', () => {
+    const f = pageFixture();
+    f.hidden['so-filter-applied-status'].value = 'selesai';
+    f.hidden['so-filter-applied-result'].value = 'sesuai';
+    f.context.branch.value = '7';
+    f.context.dateField.value = '2026-11-01 to 2026-11-04';
+
+    f.handlers.get('[data-so-open-filter]:click')();
+
+    assert.equal(f.opener.attrs['aria-expanded'], 'true');
+    assert.equal(f.dispatched.length, 1);
+    assert.equal(f.dispatched[0].type, 'erp-filter-open');
+    assert.deepEqual(JSON.parse(JSON.stringify(f.dispatched[0].detail)), {
+        id:'so', values:{branch:'7', status:'selesai', start:'2026-11-01', end:'2026-11-04', extra:{result:'sesuai'}}
+    });
+});
+
+test('applying from the sheet writes the request fields once and redraws', () => {
+    const f = pageFixture();
+
+    f.windowEvents.get('erp-filter-apply')({detail:{id:'so', values:{branch:'7', status:'draft', start:'2026-11-01', end:'', extra:{result:'kurang'}}}});
 
     assert.equal(f.hidden['so-filter-applied-status'].value, 'draft');
     assert.equal(f.hidden['so-filter-applied-result'].value, 'kurang');
+    assert.equal(f.context.branch.value, '7');
+    assert.equal(f.context.dateField.value, '2026-11-01 to 2026-11-01', 'a single day is a one-day range');
     assert.equal(f.draws(), 1);
-    assert.equal(f.hides(), 0, 'apply(false) must keep the sheet open');
     assert.equal(f.opener.classes.has('is-active'), true);
     assert.equal(f.label.value, 'Filter aktif');
 });
 
-test('opening the sheet reads the applied result and status back into the draft', () => {
-    const f = filterFixture();
-    f.hidden['so-filter-applied-status'].value = 'selesai';
-    f.hidden['so-filter-applied-result'].value = 'sesuai';
+test('other sheets and clearing the filters leave the list consistent', () => {
+    const f = pageFixture();
 
-    assert.deepEqual(f.context.readApplied(), {
-        branch:'all', start:'', end:'', status:'selesai', result:'sesuai'
-    });
+    f.windowEvents.get('erp-filter-apply')({detail:{id:'wholesale', values:{branch:'7', status:'draft', start:'', end:'', extra:{result:'kurang'}}}});
+    assert.equal(f.draws(), 0);
+
+    f.windowEvents.get('erp-filter-apply')({detail:{id:'so', values:{branch:'7', status:'draft', start:'', end:'', extra:{result:'kurang'}}}});
+    f.windowEvents.get('erp-filter-apply')({detail:{id:'so', values:{branch:'all', status:'all', start:'', end:'', extra:{result:'all'}}}});
+
+    assert.equal(f.context.dateField.value, '');
+    assert.equal(f.opener.classes.has('is-active'), false);
+    assert.equal(f.label.value, 'Filter');
+    assert.equal(f.draws(), 2);
 });
 
-test('choice buttons reflect the draft and keep aria-pressed in sync', () => {
-    const f = filterFixture();
-    f.context.draft.status = 'draft';
-    f.context.draft.result = 'lebih';
-    f.context.syncChoices();
+test('the opener reports closing', () => {
+    const f = pageFixture();
+    f.handlers.get('[data-so-open-filter]:click')();
 
-    const pressed = list => list.filter(b => b.attrs['aria-pressed'] === 'true').map(b => b.dataset.soResult || b.dataset.soStatus);
-    assert.deepEqual(pressed(f.results), ['lebih']);
-    assert.deepEqual(pressed(f.statuses), ['draft']);
-    assert.deepEqual(f.results.filter(b => b.classes.has('is-selected')).map(b => b.dataset.soResult), ['lebih']);
+    f.windowEvents.get('erp-filter-close')({detail:{id:'so'}});
+
+    assert.equal(f.opener.attrs['aria-expanded'], 'false');
 });

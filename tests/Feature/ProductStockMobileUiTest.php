@@ -18,20 +18,34 @@ final class ProductStockMobileUiTest extends TestCase
         $this->assertStringContainsString("stock_filter: el.status.value", $view);
     }
 
-    public function test_filter_slot_does_not_close_its_body_before_the_footer(): void
+    public function test_filter_is_the_shared_sheet_and_the_hidden_selects_keep_the_list_state(): void
     {
         $view = file_get_contents(base_path('Modules/Master/Resources/views/products/stock.blade.php'));
-        $start = strpos($view, '<x-slot:body>');
-        $end = strpos($view, '</x-slot:body>', $start);
-        $this->assertNotFalse($start);
-        $this->assertNotFalse($end);
-        $body = substr($view, $start, $end - $start);
-        preg_match_all('/<div(?:\\s[^>]*)?>|<\\/div>/', $body, $matches);
-        $depth = 0;
-        foreach ($matches[0] as $tag) {
-            $depth += $tag === '</div>' ? -1 : 1;
-            $this->assertGreaterThanOrEqual(0, $depth, 'Filter body closes an ancestor outside its slot');
+
+        foreach ([
+            '<x-erp.filter-sheet',
+            'id="stock"',
+            'aria-label="Filter dan urutkan stok"',
+            'status-label="Status Stok"',
+            ":default-branch=\"(string) (\$branch->first()->id ?? 'all')\"",
+            "'ada' => 'Ada', 'kosong' => 'Kosong atau minus'",
+            "'key' => 'category'",
+            "'key' => 'sort'",
+            "'type' => 'radio'",
+            "'stock_available:desc' => 'Stok terbanyak'",
+            "'hpp:asc' => 'HPP terendah'",
+            ':with-dates="false"',
+            'desktop="modal"',
+            // The list is still driven by these four selects.
+            'id="stock-branch"', 'id="stock-status"', 'id="stock-category"', 'id="stock-sort"',
+            "window.addEventListener('erp-filter-apply'",
+            "new CustomEvent('erp-filter-open'",
+        ] as $contract) {
+            $this->assertStringContainsString($contract, $view, "Hilang: {$contract}");
         }
-        $this->assertSame(0, $depth);
+
+        foreach (['id="stock-filters"', 'stock-backdrop', 'stock-branch-choice', 'stock-pending-status', 'setFilterOpen', 'pendingFilters'] as $gone) {
+            $this->assertStringNotContainsString($gone, $view, "Sisa implementasi lama: {$gone}");
+        }
     }
 }

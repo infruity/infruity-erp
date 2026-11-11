@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureFeatureEnabled;
 use Illuminate\Support\Facades\Route;
 use Modules\Transaction\Http\Controllers\WholesaleController;
 use Modules\Transaction\Http\Controllers\SortirController;
@@ -84,7 +85,8 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 
     Route::resource('product-receipt', ProductReceiptController::class)->names('product-receipt')->except('show');
 
-    Route::resource('stock-out', StockOutController::class)->names('stock-out')->except('show');
+    // Stok Keluar is not in use: hidden (404) until FEATURE_STOCK_OUT_PAGES is switched on.
+    Route::resource('stock-out', StockOutController::class)->names('stock-out')->except('show')->middleware(EnsureFeatureEnabled::class . ':stock_out_pages');
 
     Route::resource('stock-opname', StockOpnameController::class)->names('stock-opname')->except('show');
     Route::get('stock-opname/{id}/history', [StockOpnameController::class, 'get_history'])->name('stock-opname.history');
@@ -95,7 +97,8 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::get('stock-opname-export', [StockOpnameController::class, 'export'])->name('stock-opname.export');
     Route::get('stock-opname-preview', [StockOpnameController::class, 'preview'])->name('stock-opname.preview');
 
-    Route::resource('stock-out-type', StockOutTypeController::class)->names('stock-out-type')->except('show');
+    // Jenis Stok Keluar goes with Stok Keluar: hidden (404) until FEATURE_STOCK_OUT_TYPE_PAGES is switched on.
+    Route::resource('stock-out-type', StockOutTypeController::class)->names('stock-out-type')->except('show')->middleware(EnsureFeatureEnabled::class . ':stock_out_type_pages');
 
     Route::resource('production', ProductionController::class)->names('production')->except('show');
     Route::get('production/{id}/payment', [ProductionController::class, 'payment'])->name('production.payment');
@@ -139,9 +142,9 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::get('wholesale/data', [WholesaleController::class, 'get_data'])->name('wholesale-data');
     Route::get('sortir/data', [SortirController::class, 'get_data'])->name('sortir-data');
     Route::get('transfer/data', [TransferController::class, 'get_data'])->name('transfer-data');
-    Route::get('stock-out/data', [StockOutController::class, 'get_data'])->name('stock-out.data');
+    Route::get('stock-out/data', [StockOutController::class, 'get_data'])->name('stock-out.data')->middleware(EnsureFeatureEnabled::class . ':stock_out_pages');
     Route::get('stock-opname/data', [StockOpnameController::class, 'get_data'])->name('stock-opname.data');
-    Route::get('stock-out-type/data', [StockOutTypeController::class, 'get_data'])->name('stock-out-type.data');
+    Route::get('stock-out-type/data', [StockOutTypeController::class, 'get_data'])->name('stock-out-type.data')->middleware(EnsureFeatureEnabled::class . ':stock_out_type_pages');
     Route::get('production/data', [ProductionController::class, 'get_data'])->name('production-data');
     Route::get('receipt/data', [ProductReceiptController::class, 'get_data'])->name('receipt-data');
     Route::get('parcel/data', [ProductionParcelController::class, 'get_data'])->name('parcel-data');

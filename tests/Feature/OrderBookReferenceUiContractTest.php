@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Support\Facades\Blade;
 use Tests\TestCase;
 
 class OrderBookReferenceUiContractTest extends TestCase
@@ -83,28 +84,30 @@ class OrderBookReferenceUiContractTest extends TestCase
         }
     }
 
-    public function test_order_book_filter_sheet_uses_reference_controls_and_existing_request_fields(): void
+    public function test_order_book_filter_sheet_uses_the_shared_component_and_existing_request_fields(): void
     {
         $view = file_get_contents(base_path('Modules/Pos/Resources/views/order-book/index.blade.php'));
 
         foreach ([
             '@click="openFilter()"',
-            'order-book-filter-sheet',
-            'role="dialog"',
-            'aria-modal="true"',
-            'Cabang Tujuan',
-            'placeholder="Cari cabang..."',
-            'x-text="branch.name"',
-            ':value="branch.id"',
-            "{ value: 'draft', label: 'Pending' }",
-            "{ value: 'process', label: 'Proses' }",
-            "{ value: 'done', label: 'Selesai' }",
+            'aria-controls="order-book-filter-sheet"',
+            '<x-erp.filter-sheet',
+            'id="order-book"',
+            'title="Filter Pesanan"',
+            'branch-label="Cabang Tujuan"',
+            'status-label="Status Pesanan"',
+            "'draft' => 'Pending'",
+            "'process' => 'Proses'",
+            "'done' => 'Selesai'",
             '<option value="draft">Pending</option>',
-            'Periode Tanggal',
-            'Minggu Ini',
-            'Hari Ini',
-            'Reset Filter',
-            'Terapkan Filter',
+            ':timezone="config(\'app.timezone\')"',
+            'week-start="monday"',
+            'desktop="modal"',
+            'reset-applies',
+            'reset-label="Reset Filter"',
+            'apply-label="Terapkan Filter"',
+            "this.\$dispatch('erp-filter-open', { id: 'order-book'",
+            '@erp-filter-apply.window',
             'document.dispatchEvent(new CustomEvent(\'order-book:filters-applied\'))',
             'document.addEventListener(\'order-book:filters-applied\'',
             'd.status_filter =',
@@ -115,6 +118,10 @@ class OrderBookReferenceUiContractTest extends TestCase
             $this->assertStringContainsString($filterContract, $view, "Missing order-book filter sheet contract: {$filterContract}");
         }
 
+        // The sheet markup, calendar and draft state live in the component now.
+        foreach (['draftBranch', 'draftStartDate', 'calOpen', 'orderBookFilterUi', 'x-teleport'] as $gone) {
+            $this->assertStringNotContainsString($gone, $view, "Sisa implementasi lama: {$gone}");
+        }
         $this->assertStringNotContainsString('data-kt-menu-trigger="click"', $view);
     }
 
@@ -126,24 +133,33 @@ class OrderBookReferenceUiContractTest extends TestCase
         $this->assertStringContainsString("whereIn('status', ['process', 'posting'])", $controller);
     }
 
+    private function orderBookSheet(): string
+    {
+        return Blade::render(
+            '<x-erp.filter-sheet id="order-book" title="Filter Pesanan" :branches="$branches" :statuses="$statuses" desktop="modal" week-start="monday" reset-applies reset-label="Reset Filter" apply-label="Terapkan Filter" />',
+            [
+                'branches' => [(object) ['id' => 1, 'name' => 'toko gkb']],
+                'statuses' => ['all' => 'Semua Status', 'draft' => 'Pending', 'process' => 'Proses', 'done' => 'Selesai'],
+            ]
+        );
+    }
+
     public function test_filter_sheet_keeps_reference_sizing_without_forcing_empty_viewport_height(): void
     {
-        $view = file_get_contents(base_path('Modules/Pos/Resources/views/order-book/index.blade.php'));
-        $sheet = explode('<template x-teleport="body">', $view, 2)[1];
-        $sheet = explode('</x-erp.workspace>', $sheet, 2)[0];
+        $sheet = $this->orderBookSheet();
 
         foreach ([
+            'id="order-book-filter-sheet"',
             'h-auto',
-            'max-h-[88vh]',
             'max-h-[88dvh]',
             'max-w-[512px]',
             'min-h-0 flex-1',
             'overflow-y-auto',
             'space-y-[16px]',
-            'text-[12px] leading-[16px]',
-            'text-[16px] leading-[16px]',
-            '<x-erp.filter-sheet-frame',
-            '<x-slot:footer>',
+            'text-[12px]',
+            'sm:items-center',
+            'Reset Filter',
+            'Terapkan Filter',
         ] as $filterSheetContract) {
             $this->assertStringContainsString($filterSheetContract, $sheet, "Missing reference filter sizing: {$filterSheetContract}");
         }
@@ -151,19 +167,27 @@ class OrderBookReferenceUiContractTest extends TestCase
         // Footer action height (44px) is owned by the shared filter sheet stylesheet.
         $this->assertStringContainsString('--erp-filter-action-height:44px;', file_get_contents(base_path('public/assets/css/erp-filters.css')));
         $this->assertDoesNotMatchRegularExpression('/(?<!max-)h-\[\d+(?:d)?vh\]/', $sheet);
-        $this->assertStringContainsString('#order-book-filter-sheet :is(h2, h3, h4, p) { margin-bottom:0; }', $view);
+        $this->assertStringContainsString('#order-book-filter-sheet :is(h2, h3, h4, p) { margin-bottom:0; }', file_get_contents(base_path('Modules/Pos/Resources/views/order-book/index.blade.php')));
+    }
+
+    public function test_filter_sizes_do_not_depend_on_the_page_root_font_size(): void
+    {
+        $component = file_get_contents(base_path('resources/views/components/erp/filter-sheet.blade.php'));
+        $markup = substr($component, strpos($component, '--}}') + 4);
+
+        // Pages with a 12px root (this one) would shrink rem based Tailwind sizes.
+        $this->assertDoesNotMatchRegularExpression('/(?<![\w\[-])(?:text-(?:xs|sm|base)|(?:p[xytblr]?|m[xytblr]?|gap|h|w)-(?:[1-9]\d*(?:\.\d+)?|0\.\d+))(?![\w\[%-])/', $markup);
     }
 
     public function test_filter_controls_do_not_inherit_bootstrap_border_and_text_utilities(): void
     {
         $view = file_get_contents(base_path('Modules/Pos/Resources/views/order-book/index.blade.php'));
-        $sheet = explode('<template x-teleport="body">', $view, 2)[1];
-        $sheet = explode('</x-erp.workspace>', $sheet, 2)[0];
+        $sheet = $this->orderBookSheet();
 
         $this->assertStringContainsString(':where(#order-book-filter-sheet, #order-book-filter-sheet *) { border-width:0; border-style:solid; border-color:#e5e7eb; }', $view);
         $this->assertStringContainsString('border-[1px] border-solid', $sheet);
         $this->assertStringContainsString('border-[2px] border-solid', $sheet);
-        // The primary action's colour now comes from the shared Stock Opname sheet frame, not inline utilities.
+        // The primary action's colour comes from the shared sheet frame, not inline utilities.
         $this->assertStringContainsString('class="erp-filter-sheet__primary"', $sheet);
         $this->assertStringContainsString('shadow-[0_1px_2px_rgba(0,0,0,0.05)]', $sheet);
         $this->assertDoesNotMatchRegularExpression('/(?:class="|\s)border(?:\s|")/', $sheet);

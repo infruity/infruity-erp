@@ -44,7 +44,7 @@ final class PosListUiContractTest extends TestCase
             $this->assertStringContainsString($contract, $view);
         }
         // The filter sheet feeds the same request fields: status, branch and a date range.
-        foreach (['d.status_filter = applied.status', 'd.cabang_filter = applied.branch', 'd.start_date = start', 'd.end_date = end', 'data-pos-status="{{ $value }}"', 'id="pos-start-date"', 'id="pos-end-date"'] as $contract) {
+        foreach (['d.status_filter = applied.status', 'd.cabang_filter = applied.branch', 'd.start_date = start', 'd.end_date = end', '<x-erp.filter-sheet'] as $contract) {
             $this->assertStringContainsString($contract, $view);
         }
     }
@@ -71,7 +71,7 @@ final class PosListUiContractTest extends TestCase
             $this->assertStringContainsString($contract, $view);
         }
         // Draft/apply sheet with the reference sections and quick ranges.
-        foreach (['Filter Transaksi', 'Status Transaksi', 'Periode Tanggal', 'Pilihan Cepat', 'Minggu Ini', 'Hari Ini', 'Reset Filter', 'Terapkan Filter'] as $label) {
+        foreach (['Filter Transaksi', 'Status Transaksi', 'Reset Filter', 'Terapkan Filter'] as $label) {
             $this->assertStringContainsString($label, $view);
         }
         // Load more replaces the pager; the sheet no longer posts the old Metronic selects.

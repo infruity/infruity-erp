@@ -10,46 +10,6 @@
 #delivery-order-detail-modal .delivery-order-zero-confirm input { flex:none; width:18px; height:18px; margin:0; accent-color:#0b595b; }
 #delivery-order-detail-modal :is(.delivery-order-payment-link,.delivery-order-zero-confirm input):focus-visible { outline:2px solid #10b981; outline-offset:3px; }
 #delivery-order-page .delivery-order-filter-menu { display:none!important; }
-#delivery-order-mobile-filter-sheet { display:flex!important; justify-content:flex-end; padding:0; }
-#delivery-order-mobile-filter-sheet[hidden], #delivery-order-mobile-filter-sheet [hidden] { display:none!important; }
-#delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__panel { min-height:0; max-height:calc(100vh - 12px); max-height:calc(100dvh - max(12px, env(safe-area-inset-top))); }
-#delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__body { flex:0 1 auto; gap:16px; padding:20px; overflow-x:hidden; }
-#delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__section { min-width:0; padding:0; }
-#delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__label { margin-bottom:6px; font-size:10px; line-height:15px; font-weight:600; }
-#delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__branch-card { border-radius:12px; }
-#delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__branch-search { display:block; }
-#delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__branch-search input { padding-block:8px; font-size:16px; line-height:20px; }
-#delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__branch-list { min-height:0; max-height:128px; }
-#delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__branch-option { min-height:0; padding-block:8px; line-height:16px; }
-#delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__chip { line-height:16px; }
-#delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__footer { gap:12px; padding:14px 20px; background:rgba(249,250,251,.7); }
-#delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__button { min-width:0; font-size:12px; }
-#delivery-order-mobile-filter-sheet .delivery-order-reference-label-row { display:flex; justify-content:space-between; gap:8px; }
-#delivery-order-mobile-filter-sheet .delivery-order-reference-reset { border:0; padding:0; background:none; color:#ef4444; font:600 10px/15px var(--erp-font); }
-#delivery-order-mobile-filter-sheet .delivery-order-reference-range { display:flex; flex-direction:column; gap:8px; }
-#delivery-order-mobile-filter-sheet .delivery-order-reference-range button { display:flex; min-width:0; flex:1; gap:8px; align-items:center; border:1px solid #e5e7eb; border-radius:12px; padding:10px 12px; background:#fff; color:#374151; text-align:left; font:500 12px/16px var(--erp-font); box-shadow:0 1px 2px rgb(0 0 0 / .05); }
-#delivery-order-mobile-filter-sheet .delivery-order-reference-range button > span:first-child { width:32px; flex:none; color:#9ca3af; font-size:10px; font-weight:700; }
-#delivery-order-mobile-filter-sheet .delivery-order-reference-quick-label { margin:8px 0; }
-#delivery-order-mobile-filter-sheet .delivery-order-reference-presets { display:flex; gap:8px; }
-#delivery-order-mobile-filter-sheet .delivery-order-reference-presets button { min-height:38px; min-width:0; flex:1; border:1px solid #e5e7eb; border-radius:12px; padding:8px; background:#fff; color:#374151; font:600 12px/16px var(--erp-font); }
-#delivery-order-mobile-filter-sheet .delivery-order-reference-presets [data-delivery-date-preset="week"] { border-color:#c5f037; background:#c5f037; color:#111827; }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar { width:100%; min-width:0; border:1px solid #f3f4f6; border-radius:16px; padding:16px; }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__header { display:flex; align-items:center; justify-content:space-between; gap:8px; border-bottom:1px solid #f3f4f6; margin-bottom:16px; padding-bottom:8px; }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__header > div { display:flex; gap:6px; }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__header button { min-width:32px; min-height:32px; border:0; border-radius:8px; padding:6px; background:#f9fafb; color:#4b5563; font:700 14px/20px var(--erp-font); }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__header > button { background:#fff; text-align:left; }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__weekdays, #delivery-order-mobile-filter-sheet .delivery-order-calendar__grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; text-align:center; }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__weekdays { margin-bottom:8px; color:#9ca3af; font:700 11px/16px var(--erp-font); }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__grid { min-height:212px; align-content:start; }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__grid > button, #delivery-order-mobile-filter-sheet .delivery-order-calendar__grid > span { width:32px; max-width:100%; height:32px; margin:auto; }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__grid > button { border:0; border-radius:50%; padding:0; background:#fff; color:#374151; font:500 12px/16px var(--erp-font); }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__grid--choices { grid-template-columns:repeat(3,minmax(0,1fr)); min-height:180px; }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__grid--choices > button { width:100%; height:36px; border-radius:12px; }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__grid > .is-in-range { background:rgba(197,240,55,.28); border-radius:0; }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__grid > .is-selected { background:#c5f037; color:#111827; font-weight:700; }
-#delivery-order-mobile-filter-sheet .delivery-order-calendar__back { display:flex; width:100%; min-height:36px; justify-content:center; align-items:center; gap:8px; margin-top:16px; border:0; border-radius:12px; background:#f9fafb; color:#374151; font:700 12px/16px var(--erp-font); }
-#delivery-order-mobile-filter-sheet button { cursor:pointer; }
-#delivery-order-mobile-filter-sheet :is(button,input):focus-visible { outline:2px solid #10b981; outline-offset:2px; }
 #delivery-order-detail-modal .delivery-order-detail-modal__title { color:#1f2937; line-height:28px; }
 #delivery-order-detail-modal .delivery-order-detail-modal__header { padding:20px 20px; }
 #delivery-order-detail-modal .delivery-order-detail-modal__body { padding-top:0; }
@@ -59,20 +19,12 @@
 #delivery-order-detail-modal .delivery-order-detail-modal__link--phone { color:#1f2937; }
 #delivery-order-detail-modal .delivery-order-detail-modal__link--wrap { white-space:normal; overflow-wrap:anywhere; }
 #delivery-order-detail-modal .delivery-order-detail-modal__action { border-radius:12px; font-size:14px; }
-@media (min-width:480px) {
-    #delivery-order-mobile-filter-sheet .delivery-order-reference-range { flex-direction:row; }
-}
 @media (min-width:576px) and (max-width:767.98px) {
     #delivery-order-page .erp-workspace-toolbar { flex-wrap:nowrap; gap:12px; }
     #delivery-order-page .erp-workspace-toolbar > .erp-mobile-search-shell { width:auto; flex:1 1 0; }
     #delivery-order-page .erp-workspace-toolbar > a[aria-label="Tambah pengiriman lewat POS"] { flex:none; min-height:44px; }
 }
 @media (min-width:640px) {
-    #delivery-order-mobile-filter-sheet { align-items:center; justify-content:center; padding:16px; }
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__panel { max-width:512px; max-height:calc(100vh - 32px); max-height:calc(100dvh - 32px); border-radius:24px; padding-bottom:0; transform:translateY(16px); opacity:0; transition:transform .2s,opacity .2s; }
-    #delivery-order-mobile-filter-sheet.is-open .delivery-order-filter-sheet__panel { transform:translateY(0); opacity:1; }
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__handle { display:none; }
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__button { font-size:14px; }
     #delivery-order-detail-modal .delivery-order-detail-modal__header { padding:22px 24px 24px; }
     #delivery-order-detail-modal .delivery-order-detail-modal__body { padding:0 24px 20px; }
     #delivery-order-detail-modal .delivery-order-detail-modal__footer { padding:14px 20px 20px; }
@@ -85,8 +37,4 @@
     #delivery-order-page .delivery-order-card__title { font-size:14px; font-weight:700; line-height:20px; }
     #delivery-order-page .delivery-order-card__phone, #delivery-order-page .delivery-order-card__amount, #delivery-order-page .delivery-order-card__courier { font-size:12px; line-height:18px; }
     #delivery-order-page .delivery-order-card__delivery { font-size:14px; line-height:20px; }
-}
-@media (max-height:600px) {
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__body { padding:12px; gap:12px; }
-    #delivery-order-mobile-filter-sheet :is(.delivery-order-filter-sheet__header,.delivery-order-filter-sheet__footer) { padding:12px; }
 }

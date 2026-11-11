@@ -21,7 +21,7 @@
     <script src="{{ asset('assets/js/transfer-list.js') }}?v={{ filemtime(public_path('assets/js/transfer-list.js')) }}"></script>
 @endpush
 @section('content')
-    <section class="transfer-list-page" x-data="transferList({ endpoint: @js(route('transfer-data')), csrf: @js(csrf_token()), timezone: @js(config('app.timezone')), side: @js($side), receiving: @js($receiving), branches: @js($filterBranches) })" aria-label="Daftar Pindah Stok">
+    <section class="transfer-list-page" x-data="transferList({ endpoint: @js(route('transfer-data')), csrf: @js(csrf_token()), side: @js($side), receiving: @js($receiving) })" @erp-filter-apply.window="if ($event.detail.id === 'transfer') applyFilters($event.detail.values)" @erp-filter-close.window="if ($event.detail.id === 'transfer') closeFilter()" aria-label="Daftar Pindah Stok">
         <div class="transfer-toolbar">
             <div class="transfer-search">
                 <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
@@ -65,85 +65,20 @@
             </div>
             <p class="transfer-list-count" x-show="rows.length && !hasMore" x-cloak x-text="rows.length + ' dari ' + filtered + ' transfer stok'"></p>
         </div>
-        <template x-teleport="body">
-            <div x-show="filterOpen" x-cloak class="transfer-overlay is-filter" @click.self="closeFilter()" @keydown.escape.window="if (filterOpen) closeFilter()" @keydown.tab="trapFocus($event)">
-                <section class="transfer-dialog transfer-filter-dialog" id="transfer-filter-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="transfer-filter-title" aria-describedby="transfer-filter-description">
-                    <button type="button" class="transfer-filter-handle" @click="closeFilter()" aria-label="Tutup filter"></button>
-                    <x-erp.filter-sheet-frame title="Filter Pindah Stok" title-id="transfer-filter-title" subtitle-id="transfer-filter-description" subtitle="Saring cabang dan status {{ $receiving ? 'penerimaan' : 'pengiriman' }}" header-class="transfer-dialog-head" body-class="transfer-filter-body" footer-class="transfer-filter-foot">
-                        <x-slot:close><button type="button" class="transfer-icon-button" @click="closeFilter()" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
-                        <x-slot:body>
-                            <div id="transfer-filter-main" x-show="!calendarOpen" class="transfer-filter-main">
-                                <div class="transfer-filter-section">
-                                    <div class="transfer-filter-section-head">
-                                        <span class="transfer-filter-label" id="transfer-filter-branch-label">{{ $receiving ? 'Cabang Penerima' : 'Cabang Pengirim' }}</span>
-                                        <button type="button" class="transfer-filter-reset" x-show="pending.branch !== 'all'" x-cloak @click="resetPendingFilter('branch')">Reset</button>
-                                    </div>
-                                    <div class="transfer-filter-branch-picker">
-                                        <label class="transfer-filter-branch-search"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i><input type="search" x-model="branchSearchQuery" placeholder="Cari cabang..." aria-label="Cari cabang" autocomplete="off"></label>
-                                        <div class="transfer-filter-branch-options" role="radiogroup" aria-labelledby="transfer-filter-branch-label">
-                                            <template x-for="branchOption in filteredBranches" :key="branchOption.id">
-                                                <label class="transfer-filter-branch-option"><input type="radio" name="transfer-filter-branch" :value="branchOption.id" x-model="pending.branch"><span x-text="branchOption.name"></span></label>
-                                            </template>
-                                            <p x-show="!filteredBranches.length" x-cloak class="transfer-filter-branch-empty" role="status">Cabang tidak ditemukan</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="transfer-filter-section">
-                                    <div class="transfer-filter-section-head">
-                                        <span class="transfer-filter-label">Status {{ $receiving ? 'Penerimaan' : 'Pengiriman' }}</span>
-                                        <button type="button" class="transfer-filter-reset" x-show="pending.status !== 'all'" x-cloak @click="resetPendingFilter('status')">Reset</button>
-                                    </div>
-                                    <div class="transfer-filter-chips" role="group" aria-label="Status transfer">
-                                        <template x-for="status in @js($statuses)" :key="status.value"><button type="button" @click="pending.status = status.value" :class="pending.status === status.value ? 'is-active' : ''" :aria-pressed="pending.status === status.value" x-text="status.label"></button></template>
-                                    </div>
-                                </div>
-                                <div class="transfer-filter-section">
-                                    <div class="transfer-filter-section-head">
-                                        <span class="transfer-filter-label">Periode Tanggal</span>
-                                        <button type="button" class="transfer-filter-reset" x-show="pending.start || pending.end" x-cloak @click="resetPendingFilter('date')">Reset</button>
-                                    </div>
-                                    <div class="transfer-filter-date-cards">
-                                        <button type="button" id="transfer-date-start" class="transfer-filter-date-card" @click="openFilterCalendar($event.currentTarget)" :aria-expanded="calendarOpen && filterCalendarTrigger?.id === 'transfer-date-start'" aria-controls="transfer-filter-calendar" :aria-label="'Dari tanggal: ' + formatFilterDate(pending.start)"><span class="transfer-filter-date-label">DARI</span><strong :class="pending.start ? 'is-set' : ''" x-text="formatFilterDate(pending.start)"></strong></button>
-                                        <button type="button" id="transfer-date-end" class="transfer-filter-date-card" @click="openFilterCalendar($event.currentTarget)" :aria-expanded="calendarOpen && filterCalendarTrigger?.id === 'transfer-date-end'" aria-controls="transfer-filter-calendar" :aria-label="'Sampai tanggal: ' + formatFilterDate(pending.end)"><span class="transfer-filter-date-label">KE</span><strong :class="pending.end ? 'is-set' : ''" x-text="formatFilterDate(pending.end)"></strong></button>
-                                    </div>
-                                    <p class="transfer-filter-error" x-show="pendingDateError" x-cloak x-text="pendingDateError" role="alert"></p>
-                                    <div class="transfer-filter-quick">
-                                        <span class="transfer-filter-label">Pilihan Cepat</span>
-                                        <div class="transfer-filter-quick-actions" role="group" aria-label="Pilihan cepat tanggal">
-                                            <button type="button" class="is-week" @click="setPendingDateRange('week')">Minggu Ini</button>
-                                            <button type="button" @click="setPendingDateRange('today')">Hari Ini</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <section id="transfer-filter-calendar" x-show="calendarOpen" x-cloak class="transfer-filter-calendar" aria-label="Pilih periode tanggal">
-                                <button id="transfer-filter-calendar-back" x-ref="filterCalendarBack" type="button" @click="closeFilterCalendar()" class="transfer-filter-calendar-back"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i><span>Kembali</span></button>
-                                <div class="transfer-filter-calendar-card">
-                                    <div class="transfer-filter-calendar-head">
-                                        <button type="button" @click="moveFilterCalendar(-1)" aria-label="Sebelumnya"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button>
-                                        <button id="transfer-filter-calendar-heading" type="button" @click="calendarView = calendarView === 'date' ? 'month' : (calendarView === 'month' ? 'year' : 'date')" x-text="filterCalendarHeading"></button>
-                                        <button type="button" @click="moveFilterCalendar(1)" aria-label="Berikutnya"><i class="ph-bold ph-caret-right" aria-hidden="true"></i></button>
-                                    </div>
-                                    <div x-show="calendarView === 'date'" class="transfer-filter-calendar-days">
-                                        <template x-for="(weekday, index) in ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']" :key="weekday"><span :aria-label="weekday" x-text="weekday[0]"></span></template>
-                                        <template x-for="blank in filterCalendarBlankDays" :key="'blank-' + blank"><span class="is-blank"></span></template>
-                                        <template x-for="day in filterCalendarDays" :key="getFilterCalendarDate(day)">
-                                            <span class="transfer-filter-calendar-day"><i x-show="isFilterCalendarDateInRange(day)"></i><button type="button" @click="selectFilterCalendarDate(day)" :aria-label="formatFilterDate(getFilterCalendarDate(day))" :aria-pressed="isFilterCalendarDateSelected(day)" :class="{'is-selected':isFilterCalendarDateSelected(day),'is-in-range':isFilterCalendarDateInRange(day)}" x-text="day"></button></span>
-                                        </template>
-                                    </div>
-                                    <div x-show="calendarView === 'month'" x-cloak class="transfer-filter-calendar-months"><template x-for="(month,index) in filterCalendarMonths" :key="month"><button type="button" @click="chooseFilterCalendarMonth(index)" :class="calendarMonth === index ? 'is-selected' : ''" x-text="month"></button></template></div>
-                                    <div x-show="calendarView === 'year'" x-cloak class="transfer-filter-calendar-months"><template x-for="year in filterCalendarYears" :key="year"><button type="button" @click="chooseFilterCalendarYear(year)" :class="calendarYear === year ? 'is-selected' : ''" x-text="year"></button></template></div>
-                                </div>
-                            </section>
-                        </x-slot:body>
-                        <x-slot:footer>
-                            <button type="button" @click="resetFilters()">Reset</button>
-                            <button type="button" class="erp-filter-sheet__primary" @click="applyFilter()" :disabled="!!pendingDateError">Terapkan</button>
-                        </x-slot:footer>
-                    </x-erp.filter-sheet-frame>
-                </section>
-            </div>
-        </template>
+        <x-erp.filter-sheet
+            id="transfer"
+            title="Filter Pindah Stok"
+            aria-label="Filter pindah stok"
+            subtitle="Saring cabang dan status {{ $receiving ? 'penerimaan' : 'pengiriman' }}"
+            :branch-label="$receiving ? 'Cabang Penerima' : 'Cabang Pengirim'"
+            branch-all-label="Semua Cabang"
+            :status-label="'Status ' . ($receiving ? 'Penerimaan' : 'Pengiriman')"
+            :branches="$filterBranches"
+            :statuses="collect($statuses)->pluck('label', 'value')->all()"
+            :timezone="config('app.timezone')"
+            desktop="modal"
+            reset-applies
+        />
         @include('transaction::transfer.segment.detail-dialog')
     </section>
 @endsection

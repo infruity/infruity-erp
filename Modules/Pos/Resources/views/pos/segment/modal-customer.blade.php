@@ -1,13 +1,13 @@
 {{-- Modal Tambah Pelanggan: disimpan lewat /pos/customers, lalu dipilih dengan ID aslinya (lihat saveCustomer di js-buah). --}}
 <div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
-    <div class="modal-dialog erp-sheet-dialog pos-sheet modal-fullscreen-sm-down">
+    <div class="modal-dialog modal-dialog-centered erp-sheet-dialog pos-sheet pos-sheet--compact">
         <div class="modal-content" x-data="{ customerName: '', customerPhone: '', customerAddress: '' }">
             <div class="erp-sheet-header pos-sheet-header">
                 <div class="pos-sheet-title">
                     <span class="pos-sheet-icon" aria-hidden="true"><i class="ph-bold ph-user-plus"></i></span>
                     <h5 class="modal-title" id="customerModalLabel">Tambah Pelanggan Baru</h5>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                <button type="button" data-bs-dismiss="modal" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
             </div>
             <div class="erp-sheet-body">
                 <div class="mb-3">

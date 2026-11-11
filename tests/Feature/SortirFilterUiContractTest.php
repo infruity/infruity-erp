@@ -2,141 +2,82 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Support\Facades\Blade;
 use Tests\TestCase;
 
 final class SortirFilterUiContractTest extends TestCase
 {
-    public function test_filter_uses_searchable_branch_ids_with_draft_reset(): void
+    private function pageSource(): string
     {
-        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/sortir/index2.blade.php'));
-
-        foreach ([
-            'branches: @js($sortirFilterBranches)',
-            'Cabang Tujuan',
-            'x-model.debounce.150ms="branchSearch"',
-            'role="radiogroup" aria-labelledby="sortir-filter-branch-label"',
-            'x-for="branch in visibleBranches"',
-            ':value="String(branch.id)"',
-            'x-model="pending.branch"',
-            'value="all"',
-            "resetPendingFilter('branch')",
-        ] as $contract) {
-            $this->assertStringContainsString($contract, $view);
-        }
-
-        $this->assertStringNotContainsString('id="sortir-filter-branch"', $view);
+        return file_get_contents(base_path('Modules/Transaction/Resources/views/sortir/index2.blade.php'));
     }
 
-    public function test_filter_matches_reference_sections_and_keeps_existing_date_query(): void
+    public function test_filter_is_the_shared_sheet_with_the_sortir_labels_and_statuses(): void
     {
-        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/sortir/index2.blade.php'));
+        $view = $this->pageSource();
+
+        foreach ([
+            '<x-erp.filter-sheet',
+            'id="sortir"',
+            'title="Filter Sortir Barang"',
+            'branch-label="Cabang Tujuan"',
+            'status-label="Status Sortir"',
+            ':branches="$sortirFilterBranches"',
+            "'draft' => 'Draf'",
+            "'paid' => 'Selesai'",
+            ':timezone="config(\'app.timezone\')"',
+            'desktop="modal"',
+            'reset-applies',
+            'apply-label="Terapkan Filter"',
+        ] as $contract) {
+            $this->assertStringContainsString($contract, $view, "Hilang: {$contract}");
+        }
+
+        // The sheet markup, calendar and draft state live in the component now.
+        foreach (['pending.', 'openFilterCalendar', 'filterCalendar', 'resetPendingFilter', 'x-teleport="body">' . "\n" . '            <div x-show="filterOpen"'] as $gone) {
+            $this->assertStringNotContainsString($gone, $view, "Sisa implementasi lama: {$gone}");
+        }
+    }
+
+    public function test_the_page_opens_the_sheet_and_listens_for_apply_and_close(): void
+    {
+        $view = $this->pageSource();
         $script = file_get_contents(base_path('public/assets/js/sortir-list.js'));
 
-        $branchPosition = strpos($view, 'Cabang Tujuan');
-        $statusPosition = strpos($view, 'Status Sortir');
-        $datePosition = strpos($view, 'Periode Tanggal');
-        $this->assertNotFalse($branchPosition);
-        $this->assertNotFalse($statusPosition);
-        $this->assertNotFalse($datePosition);
-        $this->assertLessThan($statusPosition, $branchPosition);
-        $this->assertLessThan($datePosition, $statusPosition);
-
-        foreach ([
-            "setPendingDateRange('week')",
-            "setPendingDateRange('today')",
-            "value:'draft',label:'Draf'",
-            "value:'paid',label:'Selesai'",
-            '@click="openFilterCalendar($event.currentTarget)"',
-            "resetPendingFilter('status')",
-            "resetPendingFilter('date')",
-            'applyFilter()',
-        ] as $contract) {
-            $this->assertStringContainsString($contract, $view);
-        }
-
-        foreach ([
-            'selectFilterCalendarDate(day)',
-            'moveFilterCalendar(step)',
-            'isFilterCalendarDateSelected(day)',
-        ] as $contract) {
-            $this->assertStringContainsString($contract, $script);
-        }
-
+        $this->assertStringContainsString('@click="openFilter($event)"', $view);
+        $this->assertStringContainsString("@erp-filter-apply.window=\"if (\$event.detail.id === 'sortir') applyFilters(\$event.detail.values)\"", $view);
+        $this->assertStringContainsString("@erp-filter-close.window=\"if (\$event.detail.id === 'sortir') closeFilter()\"", $view);
+        $this->assertStringContainsString("\$dispatch('erp-filter-open', {id: 'sortir'", $script);
+        // The date query keeps the same request fields.
         $this->assertStringContainsString('status_filter:this.filters.status,cabang_filter:this.filters.branch,start_date:this.filters.start,end_date:this.filters.end', $script);
     }
 
-    public function test_filter_sheet_keeps_actions_outside_the_scrollable_body(): void
+    public function test_sheet_renders_sections_in_reference_order(): void
     {
-        $styles = file_get_contents(base_path('public/assets/css/sortir-mobile.css'));
+        $html = Blade::render(
+            '<x-erp.filter-sheet id="sortir" title="Filter Sortir Barang" branch-label="Cabang Tujuan" status-label="Status Sortir" :branches="$branches" :statuses="$statuses" />',
+            ['branches' => [(object) ['id' => 1, 'name' => 'toko gkb']], 'statuses' => ['all' => 'Semua Status', 'draft' => 'Draf', 'paid' => 'Selesai']]
+        );
 
-        $this->assertStringContainsString('.sortir-dialog.is-filter-dialog { display:flex;', $styles);
-        $this->assertStringContainsString('.sortir-dialog.is-filter-dialog .sortir-filter-body { flex:1;', $styles);
-        $this->assertStringContainsString('overflow-y:auto;', $styles);
-        $this->assertStringContainsString('.sortir-dialog.is-filter-dialog .sortir-filter-foot { flex:none;', $styles);
+        $branch = strpos($html, 'Cabang Tujuan');
+        $status = strpos($html, 'Status Sortir');
+        $date = strpos($html, 'Periode Tanggal');
+        $this->assertNotFalse($branch);
+        $this->assertLessThan($status, $branch);
+        $this->assertLessThan($date, $status);
+        foreach (['Minggu Ini', 'Hari Ini', 'Draf', 'Selesai', 'Toko Gkb'] as $text) {
+            $this->assertStringContainsString($text, $html);
+        }
     }
 
     public function test_branch_names_are_serialized_as_data_and_rendered_as_text(): void
     {
-        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/sortir/index2.blade.php'));
-        $sortirFilterBranches = collect([['id' => '1', 'name' => 'GKB"><img src=x>']]);
-        $html = \Illuminate\Support\Facades\Blade::render(
-            '<div x-data="sortirList({ branches: @js($sortirFilterBranches) })"><span x-text="branch.name"></span></div>',
-            compact('sortirFilterBranches')
+        $html = Blade::render(
+            '<x-erp.filter-sheet id="sortir" title="Filter" :branches="$branches" />',
+            ['branches' => [(object) ['id' => '1', 'name' => 'GKB"><img src=x>']]]
         );
 
-        $this->assertStringContainsString('branches: @js($sortirFilterBranches)', $view);
-        $this->assertStringContainsString('x-text="branch.name"', $view);
+        $this->assertStringContainsString('x-text="row.name"', $html);
         $this->assertStringNotContainsString('<img', $html);
-    }
-
-    public function test_filter_presets_use_the_application_timezone(): void
-    {
-        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/sortir/index2.blade.php'));
-
-        $this->assertStringContainsString("timezone: @js(config('app.timezone'))", $view);
-    }
-
-    public function test_date_cards_use_the_wholesale_custom_range_calendar(): void
-    {
-        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/sortir/index2.blade.php'));
-        $script = file_get_contents(base_path('public/assets/js/sortir-list.js'));
-        $styles = file_get_contents(base_path('public/assets/css/sortir-mobile.css'));
-
-        foreach ([
-            'id="sortir-date-start"',
-            'id="sortir-date-end"',
-            '@click="openFilterCalendar($event.currentTarget)"',
-            'aria-controls="sortir-filter-calendar"',
-            'id="sortir-filter-calendar"',
-            'id="sortir-filter-calendar-back"',
-            'Kembali',
-            'filterCalendarBack',
-            'filterCalendarHeading',
-            'filterCalendarBlankDays',
-            'filterCalendarDays',
-            'filterCalendarMonths',
-            'chooseFilterCalendarMonth(index)',
-            'chooseFilterCalendarYear(year)',
-            'selectFilterCalendarDate(day)',
-            'isFilterCalendarDateSelected(day)',
-            'isFilterCalendarDateInRange(day)',
-            'formatFilterDate(pending.start)',
-            'Minggu Ini',
-            'Hari Ini',
-        ] as $contract) {
-            $this->assertStringContainsString($contract, $view . $script);
-        }
-
-        $this->assertSame(3, substr_count($view, 'class="sortir-filter-section" x-show="!calendarOpen"'));
-        $this->assertSame(2, substr_count($view, '@click="openFilterCalendar($event.currentTarget)"'));
-        $this->assertStringNotContainsString('type="date"', $view);
-        $this->assertStringNotContainsString('flatpickr', $view . $script . $styles);
-        $this->assertStringNotContainsString('ph-calendar-blank', $view);
-        $this->assertStringContainsString('rounded-2xl border border-gray-100 bg-white p-4 shadow-sm', $view);
-        $this->assertStringContainsString('rounded-xl border border-gray-200 bg-white px-3 py-2.5', $view);
-        $this->assertStringContainsString('#sortir-filter-dialog .sortir-filter-date-card:focus-visible, #sortir-filter-dialog #sortir-filter-calendar button:focus-visible { outline:none; }', $styles);
-        $this->assertStringNotContainsString('.sortir-filter-dates { display:grid;', $styles);
-        $this->assertStringContainsString('#sortir-filter-dialog .sortir-branch-option:has(input[type=radio]:focus-visible) { outline:2px solid #10b981; outline-offset:-2px; }', $styles);
-        $this->assertStringNotContainsString('#sortir-filter-dialog .sortir-branch-option:focus-within { outline:2px solid', $styles);
     }
 }

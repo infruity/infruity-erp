@@ -1,4 +1,5 @@
 <?php
+use App\Http\Middleware\EnsureFeatureEnabled;
 use Illuminate\Support\Facades\Route;
 use Modules\Pos\Http\Controllers\PosController;
 use Modules\Pos\Http\Controllers\SettingNotaController;
@@ -43,15 +44,18 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::get('delivery-order/get-courier', [DeliveryOrderController::class, 'getCourier'])->name('delivery-order.get-courier');
     Route::post('delivery-order/update-courier', [DeliveryOrderController::class, 'updateCourier'])->name('delivery-order.update-courier');
     Route::put('delivery-order/set-selesai/{id}', [DeliveryOrderController::class, 'setSelesai'])->name('delivery-order.set-selesai');
-    Route::get('other-book', [OtherBookController::class, 'index'])->name('other-book');
+    Route::get('other-book', [OtherBookController::class, 'index'])->name('other-book')->middleware(EnsureFeatureEnabled::class . ':other_book_pages');
     Route::put('other-book/set-selesai/{id}', [OtherBookController::class, 'setSelesai'])->name('other-book.set-selesai');
     Route::resource('order-book', OrderBookController::class)->names('order-book')->except('show');
     Route::post('order-book/save-transaction', [OrderBookController::class, 'saveTransaction'])->name('order-book.save-transaction');
     Route::get('order-book/{id}/order', [OrderBookController::class, 'order'])->name('order-book.order');
     
-    Route::resource('expenditure', ExpenditureController::class)->names('expenditure')->except('show');
-    Route::post('expenditure/save-transaction', [ExpenditureController::class, 'saveTransaction'])->name('expenditure.save-transaction');
-    Route::get('expenditure/show/{id}', [ExpenditureController::class, 'show'])->name('expenditure.show');
+    // Pengeluaran is not in use: hidden (404) until FEATURE_EXPENDITURE_PAGES is switched on.
+    Route::middleware(EnsureFeatureEnabled::class . ':expenditure_pages')->group(function () {
+        Route::resource('expenditure', ExpenditureController::class)->names('expenditure')->except('show');
+        Route::post('expenditure/save-transaction', [ExpenditureController::class, 'saveTransaction'])->name('expenditure.save-transaction');
+        Route::get('expenditure/show/{id}', [ExpenditureController::class, 'show'])->name('expenditure.show');
+    });
 
     Route::get('arus-kas', [ArusKasController::class, 'index'])->name('arus-kas.index');
     Route::get('arus-kas/create', [ArusKasController::class, 'create'])->name('arus-kas.create');
@@ -64,8 +68,8 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::get('pos/data', [PosController::class, 'get_data'])->name('pos-data');
     Route::get('delivery-order/data', [DeliveryOrderController::class, 'get_data'])->name('delivery-order.data');
-    Route::get('other-book/data', [OtherBookController::class, 'get_data'])->name('other-book.data');
-    Route::get('expenditure/data', [ExpenditureController::class, 'get_data'])->name('expenditure.data');
+    Route::get('other-book/data', [OtherBookController::class, 'get_data'])->name('other-book.data')->middleware(EnsureFeatureEnabled::class . ':other_book_pages');
+    Route::get('expenditure/data', [ExpenditureController::class, 'get_data'])->name('expenditure.data')->middleware(EnsureFeatureEnabled::class . ':expenditure_pages');
     Route::get('order-book/data', [OrderBookController::class, 'get_data'])->name('order-book.data');
 });
 

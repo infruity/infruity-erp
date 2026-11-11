@@ -58,69 +58,6 @@
     .pos-toolbar-search { min-width:0; flex:1; padding:0; }
     .pos-toolbar-search .erp-mobile-search { height:44px; box-shadow:none; }
     .pos-toolbar-search .erp-mobile-search:not(:focus-within) { border-color:#868e98; }
-    /* The POS filter follows the Stock Opname sheet: centered on desktop, anchored to the bottom on mobile. */
-    .pos-filter-panel { width:calc(100% - 32px); max-width:512px; max-height:92dvh; border-radius:24px; }
-    .pos-filter-handle { display:none; }
-    @media (max-width:767px) {
-        .pos-filter-overlay { align-items:flex-end; }
-        .pos-filter-panel { width:100%; max-width:100%; max-height:92dvh; border-radius:24px 24px 0 0; }
-        .pos-filter-handle { display:flex; flex:none; justify-content:center; padding:12px 0 4px; }
-        .pos-filter-handle span { width:56px; height:6px; border-radius:999px; background:#d1d5db; }
-        .pos-filter-panel .erp-filter-sheet__header { padding:16px 20px; }
-    }
-    .pos-filter-panel .erp-filter-sheet__body { min-width:0; padding:20px; }
-    .pos-filter-main { display:flex; flex-direction:column; gap:16px; }
-    .pos-filter-section { min-width:0; margin:0; padding:0; border:0; }
-    .pos-filter-heading { display:flex; width:100%; align-items:center; justify-content:space-between; gap:8px; float:none; padding:0; margin:0 0 8px; color:#6b7280; font-size:10px; line-height:16px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
-    .pos-filter-reset { border:0; padding:0; background:transparent; color:#dc2626; font-size:10px; font-weight:600; text-transform:none; letter-spacing:0; cursor:pointer; }
-    .pos-filter-branch-picker { overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
-    .pos-filter-branch-search { display:flex; align-items:center; gap:8px; margin:0; padding:8px 12px; border-bottom:1px solid #f3f4f6; color:#9ca3af; }
-    .pos-filter-branch-search i { flex:none; font-size:14px; }
-    .pos-filter-branch-search input { width:100%; min-width:0; height:20px; border:0; padding:0; outline:0; background:transparent; color:#374151; font-size:16px; }
-    .pos-filter-branch-options { max-height:128px; overflow-y:auto; overscroll-behavior:contain; }
-    .pos-filter-branch-options label { display:flex; min-height:33px; align-items:center; gap:12px; margin:0; padding:6px 14px; border-bottom:1px solid #f3f4f6; color:#4b5563; font-size:12px; cursor:pointer; }
-    .pos-filter-branch-options label:last-child { border-bottom:0; }
-    .pos-filter-branch-options input[type="radio"] { appearance:none; box-sizing:border-box; width:16px; height:16px; flex:none; margin:0; border:2px solid #d1d5db; border-radius:50%; padding:0; background:#fff; box-shadow:none; cursor:pointer; }
-    .pos-filter-branch-options input[type="radio"]:checked { border-color:#10b981; background-image:radial-gradient(circle,#10b981 0 4px,transparent 4px); }
-    .pos-filter-branch-options input[type="radio"]:focus-visible { outline:2px solid #10b981; outline-offset:2px; }
-    .pos-filter-branch-options label:has(input:checked) { color:#111827; background:#f9fafb; font-weight:700; }
-    .pos-filter-branch-empty { padding:12px; margin:0; color:#9ca3af; font-size:12px; text-align:center; }
-    .pos-filter-status-options { display:flex; flex-wrap:wrap; gap:8px; }
-    .pos-filter-status-options button { min-height:30px; border:1px solid #e5e7eb; border-radius:999px; padding:4px 14px; background:#fff; color:#4b5563; font-size:12px; cursor:pointer; }
-    .pos-filter-status-options button[aria-pressed="true"] { border-color:#6ee7b7; background:#ecfdf5; color:#047857; font-weight:600; }
-    .pos-filter-dates { display:grid; gap:8px; margin-bottom:10px; }
-    .pos-filter-dates button { display:flex; width:100%; min-width:0; min-height:38px; align-items:center; gap:16px; border:1px solid #e5e7eb; border-radius:12px; padding:8px 12px; background:#f9fafb; text-align:left; cursor:pointer; }
-    .pos-filter-dates button:focus-visible { outline:2px solid #0b595b; outline-offset:2px; }
-    .pos-filter-dates span { width:24px; flex:none; color:#9ca3af; font-size:10px; font-weight:700; }
-    .pos-filter-dates strong { min-width:0; overflow:hidden; color:#6b7280; font-size:12px; font-weight:500; text-overflow:ellipsis; white-space:nowrap; }
-    .pos-filter-presets { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
-    .pos-filter-presets button { min-width:0; min-height:38px; border:1px solid #e5e7eb; border-radius:12px; padding:6px 8px; background:#fff; color:#6b7280; font-size:12px; font-weight:700; cursor:pointer; }
-    .pos-filter-presets button.is-selected { border-color:#c5f037; background:#c5f037; color:#1f2937; }
-    .pos-filter-calendar { display:flex; flex-direction:column; gap:16px; }
-    .pos-filter-calendar-back { display:inline-flex; min-height:36px; align-items:center; gap:8px; align-self:flex-start; border:0; border-radius:8px; padding:4px 6px; margin:0; background:transparent; color:#374151; font-size:14px; font-weight:600; cursor:pointer; }
-    .pos-filter-calendar-back i { font-size:18px; }
-    .pos-filter-calendar-card { max-width:100%; border:1px solid #f3f4f6; border-radius:20px; padding:16px; background:#fff; box-shadow:0 1px 4px rgba(15,23,42,.06); }
-    .pos-filter-calendar-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-    .pos-filter-calendar-header button { display:flex; width:36px; height:36px; align-items:center; justify-content:center; border:0; border-radius:50%; padding:0; background:transparent; color:#6b7280; font-size:18px; cursor:pointer; }
-    .pos-filter-calendar-header button:hover { background:#f9fafb; }
-    .pos-filter-calendar-header button:nth-child(2) { width:auto; border-radius:8px; padding:4px 10px; color:#1f2937; font-size:18px; font-weight:700; }
-    .pos-filter-calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); text-align:center; }
-    .pos-filter-calendar-weekday,.pos-filter-calendar-blank { display:flex; height:36px; align-items:center; justify-content:center; color:#9ca3af; font-size:12px; font-weight:600; }
-    .pos-filter-calendar-day { position:relative; display:flex; height:40px; align-items:center; justify-content:center; }
-    .pos-filter-calendar-day > i { position:absolute; inset:2px 0; background:#ecfdf5; }
-    .pos-filter-calendar-day button { position:relative; z-index:1; width:36px; height:36px; border:0; border-radius:50%; padding:0; background:transparent; color:#374151; font-size:14px; cursor:pointer; }
-    .pos-filter-calendar-day button:hover { background:#f3f4f6; }
-    .pos-filter-calendar-day button.is-in-range { color:#1f2937; font-weight:600; }
-    .pos-filter-calendar-day button.is-selected,.pos-filter-calendar-options button.is-selected { background:#c5f037; color:#1f2937; font-weight:700; }
-    .pos-filter-calendar-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:8px 0; }
-    .pos-filter-calendar-options button { min-height:44px; border:0; border-radius:12px; padding:8px; background:transparent; color:#4b5563; font-size:12px; cursor:pointer; }
-    .pos-filter-calendar-options button:hover { background:#f9fafb; }
-    @media (max-width:360px) {
-        .pos-filter-panel .erp-filter-sheet__body { padding:16px; }
-        .pos-filter-calendar-card { padding:12px; }
-        .pos-filter-calendar-day button { width:32px; height:32px; }
-        .pos-filter-calendar-weekday { font-size:11px; }
-    }
     /* The shell root is 12px and Metronic utilities are !important, so the shared dialog's rem sizes are pinned to the reference pixels. */
     [data-pos-detail] > section { max-width:384px; border-radius:16px; }
     [data-pos-detail] > section > div:first-child { padding:24px !important; }
@@ -152,7 +89,7 @@
     }
 </style>
 <script src="{{ asset('assets/js/pos-list-reference.js') }}?v={{ filemtime(public_path('assets/js/pos-list-reference.js')) }}"></script>
-<div class="contents pos-list-page" data-pos-list x-data="PosListUi.createFilters(@js($posFilterConfig))" x-init="onApply = (applied) => window.posApplyFilters(applied); onLoadMore = () => window.posLoadMore()" @pos-list-drawn.window="onDrawn($event.detail)" @keydown.escape.window="close()">
+<div class="contents pos-list-page" data-pos-list x-data="PosListUi.createFilters(@js($posFilterConfig))" x-init="onApply = (applied) => window.posApplyFilters(applied); onLoadMore = () => window.posLoadMore()" @pos-list-drawn.window="onDrawn($event.detail)" @erp-filter-apply.window="if ($event.detail.id === 'pos') applyFilters($event.detail.values)" @erp-filter-close.window="if ($event.detail.id === 'pos') close()">
 <x-erp.workspace title="Kasir / POS" subtitle="Kelola kasir / pos dan lihat rincian transaksi.">
     <x-slot:toolbar>
         <x-erp.mobile-search class="pos-toolbar-search erp-mobile-search-shell--always-visible erp-mobile-search-shell--flush">
@@ -178,79 +115,24 @@
     </div>
 </x-erp.workspace>
 
-<template x-teleport="body">
-    <div x-show="filtersOpen" x-cloak class="pos-filter-overlay fixed inset-0 z-[100] flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="pos-filter-title">
-        <button type="button" class="absolute inset-0 bg-black/60" @click="close()" aria-label="Tutup filter"></button>
-        <section x-show="filtersOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-full opacity-0 md:translate-y-4 md:scale-95" x-transition:enter-end="translate-y-0 opacity-100 md:scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0 opacity-100 md:scale-100" x-transition:leave-end="translate-y-full opacity-0 md:translate-y-4 md:scale-95" class="pos-filter-panel relative flex w-full flex-col overflow-hidden bg-white pb-0 shadow-2xl">
-            <div class="pos-filter-handle"><span></span></div>
-            <x-erp.filter-sheet-frame title="Filter Transaksi" title-id="pos-filter-title" title-tag="h3" subtitle="Saring cabang, status, dan periode tanggal transaksi." body-class="pos-filter-body min-h-0 flex-1 overflow-y-auto overscroll-contain">
-                <x-slot:close><button type="button" @click="close()" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
-                <x-slot:body>
-                    <div x-show="!calendarOpen" class="pos-filter-main">
-                        <fieldset class="pos-filter-section">
-                            <legend class="pos-filter-heading"><span>Cabang</span><button type="button" class="pos-filter-reset" x-show="draft.branch !== (branches.length === 1 ? branches[0].id : 'all') || branchSearch.trim()" @click="draft.branch = branches.length === 1 ? branches[0].id : 'all'; branchSearch = ''">Reset</button></legend>
-                            <div class="pos-filter-branch-picker">
-                                <label class="pos-filter-branch-search" for="pos-branch-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="pos-branch-search" type="search" x-model="branchSearch" placeholder="Cari cabang..." aria-label="Cari cabang" autocomplete="off"></label>
-                                <div class="pos-filter-branch-options">
-                                    <label x-show="branches.length > 1 && showAllBranches"><input type="radio" name="pos-branch" value="all" x-model="draft.branch"><span>Semua Cabang</span></label>
-                                    <template x-for="branch in visibleBranches" :key="branch.id"><label><input type="radio" name="pos-branch" :value="branch.id" x-model="draft.branch"><span x-text="branch.name"></span></label></template>
-                                    <p x-show="visibleBranches.length === 0 && !showAllBranches" class="pos-filter-branch-empty">Cabang tidak ditemukan</p>
-                                </div>
-                            </div>
-                        </fieldset>
-                        <fieldset class="pos-filter-section">
-                            <legend class="pos-filter-heading"><span>Status Transaksi</span><button type="button" class="pos-filter-reset" x-show="draft.status !== 'all'" @click="draft.status = 'all'">Reset</button></legend>
-                            <div class="pos-filter-status-options">
-                                @foreach ($posStatuses as $value => $label)
-                                    <button type="button" data-pos-status="{{ $value }}" @click="draft.status = '{{ $value }}'" :aria-pressed="draft.status === '{{ $value }}'">{{ $label }}</button>
-                                @endforeach
-                            </div>
-                        </fieldset>
-                        <fieldset class="pos-filter-section">
-                            <legend class="pos-filter-heading"><span>Periode Tanggal</span><button type="button" class="pos-filter-reset" x-show="draft.start || draft.end" @click="draft.start = ''; draft.end = ''">Reset</button></legend>
-                            <div class="pos-filter-dates">
-                                <button type="button" id="pos-start-date" aria-label="Pilih tanggal mulai transaksi" aria-controls="pos-filter-calendar" :aria-expanded="calendarOpen && calendarSide === 'start'" @click="openCalendar('start', $el); $nextTick(() => requestAnimationFrame(() => { $refs.posCalendarBack?.focus({preventScroll:true}); $refs.posCalendarBack?.scrollIntoView({block:'nearest'}); }))"><span>DARI</span><strong x-text="formatDate(draft.start)"></strong></button>
-                                <button type="button" id="pos-end-date" aria-label="Pilih tanggal akhir transaksi" aria-controls="pos-filter-calendar" :aria-expanded="calendarOpen && calendarSide === 'end'" @click="openCalendar('end', $el); $nextTick(() => requestAnimationFrame(() => { $refs.posCalendarBack?.focus({preventScroll:true}); $refs.posCalendarBack?.scrollIntoView({block:'nearest'}); }))"><span>KE</span><strong x-text="formatDate(draft.end)"></strong></button>
-                            </div>
-                            <p x-show="dateError" x-cloak role="alert" class="mt-2 text-xs font-medium text-red-600" x-text="dateError"></p>
-                            <div class="flex flex-col gap-2 pt-2">
-                                <span class="pos-filter-heading" style="margin:0">Pilihan Cepat</span>
-                                <div class="pos-filter-presets">
-                                    <button type="button" @click="setDateRange('week')" :class="isDateRangeActive('week') ? 'is-selected' : ''" :aria-pressed="isDateRangeActive('week')">Minggu Ini</button>
-                                    <button type="button" @click="setDateRange('today')" :class="isDateRangeActive('today') ? 'is-selected' : ''" :aria-pressed="isDateRangeActive('today')">Hari Ini</button>
-                                </div>
-                            </div>
-                        </fieldset>
-                    </div>
-                    <div id="pos-filter-calendar" class="pos-filter-calendar" data-pos-calendar x-show="calendarOpen" x-cloak @keydown.escape.stop="closeCalendar()">
-                        <button type="button" x-ref="posCalendarBack" class="pos-filter-calendar-back" @click="closeCalendar()"><i class="ph ph-arrow-left" aria-hidden="true"></i><span>Kembali</span></button>
-                        <div class="pos-filter-calendar-card">
-                            <div class="pos-filter-calendar-header">
-                                <button type="button" @click="navigateCalendar(-1)" aria-label="Sebelumnya"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
-                                <button type="button" @click="setCalendarView(calendarView === 'date' ? 'month' : calendarView === 'month' ? 'year' : 'date')" x-text="calendarHeading" aria-label="Ubah tampilan kalender"></button>
-                                <button type="button" @click="navigateCalendar(1)" aria-label="Berikutnya"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
-                            </div>
-                            <div x-show="calendarView === 'date'" class="pos-filter-calendar-grid">
-                                <template x-for="(weekday, index) in calendarWeekdays" :key="'weekday-' + index"><span class="pos-filter-calendar-weekday" :aria-label="weekday" x-text="weekday[0]"></span></template>
-                                <template x-for="(day, index) in calendarDays" :key="day ? day.date : 'blank-' + index"><span class="pos-filter-calendar-day"><i x-show="day && isCalendarDateInRange(day.date)" aria-hidden="true"></i><button type="button" :disabled="!day" :aria-pressed="!!day && isCalendarDateSelected(day.date)" :class="day && isCalendarDateSelected(day.date) ? 'is-selected' : day && isCalendarDateInRange(day.date) ? 'is-in-range' : ''" @click="selectCalendarDate(day)" x-text="day ? day.day : ''"></button></span></template>
-                            </div>
-                            <div x-show="calendarView === 'month'" class="pos-filter-calendar-options">
-                                <template x-for="(month, index) in calendarMonths" :key="'month-' + index"><button type="button" :class="calendarMonth === index ? 'is-selected' : ''" :aria-pressed="calendarMonth === index" @click="selectCalendarMonth(index)" x-text="month"></button></template>
-                            </div>
-                            <div x-show="calendarView === 'year'" class="pos-filter-calendar-options">
-                                <template x-for="year in calendarYears" :key="'year-' + year"><button type="button" :class="calendarYear === year ? 'is-selected' : ''" :aria-pressed="calendarYear === year" @click="selectCalendarYear(year)" x-text="year"></button></template>
-                            </div>
-                        </div>
-                    </div>
-                </x-slot:body>
-                <x-slot:footer>
-                    <button type="button" @click="reset()">Reset Filter</button>
-                    <button type="button" class="erp-filter-sheet__primary" @click="apply()" :disabled="!!dateError">Terapkan Filter</button>
-                </x-slot:footer>
-            </x-erp.filter-sheet-frame>
-        </section>
-    </div>
-</template>
+<x-erp.filter-sheet
+    id="pos"
+    title="Filter Transaksi"
+    aria-label="Filter transaksi"
+    subtitle="Saring cabang, status, dan periode tanggal transaksi."
+    branch-label="Cabang"
+    branch-all-label="Semua Cabang"
+    status-label="Status Transaksi"
+    :branches="$posBranches"
+    :show-branch-all="$posBranches->count() > 1"
+    :default-branch="$posFilterConfig['defaultBranch']"
+    :statuses="$posStatuses"
+    :timezone="$posFilterConfig['timezone']"
+    desktop="modal"
+    reset-applies
+    reset-label="Reset Filter"
+    apply-label="Terapkan Filter"
+/>
 
 <template x-teleport="body">
     <x-erp.detail-dialog open="detailOpen" close="closeDetail()" title="Detail Transaksi" labelledby="pos-detail-title" close-label="Tutup detail transaksi" data-pos-detail>

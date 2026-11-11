@@ -102,19 +102,11 @@ body.erp-ui .erp-filter-sheet__footer > button:is(.is-primary,.erp-filter-sheet_
 
 /* Sheet titles */
 body.erp-ui :is(
-    #arus-kas-filter-title,
-    #order-book-filter-title,
-    #delivery-order-mobile-filter-title,
-    #sortir-filter-title,
-    #transfer-filter-title,
+    [data-erp-filter-sheet] .erp-filter-sheet__title,
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div > h3,
-    #stock-filter-title,
-    #stock-detail-filter-title,
     div.relative:has(> form #receipt-category-mobile) > div > h3,
     form[method="GET"]:has(#mobile-user-role-filter) > div > h3,
-    form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > header h3,
-    [role="dialog"][aria-label="Filter pengadaan"] > section h2,
-    .report-mobile-sheet--filter .report-mobile-sheet__head h2
+    form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > header h3
 ) {
     margin:0;
     font-size:var(--erp-filter-title-size);
@@ -142,28 +134,19 @@ body.erp-ui :is(
 
 /* Headers */
 body.erp-ui :is(
-    .arus-kas-filter-sheet > header,
-    #order-book-filter-sheet > section > header,
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__header,
-    #sortir-filter-dialog .sortir-dialog-head,
-    #transfer-filter-dialog .transfer-dialog-head,
+    [data-erp-filter-sheet] > section > header,
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div:has(> h3),
-    #stock-filters .stock-filter-header,
-    #stock-detail-filters .stock-detail-filter-head,
     div.relative:has(> form #receipt-category-mobile) > div:has(> h3),
     form[method="GET"]:has(#mobile-user-role-filter) > div:has(> h3),
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > header,
-    [role="dialog"][aria-label="Filter pengadaan"] > section > div:has(h2),
-    .report-mobile-sheet--filter > .report-mobile-sheet__head
+    [role="dialog"][aria-label="Filter pengadaan"] > section > div:has(h2)
 ) {
     padding:14px 20px !important;
 }
 
 /* Subtitles */
 body.erp-ui :is(
-    .arus-kas-filter-sheet > header p,
-    #order-book-filter-sheet > section > header p,
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__subtitle
+    [data-erp-filter-sheet] > section > header p
 ) {
     font-size:11px;
     line-height:16px;
@@ -171,19 +154,12 @@ body.erp-ui :is(
 
 /* Close controls */
 body.erp-ui :is(
-    .arus-kas-filter-sheet > header button[aria-label="Tutup filter"],
-    #order-book-filter-sheet [x-ref="filterCloseButton"],
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__close,
-    #sortir-filter-dialog .sortir-dialog-head .sortir-icon-button,
-    #transfer-filter-dialog .transfer-dialog-head .transfer-icon-button,
+    [data-erp-filter-sheet] [x-ref="closeButton"],
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div:has(> h3) > button,
-    #stock-filters .stock-filter-close,
-    #stock-detail-filter-close,
     div.relative:has(> form #receipt-category-mobile) button[aria-label="Tutup filter"],
     form[method="GET"]:has(#mobile-user-role-filter) button[aria-label="Tutup filter"],
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > header button[aria-label="Tutup filter"],
-    [role="dialog"][aria-label="Filter pengadaan"] > section button[aria-label="Tutup"],
-    .report-mobile-sheet--filter .report-mobile-sheet__close
+    [role="dialog"][aria-label="Filter pengadaan"] > section button[aria-label="Tutup"]
 ) {
     width:32px;
     height:32px;
@@ -194,19 +170,12 @@ body.erp-ui :is(
 
 /* Close icons */
 body.erp-ui :is(
-    .arus-kas-filter-sheet > header button[aria-label="Tutup filter"] > i,
-    #order-book-filter-sheet [x-ref="filterCloseButton"] > i,
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__close > i,
-    #sortir-filter-dialog .sortir-dialog-head .sortir-icon-button > i,
-    #transfer-filter-dialog .transfer-dialog-head .transfer-icon-button > i,
+    [data-erp-filter-sheet] [x-ref="closeButton"] > i,
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div:has(> h3) > button > i,
-    #stock-filters .stock-filter-close > i,
-    #stock-detail-filter-close > i,
     div.relative:has(> form #receipt-category-mobile) button[aria-label="Tutup filter"] > i,
     form[method="GET"]:has(#mobile-user-role-filter) button[aria-label="Tutup filter"] > i,
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > header button[aria-label="Tutup filter"] > i,
-    [role="dialog"][aria-label="Filter pengadaan"] > section button[aria-label="Tutup"] > i,
-    .report-mobile-sheet--filter .report-mobile-sheet__close > i
+    [role="dialog"][aria-label="Filter pengadaan"] > section button[aria-label="Tutup"] > i
 ) {
     font-size:16px;
     line-height:1;
@@ -214,22 +183,14 @@ body.erp-ui :is(
 
 /* Section labels; Bootstrap color and weight utilities are important */
 body.erp-ui :is(
-    .arus-kas-filter-sheet .arus-kas-filter-scroll h3,
-    #order-book-filter-sheet [x-show="!calOpen"] h3,
-    #order-book-filter-sheet [x-show="!calOpen"] h4,
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__label,
-    #sortir-filter-dialog .sortir-filter-label,
-    #transfer-filter-dialog .transfer-filter-label,
+    [data-erp-filter-sheet] [x-show="!calendarOpen"] :is(label, span).uppercase,
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div.flex-1 label.uppercase,
     [x-show="filterOpen"][data-erp-modal].absolute:has(> button[\@click="toggleType('Semua')"]) > div > p,
-    #stock-filters .stock-filter-heading,
-    #stock-detail-filters .stock-detail-filter-label,
     label[for="receipt-category-mobile-button"],
     label[for="mobile-user-role-filter"],
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) .dashboard-scroll h4,
     [role="dialog"][aria-label="Filter pengadaan"] > section label.uppercase,
     [x-show*="filtersOpen"].md\:block:has([data-wholesale-filter="status"]) label,
-    .report-mobile-sheet--filter .report-mobile-field__label,
     .report-mobile-sheet--history .report-mobile-history-filter-popover .report-mobile-field__label,
     .menu[data-kt-menu="true"]:has(#kt_ecommerce_sales_flatpickr):has(> [data-kt-user-table-filter="form"]):not(.delivery-order-filter-menu) .form-label,
     details.erp-operations-filter:has(#kt_ecommerce_sales_flatpickr) > .erp-operations-filter__body > label,
@@ -245,19 +206,12 @@ body.erp-ui :is(
 
 /* Sheet bodies */
 body.erp-ui :is(
-    .arus-kas-filter-sheet .arus-kas-filter-scroll,
-    #order-book-filter-sheet > section > div.min-h-0.flex-1,
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__body,
-    #sortir-filter-dialog .sortir-filter-body,
-    #transfer-filter-dialog .transfer-filter-body,
+    [data-erp-filter-sheet] > section > div.min-h-0.flex-1,
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div.flex-1.overflow-y-auto,
-    #stock-filters .stock-filter-body,
-    #stock-detail-filters .stock-detail-filter-fields,
     div.relative:has(> form #receipt-category-mobile) > form > div:first-of-type,
     form[method="GET"]:has(#mobile-user-role-filter) > div.p-5,
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > .dashboard-scroll,
-    [role="dialog"][aria-label="Filter pengadaan"] > section > div.overflow-y-auto,
-    .report-mobile-sheet--filter > .report-mobile-sheet__body
+    [role="dialog"][aria-label="Filter pengadaan"] > section > div.overflow-y-auto
 ) {
     padding:20px !important;
     min-width:0;
@@ -266,18 +220,11 @@ body.erp-ui :is(
 
 /* Search inputs; retain mobile anti-zoom size */
 body.erp-ui :is(
-    .arus-kas-filter-sheet input[type="search"],
-    #order-book-filter-sheet input[x-model="branchSearchQuery"],
-    #delivery-order-mobile-branch-search,
-    #sortir-filter-dialog input[type="search"],
-    #transfer-filter-dialog input[type="search"],
+    [data-erp-filter-sheet] input[x-model="branchSearch"],
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative input[x-model="branchSearchQuery"],
-    #stock-branch-search,
-    #stock-detail-branch-search,
-    #stock-detail-filters .stock-detail-search-filter #search,
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) input[x-model="branchSearchQuery"],
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) input[x-model="periodSearchQuery"],
-    #wholesale-mobile-branch-search,
+    [data-erp-filter-sheet] input[type="search"],
     .report-mobile-sheet--history .report-mobile-history-search input
 ) {
     min-width:0;
@@ -289,14 +236,8 @@ body.erp-ui :is(
 
 /* Visible select values; never change backing-control visibility */
 body.erp-ui :is(
-    #stock-filters .stock-filter-selects select,
-    #stock-filters #stock-pending-status,
-    #stock-detail-filters .select2-selection--single,
-    #stock-detail-filters .select2-selection__rendered,
-    #receipt-category-mobile-button,
     #mobile-user-role-filter,
     [x-show*="filtersOpen"].md\:block:has([data-wholesale-filter="status"]) select[data-wholesale-filter],
-    .report-mobile-sheet--filter .report-mobile-select__trigger,
     .menu[data-kt-menu="true"]:has(#kt_ecommerce_sales_flatpickr):has(> [data-kt-user-table-filter="form"]):not(.delivery-order-filter-menu) .form-select,
     .menu[data-kt-menu="true"]:has(#kt_ecommerce_sales_flatpickr):has(> [data-kt-user-table-filter="form"]):not(.delivery-order-filter-menu) .select2-selection--single,
     .menu[data-kt-menu="true"]:has(#kt_ecommerce_sales_flatpickr):has(> [data-kt-user-table-filter="form"]):not(.delivery-order-filter-menu) .select2-selection__rendered,
@@ -317,22 +258,14 @@ body.erp-ui :is(
 
 /* Primary options; keep selected weight and secondary captions */
 body.erp-ui :is(
-    .arus-kas-filter-sheet .arus-kas-radio-row,
-    #order-book-filter-sheet label:has(input[name="orderBookDraftBranch"]),
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__branch-option,
-    #sortir-filter-dialog .sortir-branch-option,
-    #transfer-filter-dialog .transfer-filter-branch-option,
+    [data-erp-filter-sheet] label:has(input[name$="MobileBranch"]),
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative label:has(input[name="cabangFilter"]),
     [x-show="filterOpen"][data-erp-modal].absolute:has(> button[\@click="toggleType('Semua')"]) > button,
-    #stock-filters .stock-branch-radio,
-    #stock-filters .stock-filter-sort,
-    #stock-detail-filters .stock-detail-filter-branch-option,
     #receipt-category-mobile-options [role="menuitemradio"],
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) .dashboard-scroll label:has(input[type="radio"]),
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) span[x-text="branch.name"],
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) span[x-text="item.name"],
-    #wholesale-mobile-branches > label[data-wholesale-mobile-branch],
-    .report-mobile-sheet--filter .report-mobile-select__menu button,
+    [data-erp-filter-sheet] [id$="-mobile-branches"] > label,
     .report-mobile-sheet--history .report-mobile-history-filter-popover .report-mobile-history-option-menu button,
     #receipt-category-desktop-options [role="menuitemradio"]
 ) {
@@ -342,13 +275,9 @@ body.erp-ui :is(
 
 /* Primary branch text */
 body.erp-ui :is(
-    .arus-kas-filter-sheet .arus-kas-radio-row > span,
-    #order-book-filter-sheet label:has(input[name="orderBookDraftBranch"]) > span:last-child,
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__branch-option > span,
-    #sortir-filter-dialog .sortir-branch-option > span,
-    #transfer-filter-dialog .transfer-filter-branch-option > span,
+    [data-erp-filter-sheet] label:has(input[name$="MobileBranch"]) > span:last-child,
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) label:has(input[name="cabangFilter"]) > span:last-child,
-    #wholesale-mobile-branches > label[data-wholesale-mobile-branch] > span:last-child
+    [data-erp-filter-sheet] [id$="-mobile-branches"] > label > span:last-child
 ) {
     font-size:var(--erp-filter-option-size);
     line-height:16px;
@@ -361,17 +290,8 @@ body.erp-ui form[method="GET"]:has(> input[name="period"][value="week"]):has(inp
 
 /* Status and grouping text */
 body.erp-ui :is(
-    .arus-kas-filter-sheet [role="group"][aria-label="Status Arus Kas"] button,
-    #order-book-filter-sheet button[\:aria-pressed],
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__chip,
-    #sortir-filter-dialog .sortir-filter-chips button,
-    #transfer-filter-dialog .transfer-filter-chips button,
-    [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div.flex-1.overflow-y-auto button.rounded-full,
-    #stock-filters .stock-category-options .stock-filter-option,
-    #stock-detail-filters .stock-detail-direction-option,
-    #stock-detail-filters .stock-detail-filter-reference-chip,
-    [role="dialog"][aria-label="Filter pengadaan"] > section button[\:aria-pressed],
-    .report-mobile-sheet--filter .report-mobile-grouping button
+    [data-erp-filter-sheet] button[\:aria-pressed],
+    [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div.flex-1.overflow-y-auto button.rounded-full
 ) {
     font-size:var(--erp-filter-option-size);
     line-height:16px;
@@ -379,16 +299,10 @@ body.erp-ui :is(
 
 /* Visible date values; originals and invisible overlays retain their geometry */
 body.erp-ui :is(
-    #order-book-filter-sheet [aria-label="Tanggal mulai"] > span:last-child,
-    #order-book-filter-sheet [aria-label="Tanggal akhir"] > span:last-child,
-    #delivery-order-mobile-filter-sheet .delivery-order-reference-range button > span:last-child,
-    #sortir-filter-dialog .sortir-filter-date-value,
-    #transfer-filter-dialog .transfer-filter-date-card input,
-    #stock-detail-filters #stock-detail-date-start-display,
-    #stock-detail-filters #stock-detail-date-end-display,
-    [role="dialog"][aria-label="Filter pengadaan"] label:has(> #wholesale-mobile-start-date) > span:last-of-type,
-    [role="dialog"][aria-label="Filter pengadaan"] label:has(> #wholesale-mobile-end-date) > span:last-of-type,
-    .report-mobile-sheet--filter .report-mobile-date-input > input,
+    [data-erp-filter-sheet] [aria-label="Tanggal mulai"] > span:last-child,
+    [data-erp-filter-sheet] [aria-label="Tanggal akhir"] > span:last-child,
+    [data-erp-filter-sheet] [id$="-mobile-start-date-trigger"] > span:last-child,
+    [data-erp-filter-sheet] [id$="-mobile-end-date-trigger"] > span:last-child,
     .report-mobile-sheet--history .report-mobile-history-filter-popover .report-mobile-history-date-trigger,
     .menu[data-kt-menu="true"]:has(#kt_ecommerce_sales_flatpickr):has(> [data-kt-user-table-filter="form"]):not(.delivery-order-filter-menu) #kt_ecommerce_sales_flatpickr,
     details.erp-operations-filter:has(#kt_ecommerce_sales_flatpickr) #kt_ecommerce_sales_flatpickr,
@@ -402,45 +316,34 @@ body.erp-ui :is(
 
 /* Date presets */
 body.erp-ui :is(
-    #order-book-filter-sheet button[title="Tampilkan Minggu Ini"],
-    #order-book-filter-sheet button[title="Tampilkan Hari Ini"],
-    #delivery-order-mobile-filter-sheet .delivery-order-reference-presets button,
-    #sortir-filter-dialog .sortir-filter-quick-actions button,
-    #transfer-filter-dialog .transfer-filter-quick-actions button,
-    #stock-detail-filters .stock-detail-date-presets button,
+    [data-erp-filter-sheet] button[title="Tampilkan Minggu Ini"],
+    [data-erp-filter-sheet] button[title="Tampilkan Hari Ini"],
     [role="dialog"][aria-label="Filter pengadaan"] > section button[title="Tampilkan Minggu Ini"],
-    [role="dialog"][aria-label="Filter pengadaan"] > section button[title="Tampilkan Hari Ini"],
-    .report-mobile-sheet--filter .report-mobile-quick button
+    [role="dialog"][aria-label="Filter pengadaan"] > section button[title="Tampilkan Hari Ini"]
 ) {
     font-size:var(--erp-filter-option-size);
     line-height:16px;
 }
 
 /* Only these sheets own the inset in their footer, not in the containing panel. */
-body.erp-ui :is(.arus-kas-filter-sheet > footer, .report-mobile-sheet--filter > .report-mobile-sheet__foot) {
+
+
+
+/* The shared sheets own the safe-area inset in their footer, not in the containing panel. */
+body.erp-ui :is(
+    [data-erp-filter-sheet] > section > footer
+) {
     --erp-filter-footer-inset:env(safe-area-inset-bottom, 0px);
-}
-@media (max-width:767.98px) {
-    body.erp-ui :is(#sortir-filter-dialog .sortir-filter-foot, #transfer-filter-dialog .transfer-filter-foot, #stock-filters .stock-filter-footer) {
-        --erp-filter-footer-inset:env(safe-area-inset-bottom, 0px);
-    }
 }
 
 /* Sheet footer spacing */
 body.erp-ui :is(
-    .arus-kas-filter-sheet > footer,
-    #order-book-filter-sheet > section > footer,
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__footer,
-    #sortir-filter-dialog .sortir-filter-foot,
-    #transfer-filter-dialog .transfer-filter-foot,
+    [data-erp-filter-sheet] > section > footer,
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div.border-t,
-    #stock-filters .stock-filter-footer,
-    #stock-detail-filters .stock-detail-filter-footer,
     div.relative:has(> form #receipt-category-mobile) > form > div.border-t,
     form[method="GET"]:has(#mobile-user-role-filter) > div.border-t,
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > footer,
-    [role="dialog"][aria-label="Filter pengadaan"] > section > div.border-t,
-    .report-mobile-sheet--filter > .report-mobile-sheet__foot
+    [role="dialog"][aria-label="Filter pengadaan"] > section > div.border-t
 ) {
     gap:12px !important;
     padding:var(--erp-filter-footer-padding) var(--erp-filter-footer-gutter) calc(var(--erp-filter-footer-padding) + var(--erp-filter-footer-inset, 0px)) !important;
@@ -448,19 +351,12 @@ body.erp-ui :is(
 
 /* Footer actions */
 body.erp-ui :is(
-    .arus-kas-filter-sheet > footer > button,
-    #order-book-filter-sheet > section > footer > button,
-    #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__button,
-    #sortir-filter-dialog .sortir-filter-foot button,
-    #transfer-filter-dialog .transfer-filter-foot button,
+    [data-erp-filter-sheet] > section > footer > button,
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div.border-t > button,
-    #stock-filters .stock-filter-footer button,
-    #stock-detail-filters .stock-detail-filter-footer button,
     div.relative:has(> form #receipt-category-mobile) > form > div.border-t > :is(a,button),
     form[method="GET"]:has(#mobile-user-role-filter) > div.border-t > :is(a,button),
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > footer > button,
     [role="dialog"][aria-label="Filter pengadaan"] > section > div.border-t > button,
-    .report-mobile-sheet--filter .report-mobile-sheet__foot > button,
     .report-mobile-sheet--history .report-mobile-history-filter-popover .report-mobile-history-filter-actions button
 ) {
     min-width:0;
@@ -487,33 +383,19 @@ body.erp-ui :is(
         --erp-filter-footer-gutter:12px;
     }
     body.erp-ui :is(
-        .arus-kas-filter-sheet > header,
-        #order-book-filter-sheet > section > header,
-        #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__header,
-        #sortir-filter-dialog .sortir-dialog-head,
-        #transfer-filter-dialog .transfer-dialog-head,
-        [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div:has(> h3),
-        #stock-filters .stock-filter-header,
-        #stock-detail-filters .stock-detail-filter-head,
-        div.relative:has(> form #receipt-category-mobile) > div:has(> h3),
-        form[method="GET"]:has(#mobile-user-role-filter) > div:has(> h3),
-        form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > header,
-        [role="dialog"][aria-label="Filter pengadaan"] > section > div:has(h2),
-        .report-mobile-sheet--filter > .report-mobile-sheet__head,
-        .arus-kas-filter-sheet .arus-kas-filter-scroll,
-        #order-book-filter-sheet > section > div.min-h-0.flex-1,
-        #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__body,
-        #sortir-filter-dialog .sortir-filter-body,
-        #transfer-filter-dialog .transfer-filter-body,
-        [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div.flex-1.overflow-y-auto,
-        #stock-filters .stock-filter-body,
-        #stock-detail-filters .stock-detail-filter-fields,
-        div.relative:has(> form #receipt-category-mobile) > form > div:first-of-type,
-        form[method="GET"]:has(#mobile-user-role-filter) > div.p-5,
-        form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > .dashboard-scroll,
-        [role="dialog"][aria-label="Filter pengadaan"] > section > div.overflow-y-auto,
-        .report-mobile-sheet--filter > .report-mobile-sheet__body
-    ) { padding:12px !important; }
+    [data-erp-filter-sheet] > section > header,
+    [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div:has(> h3),
+    div.relative:has(> form #receipt-category-mobile) > div:has(> h3),
+    form[method="GET"]:has(#mobile-user-role-filter) > div:has(> h3),
+    form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > header,
+    [role="dialog"][aria-label="Filter pengadaan"] > section > div:has(h2),
+    [data-erp-filter-sheet] > section > div.min-h-0.flex-1,
+    [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div.flex-1.overflow-y-auto,
+    div.relative:has(> form #receipt-category-mobile) > form > div:first-of-type,
+    form[method="GET"]:has(#mobile-user-role-filter) > div.p-5,
+    form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > .dashboard-scroll,
+    [role="dialog"][aria-label="Filter pengadaan"] > section > div.overflow-y-auto
+) { padding:12px !important; }
 }
 
 /* Re-anchor narrow operations menus to the toolbar; leave desktop alignment intact. */
@@ -521,4 +403,57 @@ body.erp-ui :is(
     body.erp-ui .erp-workspace-toolbar:has(details.erp-operations-filter #kt_ecommerce_sales_flatpickr) { position:relative; }
     body.erp-ui details.erp-operations-filter:has(#kt_ecommerce_sales_flatpickr) { position:static; }
     body.erp-ui details.erp-operations-filter:has(#kt_ecommerce_sales_flatpickr) > .erp-operations-filter__body { right:20px; }
+}
+
+/* Field sizes of the sheets that are not built on <x-erp.filter-sheet> (Resep, Akun Pengguna, Master Produk,
+   Dashboard CRM), so their inputs, rows and gaps match the shared sheet: 36px search, 40px select, 33px rows,
+   16px between sections, 24px top corners. Inputs keep 16px text so iOS does not zoom on focus. */
+
+/* Resep: category dropdown (a button, not an input) */
+body.erp-ui #receipt-category-mobile-button {
+    height:40px;
+    min-height:40px;
+    padding-block:0;
+    font-size:12px;
+    font-weight:400;
+    line-height:16px;
+}
+
+/* Akun Pengguna: role select and its label */
+body.erp-ui #mobile-user-role-filter {
+    height:40px;
+    min-height:40px;
+    padding-block:0;
+}
+body.erp-ui label[for="mobile-user-role-filter"] {
+    text-transform:uppercase;
+    letter-spacing:.05em;
+}
+
+/* Master Produk: sections aligned with the sheet edge, tighter search and rows, one list height */
+body.erp-ui [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative :is(.mb-6, .mb-0).px-2 {
+    padding-inline:0;
+}
+body.erp-ui [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative .mb-6 {
+    margin-bottom:16px;
+}
+body.erp-ui [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative input[x-model="branchSearchQuery"] {
+    height:36px;
+    padding-block:0;
+}
+body.erp-ui [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative label:has(input[name="cabangFilter"]) {
+    min-height:33px;
+    padding-block:8px;
+}
+body.erp-ui [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative [class~="h-[220px]"] {
+    max-height:132px;
+}
+
+/* Dashboard CRM: same corner radius, search rows 36px */
+body.erp-ui form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) {
+    border-top-left-radius:24px;
+    border-top-right-radius:24px;
+}
+body.erp-ui form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) .dashboard-scroll label.relative.h-10 {
+    height:36px;
 }

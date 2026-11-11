@@ -54,16 +54,16 @@ class ErpFilterSheetFrameTest extends TestCase
     public function test_filter_interactions_remain_owned_by_the_existing_views(): void
     {
         $contracts = [
-            'Modules/Pos/Resources/views/order-book/index.blade.php' => ['applyFilters()', 'resetFilters()'],
-            'Modules/Pos/Resources/views/delivery-order/index.blade.php' => ['data-delivery-order-filter-apply', 'data-delivery-order-filter-reset'],
-            'Modules/Pos/Resources/views/pos/index2.blade.php' => ['@click="apply()"', '@click="reset()"'],
-            'Modules/Pos/Resources/views/arus-kas/index.blade.php' => ['applyMobileFilters()', 'resetMobileFilters()'],
-            'Modules/Transaction/Resources/views/wholesale/index.blade.php' => ['applyWholesaleMobileFilters(', 'data-wholesale-filter-reset'],
-            'Modules/Transaction/Resources/views/sortir/index2.blade.php' => ['applyFilter()', 'pendingDateError'],
-            'Modules/Transaction/Resources/views/transfer/index2.blade.php' => ['applyFilter()', 'pendingDateError'],
-            'Modules/Report/Resources/views/partials/mobile-detail.blade.php' => ['applyDraftLive()', 'calendarOpen'],
-            'Modules/Master/Resources/views/products/stock.blade.php' => ['id="stock-filter-apply"', 'setFilterOpen(open)'],
-            'Modules/Master/Resources/views/products/stock-show.blade.php' => ['id="stock-detail-filter-apply"', 'data-stock-date-preset'],
+            'Modules/Pos/Resources/views/order-book/index.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
+            'Modules/Pos/Resources/views/delivery-order/index.blade.php' => ['applySheetFilters(', '<x-erp.filter-sheet'],
+            'Modules/Pos/Resources/views/pos/index2.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
+            'Modules/Pos/Resources/views/arus-kas/index.blade.php' => ['applyMobileFilters(', '<x-erp.filter-sheet'],
+            'Modules/Transaction/Resources/views/wholesale/index.blade.php' => ['applyWholesaleMobileFilters(', 'data-wholesale-filter-reset', '<x-erp.filter-sheet'],
+            'Modules/Transaction/Resources/views/sortir/index2.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
+            'Modules/Transaction/Resources/views/transfer/index2.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
+            'Modules/Report/Resources/views/partials/mobile-detail.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
+            'Modules/Master/Resources/views/products/stock.blade.php' => ['applySheetFilters(', '<x-erp.filter-sheet'],
+            'Modules/Master/Resources/views/products/stock-show.blade.php' => ['applyStockDetailFilters(', '<x-erp.filter-sheet'],
         ];
 
         foreach ($contracts as $view => $tokens) {
@@ -77,17 +77,8 @@ class ErpFilterSheetFrameTest extends TestCase
     public function test_stock_opname_and_similar_sheet_filters_use_the_shared_frame(): void
     {
         $views = [
-            'Modules/Transaction/Resources/views/stock-opname/partials/reference-filters.blade.php',
-            'Modules/Pos/Resources/views/order-book/index.blade.php',
-            'Modules/Pos/Resources/views/delivery-order/index.blade.php',
-            'Modules/Pos/Resources/views/pos/index2.blade.php',
-            'Modules/Pos/Resources/views/arus-kas/index.blade.php',
-            'Modules/Transaction/Resources/views/wholesale/index.blade.php',
-            'Modules/Transaction/Resources/views/sortir/index2.blade.php',
-            'Modules/Transaction/Resources/views/transfer/index2.blade.php',
-            'Modules/Report/Resources/views/partials/mobile-detail.blade.php',
-            'Modules/Master/Resources/views/products/stock.blade.php',
-            'Modules/Master/Resources/views/products/stock-show.blade.php',
+            'resources/views/components/erp/filter-sheet.blade.php',
+            'resources/views/components/erp/filter-sheet.blade.php',
         ];
 
         foreach ($views as $view) {
@@ -95,5 +86,90 @@ class ErpFilterSheetFrameTest extends TestCase
             $this->assertFileExists($path, "Missing filter view: {$view}");
             $this->assertStringContainsString('<x-erp.filter-sheet-frame', file_get_contents($path), "Filter sheet not using the shared frame: {$view}");
         }
+    }
+
+    public function test_sheet_can_drop_the_period_section_for_branch_and_status_only_lists(): void
+    {
+        $with = Blade::render('<x-erp.filter-sheet id="a" title="Filter" :statuses="$statuses" />', ['statuses' => ['all' => 'Semua']]);
+        $without = Blade::render('<x-erp.filter-sheet id="a" title="Filter" :statuses="$statuses" :with-dates="false" />', ['statuses' => ['all' => 'Semua']]);
+
+        foreach (['Periode Tanggal', 'Pilihan Cepat', 'id="a-mobile-calendar"'] as $dates) {
+            $this->assertStringContainsString($dates, $with);
+            $this->assertStringNotContainsString($dates, $without);
+        }
+        $this->assertStringContainsString('Semua', $without);
+        $this->assertStringContainsString('Terapkan', $without);
+    }
+
+    public function test_sheet_renders_extra_choice_groups_and_quick_ranges(): void
+    {
+        $html = Blade::render(
+            '<x-erp.filter-sheet id="a" title="Filter" :statuses="$statuses" :groups="$groups" :quick-ranges="[\'week\', \'today\', \'month\']" />',
+            [
+                'statuses' => ['all' => 'Semua'],
+                'groups' => [
+                    ['key' => 'delivery', 'label' => 'Status Penerimaan', 'options' => ['all' => 'Semua', 'received' => 'Sudah Diterima']],
+                    ['key' => 'sort', 'label' => 'Urutkan', 'type' => 'radio', 'default' => 'name', 'options' => ['name' => 'Nama', 'stock' => 'Stok']],
+                ],
+            ]
+        );
+
+        foreach (['Status Penerimaan', 'Sudah Diterima', 'Urutkan', 'role="radiogroup"', 'name="a-sort-"', 'Minggu Ini', 'Hari Ini', 'Bulan Ini'] as $text) {
+            $this->assertStringContainsString($text, $html, "Hilang: {$text}");
+        }
+        // Chips set the group value; the group's default decides when its Reset link shows.
+        $this->assertStringContainsString("setExtra('delivery', 'received')", $html);
+        $this->assertStringContainsString("extra['sort'] !== 'name'", $html);
+        $this->assertStringContainsString("setExtra('sort', 'name')", $html);
+        $this->assertStringContainsString('\u0022groups\u0022:[{\u0022key\u0022:\u0022delivery\u0022,\u0022default\u0022:\u0022all\u0022,\u0022resets\u0022:[]}', $html);
+    }
+
+    public function test_default_quick_ranges_stay_week_and_today_without_a_month_button(): void
+    {
+        $html = Blade::render('<x-erp.filter-sheet id="a" title="Filter" :statuses="$statuses" />', ['statuses' => ['all' => 'Semua']]);
+
+        $this->assertStringContainsString("setDateRange('week')", $html);
+        $this->assertStringContainsString("setDateRange('today')", $html);
+        $this->assertStringNotContainsString('Bulan Ini', $html);
+        $this->assertStringNotContainsString('\u0022groups\u0022:[{', $html);
+    }
+
+    public function test_sheet_can_start_with_a_search_box_and_names_its_subtitle_for_retitling(): void
+    {
+        $with = Blade::render('<x-erp.filter-sheet id="a" title="Filter" subtitle="Atur" search-label="Cari aktivitas" search-placeholder="Cari aktivitas atau referensi..." />');
+        $without = Blade::render('<x-erp.filter-sheet id="a" title="Filter" subtitle="Atur" />');
+
+        $this->assertStringContainsString('Cari aktivitas', $with);
+        $this->assertStringContainsString('id="a-mobile-query"', $with);
+        $this->assertStringContainsString('placeholder="Cari aktivitas atau referensi..."', $with);
+        $this->assertStringContainsString('\u0022search\u0022:true', $with);
+        $this->assertStringNotContainsString('a-mobile-query', $without);
+        $this->assertStringContainsString('id="a-filter-subtitle"', $with);
+    }
+
+    public function test_groups_can_depend_on_each_other_and_follow_another_groups_value(): void
+    {
+        $html = Blade::render(
+            '<x-erp.filter-sheet id="r" title="Filter" :groups="$groups" :dates-when="[\'timeGroup\' => \'daily\']" />',
+            ['groups' => [
+                ['key' => 'timeGroup', 'label' => 'Kelompok', 'default' => 'daily', 'options' => ['daily' => 'Harian', 'weekly' => 'Mingguan']],
+                ['key' => 'year', 'label' => 'Tahun', 'showWhen' => ['timeGroup' => 'weekly'], 'resets' => ['week'], 'options' => ['all' => 'Semua', '2026' => '2026']],
+                ['key' => 'week', 'label' => 'Periode Mingguan', 'type' => 'radio', 'scroll' => true, 'optionsBy' => 'year', 'showWhen' => ['timeGroup' => 'weekly'], 'disabled' => ['b'],
+                    'options' => ['2026' => ['' => 'Semua Periode', 'a' => 'Minggu 1', 'b' => 'Minggu 2'], 'all' => ['' => 'Semua Periode']]],
+            ]]
+        );
+
+        // Shown only for the weekly mode, the period section only for the daily one.
+        $this->assertStringContainsString('x-show="matches(JSON.parse(', $html);
+        $this->assertStringContainsString('\\u0022timeGroup\\u0022:\\u0022weekly\\u0022', $html);
+        $this->assertStringContainsString("setExtra('year', 'all')", $html);
+        // One list of weeks per year, each visible only while that year is chosen.
+        $this->assertStringContainsString('name="r-week-2026"', $html);
+        $this->assertStringContainsString('name="r-week-all"', $html);
+        $this->assertStringContainsString("extra['year'] === '2026'", $html);
+        $this->assertStringContainsString('max-h-[176px]', $html);
+        // A week that cannot be picked is disabled and dimmed.
+        $this->assertMatchesRegularExpression('/value="b"[^>]*disabled/', $html);
+        $this->assertStringContainsString('cursor-not-allowed opacity-50', $html);
     }
 }

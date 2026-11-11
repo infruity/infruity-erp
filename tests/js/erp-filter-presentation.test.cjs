@@ -8,10 +8,10 @@ const asset = path.join(__dirname, '../../public/assets/css/erp-filters.css');
 test('all filter families and nested report filters use the shared scale', () => {
     const css = fs.readFileSync(asset, 'utf8');
     for (const hook of [
-        '#sortir-filter-dialog', '#transfer-filter-dialog', '#stock-filters', '#stock-detail-filters',
-        '.report-mobile-sheet--filter', '.report-mobile-history-filter-popover',
+        '[data-erp-filter-sheet]',
+        '.report-mobile-history-filter-popover',
         '#mobile-user-role-filter', '#receipt-category-mobile', '#receipt-category-desktop-button',
-        'Filter pengadaan', '#wholesale-mobile-branch-search', 'periodSearchQuery',
+        'periodSearchQuery',
         'cabangFilter', '.erp-operations-filter', '.erp-operations-inline-select', '.nota-branch-picker',
         'data-kt-menu', '#kt_ecommerce_sales_flatpickr',
     ]) assert.ok(css.includes(hook), `Missing visual family hook: ${hook}`);
@@ -50,7 +50,7 @@ test('filter presentation uses explicit shared role sizes without changing the a
     })) {
         assert.match(css, new RegExp(`--erp-filter-${name}:\\s*${value}`));
     }
-    for (const selector of ['.arus-kas-filter-sheet', '#order-book-filter-sheet', '#delivery-order-mobile-filter-sheet']) {
+    for (const selector of ['[data-erp-filter-sheet] input[type="search"]', '[data-erp-filter-sheet] .erp-filter-sheet__title', '[data-erp-filter-sheet] > section > footer']) {
         assert.ok(css.includes(selector), `Missing core family ${selector}`);
     }
     assert.equal((css.match(/font-size:var\(--erp-filter-option-size\)/g) || []).length, 4);
@@ -59,4 +59,22 @@ test('filter presentation uses explicit shared role sizes without changing the a
     assert.doesNotMatch(css, /(?:^|})\s*(?:html|:root|body)\s*\{/m, 'Do not compensate by changing the global root');
     assert.doesNotMatch(css, /(?:^|})\s*(?:input|button|select|h2|h3)\s*\{/m, 'Do not leak presentation into unrelated forms');
     assert.doesNotMatch(css, /(?:^|[;{])\s*(?:height|min-height):\s*(?:88|96|100)(?:d?vh)/, 'No forced full-height filter sheets');
+});
+
+test('sheets outside the shared component get the same field sizes', () => {
+    const css = fs.readFileSync(asset, 'utf8');
+
+    // Resep's category dropdown is a 40px, 12px button; it must not stay in the 16px input group.
+    assert.match(css, /body\.erp-ui #receipt-category-mobile-button\s*\{[^}]*height:40px[^}]*font-size:12px/);
+    assert.doesNotMatch(css.match(/Visible select values[\s\S]*?\{/)[0], /#receipt-category-mobile-button/);
+    // Akun Pengguna: 40px select and an uppercase label like the other sheets.
+    assert.match(css, /body\.erp-ui #mobile-user-role-filter\s*\{[^}]*height:40px/);
+    assert.match(css, /label\[for="mobile-user-role-filter"\]\s*\{[^}]*text-transform:uppercase/);
+    // Master Produk: sections on the sheet edge, 36px search, 33px branch rows, shorter list.
+    assert.match(css, /input\[x-model="branchSearchQuery"\]\s*\{\s*height:36px/);
+    assert.match(css, /label:has\(input\[name="cabangFilter"\]\)\s*\{\s*min-height:33px/);
+    assert.match(css, /\[class~="h-\[220px\]"\]\s*\{\s*max-height:132px/);
+    // Dashboard CRM: 24px top corners, 36px search rows.
+    assert.match(css, /border-top-left-radius:24px/);
+    assert.match(css, /label\.relative\.h-10\s*\{\s*height:36px/);
 });

@@ -10,45 +10,6 @@
 .delivery-order-filter-chip.is-active { border-color:#a7f3d0; background:#ecfdf5; color:#047857; font-weight:600; }
 .delivery-order-filter-chip:focus-visible { outline:2px solid #0f766e; outline-offset:2px; }
 .delivery-order-filter-trigger.is-active { color:#0b595b; }
-.delivery-order-filter-sheet { position:fixed; inset:0; z-index:1250; display:flex; flex-direction:column; justify-content:flex-end; }
-.delivery-order-filter-sheet[hidden] { display:none !important; }
-.delivery-order-filter-sheet__backdrop { position:absolute; inset:0; border:0; padding:0; background:rgba(0,0,0,.7); opacity:0; transition:opacity .3s ease; }
-.delivery-order-filter-sheet__panel { position:relative; z-index:1; display:flex; width:100%; max-height:85vh; max-height:85dvh; flex-direction:column; overflow:hidden; border-radius:24px 24px 0 0; background:#fff; padding-bottom:env(safe-area-inset-bottom); box-shadow:0 -10px 35px rgba(0,0,0,.12); transform:translateY(100%); transition:transform .3s ease; }
-.delivery-order-filter-sheet.is-open .delivery-order-filter-sheet__backdrop { opacity:1; }
-.delivery-order-filter-sheet.is-open .delivery-order-filter-sheet__panel { transform:translateY(0); }
-.delivery-order-filter-sheet__handle { display:flex; width:100%; flex:none; justify-content:center; border:0; background:transparent; padding:12px 0 4px; cursor:pointer; }
-.delivery-order-filter-sheet__handle span { width:64px; height:6px; border-radius:999px; background:#d1d5db; }
-.delivery-order-filter-sheet__header { display:flex; flex:none; align-items:center; justify-content:space-between; border-bottom:1px solid #f3f4f6; background:#fff; padding:16px 20px; }
-.delivery-order-filter-sheet__title { margin:0; color:#1f2937; font:700 18px/1.35 var(--erp-font); }
-.delivery-order-filter-sheet__subtitle { margin:2px 0 0; color:#9ca3af; font:400 11px/1.4 var(--erp-font); }
-.delivery-order-filter-sheet__close { display:flex; width:32px; height:32px; flex:none; align-items:center; justify-content:center; border:0; border-radius:50%; background:#f3f4f6; color:#6b7280; font-size:18px; cursor:pointer; }
-.delivery-order-filter-sheet__body { display:flex; min-height:0; flex:1 1 auto; flex-direction:column; gap:20px; overflow-y:auto; overscroll-behavior:contain; padding:16px; scrollbar-width:none; }
-.delivery-order-filter-sheet__body::-webkit-scrollbar { display:none; }
-.delivery-order-filter-sheet__section { padding:0 4px; }
-.delivery-order-filter-sheet__label { display:block; margin:0 0 8px; color:#6b7280; font:700 12px/1.35 var(--erp-font); letter-spacing:.06em; text-transform:uppercase; }
-.delivery-order-filter-sheet__branch-card { overflow:hidden; border:1px solid #e5e7eb; border-radius:8px; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.04); }
-.delivery-order-filter-sheet__branch-search { position:relative; border-bottom:1px solid #f3f4f6; }
-.delivery-order-filter-sheet__branch-search i { position:absolute; top:50%; left:12px; color:#9ca3af; font-size:13px; transform:translateY(-50%); }
-.delivery-order-filter-sheet__branch-search input { width:100%; border:0; outline:0; background:transparent; padding:10px 12px 10px 32px; color:#374151; font:400 12px/1.5 var(--erp-font); }
-.delivery-order-filter-sheet__branch-search input:focus { background:#f9fafb; }
-.delivery-order-filter-sheet__branch-list { min-height:144px; max-height:144px; overflow-y:auto; overscroll-behavior:contain; background:rgba(249,250,251,.3); }
-.delivery-order-filter-sheet__branch-option { display:flex; min-height:38px; align-items:center; gap:12px; border-bottom:1px solid rgba(243,244,246,.7); padding:10px 14px; color:#4b5563; font:500 12px/1.5 var(--erp-font); cursor:pointer; }
-.delivery-order-filter-sheet__branch-option:last-of-type { border-bottom:0; }
-.delivery-order-filter-sheet__branch-option input { appearance:none; width:16px; height:16px; flex:none; margin:0; border:2px solid #cbd5e1; border-radius:50%; background:#fff; cursor:pointer; }
-.delivery-order-filter-sheet__branch-option input:checked { border-color:#10b981; background:radial-gradient(circle,#10b981 0 4px,#fff 4.5px); }
-.delivery-order-filter-sheet__branch-option input:focus-visible { outline:2px solid #0f766e; outline-offset:2px; }
-.delivery-order-filter-sheet__branch-option:has(input:checked) { color:#111827; font-weight:700; }
-.delivery-order-filter-sheet__empty { margin:0; padding:14px 10px; color:#9ca3af; font:400 12px/1.4 var(--erp-font); text-align:center; }
-.delivery-order-filter-sheet__chips { display:flex; flex-wrap:wrap; gap:8px; }
-.delivery-order-filter-sheet__chip { border:1px solid #e5e7eb; border-radius:999px; background:#fff; padding:6px 12px; color:#4b5563; font:500 12px/1.5 var(--erp-font); cursor:pointer; transition:background .15s,border-color .15s,color .15s; }
-.delivery-order-filter-sheet__chip.is-active { border-color:#6ee7b7; background:#ecfdf5; color:#047857; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.04); }
-.delivery-order-filter-sheet__chip:focus-visible,.delivery-order-filter-sheet__close:focus-visible,.delivery-order-filter-sheet__button:focus-visible { outline:2px solid #0f766e; outline-offset:2px; }
-.delivery-order-filter-sheet__footer { display:flex; flex:none; gap:8px; border-top:1px solid #f3f4f6; background:#fff; padding:16px 16px calc(16px + env(safe-area-inset-bottom)); }
-.delivery-order-filter-sheet__button { min-height:44px; flex:1; border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:#4b5563; font:600 14px/1.2 var(--erp-font); cursor:pointer; transition:transform .15s,background .15s; }
-.delivery-order-filter-sheet__button:active { transform:scale(.98); }
-.delivery-order-filter-sheet__button--primary { border-color:#0b595b; background:#0b595b; color:#fff; box-shadow:0 2px 4px rgba(0,0,0,.08); }
-.delivery-order-filter-sheet__button--primary:hover { background:#0a4e50; }
-@media (min-width:768px) { .delivery-order-filter-sheet { display:none !important; } }
 .delivery-order-detail-modal { position:fixed; inset:0; z-index:1200; display:flex; align-items:center; justify-content:center; padding:16px; }
 .delivery-order-detail-modal[hidden] { display:none !important; }
 .delivery-order-detail-modal__backdrop { position:absolute; inset:0; border:0; padding:0; background:rgba(0,0,0,.6); }
@@ -138,7 +99,7 @@
     .delivery-order-card__courier { max-width:120px; margin-top:2px; overflow:hidden; color:#6b7280; font-size:11px; font-weight:400; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
 }
 </style>
-<x-erp.workspace id="delivery-order-page" title="Pengiriman" subtitle="Kelola pengiriman dan lihat rincian transaksi."><x-slot:toolbar><div class="erp-search d-none d-md-flex"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-kt-ecommerce-product-filter="search" aria-label="Cari nama pelanggan, kurir, atau 4 digit HP" placeholder="Cari..."></div><x-erp.mobile-search class="d-md-none erp-mobile-search-shell--fill"><x-slot:input><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari nama pelanggan, kurir, atau 4 digit HP" placeholder="Cari..." class="erp-mobile-search__input"></x-slot:input><x-slot:clear><button type="button" data-delivery-order-mobile-search-clear aria-label="Hapus pencarian" class="erp-mobile-search__clear" hidden><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear><x-slot:filter><button type="button" data-delivery-order-mobile-filter-trigger aria-label="Filter pengiriman" aria-haspopup="dialog" aria-controls="delivery-order-mobile-filter-sheet" aria-expanded="false" aria-pressed="false" class="erp-mobile-search__filter"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span class="erp-mobile-search__filter-dot" data-delivery-order-mobile-filter-dot hidden></span></button></x-slot:filter></x-erp.mobile-search><a href="{{ route('pos.index') }}" class="erp-action erp-action--primary d-none d-sm-inline-flex" aria-label="Tambah pengiriman lewat POS"><i class="ph ph-plus" aria-hidden="true"></i><span>Tambah Pengiriman</span></a><button type="button" class="erp-action delivery-order-filter-trigger d-none d-md-inline-flex" data-delivery-order-filter-trigger aria-haspopup="dialog" aria-controls="delivery-order-mobile-filter-sheet" aria-expanded="false" aria-label="Filter pengiriman" aria-pressed="false"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px delivery-order-filter-menu"
+<x-erp.workspace id="delivery-order-page" title="Pengiriman" subtitle="Kelola pengiriman dan lihat rincian transaksi."><x-slot:toolbar><div class="erp-search d-none d-md-flex"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-kt-ecommerce-product-filter="search" aria-label="Cari nama pelanggan, kurir, atau 4 digit HP" placeholder="Cari..."></div><x-erp.mobile-search class="d-md-none erp-mobile-search-shell--fill"><x-slot:input><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari nama pelanggan, kurir, atau 4 digit HP" placeholder="Cari..." class="erp-mobile-search__input"></x-slot:input><x-slot:clear><button type="button" data-delivery-order-mobile-search-clear aria-label="Hapus pencarian" class="erp-mobile-search__clear" hidden><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear><x-slot:filter><button type="button" data-delivery-order-mobile-filter-trigger aria-label="Filter pengiriman" aria-haspopup="dialog" aria-controls="delivery-order-filter-sheet" aria-expanded="false" aria-pressed="false" class="erp-mobile-search__filter"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span class="erp-mobile-search__filter-dot" data-delivery-order-mobile-filter-dot hidden></span></button></x-slot:filter></x-erp.mobile-search><a href="{{ route('pos.index') }}" class="erp-action erp-action--primary d-none d-sm-inline-flex" aria-label="Tambah pengiriman lewat POS"><i class="ph ph-plus" aria-hidden="true"></i><span>Tambah Pengiriman</span></a><button type="button" class="erp-action delivery-order-filter-trigger d-none d-md-inline-flex" data-delivery-order-filter-trigger aria-haspopup="dialog" aria-controls="delivery-order-filter-sheet" aria-expanded="false" aria-label="Filter pengiriman" aria-pressed="false"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px delivery-order-filter-menu"
                             data-kt-menu="true">
                             <!--begin::Header-->
                             <div class="px-7 py-5">
@@ -215,63 +176,22 @@
                     </thead>
                     <tbody class="fw-semibold text-gray-600"></tbody>
                 </table></x-erp.collection></x-erp.workspace>
-<div id="delivery-order-mobile-filter-sheet" class="delivery-order-filter-sheet" hidden>
-    <button type="button" class="delivery-order-filter-sheet__backdrop bg-black/70" data-delivery-order-filter-close tabindex="-1" aria-label="Tutup filter pengiriman"></button>
-    <section class="delivery-order-filter-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="delivery-order-mobile-filter-title" tabindex="-1">
-        <button type="button" class="delivery-order-filter-sheet__handle" data-delivery-order-filter-close aria-label="Tutup filter pengiriman"><span aria-hidden="true"></span></button>
-        <x-erp.filter-sheet-frame title="Filter Pengiriman" title-id="delivery-order-mobile-filter-title" subtitle="Saring cabang, status, dan periode pengiriman" header-class="delivery-order-filter-sheet__header" body-class="delivery-order-filter-sheet__body" footer-class="delivery-order-filter-sheet__footer">
-            <x-slot:close><button type="button" class="delivery-order-filter-sheet__close" data-delivery-order-filter-close aria-label="Tutup filter pengiriman"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
-            <x-slot:body>
-
-            <section class="delivery-order-filter-sheet__section" aria-labelledby="delivery-order-mobile-branch-label">
-                <h3 id="delivery-order-mobile-branch-label" class="delivery-order-filter-sheet__label">Cabang Tujuan</h3>
-                <div class="delivery-order-filter-sheet__branch-card">
-                    <label class="delivery-order-filter-sheet__branch-search">
-                        <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
-                        <input id="delivery-order-mobile-branch-search" type="search" placeholder="Cari cabang..." autocomplete="off" aria-label="Cari cabang">
-                    </label>
-                    <div class="delivery-order-filter-sheet__branch-list" role="radiogroup" aria-labelledby="delivery-order-mobile-branch-label">
-                        @if (count($branches) > 1)
-                            <label class="delivery-order-filter-sheet__branch-option" data-delivery-order-mobile-branch-option>
-                                <input type="radio" name="delivery-order-mobile-branch" value="all" data-delivery-order-mobile-branch checked>
-                                <span>Semua Cabang</span>
-                            </label>
-                        @endif
-                        @foreach ($branches as $branch)
-                            <label class="delivery-order-filter-sheet__branch-option" data-delivery-order-mobile-branch-option>
-                                <input type="radio" name="delivery-order-mobile-branch" value="{{ $branch->id }}" data-delivery-order-mobile-branch>
-                                <span>{{ ucwords($branch->name) }}</span>
-                            </label>
-                        @endforeach
-                        <p class="delivery-order-filter-sheet__empty" data-delivery-order-mobile-branch-empty hidden>Cabang tidak ditemukan</p>
-                    </div>
-                </div>
-            </section>
-            <section class="delivery-order-filter-sheet__section" aria-labelledby="delivery-order-mobile-delivery-label">
-                <h3 id="delivery-order-mobile-delivery-label" class="delivery-order-filter-sheet__label">Status Penerimaan</h3>
-                <div class="delivery-order-filter-sheet__chips" role="group" aria-label="Status Penerimaan">
-                    <button type="button" class="delivery-order-filter-sheet__chip is-active" data-delivery-order-mobile-filter="delivery" data-filter-value="all" aria-pressed="true">Semua Status</button>
-                    <button type="button" class="delivery-order-filter-sheet__chip" data-delivery-order-mobile-filter="delivery" data-filter-value="unreceived" aria-pressed="false">Belum Diterima</button>
-                    <button type="button" class="delivery-order-filter-sheet__chip" data-delivery-order-mobile-filter="delivery" data-filter-value="received" aria-pressed="false">Sudah Diterima</button>
-                </div>
-            </section>
-            <section class="delivery-order-filter-sheet__section" aria-labelledby="delivery-order-mobile-payment-label">
-                <h3 id="delivery-order-mobile-payment-label" class="delivery-order-filter-sheet__label">Status Pembayaran</h3>
-                <div class="delivery-order-filter-sheet__chips" role="group" aria-label="Status Pembayaran">
-                    <button type="button" class="delivery-order-filter-sheet__chip is-active" data-delivery-order-mobile-filter="payment" data-filter-value="all" aria-pressed="true">Semua Status</button>
-                    <button type="button" class="delivery-order-filter-sheet__chip" data-delivery-order-mobile-filter="payment" data-filter-value="unpaid" aria-pressed="false">Belum Lunas</button>
-                    <button type="button" class="delivery-order-filter-sheet__chip" data-delivery-order-mobile-filter="payment" data-filter-value="paid" aria-pressed="false">Sudah Lunas</button>
-                </div>
-            </section>
-            @include('pos::delivery-order.partials.reference-dates')
-            </x-slot:body>
-            <x-slot:footer>
-                <button type="button" class="delivery-order-filter-sheet__button" data-delivery-order-filter-reset>Reset</button>
-                <button type="button" class="delivery-order-filter-sheet__button delivery-order-filter-sheet__button--primary erp-filter-sheet__primary" data-delivery-order-filter-apply>Terapkan</button>
-            </x-slot:footer>
-        </x-erp.filter-sheet-frame>
-    </section>
-</div>
+<x-erp.filter-sheet
+    id="delivery-order"
+    title="Filter Pengiriman"
+    aria-label="Filter pengiriman"
+    subtitle="Saring cabang, status, dan periode pengiriman"
+    branch-label="Cabang Tujuan"
+    branch-all-label="Semua Cabang"
+    status-label="Status Penerimaan"
+    :branches="$branches"
+    :show-branch-all="count($branches) > 1"
+    :default-branch="count($branches) > 1 ? 'all' : (string) optional($branches->first())->id"
+    :statuses="['all' => 'Semua Status', 'unreceived' => 'Belum Diterima', 'received' => 'Sudah Diterima']"
+    :groups="[['key' => 'payment', 'label' => 'Status Pembayaran', 'options' => ['all' => 'Semua Status', 'unpaid' => 'Belum Lunas', 'paid' => 'Sudah Lunas']]]"
+    :timezone="config('app.timezone')"
+    reset-applies
+/>
 <div id="delivery-order-detail-modal" class="delivery-order-detail-modal" hidden aria-hidden="true">
     <button type="button" class="delivery-order-detail-modal__backdrop" data-delivery-order-detail-close tabindex="-1" aria-label="Tutup detail pengiriman"></button>
     <section class="delivery-order-detail-modal__panel" role="dialog" aria-modal="true" aria-labelledby="delivery-order-detail-title" tabindex="-1">
@@ -442,33 +362,22 @@
 @section('script')
     <script src="{{ asset('assets/js/delivery-order-mobile.js') }}?v={{ filemtime(public_path('assets/js/delivery-order-mobile.js')) }}"></script>
     <script src="{{ asset('assets/js/delivery-order-filter-state.js') }}"></script>
-    <script src="{{ asset('assets/js/delivery-order-reference-dates.js') }}?v={{ filemtime(public_path('assets/js/delivery-order-reference-dates.js')) }}"></script>
     <script type="text/javascript">
         var dataTable;
         $(document).ready(function() {
             const $branchFilter = $('[data-kt-ecommerce-product-filter="cabang"]');
             const $dateFilter = $('#kt_ecommerce_sales_flatpickr');
             const $activeBranchButtonLabel = $('#active-branch-button-label');
-            const $filterSheet = $('#delivery-order-mobile-filter-sheet');
-            const $filterPanel = $filterSheet.find('[role="dialog"]');
             const $mobileFilterTrigger = $('[data-delivery-order-mobile-filter-trigger]');
             const $desktopFilterTrigger = $('[data-delivery-order-filter-trigger]');
             const $searchFields = $('[data-kt-ecommerce-product-filter="search"]');
             const $mobileSearchClear = $('[data-delivery-order-mobile-search-clear]');
             const defaultBranch = String($branchFilter.val() || 'all');
             const filterState = window.DeliveryOrderFilterState.create({ branch: defaultBranch });
-            const dateFilterUi = window.DeliveryOrderReferenceDates.attach({ root: $filterSheet[0], state: filterState, timezone: @json(config('app.timezone')) });
-            const mobileViewport = window.matchMedia('(max-width: 767.98px)');
-            let previousMobileViewport = mobileViewport.matches;
             let salesFlatpickr;
             const searchDebounce = window.DeliveryOrderFilterState.createDebouncedSearch(query => {
                 dataTable.search(query).draw();
             });
-            let filterCloseTimer;
-            let filterOpenFrame;
-            let filterSheetClosing = false;
-            let previousBodyOverflow = '';
-            let filterReturnFocus = null;
 
             function updateActiveFilterInfo() {
                 const filters = filterState.applied;
@@ -500,125 +409,26 @@
                 updateActiveFilterInfo();
             }
 
-            function syncMobileFilterControls(filters) {
-                $filterSheet.find('[data-delivery-order-mobile-branch]').each(function() {
-                    this.checked = this.value === filters.branch;
-                });
-                $filterSheet.find('[data-delivery-order-mobile-filter]').each(function() {
-                    const group = this.getAttribute('data-delivery-order-mobile-filter');
-                    const active = this.getAttribute('data-filter-value') === filters[group];
-                    this.classList.toggle('is-active', active);
-                    this.setAttribute('aria-pressed', String(active));
-                });
-                dateFilterUi.sync();
+            // The sheet itself is the shared filter-sheet component (id "delivery-order"): status penerimaan is
+            // its status group, status pembayaran an extra group. It only exists on phones; desktop keeps the
+            // inline controls above.
+            function sheetValues(filters) {
+                const [start = '', end = ''] = String(filters.dateRange || '').split(' to ');
+                return { branch: filters.branch, status: filters.delivery, start, end: end || start, extra: { payment: filters.payment } };
             }
 
-            function filterMobileBranches() {
-                const query = document.getElementById('delivery-order-mobile-branch-search').value.trim().toLocaleLowerCase();
-                const options = Array.from($filterSheet[0].querySelectorAll('[data-delivery-order-mobile-branch-option]'));
-                let visibleCount = 0;
-                options.forEach(option => {
-                    const matches = option.textContent.trim().toLocaleLowerCase().includes(query);
-                    option.hidden = !matches;
-                    if (matches) visibleCount += 1;
-                });
-                $filterSheet.find('[data-delivery-order-mobile-branch-empty]').prop('hidden', visibleCount > 0);
-            }
-
-            function openMobileFilterSheet(event) {
-                if (!$filterSheet.prop('hidden') && !filterSheetClosing) return;
-                if (filterCloseTimer) {
-                    window.clearTimeout(filterCloseTimer);
-                    filterCloseTimer = null;
-                }
-                filterSheetClosing = false;
-                filterReturnFocus = event?.currentTarget || document.activeElement;
-                filterState.open();
-                dateFilterUi.open();
-                document.getElementById('delivery-order-mobile-branch-search').value = '';
-                filterMobileBranches();
-                syncMobileFilterControls(filterState.pending);
-                previousBodyOverflow = document.body.style.overflow;
-                document.body.style.overflow = 'hidden';
-                $filterSheet.prop('hidden', false);
+            function openFilterSheet() {
                 $mobileFilterTrigger.add($desktopFilterTrigger).attr('aria-expanded', 'true');
-                filterOpenFrame = window.requestAnimationFrame(() => {
-                    filterOpenFrame = null;
-                    $filterSheet.addClass('is-open');
-                });
-                $filterPanel[0]?.focus({ preventScroll: true });
+                window.dispatchEvent(new CustomEvent('erp-filter-open', { detail: { id: 'delivery-order', values: sheetValues(filterState.applied) } }));
             }
 
-            function closeMobileFilterSheet(options = {}) {
-                if ($filterSheet.prop('hidden') || filterSheetClosing) return;
-                filterSheetClosing = true;
-                const immediate = options.immediate === true;
-                const focusTarget = Object.prototype.hasOwnProperty.call(options, 'focusTarget')
-                    ? options.focusTarget
-                    : filterReturnFocus;
-                filterState.discard();
-                dateFilterUi.close();
-                if (filterOpenFrame) {
-                    window.cancelAnimationFrame(filterOpenFrame);
-                    filterOpenFrame = null;
-                }
-                if (filterCloseTimer) {
-                    window.clearTimeout(filterCloseTimer);
-                    filterCloseTimer = null;
-                }
-                $filterSheet.removeClass('is-open');
-                $mobileFilterTrigger.add($desktopFilterTrigger).attr('aria-expanded', 'false');
-                document.body.style.overflow = previousBodyOverflow;
-                if (immediate) {
-                    $filterSheet.prop('hidden', true);
-                    filterSheetClosing = false;
-                } else {
-                    filterCloseTimer = window.setTimeout(() => {
-                        filterCloseTimer = null;
-                        if (!$filterSheet.hasClass('is-open')) {
-                            $filterSheet.prop('hidden', true);
-                            filterSheetClosing = false;
-                        }
-                    }, 300);
-                }
-                if (focusTarget && typeof focusTarget.focus === 'function'
-                    && focusTarget.getClientRects().length) {
-                    focusTarget.focus({ preventScroll: true });
-                }
-            }
-
-            function dismissMobileFilterForDesktop() {
-                if (previousMobileViewport === mobileViewport.matches) return;
-                previousMobileViewport = mobileViewport.matches;
-                if ($filterSheet.prop('hidden')) return;
-                closeMobileFilterSheet({
-                    immediate: true,
-                    focusTarget: mobileViewport.matches ? $mobileFilterTrigger[0] : $desktopFilterTrigger[0]
-                });
-            }
-
-            window.addEventListener('resize', dismissMobileFilterForDesktop);
-            window.DeliveryOrderFilterState.bindDesktopDismissal(
-                mobileViewport,
-                () => !$filterSheet.prop('hidden'),
-                dismissMobileFilterForDesktop
-            );
-
-            function resetMobileFilterSheet() {
-                const filters = filterState.reset();
-                searchDebounce.cancel();
-                $searchFields.val('');
-                $mobileSearchClear.prop('hidden', true);
-                dataTable.search('').draw();
-                syncDesktopFilterControls(filters);
-                syncMobileFilterControls(filters);
-                closeMobileFilterSheet();
-            }
-
-            function applyMobileFilterSheet() {
-                const filters = filterState.apply();
-                syncDesktopFilterControls(filters);
-                closeMobileFilterSheet();
+            function applySheetFilters(values) {
+                const start = values.start || '';
+                filterState.setApplied('branch', values.branch || defaultBranch);
+                filterState.setApplied('delivery', values.status || 'all');
+                filterState.setApplied('payment', values.extra?.payment || 'all');
+                filterState.setApplied('dateRange', start ? `${start} to ${values.end || start}` : '');
+                syncDesktopFilterControls(filterState.applied);
                 dataTable.draw();
             }
 
@@ -730,45 +540,12 @@
                 dataTable.draw();
             });
 
-            $mobileFilterTrigger.on('click', openMobileFilterSheet);
-            $desktopFilterTrigger.on('click', openMobileFilterSheet);
-            $filterSheet.on('click', '[data-delivery-order-filter-close]', closeMobileFilterSheet);
-            $filterSheet.on('click', '[data-delivery-order-filter-reset]', resetMobileFilterSheet);
-            $filterSheet.on('click', '[data-delivery-order-filter-apply]', applyMobileFilterSheet);
-            $filterSheet.on('input', '#delivery-order-mobile-branch-search', filterMobileBranches);
-            $filterSheet.on('change', '[data-delivery-order-mobile-branch]', function() {
-                filterState.setPending('branch', this.value);
+            $mobileFilterTrigger.add($desktopFilterTrigger).on('click', openFilterSheet);
+            window.addEventListener('erp-filter-apply', event => {
+                if (event.detail.id === 'delivery-order') applySheetFilters(event.detail.values);
             });
-            $filterSheet.on('click', '[data-delivery-order-mobile-filter]', function() {
-                const group = this.getAttribute('data-delivery-order-mobile-filter');
-                filterState.setPending(group, this.getAttribute('data-filter-value'));
-                syncMobileFilterControls(filterState.pending);
-            });
-            document.addEventListener('keydown', function(event) {
-                if ($filterSheet.prop('hidden') || filterSheetClosing) return;
-                if (event.key === 'Escape') {
-                    event.preventDefault();
-                    closeMobileFilterSheet();
-                    return;
-                }
-                if (event.key !== 'Tab') return;
-                const focusable = Array.from($filterPanel[0].querySelectorAll('button:not(:disabled), input:not(:disabled)'))
-                    .filter(element => !element.hidden && element.getClientRects().length);
-                if (!focusable.length) {
-                    event.preventDefault();
-                    $filterPanel[0].focus();
-                    return;
-                }
-                const first = focusable[0];
-                const last = focusable[focusable.length - 1];
-                const activeIndex = focusable.indexOf(document.activeElement);
-                if (event.shiftKey && activeIndex <= 0) {
-                    event.preventDefault();
-                    last.focus();
-                } else if (!event.shiftKey && (activeIndex === -1 || activeIndex === focusable.length - 1)) {
-                    event.preventDefault();
-                    first.focus();
-                }
+            window.addEventListener('erp-filter-close', event => {
+                if (event.detail.id === 'delivery-order') $mobileFilterTrigger.add($desktopFilterTrigger).attr('aria-expanded', 'false');
             });
 
             updateActiveFilterInfo();

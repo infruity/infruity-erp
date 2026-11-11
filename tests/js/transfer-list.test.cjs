@@ -16,31 +16,22 @@ test('document view preserves selected transfer, respects permission and restore
     t.app.closeDocument();assert.equal(t.app.documentOpen,false);assert.equal(t.app.selected.id,9);assert.ok(focused>=3);
     t.app.openDocument();t.app.closeDetail();assert.equal(t.app.documentOpen,false);assert.equal(t.app.selected,null);
 });
-test('branch search includes all branches and handles case, whitespace and no results',()=>{
-    const app=require('../../public/assets/js/transfer-list.js')({branches:[{id:'1',name:'Toko GKB'},{id:'2',name:'Toko GBA'}]});
-    assert.equal(app.filteredBranches.length,3);
-    app.branchSearchQuery='  gBa  ';assert.deepEqual(app.filteredBranches,[{id:'2',name:'Toko GBA'}]);
-    app.branchSearchQuery='tidak ada';assert.equal(app.filteredBranches.length,0);
-    app.branchSearchQuery='';assert.equal(app.filteredBranches[0].id,'all');
-});
-test('closing filter discards pending choices on reopen; apply sends selected branch and status',async()=>{
-    const t=setup();t.app.$nextTick=()=>{};t.app.filters.branch='1';
-    t.app.openFilter();t.app.pending.branch='2';t.app.pending.status='pending';t.app.closeFilter();
+test('opening hands the sheet the applied filters; apply sends the selected branch and status',async()=>{
+    const t=setup();const opened=[];t.app.$dispatch=(name,detail)=>opened.push({name,detail});t.app.filters.branch='1';
+    t.app.openFilter();
+    assert.equal(t.app.filterOpen,true);
+    assert.deepEqual(JSON.parse(JSON.stringify(opened)),[{name:'erp-filter-open',detail:{id:'transfer',values:{status:'all',branch:'1',start:'',end:''}}}]);
+    t.app.closeFilter();
     assert.equal(t.app.filters.branch,'1');assert.equal(t.requests.length,0);
-    t.app.branchSearchQuery='GBA';t.app.openFilter();assert.equal(t.app.pending.branch,'1');assert.equal(t.app.branchSearchQuery,'');
-    t.app.pending.branch='2';t.app.pending.status='pending';t.app.applyFilter();
-    assert.equal(t.app.filterOpen,false);assert.equal(t.app.activeFilters,true);
+    t.app.applyFilters({status:'pending',branch:'2',start:'',end:''});
+    assert.equal(t.app.activeFilters,true);
     assert.match(t.requests[0],/cabang_filter=2/);assert.match(t.requests[0],/status_filter=pending/);
 });
 test('reset clears branch, status, dates and search before reloading',()=>{
-    const t=setup();t.app.search='apel';t.app.branchSearchQuery='GBA';t.app.filters={branch:'2',status:'pending',start:'2026-10-01',end:'2026-10-24'};
-    t.app.resetFilters();assert.equal(t.app.search,'');assert.equal(t.app.branchSearchQuery,'');assert.equal(t.app.activeFilters,false);
+    const t=setup();t.app.search='apel';t.app.filterOpen=true;t.app.filters={branch:'2',status:'pending',start:'2026-10-01',end:'2026-10-24'};
+    t.app.resetFilters();assert.equal(t.app.search,'');assert.equal(t.app.filterOpen,false);assert.equal(t.app.activeFilters,false);
     const query=new URL(t.requests[0],'http://localhost').searchParams;
     assert.equal(query.get('cabang_filter'),'all');assert.equal(query.get('status_filter'),'all');assert.equal(query.get('start_date'),'');assert.equal(query.get('search'),'');
-});
-test('invalid date range keeps filter open without requesting data',()=>{
-    const t=setup();t.app.filterOpen=true;t.app.pending.start='2026-10-24';t.app.pending.end='2026-10-01';t.app.applyFilter();
-    assert.ok(t.app.pendingDateError);assert.equal(t.app.filterOpen,true);assert.equal(t.requests.length,0);
 });
 test('sender list gives GKB and GBA distinct avatar accents',()=>{
     const createTransferList=require('../../public/assets/js/transfer-list.js');
