@@ -35,6 +35,30 @@ final class PosSheetsUiContractTest extends TestCase
         $this->assertMatchesRegularExpression('/required[^>]*>\s*No WhatsApp|No WhatsApp[^<]*<\/label>/', $modal);
     }
 
+    public function test_customer_modal_is_a_small_popup_with_a_visible_close_icon(): void
+    {
+        $modal = $this->segment('modal-customer');
+        $css = file_get_contents(base_path('public/assets/css/pos-form.css'));
+
+        // Three short fields do not need a full-screen page: a small centred popup on every screen size.
+        $this->assertStringContainsString('pos-sheet--compact', $modal);
+        $this->assertStringContainsString('modal-dialog-centered', $modal);
+        $this->assertStringNotContainsString('modal-fullscreen-sm-down', $modal);
+        // The round header button hides Bootstrap's background-image cross, so it carries its own icon.
+        $this->assertStringNotContainsString('btn-close', $modal);
+        $this->assertStringContainsString('<i class="ph-bold ph-x" aria-hidden="true"></i>', $modal);
+
+        foreach ([
+            '.modal .pos-sheet--compact { max-width:420px; }',
+            '.modal .pos-sheet--compact .modal-content { height:auto; max-height:90dvh; border-radius:20px; }',
+            '.pos-sheet--compact .erp-sheet-body { flex:none;',
+            // The shared sheet rules pin dialogs to the bottom edge on phones; this one stays a popup.
+            '.modal .pos-sheet--compact.modal-dialog { position:relative; inset:auto; width:calc(100% - 32px); max-width:420px; margin:0 auto; padding:0; }',
+        ] as $rule) {
+            $this->assertStringContainsString($rule, $css, "CSS hilang: {$rule}");
+        }
+    }
+
     public function test_new_customer_is_saved_through_the_real_endpoint_and_selected_by_its_id(): void
     {
         $js = file_get_contents(base_path('Modules/Pos/Resources/views/pos/js/js-buah.blade.php'));

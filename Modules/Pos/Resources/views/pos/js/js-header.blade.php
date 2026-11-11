@@ -52,7 +52,9 @@
                 const width = customerField?.getBoundingClientRect().width;
                 const searchField = dropdown?.querySelector('.select2-search__field[aria-controls="select2-customer_id-results"]');
 
-                if (dropdown && width) dropdown.style.setProperty('width', `${Math.round(width)}px`, 'important');
+                // Select2 rewrites the inline width whenever results load (the list pages in), which drops any
+                // inline !important. The stylesheet reads this variable instead, so the width sticks.
+                if (width) document.documentElement.style.setProperty('--pos-customer-dropdown-width', `${Math.round(width)}px`);
                 if (searchField) searchField.placeholder = 'Cari pelanggan / nomor HP...';
             };
 
