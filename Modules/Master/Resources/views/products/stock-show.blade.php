@@ -66,41 +66,8 @@
         @media (min-width:768px) {
             .product-stock-detail-card { position:relative; display:flex; min-height:0; flex:1; flex-direction:column; overflow:hidden; }
             .product-stock-detail-card .card-header { flex:none; padding:0; border:0; }
-            .product-stock-detail-card .card-toolbar { position:absolute; top:58px; right:20px; z-index:20; display:none!important; width:min(420px,calc(100vw - 48px)); max-height:75vh; flex-direction:column; align-items:stretch; overflow:auto; padding:20px; border:1px solid #e5e7eb; border-radius:16px; background:#fff; box-shadow:0 18px 42px rgba(15,23,42,.16); }
-            .product-stock-detail-card .card-toolbar.is-open { display:flex!important; }
-            .product-stock-detail-card .stock-detail-filter-handle { display:none; }
-            .product-stock-detail-card .stock-detail-filter-head { display:flex; align-items:center; justify-content:space-between; }
-            .product-stock-detail-card .stock-detail-filter-close { display:grid; width:32px; height:32px; place-items:center; border:0; border-radius:50%; background:#f3f4f6; color:#6b7280; }
-            .product-stock-detail-card .stock-detail-filter-fields { display:flex; flex-direction:column; gap:16px; }
-            .product-stock-detail-card .stock-detail-filter-mobile-controls { display:block; }
-            .product-stock-detail-card .stock-detail-filter-desktop-control { display:none!important; }
-            .product-stock-detail-card .stock-detail-filter-field { margin:0; }
-            .product-stock-detail-card .stock-detail-filter-label { display:block; margin-bottom:6px; color:#6b7280; font-size:11px; font-weight:700; }
-            .product-stock-detail-card .stock-detail-filter-footer { display:flex; gap:8px; }
-            .product-stock-detail-card .stock-detail-filter-footer button { flex:1; min-height:40px; border-radius:10px; font-size:13px; font-weight:600; }
-            .product-stock-detail-card .stock-detail-filter-branch-options { max-height:180px; overflow:auto; }
             .stock-detail-table-heading { margin-top:14px; }
         }
-        .stock-detail-date-range { display:grid; width:100%; min-width:0; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:end; gap:8px; }
-        .stock-detail-filter-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
-        .stock-detail-filter-heading .stock-detail-filter-label { margin-bottom:0; }
-        .stock-detail-date-item { display:block; width:100%; min-width:0; }
-        .stock-detail-date-item > label { display:block; margin:0 0 5px; color:#7b8790; font-size:10px; font-weight:700; letter-spacing:.06em; line-height:1.2; text-transform:uppercase; }
-        .stock-detail-date-field { position:relative; display:flex; width:100%; min-width:0; height:44px; align-items:center; overflow:hidden; border:1px solid #e1e5e9; border-radius:10px; background:#fff; transition:border-color .18s ease,box-shadow .18s ease; }
-        .stock-detail-date-field:focus-within { border-color:#0b8f68; box-shadow:0 0 0 3px rgba(16,185,129,.1); }
-        .stock-detail-date-field > i { position:absolute; z-index:1; left:12px; color:#82909a; font-size:17px; pointer-events:none; }
-        .stock-detail-date-field input:not(.flatpickr-input) { width:100%; min-width:0; height:100%; border:0!important; outline:0!important; padding:0 12px 0 38px!important; background:transparent!important; color:#253238; font-family:inherit; font-size:14px!important; font-weight:500; box-shadow:none!important; }
-        .stock-detail-date-field input:not(.flatpickr-input)::placeholder { color:#9aa4ad; font-weight:400; opacity:1; }
-        .stock-detail-date-clear { display:grid; width:32px; height:32px; flex:none; place-items:center; border:1px solid #e1e5e9; border-radius:9px; background:#fff; color:#7b8790; cursor:pointer; }
-        .stock-detail-date-clear:hover { background:#f3f6f5; color:#0b595b; }
-        .stock-detail-date-clear[hidden] { display:none!important; }
-        .stock-detail-direction-options { display:flex; gap:8px; }
-        .stock-detail-direction-option { display:flex; min-height:38px; flex:1; align-items:center; justify-content:center; gap:6px; border:1px solid #e5e7eb; border-radius:11px; background:#f9fafb; color:#6b7280; font-size:12px; font-weight:600; }
-        .stock-detail-direction-option.is-selected[data-direction="all"] { border-color:#a7f3d0; background:#ecfdf5; color:#047857; }
-        .stock-detail-direction-option.is-selected[data-direction="in"] { border-color:#a7f3d0; background:#ecfdf5; color:#047857; }
-        .stock-detail-direction-option.is-selected[data-direction="out"] { border-color:#fecdd3; background:#fff1f2; color:#be123c; }
-        .stock-detail-date-presets { display:flex; gap:7px; margin-top:8px; }
-        .stock-detail-date-presets button { min-height:32px; flex:1; padding:4px 7px; border:1px solid #e5e7eb; border-radius:9px; background:#fff; color:#4b5563; font-size:11px; font-weight:600; }
         .flatpickr-calendar { z-index:1065!important; border:1px solid #e6ebe8!important; border-radius:14px!important; box-shadow:0 12px 34px rgba(15,23,42,.16)!important; font-family:'Plus Jakarta Sans',sans-serif!important; }
         .flatpickr-calendar .flatpickr-day.selected,
         .flatpickr-calendar .flatpickr-day.startRange,
@@ -120,46 +87,6 @@
             .product-stock-detail-page { display:flex; width:100%; height:100%; min-height:0; flex:1; flex-direction:column; padding-bottom:0; box-sizing:border-box; }
             .product-stock-detail-card { display:flex; height:100%; min-height:0; flex-direction:column; border:0; border-radius:0; box-shadow:none; }
             .product-stock-detail-card .card-header { display:flex; flex:none; flex-direction:column; align-items:stretch; gap:0!important; padding:0!important; border:0; }
-            .product-stock-detail-card .stock-detail-search-filter { width:100%; min-width:0; margin:0 8px 20px; }
-            .stock-detail-filter-backdrop { position:fixed; inset:0; z-index:1050; background:rgba(0,0,0,.7); opacity:0; transition:opacity .3s ease; }
-            .stock-detail-filter-backdrop[hidden] { display:none!important; }
-            .stock-detail-filter-backdrop.is-open { opacity:1; }
-            .product-stock-detail-card .card-toolbar { position:fixed; right:0; bottom:0; left:0; z-index:1051; display:flex; width:auto; max-height:85dvh; flex:none; flex-direction:column; flex-wrap:nowrap!important; align-items:stretch; gap:0!important; overflow:hidden; overscroll-behavior:contain; padding:0 0 env(safe-area-inset-bottom)!important; border-radius:24px 24px 0 0; background:#fff; box-shadow:0 -16px 40px rgba(0,0,0,.2); transform:translateY(105%); visibility:hidden; transition:transform .3s ease,visibility .3s; }
-            .product-stock-detail-card .card-toolbar.is-open { transform:translateY(0); visibility:visible; }
-            .stock-detail-filter-handle { width:48px; height:6px; flex:none; margin:12px auto 4px; border-radius:999px; background:#d1d5db; }
-            .stock-detail-filter-head { display:flex; width:100%; flex:none; align-items:center; justify-content:space-between; gap:12px; margin:0; padding:12px 20px; border-bottom:1px solid #f3f4f6; }
-            .stock-detail-filter-head h2 { margin:0; color:#1f2937; font-size:16px; font-weight:700; line-height:1.25; }
-            .stock-detail-filter-head p { margin:2px 0 0; color:#9ca3af; font-size:12px; line-height:1.35; }
-            .stock-detail-filter-close { width:32px; height:32px; font-size:16px; }
-            .stock-detail-filter-fields { display:flex; width:100%; min-height:0; flex:1; box-sizing:border-box; flex-direction:column; gap:16px; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; padding:20px; }
-            .stock-detail-search-filter, .stock-detail-filter-mobile-controls { display:none!important; }
-            .product-stock-detail-card .stock-detail-filter-field { display:block; width:auto; margin:0; }
-            .product-stock-detail-card .stock-detail-filter-desktop-control { display:block!important; width:auto; margin:0; }
-            .stock-detail-filter-label { display:block; margin:0 0 6px; color:#6b7280; font-size:10px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; }
-            .product-stock-detail-card .card-toolbar .select2-container { width:100%!important; }
-            .product-stock-detail-card .card-toolbar .select2-container .select2-selection--single { height:38px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
-            .product-stock-detail-card .card-toolbar .select2-container .select2-selection__rendered { padding-left:10px; color:#374151; font-size:12px; line-height:36px; }
-            .product-stock-detail-card .card-toolbar .select2-container .select2-selection__arrow { top:0; right:8px; height:36px; }
-            .product-stock-detail-card .card-toolbar .select2-container .select2-selection__arrow b { border-color:#9ca3af transparent transparent; }
-            .stock-detail-direction-options { gap:8px; }
-            .stock-detail-direction-option { min-height:38px; border-radius:12px; font-size:12px; }
-            .stock-detail-date-range { grid-template-columns:1fr; gap:8px; }
-            .stock-detail-date-item { position:relative; }
-            .stock-detail-date-item > label { position:absolute; z-index:2; top:50%; left:12px; display:block; width:32px; margin:0; transform:translateY(-50%); color:#9ca3af; font-size:10px; font-weight:700; }
-            .stock-detail-date-field { height:38px; border:1px solid #e5e7eb; border-radius:12px; }
-            .stock-detail-date-field > i { display:none; }
-            .stock-detail-date-field input:not(.flatpickr-input) { padding:0 12px 0 52px!important; font-size:12px!important; }
-            .stock-detail-date-presets { gap:8px; margin-top:8px; }
-            .stock-detail-date-presets button { min-height:38px; border:1px solid #e5e7eb; border-radius:12px; font-size:12px; }
-            .stock-detail-date-presets button[data-stock-date-preset="week"] { order:0; border-color:#c5f037; background:#c5f037; color:#1f2937; }
-            .stock-detail-date-presets button[data-stock-date-preset="today"] { order:1; }
-            .stock-detail-date-presets button[data-stock-date-preset="month"] { display:none; }
-            .stock-detail-filter-close { display:grid; width:32px; height:32px; flex:none; place-items:center; border:0; border-radius:50%; background:#f3f4f6; color:#6b7280; font-size:16px; }
-            .stock-detail-filter-footer { display:flex; width:100%; box-sizing:border-box; flex:none; gap:12px; margin-top:auto; padding:16px; border-top:1px solid #f3f4f6; background:#f9fafb; }
-            .stock-detail-filter-footer button { flex:1; min-width:0; height:44px; border-radius:12px; font-size:12px; font-weight:600; white-space:nowrap; }
-            .stock-detail-filter-cancel { border:1px solid #e5e7eb; background:#fff; color:#4b5563; }
-            .stock-detail-filter-apply { border:1px solid #0b595b; background:#0b595b; color:#fff; box-shadow:0 1px 2px rgba(0,0,0,.08); }
-            body.stock-detail-filter-open { overflow:hidden; }
             .product-stock-detail-card .card-body { display:flex; flex:1; min-height:0; flex-direction:column; overflow:hidden; padding:0!important; }
             .stock-detail-view-header { padding:14px 16px 10px; }
             .stock-detail-view-title p { font-size:11px; }
@@ -203,17 +130,29 @@
             .stock-mobile-empty strong { margin-bottom:4px; color:#1f2937; font-size:14px; }
             .stock-mobile-empty span { font-size:12px; }
         }
-        @media (min-width:640px) and (max-width:767.98px) {
-            .stock-detail-date-range { grid-template-columns:repeat(2,minmax(0,1fr)); }
-        }
-        @media (max-width:359.98px) {
-            .stock-detail-date-range { gap:6px; }
-            .stock-detail-date-field input:not(.flatpickr-input) { padding-left:48px!important; font-size:11px!important; }
-        }
-        @media (min-width: 768px) { .stock-detail-filter-backdrop { display:none!important; } }
     </style>
+    <x-erp.filter-sheet
+        id="stock-detail"
+        title="Filter Riwayat Stok"
+        aria-label="Filter riwayat stok"
+        subtitle="Sesuaikan parameter riwayat pergerakan barang"
+        search-label="Cari aktivitas"
+        search-placeholder="Cari aktivitas atau referensi..."
+        branch-label="Cabang"
+        branch-all-label="Semua Cabang"
+        :branches="$branch"
+        :groups="[
+            ['key' => 'direction', 'label' => 'Arah Mutasi', 'options' => ['all' => 'Semua', 'in' => 'Masuk', 'out' => 'Keluar']],
+            ['key' => 'reference', 'label' => 'Sumber Transaksi', 'options' => ['all' => 'Semua', 'stock-opname' => 'Stock Opname', 'sortir' => 'Sortir', 'pos' => 'POS', 'production' => 'Produksi', 'wholesale' => 'Pengadaan', 'transfer' => 'Transfer']],
+        ]"
+        :quick-ranges="['week', 'today', 'month']"
+        :timezone="config('app.timezone')"
+        desktop="modal"
+        reset-applies
+        reset-label="Reset Filter"
+        apply-label="Terapkan Filter"
+    />
     <div class="product-stock-detail-page">
-        <div id="stock-detail-filter-backdrop" class="stock-detail-filter-backdrop" hidden></div>
         <div class="card card-flush product-stock-detail-card">
             <!--begin::Card header-->
             <div class="card-header align-items-stretch p-0 gap-0 flex-column">
@@ -227,128 +166,6 @@
                         <button id="stock-detail-filter-toggle" type="button" aria-label="Filter riwayat stok" aria-expanded="false" class="stock-detail-view-filter"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="stock-detail-filter-dot" hidden class="erp-mobile-search__filter-dot"></span></button>
                     </div>
                 </div>
-                <!--begin::Card toolbar-->
-                <div class="card-toolbar flex-wrap gap-3 justify-content-end" id="stock-detail-filters" aria-labelledby="stock-detail-filter-title">
-                    <div class="stock-detail-filter-handle" aria-hidden="true"></div>
-                    <x-erp.filter-sheet-frame title="Filter Riwayat Stok" title-id="stock-detail-filter-title" subtitle-id="stock-detail-filter-subtitle" subtitle="Sesuaikan parameter riwayat pergerakan barang" header-class="stock-detail-filter-head" body-class="stock-detail-filter-fields" footer-class="stock-detail-filter-footer">
-                        <x-slot:close><button id="stock-detail-filter-close" class="stock-detail-filter-close" type="button" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
-                        <x-slot:body>
-
-                        <div class="stock-detail-filter-field stock-detail-search-filter">
-                            <label class="stock-detail-filter-label" for="search">Cari aktivitas</label>
-                            <input id="search" type="search" class="form-control form-control-solid" placeholder="Cari aktivitas atau referensi..." autocomplete="off">
-                        </div>
-                        <div class="stock-detail-filter-field">
-                            <label class="stock-detail-filter-label">Arah Mutasi</label>
-                            <div class="stock-detail-direction-options" role="group" aria-label="Filter arah mutasi">
-                                <button type="button" class="stock-detail-direction-option is-selected" data-direction="all" aria-pressed="true">Semua</button>
-                                <button type="button" class="stock-detail-direction-option" data-direction="in" aria-pressed="false"><i class="ph-bold ph-arrow-down-left" aria-hidden="true"></i> Masuk</button>
-                                <button type="button" class="stock-detail-direction-option" data-direction="out" aria-pressed="false"><i class="ph-bold ph-arrow-up-right" aria-hidden="true"></i> Keluar</button>
-                            </div>
-                            <select id="stock-detail-direction" class="d-none" aria-hidden="true" tabindex="-1">
-                                <option value="all" selected>Semua</option><option value="in">Masuk</option><option value="out">Keluar</option>
-                            </select>
-                        </div>
-                        <div class="stock-detail-filter-mobile-controls">
-                            <div class="stock-detail-filter-field">
-                                <label class="stock-detail-filter-label" for="stock-detail-branch-search">Cabang</label>
-                                <div class="stock-detail-filter-branch-picker">
-                                    <div class="stock-detail-filter-branch-search">
-                                        <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-                                        <input id="stock-detail-branch-search" type="search" placeholder="Cari cabang..." autocomplete="off" aria-label="Cari cabang">
-                                    </div>
-                                    <div class="stock-detail-filter-branch-options" id="stock-detail-branch-options" role="radiogroup" aria-label="Pilih cabang">
-                                        <label class="stock-detail-filter-branch-option">
-                                            <input type="radio" name="stock-detail-branch-mobile" value="all" checked>
-                                            <span>Semua Cabang</span>
-                                        </label>
-                                        @foreach ($branch as $item)
-                                            <label class="stock-detail-filter-branch-option">
-                                                <input type="radio" name="stock-detail-branch-mobile" value="{{ $item->id }}">
-                                                <span>{{ ucwords($item->name) }}</span>
-                                            </label>
-                                        @endforeach
-                                        <div id="stock-detail-branch-empty" class="stock-detail-filter-branch-empty" hidden>Cabang tidak ditemukan</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="stock-detail-filter-field">
-                                <span class="stock-detail-filter-label">Sumber Transaksi</span>
-                                <div class="stock-detail-filter-reference-chips" role="group" aria-label="Filter reference">
-                                    <button type="button" class="stock-detail-filter-reference-chip is-selected" data-stock-reference="all" aria-pressed="true">Semua</button>
-                                    <button type="button" class="stock-detail-filter-reference-chip" data-stock-reference="stock-opname" aria-pressed="false">Stock Opname</button>
-                                    <button type="button" class="stock-detail-filter-reference-chip" data-stock-reference="sortir" aria-pressed="false">Sortir</button>
-                                    <button type="button" class="stock-detail-filter-reference-chip" data-stock-reference="pos" aria-pressed="false">POS</button>
-                                    <button type="button" class="stock-detail-filter-reference-chip" data-stock-reference="production" aria-pressed="false">Produksi</button>
-                                    <button type="button" class="stock-detail-filter-reference-chip" data-stock-reference="wholesale" aria-pressed="false">Pengadaan</button>
-                                    <button type="button" class="stock-detail-filter-reference-chip" data-stock-reference="transfer" aria-pressed="false">Transfer</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="stock-detail-filter-field stock-detail-filter-desktop-control w-100 w-md-auto">
-                            <label class="stock-detail-filter-label" for="stock-detail-branch">Cabang</label>
-                            <select class="form-select form-select-solid" data-control="select2"
-                                data-hide-search="true" data-placeholder="Cabang"
-                                data-kt-ecommerce-product-filter="branch" id="stock-detail-branch">
-                                <option value="all" selected>Semua Cabang</option>
-                                @foreach ($branch as $item)
-                                    <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="stock-detail-filter-field stock-detail-filter-desktop-control w-100 w-md-auto">
-                            <label class="stock-detail-filter-label" for="stock-detail-reference">Sumber Transaksi</label>
-                            <select class="form-select form-select-solid" data-control="select2"
-                                data-hide-search="true" data-placeholder="Sumber Transaksi"
-                                data-kt-ecommerce-product-filter="reference" id="stock-detail-reference">
-                                <option value="all">Semua Sumber</option>
-                                <option value="stock-opname">Stock Opname</option>
-                                <option value="sortir">Sortir</option>
-                                <option value="pos">POS</option>
-                                <option value="production">Produksi</option>
-                                <option value="wholesale">Pengadaan</option>
-                                <option value="transfer">Transfer</option>
-                            </select>
-                        </div>
-                    <div class="stock-detail-filter-field stock-detail-filter-field--date w-100 w-md-auto">
-                        <div class="stock-detail-filter-heading">
-                            <span class="stock-detail-filter-label">Periode Tanggal</span>
-                            <button class="stock-detail-date-clear" id="stock-detail-date-clear" type="button" aria-label="Hapus rentang tanggal" hidden>
-                                <i class="ph ph-x" aria-hidden="true"></i>
-                            </button>
-                        </div>
-                        <div class="stock-detail-date-range">
-                            <div class="stock-detail-date-item">
-                                <label for="stock-detail-date-start-display">DARI</label>
-                                <div class="stock-detail-date-field">
-                                    <i class="ph ph-calendar-blank" aria-hidden="true"></i>
-                                    <input type="text" class="form-control form-control-solid stock-detail-date-input" placeholder="Pilih Tanggal"
-                                        id="stock-detail-date-start" aria-label="Tanggal mulai" autocomplete="off" />
-                                </div>
-                            </div>
-                            <div class="stock-detail-date-item">
-                                <label for="stock-detail-date-end-display">KE</label>
-                                <div class="stock-detail-date-field">
-                                    <i class="ph ph-calendar-blank" aria-hidden="true"></i>
-                                    <input type="text" class="form-control form-control-solid stock-detail-date-input" placeholder="Pilih Tanggal"
-                                        id="stock-detail-date-end" aria-label="Tanggal akhir" autocomplete="off" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="stock-detail-date-presets" role="group" aria-label="Periode cepat">
-                            <button type="button" data-stock-date-preset="today">Hari Ini</button>
-                            <button type="button" data-stock-date-preset="week">Minggu Ini</button>
-                            <button type="button" data-stock-date-preset="month">Bulan Ini</button>
-                        </div>
-                        </div>
-                        </x-slot:body>
-                        <x-slot:footer>
-                            <button id="stock-detail-filter-reset" type="button" class="stock-detail-filter-cancel">Reset Filter</button>
-                            <button id="stock-detail-filter-apply" type="button" class="stock-detail-filter-apply erp-filter-sheet__primary">Terapkan Filter</button>
-                        </x-slot:footer>
-                    </x-erp.filter-sheet-frame>
-                </div>
-                <!--end::Card toolbar-->
             </div>
             <!--end::Card header-->
             <div class="stock-detail-table-heading" aria-hidden="true">
@@ -387,11 +204,6 @@
     <script type="text/javascript">
         var dataTable;
         let activeHistoryTab = 'stock';
-        let stockFilterDraftOpen = false;
-        let stockFilterSnapshot = null;
-        let stockFilterBackdropTimeout = null;
-        let stockStartDatePicker = null;
-        let stockEndDatePicker = null;
 
         function stockDetailElement(tagName, className, text) {
             const element = document.createElement(tagName);
@@ -441,131 +253,43 @@
             return !date ? String(value) : new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
         }
 
-        function syncStockMobileBranchControls() {
-            const selectedBranch = String($('[data-kt-ecommerce-product-filter="branch"]').val() || 'all');
-            document.querySelectorAll('input[name="stock-detail-branch-mobile"]').forEach((radio) => {
-                radio.checked = radio.value === selectedBranch;
-            });
-        }
-
-        function syncStockMobileReferenceControls() {
-            const selectedReference = String($('[data-kt-ecommerce-product-filter="reference"]').val() || 'all');
-            document.querySelectorAll('[data-stock-reference]').forEach((chip) => {
-                const selected = chip.dataset.stockReference === selectedReference;
-                chip.classList.toggle('is-selected', selected);
-                chip.setAttribute('aria-pressed', selected ? 'true' : 'false');
-            });
-        }
-
-        function syncStockDirectionControls() {
-            const selectedDirection = String($('#stock-detail-direction').val() || 'all');
-            document.querySelectorAll('[data-direction]').forEach((button) => {
-                const selected = button.dataset.direction === selectedDirection;
-                button.classList.toggle('is-selected', selected);
-                button.setAttribute('aria-pressed', selected ? 'true' : 'false');
-            });
-        }
-
-        function filterStockMobileBranchOptions() {
-            const query = String(document.getElementById('stock-detail-branch-search')?.value || '').trim().toLocaleLowerCase('id');
-            const options = [...document.querySelectorAll('.stock-detail-filter-branch-option')];
-            let visibleCount = 0;
-            options.forEach((option) => {
-                const visible = option.textContent.trim().toLocaleLowerCase('id').includes(query);
-                option.hidden = !visible;
-                if (visible) visibleCount += 1;
-            });
-            const empty = document.getElementById('stock-detail-branch-empty');
-            if (empty) empty.hidden = visibleCount > 0;
-        }
+        // The sheet itself is the shared filter-sheet component (id "stock-detail"). It edits a draft; this page
+        // keeps what the table is currently filtered by and hands it over each time the sheet opens.
+        const stockFilters = { branch: 'all', reference: 'all', direction: 'all', start: '', end: '', search: '' };
 
         function updateStockDetailFilterState() {
-            const branch = $('[data-kt-ecommerce-product-filter="branch"]').val();
-            const reference = $('[data-kt-ecommerce-product-filter="reference"]').val();
-            const direction = $('#stock-detail-direction').val();
-            const hasDate = Boolean(stockDateValue(stockStartDatePicker) || stockDateValue(stockEndDatePicker));
-            const panelOpen = $('#stock-detail-filters').hasClass('is-open');
-            const hasActiveFilter = (branch && branch !== 'all') || (reference && reference !== 'all') || (direction && direction !== 'all') || hasDate;
-            $('#stock-detail-filter-toggle')
-                .toggleClass('is-active', Boolean(hasActiveFilter || panelOpen))
-                .attr('aria-expanded', panelOpen ? 'true' : 'false');
+            const hasActiveFilter = stockFilters.branch !== 'all' || stockFilters.reference !== 'all'
+                || stockFilters.direction !== 'all' || Boolean(stockFilters.start || stockFilters.end || stockFilters.search);
+            $('#stock-detail-filter-toggle').toggleClass('is-active', hasActiveFilter);
             $('#stock-detail-filter-dot').prop('hidden', !hasActiveFilter);
-            $('#stock-detail-date-clear').prop('hidden', !hasDate);
-            syncStockMobileBranchControls();
-            syncStockMobileReferenceControls();
-            syncStockDirectionControls();
-        }
-
-        function stockDateValue(picker) {
-            const date = picker?.selectedDates?.[0];
-            return date && picker ? picker.formatDate(date, 'Y-m-d') : '';
-        }
-
-        function syncStockDateRange(redraw = true) {
-            const startDate = stockStartDatePicker?.selectedDates?.[0] || null;
-            const endDate = stockEndDatePicker?.selectedDates?.[0] || null;
-
-            if (startDate && endDate && startDate > endDate) {
-                stockEndDatePicker.clear(false);
-            }
-
-            const validStartDate = stockStartDatePicker?.selectedDates?.[0] || null;
-            const validEndDate = stockEndDatePicker?.selectedDates?.[0] || null;
-            stockStartDatePicker?.set('maxDate', validEndDate);
-            stockEndDatePicker?.set('minDate', validStartDate);
-
-            updateStockDetailFilterState();
-            if (redraw && !stockFilterDraftOpen && typeof dataTable !== 'undefined') dataTable.draw();
         }
 
         function openStockDetailFilters() {
-            window.clearTimeout(stockFilterBackdropTimeout);
-            stockFilterSnapshot = {
-                branch: $('[data-kt-ecommerce-product-filter="branch"]').val(),
-                reference: $('[data-kt-ecommerce-product-filter="reference"]').val(),
-                direction: $('#stock-detail-direction').val(),
-                startDate: stockDateValue(stockStartDatePicker),
-                endDate: stockDateValue(stockEndDatePicker)
-            };
-            stockFilterDraftOpen = true;
-            $('#stock-detail-filters').attr({ role: 'dialog', 'aria-modal': 'true' });
-            $('#stock-detail-filter-backdrop').prop('hidden', false);
-            requestAnimationFrame(() => {
-                $('#stock-detail-filter-backdrop').addClass('is-open');
-                $('#stock-detail-filters').addClass('is-open');
-                updateStockDetailFilterState();
-            });
-            document.body.classList.add('stock-detail-filter-open');
-            document.getElementById('stock-detail-filter-close')?.focus();
+            const isHpp = activeHistoryTab === 'hpp';
+            $('#stock-detail-filter-toggle').attr('aria-expanded', 'true');
+            window.dispatchEvent(new CustomEvent('erp-filter-open', { detail: {
+                id: 'stock-detail',
+                title: isHpp ? 'Filter Riwayat HPP' : 'Filter Riwayat Stok',
+                subtitle: isHpp ? 'Sesuaikan parameter riwayat pergerakan HPP' : 'Sesuaikan parameter riwayat pergerakan barang',
+                values: {
+                    branch: stockFilters.branch,
+                    start: stockFilters.start,
+                    end: stockFilters.end,
+                    search: stockFilters.search,
+                    extra: { direction: stockFilters.direction, reference: stockFilters.reference }
+                }
+            } }));
         }
 
-        function closeStockDetailFilters(applyChanges) {
-            if (!stockFilterDraftOpen) return;
-
-            if (!applyChanges && stockFilterSnapshot) {
-                $('[data-kt-ecommerce-product-filter="branch"]').val(stockFilterSnapshot.branch).trigger('change.select2');
-                $('[data-kt-ecommerce-product-filter="reference"]').val(stockFilterSnapshot.reference).trigger('change.select2');
-                $('#stock-detail-direction').val(stockFilterSnapshot.direction || 'all');
-                stockStartDatePicker?.set('maxDate', null);
-                stockEndDatePicker?.set('minDate', null);
-                stockStartDatePicker?.setDate(stockFilterSnapshot.startDate || '', false);
-                stockEndDatePicker?.setDate(stockFilterSnapshot.endDate || '', false);
-                syncStockDateRange(false);
-            }
-
-            stockFilterDraftOpen = false;
-            stockFilterSnapshot = null;
-            $('#stock-detail-filters').removeClass('is-open');
-            $('#stock-detail-filters').removeAttr('role aria-modal');
-            $('#stock-detail-filter-backdrop').removeClass('is-open');
-            document.body.classList.remove('stock-detail-filter-open');
-            stockFilterBackdropTimeout = window.setTimeout(() => {
-                $('#stock-detail-filter-backdrop').prop('hidden', true);
-                stockFilterBackdropTimeout = null;
-            }, 260);
-            if (applyChanges && dataTable) dataTable.draw();
+        function applyStockDetailFilters(values) {
+            stockFilters.branch = values.branch || 'all';
+            stockFilters.reference = values.extra?.reference || 'all';
+            stockFilters.direction = values.extra?.direction || 'all';
+            stockFilters.start = values.start || '';
+            stockFilters.end = values.start ? (values.end || values.start) : '';
+            stockFilters.search = values.search || '';
             updateStockDetailFilterState();
-            document.getElementById('stock-detail-filter-toggle')?.focus();
+            if (typeof dataTable !== 'undefined') dataTable.search(stockFilters.search).draw();
         }
 
         function renderStockDetailRows(api) {
@@ -705,17 +429,18 @@
                 processing:true,
                 serverSide:true,
                 searching:true,
+                search:{search:stockFilters.search},
                 ordering:true,
                 scrollX:true,
                 ajax:{
                     url:isHpp ? @json(route('product-transaction-data')) : @json(route('product-stock-data-show')),
                     data:function(d) {
                         d.product_id = {{ $data->id }};
-                        d.branch = $('[data-kt-ecommerce-product-filter="branch"]').val();
-                        d.reference = $('[data-kt-ecommerce-product-filter="reference"]').val();
-                        d.stock_direction = $('#stock-detail-direction').val() || 'all';
-                        d.start_date = stockDateValue(stockStartDatePicker);
-                        d.end_date = stockDateValue(stockEndDatePicker);
+                        d.branch = stockFilters.branch;
+                        d.reference = stockFilters.reference;
+                        d.stock_direction = stockFilters.direction;
+                        d.start_date = stockFilters.start;
+                        d.end_date = stockFilters.end;
                     }
                 },
                 drawCallback:function() {
@@ -744,11 +469,7 @@
                 viewToggle.setAttribute('aria-label', isHpp ? 'Tampilkan riwayat stok' : 'Tampilkan riwayat HPP');
                 viewToggle.setAttribute('aria-pressed', isHpp ? 'true' : 'false');
             }
-            const filterTitle = document.getElementById('stock-detail-filter-title');
-            const filterSubtitle = document.getElementById('stock-detail-filter-subtitle');
             const filterToggle = document.getElementById('stock-detail-filter-toggle');
-            if (filterTitle) filterTitle.textContent = isHpp ? 'Filter Riwayat HPP' : 'Filter Riwayat Stok';
-            if (filterSubtitle) filterSubtitle.textContent = isHpp ? 'Sesuaikan parameter riwayat pergerakan HPP' : 'Sesuaikan parameter riwayat pergerakan barang';
             if (filterToggle) filterToggle.setAttribute('aria-label', isHpp ? 'Filter riwayat HPP' : 'Filter riwayat stok');
         }
 
@@ -759,80 +480,17 @@
                 initializeHistoryTable(activeHistoryTab === 'stock' ? 'hpp' : 'stock');
             });
 
-            $(document).on('click', '[data-direction]', function() {
-                $('#stock-detail-direction').val(this.dataset.direction || 'all');
-                syncStockDirectionControls();
-            });
-
-            $(document).on('click', '[data-stock-date-preset]', function() {
-                const now = new Date();
-                const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                let end = new Date(start);
-                if (this.dataset.stockDatePreset === 'week') {
-                    const offset = (start.getDay() + 6) % 7;
-                    start.setDate(start.getDate() - offset);
-                    end = new Date(start);
-                    end.setDate(start.getDate() + 6);
-                } else if (this.dataset.stockDatePreset === 'month') {
-                    start.setDate(1);
-                    end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-                }
-                stockStartDatePicker?.setDate(start, false);
-                stockEndDatePicker?.setDate(end, false);
-                syncStockDateRange(false);
-            });
-
-            $('#search').on('keyup', function() {
-                dataTable.search(this.value).draw();
-            });
-
             $('#stock-detail-load-more button').on('click', function() {
                 const page = dataTable.page.info();
                 dataTable.page.len(Math.min(page.recordsDisplay, page.length + 50)).draw('page');
             });
 
-            $('#stock-detail-filter-toggle').on('click', function() {
-                if ($('#stock-detail-filters').hasClass('is-open')) {
-                    closeStockDetailFilters(false);
-                } else {
-                    openStockDetailFilters();
-                }
+            $('#stock-detail-filter-toggle').on('click', openStockDetailFilters);
+            window.addEventListener('erp-filter-apply', function(event) {
+                if (event.detail.id === 'stock-detail') applyStockDetailFilters(event.detail.values);
             });
-
-            $('#stock-detail-filter-close, #stock-detail-filter-cancel, #stock-detail-filter-backdrop').on('click', function() {
-                closeStockDetailFilters(false);
-            });
-
-            $('#stock-detail-filter-apply').on('click', function() {
-                closeStockDetailFilters(true);
-            });
-
-            $('#stock-detail-filter-reset').on('click', function() {
-                $('[data-kt-ecommerce-product-filter="branch"]').val('all').trigger('change.select2');
-                $('[data-kt-ecommerce-product-filter="reference"]').val('all').trigger('change.select2');
-                $('#stock-detail-direction').val('all');
-                $('#search').val('');
-                dataTable?.search('');
-                stockStartDatePicker?.clear(false);
-                stockEndDatePicker?.clear(false);
-                syncStockDateRange(false);
-                closeStockDetailFilters(true);
-            });
-
-            $('#stock-detail-branch-search').on('input', filterStockMobileBranchOptions);
-
-            $(document).on('change', 'input[name="stock-detail-branch-mobile"]', function() {
-                $('[data-kt-ecommerce-product-filter="branch"]').val(this.value).trigger('change');
-                updateStockDetailFilterState();
-            });
-
-            $(document).on('click', '[data-stock-reference]', function() {
-                $('[data-kt-ecommerce-product-filter="reference"]').val(this.dataset.stockReference).trigger('change');
-                updateStockDetailFilterState();
-            });
-
-            $(document).on('keydown.stockDetailFilters', function(event) {
-                if (event.key === 'Escape' && $('#stock-detail-filters').hasClass('is-open')) closeStockDetailFilters(false);
+            window.addEventListener('erp-filter-close', function(event) {
+                if (event.detail.id === 'stock-detail') $('#stock-detail-filter-toggle').attr('aria-expanded', 'false');
             });
 
             $('[data-kt-ecommerce-product-filter="status"]').on('change', function() {
@@ -845,50 +503,7 @@
                 dataTable.draw();
             });
 
-            $('[data-kt-ecommerce-product-filter="branch"]').on('change', function() {
-                if (!stockFilterDraftOpen) dataTable.draw();
-            });
-
-            $('[data-kt-ecommerce-product-filter="reference"]').on('change', function() {
-                if (!stockFilterDraftOpen) dataTable.draw();
-            });
-
-            $('[data-kt-ecommerce-product-filter="branch"], [data-kt-ecommerce-product-filter="reference"]').on('change.stockDetailFilterState', updateStockDetailFilterState);
-
-            stockStartDatePicker = $("#stock-detail-date-start").flatpickr({
-                altInput: !0,
-                altFormat: "d/m/Y",
-                dateFormat: "Y-m-d",
-                disableMobile: true,
-                onReady: function(selectedDates, dateStr, instance) {
-                    instance.altInput.id = 'stock-detail-date-start-display';
-                    instance.altInput.setAttribute('aria-label', 'Tanggal mulai');
-                    instance.altInput.setAttribute('autocomplete', 'off');
-                },
-                onChange: function() { syncStockDateRange(); }
-            });
-
-            stockEndDatePicker = $("#stock-detail-date-end").flatpickr({
-                altInput: !0,
-                altFormat: "d/m/Y",
-                dateFormat: "Y-m-d",
-                disableMobile: true,
-                onReady: function(selectedDates, dateStr, instance) {
-                    instance.altInput.id = 'stock-detail-date-end-display';
-                    instance.altInput.setAttribute('aria-label', 'Tanggal akhir');
-                    instance.altInput.setAttribute('autocomplete', 'off');
-                },
-                onChange: function() { syncStockDateRange(); }
-            });
-
-            $('#stock-detail-date-clear').on('click', function() {
-                stockStartDatePicker?.clear(false);
-                stockEndDatePicker?.clear(false);
-                syncStockDateRange();
-            });
-
             updateStockDetailFilterState();
-            filterStockMobileBranchOptions();
         });
 
         function reloadDataTable() {

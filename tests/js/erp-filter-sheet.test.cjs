@@ -470,3 +470,57 @@ test('a phone-only sheet closes itself when the window grows to desktop width', 
         restoreBrowser();
     }
 });
+
+test('the optional search box starts from the page value and comes back trimmed in the apply event', () => {
+    const { events } = stubBrowser();
+    const sheet = createSheet({ search: true });
+
+    try {
+        sheet.onOpen({ detail: { id: 'wholesale', values: { search: 'apel' } } });
+        assert.equal(sheet.query, 'apel');
+
+        sheet.query = '  jeruk ';
+        sheet.apply();
+    } finally {
+        restoreBrowser();
+    }
+
+    assert.equal(events[0].detail.values.search, 'jeruk');
+});
+
+test('reset clears the search box; sheets without a search never report one', () => {
+    const { events } = stubBrowser();
+    const withSearch = createSheet({ search: true, resetApplies: true });
+    const without = createSheet();
+
+    try {
+        withSearch.onOpen({ detail: { id: 'wholesale', values: { search: 'apel' } } });
+        withSearch.reset();
+        without.onOpen({ detail: { id: 'wholesale', values: { search: 'apel' } } });
+        without.apply();
+    } finally {
+        restoreBrowser();
+    }
+
+    assert.equal(events[0].detail.values.search, '');
+    assert.equal('search' in events[2].detail.values, false);
+});
+
+test('an opening can rename the sheet and the next one restores the defaults', () => {
+    const title = { textContent: 'Filter Riwayat Stok' };
+    const subtitle = { textContent: 'Sesuaikan riwayat stok' };
+    stubBrowser();
+    globalThis.document.getElementById = (id) => ({ 'wholesale-filter-title': title, 'wholesale-filter-subtitle': subtitle })[id] || null;
+    const sheet = createSheet();
+
+    try {
+        sheet.onOpen({ detail: { id: 'wholesale', title: 'Filter Riwayat HPP', subtitle: 'Sesuaikan riwayat HPP', values: {} } });
+        assert.deepEqual([title.textContent, subtitle.textContent], ['Filter Riwayat HPP', 'Sesuaikan riwayat HPP']);
+
+        sheet.close();
+        sheet.onOpen({ detail: { id: 'wholesale', values: {} } });
+        assert.deepEqual([title.textContent, subtitle.textContent], ['Filter Riwayat Stok', 'Sesuaikan riwayat stok']);
+    } finally {
+        restoreBrowser();
+    }
+});

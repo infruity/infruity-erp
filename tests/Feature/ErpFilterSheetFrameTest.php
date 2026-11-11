@@ -63,7 +63,7 @@ class ErpFilterSheetFrameTest extends TestCase
             'Modules/Transaction/Resources/views/transfer/index2.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
             'Modules/Report/Resources/views/partials/mobile-detail.blade.php' => ['applyDraftLive()', 'calendarOpen'],
             'Modules/Master/Resources/views/products/stock.blade.php' => ['id="stock-filter-apply"', 'setFilterOpen(open)'],
-            'Modules/Master/Resources/views/products/stock-show.blade.php' => ['id="stock-detail-filter-apply"', 'data-stock-date-preset'],
+            'Modules/Master/Resources/views/products/stock-show.blade.php' => ['applyStockDetailFilters(', '<x-erp.filter-sheet'],
         ];
 
         foreach ($contracts as $view => $tokens) {
@@ -81,7 +81,6 @@ class ErpFilterSheetFrameTest extends TestCase
             'resources/views/components/erp/filter-sheet.blade.php',
             'Modules/Report/Resources/views/partials/mobile-detail.blade.php',
             'Modules/Master/Resources/views/products/stock.blade.php',
-            'Modules/Master/Resources/views/products/stock-show.blade.php',
         ];
 
         foreach ($views as $view) {
@@ -134,5 +133,18 @@ class ErpFilterSheetFrameTest extends TestCase
         $this->assertStringContainsString("setDateRange('today')", $html);
         $this->assertStringNotContainsString('Bulan Ini', $html);
         $this->assertStringNotContainsString('\u0022groups\u0022:[{', $html);
+    }
+
+    public function test_sheet_can_start_with_a_search_box_and_names_its_subtitle_for_retitling(): void
+    {
+        $with = Blade::render('<x-erp.filter-sheet id="a" title="Filter" subtitle="Atur" search-label="Cari aktivitas" search-placeholder="Cari aktivitas atau referensi..." />');
+        $without = Blade::render('<x-erp.filter-sheet id="a" title="Filter" subtitle="Atur" />');
+
+        $this->assertStringContainsString('Cari aktivitas', $with);
+        $this->assertStringContainsString('id="a-mobile-query"', $with);
+        $this->assertStringContainsString('placeholder="Cari aktivitas atau referensi..."', $with);
+        $this->assertStringContainsString('\u0022search\u0022:true', $with);
+        $this->assertStringNotContainsString('a-mobile-query', $without);
+        $this->assertStringContainsString('id="a-filter-subtitle"', $with);
     }
 }

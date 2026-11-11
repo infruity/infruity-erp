@@ -17,6 +17,10 @@
  * With desktop 'hidden' (the default) the sheet is a phone sheet only: it refuses to open from 768px up
  * and closes itself when the window grows past that, so a page's own desktop filter never fights it.
  *
+ * Optional search box: config.search = true adds a text field; its draft travels as values.search.
+ * The open event may also carry detail.title / detail.subtitle to rename the sheet for that opening
+ * (a page whose filter depends on a tab); the next opening without them restores the defaults.
+ *
  * Config: id, branches, showBranchAll, defaultBranch (what "no branch filter" means, e.g. the one
  * branch of a single-branch user; Reset returns to it), timezone (dates for "Hari Ini" / "Minggu Ini"
  * are read in this zone, not the browser's), weekStart ('sunday' | 'monday'),
@@ -94,6 +98,9 @@
             status: 'all',
             extra: groupDefaults(),
             groups,
+            hasSearch: Boolean(config.search),
+            query: '',
+            headings: null,
             start: '',
             end: '',
             branchSearch: '',
@@ -131,6 +138,8 @@
                 this.branch = values.branch || this.defaultBranch;
                 this.status = values.status || 'all';
                 this.extra = { ...groupDefaults(), ...(values.extra || {}) };
+                this.query = String(values.search || '');
+                this.setHeadings(detail);
                 this.start = values.start || '';
                 this.end = values.end || '';
                 this.branchSearch = '';
@@ -140,6 +149,15 @@
                 this.lockScroll();
                 this.open = true;
                 this.$nextTick(() => this.$refs.closeButton?.focus());
+            },
+            setHeadings(detail) {
+                const doc = root.document;
+                if (!doc?.getElementById) return;
+                const title = doc.getElementById(`${this.id}-filter-title`);
+                const subtitle = doc.getElementById(`${this.id}-filter-subtitle`);
+                if (!this.headings) this.headings = { title: title?.textContent ?? '', subtitle: subtitle?.textContent ?? '' };
+                if (title) title.textContent = detail.title ?? this.headings.title;
+                if (subtitle) subtitle.textContent = detail.subtitle ?? this.headings.subtitle;
             },
             close() {
                 if (!this.open) return;
@@ -155,6 +173,7 @@
                 this.branch = this.defaultBranch;
                 this.status = 'all';
                 this.extra = groupDefaults();
+                this.query = '';
                 this.start = '';
                 this.end = '';
                 this.branchSearch = '';
@@ -163,6 +182,7 @@
             apply() {
                 const values = { branch: this.branch, status: this.status, start: this.start, end: this.end };
                 if (groups.length) values.extra = { ...this.extra };
+                if (this.hasSearch) values.search = this.query.trim();
                 root.dispatchEvent(new root.CustomEvent('erp-filter-apply', { detail: { id: this.id, values } }));
                 this.close();
             },

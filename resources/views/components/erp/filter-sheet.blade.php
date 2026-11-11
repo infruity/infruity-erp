@@ -16,6 +16,7 @@
     groups: more choice groups after status, each ['key', 'label', 'options' => [value => label],
     'type' => 'chips'|'radio', 'default' => 'all']. Chosen values come back as values.extra[key].
     quick-ranges: which quick period buttons to show, in order: week, today, month.
+    search-label / search-placeholder: add a text search box on top (returned as values.search).
     with-dates=false: branch and status only (no period section or calendar).
     default-branch: the branch id that means "no branch filter" (a single-branch user's own branch).
     timezone: IANA zone used for "Hari Ini" / "Minggu Ini". week-start: "sunday" | "monday".
@@ -35,6 +36,8 @@
     'statusLabel' => 'Status',
     'dateLabel' => 'Periode Tanggal',
     'withDates' => true,
+    'searchLabel' => null,
+    'searchPlaceholder' => 'Cari...',
     'groups' => [],
     'quickRanges' => ['week', 'today'],
     'desktop' => 'hidden',
@@ -60,6 +63,7 @@
         'weekStart' => $weekStart,
         'resetApplies' => (bool) $resetApplies,
         'desktop' => $desktop,
+        'search' => $searchLabel !== null,
         'groups' => collect($groups)->map(fn ($group) => ['key' => (string) $group['key'], 'default' => (string) ($group['default'] ?? 'all')])->values()->all(),
     ];
     $quickLabels = ['week' => 'Minggu Ini', 'today' => 'Hari Ini', 'month' => 'Bulan Ini'];
@@ -89,10 +93,16 @@
             <button type="button" class="absolute inset-0 bg-black/70" @click="close()" aria-label="Tutup filter"></button>
             <section x-ref="panel" tabindex="-1" x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full" class="{{ $sectionClass }}">
                 <div class="{{ $handleClass }}"><div class="h-[6px] w-[56px] rounded-full bg-gray-300"></div></div>
-                <x-erp.filter-sheet-frame :title="$title" :title-id="$titleId" :subtitle="$subtitle" body-class="min-h-0 flex-1 overflow-y-auto overscroll-none">
+                <x-erp.filter-sheet-frame :title="$title" :title-id="$titleId" :subtitle="$subtitle" :subtitle-id="$id . '-filter-subtitle'" body-class="min-h-0 flex-1 overflow-y-auto overscroll-none">
                     <x-slot:close><button type="button" x-ref="closeButton" @click="close()" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
                     <x-slot:body>
                         <div x-show="!calendarOpen" class="space-y-[16px]">
+                            @if ($searchLabel !== null)
+                                <div>
+                                    <label for="{{ $id }}-mobile-query" class="{{ $labelClass }} mb-[6px]">{{ $searchLabel }}</label>
+                                    <input id="{{ $id }}-mobile-query" type="search" x-model="query" placeholder="{{ $searchPlaceholder }}" autocomplete="off" class="h-[40px] w-full rounded-[12px] border-[1px] border-solid border-gray-200 bg-white px-[12px] text-[12px] outline-none focus:border-emerald-500">
+                                </div>
+                            @endif
                             @if ($branchRows !== [])
                                 <div>
                                     <div class="mb-[6px] flex items-center justify-between">
