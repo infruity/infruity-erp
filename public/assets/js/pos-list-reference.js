@@ -7,6 +7,7 @@
     'use strict';
 
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const CALENDAR_MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     const THEME_COUNT = 7;
 
     // Calendar parts come from the application timezone, then date-only math runs in UTC.
@@ -91,6 +92,12 @@
             branches: Array.isArray(cfg.branches) ? cfg.branches : [],
             timezone: cfg.timezone || 'Asia/Jakarta',
             filtersOpen: false,
+            calendarOpen: false,
+            calendarView: 'date',
+            calendarSide: 'start',
+            calendarMonth: 0,
+            calendarYear: 1970,
+            calendarTrigger: null,
             branchSearch: '',
             draft: blank(),
             applied: blank(),
@@ -116,22 +123,116 @@
                 const d = this.draft;
                 return d.start && d.end && d.start > d.end ? 'Tanggal akhir harus sama atau setelah tanggal mulai.' : '';
             },
+            get calendarHeading() {
+                if (this.calendarView === 'month') return String(this.calendarYear);
+                if (this.calendarView === 'year') return `${this.calendarYear - 4} - ${this.calendarYear + 7}`;
+                return `${CALENDAR_MONTHS[this.calendarMonth]} ${this.calendarYear}`;
+            },
+            get calendarWeekdays() { return ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']; },
+            get calendarDays() {
+                const firstDay = new Date(Date.UTC(this.calendarYear, this.calendarMonth, 1));
+                const offset = (firstDay.getUTCDay() + 6) % 7;
+                const count = new Date(Date.UTC(this.calendarYear, this.calendarMonth + 1, 0)).getUTCDate();
+                return [
+                    ...Array.from({length:offset}, () => null),
+                    ...Array.from({length:count}, (_, index) => {
+                        const day = index + 1;
+                        const date = `${this.calendarYear}-${String(this.calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        return {day, date};
+                    }),
+                ];
+            },
+            get calendarMonths() { return CALENDAR_MONTHS; },
+            get calendarYears() { return Array.from({length:12}, (_, index) => this.calendarYear - 4 + index); },
             open() {
                 this.draft = {...this.applied};
                 this.branchSearch = '';
+                this.calendarOpen = false;
+                this.calendarView = 'date';
+                this.calendarTrigger = null;
                 this.filtersOpen = true;
             },
-            close() { this.filtersOpen = false; },
+            close() {
+                this.filtersOpen = false;
+                this.calendarOpen = false;
+                this.calendarView = 'date';
+                this.calendarTrigger = null;
+            },
+            openCalendar(side, trigger, now) {
+                if (!['start', 'end'].includes(side)) return;
+                const value = this.draft[side] || dateRange('today', now, this.timezone).start;
+                const [year, month] = String(value).split('-').map(Number);
+                this.calendarSide = side;
+                this.calendarMonth = month - 1;
+                this.calendarYear = year;
+                this.calendarView = 'date';
+                this.calendarTrigger = trigger || null;
+                this.calendarOpen = true;
+            },
+            closeCalendar() {
+                this.calendarOpen = false;
+                this.calendarView = 'date';
+                const trigger = this.calendarTrigger;
+                this.calendarTrigger = null;
+                if (!trigger || typeof trigger.focus !== 'function') return;
+                const restore = () => trigger.focus();
+                if (typeof this.$nextTick === 'function') this.$nextTick(restore);
+                else restore();
+            },
+            setCalendarView(view) {
+                if (['date', 'month', 'year'].includes(view)) this.calendarView = view;
+            },
+            navigateCalendar(step) {
+                const amount = Number(step);
+                if (!Number.isFinite(amount) || amount === 0) return;
+                if (this.calendarView === 'date') {
+                    const candidate = new Date(Date.UTC(this.calendarYear, this.calendarMonth + amount, 1));
+                    this.calendarYear = candidate.getUTCFullYear();
+                    this.calendarMonth = candidate.getUTCMonth();
+                } else if (this.calendarView === 'month') {
+                    this.calendarYear += amount;
+                } else {
+                    this.calendarYear += amount * 12;
+                }
+            },
+            selectCalendarYear(value) {
+                const year = Number(value);
+                if (!Number.isInteger(year)) return;
+                this.calendarYear = year;
+                this.calendarView = 'month';
+            },
+            selectCalendarMonth(value) {
+                const month = Number(value);
+                if (!Number.isInteger(month) || month < 0 || month > 11) return;
+                this.calendarMonth = month;
+                this.calendarView = 'date';
+            },
+            selectCalendarDate(day) {
+                const value = day && typeof day === 'object' ? day.date : '';
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return;
+                this.draft[this.calendarSide] = value;
+                this.closeCalendar();
+            },
+            isDateRangeActive(period, now) {
+                if (!['today', 'week'].includes(period)) return false;
+                const range = dateRange(period, now, this.timezone);
+                return this.draft.start === range.start && this.draft.end === range.end;
+            },
             setDateRange(period, now) {
                 if (!['today', 'week'].includes(period)) return;
                 const range = dateRange(period, now, this.timezone);
                 this.draft.start = range.start;
                 this.draft.end = range.end;
+                this.calendarOpen = false;
+                this.calendarView = 'date';
+                this.calendarTrigger = null;
             },
             apply() {
                 if (this.dateError) return;
                 this.applied = {...this.draft};
                 this.filtersOpen = false;
+                this.calendarOpen = false;
+                this.calendarTrigger = null;
                 if (typeof this.onApply === 'function') this.onApply({...this.applied});
             },
             reset() {
@@ -139,6 +240,9 @@
                 this.applied = blank();
                 this.branchSearch = '';
                 this.filtersOpen = false;
+                this.calendarOpen = false;
+                this.calendarView = 'date';
+                this.calendarTrigger = null;
                 if (typeof this.onApply === 'function') this.onApply({...this.applied});
             },
             detail: null,

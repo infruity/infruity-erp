@@ -92,7 +92,11 @@ final class PosListUiContractTest extends TestCase
         $shell = file_get_contents(base_path('public/assets/css/erp-shell.css'));
 
         $this->assertMatchesRegularExpression('/<\/table><\/div>\s*<div class="pos-list-more"[\s\S]*?<\/x-erp\.workspace>/', $view);
-        $this->assertStringNotContainsString('<x-slot:footer>', $view);
+        $workspaceStart = strpos($view, '<x-erp.workspace');
+        $workspaceEnd = strpos($view, '</x-erp.workspace>', $workspaceStart ?: 0);
+        $workspace = $workspaceStart !== false && $workspaceEnd !== false ? substr($view, $workspaceStart, $workspaceEnd - $workspaceStart) : '';
+        $this->assertNotEmpty($workspace);
+        $this->assertStringNotContainsString('<x-slot:footer>', $workspace);
         $this->assertStringContainsString('@click="loadMore()"', $view);
         $this->assertStringContainsString('.erp-workspace-content {', $shell);
         $this->assertStringContainsString('padding-bottom: calc(88px + env(safe-area-inset-bottom));', $shell);

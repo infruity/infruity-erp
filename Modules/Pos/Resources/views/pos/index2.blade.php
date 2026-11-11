@@ -58,6 +58,57 @@
     .pos-toolbar-search { min-width:0; flex:1; padding:0; }
     .pos-toolbar-search .erp-mobile-search { height:44px; box-shadow:none; }
     .pos-toolbar-search .erp-mobile-search:not(:focus-within) { border-color:#868e98; }
+    /* POS filter uses the same centered, inset sheet dimensions as the Stock Opname reference. */
+    .pos-filter-panel { width:calc(100% - 32px); max-width:512px; max-height:92dvh; border-radius:24px; }
+    .pos-filter-panel .erp-filter-sheet__body { min-width:0; padding:20px; }
+    .pos-filter-main { display:flex; flex-direction:column; gap:16px; }
+    .pos-filter-section { min-width:0; margin:0; padding:0; border:0; }
+    .pos-filter-heading { display:flex; width:100%; align-items:center; justify-content:space-between; gap:8px; float:none; padding:0; margin:0 0 8px; color:#6b7280; font-size:10px; line-height:16px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+    .pos-filter-reset { border:0; padding:0; background:transparent; color:#dc2626; font-size:10px; font-weight:600; text-transform:none; letter-spacing:0; cursor:pointer; }
+    .pos-filter-branch-picker { overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
+    .pos-filter-branch-search { display:flex; align-items:center; gap:8px; margin:0; padding:8px 12px; border-bottom:1px solid #f3f4f6; color:#9ca3af; }
+    .pos-filter-branch-search i { flex:none; font-size:14px; }
+    .pos-filter-branch-search input { width:100%; min-width:0; height:20px; border:0; padding:0; outline:0; background:transparent; color:#374151; font-size:16px; }
+    .pos-filter-branch-options { max-height:128px; overflow-y:auto; overscroll-behavior:contain; }
+    .pos-filter-branch-options label { display:flex; min-height:33px; align-items:center; gap:12px; margin:0; padding:6px 14px; border-bottom:1px solid #f3f4f6; color:#4b5563; font-size:12px; cursor:pointer; }
+    .pos-filter-branch-options label:last-child { border-bottom:0; }
+    .pos-filter-branch-options input[type="radio"] { appearance:none; box-sizing:border-box; width:16px; height:16px; flex:none; margin:0; border:2px solid #d1d5db; border-radius:50%; padding:0; background:#fff; box-shadow:none; cursor:pointer; }
+    .pos-filter-branch-options input[type="radio"]:checked { border-color:#10b981; background-image:radial-gradient(circle,#10b981 0 4px,transparent 4px); }
+    .pos-filter-branch-options input[type="radio"]:focus-visible { outline:2px solid #10b981; outline-offset:2px; }
+    .pos-filter-branch-options label:has(input:checked) { color:#111827; background:#f9fafb; font-weight:700; }
+    .pos-filter-branch-empty { padding:12px; margin:0; color:#9ca3af; font-size:12px; text-align:center; }
+    .pos-filter-status-options { display:flex; flex-wrap:wrap; gap:8px; }
+    .pos-filter-status-options button { min-height:30px; border:1px solid #e5e7eb; border-radius:999px; padding:4px 14px; background:#fff; color:#4b5563; font-size:12px; cursor:pointer; }
+    .pos-filter-status-options button[aria-pressed="true"] { border-color:#6ee7b7; background:#ecfdf5; color:#047857; font-weight:600; }
+    .pos-filter-dates { display:grid; gap:8px; margin-bottom:10px; }
+    .pos-filter-dates button { display:flex; width:100%; min-width:0; min-height:38px; align-items:center; gap:16px; border:1px solid #e5e7eb; border-radius:12px; padding:8px 12px; background:#f9fafb; text-align:left; cursor:pointer; }
+    .pos-filter-dates button:focus-visible { outline:2px solid #0b595b; outline-offset:2px; }
+    .pos-filter-dates span { width:24px; flex:none; color:#9ca3af; font-size:10px; font-weight:700; }
+    .pos-filter-dates strong { min-width:0; overflow:hidden; color:#6b7280; font-size:12px; font-weight:500; text-overflow:ellipsis; white-space:nowrap; }
+    .pos-filter-presets { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    .pos-filter-presets button { min-width:0; min-height:38px; border:1px solid #e5e7eb; border-radius:12px; padding:6px 8px; background:#fff; color:#6b7280; font-size:12px; font-weight:700; cursor:pointer; }
+    .pos-filter-presets button.is-selected { border-color:#c5f037; background:#c5f037; color:#1f2937; }
+    .pos-filter-calendar-back { display:inline-flex; min-height:36px; align-items:center; gap:8px; border:0; border-radius:8px; padding:4px 6px; margin:0 0 12px; background:transparent; color:#374151; font-size:14px; font-weight:600; cursor:pointer; }
+    .pos-filter-calendar-card { max-width:100%; border:1px solid #f3f4f6; border-radius:20px; padding:16px; background:#fff; box-shadow:0 1px 4px rgba(15,23,42,.06); }
+    .pos-filter-calendar-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .pos-filter-calendar-header button { display:flex; width:36px; height:36px; align-items:center; justify-content:center; border:0; border-radius:50%; padding:0; background:transparent; color:#6b7280; font-size:18px; cursor:pointer; }
+    .pos-filter-calendar-header button:hover { background:#f9fafb; }
+    .pos-filter-calendar-header button:nth-child(2) { width:auto; border-radius:8px; padding:4px 10px; color:#1f2937; font-size:18px; font-weight:700; }
+    .pos-filter-calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); text-align:center; }
+    .pos-filter-calendar-weekday,.pos-filter-calendar-blank { display:flex; height:40px; align-items:center; justify-content:center; color:#94a3b8; font-size:12px; font-weight:600; }
+    .pos-filter-calendar-day { display:flex; height:40px; align-items:center; justify-content:center; }
+    .pos-filter-calendar-day button { width:36px; height:36px; border:0; border-radius:50%; padding:0; background:transparent; color:#374151; font-size:14px; cursor:pointer; }
+    .pos-filter-calendar-day button:hover { background:#f3f4f6; }
+    .pos-filter-calendar-day button.is-selected,.pos-filter-calendar-options button.is-selected { background:#c5f037; color:#1f2937; font-weight:700; }
+    .pos-filter-calendar-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:8px 0; }
+    .pos-filter-calendar-options button { min-height:44px; border:0; border-radius:12px; padding:8px; background:transparent; color:#4b5563; font-size:12px; cursor:pointer; }
+    .pos-filter-calendar-options button:hover { background:#f9fafb; }
+    @media (max-width:360px) {
+        .pos-filter-panel .erp-filter-sheet__body { padding:16px; }
+        .pos-filter-calendar-card { padding:12px; }
+        .pos-filter-calendar-day button { width:32px; height:32px; }
+        .pos-filter-calendar-weekday { font-size:11px; }
+    }
     /* The shell root is 12px and Metronic utilities are !important, so the shared dialog's rem sizes are pinned to the reference pixels. */
     [data-pos-detail] > section { max-width:384px; border-radius:16px; }
     [data-pos-detail] > section > div:first-child { padding:24px !important; }
@@ -114,76 +165,68 @@
 </x-erp.workspace>
 
 <template x-teleport="body">
-    <div x-show="filtersOpen" x-cloak class="fixed inset-0 z-[100] flex flex-col justify-end p-0 sm:items-center sm:justify-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="pos-filter-title">
+    <div x-show="filtersOpen" x-cloak class="pos-filter-overlay fixed inset-0 z-[100] flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="pos-filter-title">
         <button type="button" class="absolute inset-0 bg-black/60" @click="close()" aria-label="Tutup filter"></button>
-        <section x-show="filtersOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-full sm:translate-y-4 sm:opacity-0" x-transition:enter-end="translate-y-0 sm:opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0 sm:opacity-100" x-transition:leave-end="translate-y-full sm:translate-y-4 sm:opacity-0" class="relative flex max-h-[88vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white pb-0 shadow-2xl sm:rounded-3xl sm:pb-0">
-            <div class="flex shrink-0 justify-center pb-1 pt-3 sm:hidden"><div class="h-1.5 w-14 rounded-full bg-gray-300"></div></div>
-            <x-erp.filter-sheet-frame title="Filter Transaksi" title-id="pos-filter-title" title-tag="h3" subtitle="Saring cabang, status, dan periode tanggal transaksi." body-class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-none">
+        <section x-show="filtersOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="scale-95 opacity-0" x-transition:enter-end="scale-100 opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="scale-100 opacity-100" x-transition:leave-end="scale-95 opacity-0" class="pos-filter-panel relative flex w-full flex-col overflow-hidden bg-white pb-0 shadow-2xl">
+            <x-erp.filter-sheet-frame title="Filter Transaksi" title-id="pos-filter-title" title-tag="h3" subtitle="Saring cabang, status, dan periode tanggal transaksi." body-class="pos-filter-body min-h-0 flex-1 overflow-y-auto overscroll-contain">
                 <x-slot:close><button type="button" @click="close()" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
                 <x-slot:body>
-
-                <div>
-                    <div class="mb-1.5 flex items-center justify-between">
-                        <label for="pos-branch-search" class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Cabang</label>
-                        <button type="button" x-show="draft.branch !== (branches.length === 1 ? branches[0].id : 'all')" @click="draft.branch = branches.length === 1 ? branches[0].id : 'all'" class="cursor-pointer text-[10px] font-semibold text-red-600">Reset</button>
+                    <div x-show="!calendarOpen" class="pos-filter-main">
+                        <fieldset class="pos-filter-section">
+                            <legend class="pos-filter-heading"><span>Cabang</span><button type="button" class="pos-filter-reset" x-show="draft.branch !== (branches.length === 1 ? branches[0].id : 'all') || branchSearch.trim()" @click="draft.branch = branches.length === 1 ? branches[0].id : 'all'; branchSearch = ''">Reset</button></legend>
+                            <div class="pos-filter-branch-picker">
+                                <label class="pos-filter-branch-search" for="pos-branch-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="pos-branch-search" type="search" x-model="branchSearch" placeholder="Cari cabang..." aria-label="Cari cabang" autocomplete="off"></label>
+                                <div class="pos-filter-branch-options">
+                                    <label x-show="branches.length > 1 && showAllBranches"><input type="radio" name="pos-branch" value="all" x-model="draft.branch"><span>Semua Cabang</span></label>
+                                    <template x-for="branch in visibleBranches" :key="branch.id"><label><input type="radio" name="pos-branch" :value="branch.id" x-model="draft.branch"><span x-text="branch.name"></span></label></template>
+                                    <p x-show="visibleBranches.length === 0 && !showAllBranches" class="pos-filter-branch-empty">Cabang tidak ditemukan</p>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset class="pos-filter-section">
+                            <legend class="pos-filter-heading"><span>Status Transaksi</span><button type="button" class="pos-filter-reset" x-show="draft.status !== 'all'" @click="draft.status = 'all'">Reset</button></legend>
+                            <div class="pos-filter-status-options">
+                                @foreach ($posStatuses as $value => $label)
+                                    <button type="button" data-pos-status="{{ $value }}" @click="draft.status = '{{ $value }}'" :aria-pressed="draft.status === '{{ $value }}'">{{ $label }}</button>
+                                @endforeach
+                            </div>
+                        </fieldset>
+                        <fieldset class="pos-filter-section">
+                            <legend class="pos-filter-heading"><span>Periode Tanggal</span><button type="button" class="pos-filter-reset" x-show="draft.start || draft.end" @click="draft.start = ''; draft.end = ''">Reset</button></legend>
+                            <div class="pos-filter-dates">
+                                <button type="button" id="pos-start-date" aria-label="Pilih tanggal mulai transaksi" aria-controls="pos-filter-calendar" :aria-expanded="calendarOpen && calendarSide === 'start'" @click="openCalendar('start', $el); $nextTick(() => $refs.posCalendarBack?.focus())"><span>DARI</span><strong x-text="formatDate(draft.start)"></strong></button>
+                                <button type="button" id="pos-end-date" aria-label="Pilih tanggal akhir transaksi" aria-controls="pos-filter-calendar" :aria-expanded="calendarOpen && calendarSide === 'end'" @click="openCalendar('end', $el); $nextTick(() => $refs.posCalendarBack?.focus())"><span>KE</span><strong x-text="formatDate(draft.end)"></strong></button>
+                            </div>
+                            <p x-show="dateError" x-cloak role="alert" class="mt-2 text-xs font-medium text-red-600" x-text="dateError"></p>
+                            <div class="flex flex-col gap-2 pt-2">
+                                <span class="pos-filter-heading" style="margin:0">Pilihan Cepat</span>
+                                <div class="pos-filter-presets">
+                                    <button type="button" @click="setDateRange('week')" :class="isDateRangeActive('week') ? 'is-selected' : ''" :aria-pressed="isDateRangeActive('week')">Minggu Ini</button>
+                                    <button type="button" @click="setDateRange('today')" :class="isDateRangeActive('today') ? 'is-selected' : ''" :aria-pressed="isDateRangeActive('today')">Hari Ini</button>
+                                </div>
+                            </div>
+                        </fieldset>
                     </div>
-                    <div class="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xs">
-                        <div class="relative shrink-0 border-b border-gray-100">
-                            <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400" aria-hidden="true"></i>
-                            <input id="pos-branch-search" type="search" x-model="branchSearch" placeholder="Cari cabang..." autocomplete="off" class="w-full bg-transparent py-2 pl-8 pr-3 text-xs outline-none focus:bg-gray-50">
-                        </div>
-                        <div class="max-h-32 divide-y divide-gray-100/60 overflow-y-auto overscroll-none bg-gray-50/30">
-                            <label x-show="branches.length > 1 && showAllBranches" class="flex cursor-pointer items-center gap-3 px-3.5 py-2 transition-colors hover:bg-gray-50">
-                                <input type="radio" name="pos-branch" value="all" x-model="draft.branch" class="h-4 w-4 accent-emerald-600">
-                                <span class="text-xs text-gray-700" :class="draft.branch === 'all' ? 'font-bold text-gray-900' : 'font-medium'">Semua Cabang</span>
-                            </label>
-                            <template x-for="branch in visibleBranches" :key="branch.id">
-                                <label class="flex cursor-pointer items-center gap-3 px-3.5 py-2 transition-colors hover:bg-gray-50">
-                                    <input type="radio" name="pos-branch" :value="branch.id" x-model="draft.branch" class="h-4 w-4 accent-emerald-600">
-                                    <span class="text-xs text-gray-700" :class="draft.branch === branch.id ? 'font-bold text-gray-900' : 'font-medium'" x-text="branch.name"></span>
-                                </label>
-                            </template>
-                            <p x-show="visibleBranches.length === 0 && !showAllBranches" class="py-3 text-center text-xs text-gray-500">Cabang tidak ditemukan</p>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <div class="mb-1.5 flex items-center justify-between">
-                        <span class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Status Transaksi</span>
-                        <button type="button" x-show="draft.status !== 'all'" @click="draft.status = 'all'" class="cursor-pointer text-[10px] font-semibold text-red-600">Reset</button>
-                    </div>
-                    <div class="mt-1 flex flex-wrap gap-2">
-                        @foreach ($posStatuses as $value => $label)
-                            <button type="button" data-pos-status="{{ $value }}" @click="draft.status = '{{ $value }}'" :aria-pressed="draft.status === '{{ $value }}'" :class="draft.status === '{{ $value }}' ? 'border-emerald-300 bg-emerald-50 font-semibold text-emerald-700 shadow-2xs' : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'" class="cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium transition-colors">{{ $label }}</button>
-                        @endforeach
-                    </div>
-                </div>
-                <div>
-                    <div class="mb-1.5 flex items-center justify-between">
-                        <span class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Periode Tanggal</span>
-                        <button type="button" x-show="draft.start || draft.end" @click="draft.start = ''; draft.end = ''" class="cursor-pointer text-[10px] font-semibold text-red-600">Reset</button>
-                    </div>
-                    <div class="flex w-full flex-col gap-2 sm:flex-row">
-                        <label class="relative flex flex-1 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs text-gray-700 shadow-xs transition-colors focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
-                            <span class="w-8 text-[10px] font-bold text-gray-500">DARI</span>
-                            <span class="min-w-0 truncate text-xs font-medium" :class="draft.start ? 'text-gray-800' : 'text-gray-500'" x-text="formatDate(draft.start)"></span>
-                            <input id="pos-start-date" type="date" x-model="draft.start" aria-label="Tanggal mulai transaksi" class="absolute inset-0 h-full w-full cursor-pointer opacity-0">
-                        </label>
-                        <label class="relative flex flex-1 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs text-gray-700 shadow-xs transition-colors focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
-                            <span class="w-8 text-[10px] font-bold text-gray-500">KE</span>
-                            <span class="min-w-0 truncate text-xs font-medium" :class="draft.end ? 'text-gray-800' : 'text-gray-500'" x-text="formatDate(draft.end)"></span>
-                            <input id="pos-end-date" type="date" x-model="draft.end" aria-label="Tanggal akhir transaksi" class="absolute inset-0 h-full w-full cursor-pointer opacity-0">
-                        </label>
-                    </div>
-                    <p x-show="dateError" x-cloak role="alert" class="mt-2 text-xs font-medium text-red-600" x-text="dateError"></p>
-                    <div class="flex flex-col gap-2 pt-2">
-                        <span class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Pilihan Cepat</span>
-                        <div class="flex flex-row gap-2">
-                            <button type="button" @click="setDateRange('week')" class="flex flex-1 cursor-pointer items-center justify-center rounded-xl px-2 py-2.5 text-xs font-semibold shadow-xs transition-colors active:scale-95" style="background-color:#c5f037;color:#1f2937">Minggu Ini</button>
-                            <button type="button" @click="setDateRange('today')" class="flex flex-1 cursor-pointer items-center justify-center rounded-xl border border-gray-200 bg-white px-2 py-2.5 text-xs font-semibold text-gray-700 shadow-xs transition-colors hover:border-gray-300 hover:bg-gray-50 active:scale-95">Hari Ini</button>
+                    <div id="pos-filter-calendar" data-pos-calendar x-show="calendarOpen" x-cloak @keydown.escape.stop="closeCalendar()">
+                        <button type="button" x-ref="posCalendarBack" class="pos-filter-calendar-back" @click="closeCalendar()"><i class="ph ph-arrow-left" aria-hidden="true"></i><span>Kembali ke filter</span></button>
+                        <div class="pos-filter-calendar-card">
+                            <div class="pos-filter-calendar-header">
+                                <button type="button" @click="navigateCalendar(-1)" aria-label="Sebelumnya"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
+                                <button type="button" @click="setCalendarView(calendarView === 'date' ? 'month' : calendarView === 'month' ? 'year' : 'date')" x-text="calendarHeading" aria-label="Ubah tampilan kalender"></button>
+                                <button type="button" @click="navigateCalendar(1)" aria-label="Berikutnya"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
+                            </div>
+                            <div x-show="calendarView === 'date'" class="pos-filter-calendar-grid">
+                                <template x-for="(weekday, index) in calendarWeekdays" :key="'weekday-' + index"><span class="pos-filter-calendar-weekday" x-text="weekday"></span></template>
+                                <template x-for="(day, index) in calendarDays" :key="day ? day.date : 'blank-' + index"><span class="pos-filter-calendar-day"><button type="button" :disabled="!day" :aria-pressed="!!day && draft[calendarSide] === day.date" :class="day && draft[calendarSide] === day.date ? 'is-selected' : ''" @click="selectCalendarDate(day)" x-text="day ? day.day : ''"></button></span></template>
+                            </div>
+                            <div x-show="calendarView === 'month'" class="pos-filter-calendar-options">
+                                <template x-for="(month, index) in calendarMonths" :key="'month-' + index"><button type="button" :class="calendarMonth === index ? 'is-selected' : ''" :aria-pressed="calendarMonth === index" @click="selectCalendarMonth(index)" x-text="month"></button></template>
+                            </div>
+                            <div x-show="calendarView === 'year'" class="pos-filter-calendar-options">
+                                <template x-for="year in calendarYears" :key="'year-' + year"><button type="button" :class="calendarYear === year ? 'is-selected' : ''" :aria-pressed="calendarYear === year" @click="selectCalendarYear(year)" x-text="year"></button></template>
+                            </div>
                         </div>
                     </div>
-                </div>
                 </x-slot:body>
                 <x-slot:footer>
                     <button type="button" @click="reset()">Reset Filter</button>
