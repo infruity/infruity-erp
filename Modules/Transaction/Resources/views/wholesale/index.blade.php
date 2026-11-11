@@ -443,6 +443,8 @@
             #wholesale-table tbody td { display:block; width:auto !important; border:0 !important; padding:0 !important; }
             .mobile-list-edge-fade.has-wholesale-empty-state { position:relative; }
             #wholesale-table_wrapper.has-wholesale-empty-state { position:static; }
+            #wholesale-table_wrapper.has-wholesale-empty-state #wholesale-table tbody tr { display:block; height:0; padding:0; border:0; }
+            #wholesale-table_wrapper.has-wholesale-empty-state #wholesale-table td.dataTables_empty { height:0; padding:0 !important; border:0 !important; }
             #wholesale-table_wrapper.has-wholesale-empty-state .wholesale-empty-state { position:absolute; top:50%; left:50%; width:calc(100% - 32px); max-width:380px; min-height:0; transform:translate(-50%, -50%); }
             #wholesale-table tbody td:nth-child(1) { grid-area:order; min-width:0; }
             #wholesale-table tbody td:nth-child(2), #wholesale-table tbody td:nth-child(3), #wholesale-table tbody td:nth-child(4) { display:none; }

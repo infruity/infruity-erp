@@ -68,6 +68,8 @@ final class InventoryListFixesTest extends TestCase
         $this->assertStringContainsString("$('#wholesale-table_wrapper').toggleClass('has-wholesale-empty-state', !info.recordsDisplay);", $view);
         $this->assertStringContainsString('.mobile-list-edge-fade.has-wholesale-empty-state { position:relative; }', $view);
         $this->assertStringContainsString('#wholesale-table_wrapper.has-wholesale-empty-state { position:static; }', $view);
+        $this->assertStringContainsString('#wholesale-table_wrapper.has-wholesale-empty-state #wholesale-table tbody tr { display:block; height:0; padding:0; border:0; }', $view);
+        $this->assertStringContainsString('#wholesale-table_wrapper.has-wholesale-empty-state #wholesale-table td.dataTables_empty { height:0; padding:0 !important; border:0 !important; }', $view);
         $this->assertStringContainsString('#wholesale-table_wrapper.has-wholesale-empty-state .wholesale-empty-state { position:absolute; top:50%; left:50%; width:calc(100% - 32px); max-width:380px; min-height:0; transform:translate(-50%, -50%); }', $view);
     }
 
