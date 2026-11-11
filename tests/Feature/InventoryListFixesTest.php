@@ -66,10 +66,9 @@ final class InventoryListFixesTest extends TestCase
 
         $this->assertStringContainsString("document.querySelector('.mobile-list-edge-fade')?.classList.toggle('has-wholesale-empty-state', !info.recordsDisplay);", $view);
         $this->assertStringContainsString("$('#wholesale-table_wrapper').toggleClass('has-wholesale-empty-state', !info.recordsDisplay);", $view);
-        $this->assertStringContainsString('.mobile-list-edge-fade.has-wholesale-empty-state { display:flex; flex-direction:column; }', $view);
-        $this->assertStringContainsString('#wholesale-table_wrapper.has-wholesale-empty-state #wholesale-table tbody tr { display:flex; flex:1 1 0%; min-height:0;', $view);
-        $this->assertStringContainsString('align-items:center; justify-content:center;', $view);
-        $this->assertStringContainsString('.wholesale-empty-state { min-height:0; }', $view);
+        $this->assertStringContainsString('.mobile-list-edge-fade.has-wholesale-empty-state { position:relative; }', $view);
+        $this->assertStringContainsString('#wholesale-table_wrapper.has-wholesale-empty-state { position:static; }', $view);
+        $this->assertStringContainsString('#wholesale-table_wrapper.has-wholesale-empty-state .wholesale-empty-state { position:absolute; top:50%; left:50%; width:calc(100% - 32px); max-width:380px; min-height:0; transform:translate(-50%, -50%); }', $view);
     }
 
     public function test_stock_opname_length_menu_has_no_all_option(): void
