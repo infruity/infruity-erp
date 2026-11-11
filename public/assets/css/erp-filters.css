@@ -236,7 +236,6 @@ body.erp-ui :is(
 
 /* Visible select values; never change backing-control visibility */
 body.erp-ui :is(
-    #receipt-category-mobile-button,
     #mobile-user-role-filter,
     [x-show*="filtersOpen"].md\:block:has([data-wholesale-filter="status"]) select[data-wholesale-filter],
     .menu[data-kt-menu="true"]:has(#kt_ecommerce_sales_flatpickr):has(> [data-kt-user-table-filter="form"]):not(.delivery-order-filter-menu) .form-select,
@@ -404,4 +403,57 @@ body.erp-ui :is(
     body.erp-ui .erp-workspace-toolbar:has(details.erp-operations-filter #kt_ecommerce_sales_flatpickr) { position:relative; }
     body.erp-ui details.erp-operations-filter:has(#kt_ecommerce_sales_flatpickr) { position:static; }
     body.erp-ui details.erp-operations-filter:has(#kt_ecommerce_sales_flatpickr) > .erp-operations-filter__body { right:20px; }
+}
+
+/* Field sizes of the sheets that are not built on <x-erp.filter-sheet> (Resep, Akun Pengguna, Master Produk,
+   Dashboard CRM), so their inputs, rows and gaps match the shared sheet: 36px search, 40px select, 33px rows,
+   16px between sections, 24px top corners. Inputs keep 16px text so iOS does not zoom on focus. */
+
+/* Resep: category dropdown (a button, not an input) */
+body.erp-ui #receipt-category-mobile-button {
+    height:40px;
+    min-height:40px;
+    padding-block:0;
+    font-size:12px;
+    font-weight:400;
+    line-height:16px;
+}
+
+/* Akun Pengguna: role select and its label */
+body.erp-ui #mobile-user-role-filter {
+    height:40px;
+    min-height:40px;
+    padding-block:0;
+}
+body.erp-ui label[for="mobile-user-role-filter"] {
+    text-transform:uppercase;
+    letter-spacing:.05em;
+}
+
+/* Master Produk: sections aligned with the sheet edge, tighter search and rows, one list height */
+body.erp-ui [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative :is(.mb-6, .mb-0).px-2 {
+    padding-inline:0;
+}
+body.erp-ui [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative .mb-6 {
+    margin-bottom:16px;
+}
+body.erp-ui [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative input[x-model="branchSearchQuery"] {
+    height:36px;
+    padding-block:0;
+}
+body.erp-ui [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative label:has(input[name="cabangFilter"]) {
+    min-height:33px;
+    padding-block:8px;
+}
+body.erp-ui [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative [class~="h-[220px]"] {
+    max-height:132px;
+}
+
+/* Dashboard CRM: same corner radius, search rows 36px */
+body.erp-ui form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) {
+    border-top-left-radius:24px;
+    border-top-right-radius:24px;
+}
+body.erp-ui form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) .dashboard-scroll label.relative.h-10 {
+    height:36px;
 }
