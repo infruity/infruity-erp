@@ -199,6 +199,7 @@
         .wholesale-procurement.is-create-mode .wholesale-cart-empty > span:last-child { color:#6b7280; font-size:12px; }
         .wholesale-empty-add { border:0; padding:0; background:transparent; color:#0b595b; font:inherit; font-weight:600; cursor:pointer; }
         .wholesale-empty-add:hover { text-decoration:underline; }
+        .wholesale-procurement.is-create-mode .wholesale-summary .btn-primary:is(:hover,:focus,:active,.active,.show) { color:#fff !important; }
         .wholesale-procurement.is-create-mode .wholesale-summary .btn i { display:none; }
         .wholesale-procurement.is-create-mode :is(button, a):focus-visible { outline:2px solid #0b595b; outline-offset:3px; }
         .wholesale-procurement.is-create-mode .btn:disabled { cursor:wait; opacity:.65; }
