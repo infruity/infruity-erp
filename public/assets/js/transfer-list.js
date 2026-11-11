@@ -25,6 +25,7 @@
             },
             branchTheme(name) {
                 const branch = String(name || '').toUpperCase();
+                if (config.receiving === false && branch.includes('TOKO')) return {background:'#fff1f2',color:'#be123c',borderColor:'#fecdd3'};
                 if (branch.includes('RUNGKUT')) return {background:'#eff6ff',color:'#1d4ed8',borderColor:'#bfdbfe'};
                 if (branch.includes('BARAT')) return {background:'#faf5ff',color:'#7e22ce',borderColor:'#e9d5ff'};
                 if (branch.includes('SIDOARJO') || branch.includes('WARU')) return {background:'#fffbeb',color:'#b45309',borderColor:'#fde68a'};

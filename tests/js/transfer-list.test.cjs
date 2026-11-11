@@ -42,3 +42,17 @@ test('invalid date range keeps filter open without requesting data',()=>{
     const t=setup();t.app.filterOpen=true;t.app.pending.start='2026-10-24';t.app.pending.end='2026-10-01';t.app.applyFilter();
     assert.ok(t.app.pendingDateError);assert.equal(t.app.filterOpen,true);assert.equal(t.requests.length,0);
 });
+test('sender list gives Toko branches a distinct rose avatar accent',()=>{
+    const createTransferList=require('../../public/assets/js/transfer-list.js');
+    const sender=createTransferList({receiving:false});
+    assert.deepEqual(sender.branchTheme('Toko GKB'),{background:'#fff1f2',color:'#be123c',borderColor:'#fecdd3'});
+    assert.deepEqual(sender.branchTheme('Toko GBA'),{background:'#fff1f2',color:'#be123c',borderColor:'#fecdd3'});
+});
+test('receiving and generic branches retain their existing avatar accents',()=>{
+    const createTransferList=require('../../public/assets/js/transfer-list.js');
+    const receiver=createTransferList({receiving:true});
+    const sender=createTransferList({receiving:false});
+    assert.deepEqual(receiver.branchTheme('Toko GKB'),{background:'#ecfdf5',color:'#0b595b',borderColor:'#a7f3d0'});
+    assert.deepEqual(sender.branchTheme('Cabang Baru'),{background:'#ecfdf5',color:'#0b595b',borderColor:'#a7f3d0'});
+    assert.deepEqual(sender.branchTheme('Rungkut'),{background:'#eff6ff',color:'#1d4ed8',borderColor:'#bfdbfe'});
+});
