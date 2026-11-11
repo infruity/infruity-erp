@@ -62,6 +62,8 @@
 <link rel="stylesheet" href="{{ asset('assets/plugins/phosphor/phosphor.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/css/erp-workspace.css') }}?v={{ filemtime(public_path('assets/css/erp-workspace.css')) }}">
 <script defer src="{{ asset('assets/js/erp-collections.js') }}?v={{ filemtime(public_path('assets/js/erp-collections.js')) }}"></script>
+<link rel="stylesheet" href="{{ asset('assets/css/erp-picker.css') }}?v={{ filemtime(public_path('assets/css/erp-picker.css')) }}">
+<script defer src="{{ asset('assets/js/erp-picker.js') }}?v={{ filemtime(public_path('assets/js/erp-picker.js')) }}"></script>
 <link rel="stylesheet" href="{{ asset('assets/css/erp-shell.css') }}?v={{ filemtime(public_path('assets/css/erp-shell.css')) }}">
 <link rel="stylesheet" href="{{ asset('assets/css/erp-filters.css') }}?v={{ filemtime(public_path('assets/css/erp-filters.css')) }}">
 </head>

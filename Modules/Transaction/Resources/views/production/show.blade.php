@@ -60,7 +60,7 @@
                 </div>
             </div>
             <div class="production-detail__status">
-                @if(in_array($data->status, ['posting', 'complete']))
+                @if(in_array($data->status, ['posting', 'complete'], true))
                     <span class="production-detail__badge is-done">Selesai</span>
                 @elseif($data->status == 'draft')
                     <span class="production-detail__badge is-ready">Siap Produksi</span>

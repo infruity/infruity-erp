@@ -36,6 +36,12 @@ final class ProductionDetailUiContractTest extends TestCase
         }
     }
 
+    public function test_legacy_complete_status_reads_as_finished(): void
+    {
+        // Older rows (and POS-generated runs) carry status "complete"; the controller already treats it like "posting".
+        $this->assertStringContainsString("in_array(\$data->status, ['posting', 'complete'], true)", $this->show());
+    }
+
     public function test_cost_comes_from_the_server_values_and_frozen_hpp_is_explained(): void
     {
         $show = $this->show();
@@ -63,8 +69,7 @@ final class ProductionDetailUiContractTest extends TestCase
         $detail = file_get_contents(base_path('Modules/Transaction/Resources/views/production/show.blade.php'));
 
         // POS-linked productions are stored as "complete"; the list renders them as Selesai.
-        $this->assertStringContainsString("in_array(\$data->status, ['posting', 'complete'])", $detail);
-        $this->assertMatchesRegularExpression("/in_array\\(\\\$data->status, \\['posting', 'complete'\\]\\)\\)\\s*<span class=\"production-detail__badge is-done\">Selesai<\\/span>/", $detail);
+        $this->assertMatchesRegularExpression("/in_array\\(\\\$data->status, \\['posting', 'complete'\\], true\\)\\)\\s*<span class=\"production-detail__badge is-done\">Selesai<\\/span>/", $detail);
     }
 
     public function test_detail_dates_use_the_recorded_time_like_the_list(): void

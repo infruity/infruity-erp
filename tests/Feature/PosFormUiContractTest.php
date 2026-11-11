@@ -203,6 +203,14 @@ final class PosFormUiContractTest extends TestCase
         $this->assertGreaterThan($footerEnd, strpos($summary, 'id="modal_tambah_alamat"'));
     }
 
+    public function test_summary_accordion_stays_visible_when_open_under_the_tailwind_layout(): void
+    {
+        // Tailwind's `.collapse` utility is `visibility: collapse`; it hides an open Bootstrap collapse body.
+        $css = $this->read('public/assets/css/pos-form.css');
+
+        $this->assertMatchesRegularExpression('/\.pos-card\s+\.accordion-collapse\.collapse\.show\s*\{[^}]*visibility:\s*visible/', $css);
+    }
+
     public function test_dock_is_hidden_on_the_form_routes(): void
     {
         $root = $this->read('resources/views/template/root.blade.php');

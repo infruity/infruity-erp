@@ -441,4 +441,40 @@
             }
         });
     });
+
+    // Searchable pickers replace the select2 look. The selects, their ids and the select2:select handlers
+    // above stay the source of truth; the picker hands the same data object to select2.
+    document.addEventListener('DOMContentLoaded', function() {
+        const withSuffix = item => {
+            const suffix = typeof getCustomerPhoneSuffix === 'function' ? getCustomerPhoneSuffix(item.whatsapp) : '';
+            return suffix ? `${item.name} (${suffix})` : item.name;
+        };
+        ErpPicker.attach('#customer_id', {
+            title: 'Pilih Pelanggan',
+            placeholder: 'Cari nama atau nomor WhatsApp...',
+            placeholderTrigger: 'Pilih pelanggan',
+            emptyText: 'Pelanggan tidak ditemukan',
+            url: '{{ route('customer.get-customer') }}',
+            paginate: true,
+            prepend: [{ id: '0', text: 'Pelanggan Umum', data: { id: '0', name: 'Pelanggan Umum', address: '-', whatsapp: '-' } }],
+            map: item => ({
+                id: item.id,
+                text: withSuffix(item),
+                meta: [item.whatsapp, item.address, item.tier_name].filter(v => v && v !== '-').join(' · '),
+                data: {
+                    id: item.id, name: item.name, address: item.address, whatsapp: item.whatsapp,
+                    tier_id: item.tier_id, tier_name: item.tier_name, tier_style: item.tier_style || 'badge-light-secondary',
+                    minimalPurchase: item.minimal_purchase || 0, voucher: item.voucher, discount: item.discount,
+                }
+            })
+        });
+        ErpPicker.attach('#branch_id', {
+            title: 'Pilih Cabang',
+            placeholder: 'Cari cabang...',
+            placeholderTrigger: 'Pilih cabang',
+            emptyText: 'Cabang tidak ditemukan',
+            url: '/ajax/getBranch',
+            map: item => ({ id: item.id, text: item.name })
+        });
+    });
 </script>

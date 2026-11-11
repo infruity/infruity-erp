@@ -31,6 +31,7 @@
 .pos-sheet .modal-content { border:0; border-radius:20px; overflow:hidden; }
 .pos-sheet-header { background:#fff; color:#1f2937; border-bottom:1px solid #f1f3f5; }
 .pos-sheet-header .modal-title { color:#1f2937; font-size:16px; font-weight:800; }
+.pos-sheet-header .btn-close { background:#f3f4f6 url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%236b7280'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center/12px no-repeat; opacity:1; }
 .pos-sheet-title { display:flex; align-items:center; gap:10px; min-width:0; }
 .pos-sheet-icon { display:flex; width:32px; height:32px; flex:none; align-items:center; justify-content:center; border-radius:10px; background:#ecfdf5; color:#0b595b; font-size:17px; }
 .pos-sheet .form-label { color:#374151; font-size:12px; font-weight:700; }
@@ -52,6 +53,7 @@
 .pos-form-actions { display:flex; gap:10px; }
 .pos-form-actions .btn { min-height:44px; border-radius:12px; font-size:13px; font-weight:700; }
 .pos-form-actions .btn-primary { flex:1; }
+.pos-card .accordion-collapse.collapse.show { visibility:visible; }
 
 /* Kasir / POS form, matched to the reference (create2 only; the Pesanan "Proses" page keeps the rules above). */
 .pos-form--reference { gap:16px; min-height:calc(100dvh - 60px); padding-top:24px; }

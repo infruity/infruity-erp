@@ -44,6 +44,16 @@ final class StockOpnameListUiContractTest extends TestCase
         }
     }
 
+    public function test_detail_sheet_locks_corrections_and_finalize_once_the_record_is_finished(): void
+    {
+        $source = $this->source();
+
+        // update / adjust / finalize answer 422 for a finished record, so the sheet must not offer them.
+        $this->assertStringContainsString("find('[data-so-action=\"finalize\"]').toggleClass('d-none', !info.isPending)", $source);
+        $this->assertStringContainsString("const canCorrect = info.isPending &&", $source);
+        $this->assertStringContainsString(".prop('disabled', !canCorrect)", $source);
+    }
+
     public function test_server_endpoints_and_filters_are_unchanged(): void
     {
         $source = $this->source();
