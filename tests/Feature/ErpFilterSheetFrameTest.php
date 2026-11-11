@@ -105,4 +105,36 @@ class ErpFilterSheetFrameTest extends TestCase
         $this->assertStringContainsString('Semua', $without);
         $this->assertStringContainsString('Terapkan', $without);
     }
+
+    public function test_sheet_renders_extra_choice_groups_and_quick_ranges(): void
+    {
+        $html = Blade::render(
+            '<x-erp.filter-sheet id="a" title="Filter" :statuses="$statuses" :groups="$groups" :quick-ranges="[\'week\', \'today\', \'month\']" />',
+            [
+                'statuses' => ['all' => 'Semua'],
+                'groups' => [
+                    ['key' => 'delivery', 'label' => 'Status Penerimaan', 'options' => ['all' => 'Semua', 'received' => 'Sudah Diterima']],
+                    ['key' => 'sort', 'label' => 'Urutkan', 'type' => 'radio', 'default' => 'name', 'options' => ['name' => 'Nama', 'stock' => 'Stok']],
+                ],
+            ]
+        );
+
+        foreach (['Status Penerimaan', 'Sudah Diterima', 'Urutkan', 'role="radiogroup"', 'name="a-sort"', 'Minggu Ini', 'Hari Ini', 'Bulan Ini'] as $text) {
+            $this->assertStringContainsString($text, $html, "Hilang: {$text}");
+        }
+        // Chips set the group value; the group's default decides when its Reset link shows.
+        $this->assertStringContainsString("extra['delivery'] = 'received'", $html);
+        $this->assertStringContainsString("extra['sort'] !== 'name'", $html);
+        $this->assertStringContainsString('\u0022groups\u0022:[{\u0022key\u0022:\u0022delivery\u0022,\u0022default\u0022:\u0022all\u0022}', $html);
+    }
+
+    public function test_default_quick_ranges_stay_week_and_today_without_a_month_button(): void
+    {
+        $html = Blade::render('<x-erp.filter-sheet id="a" title="Filter" :statuses="$statuses" />', ['statuses' => ['all' => 'Semua']]);
+
+        $this->assertStringContainsString("setDateRange('week')", $html);
+        $this->assertStringContainsString("setDateRange('today')", $html);
+        $this->assertStringNotContainsString('Bulan Ini', $html);
+        $this->assertStringNotContainsString('\u0022groups\u0022:[{', $html);
+    }
 }

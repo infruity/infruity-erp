@@ -13,6 +13,9 @@
 
     desktop="hidden" (default): phone sheet only, hidden from 768px up (the page has its own
     desktop filter). desktop="modal": the same sheet becomes a centred dialog from 640px up.
+    groups: more choice groups after status, each ['key', 'label', 'options' => [value => label],
+    'type' => 'chips'|'radio', 'default' => 'all']. Chosen values come back as values.extra[key].
+    quick-ranges: which quick period buttons to show, in order: week, today, month.
     with-dates=false: branch and status only (no period section or calendar).
     default-branch: the branch id that means "no branch filter" (a single-branch user's own branch).
     timezone: IANA zone used for "Hari Ini" / "Minggu Ini". week-start: "sunday" | "monday".
@@ -32,6 +35,8 @@
     'statusLabel' => 'Status',
     'dateLabel' => 'Periode Tanggal',
     'withDates' => true,
+    'groups' => [],
+    'quickRanges' => ['week', 'today'],
     'desktop' => 'hidden',
     'timezone' => null,
     'weekStart' => 'sunday',
@@ -54,7 +59,11 @@
         'timezone' => $timezone,
         'weekStart' => $weekStart,
         'resetApplies' => (bool) $resetApplies,
+        'groups' => collect($groups)->map(fn ($group) => ['key' => (string) $group['key'], 'default' => (string) ($group['default'] ?? 'all')])->values()->all(),
     ];
+    $quickLabels = ['week' => 'Minggu Ini', 'today' => 'Hari Ini', 'month' => 'Bulan Ini'];
+    $quickOutline = 'flex flex-1 cursor-pointer items-center justify-center gap-[6px] rounded-[12px] border-[1px] border-solid border-gray-200 bg-white px-[8px] py-[10px] text-[12px] font-semibold text-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors hover:border-gray-300 hover:bg-gray-50 active:scale-95';
+    $quickPrimary = 'flex flex-1 cursor-pointer items-center justify-center gap-[6px] rounded-[12px] bg-[#c5f037] px-[8px] py-[10px] text-[12px] font-semibold text-gray-800 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors active:scale-95';
     $isModal = $desktop === 'modal';
     $dialogClass = $isModal
         ? 'fixed inset-0 z-[1100] flex items-end justify-center p-0 sm:items-center sm:p-[16px]'
@@ -127,6 +136,38 @@
                                 </div>
                             @endif
 
+                            @foreach ($groups as $group)
+                                @php
+                                    $groupKey = (string) $group['key'];
+                                    $groupDefault = (string) ($group['default'] ?? 'all');
+                                    $groupRadio = ($group['type'] ?? 'chips') === 'radio';
+                                @endphp
+                                <div>
+                                    <div class="mb-[6px] flex items-center justify-between">
+                                        <span class="{{ $labelClass }}">{{ $group['label'] }}</span>
+                                        <button type="button" x-show="extra[@js($groupKey)] !== @js($groupDefault)" @click="extra[@js($groupKey)] = @js($groupDefault)" class="{{ $resetLinkClass }}">Reset</button>
+                                    </div>
+                                    @if ($groupRadio)
+                                        <div class="flex flex-col overflow-hidden rounded-[12px] border-[1px] border-solid border-gray-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]" role="radiogroup">
+                                            <div class="divide-y divide-gray-100/60 bg-gray-50/30">
+                                                @foreach ($group['options'] as $value => $label)
+                                                    <label class="flex cursor-pointer items-center gap-[12px] px-[14px] py-[8px] transition-colors hover:bg-gray-50">
+                                                        <span class="relative flex h-[16px] w-[16px] shrink-0 items-center justify-center"><input type="radio" name="{{ $id }}-{{ $groupKey }}" value="{{ $value }}" x-model="extra[@js($groupKey)]" class="{{ $radio }}"><span class="{{ $radioDot }}"></span></span>
+                                                        <span class="text-[12px] text-gray-700" :class="extra[@js($groupKey)] === @js((string) $value) ? 'font-bold text-gray-900' : 'font-medium'">{{ $label }}</span>
+                                                    </label>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="mt-[4px] flex flex-wrap gap-[8px]">
+                                            @foreach ($group['options'] as $value => $label)
+                                                <button type="button" @click="extra[@js($groupKey)] = @js((string) $value)" :aria-pressed="extra[@js($groupKey)] === @js((string) $value)" :class="extra[@js($groupKey)] === @js((string) $value) ? 'border-emerald-300 bg-emerald-50 text-emerald-700 font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'" class="cursor-pointer rounded-full border-[1px] border-solid px-[12px] py-[6px] text-[12px] font-medium transition-colors">{{ $label }}</button>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+
                             @if ($withDates)
                             <div>
                                 <div class="mb-[6px] flex items-center justify-between">
@@ -148,8 +189,9 @@
                                 <div class="flex flex-col gap-[8px] pt-[8px]">
                                     <span class="{{ $labelClass }}">Pilihan Cepat</span>
                                     <div class="flex flex-row gap-[8px]">
-                                        <button type="button" @click="setDateRange('week')" class="flex flex-1 cursor-pointer items-center justify-center gap-[6px] rounded-[12px] bg-[#c5f037] px-[8px] py-[10px] text-[12px] font-semibold text-gray-800 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors active:scale-95" title="Tampilkan Minggu Ini">Minggu Ini</button>
-                                        <button type="button" @click="setDateRange('today')" class="flex flex-1 cursor-pointer items-center justify-center gap-[6px] rounded-[12px] border-[1px] border-solid border-gray-200 bg-white px-[8px] py-[10px] text-[12px] font-semibold text-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors hover:border-gray-300 hover:bg-gray-50 active:scale-95" title="Tampilkan Hari Ini">Hari Ini</button>
+                                        @foreach ($quickRanges as $range)
+                                            <button type="button" @click="setDateRange(@js($range))" class="{{ $loop->first ? $quickPrimary : $quickOutline }}" title="Tampilkan {{ $quickLabels[$range] }}">{{ $quickLabels[$range] }}</button>
+                                        @endforeach
                                     </div>
                                 </div>
                             </div>

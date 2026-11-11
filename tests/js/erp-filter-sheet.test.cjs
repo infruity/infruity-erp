@@ -357,3 +357,61 @@ test('a single-branch user keeps their branch as the default; reset returns to i
 
     assert.equal(events[0].detail.values.branch, '1');
 });
+
+test('extra groups start at their defaults and come from the page when opening', () => {
+    const sheet = createSheet({ groups: [{ key: 'delivery', default: 'all' }, { key: 'sort', default: 'name' }] });
+    assert.deepEqual({ ...sheet.extra }, { delivery: 'all', sort: 'name' });
+
+    const { events } = stubBrowser();
+    try {
+        sheet.onOpen({ detail: { id: 'wholesale', values: { extra: { delivery: 'received' } } } });
+        assert.deepEqual({ ...sheet.extra }, { delivery: 'received', sort: 'name' });
+
+        sheet.extra.sort = 'stock';
+        sheet.apply();
+    } finally {
+        restoreBrowser();
+    }
+
+    assert.deepEqual({ ...events[0].detail.values.extra }, { delivery: 'received', sort: 'stock' });
+});
+
+test('reset returns the extra groups to their defaults', () => {
+    const { events } = stubBrowser();
+    const sheet = createSheet({ resetApplies: true, groups: [{ key: 'delivery', default: 'all' }] });
+
+    try {
+        sheet.onOpen({ detail: { id: 'wholesale', values: { extra: { delivery: 'received' } } } });
+        sheet.reset();
+    } finally {
+        restoreBrowser();
+    }
+
+    assert.deepEqual({ ...events[0].detail.values.extra }, { delivery: 'all' });
+});
+
+test('pages without groups keep the original event shape', () => {
+    const { events } = stubBrowser();
+    const sheet = createSheet();
+
+    try {
+        sheet.onOpen({ detail: { id: 'wholesale', values: {} } });
+        sheet.apply();
+    } finally {
+        restoreBrowser();
+    }
+
+    assert.deepEqual(Object.keys(events[0].detail.values), ['branch', 'status', 'start', 'end']);
+});
+
+test('"Bulan Ini" fills the whole current month in the application timezone', () => {
+    // 31 Oct 18:30 UTC is already 1 Nov in Jakarta.
+    assert.deepEqual({ ...erpFilterSheet.monthRange('Asia/Jakarta', new Date('2026-10-31T18:30:00Z')) }, { start: '2026-11-01', end: '2026-11-30' });
+    assert.deepEqual({ ...erpFilterSheet.monthRange('UTC', new Date('2028-02-10T00:00:00Z')) }, { start: '2028-02-01', end: '2028-02-29' });
+
+    const sheet = createSheet({ timezone: 'UTC' });
+    sheet.setDateRange('month');
+    assert.match(sheet.start, /^\d{4}-\d{2}-01$/);
+    assert.equal(sheet.end.slice(0, 7), sheet.start.slice(0, 7));
+    assert.deepEqual([sheet.calendarYear, sheet.calendarMonth], [Number(sheet.start.slice(0, 4)), Number(sheet.start.slice(5, 7)) - 1]);
+});

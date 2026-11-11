@@ -10,6 +10,10 @@
  *   apply: window event 'erp-filter-apply' detail { id, values: { branch, status, start, end } }
  *   close: window event 'erp-filter-close' detail { id }   (always fired, apply included)
  *
+ * Extra choice groups: config.groups = [{key, default}] (chips or radio rows, rendered by the
+ * component). Their chosen values travel as values.extra = {key: value}; the key is absent from
+ * the event when no group is configured, so pages without groups see the same shape as before.
+ *
  * Config: id, branches, showBranchAll, defaultBranch (what "no branch filter" means, e.g. the one
  * branch of a single-branch user; Reset returns to it), timezone (dates for "Hari Ini" / "Minggu Ini"
  * are read in this zone, not the browser's), weekStart ('sunday' | 'monday'),
@@ -53,6 +57,16 @@
         return weekStart === 'monday' ? (weekday + 6) % 7 : weekday;
     }
 
+    /** First to last day of the current month in the given zone. */
+    function monthRange(timeZone, now = new Date()) {
+        const [year, month] = today(timeZone, now).split('-').map(Number);
+
+        return {
+            start: toIsoDate(new Date(Date.UTC(year, month - 1, 1))),
+            end: toIsoDate(new Date(Date.UTC(year, month, 0))),
+        };
+    }
+
     function daysInMonth(year, month) {
         return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
     }
@@ -61,6 +75,8 @@
         const timezone = config.timezone || '';
         const weekStart = config.weekStart === 'monday' ? 'monday' : 'sunday';
         const [startYear, startMonth] = today(timezone).split('-').map(Number);
+        const groups = (config.groups || []).map((group) => ({ key: String(group.key), default: String(group.default ?? 'all') }));
+        const groupDefaults = () => Object.fromEntries(groups.map((group) => [group.key, group.default]));
 
         return {
             id: config.id || 'filter',
@@ -71,6 +87,8 @@
             open: false,
             branch: String(config.defaultBranch || 'all'),
             status: 'all',
+            extra: groupDefaults(),
+            groups,
             start: '',
             end: '',
             branchSearch: '',
@@ -96,6 +114,7 @@
                 const values = detail.values || {};
                 this.branch = values.branch || this.defaultBranch;
                 this.status = values.status || 'all';
+                this.extra = { ...groupDefaults(), ...(values.extra || {}) };
                 this.start = values.start || '';
                 this.end = values.end || '';
                 this.branchSearch = '';
@@ -119,15 +138,16 @@
             reset() {
                 this.branch = this.defaultBranch;
                 this.status = 'all';
+                this.extra = groupDefaults();
                 this.start = '';
                 this.end = '';
                 this.branchSearch = '';
                 if (this.resetApplies) this.apply();
             },
             apply() {
-                root.dispatchEvent(new root.CustomEvent('erp-filter-apply', {
-                    detail: { id: this.id, values: { branch: this.branch, status: this.status, start: this.start, end: this.end } },
-                }));
+                const values = { branch: this.branch, status: this.status, start: this.start, end: this.end };
+                if (groups.length) values.extra = { ...this.extra };
+                root.dispatchEvent(new root.CustomEvent('erp-filter-apply', { detail: { id: this.id, values } }));
                 this.close();
             },
 
@@ -181,7 +201,7 @@
             setDateRange(period) {
                 const range = period === 'week'
                     ? week(this.timezone)
-                    : { start: today(this.timezone), end: today(this.timezone) };
+                    : (period === 'month' ? monthRange(this.timezone) : { start: today(this.timezone), end: today(this.timezone) });
                 this.start = range.start;
                 this.end = range.end;
                 const [year, month] = range.start.split('-').map(Number);
@@ -287,6 +307,7 @@
 
     erpFilterSheet.today = today;
     erpFilterSheet.week = week;
+    erpFilterSheet.monthRange = monthRange;
     erpFilterSheet.monthGridOffset = monthGridOffset;
     erpFilterSheet.daysInMonth = daysInMonth;
 
