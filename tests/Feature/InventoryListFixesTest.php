@@ -60,6 +60,18 @@ final class InventoryListFixesTest extends TestCase
         $this->assertStringContainsString("$('#wholesale-table td.dataTables_empty').html(hasCriteria ? wholesaleNoMatchState : wholesaleEmptyState);", $view);
     }
 
+    public function test_wholesale_mobile_empty_state_centers_in_the_available_list_area(): void
+    {
+        $view = $this->src('Modules/Transaction/Resources/views/wholesale/index.blade.php');
+
+        $this->assertStringContainsString("document.querySelector('.mobile-list-edge-fade')?.classList.toggle('has-wholesale-empty-state', !info.recordsDisplay);", $view);
+        $this->assertStringContainsString("$('#wholesale-table_wrapper').toggleClass('has-wholesale-empty-state', !info.recordsDisplay);", $view);
+        $this->assertStringContainsString('.mobile-list-edge-fade.has-wholesale-empty-state { display:flex; flex-direction:column; }', $view);
+        $this->assertStringContainsString('#wholesale-table_wrapper.has-wholesale-empty-state #wholesale-table tbody tr { display:flex; flex:1 1 0%; min-height:0;', $view);
+        $this->assertStringContainsString('align-items:center; justify-content:center;', $view);
+        $this->assertStringContainsString('.wholesale-empty-state { min-height:0; }', $view);
+    }
+
     public function test_stock_opname_length_menu_has_no_all_option(): void
     {
         $view = $this->src('Modules/Transaction/Resources/views/stock-opname/index.blade.php');

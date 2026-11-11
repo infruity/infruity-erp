@@ -441,6 +441,13 @@
             #wholesale-table thead { display:none; }
             #wholesale-table tbody tr { display:grid; grid-template-columns:minmax(0,1fr) minmax(126px,auto); grid-template-areas:'order status'; align-items:center; gap:4px 14px; border-bottom:1px solid #f1f3f5; padding:14px clamp(16px,3vw,24px); transition:background-color .16s ease; }
             #wholesale-table tbody td { display:block; width:auto !important; border:0 !important; padding:0 !important; }
+            .mobile-list-edge-fade.has-wholesale-empty-state { display:flex; flex-direction:column; }
+            #wholesale-table_wrapper.has-wholesale-empty-state { display:flex; flex:1 1 0%; flex-direction:column; min-height:0; }
+            #wholesale-table_wrapper.has-wholesale-empty-state #wholesale-table { display:flex; flex:1 1 0%; flex-direction:column; min-height:0; }
+            #wholesale-table_wrapper.has-wholesale-empty-state #wholesale-table tbody { display:flex; flex:1 1 0%; flex-direction:column; min-height:0; }
+            #wholesale-table_wrapper.has-wholesale-empty-state #wholesale-table tbody tr { display:flex; flex:1 1 0%; min-height:0; padding:0; border:0; }
+            #wholesale-table_wrapper.has-wholesale-empty-state #wholesale-table td.dataTables_empty { display:flex; width:100% !important; flex:1 1 0%; align-items:center; justify-content:center; padding:0 16px !important; }
+            #wholesale-table_wrapper.has-wholesale-empty-state .wholesale-empty-state { min-height:0; }
             #wholesale-table tbody td:nth-child(1) { grid-area:order; min-width:0; }
             #wholesale-table tbody td:nth-child(2), #wholesale-table tbody td:nth-child(3), #wholesale-table tbody td:nth-child(4) { display:none; }
             #wholesale-table tbody td:nth-child(5) { grid-area:status; }
@@ -595,6 +602,8 @@
                 },
                 drawCallback: function () {
                     const info = this.api().page.info();
+                    document.querySelector('.mobile-list-edge-fade')?.classList.toggle('has-wholesale-empty-state', !info.recordsDisplay);
+                    $('#wholesale-table_wrapper').toggleClass('has-wholesale-empty-state', !info.recordsDisplay);
                     const hasCriteria = hasWholesaleFilterCriteria({
                         status: getWholesaleFilter('status'),
                         branch: getWholesaleFilter('branch'),
