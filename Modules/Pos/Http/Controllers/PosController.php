@@ -202,8 +202,8 @@ class PosController extends Controller
         }
 
         $data['data']         = PosModel::with(['customer', 'paymentDetails'])->whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
-        $data['detail']       = PosDetailModel::with('product')->where('pos_id', $id)->get();
-        $data['parcelDetail'] = ProductionParcelDetail::with('product')->where('pos_id', $id)->get();
+        $data['detail']       = PosDetailModel::with('product.unit')->where('pos_id', $id)->get();
+        $data['parcelDetail'] = ProductionParcelDetail::with('product.unit')->where('pos_id', $id)->get();
         $data['setting']      = SettingNota::where('branch_id', $data['data']->branch_id)->first() ?? SettingNota::first();
         // dd($data);
         return view('pos::pos.receipt', $data);
