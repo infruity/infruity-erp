@@ -57,6 +57,15 @@ final class PosInvoiceNotaUiTest extends TestCase
         $this->assertStringContainsString('*** Kurang Bayar ***', $this->render('debt'));
     }
 
+    public function test_whatsapp_share_uses_the_public_nota_link(): void
+    {
+        $html = $this->render('paid', ['uuid' => 'uuid-nota-7']);
+
+        $this->assertStringContainsString('aria-label="Kirim ke WhatsApp"', $html);
+        $this->assertStringContainsString('function sendReceiptToWA()', $html);
+        $this->assertStringContainsString('cek-nota\/draft\/uuid-nota-7', $html);
+    }
+
     public function test_print_and_back_actions_are_kept_off_the_printout(): void
     {
         $html = $this->render('paid');

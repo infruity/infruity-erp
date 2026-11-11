@@ -53,6 +53,7 @@
         .nota-topbar, .nota-bar { display:none; }
         .nota-desktop-actions { display:flex; gap:10px; max-width:576px; margin:16px auto 0; }
         .nota-btn { display:flex; height:44px; flex:1; align-items:center; justify-content:center; gap:8px; border:1px solid #d1d5db; border-radius:12px; background:#fff; color:#1f2937; font-size:14px; font-weight:700; cursor:pointer; }
+        .nota-btn--icon { flex:none; width:44px; font-size:18px; }
         .nota-btn--primary { border:0; background:#0b595b; color:#fff; }
         .nota-btn--primary:hover { background:#08484a; }
         .nota-btn:not(.nota-btn--primary):hover { border-color:#34a684; color:#0b595b; }
@@ -242,11 +243,13 @@
 
     <div class="nota-desktop-actions">
         <a href="{{ $backUrl }}" class="nota-btn"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i> Kembali</a>
+        <button type="button" class="nota-btn nota-btn--icon" onclick="sendReceiptToWA()" aria-label="Kirim ke WhatsApp" title="Kirim nota via WhatsApp"><i class="ph-bold ph-chats-circle" aria-hidden="true"></i></button>
         <button type="button" class="nota-btn nota-btn--primary" onclick="window.print()"><i class="ph-bold ph-printer" aria-hidden="true"></i> Cetak Nota</button>
     </div>
 
     <nav class="nota-bar" aria-label="Aksi nota">
         <a href="{{ $backUrl }}" class="nota-bar__icon" aria-label="Kembali" title="Kembali"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a>
+        <button type="button" class="nota-bar__icon" onclick="sendReceiptToWA()" aria-label="Kirim ke WhatsApp" title="Kirim nota via WhatsApp"><i class="ph-bold ph-chats-circle" aria-hidden="true"></i></button>
         <button type="button" class="nota-btn nota-btn--primary" onclick="window.print()"><i class="ph-bold ph-printer" aria-hidden="true"></i> Cetak Nota</button>
     </nav>
 
@@ -254,6 +257,15 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('print') === 'true') {
             window.print();
+        }
+
+        // Same public link the cashier nota shares; opens WhatsApp to the customer's number when known.
+        function sendReceiptToWA() {
+            const url = @json(url('/cek-nota/draft/' . $data->uuid));
+            let phone = @json((string) ($data->customer->whatsapp ?? '')).replace(/[^0-9]/g, '');
+            if (phone.startsWith('0')) phone = '62' + phone.substring(1);
+            else if (phone.startsWith('8')) phone = '62' + phone;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent('Halo, berikut bukti transaksi Anda:\n' + url)}`, '_blank');
         }
     </script>
 </body>
