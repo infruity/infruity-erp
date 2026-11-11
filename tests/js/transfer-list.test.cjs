@@ -48,11 +48,11 @@ test('sender list gives GKB and GBA distinct avatar accents',()=>{
     assert.deepEqual(sender.branchTheme('Toko GKB'),{background:'#fff1f2',color:'#be123c',borderColor:'#fecdd3'});
     assert.deepEqual(sender.branchTheme('Toko GBA'),{background:'#eef2ff',color:'#4338ca',borderColor:'#c7d2fe'});
 });
-test('receiving and generic branches retain their existing avatar accents',()=>{
+test('receiver uses the same GKB and GBA accents without changing other branch themes',()=>{
     const createTransferList=require('../../public/assets/js/transfer-list.js');
     const receiver=createTransferList({receiving:true});
-    const sender=createTransferList({receiving:false});
-    assert.deepEqual(receiver.branchTheme('Toko GKB'),{background:'#ecfdf5',color:'#0b595b',borderColor:'#a7f3d0'});
-    assert.deepEqual(sender.branchTheme('Cabang Baru'),{background:'#ecfdf5',color:'#0b595b',borderColor:'#a7f3d0'});
-    assert.deepEqual(sender.branchTheme('Rungkut'),{background:'#eff6ff',color:'#1d4ed8',borderColor:'#bfdbfe'});
+    assert.deepEqual(receiver.branchTheme('Toko GKB'),{background:'#fff1f2',color:'#be123c',borderColor:'#fecdd3'});
+    assert.deepEqual(receiver.branchTheme('Toko GBA'),{background:'#eef2ff',color:'#4338ca',borderColor:'#c7d2fe'});
+    assert.deepEqual(receiver.branchTheme('Cabang Baru'),{background:'#ecfdf5',color:'#0b595b',borderColor:'#a7f3d0'});
+    assert.deepEqual(receiver.branchTheme('Rungkut'),{background:'#eff6ff',color:'#1d4ed8',borderColor:'#bfdbfe'});
 });
