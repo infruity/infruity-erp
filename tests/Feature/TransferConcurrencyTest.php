@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Modules\Master\Entities\Branch;
 use Modules\Transaction\Entities\Transfer;
 use Modules\Transaction\Entities\TransferDetail;
@@ -21,6 +22,11 @@ class TransferConcurrencyTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // These tests exercise the real transfer tables; phpunit.xml uses an empty in-memory SQLite database.
+        if (! Schema::hasTable('users') || ! Schema::hasTable('transfers')) {
+            $this->markTestSkipped('Needs a migrated database (run with a real DB connection).');
+        }
 
         $this->user = User::first() ?? User::create([
             'name'     => 'Test Admin',
