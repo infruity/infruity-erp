@@ -26,6 +26,9 @@ class ErpFilterPresentationTest extends TestCase
         $include = "{{ asset('assets/css/erp-filters.css') }}?v={{ filemtime(public_path('assets/css/erp-filters.css')) }}";
 
         $this->assertSame(1, substr_count($root, $include));
-        $this->assertGreaterThan(strpos($root, "assets/css/arus-kas-filter.css"), strpos($root, $include));
+        $this->assertGreaterThan(strpos($root, 'assets/css/erp-shell.css'), strpos($root, $include));
+        // The cash-flow sheet is the shared component now; its own stylesheet is gone.
+        $this->assertStringNotContainsString('arus-kas-filter.css', $root);
+        $this->assertFileDoesNotExist(public_path('assets/css/arus-kas-filter.css'));
     }
 }

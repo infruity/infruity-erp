@@ -8,10 +8,10 @@ const asset = path.join(__dirname, '../../public/assets/css/erp-filters.css');
 test('all filter families and nested report filters use the shared scale', () => {
     const css = fs.readFileSync(asset, 'utf8');
     for (const hook of [
-        '#sortir-filter-dialog', '#transfer-filter-dialog', '#stock-filters', '#stock-detail-filters',
+        '[data-erp-filter-sheet]',
         '.report-mobile-sheet--filter', '.report-mobile-history-filter-popover',
         '#mobile-user-role-filter', '#receipt-category-mobile', '#receipt-category-desktop-button',
-        'Filter pengadaan', '#wholesale-mobile-branch-search', 'periodSearchQuery',
+        'periodSearchQuery',
         'cabangFilter', '.erp-operations-filter', '.erp-operations-inline-select', '.nota-branch-picker',
         'data-kt-menu', '#kt_ecommerce_sales_flatpickr',
     ]) assert.ok(css.includes(hook), `Missing visual family hook: ${hook}`);
@@ -50,7 +50,7 @@ test('filter presentation uses explicit shared role sizes without changing the a
     })) {
         assert.match(css, new RegExp(`--erp-filter-${name}:\\s*${value}`));
     }
-    for (const selector of ['.arus-kas-filter-sheet', '#order-book-filter-sheet', '#delivery-order-mobile-filter-sheet']) {
+    for (const selector of ['[data-erp-filter-sheet] input[type="search"]', '[data-erp-filter-sheet] .erp-filter-sheet__title', '[data-erp-filter-sheet] > section > footer']) {
         assert.ok(css.includes(selector), `Missing core family ${selector}`);
     }
     assert.equal((css.match(/font-size:var\(--erp-filter-option-size\)/g) || []).length, 4);

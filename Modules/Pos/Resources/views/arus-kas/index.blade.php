@@ -23,14 +23,6 @@
     .arus-kas-empty { display:flex; min-height:calc(100dvh - 218px); flex-direction:column; align-items:center; justify-content:center; padding:24px 20px 108px; text-align:center; }
     .arus-kas-empty__icon { display:flex; width:64px; height:64px; align-items:center; justify-content:center; border:1px solid rgba(16,185,129,.12); border-radius:24px; background:rgba(236,253,245,.72); color:#0b595b; }
     .arus-kas-empty__icon i { font-size:28px; }
-    .arus-kas-sheet-backdrop { position:fixed; z-index:110; inset:0; background:rgba(0,0,0,.58); }
-    .arus-kas-filter-sheet { position:fixed; z-index:111; right:0; bottom:0; left:0; display:flex; max-height:88dvh; flex-direction:column; overflow:hidden; border-radius:22px 22px 0 0; background:#fff; box-shadow:0 -12px 40px rgba(0,0,0,.18); }
-    .arus-kas-sheet-handle { width:64px; height:5px; margin:11px auto 9px; border-radius:999px; background:#d1d5db; }
-    .arus-kas-filter-scroll { min-height:0; overflow-y:auto; padding:16px 20px 20px; }
-    .arus-kas-radio-list { overflow:hidden; border:1px solid #e5e7eb; border-radius:10px; }
-    .arus-kas-radio-row { display:flex; min-height:37px; align-items:center; gap:12px; border-bottom:1px solid #f3f4f6; padding:7px 12px; color:#4b5563; font-size:12px; }
-    .arus-kas-radio-row:last-child { border-bottom:0; }
-    .arus-kas-radio-row input { width:16px; height:16px; accent-color:#10b981; }
     .arus-kas-form-page { display:flex; min-height:100%; flex-direction:column; background:#e5e9f3; }
     .arus-kas-form-scroll { min-height:0; flex:1; overflow-y:auto; padding:18px 16px 14px; }
     .arus-kas-form-branch { position:relative; z-index:30; min-height:99px; border-radius:16px; background:#fff; padding:16px; box-shadow:0 8px 20px -12px rgba(31,41,55,.18); }
