@@ -172,7 +172,7 @@ body.erp-ui :is(
 /* Close controls */
 body.erp-ui :is(
     .arus-kas-filter-sheet > header button[aria-label="Tutup filter"],
-    #order-book-filter-sheet [x-ref="filterCloseButton"],
+    #order-book-filter-sheet [x-ref="closeButton"],
     #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__close,
     #sortir-filter-dialog .sortir-dialog-head .sortir-icon-button,
     #transfer-filter-dialog .transfer-dialog-head .transfer-icon-button,
@@ -195,7 +195,7 @@ body.erp-ui :is(
 /* Close icons */
 body.erp-ui :is(
     .arus-kas-filter-sheet > header button[aria-label="Tutup filter"] > i,
-    #order-book-filter-sheet [x-ref="filterCloseButton"] > i,
+    #order-book-filter-sheet [x-ref="closeButton"] > i,
     #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__close > i,
     #sortir-filter-dialog .sortir-dialog-head .sortir-icon-button > i,
     #transfer-filter-dialog .transfer-dialog-head .transfer-icon-button > i,
@@ -215,8 +215,7 @@ body.erp-ui :is(
 /* Section labels; Bootstrap color and weight utilities are important */
 body.erp-ui :is(
     .arus-kas-filter-sheet .arus-kas-filter-scroll h3,
-    #order-book-filter-sheet [x-show="!calOpen"] h3,
-    #order-book-filter-sheet [x-show="!calOpen"] h4,
+    #order-book-filter-sheet [x-show="!calendarOpen"] :is(label, span).uppercase,
     #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__label,
     #sortir-filter-dialog .sortir-filter-label,
     #transfer-filter-dialog .transfer-filter-label,
@@ -267,7 +266,7 @@ body.erp-ui :is(
 /* Search inputs; retain mobile anti-zoom size */
 body.erp-ui :is(
     .arus-kas-filter-sheet input[type="search"],
-    #order-book-filter-sheet input[x-model="branchSearchQuery"],
+    #order-book-filter-sheet input[x-model="branchSearch"],
     #delivery-order-mobile-branch-search,
     #sortir-filter-dialog input[type="search"],
     #transfer-filter-dialog input[type="search"],
@@ -318,7 +317,7 @@ body.erp-ui :is(
 /* Primary options; keep selected weight and secondary captions */
 body.erp-ui :is(
     .arus-kas-filter-sheet .arus-kas-radio-row,
-    #order-book-filter-sheet label:has(input[name="orderBookDraftBranch"]),
+    #order-book-filter-sheet label:has(input[name="order-bookMobileBranch"]),
     #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__branch-option,
     #sortir-filter-dialog .sortir-branch-option,
     #transfer-filter-dialog .transfer-filter-branch-option,
@@ -343,7 +342,7 @@ body.erp-ui :is(
 /* Primary branch text */
 body.erp-ui :is(
     .arus-kas-filter-sheet .arus-kas-radio-row > span,
-    #order-book-filter-sheet label:has(input[name="orderBookDraftBranch"]) > span:last-child,
+    #order-book-filter-sheet label:has(input[name="order-bookMobileBranch"]) > span:last-child,
     #delivery-order-mobile-filter-sheet .delivery-order-filter-sheet__branch-option > span,
     #sortir-filter-dialog .sortir-branch-option > span,
     #transfer-filter-dialog .transfer-filter-branch-option > span,

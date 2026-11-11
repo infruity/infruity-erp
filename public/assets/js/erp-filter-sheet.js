@@ -1,0 +1,303 @@
+/**
+ * Alpine state of <x-erp.filter-sheet>.
+ *
+ * The sheet edits a draft (branch, status, start, end). Nothing reaches the page
+ * until "Terapkan": the page then receives an `erp-filter-apply` window event.
+ * The page opens the sheet with an `erp-filter-open` window event that carries the
+ * values currently applied, so the draft always starts from what the list shows.
+ *
+ *   open:  window event 'erp-filter-open'  detail { id, values: { branch, status, start, end } }
+ *   apply: window event 'erp-filter-apply' detail { id, values: { branch, status, start, end } }
+ *   close: window event 'erp-filter-close' detail { id }   (always fired, apply included)
+ *
+ * Config: id, branches, showBranchAll, defaultBranch (what "no branch filter" means, e.g. the one
+ * branch of a single-branch user; Reset returns to it), timezone (dates for "Hari Ini" / "Minggu Ini"
+ * are read in this zone, not the browser's), weekStart ('sunday' | 'monday'),
+ * resetApplies (Reset also applies and closes, instead of only clearing the draft).
+ */
+(function (root) {
+    const MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const WEEKDAYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    const pad = (number) => String(number).padStart(2, '0');
+    const toIsoDate = (date) => `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+
+    /** Today as YYYY-MM-DD in the given IANA zone (the browser's zone when none is given). */
+    function today(timeZone, now = new Date()) {
+        const parts = new Intl.DateTimeFormat('en-CA', { timeZone: timeZone || undefined, year: 'numeric', month: '2-digit', day: '2-digit' })
+            .formatToParts(now)
+            .reduce((date, part) => {
+                if (part.type !== 'literal') date[part.type] = part.value;
+                return date;
+            }, {});
+
+        return `${parts.year}-${parts.month}-${parts.day}`;
+    }
+
+    /** Monday through Sunday of the current week in the given zone. */
+    function week(timeZone, now = new Date()) {
+        const [year, month, day] = today(timeZone, now).split('-').map(Number);
+        const monday = new Date(Date.UTC(year, month - 1, day));
+        monday.setUTCDate(monday.getUTCDate() - (monday.getUTCDay() || 7) + 1);
+        const sunday = new Date(monday.getTime());
+        sunday.setUTCDate(sunday.getUTCDate() + 6);
+
+        return { start: toIsoDate(monday), end: toIsoDate(sunday) };
+    }
+
+    /** Empty cells before the 1st of the month, for a week that starts on Monday or Sunday. */
+    function monthGridOffset(year, month, weekStart = 'sunday') {
+        const weekday = new Date(Date.UTC(year, month, 1)).getUTCDay();
+        return weekStart === 'monday' ? (weekday + 6) % 7 : weekday;
+    }
+
+    function daysInMonth(year, month) {
+        return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+    }
+
+    function erpFilterSheet(config = {}) {
+        const timezone = config.timezone || '';
+        const weekStart = config.weekStart === 'monday' ? 'monday' : 'sunday';
+        const [startYear, startMonth] = today(timezone).split('-').map(Number);
+
+        return {
+            id: config.id || 'filter',
+            timezone,
+            weekStart,
+            resetApplies: Boolean(config.resetApplies),
+            defaultBranch: String(config.defaultBranch || 'all'),
+            open: false,
+            branch: String(config.defaultBranch || 'all'),
+            status: 'all',
+            start: '',
+            end: '',
+            branchSearch: '',
+            showBranchAll: Boolean(config.showBranchAll),
+            branches: (config.branches || []).map((branch) => ({
+                id: String(branch.id),
+                name: String(branch.name),
+                search: String(branch.name).toLocaleLowerCase('id'),
+            })),
+            calendarOpen: false,
+            calendarView: 'date',
+            calendarMonth: startMonth - 1,
+            calendarYear: startYear,
+            calendarTrigger: null,
+            calendarMonths: MONTHS,
+            returnFocus: null,
+            previousBodyOverflow: '',
+            previousMainOverflow: '',
+
+            onOpen(event) {
+                const detail = event.detail || {};
+                if (detail.id !== this.id) return;
+                const values = detail.values || {};
+                this.branch = values.branch || this.defaultBranch;
+                this.status = values.status || 'all';
+                this.start = values.start || '';
+                this.end = values.end || '';
+                this.branchSearch = '';
+                this.calendarOpen = false;
+                this.calendarView = 'date';
+                this.returnFocus = root.document?.activeElement || null;
+                this.lockScroll();
+                this.open = true;
+                this.$nextTick(() => this.$refs.closeButton?.focus());
+            },
+            close() {
+                if (!this.open) return;
+                this.open = false;
+                this.calendarOpen = false;
+                this.unlockScroll();
+                root.dispatchEvent(new root.CustomEvent('erp-filter-close', { detail: { id: this.id } }));
+                const target = this.returnFocus;
+                this.returnFocus = null;
+                this.$nextTick(() => target?.focus?.());
+            },
+            reset() {
+                this.branch = this.defaultBranch;
+                this.status = 'all';
+                this.start = '';
+                this.end = '';
+                this.branchSearch = '';
+                if (this.resetApplies) this.apply();
+            },
+            apply() {
+                root.dispatchEvent(new root.CustomEvent('erp-filter-apply', {
+                    detail: { id: this.id, values: { branch: this.branch, status: this.status, start: this.start, end: this.end } },
+                }));
+                this.close();
+            },
+
+            lockScroll() {
+                const doc = root.document;
+                if (!doc) return;
+                this.previousBodyOverflow = doc.body.style.overflow;
+                const main = doc.querySelector('.erp-main');
+                this.previousMainOverflow = main?.style.overflow || '';
+                doc.body.style.overflow = 'hidden';
+                if (main) main.style.overflow = 'hidden';
+            },
+            unlockScroll() {
+                const doc = root.document;
+                if (!doc) return;
+                doc.body.style.overflow = this.previousBodyOverflow;
+                const main = doc.querySelector('.erp-main');
+                if (main) main.style.overflow = this.previousMainOverflow;
+            },
+            trapFocus(event) {
+                const panel = this.$refs.panel;
+                if (!panel) return;
+                const focusable = Array.from(panel.querySelectorAll(FOCUSABLE)).filter((element) => element.getClientRects().length > 0);
+                if (!focusable.length) {
+                    event.preventDefault();
+                    panel.focus();
+                    return;
+                }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                const active = root.document?.activeElement;
+                if (event.shiftKey && active === first) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && active === last) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            },
+
+            branchMatches(search) {
+                const term = this.branchSearch.trim().toLocaleLowerCase('id');
+                return term === '' || String(search).includes(term);
+            },
+            get visibleBranchCount() {
+                const rows = this.branches.filter((branch) => this.branchMatches(branch.search)).length;
+                const all = this.showBranchAll && this.branchMatches('semua cabang') ? 1 : 0;
+                return rows + all;
+            },
+
+            setDateRange(period) {
+                const range = period === 'week'
+                    ? week(this.timezone)
+                    : { start: today(this.timezone), end: today(this.timezone) };
+                this.start = range.start;
+                this.end = range.end;
+                const [year, month] = range.start.split('-').map(Number);
+                this.calendarYear = year;
+                this.calendarMonth = month - 1;
+                this.calendarView = 'date';
+            },
+            formatDate(value) {
+                if (!value) return 'Pilih Tanggal';
+                const [year, month, day] = value.split('-').map(Number);
+                return `${day} ${SHORT_MONTHS[month - 1]} ${year}`;
+            },
+
+            get weekdays() {
+                const order = this.weekStart === 'monday' ? [1, 2, 3, 4, 5, 6, 0] : [0, 1, 2, 3, 4, 5, 6];
+                return order.map((index) => ({ name: WEEKDAYS[index], initial: WEEKDAYS[index][0] }));
+            },
+            get calendarHeading() {
+                if (this.calendarView === 'month') return String(this.calendarYear);
+                if (this.calendarView === 'year') return `${this.calendarYear - 4} - ${this.calendarYear + 7}`;
+                return `${MONTHS[this.calendarMonth]} ${this.calendarYear}`;
+            },
+            get calendarBlankDays() {
+                return Array.from({ length: monthGridOffset(this.calendarYear, this.calendarMonth, this.weekStart) }, (_, index) => index);
+            },
+            get calendarDays() {
+                return Array.from({ length: daysInMonth(this.calendarYear, this.calendarMonth) }, (_, index) => index + 1);
+            },
+            get calendarYears() {
+                return Array.from({ length: 12 }, (_, index) => this.calendarYear - 4 + index);
+            },
+            calendarDate(day) {
+                return `${this.calendarYear}-${pad(this.calendarMonth + 1)}-${pad(day)}`;
+            },
+            openCalendar(trigger, field) {
+                this.calendarTrigger = trigger;
+                const value = (field === 'end' ? (this.end || this.start) : (this.start || this.end)) || today(this.timezone);
+                const [year, month] = value.split('-').map(Number);
+                this.calendarYear = year;
+                this.calendarMonth = month - 1;
+                this.calendarView = 'date';
+                this.calendarOpen = true;
+                this.focusAfterPaint(() => this.$refs.calendarBack);
+            },
+            closeCalendar() {
+                this.calendarOpen = false;
+                this.calendarView = 'date';
+                this.focusAfterPaint(() => this.calendarTrigger);
+            },
+            focusAfterPaint(getTarget) {
+                this.$nextTick(() => requestAnimationFrame(() => {
+                    const target = getTarget();
+                    if (!target || !target.getClientRects().length) return;
+                    target.focus({ preventScroll: true });
+                    target.scrollIntoView({ block: 'nearest' });
+                }));
+            },
+            moveCalendar(step) {
+                if (this.calendarView === 'date') {
+                    const date = new Date(Date.UTC(this.calendarYear, this.calendarMonth + step, 1));
+                    this.calendarMonth = date.getUTCMonth();
+                    this.calendarYear = date.getUTCFullYear();
+                } else if (this.calendarView === 'month') {
+                    this.calendarYear += step;
+                } else {
+                    this.calendarYear += step * 12;
+                }
+            },
+            cycleCalendarView() {
+                this.calendarView = this.calendarView === 'date' ? 'month' : (this.calendarView === 'month' ? 'year' : 'date');
+            },
+            chooseCalendarMonth(month) {
+                this.calendarMonth = month;
+                this.calendarView = 'date';
+            },
+            chooseCalendarYear(year) {
+                this.calendarYear = year;
+                this.calendarView = 'month';
+            },
+            selectCalendarDate(day) {
+                const date = this.calendarDate(day);
+                if (!this.start || (this.start && this.end)) {
+                    this.start = date;
+                    this.end = '';
+                } else if (date < this.start) {
+                    this.end = this.start;
+                    this.start = date;
+                } else {
+                    this.end = date;
+                }
+            },
+            isCalendarDateSelected(day) {
+                const date = this.calendarDate(day);
+                return date === this.start || date === this.end;
+            },
+            isCalendarDateInRange(day) {
+                if (!this.start || !this.end) return false;
+                const date = this.calendarDate(day);
+                return date > this.start && date < this.end;
+            },
+        };
+    }
+
+    erpFilterSheet.today = today;
+    erpFilterSheet.week = week;
+    erpFilterSheet.monthGridOffset = monthGridOffset;
+    erpFilterSheet.daysInMonth = daysInMonth;
+
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = erpFilterSheet;
+    }
+
+    const register = () => root.Alpine.data('erpFilterSheet', erpFilterSheet);
+    if (root.Alpine && typeof root.Alpine.data === 'function') {
+        register();
+    } else if (root.document) {
+        root.document.addEventListener('alpine:init', register);
+    }
+})(typeof window !== 'undefined' ? window : globalThis);

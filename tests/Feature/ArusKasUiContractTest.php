@@ -52,7 +52,11 @@ class ArusKasUiContractTest extends TestCase
         $this->assertStringContainsString('ph-sliders-horizontal', $view);
         $this->assertStringContainsString('x-model.debounce.200ms="searchQuery"', $view);
         $this->assertStringContainsString('openFilterModal()', $view);
-        $this->assertStringContainsString('x-show="filterOpen"', $view);
+        // The sheet itself is the shared component; the page only opens it and applies the result.
+        $this->assertStringContainsString('<x-erp.filter-sheet', $view);
+        $this->assertStringContainsString('id="arus-kas"', $view);
+        $this->assertStringContainsString(':with-dates="false"', $view);
+        $this->assertStringContainsString("@erp-filter-apply.window=\"if (\$event.detail.id === 'arus-kas') applyMobileFilters(\$event.detail.values)\"", $view);
         $this->assertStringContainsString('open="detailModalOpen"', $view);
         $this->assertStringContainsString('x-show="invoiceModalOpen"', $view);
         $this->assertStringContainsString('x-show="itemModalOpen"', $view);

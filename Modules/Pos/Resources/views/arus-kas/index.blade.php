@@ -141,7 +141,9 @@
 
 @if ($pageMode === 'list')
 <section id="arus-kas-index-page" class="arus-kas-page arus-kas-list-page" aria-label="Arus Kas"
-    x-data="arusKasApp({ orders: @js($orders), branches: @js($branchOptions), formOrder: @js($formOrder), selectedBranchId: @js((string) ($selectedBranchId ?? '')), pageMode: @js($pageMode), baseUrl: @js(url('/arus-kas')) })">
+    x-data="arusKasApp({ orders: @js($orders), branches: @js($branchOptions), formOrder: @js($formOrder), selectedBranchId: @js((string) ($selectedBranchId ?? '')), pageMode: @js($pageMode), baseUrl: @js(url('/arus-kas')) })"
+    @erp-filter-apply.window="if ($event.detail.id === 'arus-kas') applyMobileFilters($event.detail.values)"
+    @erp-filter-close.window="if ($event.detail.id === 'arus-kas') filterOpen = false">
     <x-erp.mobile-search class="arus-kas-mobile-search">
         <x-slot:input>
             <input type="search" x-model.debounce.200ms="searchQuery" @input="visibleCount = pageSize" aria-label="Cari transaksi arus kas" placeholder="Cari..." class="erp-mobile-search__input">
@@ -213,37 +215,18 @@
         </div>
     </div>
 
-    <div x-show="filterOpen" x-cloak @keydown.escape.window="filterOpen = false" class="sm:hidden">
-        <div class="arus-kas-sheet-backdrop" @click="filterOpen = false"></div>
-        <section class="arus-kas-filter-sheet" role="dialog" aria-modal="true" aria-labelledby="arus-kas-filter-title" @click.stop>
-            <div class="arus-kas-sheet-handle" aria-hidden="true"></div>
-            <x-erp.filter-sheet-frame title="Filter Arus Kas" title-id="arus-kas-filter-title" subtitle="Saring cabang dan status arus kas" body-class="arus-kas-filter-scroll">
-                <x-slot:close><button type="button" @click="filterOpen = false" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
-                <x-slot:body>
-
-                <section>
-                    <h3 class="mb-2 text-[11px] font-bold uppercase tracking-wide text-gray-500">Cabang Tujuan</h3>
-                    <label class="flex h-11 items-center gap-2 rounded-t-lg border border-gray-200 px-3 text-gray-400"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" x-model="branchSearchQuery" placeholder="Cari cabang..." class="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm outline-none focus:ring-0"></label>
-                    <div class="arus-kas-radio-list rounded-t-none">
-                        <label class="arus-kas-radio-row"><input type="radio" name="mobileArusKasCabangFilter" value="all" x-model="tempSelectedBranch"><span class="font-semibold text-gray-800">Semua Cabang</span></label>
-                        <template x-for="branch in filteredBranches" :key="branch.id"><label class="arus-kas-radio-row"><input type="radio" name="mobileArusKasCabangFilter" :value="String(branch.id)" x-model="tempSelectedBranch"><span x-text="branch.name"></span></label></template>
-                        <p x-show="filteredBranches.length === 0" x-cloak class="px-3 py-4 text-center text-xs text-gray-400">Cabang tidak ditemukan</p>
-                    </div>
-                </section>
-                <section class="mt-5">
-                    <h3 class="mb-2 text-[11px] font-bold uppercase tracking-wide text-gray-500">Status Arus Kas</h3>
-                    <div class="flex flex-wrap gap-2" role="group" aria-label="Status Arus Kas">
-                        <template x-for="status in statusOptions" :key="status"><button type="button" @click="tempFilterStatus = status" :aria-pressed="tempFilterStatus === status" :class="tempFilterStatus === status ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-gray-200 bg-white text-gray-600'" class="rounded-full border px-3 py-2 text-xs font-semibold" x-text="status === 'Semua' ? 'Semua Status' : status"></button></template>
-                    </div>
-                </section>
-                </x-slot:body>
-                <x-slot:footer>
-                    <button type="button" @click="resetMobileFilters()">Reset</button>
-                    <button type="button" class="erp-filter-sheet__primary" @click="applyMobileFilters()">Terapkan</button>
-                </x-slot:footer>
-            </x-erp.filter-sheet-frame>
-        </section>
-    </div>
+    <x-erp.filter-sheet
+        id="arus-kas"
+        title="Filter Arus Kas"
+        aria-label="Filter arus kas"
+        subtitle="Saring cabang dan status arus kas"
+        branch-label="Cabang Tujuan"
+        branch-all-label="Semua Cabang"
+        status-label="Status Arus Kas"
+        :branches="$branchOptions"
+        :statuses="['all' => 'Semua', 'Draft' => 'Draft', 'Selesai' => 'Selesai']"
+        :with-dates="false"
+    />
 
     <x-erp.detail-dialog open="detailModalOpen" close="closeDetailModal()" title="Detail Arus Kas" labelledby="arus-kas-detail-title" closeLabel="Tutup detail arus kas" id="arus-kas-detail-dialog">
         <template x-if="selectedOrder"><div class="space-y-4">
@@ -418,10 +401,7 @@ function arusKasApp(config) {
         searchQuery: '',
         filterOpen: false,
         filterStatus: 'Semua',
-        tempFilterStatus: 'Semua',
         selectedBranch: 'all',
-        tempSelectedBranch: 'all',
-        branchSearchQuery: '',
         detailModalOpen: false,
         invoiceModalOpen: false,
         itemModalOpen: false,
@@ -435,10 +415,6 @@ function arusKasApp(config) {
         },
         modalItem: { type: 'in', name: '', unit: '', quantity: '', price: '' },
         get statusOptions() { return ['Semua', 'Draft', 'Selesai']; },
-        get filteredBranches() {
-            const query = this.branchSearchQuery.trim().toLocaleLowerCase('id-ID');
-            return this.branches.filter(branch => !query || branch.name.toLocaleLowerCase('id-ID').includes(query));
-        },
         get hasActiveFilter() { return this.filterStatus !== 'Semua' || this.selectedBranch !== 'all'; },
         get filteredOrders() {
             const query = this.searchQuery.trim().toLocaleLowerCase('id-ID');
@@ -453,29 +429,21 @@ function arusKasApp(config) {
         get hasMore() { return this.visibleCount < this.filteredOrders.length; },
         get grandTotal() { return this.form.items.reduce((total, item) => total + this.itemSubtotal(item), 0); },
         openFilterModal() {
-            this.tempFilterStatus = this.filterStatus;
-            this.tempSelectedBranch = this.selectedBranch;
-            this.branchSearchQuery = '';
             this.filterOpen = true;
+            this.$dispatch('erp-filter-open', { id: 'arus-kas', values: {
+                branch: this.selectedBranch,
+                status: this.filterStatus === 'Semua' ? 'all' : this.filterStatus
+            } });
         },
-        applyMobileFilters() {
-            this.filterStatus = this.tempFilterStatus;
-            this.selectedBranch = this.tempSelectedBranch;
-            this.filterOpen = false;
+        applyMobileFilters(values) {
+            this.filterStatus = values.status === 'all' ? 'Semua' : values.status;
+            this.selectedBranch = values.branch;
             this.visibleCount = this.pageSize;
-        },
-        resetMobileFilters() {
-            this.tempFilterStatus = 'Semua';
-            this.tempSelectedBranch = 'all';
-            this.branchSearchQuery = '';
         },
         resetFilters() {
             this.searchQuery = '';
             this.filterStatus = 'Semua';
-            this.tempFilterStatus = 'Semua';
             this.selectedBranch = 'all';
-            this.tempSelectedBranch = 'all';
-            this.branchSearchQuery = '';
             this.visibleCount = this.pageSize;
         },
         loadMore() { this.visibleCount += this.pageSize; },

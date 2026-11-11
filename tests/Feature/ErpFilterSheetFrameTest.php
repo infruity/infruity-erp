@@ -54,13 +54,13 @@ class ErpFilterSheetFrameTest extends TestCase
     public function test_filter_interactions_remain_owned_by_the_existing_views(): void
     {
         $contracts = [
-            'Modules/Pos/Resources/views/order-book/index.blade.php' => ['applyFilters()', 'resetFilters()'],
+            'Modules/Pos/Resources/views/order-book/index.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
             'Modules/Pos/Resources/views/delivery-order/index.blade.php' => ['data-delivery-order-filter-apply', 'data-delivery-order-filter-reset'],
-            'Modules/Pos/Resources/views/pos/index2.blade.php' => ['@click="apply()"', '@click="reset()"'],
-            'Modules/Pos/Resources/views/arus-kas/index.blade.php' => ['applyMobileFilters()', 'resetMobileFilters()'],
-            'Modules/Transaction/Resources/views/wholesale/index.blade.php' => ['applyWholesaleMobileFilters(', 'data-wholesale-filter-reset'],
-            'Modules/Transaction/Resources/views/sortir/index2.blade.php' => ['applyFilter()', 'pendingDateError'],
-            'Modules/Transaction/Resources/views/transfer/index2.blade.php' => ['applyFilter()', 'pendingDateError'],
+            'Modules/Pos/Resources/views/pos/index2.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
+            'Modules/Pos/Resources/views/arus-kas/index.blade.php' => ['applyMobileFilters(', '<x-erp.filter-sheet'],
+            'Modules/Transaction/Resources/views/wholesale/index.blade.php' => ['applyWholesaleMobileFilters(', 'data-wholesale-filter-reset', '<x-erp.filter-sheet'],
+            'Modules/Transaction/Resources/views/sortir/index2.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
+            'Modules/Transaction/Resources/views/transfer/index2.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
             'Modules/Report/Resources/views/partials/mobile-detail.blade.php' => ['applyDraftLive()', 'calendarOpen'],
             'Modules/Master/Resources/views/products/stock.blade.php' => ['id="stock-filter-apply"', 'setFilterOpen(open)'],
             'Modules/Master/Resources/views/products/stock-show.blade.php' => ['id="stock-detail-filter-apply"', 'data-stock-date-preset'],
@@ -78,13 +78,9 @@ class ErpFilterSheetFrameTest extends TestCase
     {
         $views = [
             'Modules/Transaction/Resources/views/stock-opname/partials/reference-filters.blade.php',
-            'Modules/Pos/Resources/views/order-book/index.blade.php',
+            'resources/views/components/erp/filter-sheet.blade.php',
             'Modules/Pos/Resources/views/delivery-order/index.blade.php',
-            'Modules/Pos/Resources/views/pos/index2.blade.php',
-            'Modules/Pos/Resources/views/arus-kas/index.blade.php',
-            'Modules/Transaction/Resources/views/wholesale/index.blade.php',
-            'Modules/Transaction/Resources/views/sortir/index2.blade.php',
-            'Modules/Transaction/Resources/views/transfer/index2.blade.php',
+            'resources/views/components/erp/filter-sheet.blade.php',
             'Modules/Report/Resources/views/partials/mobile-detail.blade.php',
             'Modules/Master/Resources/views/products/stock.blade.php',
             'Modules/Master/Resources/views/products/stock-show.blade.php',
@@ -95,5 +91,18 @@ class ErpFilterSheetFrameTest extends TestCase
             $this->assertFileExists($path, "Missing filter view: {$view}");
             $this->assertStringContainsString('<x-erp.filter-sheet-frame', file_get_contents($path), "Filter sheet not using the shared frame: {$view}");
         }
+    }
+
+    public function test_sheet_can_drop_the_period_section_for_branch_and_status_only_lists(): void
+    {
+        $with = Blade::render('<x-erp.filter-sheet id="a" title="Filter" :statuses="$statuses" />', ['statuses' => ['all' => 'Semua']]);
+        $without = Blade::render('<x-erp.filter-sheet id="a" title="Filter" :statuses="$statuses" :with-dates="false" />', ['statuses' => ['all' => 'Semua']]);
+
+        foreach (['Periode Tanggal', 'Pilihan Cepat', 'id="a-mobile-calendar"'] as $dates) {
+            $this->assertStringContainsString($dates, $with);
+            $this->assertStringNotContainsString($dates, $without);
+        }
+        $this->assertStringContainsString('Semua', $without);
+        $this->assertStringContainsString('Terapkan', $without);
     }
 }

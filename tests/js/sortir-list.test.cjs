@@ -28,12 +28,29 @@ test('browser network failure shows a readable Indonesian message',async()=>{
     const a=app();global.fetch=async()=>{throw new TypeError('Failed to fetch')};await a.load();
     assert.equal(a.error,'Periksa koneksi lalu coba lagi.');assert.equal(a.loading,false);
 });
-test('filters apply only on confirmation; reversed date range is rejected',()=>{
+test('opening hands the sheet the applied filters; only apply changes the list and reloads',()=>{
+    const a=app();let loaded=0;a.load=()=>loaded++;const opened=[];
+    a.$dispatch=(name,detail)=>opened.push({name,detail});
+    a.filters={status:'paid',branch:'2',start:'2026-10-01',end:'2026-10-31'};
+
+    a.openFilter();
+    assert.equal(a.filterOpen,true);
+    assert.deepEqual(JSON.parse(JSON.stringify(opened)),[{name:'erp-filter-open',detail:{id:'sortir',values:{status:'paid',branch:'2',start:'2026-10-01',end:'2026-10-31'}}}]);
+    assert.equal(loaded,0);
+
+    a.applyFilters({status:'draft',branch:'1',start:'2026-11-01',end:'2026-11-07',ignored:'x'});
+    assert.deepEqual(a.filters,{status:'draft',branch:'1',start:'2026-11-01',end:'2026-11-07'});
+    assert.equal(loaded,1);
+});
+test('closing the sheet only clears the open flag; reset clears the filters and reloads',()=>{
     const a=app();let loaded=0;a.load=()=>loaded++;
-    a.openFilter();a.pending.status='paid';assert.equal(a.filters.status,'all');
-    a.pending.start='2026-10-24';a.pending.end='2026-10-23';a.applyFilter();assert.equal(loaded,0);
-    a.pending.end='2026-10-25';a.applyFilter();assert.equal(loaded,1);assert.equal(a.filters.status,'paid');
-    a.resetFilters();assert.equal(a.activeFilters,false);assert.equal(a.filters.branch,'all');
+    a.filters={status:'paid',branch:'2',start:'',end:''};a.filterOpen=true;
+
+    a.closeFilter();
+    assert.equal(a.filterOpen,false);assert.equal(loaded,0);assert.equal(a.filters.status,'paid');
+
+    a.resetFilters();
+    assert.equal(a.activeFilters,false);assert.equal(a.filters.branch,'all');assert.equal(loaded,1);
 });
 test('delete cancellation and permission guard never send a request',async()=>{
     const a=app();let sent=0;global.fetch=async()=>{sent++};global.Swal={fire:async()=>({isConfirmed:false})};

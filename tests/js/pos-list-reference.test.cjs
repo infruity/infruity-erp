@@ -5,76 +5,62 @@ const PosListUi = require('../../public/assets/js/pos-list-reference.js');
 const config = {timezone: 'Asia/Jakarta', branches: [{id: '1', name: 'Toko GKB'}, {id: '15', name: 'Toko GBA'}], step: 50};
 const create = () => PosListUi.createFilters(config);
 
-test('quick date presets use the application timezone and stay pending until Apply', () => {
+test('opening hands the sheet the applied filters', () => {
     const f = create();
-    const now = new Date('2026-11-01T18:30:00Z'); // already Monday 2 Nov in Asia/Jakarta
+    const sent = [];
+    f.$dispatch = (name, detail) => sent.push({name, detail});
+    f.applied = {status: 'paid', branch: '15', start: '2026-11-01', end: '2026-11-07'};
 
-    f.setDateRange('today', now);
-    assert.deepEqual([f.draft.start, f.draft.end], ['2026-11-02', '2026-11-02']);
-    f.setDateRange('week', now);
-    assert.deepEqual([f.draft.start, f.draft.end], ['2026-11-02', '2026-11-08']);
-    assert.deepEqual([f.applied.start, f.applied.end], ['', '']);
+    f.open();
+
+    assert.equal(f.filtersOpen, true);
+    assert.deepEqual(JSON.parse(JSON.stringify(sent)), [{name: 'erp-filter-open', detail: {id: 'pos', values: {status: 'paid', branch: '15', start: '2026-11-01', end: '2026-11-07'}}}]);
 });
 
-test('week range starts on Monday across a month boundary', () => {
-    const f = create();
-    f.setDateRange('week', new Date('2026-10-31T05:00:00Z')); // Saturday 31 Oct, 12:00 WIB
-    assert.deepEqual([f.draft.start, f.draft.end], ['2026-10-26', '2026-11-01']);
-});
-
-test('apply copies the draft, closes the sheet and reports the applied filters once', () => {
+test('applying stores the chosen values, closes the sheet and reports them once', () => {
     const f = create();
     const seen = [];
     f.onApply = value => seen.push(value);
-    f.open();
-    f.draft.status = 'partial';
-    f.draft.branch = '15';
-    assert.equal(f.applied.status, 'all');
-    f.apply();
+    f.filtersOpen = true;
+
+    f.applyFilters({status: 'partial', branch: '15', start: '', end: '', ignored: 'x'});
+
     assert.equal(f.filtersOpen, false);
     assert.deepEqual(f.applied, {status: 'partial', branch: '15', start: '', end: ''});
     assert.equal(seen.length, 1);
     assert.deepEqual(seen[0], f.applied);
 });
 
-test('a reversed date range cannot be applied', () => {
-    const f = create();
-    let applied = 0;
-    f.onApply = () => applied++;
-    f.open();
-    f.draft.start = '2026-09-01';
-    f.draft.end = '2026-08-01';
-    assert.match(f.dateError, /Tanggal akhir/);
-    f.apply();
-    assert.equal(applied, 0);
-    assert.equal(f.filtersOpen, true);
-});
-
-test('reset clears the draft and the applied filters, and the dot follows the applied state', () => {
+test('applying with missing values falls back to no filter', () => {
     const f = create();
     f.onApply = () => {};
-    f.open(); f.draft.status = 'paid'; f.apply();
+
+    f.applyFilters({});
+
+    assert.deepEqual(f.applied, {status: 'all', branch: 'all', start: '', end: ''});
+});
+
+test('closing the sheet leaves the applied filters alone', () => {
+    const f = create();
+    f.applied = {status: 'paid', branch: 'all', start: '', end: ''};
+    f.filtersOpen = true;
+
+    f.close();
+
+    assert.equal(f.filtersOpen, false);
+    assert.equal(f.applied.status, 'paid');
+});
+
+test('reset clears the applied filters, and the dot follows the applied state', () => {
+    const f = create();
+    f.onApply = () => {};
+    f.applyFilters({status: 'paid', branch: 'all', start: '', end: ''});
     assert.equal(f.hasActive, true);
+
     f.reset();
+
     assert.deepEqual(f.applied, {status: 'all', branch: 'all', start: '', end: ''});
     assert.equal(f.hasActive, false);
-});
-
-test('opening the sheet starts from the applied filters, not from an abandoned draft', () => {
-    const f = create();
-    f.onApply = () => {};
-    f.open(); f.draft.status = 'debt'; f.filtersOpen = false;
-    f.open();
-    assert.equal(f.draft.status, 'all');
-});
-
-test('branch search filters the visible branches and keeps the all option in sync', () => {
-    const f = create();
-    f.branchSearch = 'gba';
-    assert.deepEqual(f.visibleBranches.map(b => b.id), ['15']);
-    assert.equal(f.showAllBranches, false);
-    f.branchSearch = 'semua';
-    assert.equal(f.showAllBranches, true);
 });
 
 test('load more grows by the step from the current length and never shrinks the list', () => {
