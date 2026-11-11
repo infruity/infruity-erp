@@ -175,6 +175,40 @@ test('date presets use application timezone and Monday-Sunday across month bound
     assert.deepEqual(ui.period('week','Asia/Jakarta',new Date('2026-11-01T12:00:00Z')), {start:'2026-10-26',end:'2026-11-01'});
 });
 
+test('stock opname calendar navigates dates, months and years from the selected draft month', () => {
+    assert.equal(typeof ui.filterCalendar, 'function');
+    const calendar = ui.filterCalendar(new Date('2026-11-11T12:00:00Z'));
+    calendar.open('2027-01-15');
+    assert.equal(calendar.heading, 'Januari 2027');
+    assert.equal(calendar.month, 0);
+    assert.equal(calendar.year, 2027);
+    assert.equal(calendar.days.length, 31);
+    assert.equal(calendar.blankDays.length, 5);
+    calendar.move(-1);
+    assert.equal(calendar.heading, 'Desember 2026');
+    calendar.toggleView();
+    assert.equal(calendar.view, 'month');
+    calendar.toggleView();
+    assert.equal(calendar.view, 'year');
+    calendar.chooseYear(2028);
+    assert.equal(calendar.view, 'month');
+    assert.equal(calendar.year, 2028);
+    calendar.chooseMonth(1);
+    assert.equal(calendar.view, 'date');
+    assert.equal(calendar.heading, 'Februari 2028');
+});
+
+test('stock opname date selection preserves the start/end-side behavior and ordered range', () => {
+    assert.equal(typeof ui.selectFilterDate, 'function');
+    const draft = {start:'2026-11-10',end:'2026-11-20'};
+    ui.selectFilterDate(draft,'start','2026-11-25');
+    assert.deepEqual(draft,{start:'2026-11-25',end:'2026-11-25'});
+    ui.selectFilterDate(draft,'end','2026-11-05');
+    assert.deepEqual(draft,{start:'2026-11-05',end:'2026-11-05'});
+    ui.selectFilterDate(draft,'end','2026-11-12');
+    assert.deepEqual(draft,{start:'2026-11-05',end:'2026-11-12'});
+});
+
 test('filter draft preserves branch, date, result and status choices and submits server filters', () => {
     const applied={branch:'7',start:'2026-11-01',end:'2026-11-04',status:'draft',result:'kurang'};
     const draft=ui.filterDraft(applied);

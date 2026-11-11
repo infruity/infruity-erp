@@ -80,6 +80,52 @@
         if (preset === 'week') end.setUTCDate(end.getUTCDate()+6);
         return {start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)};
     }
+    function filterCalendar(now = new Date()) {
+        const months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        const initialYear=now.getFullYear(), initialMonth=now.getMonth();
+        let year=initialYear, month=initialMonth, view='date';
+        return {
+            months,
+            get year() { return year; },
+            get month() { return month; },
+            get view() { return view; },
+            get heading() { return view === 'month' ? String(year) : view === 'year' ? `${year-4} - ${year+7}` : `${months[month]} ${year}`; },
+            get days() { return Array.from({length:new Date(year,month+1,0).getDate()},(_,index)=>index+1); },
+            get blankDays() { return Array.from({length:new Date(year,month,1).getDay()},(_,index)=>index); },
+            get years() { return Array.from({length:12},(_,index)=>year-4+index); },
+            open(value) {
+                const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+                let selected=false;
+                if (match) {
+                    const candidate=new Date(Number(match[1]),Number(match[2])-1,Number(match[3]));
+                    if (candidate.getFullYear()===Number(match[1]) && candidate.getMonth()===Number(match[2])-1 && candidate.getDate()===Number(match[3])) {
+                        year=candidate.getFullYear(); month=candidate.getMonth(); selected=true;
+                    }
+                }
+                if (!selected) { year=initialYear; month=initialMonth; }
+                view='date';
+            },
+            move(step) {
+                if (view === 'date') {
+                    const candidate=new Date(year,month+step,1); year=candidate.getFullYear(); month=candidate.getMonth();
+                } else if (view === 'month') year+=step;
+                else year+=step*12;
+            },
+            toggleView() { view=view==='date' ? 'month' : view==='month' ? 'year' : 'date'; },
+            chooseYear(value) { const selected=Number(value); if (!Number.isInteger(selected)) return; year=selected; view='month'; },
+            chooseMonth(value) { const selected=Number(value); if (!Number.isInteger(selected) || selected<0 || selected>11) return; month=selected; view='date'; }
+        };
+    }
+    function selectFilterDate(draft, side, value) {
+        if (!['start','end'].includes(side) || !/^(\d{4})-(\d{2})-(\d{2})$/.test(String(value || ''))) return draft;
+        draft[side]=value;
+        if (side==='end' && !draft.start) draft.start=value;
+        if (draft.start && draft.end && draft.start>draft.end) {
+            if (side==='start') draft.end=value;
+            else draft.start=value;
+        }
+        return draft;
+    }
     function filterDraft(applied) {
         return {
             branch:String(applied.branch || 'all'),
@@ -98,5 +144,5 @@
             result_filter:draft.result
         };
     }
-    return {parseQuantity,quantity,history,filterHistory,correction,formatLongDateTime,period,filterDraft,filterRequest};
+    return {parseQuantity,quantity,history,filterHistory,correction,formatLongDateTime,period,filterCalendar,selectFilterDate,filterDraft,filterRequest};
 });

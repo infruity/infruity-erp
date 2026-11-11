@@ -52,11 +52,26 @@
 .so-reference-sheet .so-filter-dates span { width:24px; color:#9ca3af; font-size:10px; font-weight:700; }
 .so-reference-sheet .so-filter-dates strong { color:#6b7280; font-size:12px; font-weight:500; }
 .so-reference-sheet .so-period-presets button.is-selected { background:#c5f037; border-color:#c5f037; color:#1f2937; }
-.so-reference-sheet .so-calendar-back { border:0; padding:8px 0; margin-bottom:12px; background:transparent; color:#0b595b; font-size:12px; font-weight:700; }
-#so-calendar-host .flatpickr-calendar { max-width:100%; width:100%; box-shadow:none; background:#fff; }
-#so-calendar-host :is(.flatpickr-innerContainer,.flatpickr-rContainer,.flatpickr-days,.dayContainer) { width:100%; max-width:100%; min-width:0; }
-#so-calendar-host .flatpickr-day { max-width:none; flex-basis:14.2857%; color:#374151; }
-#so-calendar-host .flatpickr-day.selected,#so-calendar-host .flatpickr-day.startRange,#so-calendar-host .flatpickr-day.endRange { background:#c5f037; border-color:#c5f037; color:#1f2937; }
+.so-reference-sheet .so-calendar-back { display:inline-flex; min-height:36px; align-items:center; gap:8px; border:0; border-radius:8px; padding:4px 6px; margin:0 0 12px; background:transparent; color:#374151; font-size:14px; font-weight:600; }
+.so-reference-sheet .so-calendar-back i { font-size:18px; }
+#so-calendar-host .so-calendar-card { max-width:100%; border:1px solid #f3f4f6; border-radius:20px; padding:16px; background:#fff; box-shadow:0 1px 4px rgba(15,23,42,.06); }
+#so-calendar-host .so-calendar-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+#so-calendar-host .so-calendar-header button { display:flex; width:36px; height:36px; align-items:center; justify-content:center; border:0; border-radius:50%; padding:0; background:transparent; color:#6b7280; font-size:18px; }
+#so-calendar-host .so-calendar-header button:hover { background:#f9fafb; }
+#so-calendar-host .so-calendar-header button:nth-child(2) { width:auto; border-radius:8px; padding:4px 10px; color:#1f2937; font-size:18px; font-weight:700; }
+#so-calendar-host .so-calendar-days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); text-align:center; }
+#so-calendar-host .so-calendar-weekday, #so-calendar-host .so-calendar-blank { display:flex; height:40px; align-items:center; justify-content:center; color:#94a3b8; font-size:12px; font-weight:600; }
+#so-calendar-host .so-calendar-day { position:relative; display:flex; height:40px; align-items:center; justify-content:center; }
+#so-calendar-host .so-calendar-day > i { position:absolute; inset:2px 0; background:#ecfdf5; }
+#so-calendar-host .so-calendar-day > i[hidden] { display:none; }
+#so-calendar-host .so-calendar-day button { position:relative; z-index:1; display:flex; width:36px; height:36px; align-items:center; justify-content:center; border:0; border-radius:50%; padding:0; background:transparent; color:#374151; font-size:14px; }
+#so-calendar-host .so-calendar-day button:hover { background:#f3f4f6; }
+#so-calendar-host .so-calendar-day button.is-in-range { color:#1f2937; font-weight:600; }
+#so-calendar-host .so-calendar-day button.is-selected { background:#c5f037; color:#1f2937; font-weight:700; box-shadow:0 1px 3px rgba(0,0,0,.12); }
+#so-calendar-host .so-calendar-months { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:8px 0; }
+#so-calendar-host .so-calendar-months button { min-height:44px; border:0; border-radius:12px; padding:8px; background:transparent; color:#4b5563; font-size:12px; }
+#so-calendar-host .so-calendar-months button:hover { background:#f9fafb; }
+#so-calendar-host .so-calendar-months button.is-selected { background:#c5f037; color:#1f2937; font-weight:700; }
 .so-reference-sheet .so-detail-meta { padding:8px 10px; margin-bottom:12px; border:1px solid #f3f4f6; border-radius:16px; background:#f9fafb; }
 .so-reference-sheet .so-detail-meta > div { display:flex; justify-content:space-between; gap:8px; padding:4px 0; }
 .so-reference-sheet .so-detail-meta > div + div { border-top:1px solid #e5e7eb; }

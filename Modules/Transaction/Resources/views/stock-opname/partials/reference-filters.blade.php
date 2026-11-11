@@ -16,9 +16,23 @@
                         @endforeach
                         <p class="so-branch-empty" hidden>Cabang tidak ditemukan</p>
                     </div></div></fieldset>
-                    <fieldset class="so-filter-section"><legend class="so-filter-heading"><span>Periode Tanggal</span><button type="button" data-so-reset="period" aria-label="Reset periode tanggal" hidden>Reset</button></legend><div class="so-filter-dates"><button type="button" data-so-date="start"><span>DARI</span><strong id="so-date-start-label">Pilih Tanggal</strong></button><button type="button" data-so-date="end"><span>KE</span><strong id="so-date-end-label">Pilih Tanggal</strong></button></div><div class="so-filter-grid so-period-presets"><button type="button" data-so-period="week">Minggu Ini</button><button type="button" data-so-period="today">Hari Ini</button></div></fieldset>
+                    <fieldset class="so-filter-section"><legend class="so-filter-heading"><span>Periode Tanggal</span><button type="button" data-so-reset="period" aria-label="Reset periode tanggal" hidden>Reset</button></legend><div class="so-filter-dates"><button type="button" data-so-date="start" aria-controls="so-filter-calendar" aria-expanded="false"><span>DARI</span><strong id="so-date-start-label">Pilih Tanggal</strong></button><button type="button" data-so-date="end" aria-controls="so-filter-calendar" aria-expanded="false"><span>KE</span><strong id="so-date-end-label">Pilih Tanggal</strong></button></div><div class="so-filter-grid so-period-presets"><button type="button" data-so-period="week">Minggu Ini</button><button type="button" data-so-period="today">Hari Ini</button></div></fieldset>
                 </div>
-                <div id="so-filter-calendar" hidden><button type="button" id="so-calendar-back" class="so-calendar-back"><i class="ph ph-caret-left" aria-hidden="true"></i>Kembali ke Filter</button><label class="visually-hidden" for="so-draft-calendar">Pilih rentang tanggal</label><input id="so-draft-calendar" type="text" hidden><div id="so-calendar-host"></div></div>
+                <div id="so-filter-calendar" hidden>
+                    <button type="button" id="so-calendar-back" class="so-calendar-back"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i>Kembali</button>
+                    <div id="so-calendar-host" class="so-calendar-host">
+                        <div class="so-calendar-card">
+                            <div class="so-calendar-header">
+                                <button type="button" data-so-calendar-move="-1" aria-label="Sebelumnya"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button>
+                                <button type="button" id="so-calendar-heading" data-so-calendar-toggle></button>
+                                <button type="button" data-so-calendar-move="1" aria-label="Berikutnya"><i class="ph-bold ph-caret-right" aria-hidden="true"></i></button>
+                            </div>
+                            <div id="so-calendar-days" class="so-calendar-days"></div>
+                            <div id="so-calendar-months" class="so-calendar-months" hidden></div>
+                            <div id="so-calendar-years" class="so-calendar-months" hidden></div>
+                        </div>
+                    </div>
+                </div>
             </x-slot:body>
             <x-slot:footer><button type="button" id="so-filter-reset">Reset Filter</button><button type="button" class="is-primary" id="so-filter-apply">Terapkan Filter</button></x-slot:footer>
         </x-erp.filter-sheet-frame>

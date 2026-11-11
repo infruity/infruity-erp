@@ -32,6 +32,22 @@ final class StockOpnameReferencePresentationTest extends TestCase
         $this->assertStringContainsString('max-height:88dvh', $css);
     }
 
+    public function test_main_filter_uses_the_reference_calendar_screen_without_changing_filter_fields(): void
+    {
+        $source = file_get_contents(base_path('Modules/Transaction/Resources/views/stock-opname/partials/reference-filters.blade.php'));
+        $script = file_get_contents(public_path('assets/js/stock-opname-reference-page.js'));
+        $styles = file_get_contents(public_path('assets/css/stock-opname-reference.css'));
+
+        foreach (['id="so-calendar-back"', 'id="so-calendar-host"', 'id="so-calendar-heading"', 'id="so-calendar-days"', 'id="so-calendar-months"', 'id="so-calendar-years"'] as $marker) {
+            $this->assertStringContainsString($marker, $source);
+        }
+        $this->assertStringNotContainsString('so-draft-calendar', $source);
+        $this->assertStringContainsString('calendar.open(draft[dateSide]', $script);
+        $this->assertStringContainsString('data-so-calendar-day', $script);
+        $this->assertStringContainsString('#so-calendar-host .so-calendar-card', $styles);
+        $this->assertStringContainsString('#so-calendar-host .so-calendar-day button.is-selected', $styles);
+    }
+
     public function test_branch_radio_uses_a_green_checked_stroke(): void
     {
         $css = file_get_contents(public_path('assets/css/stock-opname-reference.css'));
