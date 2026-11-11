@@ -67,7 +67,7 @@
                         <x-slot:close><button type="button" class="sortir-icon-button" @click="closeFilter()" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
                         <x-slot:body>
 
-                        <div class="sortir-filter-section">
+                        <div class="sortir-filter-section" x-show="!calendarOpen">
                             <div class="sortir-filter-section-head">
                                 <span id="sortir-filter-branch-label" class="sortir-filter-label">Cabang Tujuan</span>
                                 <button type="button" class="sortir-filter-reset" x-show="pending.branch !== 'all' || branchSearch.trim()" x-cloak @click="resetPendingFilter('branch')">Reset</button>
@@ -94,7 +94,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="sortir-filter-section">
+                        <div class="sortir-filter-section" x-show="!calendarOpen">
                             <div class="sortir-filter-section-head">
                                 <span class="sortir-filter-label">Status Sortir</span>
                                 <button type="button" class="sortir-filter-reset" x-show="pending.status !== 'all'" x-cloak @click="resetPendingFilter('status')">Reset</button>
@@ -103,24 +103,22 @@
                                 <template x-for="status in [{value:'all',label:'Semua Status'},{value:'draft',label:'Draf'},{value:'paid',label:'Selesai'}]" :key="status.value"><button type="button" @click="pending.status = status.value" :class="pending.status === status.value ? 'is-active' : ''" :aria-pressed="pending.status === status.value" x-text="status.label"></button></template>
                             </div>
                         </div>
-                        <div class="sortir-filter-section">
+                        <div class="sortir-filter-section" x-show="!calendarOpen">
                             <div class="sortir-filter-section-head">
                                 <span class="sortir-filter-label">Periode Tanggal</span>
                                 <button type="button" class="sortir-filter-reset" x-show="pending.start || pending.end" x-cloak @click="resetPendingFilter('date')">Reset</button>
                             </div>
                             <div class="sortir-filter-dates">
-                                <label class="sortir-filter-date-card" for="sortir-date-start">
+                                <button type="button" id="sortir-date-start" class="sortir-filter-date-card" @click="openFilterCalendar('start')" :aria-expanded="calendarOpen && filterCalendarSide === 'start'" aria-controls="sortir-filter-calendar" :aria-label="'Dari tanggal: ' + formatFilterDate(pending.start)">
                                     <span class="sortir-filter-date-key">DARI</span>
                                     <span class="sortir-filter-date-value" :class="pending.start ? 'is-selected' : ''" x-text="formatFilterDate(pending.start)"></span>
                                     <i class="ph-bold ph-calendar-blank" aria-hidden="true"></i>
-                                    <input id="sortir-date-start" type="date" x-model="pending.start" aria-label="Dari tanggal">
-                                </label>
-                                <label class="sortir-filter-date-card" for="sortir-date-end">
+                                </button>
+                                <button type="button" id="sortir-date-end" class="sortir-filter-date-card" @click="openFilterCalendar('end')" :aria-expanded="calendarOpen && filterCalendarSide === 'end'" aria-controls="sortir-filter-calendar" :aria-label="'Sampai tanggal: ' + formatFilterDate(pending.end)">
                                     <span class="sortir-filter-date-key">KE</span>
                                     <span class="sortir-filter-date-value" :class="pending.end ? 'is-selected' : ''" x-text="formatFilterDate(pending.end)"></span>
                                     <i class="ph-bold ph-calendar-blank" aria-hidden="true"></i>
-                                    <input id="sortir-date-end" type="date" x-model="pending.end" :min="pending.start" aria-label="Sampai tanggal">
-                                </label>
+                                </button>
                             </div>
                             <p class="sortir-filter-error" x-show="pendingDateError" x-text="pendingDateError" role="alert"></p>
                             <div class="sortir-filter-quick">
@@ -130,6 +128,12 @@
                                     <button type="button" @click="setPendingDateRange('today')">Hari Ini</button>
                                 </div>
                             </div>
+                        </div>
+                        <div id="sortir-filter-calendar" class="sortir-filter-calendar" x-show="calendarOpen" x-cloak>
+                            <button type="button" id="sortir-filter-calendar-back" class="sortir-filter-calendar-back" @click="closeFilterCalendar()"><i class="ph ph-caret-left" aria-hidden="true"></i>Kembali ke Filter</button>
+                            <label class="visually-hidden" for="sortir-draft-calendar">Pilih tanggal filter</label>
+                            <input id="sortir-draft-calendar" type="text" hidden>
+                            <div id="sortir-calendar-host"></div>
                         </div>
                         </x-slot:body>
                         <x-slot:footer>

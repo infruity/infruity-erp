@@ -1,11 +1,21 @@
 (function (root) {
     function sortirList(config) {
+        let filterCalendar = null;
+        const focusFilterControl = id => {
+            const focus = () => {
+                const target = root.document?.getElementById(id);
+                if (target?.getClientRects().length) target.focus({preventScroll:true});
+                target?.scrollIntoView({block:'nearest'});
+            };
+            if (typeof root.requestAnimationFrame === 'function') root.requestAnimationFrame(focus);
+            else focus();
+        };
         return {
             rows: [], total: 0, filtered: 0, search: '', loading: false, error: '', requestId: 0,
             branches: Array.isArray(config.branches) ? config.branches : [], branchSearch: '',
             filters: {status: 'all', branch: 'all', start: '', end: ''},
             pending: {status: 'all', branch: 'all', start: '', end: ''},
-            filterOpen: false, selected: null, deleting: false, returnFocus: null,
+            filterOpen: false, calendarOpen: false, filterCalendarSide: 'start', selected: null, deleting: false, returnFocus: null,
             init() { this.load(); },
             money(value) { return 'Rp ' + Number(value || 0).toLocaleString('id-ID', {maximumFractionDigits: 2}); },
             statusLabel(status) { return ['paid', 'debt'].includes(status) ? 'Selesai' : (status === 'canceled' ? 'Dibatalkan' : 'Draf'); },
@@ -44,10 +54,41 @@
             get pendingDateError() { return this.pending.start && this.pending.end && this.pending.start > this.pending.end ? 'Tanggal akhir harus sama atau setelah tanggal mulai.' : ''; },
             openFilter(event) {
                 this.returnFocus = event?.currentTarget || null;
-                this.pending = {...this.filters}; this.branchSearch = ''; this.filterOpen = true;
+                this.pending = {...this.filters}; this.branchSearch = ''; this.calendarOpen = false; this.filterOpen = true;
                 this.$nextTick(() => document.getElementById('sortir-filter-dialog')?.focus());
             },
-            closeFilter() { this.filterOpen = false; this.returnFocus?.focus(); },
+            openFilterCalendar(side) {
+                if (!['start', 'end'].includes(side)) return;
+                this.filterCalendarSide = side;
+                this.calendarOpen = true;
+                this.$nextTick(() => {
+                    const input = root.document?.getElementById('sortir-draft-calendar');
+                    const host = root.document?.getElementById('sortir-calendar-host');
+                    if (input && host && typeof root.flatpickr === 'function') {
+                        if (!filterCalendar) {
+                            filterCalendar = root.flatpickr(input, {
+                                inline: true, appendTo: host, disableMobile: true,
+                                dateFormat: 'Y-m-d', defaultDate: [],
+                                onChange: (dates, value) => this.selectFilterCalendarDate(value),
+                            });
+                        }
+                        filterCalendar.set('minDate', side === 'end' ? (this.pending.start || null) : null);
+                        filterCalendar.setDate(this.pending[side] || [], false);
+                    }
+                    focusFilterControl('sortir-filter-calendar-back');
+                });
+            },
+            closeFilterCalendar() {
+                if (!this.calendarOpen) return;
+                this.calendarOpen = false;
+                focusFilterControl(this.filterCalendarSide === 'end' ? 'sortir-date-end' : 'sortir-date-start');
+            },
+            selectFilterCalendarDate(value) {
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || '')) || !['start', 'end'].includes(this.filterCalendarSide)) return;
+                this.pending[this.filterCalendarSide] = String(value);
+                this.closeFilterCalendar();
+            },
+            closeFilter() { this.calendarOpen = false; this.filterOpen = false; this.returnFocus?.focus(); },
             openDetail(row, event) {
                 this.returnFocus = event?.currentTarget || null; this.selected = row;
                 this.$nextTick(() => document.getElementById('sortir-detail-dialog')?.focus());

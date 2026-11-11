@@ -102,14 +102,18 @@ body:has(.sortir-list-page) main > .animate-fade-in-up { animation:none; }
 #sortir-filter-dialog .sortir-branch-empty { margin:0; padding:12px; color:#9ca3af; font-size:12px; text-align:center; }
 .sortir-filter-chips { margin:0; }
 .sortir-filter-dates { display:grid; grid-template-columns:minmax(0,1fr); gap:8px; }
-#sortir-filter-dialog .sortir-filter-date-card { position:relative; display:flex; min-width:0; height:44px; align-items:center; gap:8px; margin:0; overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; padding:0 12px; background:#fff; color:#374151; text-transform:none; cursor:pointer; }
-#sortir-filter-dialog .sortir-filter-date-card:focus-within { border-color:#10b981; outline:2px solid rgba(16,185,129,.18); }
+#sortir-filter-dialog .sortir-filter-date-card { position:relative; display:flex; width:100%; min-width:0; height:44px; align-items:center; gap:8px; margin:0; overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; padding:0 12px; -webkit-appearance:none; appearance:none; background:#fff; color:#374151; font:inherit; text-align:left; text-transform:none; cursor:pointer; }
+#sortir-filter-dialog .sortir-filter-date-card:focus-visible { border-color:#10b981; outline:2px solid rgba(16,185,129,.18); outline-offset:1px; }
 .sortir-filter-date-key { width:28px; flex:none; color:#9ca3af; font-size:10px; font-weight:700; }
 .sortir-filter-date-value { min-width:0; overflow:hidden; color:#9ca3af; font-size:12px; font-weight:500; text-overflow:ellipsis; white-space:nowrap; }
 .sortir-filter-date-value.is-selected { color:#1f2937; }
 .sortir-filter-date-card > i { flex:none; margin-left:auto; color:#6b7280; font-size:14px; }
-#sortir-filter-dialog .sortir-filter-date-card input[type=date] { position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; border:0; border-radius:12px; padding:0; outline:0; box-shadow:none; cursor:pointer; }
-#sortir-filter-dialog .sortir-filter-date-card input[type=date]:focus { border:0; outline:0; box-shadow:none; }
+#sortir-filter-dialog .sortir-filter-calendar-back { display:flex; align-items:center; gap:6px; border:0; margin:0 0 12px; padding:8px 0; background:transparent; color:#0b595b; font-size:12px; font-weight:700; cursor:pointer; }
+#sortir-filter-dialog .sortir-filter-calendar-back:focus-visible { outline:2px solid #10b981; outline-offset:2px; }
+#sortir-calendar-host .flatpickr-calendar { width:100%; max-width:100%; box-shadow:none; background:#fff; }
+#sortir-calendar-host :is(.flatpickr-innerContainer,.flatpickr-rContainer,.flatpickr-days,.dayContainer) { width:100%; max-width:100%; min-width:0; }
+#sortir-calendar-host .flatpickr-day { max-width:none; flex-basis:14.2857%; color:#374151; }
+#sortir-calendar-host .flatpickr-day.selected,#sortir-calendar-host .flatpickr-day.startRange,#sortir-calendar-host .flatpickr-day.endRange { background:#c5f037; border-color:#c5f037; color:#1f2937; }
 .sortir-filter-quick { display:flex; flex-direction:column; gap:8px; padding-top:4px; }
 .sortir-filter-quick-actions { display:flex; gap:8px; }
 #sortir-filter-dialog .sortir-filter-quick-actions button { min-height:40px; flex:1; border:1px solid #e5e7eb; border-radius:12px; padding:8px 10px; background:#fff; color:#4b5563; font-size:12px; font-weight:600; cursor:pointer; }
