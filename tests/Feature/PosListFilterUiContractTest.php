@@ -45,6 +45,11 @@ final class PosListFilterUiContractTest extends TestCase
             'class="pos-filter-branch-picker"',
             'class="pos-filter-branch-options"',
             'appearance:none',
+            '@media (max-width:767px)',
+            '.pos-filter-overlay { align-items:flex-end; }',
+            '.pos-filter-panel { width:100%; max-width:100%; max-height:92dvh; border-radius:24px 24px 0 0; }',
+            'class="pos-filter-handle"',
+            'translate-y-full',
         ] as $contract) {
             $this->assertStringContainsString($contract, $view);
         }

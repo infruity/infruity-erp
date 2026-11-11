@@ -58,8 +58,16 @@
     .pos-toolbar-search { min-width:0; flex:1; padding:0; }
     .pos-toolbar-search .erp-mobile-search { height:44px; box-shadow:none; }
     .pos-toolbar-search .erp-mobile-search:not(:focus-within) { border-color:#868e98; }
-    /* POS filter uses the same centered, inset sheet dimensions as the Stock Opname reference. */
+    /* The POS filter follows the Stock Opname sheet: centered on desktop, anchored to the bottom on mobile. */
     .pos-filter-panel { width:calc(100% - 32px); max-width:512px; max-height:92dvh; border-radius:24px; }
+    .pos-filter-handle { display:none; }
+    @media (max-width:767px) {
+        .pos-filter-overlay { align-items:flex-end; }
+        .pos-filter-panel { width:100%; max-width:100%; max-height:92dvh; border-radius:24px 24px 0 0; }
+        .pos-filter-handle { display:flex; flex:none; justify-content:center; padding:12px 0 4px; }
+        .pos-filter-handle span { width:56px; height:6px; border-radius:999px; background:#d1d5db; }
+        .pos-filter-panel .erp-filter-sheet__header { padding:16px 20px; }
+    }
     .pos-filter-panel .erp-filter-sheet__body { min-width:0; padding:20px; }
     .pos-filter-main { display:flex; flex-direction:column; gap:16px; }
     .pos-filter-section { min-width:0; margin:0; padding:0; border:0; }
@@ -167,7 +175,8 @@
 <template x-teleport="body">
     <div x-show="filtersOpen" x-cloak class="pos-filter-overlay fixed inset-0 z-[100] flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="pos-filter-title">
         <button type="button" class="absolute inset-0 bg-black/60" @click="close()" aria-label="Tutup filter"></button>
-        <section x-show="filtersOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="scale-95 opacity-0" x-transition:enter-end="scale-100 opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="scale-100 opacity-100" x-transition:leave-end="scale-95 opacity-0" class="pos-filter-panel relative flex w-full flex-col overflow-hidden bg-white pb-0 shadow-2xl">
+        <section x-show="filtersOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-full opacity-0 md:translate-y-4 md:scale-95" x-transition:enter-end="translate-y-0 opacity-100 md:scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0 opacity-100 md:scale-100" x-transition:leave-end="translate-y-full opacity-0 md:translate-y-4 md:scale-95" class="pos-filter-panel relative flex w-full flex-col overflow-hidden bg-white pb-0 shadow-2xl">
+            <div class="pos-filter-handle"><span></span></div>
             <x-erp.filter-sheet-frame title="Filter Transaksi" title-id="pos-filter-title" title-tag="h3" subtitle="Saring cabang, status, dan periode tanggal transaksi." body-class="pos-filter-body min-h-0 flex-1 overflow-y-auto overscroll-contain">
                 <x-slot:close><button type="button" @click="close()" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
                 <x-slot:body>
