@@ -55,7 +55,9 @@ final class InventoryListFixesTest extends TestCase
         $this->assertStringContainsString('Pengadaan tidak ditemukan', $view);
         $this->assertStringContainsString('Coba kata pencarian lain atau sesuaikan filter.', $view);
         // The count line under the toolbar must say the same thing as the table body.
-        $this->assertStringContainsString("info.recordsTotal ? 'Pengadaan tidak ditemukan' : 'Belum ada pengadaan'", $view);
+        $this->assertStringContainsString(": (hasCriteria ? 'Pengadaan tidak ditemukan' : 'Belum ada pengadaan')", $view);
+        $this->assertStringContainsString('function hasWholesaleFilterCriteria(filters)', $view);
+        $this->assertStringContainsString("$('#wholesale-table td.dataTables_empty').html(hasCriteria ? wholesaleNoMatchState : wholesaleEmptyState);", $view);
     }
 
     public function test_stock_opname_length_menu_has_no_all_option(): void

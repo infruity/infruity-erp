@@ -515,12 +515,21 @@
             if (branch) showStockAlert(branch);
         }
 
+        function hasWholesaleFilterCriteria(filters) {
+            const status = filters.status || 'all';
+            const branch = filters.branch || 'all';
+            return status !== 'all'
+                || (branch !== '' && branch !== 'all')
+                || Boolean(filters.start || filters.end)
+                || Boolean(String(filters.search || '').trim());
+        }
+
         function updateWholesaleFilterSummary() {
             const status = getWholesaleFilter('status') || 'all';
             const branch = getWholesaleFilter('branch') || 'all';
             const start = getWholesaleFilter('start');
             const end = getWholesaleFilter('end');
-            const hasFilter = status !== 'all' || (branch && branch !== 'all') || start || end;
+            const hasFilter = hasWholesaleFilterCriteria({ status, branch, start, end });
             $('#wholesale-filter-dot').toggleClass('hidden', !hasFilter);
             const labels = [];
             if (status !== 'all') labels.push($('[data-wholesale-filter="status"] option[value="' + status + '"]').first().text());
@@ -586,7 +595,17 @@
                 },
                 drawCallback: function () {
                     const info = this.api().page.info();
-                    $('#wholesale-count').text(info.recordsDisplay ? `Menampilkan ${info.start + 1}–${info.end} dari ${info.recordsDisplay} pengadaan` : (info.recordsTotal ? 'Pengadaan tidak ditemukan' : 'Belum ada pengadaan'));
+                    const hasCriteria = hasWholesaleFilterCriteria({
+                        status: getWholesaleFilter('status'),
+                        branch: getWholesaleFilter('branch'),
+                        start: getWholesaleFilter('start'),
+                        end: getWholesaleFilter('end'),
+                        search: this.api().search()
+                    });
+                    if (!info.recordsDisplay) {
+                        $('#wholesale-table td.dataTables_empty').html(hasCriteria ? wholesaleNoMatchState : wholesaleEmptyState);
+                    }
+                    $('#wholesale-count').text(info.recordsDisplay ? `Menampilkan ${info.start + 1}–${info.end} dari ${info.recordsDisplay} pengadaan` : (hasCriteria ? 'Pengadaan tidak ditemukan' : 'Belum ada pengadaan'));
                     this.api().rows({ page: 'current' }).every(function () {
                         $(this.node()).toggleClass('is-openable', Boolean(this.data()?.detail_payload));
                     });
