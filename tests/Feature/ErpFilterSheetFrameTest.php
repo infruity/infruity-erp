@@ -62,7 +62,7 @@ class ErpFilterSheetFrameTest extends TestCase
             'Modules/Transaction/Resources/views/sortir/index2.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
             'Modules/Transaction/Resources/views/transfer/index2.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
             'Modules/Report/Resources/views/partials/mobile-detail.blade.php' => ['applyDraftLive()', 'calendarOpen'],
-            'Modules/Master/Resources/views/products/stock.blade.php' => ['id="stock-filter-apply"', 'setFilterOpen(open)'],
+            'Modules/Master/Resources/views/products/stock.blade.php' => ['applySheetFilters(', '<x-erp.filter-sheet'],
             'Modules/Master/Resources/views/products/stock-show.blade.php' => ['applyStockDetailFilters(', '<x-erp.filter-sheet'],
         ];
 
@@ -80,7 +80,6 @@ class ErpFilterSheetFrameTest extends TestCase
             'resources/views/components/erp/filter-sheet.blade.php',
             'resources/views/components/erp/filter-sheet.blade.php',
             'Modules/Report/Resources/views/partials/mobile-detail.blade.php',
-            'Modules/Master/Resources/views/products/stock.blade.php',
         ];
 
         foreach ($views as $view) {
