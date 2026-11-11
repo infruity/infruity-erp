@@ -89,4 +89,23 @@ final class SortirFilterUiContractTest extends TestCase
 
         $this->assertStringContainsString("timezone: @js(config('app.timezone'))", $view);
     }
+
+    public function test_pointer_focus_keeps_branch_and_date_controls_free_of_native_strokes(): void
+    {
+        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/sortir/index2.blade.php'));
+        $styles = file_get_contents(base_path('public/assets/css/sortir-mobile.css'));
+
+        foreach ([
+            'id="sortir-date-start" type="date" x-model="pending.start"',
+            'id="sortir-date-end" type="date" x-model="pending.end" :min="pending.start"',
+        ] as $dateControl) {
+            $this->assertStringContainsString($dateControl, $view);
+        }
+
+        $this->assertStringContainsString('#sortir-filter-dialog .sortir-branch-option:has(input[type=radio]:focus-visible) { outline:2px solid #10b981; outline-offset:-2px; }', $styles);
+        $this->assertStringNotContainsString('#sortir-filter-dialog .sortir-branch-option:focus-within { outline:2px solid', $styles);
+        $this->assertStringContainsString('#sortir-filter-dialog .sortir-filter-date-card input[type=date] {', $styles);
+        $this->assertStringContainsString('outline:0; box-shadow:none;', $styles);
+        $this->assertStringContainsString('#sortir-filter-dialog .sortir-filter-date-card input[type=date]:focus { border:0; outline:0; box-shadow:none; }', $styles);
+    }
 }
