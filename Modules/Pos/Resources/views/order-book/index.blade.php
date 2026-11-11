@@ -48,6 +48,7 @@
         .order-book-workspace { width:100vw; margin-inline:calc(50% - 50vw); }
         .order-book-workspace .order-book-filter-label { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
         .order-book-workspace .erp-workspace-heading { display:none; }
+        .order-book-workspace .erp-workspace-toolbar { position:sticky; top:0; z-index:25; background:#fff; }
         .order-book-workspace .erp-workspace-toolbar .order-book-toolbar-controls { position:relative; display:flex; width:100%; min-width:0; flex:1 1 100%; align-items:center; }
         .order-book-workspace .erp-workspace-toolbar .order-book-mobile-search .erp-mobile-search { min-width:0; height:44px; }
         .order-book-workspace .order-book-create,
