@@ -77,7 +77,6 @@ class ErpFilterSheetFrameTest extends TestCase
     public function test_stock_opname_and_similar_sheet_filters_use_the_shared_frame(): void
     {
         $views = [
-            'Modules/Transaction/Resources/views/stock-opname/partials/reference-filters.blade.php',
             'resources/views/components/erp/filter-sheet.blade.php',
             'Modules/Pos/Resources/views/delivery-order/index.blade.php',
             'resources/views/components/erp/filter-sheet.blade.php',

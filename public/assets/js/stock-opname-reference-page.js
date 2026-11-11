@@ -3,129 +3,16 @@ function initStockOpnameReference() {
     'use strict';
     const ui = window.StockOpnameUi;
     const $ = window.jQuery;
-    const filterEl = document.getElementById('so-filter-sheet');
-    const filter = bootstrap.Modal.getOrCreateInstance(filterEl);
     const branch = document.querySelector('[data-kt-ecommerce-product-filter="cabang"]');
     const dateField = document.getElementById('kt_ecommerce_sales_flatpickr');
-    const timezone = filterEl.dataset.soTimezone || 'Asia/Jakarta';
-    let draft = ui.filterDraft({branch:branch.value});
-    let dateSide = 'start';
     let searchTimer;
-    let trigger;
     let busy = false;
     dataTable.on('draw', function () {
         $('#transaction-table_wrapper').toggleClass('so-single-page', dataTable.page.info().pages <= 1);
     });
-    const calendar=ui.filterCalendar();
-    const calendarHost=document.getElementById('so-calendar-host');
-    const calendarHeading=document.getElementById('so-calendar-heading');
-    const calendarDays=document.getElementById('so-calendar-days');
-    const calendarMonths=document.getElementById('so-calendar-months');
-    const calendarYears=document.getElementById('so-calendar-years');
-    const weekdays=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-    const dateLabel = date => date ? new Intl.DateTimeFormat('id-ID',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'}).format(new Date(date+'T00:00:00Z')) : 'Pilih Tanggal';
-    function renderCalendar() {
-        calendarHeading.textContent=calendar.heading;
-        calendarDays.hidden=calendar.view!=='date';
-        calendarMonths.hidden=calendar.view!=='month';
-        calendarYears.hidden=calendar.view!=='year';
-        calendarDays.replaceChildren();
-        if (calendar.view==='date') {
-            weekdays.forEach(day => {
-                const cell=document.createElement('span'); cell.className='so-calendar-weekday'; cell.textContent=day[0]; cell.setAttribute('aria-label',day); calendarDays.appendChild(cell);
-            });
-            calendar.blankDays.forEach(() => { const blank=document.createElement('span'); blank.className='so-calendar-blank'; calendarDays.appendChild(blank); });
-            calendar.days.forEach(day => {
-                const date=`${calendar.year}-${String(calendar.month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-                const cell=document.createElement('span'); cell.className='so-calendar-day';
-                const inRange=Boolean(draft.start && draft.end && date>draft.start && date<draft.end);
-                const range=document.createElement('i'); range.hidden=!inRange; cell.appendChild(range);
-                const button=document.createElement('button'); button.type='button'; button.dataset.soCalendarDay=date; button.textContent=String(day);
-                button.setAttribute('aria-label',dateLabel(date));
-                button.setAttribute('aria-pressed',String(date===draft.start || date===draft.end));
-                if (date===draft.start || date===draft.end) button.classList.add('is-selected');
-                else if (inRange) button.classList.add('is-in-range');
-                cell.appendChild(button); calendarDays.appendChild(cell);
-            });
-        }
-        calendarMonths.replaceChildren();
-        calendar.months.forEach((month,index) => {
-            const button=document.createElement('button'); button.type='button'; button.dataset.soCalendarMonth=String(index); button.textContent=month;
-            if (calendar.month===index) button.classList.add('is-selected');
-            calendarMonths.appendChild(button);
-        });
-        calendarYears.replaceChildren();
-        calendar.years.forEach(year => {
-            const button=document.createElement('button'); button.type='button'; button.dataset.soCalendarYear=String(year); button.textContent=String(year);
-            if (calendar.year===year) button.classList.add('is-selected');
-            calendarYears.appendChild(button);
-        });
-    }
-    const showCalendar = open => {
-        document.getElementById('so-filter-main').hidden = open;
-        document.getElementById('so-filter-calendar').hidden = !open;
-        filterEl.querySelectorAll('[data-so-date]').forEach(button => {
-            button.setAttribute('aria-expanded',String(open && button.dataset.soDate===dateSide));
-        });
-        if (open) renderCalendar();
-        requestAnimationFrame(() => {
-            const target = open ? document.getElementById('so-calendar-back') : document.querySelector(`[data-so-date="${dateSide}"]`);
-            if (target?.getClientRects().length) target.focus({preventScroll:true});
-            target?.scrollIntoView({block:'nearest'});
-        });
-    };
-    calendarHost.addEventListener('click',event => {
-        const move=event.target.closest('[data-so-calendar-move]');
-        if (move) { calendar.move(Number(move.dataset.soCalendarMove)); renderCalendar(); return; }
-        if (event.target.closest('[data-so-calendar-toggle]')) { calendar.toggleView(); renderCalendar(); return; }
-        const day=event.target.closest('[data-so-calendar-day]');
-        if (day) {
-            const date=day.dataset.soCalendarDay;
-            ui.selectFilterRangeDate(draft,date);
-            syncDates(); renderCalendar();
-            const selected=calendarHost.querySelector(`[data-so-calendar-day="${date}"]`);
-            if (selected?.getClientRects().length) selected.focus({preventScroll:true});
-            selected?.scrollIntoView({block:'nearest'});
-            return;
-        }
-        const month=event.target.closest('[data-so-calendar-month]');
-        if (month) { calendar.chooseMonth(month.dataset.soCalendarMonth); renderCalendar(); calendarHeading.focus({preventScroll:true}); return; }
-        const year=event.target.closest('[data-so-calendar-year]');
-        if (year) { calendar.chooseYear(year.dataset.soCalendarYear); renderCalendar(); calendarHeading.focus({preventScroll:true}); }
-    });
-    function syncDates() {
-        $('#so-date-start-label').text(dateLabel(draft.start));
-        $('#so-date-end-label').text(dateLabel(draft.end));
-        $('[data-so-reset="period"]').prop('hidden',!draft.start && !draft.end);
-        $('[data-so-period]').each(function () {
-            const period = ui.period(this.dataset.soPeriod,timezone);
-            const active = period.start === draft.start && period.end === draft.end;
-            this.classList.toggle('is-selected',active);
-            this.setAttribute('aria-pressed',String(active));
-        });
-    }
-    function syncBranches() {
-        $('[data-so-reset="branch"]').prop('hidden',draft.branch === 'all');
-        $('input[name="so-filter-draft-branch"]').each(function () { this.checked = this.value === draft.branch; });
-    }
-    function searchBranches() {
-        const query = $('#so-filter-branch-search').val().toLocaleLowerCase('id-ID').trim();
-        const labels = [...filterEl.querySelectorAll('.so-branch-options label')];
-        labels.forEach(label => { label.hidden = !label.textContent.toLocaleLowerCase('id-ID').includes(query); });
-        filterEl.querySelector('.so-branch-empty').hidden = labels.some(label => !label.hidden);
-    }
-    function syncChoices() {
-        $('[data-so-result]').each(function () {
-            const active = this.dataset.soResult === draft.result;
-            this.classList.toggle('is-selected',active);
-            this.setAttribute('aria-pressed',String(active));
-        });
-        $('[data-so-status]').each(function () {
-            const active = this.dataset.soStatus === draft.status;
-            this.classList.toggle('is-selected',active);
-            this.setAttribute('aria-pressed',String(active));
-        });
-    }
+
+    // The sheet itself is the shared filter-sheet component (id "so"). This code only opens it with the
+    // filters the list is using and writes the chosen ones back to the request fields.
     function readApplied() {
         const [start='',end=''] = dateField.value.split(' to ');
         return ui.filterDraft({
@@ -136,7 +23,7 @@ function initStockOpnameReference() {
             result:document.getElementById('so-filter-applied-result').value
         });
     }
-    function apply(close = true) {
+    function apply(draft) {
         const fields = ui.filterRequest(draft);
         branch.value = fields.cabang_filter;
         dateField.value = fields.start_date ? `${fields.start_date} to ${fields.end_date}` : '';
@@ -147,49 +34,17 @@ function initStockOpnameReference() {
         $('[data-so-open-filter]').toggleClass('is-active',active);
         $('#active-branch-button-label').text(active ? 'Filter aktif' : 'Filter');
         dataTable.draw();
-        if (close !== false) filter.hide();
     }
     $('[data-so-open-filter]').on('click',function () {
-        trigger = this;
-        draft = readApplied();
-        syncBranches();syncDates();syncChoices();
-        $('#so-filter-branch-search').val('');searchBranches();
-        document.getElementById('so-filter-main').hidden = false;
-        document.getElementById('so-filter-calendar').hidden = true;
-        filterEl.querySelectorAll('[data-so-date]').forEach(button => button.setAttribute('aria-expanded','false'));
-        filter.show();
-    });
-    $(filterEl).on('hidden.bs.modal',function () {
-        document.getElementById('so-filter-main').hidden = false;
-        document.getElementById('so-filter-calendar').hidden = true;
-        filterEl.querySelectorAll('[data-so-date]').forEach(button => button.setAttribute('aria-expanded','false'));
-        $('[data-so-open-filter]').attr('aria-expanded','false');
-        if (trigger?.getClientRects().length) trigger.focus();
-    }).on('shown.bs.modal',function () {
         $('[data-so-open-filter]').attr('aria-expanded','true');
-        filterEl.querySelector('.so-close').focus();
+        window.dispatchEvent(new CustomEvent('erp-filter-open',{detail:{id:'so',values:ui.sheetValues(readApplied())}}));
     });
-    $('#so-filter-branch-search').on('input',searchBranches);
-    $('input[name="so-filter-draft-branch"]').on('change',function () { draft.branch = this.value;syncBranches(); });
-    $('[data-so-result]').on('click',function () { draft.result = this.dataset.soResult;syncChoices(); });
-    $('[data-so-status]').on('click',function () { draft.status = this.dataset.soStatus;syncChoices(); });
-    $('[data-so-reset="branch"]').on('click',function () {
-        draft.branch='all';syncBranches();
-        filterEl.querySelector('#so-filter-branch-search').focus();
+    window.addEventListener('erp-filter-apply',event => {
+        if (event.detail.id === 'so') apply(ui.draftFromSheet(event.detail.values));
     });
-    $('[data-so-reset="period"]').on('click',function () {
-        draft.start='';draft.end='';syncDates();
-        filterEl.querySelector('[data-so-date="start"]').focus();
+    window.addEventListener('erp-filter-close',event => {
+        if (event.detail.id === 'so') $('[data-so-open-filter]').attr('aria-expanded','false');
     });
-    $('[data-so-period]').on('click',function () { Object.assign(draft,ui.period(this.dataset.soPeriod,timezone));syncDates(); });
-    $('[data-so-date]').on('click',function () {
-        dateSide = this.dataset.soDate;
-        calendar.open(draft[dateSide] || draft.start || draft.end);
-        showCalendar(true);
-    });
-    $('#so-calendar-back').on('click',() => showCalendar(false));
-    $('#so-filter-apply').on('click',apply);
-    $('#so-filter-reset').on('click',function () { draft=ui.filterDraft({branch:'all'});syncBranches();syncDates();syncChoices();apply(false); });
 
     $('[data-so-search]').on('input',function () {
         const text=this.value;
