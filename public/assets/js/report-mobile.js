@@ -31,25 +31,11 @@
             courier: 'all',
             startDate: '',
             endDate: '',
-            draftBranch: 'all',
-            draftCourier: 'all',
-            draftStart: '',
-            draftEnd: '',
             groupBy: 'product',
             timeGroup: 'daily',
-            selectedYear: todayDate.getFullYear(),
+            selectedYear: String(todayDate.getFullYear()),
             selectedWeekValue: '',
-            draftGroupBy: 'product',
-            draftTimeGroup: 'daily',
-            draftYear: todayDate.getFullYear(),
-            draftWeekValue: '',
-            weekOptions: [],
-            calendarOpen: false,
-            calendarView: 'date',
-            calendarMonth: todayDate.getMonth(),
-            calendarYear: todayDate.getFullYear(),
             filterOpen: false,
-            filterError: '',
             infoOpen: false,
             loading: false,
             error: '',
@@ -147,14 +133,6 @@
             },
             get calendarWeekdays() { return ['M', 'S', 'S', 'R', 'K', 'J', 'S']; },
             get calendarMonths() { return ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; },
-            get calendarHeading() {
-                if (this.calendarView === 'month') return String(this.calendarYear);
-                if (this.calendarView === 'year') return `${this.calendarYear - 4} - ${this.calendarYear + 7}`;
-                return `${this.calendarMonths[this.calendarMonth]} ${this.calendarYear}`;
-            },
-            get calendarBlankDays() { return Array.from({ length: new Date(this.calendarYear, this.calendarMonth, 1).getDay() }, (_, index) => index); },
-            get calendarDays() { return Array.from({ length: new Date(this.calendarYear, this.calendarMonth + 1, 0).getDate() }, (_, index) => index + 1); },
-            get calendarYears() { return Array.from({ length: 12 }, (_, index) => this.calendarYear - 4 + index); },
             historyCalendarMonthLabel() { return `${this.calendarMonths[this.historyCalendarMonth]} ${this.historyCalendarYear}`; },
             historyCalendarBlankDays() { return Array.from({ length: new Date(this.historyCalendarYear, this.historyCalendarMonth, 1).getDay() }, (_, index) => index); },
             historyCalendarDays() { return Array.from({ length: new Date(this.historyCalendarYear, this.historyCalendarMonth + 1, 0).getDate() }, (_, index) => index + 1); },
@@ -183,12 +161,7 @@
                 this.historyDate = this.historyCalendarDate(day);
                 this.historyCalendarOpen = false;
             },
-            get reportYears() { return [todayDate.getFullYear(), todayDate.getFullYear() - 1, todayDate.getFullYear() - 2]; },
             fullDateLabel(value) { return fullDateLabel(value); },
-            draftBranchName() { return config.branches.find(branch => String(branch.id) === String(this.draftBranch))?.name || 'Semua Cabang'; },
-            draftCourierName() { return this.draftCourier === 'null' ? 'Tanpa Kurir / Lainnya' : (config.couriers?.find(courier => String(courier.id) === String(this.draftCourier))?.name || 'Semua Kurir'); },
-            draftWeekLabel() { return this.weekOptions.find(week => week.value === this.draftWeekValue)?.label || 'Semua Periode'; },
-            draftYearLabel() { return this.draftYear === 'all' ? 'Semua Tahun' : String(this.draftYear); },
             get summaryLines() {
                 const total = key => parseMoney(this.totals[key]);
                 if (config.type === 'asset') return [{ label: 'TOTAL', value: this.rupiah(total('grand_total')) }];
@@ -302,222 +275,40 @@
                     }
                 }
             },
+            // The filter sheet is the shared filter-sheet component (id "report"). It edits a draft; this page
+            // keeps what the list is filtered by and turns the chosen values into the same request fields.
+            sheetValues() {
+                return {
+                    branch: this.branch,
+                    start: this.startDate,
+                    end: this.endDate,
+                    extra: { groupBy: this.groupBy, timeGroup: this.timeGroup, courier: this.courier, year: String(this.selectedYear), week: this.selectedWeekValue },
+                };
+            },
             openFilter() {
-                this.draftBranch = this.branch;
-                this.draftCourier = this.courier;
-                this.draftStart = this.startDate;
-                this.draftEnd = this.endDate;
-                this.draftGroupBy = this.groupBy;
-                this.draftTimeGroup = this.timeGroup;
-                this.draftYear = this.selectedYear;
-                this.generateWeekOptions();
-                this.draftWeekValue = this.selectedWeekValue;
-                this.calendarOpen = false;
-                this.filterError = '';
                 this.filterOpen = true;
+                this.$dispatch('erp-filter-open', { id: 'report', values: this.sheetValues() });
             },
-            openDateCalendar() {
-                const selected = this.draftStart || this.draftEnd || today;
-                const date = new Date(selected + 'T12:00:00');
-                this.calendarMonth = date.getMonth();
-                this.calendarYear = date.getFullYear();
-                this.calendarView = 'date';
-                this.calendarOpen = true;
+            closeFilter() { this.filterOpen = false; },
+            // Mingguan reports pick a year and optionally one week; harian ones pick a date range.
+            periodFor(timeGroup, values, extra) {
+                if (config.type === 'asset') return ['', ''];
+                if (timeGroup !== 'weekly') return [values.start || '', values.end || ''];
+                if (extra.week) return extra.week.split('|');
+                if (extra.year && extra.year !== 'all') return [`${extra.year}-01-01`, `${extra.year}-12-31`];
+                return ['', ''];
             },
-            navigateCalendar(step) {
-                if (this.calendarView === 'date') {
-                    const date = new Date(this.calendarYear, this.calendarMonth + step, 1);
-                    this.calendarMonth = date.getMonth();
-                    this.calendarYear = date.getFullYear();
-                } else if (this.calendarView === 'month') {
-                    this.calendarYear += step;
-                } else {
-                    this.calendarYear += step * 12;
-                }
-            },
-            toggleCalendarView() {
-                this.calendarView = this.calendarView === 'date' ? 'month' : (this.calendarView === 'month' ? 'year' : 'date');
-            },
-            chooseCalendarMonth(month) { this.calendarMonth = month; this.calendarView = 'date'; },
-            chooseCalendarYear(year) { this.calendarYear = year; this.calendarView = 'month'; },
-            calendarDate(day) { return toDateValue(new Date(this.calendarYear, this.calendarMonth, day)); },
-            isCalendarDateSelected(day) {
-                const value = this.calendarDate(day);
-                return value === this.draftStart || value === this.draftEnd;
-            },
-            isCalendarDateInRange(day) {
-                if (!this.draftStart || !this.draftEnd) return false;
-                const value = this.calendarDate(day);
-                return value > this.draftStart && value < this.draftEnd;
-            },
-            selectCalendarDate(day) {
-                const value = this.calendarDate(day);
-                if (!this.draftStart || (this.draftStart && this.draftEnd)) {
-                    this.draftStart = value;
-                    this.draftEnd = '';
-                } else if (this.draftStart && !this.draftEnd) {
-                    if (value < this.draftStart) {
-                        this.draftEnd = this.draftStart;
-                        this.draftStart = value;
-                    } else {
-                        this.draftEnd = value;
-                    }
-                }
-                this.applyDraftLive();
-            },
-            setDraftTimeGroup(value) {
-                this.draftTimeGroup = value;
-                if (value === 'weekly') {
-                    this.generateWeekOptions();
-                    this.selectDraftWeek();
-                } else {
-                    this.draftStart = today;
-                    this.draftEnd = today;
-                    this.draftWeekValue = '';
-                    this.applyDraftLive();
-                }
-            },
-            generateWeekOptions() {
-                if (this.draftYear === 'all') {
-                    this.weekOptions = [{ value: '', label: 'Semua Periode', disabled: false }];
-                    return;
-                }
-                const year = Number(this.draftYear);
-                const endOfYear = new Date(year, 11, 31, 12);
-                const cursor = new Date(year, 0, 1, 12);
-                cursor.setDate(cursor.getDate() - (cursor.getDay() + 1) % 7);
-                const options = [{ value: '', label: 'Semua Periode', disabled: false }];
-                let week = 1;
-                while (cursor <= endOfYear || cursor.getFullYear() === year) {
-                    if (cursor.getFullYear() > year) break;
-                    const start = new Date(cursor);
-                    const end = new Date(cursor);
-                    end.setDate(end.getDate() + 6);
-                    const startValue = toDateValue(start);
-                    const endValue = toDateValue(end);
-                    const shortDate = date => date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                    options.push({
-                        value: `${startValue}|${endValue}`,
-                        start: startValue,
-                        end: endValue,
-                        label: `Minggu ${week} : ${shortDate(start)} s.d ${shortDate(end)}`,
-                        disabled: startValue > today,
-                    });
-                    cursor.setDate(cursor.getDate() + 7);
-                    week += 1;
-                }
-                this.weekOptions = options;
-            },
-            changeDraftYear() {
-                this.generateWeekOptions();
-                this.draftWeekValue = '';
-                if (this.draftYear === 'all') {
-                    this.draftStart = '';
-                    this.draftEnd = '';
-                    this.applyDraftLive();
-                    return;
-                }
-                this.draftStart = `${this.draftYear}-01-01`;
-                this.draftEnd = `${this.draftYear}-12-31`;
-                this.applyDraftLive();
-            },
-            selectDraftWeek() {
-                if (!this.draftWeekValue) {
-                    if (this.draftYear === 'all') {
-                        this.draftStart = '';
-                        this.draftEnd = '';
-                    } else {
-                        this.draftStart = `${this.draftYear}-01-01`;
-                        this.draftEnd = `${this.draftYear}-12-31`;
-                    }
-                    this.applyDraftLive();
-                    return;
-                }
-                const [start, end] = this.draftWeekValue.split('|');
-                this.draftStart = start;
-                this.draftEnd = end;
-                this.applyDraftLive();
-            },
-            setDraftToday() {
-                this.draftStart = today;
-                this.draftEnd = today;
-                this.applyDraftLive();
-            },
-            currentDraftWeekRange() {
-                const start = new Date(today + 'T12:00:00');
-                const offset = this.draftTimeGroup === 'weekly' ? (start.getDay() + 1) % 7 : ((start.getDay() || 7) - 1);
-                start.setDate(start.getDate() - offset);
-                const end = new Date(start);
-                end.setDate(end.getDate() + 6);
-                return [toDateValue(start), toDateValue(end)];
-            },
-            isDraftTodayActive() {
-                return this.draftStart === today && this.draftEnd === today;
-            },
-            isDraftWeekActive() {
-                const [start, end] = this.currentDraftWeekRange();
-                return this.draftStart === start && this.draftEnd === end;
-            },
-            setDraftWeek() {
-                [this.draftStart, this.draftEnd] = this.currentDraftWeekRange();
-                if (this.draftTimeGroup === 'weekly') {
-                    this.draftYear = todayDate.getFullYear();
-                    this.generateWeekOptions();
-                    this.draftWeekValue = `${this.draftStart}|${this.draftEnd}`;
-                }
-                this.applyDraftLive();
-            },
-            resetDraft() {
-                this.search = '';
-                this.draftBranch = 'all';
-                this.draftCourier = 'all';
-                this.draftStart = '';
-                this.draftEnd = '';
-                this.draftYear = 'all';
-                this.draftWeekValue = '';
-                this.calendarOpen = false;
-                this.filterError = '';
-            },
-            resetFilter() {
-                const nextGroupBy = config.type === 'shipping' ? 'product' : this.groupBy;
-                const nextTimeGroup = config.type === 'shipping' ? 'daily' : this.timeGroup;
-                this.resetDraft();
-                this.draftGroupBy = nextGroupBy;
-                this.draftTimeGroup = nextTimeGroup;
-                this.branch = 'all';
-                this.courier = 'all';
-                this.startDate = '';
-                this.endDate = '';
-                this.selectedYear = 'all';
-                this.selectedWeekValue = '';
-                this.groupBy = nextGroupBy;
-                this.timeGroup = nextTimeGroup;
-                this.filterOpen = true;
+            applyFilters(values) {
+                const extra = values.extra || {};
+                const asset = config.type === 'asset';
+                this.groupBy = asset ? 'product' : (extra.groupBy || 'product');
+                this.timeGroup = asset ? 'daily' : (extra.timeGroup || 'daily');
+                this.branch = values.branch || 'all';
+                this.courier = config.type === 'shipping' && this.groupBy === 'product' ? (extra.courier || 'all') : 'all';
+                this.selectedYear = String(extra.year || 'all');
+                this.selectedWeekValue = extra.week || '';
+                [this.startDate, this.endDate] = this.periodFor(this.timeGroup, values, extra);
                 this.reload();
-            },
-            applyDraftLive() {
-                if (config.type !== 'asset' && this.draftStart && this.draftEnd && this.draftStart > this.draftEnd) {
-                    this.filterError = 'Pilih rentang tanggal yang valid.';
-                    return;
-                }
-                this.branch = this.draftBranch;
-                this.courier = config.type === 'shipping' && this.draftGroupBy === 'product' ? this.draftCourier : 'all';
-                this.startDate = config.type === 'asset' ? '' : this.draftStart;
-                this.endDate = config.type === 'asset' ? '' : this.draftEnd;
-                this.selectedYear = this.draftYear;
-                this.selectedWeekValue = this.draftWeekValue;
-                this.groupBy = config.type === 'asset' ? 'product' : this.draftGroupBy;
-                this.timeGroup = this.draftTimeGroup;
-                this.filterError = '';
-                this.reload();
-            },
-            applyFilter() {
-                if (config.type !== 'asset' && this.draftStart && this.draftEnd && this.draftStart > this.draftEnd) {
-                    this.filterError = 'Pilih rentang tanggal yang valid.';
-                    return;
-                }
-                this.calendarOpen = false;
-                this.filterOpen = false;
             },
             async openRow(row) {
                 if (this.groupBy === 'date') {

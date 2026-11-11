@@ -9,7 +9,7 @@ test('all filter families and nested report filters use the shared scale', () =>
     const css = fs.readFileSync(asset, 'utf8');
     for (const hook of [
         '[data-erp-filter-sheet]',
-        '.report-mobile-sheet--filter', '.report-mobile-history-filter-popover',
+        '.report-mobile-history-filter-popover',
         '#mobile-user-role-filter', '#receipt-category-mobile', '#receipt-category-desktop-button',
         'periodSearchQuery',
         'cabangFilter', '.erp-operations-filter', '.erp-operations-inline-select', '.nota-branch-picker',

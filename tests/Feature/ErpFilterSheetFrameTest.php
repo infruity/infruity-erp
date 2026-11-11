@@ -61,7 +61,7 @@ class ErpFilterSheetFrameTest extends TestCase
             'Modules/Transaction/Resources/views/wholesale/index.blade.php' => ['applyWholesaleMobileFilters(', 'data-wholesale-filter-reset', '<x-erp.filter-sheet'],
             'Modules/Transaction/Resources/views/sortir/index2.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
             'Modules/Transaction/Resources/views/transfer/index2.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
-            'Modules/Report/Resources/views/partials/mobile-detail.blade.php' => ['applyDraftLive()', 'calendarOpen'],
+            'Modules/Report/Resources/views/partials/mobile-detail.blade.php' => ['applyFilters(', '<x-erp.filter-sheet'],
             'Modules/Master/Resources/views/products/stock.blade.php' => ['applySheetFilters(', '<x-erp.filter-sheet'],
             'Modules/Master/Resources/views/products/stock-show.blade.php' => ['applyStockDetailFilters(', '<x-erp.filter-sheet'],
         ];
@@ -79,7 +79,6 @@ class ErpFilterSheetFrameTest extends TestCase
         $views = [
             'resources/views/components/erp/filter-sheet.blade.php',
             'resources/views/components/erp/filter-sheet.blade.php',
-            'Modules/Report/Resources/views/partials/mobile-detail.blade.php',
         ];
 
         foreach ($views as $view) {
@@ -115,13 +114,14 @@ class ErpFilterSheetFrameTest extends TestCase
             ]
         );
 
-        foreach (['Status Penerimaan', 'Sudah Diterima', 'Urutkan', 'role="radiogroup"', 'name="a-sort"', 'Minggu Ini', 'Hari Ini', 'Bulan Ini'] as $text) {
+        foreach (['Status Penerimaan', 'Sudah Diterima', 'Urutkan', 'role="radiogroup"', 'name="a-sort-"', 'Minggu Ini', 'Hari Ini', 'Bulan Ini'] as $text) {
             $this->assertStringContainsString($text, $html, "Hilang: {$text}");
         }
         // Chips set the group value; the group's default decides when its Reset link shows.
-        $this->assertStringContainsString("extra['delivery'] = 'received'", $html);
+        $this->assertStringContainsString("setExtra('delivery', 'received')", $html);
         $this->assertStringContainsString("extra['sort'] !== 'name'", $html);
-        $this->assertStringContainsString('\u0022groups\u0022:[{\u0022key\u0022:\u0022delivery\u0022,\u0022default\u0022:\u0022all\u0022}', $html);
+        $this->assertStringContainsString("setExtra('sort', 'name')", $html);
+        $this->assertStringContainsString('\u0022groups\u0022:[{\u0022key\u0022:\u0022delivery\u0022,\u0022default\u0022:\u0022all\u0022,\u0022resets\u0022:[]}', $html);
     }
 
     public function test_default_quick_ranges_stay_week_and_today_without_a_month_button(): void
@@ -145,5 +145,31 @@ class ErpFilterSheetFrameTest extends TestCase
         $this->assertStringContainsString('\u0022search\u0022:true', $with);
         $this->assertStringNotContainsString('a-mobile-query', $without);
         $this->assertStringContainsString('id="a-filter-subtitle"', $with);
+    }
+
+    public function test_groups_can_depend_on_each_other_and_follow_another_groups_value(): void
+    {
+        $html = Blade::render(
+            '<x-erp.filter-sheet id="r" title="Filter" :groups="$groups" :dates-when="[\'timeGroup\' => \'daily\']" />',
+            ['groups' => [
+                ['key' => 'timeGroup', 'label' => 'Kelompok', 'default' => 'daily', 'options' => ['daily' => 'Harian', 'weekly' => 'Mingguan']],
+                ['key' => 'year', 'label' => 'Tahun', 'showWhen' => ['timeGroup' => 'weekly'], 'resets' => ['week'], 'options' => ['all' => 'Semua', '2026' => '2026']],
+                ['key' => 'week', 'label' => 'Periode Mingguan', 'type' => 'radio', 'scroll' => true, 'optionsBy' => 'year', 'showWhen' => ['timeGroup' => 'weekly'], 'disabled' => ['b'],
+                    'options' => ['2026' => ['' => 'Semua Periode', 'a' => 'Minggu 1', 'b' => 'Minggu 2'], 'all' => ['' => 'Semua Periode']]],
+            ]]
+        );
+
+        // Shown only for the weekly mode, the period section only for the daily one.
+        $this->assertStringContainsString('x-show="matches(JSON.parse(', $html);
+        $this->assertStringContainsString('\\u0022timeGroup\\u0022:\\u0022weekly\\u0022', $html);
+        $this->assertStringContainsString("setExtra('year', 'all')", $html);
+        // One list of weeks per year, each visible only while that year is chosen.
+        $this->assertStringContainsString('name="r-week-2026"', $html);
+        $this->assertStringContainsString('name="r-week-all"', $html);
+        $this->assertStringContainsString("extra['year'] === '2026'", $html);
+        $this->assertStringContainsString('max-h-[176px]', $html);
+        // A week that cannot be picked is disabled and dimmed.
+        $this->assertMatchesRegularExpression('/value="b"[^>]*disabled/', $html);
+        $this->assertStringContainsString('cursor-not-allowed opacity-50', $html);
     }
 }

@@ -15,6 +15,38 @@
     $reportMobileConfig['stockUrl'] = url('product-stock');
     $reportMobileConfig['dateEndpoint'] = route('reports.mobile.dates', ['type' => $reportType]);
     $reportMobileConfig['dateHistory'] = route('reports.mobile.history', ['type' => $reportType]);
+
+    // Choices of the shared filter sheet. Mingguan reports use weeks that start on Saturday, three years back.
+    $reportToday = \Illuminate\Support\Carbon::parse($reportMobileConfig['today']);
+    $reportYears = [$reportToday->year, $reportToday->year - 1, $reportToday->year - 2];
+    $reportMonthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    $reportShortDate = static fn ($date) => $date->day . ' ' . $reportMonthNames[$date->month - 1];
+    $reportWeekLists = ['all' => ['' => 'Semua Periode']];
+    $reportDisabledWeeks = [];
+    foreach ($reportYears as $reportYear) {
+        $reportWeekLists[(string) $reportYear] = ['' => 'Semua Periode'];
+        $cursor = \Illuminate\Support\Carbon::create($reportYear, 1, 1, 12)->subDays((\Illuminate\Support\Carbon::create($reportYear, 1, 1, 12)->dayOfWeek + 1) % 7);
+        for ($week = 1; $cursor->year <= $reportYear; $week++) {
+            $weekEnd = $cursor->copy()->addDays(6);
+            $value = $cursor->toDateString() . '|' . $weekEnd->toDateString();
+            $reportWeekLists[(string) $reportYear][$value] = 'Minggu ' . $week . ' : ' . $reportShortDate($cursor) . ' s.d ' . $reportShortDate($weekEnd);
+            if ($cursor->toDateString() > $reportToday->toDateString()) $reportDisabledWeeks[] = $value;
+            $cursor->addDays(7);
+        }
+    }
+    $reportGroups = [];
+    if ($reportType !== 'asset') {
+        $reportGroups[] = ['key' => 'groupBy', 'label' => 'Grup Berdasarkan', 'default' => 'product', 'options' => ['product' => $reportType === 'shipping' ? 'Kurir' : 'Produk', 'date' => 'Tanggal']];
+        $reportGroups[] = ['key' => 'timeGroup', 'label' => 'Kelompok Tanggal', 'default' => 'daily', 'options' => ['daily' => 'Harian', 'weekly' => 'Mingguan']];
+        if ($reportType === 'shipping') {
+            $reportGroups[] = [
+                'key' => 'courier', 'label' => 'Kurir', 'type' => 'radio', 'scroll' => true, 'showWhen' => ['groupBy' => 'product'],
+                'options' => ['all' => 'Semua Kurir'] + collect($couriers ?? [])->mapWithKeys(fn ($courier) => [(string) $courier->id => $courier->name])->all() + ['null' => 'Tanpa Kurir / Lainnya'],
+            ];
+        }
+        $reportGroups[] = ['key' => 'year', 'label' => 'Tahun', 'showWhen' => ['timeGroup' => 'weekly'], 'resets' => ['week'], 'options' => ['all' => 'Semua Tahun'] + collect($reportYears)->mapWithKeys(fn ($year) => [(string) $year => (string) $year])->all()];
+        $reportGroups[] = ['key' => 'week', 'label' => 'Periode Mingguan', 'type' => 'radio', 'scroll' => true, 'default' => '', 'showWhen' => ['timeGroup' => 'weekly'], 'optionsBy' => 'year', 'disabled' => $reportDisabledWeeks, 'options' => $reportWeekLists];
+    }
 @endphp
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
@@ -22,7 +54,7 @@
 <script type="application/json" id="report-mobile-config">@json($reportMobileConfig)</script>
 <script src="{{ asset('assets/js/report-mobile.js') }}?v={{ filemtime(public_path('assets/js/report-mobile.js')) }}"></script>
 
-<div class="report-mobile-page" :class="'report-mobile-page--' + config.type" x-data="erpReportMobile(JSON.parse(document.getElementById('report-mobile-config').textContent))" x-effect="document.body.style.overflow = (filterOpen || historyOpen) ? 'hidden' : ''" @mobile-search-toggle.window="$refs.reportSearch.focus()">
+<div class="report-mobile-page" :class="'report-mobile-page--' + config.type" x-data="erpReportMobile(JSON.parse(document.getElementById('report-mobile-config').textContent))" x-effect="document.body.style.overflow = (filterOpen || historyOpen) ? 'hidden' : ''" @mobile-search-toggle.window="$refs.reportSearch.focus()" @erp-filter-apply.window="if ($event.detail.id === 'report') applyFilters($event.detail.values)" @erp-filter-close.window="if ($event.detail.id === 'report') closeFilter()">
     <x-erp.mobile-search>
         <x-slot:input>
             <input x-ref="reportSearch" x-model="search" @input.debounce.350ms="reload()" type="search" :placeholder="config.placeholder" :aria-label="config.placeholder" class="erp-mobile-search__input">
@@ -86,114 +118,23 @@
         <div x-show="infoOpen" x-cloak @click.outside="infoOpen = false" class="report-mobile-info"><span x-show="config.type === 'asset'">Nilai rupiah pada laporan aset dihitung berdasarkan <strong>Nilai HPP</strong>, bukan harga jual.</span><span x-show="config.type === 'loss'">Nilai rupiah pada barang buang dihitung berdasarkan <strong>Nilai HPP</strong>, bukan harga jual.</span></div>
     </div>
 
-    <template x-teleport="body">
-        <div x-show="filterOpen" x-cloak data-erp-modal>
-            <div class="report-mobile-backdrop" @click="calendarOpen = false; filterOpen = false"></div>
-            <div class="report-mobile-sheet report-mobile-sheet--filter" :class="config.type === 'asset' ? 'report-mobile-sheet--asset' : ''" role="dialog" aria-modal="true" aria-label="Filter Laporan" @keydown.escape.window="calendarOpen = false; filterOpen = false">
-                <button type="button" class="report-mobile-sheet__handle" @click="calendarOpen = false; filterOpen = false" aria-label="Tutup filter"></button>
-                <x-erp.filter-sheet-frame title="Filter Laporan" title-id="report-mobile-filter-title" subtitle="Sesuaikan parameter data laporan" header-class="report-mobile-sheet__head" body-class="report-mobile-sheet__body" footer-class="report-mobile-sheet__foot">
-                    <x-slot:close><button type="button" class="report-mobile-sheet__close" @click="calendarOpen = false; filterOpen = false" aria-label="Tutup filter"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
-                    <x-slot:body>
-
-                    <div class="report-mobile-filter-controls" x-show="!calendarOpen">
-                        <div class="report-mobile-field" x-show="config.type !== 'asset'">
-                            <span class="report-mobile-field__label">Grup Berdasarkan</span>
-                            <div class="report-mobile-grouping">
-                                <button type="button" :class="draftGroupBy === 'product' ? 'is-active' : ''" @click="draftGroupBy = 'product'; applyDraftLive()"><i class="ph-fill ph-package" aria-hidden="true"></i><span x-text="config.type === 'shipping' ? 'Kurir' : 'Produk'"></span></button>
-                                <button type="button" :class="draftGroupBy === 'date' ? 'is-active' : ''" @click="draftGroupBy = 'date'; applyDraftLive()"><i class="ph ph-calendar-blank" aria-hidden="true"></i>Tanggal</button>
-                            </div>
-                            <div class="report-mobile-select" x-data="{open:false}" @click.outside="open = false">
-                                <button type="button" class="report-mobile-select__trigger" @click="open = !open" :aria-expanded="open" aria-haspopup="listbox" aria-label="Kelompokkan tanggal"><span x-text="draftTimeGroup === 'daily' ? 'Harian' : 'Mingguan'"></span><i class="ph-bold ph-caret-down" :class="open ? 'is-open' : ''" aria-hidden="true"></i></button>
-                                <div x-show="open" x-cloak class="report-mobile-select__menu" role="listbox" aria-label="Kelompokkan tanggal">
-                                    <button type="button" role="option" :aria-selected="draftTimeGroup === 'daily'" :class="draftTimeGroup === 'daily' ? 'is-selected' : ''" @click="setDraftTimeGroup('daily'); open = false"><span>Harian</span><i x-show="draftTimeGroup === 'daily'" class="ph-fill ph-circle" aria-hidden="true"></i></button>
-                                    <button type="button" role="option" :aria-selected="draftTimeGroup === 'weekly'" :class="draftTimeGroup === 'weekly' ? 'is-selected' : ''" @click="setDraftTimeGroup('weekly'); open = false"><span>Mingguan</span><i x-show="draftTimeGroup === 'weekly'" class="ph-fill ph-circle" aria-hidden="true"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="report-mobile-field">
-                            <div class="report-mobile-field__heading"><span class="report-mobile-field__label">Cabang</span><button x-show="draftBranch !== 'all'" type="button" @click="draftBranch = 'all'; applyDraftLive()" class="report-mobile-field__reset">Reset</button></div>
-                            <div class="report-mobile-select" x-data="{open:false}" x-effect="if (!filterOpen) open = false" @click.outside="open = false" @keydown.escape="if (open) { $event.preventDefault(); $event.stopPropagation(); open = false; $refs.branchTrigger.focus() }">
-                                <button x-ref="branchTrigger" type="button" class="report-mobile-select__trigger" @click="open = !open" :aria-expanded="open" aria-haspopup="listbox" aria-label="Cabang"><span x-text="draftBranchName()"></span><i class="ph-bold ph-caret-down" :class="open ? 'is-open' : ''" aria-hidden="true"></i></button>
-                                <div x-show="open" x-cloak class="report-mobile-select__menu" role="listbox" aria-label="Pilih cabang">
-                                    <button type="button" role="option" :aria-selected="draftBranch === 'all'" :class="draftBranch === 'all' ? 'is-selected' : ''" @click="draftBranch = 'all'; open = false; applyDraftLive(); $refs.branchTrigger.focus()"><span>Semua Cabang</span><i x-show="draftBranch === 'all'" class="ph-fill ph-circle" aria-hidden="true"></i></button>
-                                    <template x-for="branchOption in config.branches" :key="branchOption.id">
-                                        <button type="button" role="option" :aria-selected="String(draftBranch) === String(branchOption.id)" :class="String(draftBranch) === String(branchOption.id) ? 'is-selected' : ''" @click="draftBranch = String(branchOption.id); open = false; applyDraftLive(); $refs.branchTrigger.focus()"><span x-text="branchOption.name"></span><i x-show="String(draftBranch) === String(branchOption.id)" class="ph-fill ph-circle" aria-hidden="true"></i></button>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="report-mobile-field" x-show="config.type === 'shipping' && draftGroupBy === 'product'">
-                            <div class="report-mobile-field__heading"><span class="report-mobile-field__label">Kurir</span><button x-show="draftCourier !== 'all'" type="button" @click="draftCourier = 'all'; applyDraftLive()" class="report-mobile-field__reset">Reset</button></div>
-                            <div class="report-mobile-select" x-data="{open:false}" @click.outside="open = false">
-                                <button type="button" class="report-mobile-select__trigger" @click="open = !open" :aria-expanded="open" aria-haspopup="listbox" aria-label="Kurir"><span x-text="draftCourierName()"></span><i class="ph-bold ph-caret-down" :class="open ? 'is-open' : ''" aria-hidden="true"></i></button>
-                                <div x-show="open" x-cloak class="report-mobile-select__menu" role="listbox" aria-label="Pilih kurir">
-                                    <button type="button" role="option" :aria-selected="draftCourier === 'all'" :class="draftCourier === 'all' ? 'is-selected' : ''" @click="draftCourier = 'all'; open = false; applyDraftLive()"><span>Semua Kurir</span><i x-show="draftCourier === 'all'" class="ph-fill ph-circle" aria-hidden="true"></i></button>
-                                    <template x-for="courierOption in config.couriers" :key="courierOption.id"><button type="button" role="option" :aria-selected="String(draftCourier) === String(courierOption.id)" :class="String(draftCourier) === String(courierOption.id) ? 'is-selected' : ''" @click="draftCourier = String(courierOption.id); open = false; applyDraftLive()"><span x-text="courierOption.name"></span><i x-show="String(draftCourier) === String(courierOption.id)" class="ph-fill ph-circle" aria-hidden="true"></i></button></template>
-                                    <button type="button" role="option" :aria-selected="draftCourier === 'null'" :class="draftCourier === 'null' ? 'is-selected' : ''" @click="draftCourier = 'null'; open = false; applyDraftLive()"><span>Tanpa Kurir / Lainnya</span><i x-show="draftCourier === 'null'" class="ph-fill ph-circle" aria-hidden="true"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="report-mobile-field" x-show="config.type !== 'asset' && draftTimeGroup === 'weekly'">
-                            <div class="report-mobile-field__heading"><span class="report-mobile-field__label">Tahun</span><button x-show="draftYear !== 'all'" type="button" @click="draftYear = 'all'; changeDraftYear()" class="report-mobile-field__reset">Reset</button></div>
-                            <div class="report-mobile-select" x-data="{open:false}" @click.outside="open = false">
-                                <button type="button" class="report-mobile-select__trigger" @click="open = !open" :aria-expanded="open" aria-haspopup="listbox" aria-label="Tahun"><span x-text="draftYearLabel()"></span><i class="ph-bold ph-caret-down" :class="open ? 'is-open' : ''" aria-hidden="true"></i></button>
-                                <div x-show="open" x-cloak class="report-mobile-select__menu" role="listbox" aria-label="Pilih tahun">
-                                    <button type="button" role="option" :aria-selected="draftYear === 'all'" :class="draftYear === 'all' ? 'is-selected' : ''" @click="draftYear = 'all'; changeDraftYear(); open = false"><span>Semua Tahun</span><i x-show="draftYear === 'all'" class="ph-fill ph-circle" aria-hidden="true"></i></button>
-                                    <template x-for="year in reportYears" :key="year"><button type="button" role="option" :aria-selected="Number(draftYear) === year" :class="Number(draftYear) === year ? 'is-selected' : ''" @click="draftYear = year; changeDraftYear(); open = false"><span x-text="year"></span><i x-show="Number(draftYear) === year" class="ph-fill ph-circle" aria-hidden="true"></i></button></template>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="report-mobile-field" x-show="config.type !== 'asset' && draftTimeGroup === 'weekly'">
-                            <div class="report-mobile-field__heading"><span class="report-mobile-field__label">Periode Mingguan</span><button x-show="draftWeekValue" type="button" @click="draftWeekValue = ''; selectDraftWeek()" class="report-mobile-field__reset">Reset</button></div>
-                            <div class="report-mobile-select" x-data="{open:false}" @click.outside="open = false">
-                                <button type="button" class="report-mobile-select__trigger" @click="open = !open; if(open) $nextTick(() => $refs.weekMenu?.querySelector('[aria-selected=true]')?.scrollIntoView({block:'center'}))" :aria-expanded="open" aria-haspopup="listbox" aria-label="Periode mingguan"><span x-text="draftWeekLabel()"></span><i class="ph-bold ph-caret-down" :class="open ? 'is-open' : ''" aria-hidden="true"></i></button>
-                                <div x-ref="weekMenu" x-show="open" x-cloak class="report-mobile-select__menu report-mobile-select__menu--weeks" role="listbox" aria-label="Pilih periode mingguan">
-                                    <template x-for="week in weekOptions" :key="week.value"><button type="button" role="option" :aria-selected="draftWeekValue === week.value" :disabled="week.disabled" :class="draftWeekValue === week.value ? 'is-selected' : ''" @click="draftWeekValue = week.value; selectDraftWeek(); open = false"><span x-text="week.label"></span><i x-show="draftWeekValue === week.value" class="ph-fill ph-circle" aria-hidden="true"></i></button></template>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="report-mobile-field" x-show="config.type !== 'asset' && draftTimeGroup === 'daily'">
-                            <div class="report-mobile-field__heading"><span class="report-mobile-field__label">Periode Tanggal</span><button x-show="draftStart || draftEnd" type="button" @click="draftStart = ''; draftEnd = ''; applyDraftLive()" class="report-mobile-field__reset">Reset</button></div>
-                            <div class="report-mobile-date-grid">
-                                <label class="report-mobile-date-input" :class="calendarOpen ? 'is-active' : ''" aria-label="Tanggal awal">
-                                    <span>DARI</span>
-                                    <input type="text" readonly :value="draftStart ? fullDateLabel(draftStart) : ''" placeholder="Pilih Tanggal" @click="openDateCalendar()" @keydown.enter.prevent="openDateCalendar()" @keydown.space.prevent="openDateCalendar()" aria-label="Pilih tanggal awal">
-                                </label>
-                                <label class="report-mobile-date-input" :class="calendarOpen ? 'is-active' : ''" aria-label="Tanggal akhir">
-                                    <span>KE</span>
-                                    <input type="text" readonly :value="draftEnd ? fullDateLabel(draftEnd) : ''" placeholder="Pilih Tanggal" @click="openDateCalendar()" @keydown.enter.prevent="openDateCalendar()" @keydown.space.prevent="openDateCalendar()" aria-label="Pilih tanggal akhir">
-                                </label>
-                            </div>
-                        </div>
-                        <div class="report-mobile-quick-wrap" x-show="config.type !== 'asset'">
-                            <span class="report-mobile-field__label">Pilihan Cepat</span>
-                            <div class="report-mobile-quick" x-show="draftTimeGroup === 'daily'"><button type="button" :class="isDraftWeekActive() ? 'is-active' : ''" @click="setDraftWeek()">Minggu Ini</button><button type="button" :class="isDraftTodayActive() ? 'is-active' : ''" @click="setDraftToday()">Hari Ini</button></div>
-                            <div class="report-mobile-quick report-mobile-quick--single" x-show="draftTimeGroup === 'weekly'"><button type="button" :class="isDraftWeekActive() ? 'is-active' : ''" @click="setDraftWeek()">Minggu Ini</button></div>
-                        </div>
-                    </div>
-                    <div x-show="calendarOpen" x-cloak class="report-mobile-calendar">
-                        <div class="report-mobile-calendar__head">
-                            <button type="button" class="report-mobile-calendar__title" @click="toggleCalendarView()"><span x-text="calendarHeading"></span><i class="ph-bold ph-caret-down" aria-hidden="true"></i></button>
-                            <div><button type="button" @click="navigateCalendar(-1)" aria-label="Periode sebelumnya"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button><button type="button" @click="navigateCalendar(1)" aria-label="Periode berikutnya"><i class="ph-bold ph-caret-right" aria-hidden="true"></i></button></div>
-                        </div>
-                        <div x-show="calendarView === 'date'">
-                            <div class="report-mobile-calendar__grid report-mobile-calendar__weekdays"><template x-for="(day, index) in calendarWeekdays" :key="index"><span x-text="day"></span></template></div>
-                            <div class="report-mobile-calendar__grid report-mobile-calendar__days"><template x-for="blank in calendarBlankDays" :key="'blank-' + blank"><span></span></template><template x-for="day in calendarDays" :key="day"><span class="report-mobile-calendar__day" :class="{'is-selected': isCalendarDateSelected(day), 'is-in-range': isCalendarDateInRange(day), 'is-range-start': calendarDate(day) === draftStart && draftEnd && draftStart !== draftEnd, 'is-range-end': calendarDate(day) === draftEnd && draftStart !== draftEnd}"><button type="button" @click="selectCalendarDate(day)" x-text="day"></button></span></template></div>
-                        </div>
-                        <div x-show="calendarView === 'month'" x-cloak class="report-mobile-calendar__choices"><template x-for="(month, index) in calendarMonths" :key="month"><button type="button" :class="calendarMonth === index ? 'is-selected' : ''" @click="chooseCalendarMonth(index)" x-text="month"></button></template></div>
-                        <div x-show="calendarView === 'year'" x-cloak class="report-mobile-calendar__choices"><template x-for="year in calendarYears" :key="year"><button type="button" :class="calendarYear === year ? 'is-selected' : ''" @click="chooseCalendarYear(year)" x-text="year"></button></template></div>
-                        <button type="button" class="report-mobile-calendar__done" @click="calendarOpen = false"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i>Selesai Memilih Tanggal</button>
-                    </div>
-                    <p x-show="filterError" x-cloak role="alert" style="margin:12px 0 0;color:#dc2626;font-size:12px" x-text="filterError"></p>
-                    </x-slot:body>
-                    <x-slot:footer>
-                        <button type="button" class="report-mobile-sheet__cancel" @click="resetFilter()">Reset Filter</button>
-                        <button type="button" class="report-mobile-sheet__apply erp-filter-sheet__primary" @click="applyFilter()">Terapkan Filter</button>
-                    </x-slot:footer>
-                </x-erp.filter-sheet-frame>
-            </div>
-        </div>
-    </template>
+    <x-erp.filter-sheet
+        id="report"
+        title="Filter Laporan"
+        aria-label="Filter laporan"
+        subtitle="Sesuaikan parameter data laporan"
+        branch-label="Cabang"
+        branch-all-label="Semua Cabang"
+        :branches="$branches ?? []"
+        :groups="$reportGroups"
+        :with-dates="$reportType !== 'asset'"
+        :dates-when="['timeGroup' => 'daily']"
+        :timezone="config('app.timezone')"
+        desktop="modal"
+        reset-applies
+        reset-label="Reset Filter"
+        apply-label="Terapkan Filter"
+    />
 
     <template x-teleport="body">
         <div x-show="historyOpen" x-cloak data-erp-modal>

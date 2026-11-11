@@ -17,6 +17,10 @@
  * With desktop 'hidden' (the default) the sheet is a phone sheet only: it refuses to open from 768px up
  * and closes itself when the window grows past that, so a page's own desktop filter never fights it.
  *
+ * Group extras: a group can be shown only while other groups have given values (showWhen, e.g. the
+ * weekly pickers only for "Mingguan"), and choosing a value can reset dependent groups to their default
+ * (resets, e.g. picking another year clears the picked week).
+ *
  * Optional search box: config.search = true adds a text field; its draft travels as values.search.
  * The open event may also carry detail.title / detail.subtitle to rename the sheet for that opening
  * (a page whose filter depends on a tab); the next opening without them restores the defaults.
@@ -83,7 +87,11 @@
         const timezone = config.timezone || '';
         const weekStart = config.weekStart === 'monday' ? 'monday' : 'sunday';
         const [startYear, startMonth] = today(timezone).split('-').map(Number);
-        const groups = (config.groups || []).map((group) => ({ key: String(group.key), default: String(group.default ?? 'all') }));
+        const groups = (config.groups || []).map((group) => ({
+            key: String(group.key),
+            default: String(group.default ?? 'all'),
+            resets: (group.resets || []).map(String),
+        }));
         const groupDefaults = () => Object.fromEntries(groups.map((group) => [group.key, group.default]));
 
         return {
@@ -149,6 +157,21 @@
                 this.lockScroll();
                 this.open = true;
                 this.$nextTick(() => this.$refs.closeButton?.focus());
+            },
+            setExtra(key, value) {
+                this.extra[key] = String(value);
+                const group = this.groups.find((candidate) => candidate.key === key);
+                (group?.resets || []).forEach((dependent) => {
+                    this.extra[dependent] = this.groups.find((candidate) => candidate.key === dependent)?.default ?? 'all';
+                });
+            },
+            /** True while every given group currently has one of the given values; no condition always matches. */
+            matches(condition) {
+                if (!condition) return true;
+                return Object.entries(condition).every(([key, expected]) => {
+                    const allowed = Array.isArray(expected) ? expected.map(String) : [String(expected)];
+                    return allowed.includes(String(this.extra[key]));
+                });
             },
             setHeadings(detail) {
                 const doc = root.document;

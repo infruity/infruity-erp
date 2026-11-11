@@ -524,3 +524,35 @@ test('an opening can rename the sheet and the next one restores the defaults', (
         restoreBrowser();
     }
 });
+
+test('choosing a value can reset dependent groups to their own defaults', () => {
+    const sheet = createSheet({ groups: [{ key: 'year', default: 'all', resets: ['week'] }, { key: 'week', default: '' }] });
+    sheet.extra.year = '2026';
+    sheet.extra.week = '2026-01-03|2026-01-09';
+
+    sheet.setExtra('year', '2025');
+
+    assert.deepEqual({ ...sheet.extra }, { year: '2025', week: '' });
+});
+
+test('a group without dependents leaves the others alone', () => {
+    const sheet = createSheet({ groups: [{ key: 'a', default: 'all' }, { key: 'b', default: 'all' }] });
+    sheet.extra.b = 'x';
+
+    sheet.setExtra('a', 'y');
+
+    assert.deepEqual({ ...sheet.extra }, { a: 'y', b: 'x' });
+});
+
+test('matches follows the current group values, with one or several allowed values', () => {
+    const sheet = createSheet({ groups: [{ key: 'timeGroup', default: 'daily' }, { key: 'groupBy', default: 'product' }] });
+
+    assert.equal(sheet.matches(null), true);
+    assert.equal(sheet.matches({ timeGroup: 'daily' }), true);
+    assert.equal(sheet.matches({ timeGroup: 'weekly' }), false);
+    assert.equal(sheet.matches({ timeGroup: ['weekly', 'daily'] }), true);
+    assert.equal(sheet.matches({ timeGroup: 'daily', groupBy: 'date' }), false);
+
+    sheet.setExtra('timeGroup', 'weekly');
+    assert.equal(sheet.matches({ timeGroup: 'weekly' }), true);
+});

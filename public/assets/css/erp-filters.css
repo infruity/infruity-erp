@@ -106,8 +106,7 @@ body.erp-ui :is(
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div > h3,
     div.relative:has(> form #receipt-category-mobile) > div > h3,
     form[method="GET"]:has(#mobile-user-role-filter) > div > h3,
-    form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > header h3,
-    .report-mobile-sheet--filter .report-mobile-sheet__head h2
+    form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > header h3
 ) {
     margin:0;
     font-size:var(--erp-filter-title-size);
@@ -140,8 +139,7 @@ body.erp-ui :is(
     div.relative:has(> form #receipt-category-mobile) > div:has(> h3),
     form[method="GET"]:has(#mobile-user-role-filter) > div:has(> h3),
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > header,
-    [role="dialog"][aria-label="Filter pengadaan"] > section > div:has(h2),
-    .report-mobile-sheet--filter > .report-mobile-sheet__head
+    [role="dialog"][aria-label="Filter pengadaan"] > section > div:has(h2)
 ) {
     padding:14px 20px !important;
 }
@@ -161,8 +159,7 @@ body.erp-ui :is(
     div.relative:has(> form #receipt-category-mobile) button[aria-label="Tutup filter"],
     form[method="GET"]:has(#mobile-user-role-filter) button[aria-label="Tutup filter"],
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > header button[aria-label="Tutup filter"],
-    [role="dialog"][aria-label="Filter pengadaan"] > section button[aria-label="Tutup"],
-    .report-mobile-sheet--filter .report-mobile-sheet__close
+    [role="dialog"][aria-label="Filter pengadaan"] > section button[aria-label="Tutup"]
 ) {
     width:32px;
     height:32px;
@@ -178,8 +175,7 @@ body.erp-ui :is(
     div.relative:has(> form #receipt-category-mobile) button[aria-label="Tutup filter"] > i,
     form[method="GET"]:has(#mobile-user-role-filter) button[aria-label="Tutup filter"] > i,
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > header button[aria-label="Tutup filter"] > i,
-    [role="dialog"][aria-label="Filter pengadaan"] > section button[aria-label="Tutup"] > i,
-    .report-mobile-sheet--filter .report-mobile-sheet__close > i
+    [role="dialog"][aria-label="Filter pengadaan"] > section button[aria-label="Tutup"] > i
 ) {
     font-size:16px;
     line-height:1;
@@ -195,7 +191,6 @@ body.erp-ui :is(
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) .dashboard-scroll h4,
     [role="dialog"][aria-label="Filter pengadaan"] > section label.uppercase,
     [x-show*="filtersOpen"].md\:block:has([data-wholesale-filter="status"]) label,
-    .report-mobile-sheet--filter .report-mobile-field__label,
     .report-mobile-sheet--history .report-mobile-history-filter-popover .report-mobile-field__label,
     .menu[data-kt-menu="true"]:has(#kt_ecommerce_sales_flatpickr):has(> [data-kt-user-table-filter="form"]):not(.delivery-order-filter-menu) .form-label,
     details.erp-operations-filter:has(#kt_ecommerce_sales_flatpickr) > .erp-operations-filter__body > label,
@@ -216,8 +211,7 @@ body.erp-ui :is(
     div.relative:has(> form #receipt-category-mobile) > form > div:first-of-type,
     form[method="GET"]:has(#mobile-user-role-filter) > div.p-5,
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > .dashboard-scroll,
-    [role="dialog"][aria-label="Filter pengadaan"] > section > div.overflow-y-auto,
-    .report-mobile-sheet--filter > .report-mobile-sheet__body
+    [role="dialog"][aria-label="Filter pengadaan"] > section > div.overflow-y-auto
 ) {
     padding:20px !important;
     min-width:0;
@@ -245,7 +239,6 @@ body.erp-ui :is(
     #receipt-category-mobile-button,
     #mobile-user-role-filter,
     [x-show*="filtersOpen"].md\:block:has([data-wholesale-filter="status"]) select[data-wholesale-filter],
-    .report-mobile-sheet--filter .report-mobile-select__trigger,
     .menu[data-kt-menu="true"]:has(#kt_ecommerce_sales_flatpickr):has(> [data-kt-user-table-filter="form"]):not(.delivery-order-filter-menu) .form-select,
     .menu[data-kt-menu="true"]:has(#kt_ecommerce_sales_flatpickr):has(> [data-kt-user-table-filter="form"]):not(.delivery-order-filter-menu) .select2-selection--single,
     .menu[data-kt-menu="true"]:has(#kt_ecommerce_sales_flatpickr):has(> [data-kt-user-table-filter="form"]):not(.delivery-order-filter-menu) .select2-selection__rendered,
@@ -274,7 +267,6 @@ body.erp-ui :is(
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) span[x-text="branch.name"],
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) span[x-text="item.name"],
     [data-erp-filter-sheet] [id$="-mobile-branches"] > label,
-    .report-mobile-sheet--filter .report-mobile-select__menu button,
     .report-mobile-sheet--history .report-mobile-history-filter-popover .report-mobile-history-option-menu button,
     #receipt-category-desktop-options [role="menuitemradio"]
 ) {
@@ -300,8 +292,7 @@ body.erp-ui form[method="GET"]:has(> input[name="period"][value="week"]):has(inp
 /* Status and grouping text */
 body.erp-ui :is(
     [data-erp-filter-sheet] button[\:aria-pressed],
-    [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div.flex-1.overflow-y-auto button.rounded-full,
-    .report-mobile-sheet--filter .report-mobile-grouping button
+    [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div.flex-1.overflow-y-auto button.rounded-full
 ) {
     font-size:var(--erp-filter-option-size);
     line-height:16px;
@@ -313,7 +304,6 @@ body.erp-ui :is(
     [data-erp-filter-sheet] [aria-label="Tanggal akhir"] > span:last-child,
     [data-erp-filter-sheet] [id$="-mobile-start-date-trigger"] > span:last-child,
     [data-erp-filter-sheet] [id$="-mobile-end-date-trigger"] > span:last-child,
-    .report-mobile-sheet--filter .report-mobile-date-input > input,
     .report-mobile-sheet--history .report-mobile-history-filter-popover .report-mobile-history-date-trigger,
     .menu[data-kt-menu="true"]:has(#kt_ecommerce_sales_flatpickr):has(> [data-kt-user-table-filter="form"]):not(.delivery-order-filter-menu) #kt_ecommerce_sales_flatpickr,
     details.erp-operations-filter:has(#kt_ecommerce_sales_flatpickr) #kt_ecommerce_sales_flatpickr,
@@ -330,20 +320,22 @@ body.erp-ui :is(
     [data-erp-filter-sheet] button[title="Tampilkan Minggu Ini"],
     [data-erp-filter-sheet] button[title="Tampilkan Hari Ini"],
     [role="dialog"][aria-label="Filter pengadaan"] > section button[title="Tampilkan Minggu Ini"],
-    [role="dialog"][aria-label="Filter pengadaan"] > section button[title="Tampilkan Hari Ini"],
-    .report-mobile-sheet--filter .report-mobile-quick button
+    [role="dialog"][aria-label="Filter pengadaan"] > section button[title="Tampilkan Hari Ini"]
 ) {
     font-size:var(--erp-filter-option-size);
     line-height:16px;
 }
 
 /* Only these sheets own the inset in their footer, not in the containing panel. */
+
+
+
+/* The shared sheets own the safe-area inset in their footer, not in the containing panel. */
 body.erp-ui :is(
-    .report-mobile-sheet--filter > .report-mobile-sheet__foot
+    [data-erp-filter-sheet] > section > footer
 ) {
     --erp-filter-footer-inset:env(safe-area-inset-bottom, 0px);
 }
-
 
 /* Sheet footer spacing */
 body.erp-ui :is(
@@ -352,8 +344,7 @@ body.erp-ui :is(
     div.relative:has(> form #receipt-category-mobile) > form > div.border-t,
     form[method="GET"]:has(#mobile-user-role-filter) > div.border-t,
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > footer,
-    [role="dialog"][aria-label="Filter pengadaan"] > section > div.border-t,
-    .report-mobile-sheet--filter > .report-mobile-sheet__foot
+    [role="dialog"][aria-label="Filter pengadaan"] > section > div.border-t
 ) {
     gap:12px !important;
     padding:var(--erp-filter-footer-padding) var(--erp-filter-footer-gutter) calc(var(--erp-filter-footer-padding) + var(--erp-filter-footer-inset, 0px)) !important;
@@ -367,7 +358,6 @@ body.erp-ui :is(
     form[method="GET"]:has(#mobile-user-role-filter) > div.border-t > :is(a,button),
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > footer > button,
     [role="dialog"][aria-label="Filter pengadaan"] > section > div.border-t > button,
-    .report-mobile-sheet--filter .report-mobile-sheet__foot > button,
     .report-mobile-sheet--history .report-mobile-history-filter-popover .report-mobile-history-filter-actions button
 ) {
     min-width:0;
@@ -400,14 +390,12 @@ body.erp-ui :is(
     form[method="GET"]:has(#mobile-user-role-filter) > div:has(> h3),
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > header,
     [role="dialog"][aria-label="Filter pengadaan"] > section > div:has(h2),
-    .report-mobile-sheet--filter > .report-mobile-sheet__head,
     [data-erp-filter-sheet] > section > div.min-h-0.flex-1,
     [x-show="filterOpen"].md\:hidden:has(input[x-model="branchSearchQuery"]) > [x-show="filterOpen"].relative > div.flex-1.overflow-y-auto,
     div.relative:has(> form #receipt-category-mobile) > form > div:first-of-type,
     form[method="GET"]:has(#mobile-user-role-filter) > div.p-5,
     form[method="GET"]:has(> input[name="period"][value="week"]):has(input[x-model="branchSearchQuery"]) > .dashboard-scroll,
-    [role="dialog"][aria-label="Filter pengadaan"] > section > div.overflow-y-auto,
-    .report-mobile-sheet--filter > .report-mobile-sheet__body
+    [role="dialog"][aria-label="Filter pengadaan"] > section > div.overflow-y-auto
 ) { padding:12px !important; }
 }
 
