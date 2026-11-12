@@ -77,13 +77,13 @@ Gerbang: semua test hijau di MySQL.
 
 ### Hasil Fase 1 (2026-11-12)
 
-129 test baru di gerbang (+1 `known-gap`, lihat W1), semua gerbang lulus. Dijalankan di MySQL (di SQLite otomatis *skipped*):
+142 test baru di gerbang (+1 `known-gap`, lihat W1), semua gerbang lulus. Dijalankan di MySQL (di SQLite otomatis *skipped*):
 
 ```bash
 export PATH=/opt/homebrew/opt/php@8.5/bin:$PATH
-php vendor/bin/phpunit -c phpunit.mysql.xml          # 133 test (129 baru + 4 TransferConcurrency), gerbang hijau
+php vendor/bin/phpunit -c phpunit.mysql.xml          # 146 test (142 baru + 4 TransferConcurrency), gerbang hijau
 php vendor/bin/phpunit -c phpunit.mysql.xml --group known-gap   # 1 test yang SENGAJA gagal (sisa W1: total header vs item)
-php vendor/bin/phpunit                               # 519 test, 142 skipped (butuh MySQL), 0 gagal
+php vendor/bin/phpunit                               # 532 test, 155 skipped (butuh MySQL), 0 gagal
 ```
 
 | File | Test | Yang dibuktikan |
@@ -104,7 +104,7 @@ Catatan teknis: `WholesaleController::saveTransaction` memanggil `DB::disconnect
 | # | Severity | Temuan | Status |
 |---|---|---|---|
 | 1 | **High** | `GET /user/data` tidak memeriksa izin: role tanpa izin apa pun mendapat 200 berisi email & nomor telepon semua user (hash password tidak ikut). | **Diperbaiki** (`UserController::get_data` kini `authorizeAccess('user.index')`), ada test regresi. |
-| 2 | **Medium** | Login tidak dibatasi: 40 password salah berturut-turut tidak diblokir, login benar sesudahnya tetap lolos; captcha di `LoginController` dikomentari. Aplikasi akan terbuka di internet. | **Belum diubah** — perlu keputusan (kasir satu cabang bisa berbagi IP; saran awal `throttle` ±10/menit per IP+username, atau fail2ban/Cloudflare di depan). |
+| 2 | **Medium** | Login tidak dibatasi: 40 password salah berturut-turut tidak diblokir; captcha di `LoginController` dikomentari. | **Diperbaiki (throttle):** `App\Support\LoginThrottle` menghitung hanya login yang gagal — 5/menit per akun+IP, 15/15 menit per akun dari IP mana pun, 30/menit per IP (longgar karena satu toko = satu IP); login berhasil mereset hitungan akun; saat terkunci password benar pun ditolak. Pesan: "Terlalu banyak percobaan login. Coba lagi dalam N detik." 13 test (7 mutasi tertangkap). **Captcha ditunda** atas keputusan pemilik. |
 | 3 | Low | `PosController::saveTransaction` dan `StockOpnameController::destroy` membungkus error validasi/404 dalam `catch` → dikembalikan sebagai 500 JSON, bukan 422/404 (penolakan tetap benar). | Dicatat di test, belum diubah. |
 | W1 | Medium–High | `WholesaleController::saveTransaction` tidak memvalidasi isi `items`: qty negatif, harga negatif, `product_id` yang tidak ada, dan total yang tidak cocok dengan item diterima (200). | **Sebagian diperbaiki:** untuk simpan `draft`/`posting`, `items.*.id` wajib ada di `products`, `qty > 0`, `price ≥ 0`; autosave `temp` sengaja tetap longgar. **Sisa (known-gap, 1 test):** total/subtotal header belum dicek terhadap item — dihitung di JS dengan diskon, jadi perlu uji form dulu. **Cek manual di Fase 3** (lihat daftar di bawah). |
 | W2 | Medium | Nota pengadaan yang sudah `posting` bisa diedit/dihapus setelah barangnya terjual sehingga stok negatif (−5). Aturan bisnis (sesi HPP): **stok tidak boleh negatif**. | **Diperbaiki:** edit (qty lebih kecil, ubah ke draft, ganti produk) dan hapus nota ditolak (422) bila stok produk yang terlibat akan menjadi negatif dan lebih buruk dari sebelumnya; data lama yang sudah negatif tidak ikut disalahkan. 6 test baru. |
@@ -171,7 +171,9 @@ Gerbang: 0 bug Critical/High terbuka; Medium dicatat dan disetujui.
 
 - [ ] `.env` production: `APP_ENV=production`, `APP_DEBUG=false`, `APP_KEY` baru, `APP_URL` https.
 - [x] `/register` sudah tertutup (diverifikasi test Fase 1).
-- [ ] **Login tanpa rate limit & captcha nonaktif** — putuskan pembatasan (lihat temuan Fase 1 #2).
+- [x] Login dibatasi (lihat temuan Fase 1 #2). Captcha ditunda.
+- [ ] **Set `TRUSTED_PROXIES` di `.env` bila di belakang nginx/Cloudflare** (mis. `127.0.0.1`); tanpa itu `request()->ip()` selalu IP proxy, sehingga batas per-IP berlaku untuk semua pengguna sekaligus. Header `X-Forwarded-For` hanya dipercaya dari proxy yang terdaftar (palsu = diabaikan; teruji).
+- [ ] Pastikan `CACHE_DRIVER` bukan `array` di production (penghitung login disimpan di cache; `file` cukup untuk satu server).
 - [ ] Log viewer (rap2hpoutre) dan debugbar tidak bisa diakses publik.
 - [ ] `/infruity-ui`, `/produk`, `products-data` (route publik) — pastikan tidak membocorkan data.
 - [ ] Nomor WA hardcoded (`6281249702030`, `6285138882070`) — pastikan benar nomor admin; idealnya pindah ke setting.
@@ -222,5 +224,5 @@ Sebelum mulai: **backup penuh** app lama (file + DB) dan catat konfigurasi web s
 
 - Domain final app baru (pakai domain app lama atau baru?).
 - Jumlah user/cabang awal dan deadline → menentukan lama Fase 3.
-- Cara membatasi percobaan login (throttle / captcha / fail2ban).
+- ~~Cara membatasi percobaan login~~ — diputuskan: throttle (captcha ditunda).
 - Aturan bisnis POS: boleh bayar kurang (piutang)? boleh stok negatif?
