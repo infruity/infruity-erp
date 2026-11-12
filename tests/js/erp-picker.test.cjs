@@ -213,3 +213,20 @@ test('placement: as wide as the field, under it when there is room, above it whe
     const cramped = computePlacement(field(100), 1000, 250, 320);
     assert.ok(cramped.maxHeight >= 120, 'a minimum usable height even on a very short screen');
 });
+
+test('a composite field (trigger + add button in one box) anchors the dropdown to the whole box', () => {
+    const js = fs.readFileSync(asset, 'utf8');
+    const header = read('Modules/Pos/Resources/views/pos/js/js-header.blade.php');
+    const css = read('public/assets/css/pos-form.css');
+
+    // The dropdown is placed against options.anchor (a wrapper found with closest) instead of the narrower button.
+    assert.match(js, /options\.anchor && trigger\.closest\(options\.anchor\)/);
+    assert.match(js, /active\.anchor\.getBoundingClientRect\(\)/);
+    assert.ok(!/active\.trigger\.getBoundingClientRect/.test(js), 'placement must not measure the button directly');
+
+    // POS customer: the box with the "+" button is the field the dropdown has to match.
+    assert.match(header, /ErpPicker\.attach\('#customer_id', \{\s*anchor: '\.pos-customer'/);
+    // The button inside that box has no border or ring of its own (the box draws them), so it is not a second box.
+    assert.match(css, /\.pos-form--reference \.pos-customer \.erp-picker__trigger \{[^}]*border:0;[^}]*background:transparent;[^}]*box-shadow:none;/);
+    assert.match(css, /\.pos-customer \.erp-picker__trigger:is\(:hover, :focus-visible, \[aria-expanded="true"\]\) \{ border:0; background:transparent; box-shadow:none; \}/);
+});

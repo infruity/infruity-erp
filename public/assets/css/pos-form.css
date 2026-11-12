@@ -80,6 +80,9 @@
 .pos-form--reference .pos-customer .select2-container--bootstrap5 .select2-selection { border:0; background:transparent; }
 .pos-form--reference .pos-customer__add { width:48px; border:0; border-left:1px solid #d1d5db; border-radius:0 12px 12px 0; background:transparent; color:#0b595b; font-size:16px; padding:0; }
 .pos-form--reference .pos-customer__add:hover { background:#ecfdf5; }
+/* The wrapper above draws the border and, via :focus-within, the active ring: the picker button inside it is borderless (it used to be a second box inside the first). */
+.pos-form--reference .pos-customer .erp-picker__trigger { flex:1 1 auto; width:auto; min-width:0; border:0; border-radius:12px 0 0 12px; background:transparent; box-shadow:none; }
+.erp-ui .pos-form--reference .pos-customer .erp-picker__trigger:is(:hover, :focus-visible, [aria-expanded="true"]) { border:0; background:transparent; box-shadow:none; }
 .pos-card--list .pos-card__head { padding:18px 20px 14px; }
 .pos-card--list .pos-card__head h2 { font-size:14px; font-weight:700; }
 .pos-form--reference .pos-add { min-height:0; border-radius:6px; padding:2px 0; background:transparent; color:#0b595b; font-size:12px; font-weight:700; }

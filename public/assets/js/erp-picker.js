@@ -119,7 +119,7 @@
     function place() {
         if (!dialog || dialog.overlay.hidden || !active) return;
         var box = dialog.overlay;
-        var field = active.trigger.getBoundingClientRect();
+        var field = active.anchor.getBoundingClientRect();
         var vh = window.innerHeight;
         if (field.bottom < 0 || field.top > vh) { closeDialog(); return; } // the field scrolled out of sight
 
@@ -269,7 +269,10 @@
 
     function openDialog(select, trigger, options) {
         if (!dialog) dialog = buildDialog();
-        active = { select: select, trigger: trigger, options: options, request: 0, items: [], timer: null, page: 1, more: false, loading: false };
+        // The dropdown is as wide as the whole field. Usually that is the trigger itself; a composite field (a trigger
+        // next to an "add" button inside one bordered box) names its wrapper with options.anchor.
+        var anchor = (options.anchor && trigger.closest(options.anchor)) || trigger;
+        active = { select: select, trigger: trigger, anchor: anchor, options: options, request: 0, items: [], timer: null, page: 1, more: false, loading: false };
         dialog.overlay.setAttribute('aria-label', options.title || 'Pilih');
         dialog.search.placeholder = options.placeholder || 'Cari...';
         dialog.search.value = '';
