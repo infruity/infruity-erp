@@ -155,3 +155,61 @@ test('POS Buah, Hadiah and Jus sheets use one list-product picker and keep the s
     // Out-of-stock fruit is still stopped by the existing handler, not by hiding it.
     assert.match(js, /Stok tidak mencukupi/);
 });
+
+test('the picker is a dropdown anchored to its field, not a modal or a bottom sheet', () => {
+    const js = fs.readFileSync(asset, 'utf8');
+    const css = read('public/assets/css/erp-picker.css');
+
+    // No title bar, close button or dimmed backdrop any more; it opens and closes like a select.
+    for (const gone of ['erp-picker__backdrop', 'erp-picker__panel', 'erp-picker__head', 'erp-picker__close', 'aria-modal', 'erp-picker-open']) {
+        assert.ok(!js.includes(gone) && !css.includes(gone), `${gone} belongs to the old modal`);
+    }
+    assert.ok(!/@media[^{]*max-width[^{]*\{[^}]*erp-picker/s.test(css), 'no bottom sheet on small screens');
+    assert.match(css, /\.erp-picker \{[^}]*position:fixed/);
+
+    assert.match(js, /getBoundingClientRect/);
+    assert.match(js, /aria-expanded/);
+    assert.match(js, /addEventListener\('pointerdown', onOutside, true\)/);
+    assert.match(js, /addEventListener\('keydown', onKey, true\)/);
+    assert.match(js, /event\.key !== 'Escape'/);
+    assert.match(js, /ArrowDown/);
+    assert.match(js, /closest\('\.modal'\)/);
+    assert.ok(!js.includes('innerHTML'));
+});
+
+test('placement: as wide as the field, under it when there is room, above it when there is not, always on screen', () => {
+    const { computePlacement } = picker();
+    const field = (top, left = 40, width = 300) => ({ top, bottom: top + 44, left, width });
+
+    const below = computePlacement(field(100), 1000, 800, 200);
+    assert.equal(below.openBelow, true);
+    assert.equal(below.top, 100 + 44 + 4);
+    assert.equal(below.left, 40);
+    assert.equal(below.width, 300);
+
+    const above = computePlacement(field(700), 1000, 800, 200);
+    assert.equal(above.openBelow, false, 'only 44px left below the field');
+    assert.equal(above.top, 700 - 4 - 200, 'the box ends just above the field');
+    assert.equal(above.maxHeight, 200);
+
+    const roomy = computePlacement(field(500), 1000, 800, 320);
+    assert.equal(roomy.openBelow, true, '244px below is enough for a list that wants 320, so it stays under the field');
+    assert.equal(roomy.maxHeight, 244, 'and scrolls inside');
+
+    const tall = computePlacement(field(560), 1000, 800, 320);
+    assert.equal(tall.openBelow, false, 'only 184px below, much more above');
+    assert.equal(tall.maxHeight, 320);
+
+    const small = computePlacement(field(100, 20, 120), 1000, 800, 200);
+    assert.equal(small.width, 220, 'never narrower than 220px');
+
+    const edge = computePlacement(field(100, 900, 300), 1000, 800, 200);
+    assert.equal(edge.left + edge.width + 8, 1000, 'pulled back inside the right edge');
+
+    const phone = computePlacement(field(100, 16, 358), 390, 700, 150);
+    assert.equal(phone.width, 358);
+    assert.ok(phone.left >= 8 && phone.left + phone.width <= 390 - 8);
+
+    const cramped = computePlacement(field(100), 1000, 250, 320);
+    assert.ok(cramped.maxHeight >= 120, 'a minimum usable height even on a very short screen');
+});

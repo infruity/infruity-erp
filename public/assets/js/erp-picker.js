@@ -1,5 +1,5 @@
 /*
- * ERP picker: a searchable modal that replaces the look of a select2 dropdown.
+ * ERP picker: a searchable dropdown, opened right under (or above) its field, that replaces the look of a select2 dropdown.
  * The original <select> stays the source of truth: choosing an item writes to it and fires the
  * same select2 events the page handlers already listen to, so ids, names and handlers are untouched.
  */
@@ -58,22 +58,10 @@
     }
 
     function buildDialog() {
+        // One floating box, positioned by place(): search, list, empty message, "clear" button.
         var overlay = el('div', 'erp-picker');
         overlay.hidden = true;
         overlay.setAttribute('role', 'dialog');
-        overlay.setAttribute('aria-modal', 'true');
-        var backdrop = el('div', 'erp-picker__backdrop');
-        var panel = el('div', 'erp-picker__panel');
-        var head = el('div', 'erp-picker__head');
-        var titles = el('div', 'erp-picker__titles');
-        var title = el('h3', 'erp-picker__title');
-        var subtitle = el('p', 'erp-picker__subtitle');
-        titles.append(title, subtitle);
-        var close = el('button', 'erp-picker__close');
-        close.type = 'button';
-        close.setAttribute('aria-label', 'Tutup');
-        close.append(el('i', 'ph-bold ph-x'));
-        head.append(titles, close);
         var searchWrap = el('div', 'erp-picker__search');
         var searchIcon = el('i', 'ph ph-magnifying-glass');
         var search = el('input');
@@ -87,23 +75,99 @@
         var clear = el('button', 'erp-picker__clear', 'Hapus pilihan');
         clear.type = 'button';
         clear.hidden = true;
-        panel.append(head, searchWrap, list, empty, clear);
-        overlay.append(backdrop, panel);
+        overlay.append(searchWrap, list, empty, clear);
         document.body.append(overlay);
 
-        backdrop.addEventListener('click', closeDialog);
-        close.addEventListener('click', closeDialog);
-        overlay.addEventListener('keydown', function (event) { if (event.key === 'Escape') closeDialog(); });
-        return { overlay: overlay, title: title, subtitle: subtitle, search: search, list: list, empty: empty, clear: clear };
+        overlay.addEventListener('keydown', function (event) {
+            if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+            var rows = Array.prototype.slice.call(list.querySelectorAll('.erp-picker__item'));
+            if (!rows.length) return;
+            event.preventDefault();
+            var index = rows.indexOf(document.activeElement);
+            if (event.key === 'ArrowDown') index = index + 1 >= rows.length ? 0 : index + 1;
+            else if (index <= 0) { search.hidden || searchWrap.hidden ? rows[rows.length - 1].focus() : search.focus(); return; }
+            else index -= 1;
+            rows[index].focus();
+        });
+        return { overlay: overlay, searchWrap: searchWrap, search: search, list: list, empty: empty, clear: clear };
     }
 
-    function closeDialog() {
+    var MAX_HEIGHT = 320;
+    var GAP = 4;
+    var MARGIN = 8;
+
+    /*
+     * Where the dropdown goes for a field rectangle, a viewport and the height its content wants (pure, so it is testable):
+     * as wide as the field (at least 220px) and kept on screen; under the field when there is room, above it otherwise.
+     */
+    function computePlacement(field, vw, vh, natural) {
+        var width = Math.min(Math.max(field.width, 220), vw - MARGIN * 2);
+        var below = vh - field.bottom - GAP - MARGIN;
+        var above = field.top - GAP - MARGIN;
+        var openBelow = below >= Math.min(natural, 220) || below >= above;
+        var height = Math.max(120, Math.min(natural, openBelow ? below : above));
+        var boxHeight = Math.min(natural, height);
+        return {
+            width: width,
+            left: Math.min(Math.max(field.left, MARGIN), vw - width - MARGIN),
+            top: openBelow ? field.bottom + GAP : field.top - GAP - boxHeight,
+            maxHeight: height,
+            openBelow: openBelow
+        };
+    }
+
+    function place() {
+        if (!dialog || dialog.overlay.hidden || !active) return;
+        var box = dialog.overlay;
+        var field = active.trigger.getBoundingClientRect();
+        var vh = window.innerHeight;
+        if (field.bottom < 0 || field.top > vh) { closeDialog(); return; } // the field scrolled out of sight
+
+        box.style.maxHeight = 'none';
+        box.style.top = '0px';
+        box.style.left = '0px';
+        // position:fixed is measured from a transformed ancestor (sheets, drawers) instead of the viewport: find that origin.
+        var origin = box.getBoundingClientRect();
+        var spot = computePlacement(field, document.documentElement.clientWidth, vh, Math.min(box.scrollHeight, MAX_HEIGHT));
+        box.style.width = spot.width + 'px';
+        box.style.maxHeight = spot.maxHeight + 'px';
+        box.style.left = (spot.left - origin.left) + 'px';
+        box.style.top = (spot.top - origin.top) + 'px';
+        box.classList.toggle('is-above', !spot.openBelow);
+    }
+
+    function onOutside(event) {
+        if (!active || dialog.overlay.contains(event.target) || active.trigger.contains(event.target)) return;
+        closeDialog(false);
+    }
+
+    // Escape closes the dropdown only, not the sheet or modal the field sits in; leaving it with Tab closes it too.
+    function onKey(event) {
+        if (event.key !== 'Escape' || !active) return;
+        event.stopPropagation();
+        event.preventDefault();
+        closeDialog();
+    }
+
+    function onScroll(event) {
+        if (dialog && dialog.overlay.contains(event.target)) return; // scrolling the list itself
+        place();
+    }
+
+    function closeDialog(returnFocus) {
         if (!dialog || dialog.overlay.hidden) return;
         dialog.overlay.hidden = true;
-        document.documentElement.classList.remove('erp-picker-open');
+        document.removeEventListener('pointerdown', onOutside, true);
+        document.removeEventListener('focusin', onOutside, true);
+        document.removeEventListener('keydown', onKey, true);
+        window.removeEventListener('resize', place);
+        window.removeEventListener('scroll', onScroll, true);
         var trigger = active && active.trigger;
         active = null;
-        if (trigger) trigger.focus();
+        if (trigger) {
+            trigger.setAttribute('aria-expanded', 'false');
+            if (returnFocus !== false) trigger.focus();
+        }
     }
 
     function fire(select, type, data) {
@@ -154,6 +218,7 @@
             dialog.list.append(row);
         });
         dialog.empty.hidden = dialog.list.childElementCount > 0;
+        place();
     }
 
     function load(term, page) {
@@ -165,6 +230,8 @@
             active.page = 1;
             active.more = false;
             active.items = optionItems(active.select);
+            // A short fixed list needs no search box (and no on-screen keyboard on a phone).
+            dialog.searchWrap.hidden = active.items.length <= 7;
             renderList(filterItems(active.items, term), false);
             return Promise.resolve();
         }
@@ -203,19 +270,24 @@
     function openDialog(select, trigger, options) {
         if (!dialog) dialog = buildDialog();
         active = { select: select, trigger: trigger, options: options, request: 0, items: [], timer: null, page: 1, more: false, loading: false };
-        dialog.title.textContent = options.title || 'Pilih';
-        dialog.subtitle.textContent = options.subtitle || '';
-        dialog.subtitle.hidden = !options.subtitle;
+        dialog.overlay.setAttribute('aria-label', options.title || 'Pilih');
         dialog.search.placeholder = options.placeholder || 'Cari...';
         dialog.search.value = '';
+        dialog.searchWrap.hidden = false;
         dialog.empty.textContent = options.emptyText || 'Data tidak ditemukan';
         dialog.empty.hidden = true;
         dialog.clear.hidden = !(options.clearable && select.value !== '');
-        // Bootstrap traps focus inside the open modal, so the overlay lives inside it when the select does.
+        // Bootstrap traps focus inside the open modal, so the box lives inside it when the select does.
         var host = select.closest('.modal') || document.body;
         if (dialog.overlay.parentNode !== host) host.append(dialog.overlay);
         dialog.overlay.hidden = false;
-        document.documentElement.classList.add('erp-picker-open');
+        trigger.setAttribute('aria-expanded', 'true');
+        place();
+        document.addEventListener('pointerdown', onOutside, true);
+        document.addEventListener('focusin', onOutside, true);
+        document.addEventListener('keydown', onKey, true);
+        window.addEventListener('resize', place);
+        window.addEventListener('scroll', onScroll, true);
 
         dialog.search.oninput = function () {
             clearTimeout(active.timer);
@@ -233,7 +305,9 @@
             if (dialog.list.scrollTop + dialog.list.clientHeight >= dialog.list.scrollHeight - 40) load(dialog.search.value, active.page + 1);
         };
         load('', 1);
-        dialog.search.focus();
+        // Typing is the point on a desktop; on a phone it would only raise the keyboard over the list.
+        var fine = !window.matchMedia || window.matchMedia('(pointer: fine)').matches;
+        if (!dialog.searchWrap.hidden && fine) dialog.search.focus();
     }
 
     function attach(selector, options) {
@@ -244,6 +318,8 @@
 
         var trigger = el('button', 'erp-picker__trigger');
         trigger.type = 'button';
+        trigger.setAttribute('aria-haspopup', 'listbox');
+        trigger.setAttribute('aria-expanded', 'false');
         var label = el('span', 'erp-picker__label');
         trigger.append(label, el('i', 'ph-bold ph-caret-down'));
         select.insertAdjacentElement('afterend', trigger);
@@ -256,10 +332,14 @@
         };
         select.addEventListener('change', sync);
         if (window.jQuery) window.jQuery(select).on('change', sync);
-        trigger.addEventListener('click', function () { if (!select.disabled) openDialog(select, trigger, options); });
+        trigger.addEventListener('click', function () {
+            if (select.disabled) return;
+            if (active && active.trigger === trigger) { closeDialog(); return; } // a second click closes it
+            openDialog(select, trigger, options);
+        });
         sync();
         return { sync: sync };
     }
 
-    return { normalizeItems: normalizeItems, filterItems: filterItems, optionItems: optionItems, selectedLabel: selectedLabel, attach: attach };
+    return { normalizeItems: normalizeItems, filterItems: filterItems, optionItems: optionItems, selectedLabel: selectedLabel, computePlacement: computePlacement, attach: attach };
 });

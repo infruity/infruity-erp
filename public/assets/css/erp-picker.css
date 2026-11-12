@@ -1,4 +1,4 @@
-/* ERP picker: searchable modal that replaces the look of a select2 dropdown (see erp-picker.js). */
+/* ERP picker: searchable dropdown opened under (or above) its field, replaces the look of a select2 dropdown (see erp-picker.js). */
 .erp-picker-source,
 .erp-picker-source ~ .select2-container { display:none !important; }
 
@@ -10,36 +10,29 @@
 .erp-picker__label { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .erp-picker__label.is-placeholder { color:#9ca3af; font-weight:500; }
 
-html.erp-picker-open { overflow:hidden; }
-.erp-picker { position:fixed; inset:0; z-index:1300; display:flex; align-items:center; justify-content:center; padding:16px; }
+.erp-picker__trigger[aria-expanded="true"] { border-color:var(--erp-primary,#0b595b); box-shadow:0 0 0 3px rgba(11,89,91,.1); }
+.erp-picker__trigger[aria-expanded="true"] i { transform:rotate(180deg); }
+.erp-picker__trigger i { transition:transform .15s; }
+
+/* The dropdown: position, width and max-height are set by place() in erp-picker.js. */
+.erp-picker { position:fixed; z-index:1300; display:flex; min-width:220px; flex-direction:column; overflow:hidden; border:1px solid #f3f4f6; border-radius:16px; background:#fff; box-shadow:0 20px 40px -12px rgba(15,23,42,.28), 0 0 0 1px rgba(15,23,42,.04); }
 .erp-picker[hidden] { display:none; }
-.erp-picker__backdrop { position:absolute; inset:0; background:rgba(17,24,39,.6); backdrop-filter:blur(2px); }
-.erp-picker__panel { position:relative; display:flex; width:100%; max-width:448px; max-height:85vh; flex-direction:column; overflow:hidden; border:1px solid #f3f4f6; border-radius:24px; background:#fff; box-shadow:0 25px 50px -12px rgba(0,0,0,.25); }
-.erp-picker__head { display:flex; flex:none; align-items:center; justify-content:space-between; gap:12px; padding:20px; border-bottom:1px solid #f3f4f6; }
-.erp-picker__title { margin:0; color:#111827; font-size:15px; font-weight:800; }
-.erp-picker__subtitle { margin:2px 0 0; color:#9ca3af; font-size:12px; }
-.erp-picker__close { display:grid; width:32px; height:32px; flex:none; place-items:center; border:0; border-radius:50%; background:#f3f4f6; color:#6b7280; }
-.erp-picker__close:hover { background:#e5e7eb; }
-.erp-picker__search { position:relative; flex:none; padding:14px 16px; border-bottom:1px solid #f3f4f6; background:rgba(249,250,251,.6); }
-.erp-picker__search i { position:absolute; top:50%; left:30px; transform:translateY(-50%); color:#9ca3af; font-size:15px; pointer-events:none; }
-.erp-picker__search input { width:100%; height:40px; padding:0 14px 0 36px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:#111827; font-size:13px; outline:0; }
+.erp-picker__search { position:relative; flex:none; padding:10px; border-bottom:1px solid #f3f4f6; }
+.erp-picker__search[hidden] { display:none; }
+.erp-picker__search i { position:absolute; top:50%; left:22px; transform:translateY(-50%); color:#9ca3af; font-size:15px; pointer-events:none; }
+.erp-picker__search input { width:100%; height:38px; padding:0 12px 0 34px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; color:#111827; font-size:13px; outline:0; }
 .erp-picker__search input:focus { border-color:var(--erp-primary,#0b595b); box-shadow:0 0 0 1px var(--erp-primary,#0b595b); }
-.erp-picker__list { flex:1; margin:0; padding:8px; overflow-y:auto; overscroll-behavior:contain; list-style:none; }
-.erp-picker__item { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px; border-radius:12px; cursor:pointer; }
+.erp-picker__list { flex:1 1 auto; min-height:0; margin:0; padding:6px; overflow-y:auto; overscroll-behavior:contain; list-style:none; }
+.erp-picker__item { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; border-radius:10px; cursor:pointer; }
 .erp-picker__item:hover, .erp-picker__item:focus-visible { background:rgba(236,253,245,.7); outline:0; }
 .erp-picker__item.is-selected { background:#ecfdf5; color:var(--erp-primary,#0b595b); }
-.erp-picker__item + .erp-picker__item { border-top:1px solid #f9fafb; }
+.erp-picker__item + .erp-picker__item { margin-top:2px; }
 .erp-picker__text { display:flex; min-width:0; flex-direction:column; }
 .erp-picker__text strong { color:#111827; font-size:13px; font-weight:700; overflow-wrap:anywhere; }
 .erp-picker__text span { margin-top:2px; color:#9ca3af; font-size:11px; }
 .erp-picker__item > i { flex:none; color:#059669; font-size:16px; }
-.erp-picker__empty { margin:0; padding:48px 16px; color:#9ca3af; text-align:center; font-size:13px; }
+.erp-picker__empty { margin:0; padding:28px 16px; color:#9ca3af; text-align:center; font-size:13px; }
 .erp-picker__empty[hidden] { display:none; }
-.erp-picker__clear { flex:none; margin:0; padding:14px; border:0; border-top:1px solid #f3f4f6; background:#fff; color:#b91c1c; font-size:13px; font-weight:700; }
+.erp-picker__clear { flex:none; margin:0; padding:12px; border:0; border-top:1px solid #f3f4f6; background:#fff; color:#b91c1c; font-size:13px; font-weight:700; }
 .erp-picker__clear[hidden] { display:none; }
 .erp-picker.is-loading .erp-picker__list { opacity:.55; }
-
-@media (max-width:640px) {
-    .erp-picker { align-items:flex-end; padding:0; }
-    .erp-picker__panel { max-width:none; max-height:88vh; border-radius:24px 24px 0 0; }
-}
