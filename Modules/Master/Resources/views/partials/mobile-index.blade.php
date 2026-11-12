@@ -13,7 +13,7 @@
 @if ($routeBase === 'customers')
     @include('master::customer.js-create')
 @endif
-<div x-data="masterList(@js($visibleRecords), @js($formFields), @js($routeBase), @js($nameField), @js($subtitleFields), @js($pageTitle), @js($pageMode ?? 'ajax'), @js(request('q', '')), @js(in_array($routeBase, ['supplier', 'branch'], true) ? ['province' => route('ajax.province'), 'city' => route('ajax.city'), 'district' => route('ajax.district'), 'village' => route('ajax.village')] : []), @js($routeBase === 'customers' ? ($customerCreateOpen ?? false) : false), @js($routeBase === 'customers' ? route('customers.index') : ''), @js($routeBase === 'customers' ? route('customers.create') : ''), @js($routeBase === 'customers' && isset($editingCustomer)), @js($routeBase === 'customers' && isset($editingCustomer) ? route('customers.edit', $editingCustomer->id) : ''))"
+<div x-data="masterList(@js($visibleRecords), @js($formFields), @js($routeBase), @js($nameField), @js($subtitleFields), @js($pageTitle), @js($pageMode ?? 'ajax'), @js(request('q', '')), @js(in_array($routeBase, ['supplier', 'branch'], true) ? ['province' => route('ajax.province'), 'city' => route('ajax.city'), 'district' => route('ajax.district'), 'village' => route('ajax.village')] : []), @js($routeBase === 'customers' ? ($customerCreateOpen ?? false) : false), @js($routeBase === 'customers' ? route('customers.index') : ''), @js($routeBase === 'customers' ? route('customers.create') : ''), @js($routeBase === 'customers' && isset($editingCustomer)), @js($routeBase === 'customers' && isset($editingCustomer) ? route('customers.edit', $editingCustomer->id) : ''), @js(($pageMode ?? 'ajax') === 'server' && $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator ? ['total' => $records->total(), 'nextPage' => $records->hasMorePages() ? $records->currentPage() + 1 : null] : null))"
      x-init="if (new URLSearchParams(location.search).has('create')) openCreate()"
      x-effect="search; visibleCount = 50"
      @mobile-add-toggle.window="openCreate()"
@@ -38,7 +38,7 @@
         </div>
         <div class="hidden md:flex px-4 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-400 font-medium">
             @if (($pageMode ?? 'ajax') === 'server' && $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
-                Menampilkan <strong class="mx-1 text-gray-700">{{ $records->firstItem() }}–{{ $records->lastItem() }}</strong> dari <strong class="mx-1 text-gray-700">{{ $records->total() }}</strong> {{ strtolower($pageTitle) }}
+                Menampilkan <strong class="mx-1 text-gray-700" x-text="records.length"></strong> dari <strong class="mx-1 text-gray-700" x-text="total"></strong> {{ strtolower($pageTitle) }}
             @else
                 Menampilkan <strong class="mx-1 text-gray-700" x-text="Math.min(visibleCount, filtered.length)"></strong> dari <strong class="mx-1 text-gray-700" x-text="filtered.length"></strong> {{ strtolower($pageTitle) }}
             @endif
@@ -46,7 +46,7 @@
         <div x-show="scrolled" x-cloak class="md:hidden absolute top-2 left-0 right-0 z-20 flex justify-center pointer-events-none">
             <span class="bg-white/95 backdrop-blur-md border border-gray-200 rounded-full px-4 py-1.5 shadow-lg text-[11px] text-gray-700 font-medium">
                 @if (($pageMode ?? 'ajax') === 'server' && $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
-                    Menampilkan <strong>{{ $records->firstItem() }}–{{ $records->lastItem() }}</strong> dari <strong>{{ $records->total() }}</strong> {{ strtolower($pageTitle) }}
+                    Menampilkan <strong x-text="records.length"></strong> dari <strong x-text="total"></strong> {{ strtolower($pageTitle) }}
                 @else
                     Menampilkan <strong x-text="Math.min(visibleCount, filtered.length)"></strong> dari <strong x-text="filtered.length"></strong> {{ strtolower($pageTitle) }}
                 @endif
@@ -65,35 +65,10 @@
                 </div>
             </template>
             <div x-show="filtered.length === 0" class="py-12 text-center"><div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3"><i class="ph ph-magnifying-glass text-gray-400 text-xl"></i></div><p class="text-sm text-gray-500 font-medium">{{ $pageTitle }} tidak ditemukan</p><p class="text-xs text-gray-400 mt-1">Coba ubah pencarian</p></div>
-            <div x-show="visibleCount < filtered.length" class="px-5 py-4"><x-erp.load-more @click="visibleCount += 50">Muat <span x-text="Math.min(50, filtered.length - visibleCount)"></span> {{ $pageTitle }} Lagi</x-erp.load-more></div>
-            @if ($records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator && $records->hasPages())
-                <div class="md:hidden flex items-center justify-between gap-3 border-t border-gray-100 bg-white px-4 py-3">
-                    <p class="min-w-0 text-xs text-gray-500" aria-live="polite">
-                        <span class="font-semibold text-gray-700">{{ $records->firstItem() }}–{{ $records->lastItem() }}</span>
-                        <span> dari {{ $records->total() }} {{ strtolower($pageTitle) }}</span>
-                    </p>
-                    <nav class="flex shrink-0 items-center gap-2" aria-label="Navigasi halaman {{ strtolower($pageTitle) }}">
-                        @if ($records->previousPageUrl())
-                            <a href="{{ $records->previousPageUrl() }}" rel="prev" aria-label="Halaman sebelumnya" class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 text-xs font-semibold text-[#0b595b] transition-colors hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b595b]">
-                                <i class="ph-bold ph-caret-left text-sm" aria-hidden="true"></i><span>Kembali</span>
-                            </a>
-                        @else
-                            <span aria-disabled="true" aria-label="Tidak ada halaman sebelumnya" class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-gray-100 bg-gray-50 px-3 text-xs font-semibold text-gray-300">
-                                <i class="ph-bold ph-caret-left text-sm" aria-hidden="true"></i><span>Kembali</span>
-                            </span>
-                        @endif
-                        @if ($records->nextPageUrl())
-                            <a href="{{ $records->nextPageUrl() }}" rel="next" aria-label="Halaman berikutnya" class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#0b595b] px-3 text-xs font-semibold text-white transition-colors hover:bg-[#0a4e50] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b595b]">
-                                <span>Selanjutnya</span><i class="ph-bold ph-caret-right text-sm" aria-hidden="true"></i>
-                            </a>
-                        @else
-                            <span aria-disabled="true" aria-label="Tidak ada halaman berikutnya" class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-gray-100 bg-gray-50 px-3 text-xs font-semibold text-gray-300">
-                                <span>Selanjutnya</span><i class="ph-bold ph-caret-right text-sm" aria-hidden="true"></i>
-                            </span>
-                        @endif
-                    </nav>
-                </div>
-                <div class="hidden border-t border-gray-100 px-5 py-5 md:block">{{ $records->links() }}</div>
+            @if (($pageMode ?? 'ajax') === 'server' && $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
+                <div x-show="nextPage" x-cloak class="px-5 py-4"><x-erp.load-more @click="loadMore()" loading="loadingMore">Muat {{ $pageTitle }} Lagi</x-erp.load-more></div>
+            @else
+                <div x-show="visibleCount < filtered.length" class="px-5 py-4"><x-erp.load-more @click="visibleCount += 50">Muat <span x-text="Math.min(50, filtered.length - visibleCount)"></span> {{ $pageTitle }} Lagi</x-erp.load-more></div>
             @endif
         </div>
     </div>
@@ -211,10 +186,11 @@
 
 @push('scripts')
 <script>
-function masterList(records, fields, routeBase, nameKey, subtitleFields, title, mode, initialSearch = '', regionEndpoints = {}, initialCreateOpen = false, createIndexUrl = '', createPageUrl = '', initialEditOpen = false, initialEditUrl = '') {
+function masterList(records, fields, routeBase, nameKey, subtitleFields, title, mode, initialSearch = '', regionEndpoints = {}, initialCreateOpen = false, createIndexUrl = '', createPageUrl = '', initialEditOpen = false, initialEditUrl = '', pagination = null) {
     return {
         records, fields, routeBase, nameKey, subtitleFields, title, mode, regionEndpoints, createIndexUrl, createPageUrl,
         search: initialSearch, visibleCount: 50, scrolled: false, scrollTimer: null,
+        total: pagination?.total ?? records.length, nextPage: pagination?.nextPage ?? null, loadingMore: false,
         drawerOpen: false, editing: null, detail: null, saving: false, error: '', form: {}, fieldPickerOpen: {}, fieldPickerSearch: {},
         customerCreateOpen: initialCreateOpen,
         createReturnUrl: initialCreateOpen ? createIndexUrl : `${window.location.pathname}${window.location.search}`,
@@ -224,7 +200,7 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
         customerEditOverlayHtml: '', customerEditLoading: false, customerEditRequestId: 0,
         regionNames: {}, regionSearch: {}, regionOptions: {}, regionOpen: {}, regionDirection: {}, regionLoaded: {}, regionRequestId: {},
         get filtered() { if (this.mode === 'server') return this.records; const q = this.search.trim().toLocaleLowerCase('id'); return this.records.filter(record => Object.values(record).some(value => String(value ?? '').toLocaleLowerCase('id').includes(q))); },
-        get visible() { return this.filtered.slice(0, this.visibleCount); },
+        get visible() { return this.mode === 'server' ? this.filtered : this.filtered.slice(0, this.visibleCount); },
         label(record) { return String(record[this.nameKey] || record.name || ''); },
         avatarClass(record) {
             const palette = ['bg-emerald-50 border-emerald-100 text-emerald-700', 'bg-blue-50 border-blue-100 text-blue-700', 'bg-amber-50 border-amber-100 text-amber-700', 'bg-rose-50 border-rose-100 text-rose-700', 'bg-violet-50 border-violet-100 text-violet-700'];
@@ -347,6 +323,26 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
         },
         editDetail() { const record = this.detail; this.detail = null; if (record) this.openEdit(record); },
         deleteDetail() { const record = this.detail; this.detail = null; if (record) this.confirmDelete(record); },
+        async loadMore() {
+            if (this.mode !== 'server' || !this.nextPage || this.loadingMore) return;
+            this.loadingMore = true;
+            try {
+                const params = new URLSearchParams({ page: this.nextPage });
+                const query = new URLSearchParams(window.location.search).get('q');
+                if (query) params.set('q', query);
+                const response = await fetch(`/${this.routeBase}?${params}`, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const page = await response.json();
+                const known = new Set(this.records.map(record => String(record.id)));
+                this.records = this.records.concat((page.data || []).filter(record => !known.has(String(record.id))));
+                this.total = page.total ?? this.total;
+                this.nextPage = page.next_page ?? null;
+            } catch (error) {
+                window.Swal?.fire?.('Gagal', `Data ${this.title.toLowerCase()} tidak dapat dimuat. Coba lagi.`, 'error');
+            } finally {
+                this.loadingMore = false;
+            }
+        },
         searchServer() { const query = this.search.trim(); window.location.href = query ? `/${this.routeBase}?q=${encodeURIComponent(query)}` : `/${this.routeBase}`; },
         openCreate() {
             if (this.routeBase === 'staff') {

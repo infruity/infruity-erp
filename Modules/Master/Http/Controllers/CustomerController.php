@@ -55,6 +55,15 @@ class CustomerController extends Controller
             ->paginate(50)
             ->withQueryString();
 
+        // "Muat Pelanggan Lagi" asks for the next page as JSON and appends it to the list.
+        if ($request->expectsJson()) {
+            return response()->json([
+                'data' => $records->items(),
+                'total' => $records->total(),
+                'next_page' => $records->hasMorePages() ? $records->currentPage() + 1 : null,
+            ]);
+        }
+
         $birthPlaces = DB::table('reg_regencies')->orderBy('name')->pluck('name')->all();
 
         return view('master::customer.index', compact('records', 'birthPlaces'));
