@@ -33,6 +33,7 @@
             <file>./tests/Feature/LegacyImportTest.php</file>
             <file>./tests/Feature/ProductHppFractionTest.php</file>
             <file>./tests/Feature/CrmDashboardExpenseTest.php</file>
+            <file>./tests/Feature/LoginThrottleTest.php</file>
             <file>./tests/Feature/StockOpnameBehaviorTest.php</file>
         </testsuite>
     </testsuites>
