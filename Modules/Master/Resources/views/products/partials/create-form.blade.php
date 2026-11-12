@@ -36,9 +36,10 @@
     @csrf
 
     <div class="product-create-content">
-        <div class="flex flex-col items-center gap-2">
+        <div class="flex flex-col items-center gap-3">
             <label for="product-avatar" class="group flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-white text-gray-300 transition hover:border-emerald-300 hover:bg-emerald-50/30">
                 <img id="product-image-preview" @if(isset($data) && $data->image) src="{{ asset('storage/' . $data->image) }}" @endif alt="Pratinjau foto produk" class="{{ isset($data) && $data->image ? '' : 'hidden' }} h-full w-full object-cover">
+                <span id="product-image-emoji" class="hidden text-3xl leading-normal text-gray-800" aria-hidden="true"></span>
                 <i id="product-image-placeholder" class="ph ph-image text-2xl {{ isset($data) && $data->image ? 'hidden' : '' }}"></i>
             </label>
             <input id="product-avatar" type="file" name="avatar" accept="image/png,image/jpeg,image/jpg" class="sr-only">
@@ -60,7 +61,7 @@
                     <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
                     <input type="search" data-product-type-search placeholder="Cari tipe produk..." class="w-full bg-transparent py-3 pl-9 pr-4 text-sm outline-none" aria-label="Cari tipe produk atau kategori">
                 </div>
-                <div id="product-type-options" class="max-h-44 overflow-y-auto overscroll-contain scrollbar-hide">
+                <div id="product-type-options" class="max-h-48 overflow-y-auto overscroll-contain scrollbar-hide">
                     @foreach ($productTypeOptions as $option)
                         <button type="button" data-product-type-option data-category-value="{{ $option->category_id }}" data-category-label="{{ $option->name }}" data-product-tipe="{{ $option->tipe }}" data-product-status="{{ $option->status }}" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left last:border-0 hover:bg-gray-50">
                             <span class="product-picker-radio flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300"><span class="h-2 w-2 scale-0 rounded-full bg-emerald-500"></span></span>

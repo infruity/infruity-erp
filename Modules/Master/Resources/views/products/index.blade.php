@@ -572,6 +572,23 @@
             }
         }
 
+        /** The product's own icon (emoji on a tint) in the photo slot, like the reference. icon: { emoji, tint } or null to remove it. */
+        window.setProductAvatarEmoji = function (form, icon) {
+            const slot = form.querySelector('label[for="product-avatar"]');
+            const emoji = form.querySelector('#product-image-emoji');
+            if (!slot || !emoji) return;
+            if (slot.dataset.tint) slot.classList.remove(slot.dataset.tint);
+            delete slot.dataset.tint;
+            emoji.classList.toggle('hidden', !icon);
+            emoji.textContent = icon ? icon.emoji : '';
+            slot.classList.toggle('bg-white', !icon);
+            if (icon) {
+                slot.classList.add(icon.tint);
+                slot.dataset.tint = icon.tint;
+                form.querySelector('#product-image-placeholder')?.classList.add('hidden');
+            }
+        };
+
         function resetProductDrawer() {
             const form = document.getElementById('add_product_form');
             if (!form) return;
@@ -594,6 +611,7 @@
             form.querySelector('#product-image-preview').removeAttribute('src');
             form.querySelector('#product-image-preview').classList.add('hidden');
             form.querySelector('#product-image-placeholder').classList.remove('hidden');
+            window.setProductAvatarEmoji(form, null);
             form.querySelectorAll('[data-picker-option], [data-product-type-option]').forEach(option => {
                 option.classList.remove('bg-emerald-50/60');
                 option.querySelector('.product-picker-radio')?.classList.remove('!border-emerald-500');
@@ -633,6 +651,7 @@
             typeOption?.click();
             setValue('#product-unit', product.unitId);
             form.querySelector(`[data-picker-select="product-unit"][data-picker-value="${product.unitId}"]`)?.click();
+            if (!product.imageUrl && product.icon) window.setProductAvatarEmoji(form, { emoji: product.icon, tint: product.iconClass });
             if (product.imageUrl) {
                 const preview = form.querySelector('#product-image-preview');
                 preview.src = product.imageUrl;

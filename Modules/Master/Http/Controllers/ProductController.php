@@ -538,6 +538,8 @@ class ProductController extends Controller
                 'limit' => $product->limit,
                 'handling' => $product->handling,
                 'imageUrl' => $product->image ? asset('storage/' . $product->image) : null,
+                'icon' => ProductIcon::resolve($product)[0],
+                'iconClass' => ProductIcon::resolve($product)[1],
                 'variants' => $product->childProducts->map(fn ($child) => [
                     'id' => $child->product?->id,
                     'name' => $child->product?->name,

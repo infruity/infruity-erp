@@ -463,6 +463,7 @@
                 preview.src = objectUrl || '';
                 preview.classList.toggle('hidden', !file);
                 form.querySelector('#product-image-placeholder')?.classList.toggle('hidden', !!file);
+                if (file) window.setProductAvatarEmoji?.(form, null);
             });
 
             if (typeof bindFormatNumber === 'function') bindFormatNumber();

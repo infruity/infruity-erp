@@ -123,6 +123,8 @@ class ProductVariantBranchPricesTest extends TestCase
 
         $json = $this->getJson('/products/' . $parent->id . '/edit?branch_id=' . $this->branchA)->assertOk()->json();
 
+        $this->assertNotEmpty($json['icon']);
+        $this->assertStringStartsWith('bg-', $json['iconClass']);
         $this->assertSame('Grade A', $json['variants'][0]['name']);
         $prices = collect($json['variants'][0]['branchPrices'])->mapWithKeys(fn ($row) => [$row['branchId'] => (int) $row['price']])->all();
         $this->assertSame([$this->branchA => 1000, $this->branchB => 2000], $prices);

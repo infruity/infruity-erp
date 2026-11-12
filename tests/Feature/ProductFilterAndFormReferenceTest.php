@@ -61,4 +61,16 @@ class ProductFilterAndFormReferenceTest extends TestCase
         $this->assertStringContainsString("['Bahan Baku', 'Perlu Resep', 'Produk Olahan', 'Kemasan', 'Jasa / Layanan']", $controller);
         $this->assertStringContainsString("\$data['productTypeOptions'] = \$this->referenceTypeOptions();\n        \$data['tipe']", $controller);
     }
+
+    public function test_edit_drawer_uses_the_same_layout_as_add_and_shows_the_product_icon(): void
+    {
+        $form = $this->source('Modules/Master/Resources/views/products/partials/create-form.blade.php');
+        $view = $this->source('Modules/Master/Resources/views/products/index.blade.php');
+
+        $this->assertStringContainsString('<div class="flex flex-col items-center gap-3">', $form, 'photo block gap as in the reference');
+        $this->assertStringContainsString('id="product-type-options" class="max-h-48', $form, 'type list 192px high');
+        $this->assertStringContainsString('id="product-image-emoji"', $form);
+        $this->assertStringContainsString('window.setProductAvatarEmoji = function', $view);
+        $this->assertStringContainsString("product.icon, tint: product.iconClass", str_replace(['{ emoji: ', ' }'], ['', ''], $view));
+    }
 }
