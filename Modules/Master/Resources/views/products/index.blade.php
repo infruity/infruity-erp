@@ -9,14 +9,15 @@
     <span>Produk</span>
 @endsection
 
-@section('extra-style')
+@push('styles')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-    <style>
-        .product-create-overlay #add_product_form { flex-direction: column !important; padding: 0 !important; }
-        .product-create-overlay #add_product_form > div:first-child { width: 100% !important; margin: 0 !important; }
-        .product-create-overlay #add_product_form > div:last-child { width: 100% !important; }
-        .product-create-overlay #add_product_form .product-form-actions { display: none !important; }
-    </style>
+@endpush
+
+@section('extra-style')
+    .product-create-overlay #add_product_form { flex-direction: column !important; padding: 0 !important; }
+    .product-create-overlay #add_product_form > div:first-child { width: 100% !important; margin: 0 !important; }
+    .product-create-overlay #add_product_form > div:last-child { width: 100% !important; }
+    .product-create-overlay #add_product_form .product-form-actions { display: none !important; }
 @endsection
 
 @section('content')
@@ -667,12 +668,12 @@
                     .append($('<option selected>').val(variant.id).text(variant.name));
                 $row.append($('<td>').append($select));
                 $row.append($('<td>').append($('<input type="text" name="variant[price][]" class="form-control format-number mb-2">').val(variant.price ?? 0)));
-                $row.append($('<td>').append('<button type="button" class="product-remove-row remove_variant" aria-label="Hapus varian"><i class="ph ph-x"></i></button>'));
+                $row.append($('<td>').append('<button type="button" class="product-remove-row remove_variant" aria-label="Hapus varian"><i class="ph-bold ph-trash"></i></button>'));
                 $body.append($row);
             }
             if ($body.children().length) {
                 $body.find('.select2_product').select2({
-                    placeholder: 'Ketik nama produk', tags: true,
+                    placeholder: 'misal: Grade A', tags: true,
                     ajax: {
                         url: @js(route('ajax.getProduct')),
                         dataType: 'json', delay: 250,

@@ -37,4 +37,17 @@ class ProductFilterAndFormReferenceTest extends TestCase
         $this->assertStringContainsString('<span class="text-gray-300">(Opsional)</span>', $form);
         $this->assertStringContainsString('line-height: 1rem; font-weight: 600;', $form, 'label 16px high');
     }
+
+    public function test_extra_backend_fields_are_hidden_and_variants_are_cards(): void
+    {
+        $form = $this->source('Modules/Master/Resources/views/products/partials/create-form.blade.php');
+        $view = $this->source('Modules/Master/Resources/views/products/index.blade.php');
+
+        foreach (['product-sku', 'product-barcode', 'product-limit', 'product-handling'] as $id) {
+            $this->assertStringContainsString('<div class="hidden">'."\n".'                <label for="'.$id.'"', $form, $id.' hidden but still submitted');
+        }
+        $this->assertStringContainsString('Belum ada varian. Klik "Tambah Varian".', $form, 'empty state');
+        $this->assertStringContainsString("td:nth-child(1)::before { content: 'Nama Varian'", $form);
+        $this->assertStringContainsString("@push('styles')", $view, 'select2 css is a real <link>, not inside <style>');
+    }
 }

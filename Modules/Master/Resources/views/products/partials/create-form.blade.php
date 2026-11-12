@@ -18,6 +18,26 @@
     #add_product_form .product-remove-row { display: inline-flex; width: 38px; height: 38px; flex: 0 0 38px; align-items: center; justify-content: center; border-radius: .75rem; background: #fef2f2; color: #ef4444; }
     #add_product_form .product-add-row { display: inline-flex; align-items: center; gap: .375rem; color: #047857; font-size: .75rem; font-weight: 600; }
     #add_product_form #variant_table, #add_product_form #branch_table { width: 100%; font-size: .8125rem; }
+    /* Variant rows look like the reference's variant cards (the table markup is kept: the scripts add/remove <tr>) */
+    #add_product_form #variant_table, #add_product_form #variant_table tbody, #add_product_form #variant_table tr, #add_product_form #variant_table td { display: block; width: 100%; }
+    #add_product_form #product-variants:not(.hidden) { display: flex; }
+    #add_product_form #variant_table thead { display: none; }
+    #add_product_form #variant_table tbody { display: flex; flex-direction: column; gap: .75rem; }
+    #add_product_form #variant_table tbody:empty::after { content: 'Belum ada varian. Klik "Tambah Varian".'; display: block; padding: .75rem 0; text-align: center; font-size: .75rem; color: #9ca3af; }
+    #add_product_form #variant_table tbody tr { position: relative; display: flex; flex-direction: column; gap: .75rem; padding: 1rem; background: #fff; border: 1px solid #e5e7eb; border-radius: .75rem; box-shadow: 0 1px 2px rgb(0 0 0 / .05); }
+    #add_product_form #variant_table tbody td { position: relative; padding: 0; border: 0; }
+    #add_product_form #variant_table tbody td:nth-child(1)::before { content: 'Nama Varian'; display: block; margin-bottom: .25rem; font-size: 11px; font-weight: 600; color: #6b7280; }
+    #add_product_form #variant_table tbody td:nth-child(2)::before { content: 'Harga Varian'; display: block; margin-bottom: .25rem; font-size: 11px; font-weight: 600; color: #6b7280; }
+    #add_product_form #variant_table tbody td:nth-child(2)::after { content: 'Rp'; position: absolute; left: .5rem; bottom: 0; height: 2rem; line-height: 2rem; font-size: 10px; font-weight: 500; color: #9ca3af; pointer-events: none; }
+    #add_product_form #variant_table tbody td:nth-child(2) input { height: 2rem; min-height: 2rem; margin: 0 !important; padding: 0 .5rem 0 1.5rem; border-radius: .375rem; font-size: .75rem; font-weight: 600; text-align: right; background: #fff; }
+    #add_product_form #variant_table tbody td:nth-child(1) .select2-container--default .select2-selection--single { height: 2.5rem; border-radius: .5rem; background: #f9fafb; }
+    #add_product_form #variant_table tbody td:nth-child(1) .select2-container--default .select2-selection--single .select2-selection__rendered { padding: 5px 12px; line-height: 28px; font-size: .875rem; }
+    #add_product_form #variant_table tbody td:nth-child(1) .select2-container--default .select2-selection--single .select2-selection__arrow { top: 6px; }
+    #add_product_form #variant_table tbody td:nth-child(3) { position: absolute; top: .75rem; right: .75rem; width: auto; }
+    #add_product_form #variant_table .remove_variant { display: inline-flex; width: auto; height: auto; flex: none; padding: 0; background: transparent; color: #f87171; border: 0; }
+    #add_product_form #variant_table .remove_variant:hover { color: #dc2626; }
+    #add_product_form #variant_table .remove_variant i { font-size: .875rem; }
+
     #add_product_form #variant_table th, #add_product_form #branch_table th { padding: .5rem; border-bottom: 1px solid #f3f4f6; color: #9ca3af; font-size: .6875rem; font-weight: 600; text-align: left; }
     #add_product_form #variant_table td, #add_product_form #branch_table td { padding: .5rem; border-bottom: 1px solid #f9fafb; vertical-align: middle; }
     #add_product_form .select2-container { width: 100% !important; }
@@ -201,15 +221,12 @@
             </template>
         </section>
 
-        <section id="product-variants" class="hidden rounded-xl border border-gray-200 bg-white p-3">
-            <div class="mb-2 flex items-center justify-between">
-                <h3 class="text-xs font-semibold text-gray-700">Daftar Varian <span class="text-red-400">*</span></h3>
-                <button class="product-add-row" type="button" onclick="addVariant()"><i class="ph ph-plus-circle"></i> Tambah Varian</button>
+        <section id="product-variants" class="hidden flex-col gap-3">
+            <div class="flex items-center justify-between">
+                <label class="text-xs font-semibold text-gray-600">Daftar Varian <span class="text-red-400">*</span></label>
+                <button class="flex items-center gap-1 text-xs text-emerald-700 font-semibold hover:underline" type="button" onclick="addVariant()"><i class="ph ph-plus-circle"></i> Tambah Varian</button>
             </div>
-            <div class="overflow-x-auto">
-                <table id="variant_table"><thead><tr><th>Nama Varian</th><th>Harga</th><th></th></tr></thead><tbody id="kt_ecommerce_edit_order_selected_products_body"></tbody></table>
-            </div>
-            <p class="mt-2 text-[11px] text-gray-400">Pilih produk yang sudah ada atau ketik nama varian baru.</p>
+            <table id="variant_table"><thead><tr><th>Nama Varian</th><th>Harga</th><th></th></tr></thead><tbody id="kt_ecommerce_edit_order_selected_products_body"></tbody></table>
         </section>
 
         <div class="flex flex-col gap-4">
@@ -218,19 +235,19 @@
                 <textarea id="description_input" name="description" rows="3" maxlength="1000" placeholder="Deskripsi singkat produk..." class="product-input resize-none">{{ old('description', $data->description ?? '') }}</textarea>
                 @error('description') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div>
+            <div class="hidden">
                 <label for="product-sku" class="product-field-label">SKU</label>
                 <input id="product-sku" type="text" name="sku" value="{{ old('sku', $data->sku ?? '') }}" placeholder="Nomor SKU" class="product-input">
             </div>
-            <div>
+            <div class="hidden">
                 <label for="product-barcode" class="product-field-label">Barcode</label>
                 <input id="product-barcode" type="text" name="barcode" value="{{ old('barcode', $data->barcode ?? '') }}" placeholder="Nomor barcode" class="product-input">
             </div>
-            <div>
+            <div class="hidden">
                 <label for="product-limit" class="product-field-label">Limit Stok</label>
                 <input id="product-limit" type="number" name="limit" value="{{ old('limit', $data->limit ?? '') }}" placeholder="0" min="0" class="product-input">
             </div>
-            <div>
+            <div class="hidden">
                 <label for="product-handling" class="product-field-label">Kondisi Penanganan</label>
                 <input id="product-handling" type="text" name="handling" value="{{ old('handling', $data->handling ?? '') }}" placeholder="Contoh: simpan di suhu dingin" class="product-input">
             </div>

@@ -28,18 +28,18 @@
                     <select name="variant[id][]" class="form-select mb-2 select2_product"></select>
                 </td>
                 <td>
-                    <input type="text" inputmode="numeric" name="variant[price][]" class="form-control format-number mb-2" placeholder="Harga Produk" />
+                    <input type="text" inputmode="numeric" name="variant[price][]" class="form-control format-number mb-2" placeholder="0" />
                 </td>
                 <td class="text-end">
-                    <button type="button" class="btn btn-icon btn-danger remove_variant">
-                        <i class="ki-outline ki-cross fs-2"></i>
+                    <button type="button" class="product-remove-row remove_variant" aria-label="Hapus varian">
+                        <i class="ph-bold ph-trash"></i>
                     </button>
                 </td>
             </tr>
             `;
             $('#kt_ecommerce_edit_order_selected_products_body').append(html);
             $('#kt_ecommerce_edit_order_selected_products_body .select2_product').select2({
-                placeholder: 'Ketik nama produk',
+                placeholder: 'misal: Grade A',
                 tags: true, // ini aktifkan fitur menambah item baru
                 ajax: {
                     url: "{{ route('ajax.getProduct') }}",
@@ -113,9 +113,7 @@
                         <input type="text" name="variant[price][]" class="form-control format-number mb-2" placeholder="Product price" value="${item.product.price || ''}"/>
                     </td>
                     <td class="text-end">
-                        <button type="button" class="btn btn-icon btn-danger remove_variant">
-                            <i class="ki-outline ki-cross fs-2"></i>
-                        </button>
+                        <button type="button" class="product-remove-row remove_variant" aria-label="Hapus varian"><i class="ph-bold ph-trash"></i></button>
                     </td>
                 </tr>
                 `;
@@ -148,7 +146,7 @@
                     <select name="branch[id][]" class="form-select mb-2 select2_product"></select>
                 </td>
                 <td>
-                    <input type="text" inputmode="numeric" name="branch[price][]" class="form-control format-number mb-2" placeholder="Harga Produk" />
+                    <input type="text" inputmode="numeric" name="branch[price][]" class="form-control format-number mb-2" placeholder="0" />
                 </td>
                 <td class="text-end">
                     <button type="button" class="btn btn-icon btn-danger remove_branch">
@@ -583,9 +581,7 @@
                         <button type="button" class="btn btn-icon btn-primary save_variant">
                             <i class="ki-outline ki-check fs-2"></i>
                         </button>
-                        <button type="button" class="btn btn-icon btn-danger remove_variant">
-                            <i class="ki-outline ki-cross fs-2"></i>
-                        </button>
+                        <button type="button" class="product-remove-row remove_variant" aria-label="Hapus varian"><i class="ph-bold ph-trash"></i></button>
                     </td>
                 </tr>
             `;
