@@ -61,7 +61,7 @@
         .order-book-workspace .erp-record__details { padding:0 16px 16px; }
     }
 </style>
-<x-erp.workspace class="order-book-workspace" title="Pesanan" subtitle="Kelola pesanan dan lihat rincian transaksi."
+<x-erp.workspace count-table="pos-table" count-noun="pesanan" class="order-book-workspace" title="Pesanan" subtitle="Kelola pesanan dan lihat rincian transaksi."
     x-data="orderBookFilterSheet()"
     @erp-filter-apply.window="if ($event.detail.id === 'order-book') applyFilters($event.detail.values)"
     @erp-filter-close.window="if ($event.detail.id === 'order-book') closeFilter()"><x-slot:toolbar><div class="order-book-toolbar-controls"><div class="erp-search d-none d-md-flex"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-kt-ecommerce-product-filter="search" aria-label="Cari pesanan" placeholder="Cari..."></div><x-erp.mobile-search class="order-book-mobile-search erp-mobile-search-shell--fill"><x-slot:input><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari pesanan" placeholder="Cari..." class="erp-mobile-search__input"></x-slot:input><x-slot:filter><button type="button" class="erp-mobile-search__filter order-book-filter-trigger" aria-label="Filter pesanan" aria-haspopup="dialog" aria-controls="order-book-filter-sheet" :aria-expanded="filterOpen" :class="hasActiveFilters ? 'is-active' : ''" x-ref="filterTrigger" @click="openFilter()"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label" class="order-book-filter-label">Filter</span></button></x-slot:filter></x-erp.mobile-search></div><div hidden aria-hidden="true">

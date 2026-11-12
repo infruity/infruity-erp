@@ -31,17 +31,8 @@
             @endif
         </div>
 
-        <div class="hidden md:flex px-4 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-400 font-medium">
-            Menampilkan <span class="mx-1 text-gray-700 font-semibold" x-text="Math.min(visibleCount, filtered.length)"></span> dari
-            <span class="ml-1 text-gray-700 font-semibold" x-text="filtered.length"></span> satuan
-        </div>
-
-        <div x-show="scrolled" x-cloak class="md:hidden absolute top-2 left-0 right-0 z-20 flex justify-center pointer-events-none">
-                <span class="bg-white/95 backdrop-blur-md border border-gray-200 rounded-full px-4 py-1.5 shadow-lg text-[11px] text-gray-700 font-medium">
-                    Menampilkan <strong x-text="Math.min(visibleCount, filtered.length)"></strong> dari <strong x-text="filtered.length"></strong> satuan
-                </span>
-        </div>
-        <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0" @scroll.passive="scrolled = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => scrolled = false, 600)">
+        <x-erp.list-count noun="satuan" shown="Math.min(visibleCount, filtered.length)" total="filtered.length" />
+        <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0">
             <template x-for="unit in visible" :key="unit.id">
                 <div class="border-b border-gray-100">
                     <button type="button" @click="showDetail(unit)" class="w-full flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3.5 md:py-4 hover:bg-gray-50/50 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" :aria-label="'Detail ' + unit.name">
