@@ -622,22 +622,6 @@
     @endif
 @endif
 @if (check_access('tier.index') || check_access('point-schedule.index') || check_access('campaign.index'))
-    @if (check_access('tier.index'))
-        <div class="menu-item">
-            <!--begin:Menu link-->
-            <a class="menu-link {{ Request::segment(1) == 'tier' ? 'active' : '' }}"
-                href="{{ url('tier') }}">
-                <span class="menu-icon">
-                    <i class="ki-duotone ki-basket fs-2">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                    </i>
-                </span>
-                <span class="menu-title">Loyalty Tier</span>
-            </a>
-            <!--end:Menu link-->
-        </div>
-    @endif
     @if (check_access('point-schedule.index'))
         <!--begin:Menu item-->
         <div class="menu-item">
