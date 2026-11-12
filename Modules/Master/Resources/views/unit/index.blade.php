@@ -96,12 +96,19 @@
             <template x-if="detail">
                 <div class="flex flex-col gap-5 text-sm break-words">
                     <div class="flex items-center gap-3">
-                        <i class="ph-duotone ph-ruler shrink-0 text-2xl text-emerald-600"></i>
-                        <div class="min-w-0"><div class="font-bold leading-snug text-gray-800" x-text="detail.name"></div><div class="mt-0.5 text-[11px] font-medium text-gray-400">Nama Satuan</div></div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-tag text-lg"></i></div>
+                        <div class="min-w-0"><div class="font-bold leading-snug text-gray-800" x-text="detail.name"></div><div class="text-[11px] font-medium text-gray-400">Nama Satuan</div></div>
                     </div>
                     <div class="flex items-center gap-3">
-                        <i class="ph-duotone ph-tag shrink-0 text-2xl text-emerald-600"></i>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-text-aa text-lg"></i></div>
                         <div><div class="font-bold text-gray-800" x-text="detail.abbreviation"></div><div class="text-[11px] font-medium text-gray-400">Simbol</div></div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-clock text-lg"></i></div>
+                        <div class="min-w-0">
+                            <div class="text-xs font-bold leading-snug text-gray-800" x-text="detail.updatedBy || 'Administrator'"></div>
+                            <div class="mt-0.5 text-[11px] font-medium text-gray-400" x-text="'Memperbarui pada ' + formatDate(detail.updatedAt || detail.createdAt)"></div>
+                        </div>
                     </div>
                     <div x-show="detail.description" class="rounded-xl bg-gray-50 px-3.5 py-3 text-xs leading-relaxed text-gray-600"><div class="mb-1 text-[11px] font-medium text-gray-400">Deskripsi</div><div x-text="detail.description"></div></div>
                 </div>
@@ -132,6 +139,13 @@ function unitPage(units) {
         form: { name: '', abbreviation: '', description: '' },
         get filtered() { const q = this.search.trim().toLocaleLowerCase('id'); return this.units.filter(unit => [unit.name, unit.abbreviation, unit.description].some(value => String(value || '').toLocaleLowerCase('id').includes(q))); },
         get visible() { return this.filtered.slice(0, this.visibleCount); },
+        formatDate(value) {
+            const date = value ? new Date(value) : new Date();
+            if (Number.isNaN(date.getTime())) return '-';
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const pad = number => String(number).padStart(2, '0');
+            return `${pad(date.getDate())} ${months[date.getMonth()]} ${date.getFullYear()}, ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        },
         openCreate() { if (!@js(check_access('unit.create'))) return; this.editing = null; this.form = { name: '', abbreviation: '', description: '' }; this.error = ''; this.drawerOpen = true; },
         openEdit(unit) { this.editing = unit.id; this.form = { name: unit.name, abbreviation: unit.abbreviation, description: unit.description || '' }; this.error = ''; this.drawerOpen = true; },
         showDetail(unit) { this.detail = unit; },
