@@ -45,7 +45,7 @@
             <template x-for="unit in visible" :key="unit.id">
                 <div class="border-b border-gray-100">
                     <button type="button" @click="showDetail(unit)" class="w-full flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3.5 md:py-4 hover:bg-gray-50/50 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" :aria-label="'Detail ' + unit.name">
-                        <span class="w-9 h-9 md:w-12 md:h-12 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-bold text-xs md:text-base overflow-hidden">
+                        <span class="w-9 h-9 md:w-12 md:h-12 rounded-xl border flex items-center justify-center shrink-0 font-bold text-xs md:text-base overflow-hidden" :class="theme(unit)">
                             <span x-text="unit.abbreviation?.slice(0, 3).toUpperCase()"></span>
                         </span>
                         <span class="flex-1 min-w-0 text-left">
@@ -132,6 +132,20 @@ function unitPage(units) {
         form: { name: '', abbreviation: '', description: '' },
         get filtered() { const q = this.search.trim().toLocaleLowerCase('id'); return this.units.filter(unit => [unit.name, unit.abbreviation, unit.description].some(value => String(value || '').toLocaleLowerCase('id').includes(q))); },
         get visible() { return this.filtered.slice(0, this.visibleCount); },
+        // One tint per unit, in the order of the full list (the reference's avatarThemes), so filtering does not recolour rows.
+        themes: [
+            'bg-emerald-50 text-emerald-600 border-emerald-100',
+            'bg-blue-50 text-blue-600 border-blue-100',
+            'bg-purple-50 text-purple-600 border-purple-100',
+            'bg-amber-50 text-amber-600 border-amber-100',
+            'bg-rose-50 text-rose-600 border-rose-100',
+            'bg-indigo-50 text-indigo-600 border-indigo-100',
+            'bg-sky-50 text-sky-600 border-sky-100',
+            'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100',
+            'bg-teal-50 text-teal-600 border-teal-100',
+            'bg-orange-50 text-orange-600 border-orange-100'
+        ],
+        theme(unit) { return this.themes[Math.max(0, this.units.findIndex(item => item.id === unit.id)) % this.themes.length]; },
         openCreate() { if (!@js(check_access('unit.create'))) return; this.editing = null; this.form = { name: '', abbreviation: '', description: '' }; this.error = ''; this.drawerOpen = true; },
         openEdit(unit) { this.editing = unit.id; this.form = { name: unit.name, abbreviation: unit.abbreviation, description: unit.description || '' }; this.error = ''; this.drawerOpen = true; },
         showDetail(unit) { this.detail = unit; },
