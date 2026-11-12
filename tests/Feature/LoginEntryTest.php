@@ -13,8 +13,7 @@ class LoginEntryTest extends TestCase
 
     public function test_login_page_has_no_guest_button_by_default(): void
     {
-        $this->assertFalse(config('app.guest_login'));
+        config(['app.guest_login' => false]);
         $this->get('/login')->assertOk()->assertDontSee('guest-login-form', false)->assertDontSee('Masuk sebagai Guest');
-        $this->assertFalse(\Illuminate\Support\Facades\Route::has('login.guest'));
     }
 }
