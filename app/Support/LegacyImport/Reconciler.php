@@ -96,6 +96,14 @@ final class Reconciler
         return $row ? array_values((array) $row)[0] : null;
     }
 
+    private function tableExists(string $db, string $table): bool
+    {
+        return (int) DB::selectOne(
+            'SELECT COUNT(*) AS c FROM information_schema.tables WHERE table_schema = ? AND table_name = ?',
+            [$db, $table]
+        )->c > 0;
+    }
+
     private function same(mixed $a, mixed $b): bool
     {
         return abs((float) $a - (float) $b) <= max(0.005, abs((float) $a) * 1e-9);
@@ -214,8 +222,10 @@ final class Reconciler
                 'SELECT COUNT(*) FROM ' . Importer::q($db) . '.' . Importer::q($child) . ' c LEFT JOIN ' . Importer::q($db) . '.' . Importer::q($parent)
                 . ' p ON p.' . Importer::q($pcol) . ' = c.' . Importer::q($col) . ' WHERE c.' . Importer::q($col) . ' IS NOT NULL AND c.' . Importer::q($col) . ' <> 0 AND p.' . Importer::q($pcol) . ' IS NULL'
             );
-            $a = $count($this->im->source);
-            $b = $count($this->im->target);
+            // A table that only exists in the new schema (staff_role, ...) has no legacy rows, so it cannot be orphaned there.
+            $both = fn (string $db) => $this->tableExists($db, $child) && $this->tableExists($db, $parent);
+            $a = $both($this->im->source) ? $count($this->im->source) : 0;
+            $b = $both($this->im->target) ? $count($this->im->target) : 0;
             if ($a === 0 && $b === 0) {
                 continue;
             }

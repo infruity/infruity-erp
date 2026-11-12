@@ -18,6 +18,13 @@ use InvalidArgumentException;
 final class Importer
 {
     /** Target tables that are never touched (migrations bookkeeping, regional reference data loaded by migrations). */
+    /**
+     * Tables that only exist in the new schema but hold ids of tables the import replaces (staff, users). The
+     * migrations backfill them from the seeded accounts; left alone they would attach those roles to unrelated legacy
+     * staff. They are emptied by a real run; the legacy data has nothing for them.
+     */
+    public const RESET_TARGET_TABLES = ['staff_role', 'user_permissions'];
+
     public const KEEP_TARGET_TABLES = ['migrations', 'reg_provinces', 'reg_regencies', 'reg_districts', 'reg_villages'];
 
     /**
@@ -377,6 +384,12 @@ final class Importer
 
         $result = [];
         try {
+            foreach (self::RESET_TARGET_TABLES as $table) {
+                if (! isset($tables[$table]) && DB::getSchemaBuilder()->hasTable($table)) {
+                    DB::statement("TRUNCATE TABLE {$this->dst($table)}");
+                }
+            }
+
             foreach ($tables as $table => $info) {
                 if ($info['columns'] === []) {
                     continue;

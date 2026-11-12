@@ -30,6 +30,16 @@ fi
 sql -e "DROP DATABASE IF EXISTS \`$SCRATCH\`; CREATE DATABASE \`$SCRATCH\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
 gunzip -c "$DUMP" | sql "$SCRATCH"
 
+# Older legacy databases predate some columns the ledger views read. Add them the way their migrations do (nullable,
+# NULL = the old rule) in this scratch database only, so the views can be built.
+add_column() { # table column definition
+  local has
+  has=$(sql -N -B -e "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = '$SCRATCH' AND table_name = '$1' AND column_name = '$2'")
+  [ "$has" != "0" ] || sql "$SCRATCH" -e "ALTER TABLE \`$1\` ADD COLUMN \`$2\` $3"
+}
+add_column transfer_detail sent_quantity "DECIMAL(10,2) NULL"
+add_column production hpp_per_unit "DECIMAL(15,3) NULL"
+
 # The ledger views, from the same SQL files the migrations use (order matters: product_stock reads transaction_stock and transaction_stock_show, product_hpp reads transaction_stock).
 for f in transaction_stock transaction_stock_show product_stock product_hpp; do
   sql "$SCRATCH" < "$HERE/database/sql/$f.sql"
