@@ -52,8 +52,10 @@ final class DashboardReferenceSpacingTest extends TestCase
         $view = $this->source();
 
         $this->assertStringContainsString('<p class="mb-1.5 text-[11.5px] font-medium"', $view, 'label to amount: 6px');
-        $this->assertStringContainsString('<div class="mt-3.5 flex-1 border-t border-white/15 pt-3.5 flex flex-col">', $view);
+        $this->assertStringContainsString('<div class="mt-[18px] flex-1 border-t border-white/15 pt-3.5 flex flex-col">', $view);
         $this->assertStringContainsString('<p class="text-[10px]" :style="\'color:\' + modePalette.subtext" x-text="chartSubtitle"></p>', $view, 'chart title sits on its sub-title');
-        $this->assertStringContainsString('text-[9.5px] text-white/70', $view);
+        $this->assertStringContainsString('text-[9.5px]" style="color:rgba(209,250,229,.7)"', $view);
+        $this->assertStringContainsString('text-[10.5px] font-bold leading-none', $view, 'day name');
+        $this->assertStringContainsString('mt-0.5 text-[8.5px]', $view, 'day number');
     }
 }

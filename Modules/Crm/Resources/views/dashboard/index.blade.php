@@ -45,10 +45,6 @@
     @media (max-width: 767px) {
         .erp-dashboard { flex: 1 1 auto; height: auto; max-height: none; min-height: 0; margin-top: 0; margin-bottom: 0; }
     }
-    @media (max-width: 767px) and (max-height: 850px) {
-        .erp-dashboard .dashboard-hero { min-height: clamp(330px, calc(100dvh - 457px), 422px); }
-        .erp-dashboard .dashboard-chart-plot { height: 118px; }
-    }
 @endsection
 
 @section('content')
@@ -110,7 +106,7 @@
 
 
         <div class="flex-1 overflow-y-auto dashboard-scroll pt-5 pb-[112px] px-4 flex flex-col relative z-10">
-            <article class="dashboard-hero relative min-h-[422px] overflow-hidden touch-pan-y select-none" @touchstart.passive="startSwipe($event)" @touchend.passive="endSwipe($event)" @mousedown="startSwipe($event)" @mouseup="endSwipe($event)" @mouseleave="swipeStartX = null" @click.outside="resetSelectedDay()">
+            <article class="dashboard-hero relative shrink-0 md:min-h-[422px] overflow-hidden touch-pan-y select-none" @touchstart.passive="startSwipe($event)" @touchend.passive="endSwipe($event)" @mousedown="startSwipe($event)" @mouseup="endSwipe($event)" @mouseleave="swipeStartX = null" @click.outside="resetSelectedDay()">
                 <div class="dashboard-hero-shine pointer-events-none absolute -right-[60px] -top-[60px] h-40 w-40 rounded-full"></div>
                 <div class="relative z-10">
                     <div class="flex items-center justify-between gap-3">
@@ -132,22 +128,32 @@
                         </div>
                     </div>
 
-                    <div class="mt-3.5 flex-1 border-t border-white/15 pt-3.5 flex flex-col">
+                    <div class="mt-[18px] flex-1 border-t border-white/15 pt-3.5 flex flex-col">
                         <div class="mb-2 flex items-center justify-between gap-2">
                             <div class="min-w-0 text-left"><p class="text-[12px] font-bold tracking-wide" x-text="chartTitle"></p><p class="text-[10px]" :style="'color:' + modePalette.subtext" x-text="chartSubtitle"></p></div>
-                            <div class="shrink-0 text-right"><p class="text-[13px] font-bold leading-tight" :style="'color:' + modePalette.accent" x-text="selectedPoint ? rupiah(selectedPoint[mode]) : 'Rp 0'"></p><p class="mt-0.5 text-[9.5px] text-white/70" x-text="selectedPoint ? (selectedPoint.date ? formatChartDate(selectedPoint.date) : selectedPoint.label) : ''"></p></div>
+                            <div class="shrink-0 text-right"><p class="text-[13px] font-bold leading-tight" :style="'color:' + modePalette.accent" x-text="selectedPoint ? rupiah(selectedPoint[mode]) : 'Rp 0'"></p><p class="mt-0.5 text-[9.5px]" style="color:rgba(209,250,229,.7)" x-text="selectedPoint ? (selectedPoint.date ? formatChartDate(selectedPoint.date) : selectedPoint.label) : ''"></p></div>
                         </div>
-                        <div class="dashboard-chart-plot flex items-end justify-between h-[143px] relative w-full gap-2 mt-auto">
-                    <template x-for="(point, index) in chart" :key="index">
-                        <button type="button" @click="selectedIndex = index" class="flex-1 min-w-0 flex flex-col items-center justify-end gap-2 z-10 h-full group" :aria-label="point.label + ' ' + point.day + ': ' + rupiah(point[mode])">
-                            <div class="w-full max-w-[26px] rounded-t-md transition-all relative min-h-[3px]" :style="'height:' + barHeight(point) + '%;background-color:' + (selectedIndex === index ? modePalette.accent : modePalette.bar) + (selectedIndex === index ? ';box-shadow:0 0 12px ' + modePalette.accent + '88' : '')"></div>
-                            <span class="flex flex-col items-center leading-none"><span class="text-[10px] font-bold" :style="selectedIndex === index ? 'color:' + modePalette.accent : 'color:rgba(255,255,255,.75)'" x-text="point.label"></span><span class="mt-1 text-[9px]" :class="selectedIndex === index ? 'text-white font-semibold' : 'text-white/70'" x-text="point.day"></span></span>
-                        </button>
-                    </template>
+                        <div class="w-full flex flex-col justify-end mt-auto">
+                            <div class="dashboard-chart-plot h-[143px] w-full flex flex-col justify-end">
+                                <div class="h-[121px] w-full flex items-end justify-between gap-2 pb-1">
+                                    <template x-for="(point, index) in chart" :key="'bar-' + index">
+                                        <button type="button" @click="selectedIndex = index" class="flex-1 min-w-0 flex flex-col items-center h-full justify-end group" tabindex="-1" aria-hidden="true">
+                                            <div class="w-full max-w-[26px] rounded-t-md transition-all relative min-h-[3px]" :style="'height:' + barHeight(point) + '%;background-color:' + (selectedIndex === index ? modePalette.accent : modePalette.bar) + (selectedIndex === index ? ';box-shadow:0 0 12px ' + modePalette.accent + '88' : '')"></div>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center gap-2 mt-2 px-0.5">
+                                <template x-for="(point, index) in chart" :key="'label-' + index">
+                                    <button type="button" @click="selectedIndex = index" class="flex-1 min-w-0 flex flex-col items-center" :aria-label="point.label + ' ' + point.day + ': ' + rupiah(point[mode])">
+                                        <span class="flex flex-col items-center"><span class="text-[10.5px] font-bold leading-none" :style="selectedIndex === index ? 'color:' + modePalette.accent : 'color:rgba(255,255,255,.75)'" x-text="point.label"></span><span class="mt-0.5 text-[8.5px]" :style="selectedIndex === index ? 'color:#fff;font-weight:600' : 'color:' + modePalette.subtext" x-text="point.day"></span></span>
+                                    </button>
+                                </template>
+                            </div>
                         </div>
-                        <div class="mt-3.5 flex items-center justify-center gap-0" role="group" aria-label="Pilih metrik dashboard">
+                        <div class="mt-3.5 pt-0.5 flex items-center justify-center gap-0" role="group" aria-label="Pilih metrik dashboard">
                             <template x-for="item in metricModes" :key="item.key">
-                                <button type="button" @click="selectMode(item.key)" :aria-pressed="mode === item.key" :title="item.label" :aria-label="item.label" class="inline-flex w-11 h-11 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"><span :class="mode === item.key ? 'w-5' : 'w-1.5 bg-white/30'" :style="mode === item.key ? 'background-color:' + modePalette.accent : ''" class="h-1.5 rounded-full" aria-hidden="true"></span></button>
+                                <button type="button" @click="selectMode(item.key)" :aria-pressed="mode === item.key" :title="item.label" :aria-label="item.label" class="inline-flex h-11 -my-[19px] px-[3px] items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"><span :class="mode === item.key ? 'w-5' : 'w-1.5 bg-white/25'" :style="mode === item.key ? 'background-color:' + modePalette.accent : ''" class="h-1.5 rounded-full" aria-hidden="true"></span></button>
                             </template>
                         </div>
                     </div>
@@ -166,9 +172,9 @@
                         <div class="flex items-center justify-between gap-2 py-3 first:pt-1 last:pb-1">
                             <div class="flex items-center gap-3 min-w-0">
                                 <span class="w-9 h-9 rounded-xl border flex items-center justify-center text-[20px] leading-none shrink-0" :class="isCostMode ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'" role="img" :aria-label="item.name + ' icon'" x-text="itemIcon(item.name)"></span>
-                                <div class="min-w-0"><h3 class="text-[13px] font-semibold text-slate-800 leading-tight truncate" x-text="item.name"></h3><p class="text-[11.5px] font-bold mt-0.5" :class="contributorAmountClass" x-text="rupiah(item.amount)"></p></div>
+                                <div class="min-w-0"><h3 class="text-[13px] font-semibold text-gray-800 leading-tight truncate" x-text="item.name"></h3><p class="text-[11.5px] font-bold mt-0.5" :class="contributorAmountClass" x-text="rupiah(item.amount)"></p></div>
                             </div>
-                            <span class="text-[13px] font-bold shrink-0" :class="contributorPercentClass" x-text="item.percent + '%'"></span>
+                            <span class="font-['Poppins'] text-[13px] font-bold shrink-0" :class="contributorPercentClass" x-text="item.percent + '%'"></span>
                         </div>
                     </template>
                     <div x-show="filteredContributors.length === 0" class="flex min-h-[120px] flex-col items-center justify-center py-4 text-center"><i class="ph ph-chart-line-down text-xl text-gray-300"></i><p class="mt-2 text-[12px] font-medium text-gray-600" x-text="searchQuery ? 'Tidak ada hasil pencarian.' : 'Belum ada data pada periode ini.'"></p></div>
