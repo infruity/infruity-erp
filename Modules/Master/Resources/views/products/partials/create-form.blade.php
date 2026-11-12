@@ -1,11 +1,12 @@
 <style>
     #add_product_form { display: block; padding: 0; }
     #add_product_form .product-create-content { display: flex; flex-direction: column; gap: 1.25rem; padding: 1.25rem 1.25rem .5rem; }
-    #add_product_form .product-field-label { display: block; margin-bottom: .375rem; color: #4b5563; font-size: .75rem; font-weight: 600; }
+    #add_product_form .product-field-label { display: block; margin-bottom: .375rem; color: #4b5563; font-size: .75rem; line-height: 1rem; font-weight: 600; }
     #add_product_form .product-input,
     #add_product_form .product-select,
     #add_product_form .form-control,
-    #add_product_form .form-select { width: 100%; min-height: 44px; border: 1px solid #e5e7eb; border-radius: .75rem; background: #fff; padding: .625rem .875rem; color: #1f2937; font-size: .875rem; outline: none; }
+    #add_product_form .form-select { width: 100%; min-height: 44px; border: 1px solid #e5e7eb; border-radius: .75rem; background: #fff; padding: .625rem .875rem; color: #1f2937; font-size: .875rem; line-height: 1.25rem; outline: none; }
+    #add_product_form textarea.product-input { padding-top: .75rem; padding-bottom: .75rem; }
     #add_product_form .product-input:focus,
     #add_product_form .product-select:focus,
     #add_product_form .form-control:focus,
@@ -55,7 +56,7 @@
             <div data-picker-root="product-type" data-product-type-picker class="overflow-hidden rounded-xl border border-gray-200 bg-white">
                 <div class="relative border-b border-gray-100 bg-gray-50/50">
                     <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
-                    <input type="search" data-product-type-search placeholder="Cari tipe produk atau kategori..." class="w-full bg-transparent py-3 pl-9 pr-4 text-sm outline-none" aria-label="Cari tipe produk atau kategori">
+                    <input type="search" data-product-type-search placeholder="Cari tipe produk..." class="w-full bg-transparent py-3 pl-9 pr-4 text-sm outline-none" aria-label="Cari tipe produk atau kategori">
                 </div>
                 <div id="product-type-options" class="max-h-44 overflow-y-auto overscroll-contain scrollbar-hide">
                     @foreach ($productTypeOptions as $option)
@@ -108,7 +109,7 @@
         <div class="product-option-row rounded-xl border border-gray-200 bg-white px-4 py-3">
             <div class="min-w-0 flex-1">
                 <label for="product-has-variants" class="block text-sm font-semibold text-gray-700">Produk Memiliki Varian</label>
-                <p class="mt-0.5 text-[11px] text-gray-400">Tambahkan pilihan produk seperti ukuran atau grade</p>
+                <p class="mt-0.5 text-[11px] text-gray-400">Misal: Grade Super, Grade A, Grade AB</p>
             </div>
             <label class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center" aria-label="Produk memiliki varian">
                 <input id="product-has-variants" type="checkbox" role="switch" class="peer sr-only" aria-checked="false" aria-controls="product-variants">
@@ -213,7 +214,7 @@
 
         <div class="flex flex-col gap-4">
             <div>
-                <label for="description_input" class="product-field-label">Deskripsi <span class="font-normal text-gray-400">(Opsional)</span></label>
+                <label for="description_input" class="product-field-label">Deskripsi <span class="text-gray-300">(Opsional)</span></label>
                 <textarea id="description_input" name="description" rows="3" maxlength="1000" placeholder="Deskripsi singkat produk..." class="product-input resize-none">{{ old('description', $data->description ?? '') }}</textarea>
                 @error('description') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
             </div>
