@@ -44,6 +44,8 @@ final class Importer
 
     private const NUMERIC_TYPES = ['decimal', 'double', 'float', 'int', 'bigint', 'smallint', 'mediumint', 'tinyint'];
 
+    private ?bool $mariaDb = null;
+
     public function __construct(public readonly string $source, public readonly string $target)
     {
         foreach ([$source, $target] as $name) {
@@ -143,10 +145,40 @@ final class Importer
 
         $byName = [];
         foreach ($rows as $row) {
-            $byName[$row->column_name] = $row;
+            $byName[$row->column_name] = $this->normalizeDefault($row);
         }
 
         return $byName;
+    }
+
+    /**
+     * MySQL reports a column default as the plain value (NULL when there is none, DEFAULT_GENERATED in `extra` for an
+     * expression). MariaDB reports the SQL literal instead: strings come quoted ('aktif', ''), a nullable column
+     * without default comes as the text NULL, and an expression default is the bare function (current_timestamp()).
+     * Rewrite the MariaDB form into the MySQL one so the callers can use the value as it is.
+     */
+    private function normalizeDefault(object $row): object
+    {
+        if ($row->column_default === null || ! $this->isMariaDb()) {
+            return $row;
+        }
+
+        $default = (string) $row->column_default;
+
+        if (strcasecmp($default, 'NULL') === 0) {
+            $row->column_default = null;
+        } elseif (strlen($default) >= 2 && $default[0] === "'" && str_ends_with($default, "'")) {
+            $row->column_default = str_replace("''", "'", substr($default, 1, -1));
+        } elseif (str_contains($default, '(')) {
+            $row->extra = trim((string) $row->extra . ' DEFAULT_GENERATED');
+        }
+
+        return $row;
+    }
+
+    private function isMariaDb(): bool
+    {
+        return $this->mariaDb ??= stripos((string) DB::selectOne('SELECT VERSION() AS v')->v, 'mariadb') !== false;
     }
 
     public function src(string $table): string

@@ -62,7 +62,7 @@ final class Reconciler
     public function run(): array
     {
         $this->rows = [];
-        DB::statement('SET SESSION cte_max_recursion_depth = 10000000');
+        DB::statement('SET SESSION ' . config('database.cte_recursion_variable', 'cte_max_recursion_depth') . ' = 10000000');
 
         $tables = array_values(array_intersect($this->im->baseTables($this->im->target), $this->im->baseTables($this->im->source)));
         $tables = array_values(array_diff($tables, Importer::KEEP_TARGET_TABLES));

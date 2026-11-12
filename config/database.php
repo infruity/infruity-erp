@@ -2,7 +2,17 @@
 
 use Illuminate\Support\Str;
 
+// Hostinger shared hosting (production) runs MariaDB; local dev/CI usually runs MySQL 8. The two name the
+// recursive-CTE depth limit differently, and setting an unknown session variable aborts the connection.
+// DB_SERVER=mariadb switches to MariaDB's name. Anything else keeps the MySQL 8 behaviour.
+$cteVariable = strtolower((string) env('DB_SERVER', 'mysql')) === 'mariadb'
+    ? 'max_recursive_iterations'
+    : 'cte_max_recursion_depth';
+
 return [
+
+    // Name of the session variable that caps recursive-CTE depth on the connected server (see above).
+    'cte_recursion_variable' => $cteVariable,
 
     /*
     |--------------------------------------------------------------------------
@@ -68,7 +78,7 @@ return [
                 Pdo\Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
                 // product_hpp recurses once per ledger row of a product, so the depth
                 // must exceed the longest product history (it grows every day).
-                Pdo\Mysql::ATTR_INIT_COMMAND => 'SET SESSION cte_max_recursion_depth = ' . max(1000, (int) env('DB_CTE_MAX_RECURSION_DEPTH', 1000000)),
+                Pdo\Mysql::ATTR_INIT_COMMAND => 'SET SESSION ' . $cteVariable . ' = ' . max(1000, (int) env('DB_CTE_MAX_RECURSION_DEPTH', 1000000)),
             ]) : [],
         ],
 
