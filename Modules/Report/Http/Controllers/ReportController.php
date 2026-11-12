@@ -2,7 +2,7 @@
 namespace Modules\Report\Http\Controllers;
 
 use Illuminate\Contracts\Support\Renderable;
-use App\Support\LedgerCache;
+use App\Support\TotalAsetLedger;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
@@ -873,28 +873,11 @@ class ReportController extends Controller
         $branchId = (string) $request->input('branch_id', 'all');
         $searchValue = trim((string) data_get($request->input('search'), 'value', ''));
 
-        // Evaluate the moving-HPP view once per request instead of embedding it
-        // multiple times in the grouped stock query and DataTables count query.
-        // The view (database/sql/product_hpp.sql) still produces every number; the result is kept until a ledger row
-        // changes (LedgerCache), because rebuilding the moving average takes over a second.
-        $hppQuery = DB::table('product_hpp')
-            ->select('product_id', 'total_aset_berjalan', 'hpp_berjalan', 'seq')
-            ->orderByDesc('seq');
-        $latestHppByProduct = LedgerCache::remember(
-            'total_aset_latest_hpp',
-            fn () => $hppQuery->get()->unique('product_id')->keyBy('product_id')
-        );
+        // The moving-HPP view is evaluated once per request (or not at all while the ledger is unchanged, see
+        // LedgerCache) instead of being embedded in the grouped stock query and the DataTables count query.
+        $latestHppByProduct = TotalAsetLedger::latestHpp();
 
-        $stockQuery = DB::table('transaction_stock as A')
-            ->join('products as CHILD', 'A.product_id', '=', 'CHILD.id')
-            ->leftJoin('product_child as pc', 'CHILD.id', '=', 'pc.product_id')
-            ->join('products as PARENT', 'PARENT.id', '=', DB::raw('COALESCE(pc.parent_id, CHILD.id)'))
-            ->join('product_units as C', 'PARENT.product_unit', '=', 'C.id')
-            ->where('PARENT.tipe', '!=', 'parcel')
-            ->selectRaw('COALESCE(pc.parent_id, A.product_id) as product_id')
-            ->selectRaw('PARENT.name as name, C.abbreviation, PARENT.hpp')
-            ->selectRaw('SUM(A.quantity) as total_stock')
-            ->groupByRaw('COALESCE(pc.parent_id, A.product_id), PARENT.name, C.abbreviation, PARENT.hpp');
+        $stockQuery = TotalAsetLedger::stockQuery();
 
         if ($branchId !== 'all') {
             if ($branchId === 'null') $stockQuery->whereNull('A.branch_id');
@@ -902,7 +885,7 @@ class ReportController extends Controller
         }
         $this->scopeReportBranch($stockQuery, $request, 'A.branch_id');
 
-        $stockRows = LedgerCache::rememberQuery($stockQuery, 'total_aset_stock')->map(function ($row) use ($latestHppByProduct, $branchId) {
+        $stockRows = TotalAsetLedger::stockRows($stockQuery)->map(function ($row) use ($latestHppByProduct, $branchId) {
             $hppRow = $latestHppByProduct->get($row->product_id);
             $stock = (float) $row->total_stock;
             $unitHpp = (float) ($hppRow->hpp_berjalan ?? $row->hpp ?? 0);

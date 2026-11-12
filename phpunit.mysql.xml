@@ -40,6 +40,8 @@
             <file>./tests/Feature/NegativeStockWarningTest.php</file>
             <file>./tests/Feature/StockEndpointsLedgerReadTest.php</file>
             <file>./tests/Feature/LedgerCacheTest.php</file>
+            <file>./tests/Feature/StockOpnameExportTest.php</file>
+            <file>./tests/Feature/WarmLedgerCacheTest.php</file>
         </testsuite>
     </testsuites>
     <groups>
