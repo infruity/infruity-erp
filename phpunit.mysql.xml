@@ -38,6 +38,7 @@
             <file>./tests/Feature/CustomerProductReportRegionJoinTest.php</file>
             <file>./tests/Feature/CrmTopDistributionTest.php</file>
             <file>./tests/Feature/NegativeStockWarningTest.php</file>
+            <file>./tests/Feature/StockEndpointsLedgerReadTest.php</file>
         </testsuite>
     </testsuites>
     <groups>

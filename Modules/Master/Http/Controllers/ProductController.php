@@ -984,19 +984,9 @@ class ProductController extends Controller
     public function listProduct(Request $request)
     {
         $search = $request->input('term', '');
+        // The stock of the products and of their ingredients is loaded below in one go (see attachStock): eager loading
+        // it as two relations evaluated the product_stock view twice (~340 ms each).
         $with   = ['category', 'unit', 'productReceipt', 'productReceipt.ingredients', 'parentProduct'];
-
-        if ($request->has('branch') && ! empty($request->branch)) {
-            $with['get_stock'] = function ($q) use ($request) {
-                $q->where('branch_id', $request->branch);
-            };
-            $with['productReceipt.ingredients.get_stock'] = function ($q) use ($request) {
-                $q->where('branch_id', $request->branch);
-            };
-        } else {
-            $with[] = 'get_stock';
-            $with[] = 'productReceipt.ingredients.get_stock';
-        }
 
         $query  = Product::with($with)
             ->where('tipe', '!=', 'parcel')->where('name', 'like', Like::contains($search));
@@ -1034,6 +1024,7 @@ class ProductController extends Controller
         }
 
         $query = $query->get();
+        $this->attachStock($query, $request->has('branch') && ! empty($request->branch) ? $request->branch : null);
 
         // Last purchase per product, its branch, and that branch's sell price:
         // three queries for the whole list instead of three per product.
@@ -1066,6 +1057,35 @@ class ProductController extends Controller
         });
 
         return response()->json($query);
+    }
+
+    /**
+     * Sets the get_stock relation of the products and of their recipe ingredients from ONE product_stock read, with the
+     * same result as eager loading it (a belongsTo: the last stock row of the product wins, none gives null).
+     */
+    private function attachStock($products, $branchId): void
+    {
+        $ids = [];
+        foreach ($products as $product) {
+            $ids[] = $product->id;
+            foreach ($product->productReceipt as $receipt) {
+                if ($receipt->ingredients) {
+                    $ids[] = $receipt->ingredients->id;
+                }
+            }
+        }
+
+        $stock = LedgerSql::stockFor(array_unique($ids))
+            ->when($branchId !== null, fn ($q) => $q->where('branch_id', $branchId))
+            ->get()
+            ->keyBy('id');
+
+        foreach ($products as $product) {
+            $product->setRelation('get_stock', $stock->get($product->id));
+            foreach ($product->productReceipt as $receipt) {
+                $receipt->ingredients?->setRelation('get_stock', $stock->get($receipt->ingredients->id));
+            }
+        }
     }
 
     public function generateBranchPrice(Request $request)
@@ -1533,7 +1553,32 @@ class ProductController extends Controller
         $sortIndex = (int) $request->input('order.0.column', 2);
         $sortDirection = $request->input('order.0.dir') === 'asc' ? 'asc' : 'desc';
 
-        return DataTables::of($query)
+        $table = DataTables::of($query);
+
+        // Without a stock filter the left join to the stock totals never changes how many products there are, but each
+        // count query would rebuild the whole stock ledger for it (~400 ms each). Count the products alone.
+        if (! $request->filled('stock_filter')) {
+            $countProducts = function (?string $search = null) use ($request, $allowedBranchIds) {
+                $count = DB::table('products as p')->whereNull('p.is_variant')->where('p.tipe', '!=', 'parcel');
+                if ($allowedBranchIds === []) {
+                    $count->whereRaw('1 = 0');
+                }
+                if ($request->filled('stock_kategori') && $request->stock_kategori !== 'all') {
+                    $count->where('p.category_id', $request->stock_kategori);
+                }
+                if ($search !== null && $search !== '') {
+                    $count->where(fn ($q) => $q->where('p.name', 'like', Like::contains($search))
+                        ->orWhere('p.sku', 'like', Like::contains($search)));
+                }
+
+                return $count->count();
+            };
+
+            $table->setTotalRecords($countProducts())
+                ->setFilteredRecords($countProducts(trim((string) $request->input('search.value'))));
+        }
+
+        return $table
             ->order(function ($query) use ($sortColumns, $sortIndex, $sortDirection) {
                 $query->orderBy($sortColumns[$sortIndex] ?? 'stock_available', $sortDirection)
                     ->orderBy('p.id');
@@ -1642,18 +1687,30 @@ class ProductController extends Controller
             abort(403);
         }
 
-        $query = DB::table('product_stock')
-            ->whereIn('branch_id', $allowedBranches)
+        // The first 20 matches. Reading the whole product_stock view for them cost ~400 ms per keystroke, so the matching
+        // products are looked up first (cheap) and only their stock is computed, a few at a time.
+        $branchIds = $request->filled('branch_id') ? [(int) $request->branch_id] : $allowedBranches;
+        $candidates = DB::table('products')
             ->whereNull('is_variant')
-            // ->where('stock_available', '>', 0)
+            ->where('tipe', '!=', 'parcel')
             ->where('name', 'like', Like::contains((string) $request->search))
-            ->select('id', 'name', 'stock_available', 'avg_hpp as hpp');
+            ->orderBy('id')
+            ->pluck('id');
 
-        if ($request->filled('branch_id')) {
-            $query->where('branch_id', $request->branch_id);
+        $rows = collect();
+        foreach ($candidates->chunk(LedgerSql::FILTER_LIMIT) as $chunk) {
+            $rows = $rows->concat(
+                LedgerSql::stockFor($chunk)
+                    ->whereIn('branch_id', $branchIds)
+                    ->select('id', 'name', 'stock_available', 'avg_hpp as hpp')
+                    ->get()
+            );
+            if ($rows->count() >= 20) {
+                break;
+            }
         }
 
-        return $query->limit(20)->get();
+        return $rows->take(20)->values();
     }
 
     public function get_data_stock_show(Request $request)
