@@ -80,7 +80,6 @@
     <template x-teleport="body">
     <div>
     <x-erp.detail-dialog open="detailModalOpen" close="closeRecipeDetail()" title="Detail Resep" labelledby="recipe-detail-title" close-label="Tutup detail resep">
-        <x-slot:subtitle><p class="mt-0.5 text-xs text-gray-400" x-text="selectedRecipe?.code || ''"></p></x-slot:subtitle>
         <div class="flex flex-col gap-5 text-sm" x-show="selectedRecipe">
             <div class="flex items-center gap-3">
                 <i class="ph-duotone ph-tag shrink-0 text-2xl text-emerald-600"></i>
