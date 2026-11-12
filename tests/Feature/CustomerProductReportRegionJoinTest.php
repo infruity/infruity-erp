@@ -54,6 +54,30 @@ final class CustomerProductReportRegionJoinTest extends TestCase
         $this->assertSame($village->name, $rows[0]->village_name);
     }
 
+    public function test_a_sale_paid_in_several_payments_is_reported_once(): void
+    {
+        $branch = $this->makeBranch('RPT2');
+        $product = $this->makeProduct('Jeruk');
+        $pos = DB::table('pos_transaction')->insertGetId([
+            'uuid' => 'rpt-' . uniqid(), 'customer_id' => null, 'date' => '2026-10-28', 'invoice_number' => 'INV-RPT-2',
+            'status' => 'paid', 'branch_id' => $branch, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('pos_transaction_detail')->insert([
+            'pos_id' => $pos, 'product_id' => $product, 'quantity' => 3, 'price' => 1000, 'discount' => 0, 'subtotal' => 3000,
+            'exp' => 0, 'exp_value' => 0, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        foreach ([1000, 2000] as $installment) {
+            DB::table('pos_payment')->insert([
+                'uuid' => 'pay-' . uniqid(), 'pos_id' => $pos, 'total' => $installment, 'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+
+        $rows = DB::select('CALL get_customer_product_transaction(?, ?)', ['2026-10-28', '2026-10-28']);
+
+        $this->assertCount(1, $rows, 'one sold item must give one row, however many payments it has');
+        $this->assertEquals(3, $rows[0]->quantity);
+    }
+
     public function test_the_procedure_casts_the_customer_side_so_the_region_keys_are_used(): void
     {
         $definition = (string) DB::selectOne(
