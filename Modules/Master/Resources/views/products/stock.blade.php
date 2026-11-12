@@ -46,8 +46,6 @@
         .stock-empty strong { color:#374151; font-size:14px; }
         .stock-empty span, .stock-loading { font-size:12px; }
         .stock-more { display:flex; justify-content:center; padding:16px 20px 24px; }
-        .stock-more button { width:100%; min-height:44px; padding:0 24px; border:2px dashed #e5e7eb; border-radius:12px; background:#fff; color:#6b7280; font-size:14px; font-weight:700; transition:all .15s; }
-        .stock-more button:hover { border-color:#34d399; color:#047857; background:#ecfdf5; }
         @media (max-width:767.98px) {
             #kt_content { overflow:hidden!important; padding:0!important; }
             #kt_content_container { display:flex; flex:1; flex-direction:column; min-height:0; width:100%; max-width:none; padding:0; }
@@ -118,7 +116,7 @@
                     <span>Coba ubah kata kunci pencarian atau filter.</span>
                 </div>
                 <div id="stock-rows"></div>
-                <div id="stock-more" class="stock-more" hidden><button type="button"><i class="ph ph-arrow-circle-down" aria-hidden="true"></i> Muat <span id="stock-more-count">50</span> Produk Lagi</button></div>
+                <div id="stock-more" class="stock-more" hidden><x-erp.load-more>Muat <span id="stock-more-count">50</span> Produk Lagi</x-erp.load-more></div>
             </div>
         </div>
     </div>

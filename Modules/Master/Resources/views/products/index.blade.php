@@ -398,9 +398,7 @@
                     <tbody class="divide-y divide-gray-50 text-gray-700"></tbody>
                 </table>
                 <div id="products-load-more" class="hidden px-5 py-4">
-                    <button type="button" class="w-full h-11 rounded-xl border-2 border-dashed border-gray-200 text-sm font-semibold text-gray-500 hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2">
-                        <i class="ph ph-arrow-circle-down text-base"></i> Muat Produk Lagi
-                    </button>
+                    <x-erp.load-more>Muat Produk Lagi</x-erp.load-more>
                 </div>
             </div>
         </div>

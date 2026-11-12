@@ -62,9 +62,7 @@
                 <p class="text-xs text-gray-400 mt-1">Coba ubah pencarian</p>
             </div>
             <div x-show="visibleCount < filtered.length" class="px-5 py-4">
-                <button type="button" @click="visibleCount += 50" class="w-full h-11 rounded-xl border-2 border-dashed border-gray-200 text-sm font-semibold text-gray-500 hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2">
-                    <i class="ph ph-arrow-circle-down text-base"></i> Muat <span x-text="Math.min(50, filtered.length - visibleCount)"></span> Satuan Lagi
-                </button>
+                <x-erp.load-more @click="visibleCount += 50">Muat <span x-text="Math.min(50, filtered.length - visibleCount)"></span> Satuan Lagi</x-erp.load-more>
             </div>
         </div>
     </div>

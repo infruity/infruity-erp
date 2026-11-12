@@ -77,8 +77,8 @@ final class ProductionListUiContractTest extends TestCase
         // Same pattern as the /products reference: one dashed button instead of page numbers.
         $this->assertStringContainsString('id="production-load-more"', $view);
         $this->assertStringContainsString('Muat Produk Lagi', $view);
-        $this->assertStringContainsString('ph ph-arrow-circle-down', $view);
-        $this->assertStringContainsString('<button type="button" class="production-load-more__button">', $view);
+        $this->assertStringContainsString('<x-erp.load-more>Muat Produk Lagi</x-erp.load-more>', $view);
+        $this->assertStringNotContainsString('production-load-more__button', $view);
         // Pagination and the page-size select are gone at every breakpoint, not only below 1280px.
         $this->assertStringContainsString('#production-table_wrapper :is(.dataTables_paginate, .dataTables_length) { display:none !important; }', $view);
         // The stylesheet used to force the pagination visible with a higher-specificity !important.

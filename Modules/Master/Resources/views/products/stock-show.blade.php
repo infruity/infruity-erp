@@ -51,8 +51,6 @@
         .stock-detail-history-unit { color:#9ca3af; font-size:10px; font-weight:400; }
         .stock-detail-load-more { flex:none; padding:12px 20px 18px; }
         .stock-detail-load-more[hidden] { display:none!important; }
-        .stock-detail-load-more button { width:100%; min-height:44px; border:2px dashed #e5e7eb; border-radius:12px; background:#fff; color:#6b7280; font-size:14px; font-weight:600; }
-        .stock-detail-load-more button:hover { border-color:#34d399; color:#047857; background:#ecfdf5; }
         .stock-detail-scroll { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; background:#fff; }
         .stock-detail-scroll::-webkit-scrollbar { display:none; }
         .stock-mobile-list { display:block; }
@@ -62,7 +60,7 @@
         .stock-mobile-empty i { margin-bottom:10px; color:#9ca3af; font-size:28px; }
         .stock-mobile-empty strong { margin-bottom:4px; color:#1f2937; font-size:14px; }
         .stock-mobile-empty span { font-size:12px; }
-        @media (min-width:768px) { .stock-detail-load-more { display:flex; justify-content:center; } .stock-detail-load-more button { width:auto; padding:0 24px; border-width:1px; border-style:solid; border-radius:999px; } }
+        @media (min-width:768px) { .stock-detail-load-more { display:flex; justify-content:center; } }
         @media (min-width:768px) {
             .product-stock-detail-card { position:relative; display:flex; min-height:0; flex:1; flex-direction:column; overflow:hidden; }
             .product-stock-detail-card .card-header { flex:none; padding:0; border:0; }
@@ -177,7 +175,7 @@
                 <div class="stock-detail-scroll">
                     <div id="stock-mobile-list" class="stock-mobile-list" aria-live="polite"></div>
                     <div class="stock-detail-load-more" id="stock-detail-load-more" hidden>
-                        <button type="button"><i class="ph ph-arrow-circle-down" aria-hidden="true"></i> <span id="stock-detail-load-more-label">Muat Lebih Banyak</span></button>
+                        <x-erp.load-more><span id="stock-detail-load-more-label">Muat Lebih Banyak</span></x-erp.load-more>
                     </div>
                 </div>
                 <!--begin::Table-->

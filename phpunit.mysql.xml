@@ -42,6 +42,7 @@
             <file>./tests/Feature/LedgerCacheTest.php</file>
             <file>./tests/Feature/StockOpnameExportTest.php</file>
             <file>./tests/Feature/WarmLedgerCacheTest.php</file>
+            <file>./tests/Feature/CustomersLoadMoreTest.php</file>
         </testsuite>
     </testsuites>
     <groups>

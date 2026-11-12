@@ -48,10 +48,7 @@
                 <div class="py-16 text-center text-gray-400"><i class="ph ph-receipt text-3xl"></i><p class="mt-2 text-sm">Resep produk tidak ditemukan</p></div>
             @endif
             <div x-show="hasMore" class="px-5 py-4">
-                <button type="button" @click="loadMoreRecipes()" :disabled="loadingMore" class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 text-sm font-semibold text-gray-500 transition-colors hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-wait disabled:opacity-60">
-                    <i class="ph ph-arrow-circle-down text-base" :class="loadingMore ? 'animate-spin motion-reduce:animate-none' : ''"></i>
-                    <span x-text="loadingMore ? 'Memuat resep...' : 'Muat Resep Lagi'"></span>
-                </button>
+                <x-erp.load-more @click="loadMoreRecipes()" loading="loadingMore"><span x-text="loadingMore ? 'Memuat resep...' : 'Muat Resep Lagi'"></span></x-erp.load-more>
             </div>
         </div>
     </div>
