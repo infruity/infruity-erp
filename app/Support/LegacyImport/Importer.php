@@ -29,7 +29,15 @@ final class Importer
     ];
 
     /** Per-column source expressions that replace a plain copy. Keys: table => column => SQL over source columns. */
-    public const EXPRESSIONS = [];
+    public const EXPRESSIONS = [
+        // "No value" is NULL in the new schema (migration make_unused_wholesale_columns_nullable); the legacy table forced 0 / ''.
+        'wholesale' => [
+            'branch_id' => 'NULLIF(`branch_id`, 0)',
+            'supplier_id' => 'NULLIF(`supplier_id`, 0)',
+            'uuid' => "NULLIF(`uuid`, '')",
+        ],
+        'wholesale_product' => ['category_id' => 'NULLIF(`category_id`, 0)'],
+    ];
 
     /** Words that only say "this is a branch" and carry no identity; dropped when a branch code is derived from the name. */
     private const GENERIC_BRANCH_WORDS = ['toko', 'cabang', 'outlet', 'kantor', 'gerai', 'warung', 'store', 'branch', 'pusat'];

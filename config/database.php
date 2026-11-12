@@ -56,7 +56,11 @@ return [
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
             'prefix_indexes' => true,
-            'strict' => false,
+            // Off by default: MySQL then stores 0 / '' / a truncated value for what does not fit. Turn on with
+            // DB_STRICT=true (Laravel's full strict set, includes ONLY_FULL_GROUP_BY) or pick the modes with
+            // DB_SQL_MODES=STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION. See docs/qa/strict-mode-evaluation.md.
+            'strict' => (bool) env('DB_STRICT', false),
+            'modes' => env('DB_SQL_MODES') ? array_map('trim', explode(',', env('DB_SQL_MODES'))) : null,
             'engine' => null,
             // PHP 8.5 deprecates the PDO::MYSQL_* constants; Pdo\Mysql::ATTR_* is the
             // supported form and exists since PHP 8.4 (the minimum for this app).
@@ -79,7 +83,8 @@ return [
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
-            'strict' => false,
+            'strict' => (bool) env('DB_STRICT', false),
+            'modes' => env('DB_SQL_MODES') ? array_map('trim', explode(',', env('DB_SQL_MODES'))) : null,
             'engine' => null,
         ],
 

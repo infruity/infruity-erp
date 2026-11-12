@@ -1047,9 +1047,8 @@ class WholesaleController extends Controller
                     $wholesale->created_at = now();
                     $wholesale->save();
                 } else {
-                    $wholesale = Wholesale::create($wholesaleData);
-                    // Generate order number
-                    $wholesale->order_number = Wholesale::getOrderNumber();
+                    // order_number is NOT NULL without a default, so it goes in with the insert (strict-mode safe).
+                    $wholesale = Wholesale::create($wholesaleData + ['order_number' => Wholesale::getOrderNumber()]);
                     $wholesale->created_at = now();
                     $wholesale->save();
                 }

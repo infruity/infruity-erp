@@ -227,7 +227,9 @@ class DashboardController extends Controller
             ->leftJoin('products', 'products.id', '=', 'detail.product_id')
             ->select(DB::raw("COALESCE(NULLIF(detail.product_name, ''), products.name, 'Pengeluaran lainnya') AS name"),
                 'products.image', DB::raw('SUM(COALESCE(detail.subtotal, 0)) AS amount'))
-            ->groupBy('name', 'products.image')
+            // Group by the label that is shown. groupBy('name') resolved to the column products.name, which is NULL for
+            // every line without a product, so all of those lines collapsed into one arbitrary group.
+            ->groupBy(DB::raw("COALESCE(NULLIF(detail.product_name, ''), products.name, 'Pengeluaran lainnya')"), 'products.image')
             ->having('amount', '>', 0);
         $productCosts = (clone $hppQuery)
             ->join('products', 'products.id', '=', 'detail.product_id')
