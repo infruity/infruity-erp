@@ -22,9 +22,11 @@ use Modules\Crm\Http\Controllers\CampaignController;
 */
 
 Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
-    Route::resource('tier', TierController::class)->names('tier')->except('show');
-    Route::post('tier/{id}/save-detail', [TierController::class, 'saveDetail'])->name('tier.save_detail');
-    Route::get('tier/get-gift/{id}', [TierController::class, 'getGift'])->name('tier.get-gift');
+    Route::middleware(\App\Http\Middleware\EnsureFeatureEnabled::class . ':tier_pages')->group(function () {
+        Route::resource('tier', TierController::class)->names('tier')->except('show');
+        Route::post('tier/{id}/save-detail', [TierController::class, 'saveDetail'])->name('tier.save_detail');
+        Route::get('tier/get-gift/{id}', [TierController::class, 'getGift'])->name('tier.get-gift');
+    });
     Route::resource('setting-exp', SettingExpController::class)->names('setting-exp')->except('show');
     Route::resource('point-schedule', PointScheduleController::class)->names('point-schedule')->except('show');    
     Route::resource('deposito', DepositoController::class)->names('deposito')->except('show');
@@ -41,7 +43,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 });
 
 Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
-    Route::get('tier/data', [TierController::class, 'get_data'])->name('tier.data');
+    Route::get('tier/data', [TierController::class, 'get_data'])->name('tier.data')->middleware(\App\Http\Middleware\EnsureFeatureEnabled::class . ':tier_pages');
     Route::get('deposito/data', [DepositoController::class, 'get_data'])->name('deposito.data');
     Route::get('campaign/data', [CampaignController::class, 'get_data'])->name('campaign.data');
     Route::get('customer-deposito/data', [DepositoController::class, 'customer_deposito_get_data'])->name('customer-deposito.data');
