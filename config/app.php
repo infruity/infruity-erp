@@ -14,6 +14,9 @@ return [
     */
     
     'name' => env('APP_NAME', 'Laravel'),
+
+    // Demo "Guest" login (separate database). Off by default; enable only on local/demo environments.
+    'guest_login' => (bool) env('GUEST_LOGIN_ENABLED', false),
     
     /*
     |--------------------------------------------------------------------------
