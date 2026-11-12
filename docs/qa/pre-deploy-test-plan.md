@@ -77,13 +77,13 @@ Gerbang: semua test hijau di MySQL.
 
 ### Hasil Fase 1 (2026-11-12)
 
-122 test baru di gerbang (+1 `known-gap`, lihat W1), semua gerbang lulus. Dijalankan di MySQL (di SQLite otomatis *skipped*):
+129 test baru di gerbang (+1 `known-gap`, lihat W1), semua gerbang lulus. Dijalankan di MySQL (di SQLite otomatis *skipped*):
 
 ```bash
 export PATH=/opt/homebrew/opt/php@8.5/bin:$PATH
-php vendor/bin/phpunit -c phpunit.mysql.xml          # 126 test (122 baru + 4 TransferConcurrency), gerbang hijau
+php vendor/bin/phpunit -c phpunit.mysql.xml          # 133 test (129 baru + 4 TransferConcurrency), gerbang hijau
 php vendor/bin/phpunit -c phpunit.mysql.xml --group known-gap   # 1 test yang SENGAJA gagal (sisa W1: total header vs item)
-php vendor/bin/phpunit                               # 512 test, 135 skipped (butuh MySQL), 0 gagal
+php vendor/bin/phpunit                               # 519 test, 142 skipped (butuh MySQL), 0 gagal
 ```
 
 | File | Test | Yang dibuktikan |
@@ -118,6 +118,8 @@ Catatan teknis: `WholesaleController::saveTransaction` memanggil `DB::disconnect
 | D4 | Medium | `products.hpp` `double` (data lama) vs `INT` (migration): pembulatan menggeser hitungan ledger/produksi. | **Diperbaiki sesuai keputusan pemilik:** kolom tetap pecahan (migration `…_make_products_hpp_fractional`), importer menyalin apa adanya, tampilan dibulatkan di 3 titik; HPP cocok persis. Test presisi + test tampilan. |
 | D5 | Medium | 115 produk aktif (id 677–827; 93 berdiri sendiri, 4 induk, 18 varian) punya `status`/`tipe` kosong di data lama. | Diimpor sebagai default (`product`, `no-receipt`); **dikonfirmasi pemilik** (produk biasa/induk), konsisten dengan induk/varian lain. |
 | D6–D10 | Low–Medium | Draf wholesale id 0 (tidak diimpor), NULL→default (kode cabang diturunkan dari nama), 2 tabel hanya-di-data-lama kosong, token FCM basi (kini dibersihkan otomatis termasuk `SENDER_ID_MISMATCH`), logo nota (pratinjau aman bila file hilang). | **Diselesaikan**; detail di [phase2-import-rehearsal.md](phase2-import-rehearsal.md). Skrip dump/muat: `scripts/legacy/`. |
+| D11 | Medium | Kolom `wholesale.branch_id/supplier_id/uuid` dan `wholesale_product.category_id` `NOT NULL` tanpa default padahal tidak diisi aplikasi → MySQL non-strict menyimpan 0/'' (akar W5). | **Diperbaiki di skema baru** (migration `…_000003_make_unused_wholesale_columns_nullable`, kolom `NULL`); importer mengubah 0/'' lama menjadi NULL. |
+| S1–S5 | High–Low | Evaluasi MySQL strict mode: `migrate:fresh` gagal (nickname 13 > 10), simpan pengadaan baru 500 (`order_number` tanpa default), dashboard CRM salah mengelompokkan pengeluaran (154 baris jadi 1 kelompok; juga 500 di strict penuh), catatan opname terpotong di 255, fixture test memakai enum tidak sah. | **Semua diperbaiki + test.** 298 rute pada data nyata: 0 beda di strict. Sakelar `DB_STRICT` / `DB_SQL_MODES` (default tetap non-strict). **Rekomendasi:** strict sempit di staging dulu. Lihat [strict-mode-evaluation.md](strict-mode-evaluation.md). |
 
 **Koreksi plan:** `/register` sudah tertutup (403 / redirect), jadi butir Fase 4 untuk itu dicoret; captcha login tidak aktif (lihat temuan 2).
 
