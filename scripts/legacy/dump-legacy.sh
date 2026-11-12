@@ -18,14 +18,20 @@ CONN=()
 [ -n "${MYSQL_USER:-}" ] && CONN+=("-u$MYSQL_USER")
 [ -n "${MYSQL_HOST:-}" ] && CONN+=("-h$MYSQL_HOST")
 
+# Views are listed first and left out of the dump. No process substitution here: some shared-hosting shells have no /dev/fd.
 IGNORE=()
-while IFS= read -r view; do
-  [ -n "$view" ] && IGNORE+=("--ignore-table=$OLD_DB.$view")
-done < <(mysql ${CONN[@]+"${CONN[@]}"} -N -B -e "SELECT table_name FROM information_schema.views WHERE table_schema = '$OLD_DB'")
+VIEWS=$(mysql ${CONN[@]+"${CONN[@]}"} -N -B -e "SELECT table_name FROM information_schema.views WHERE table_schema = '$OLD_DB'")
+for view in $VIEWS; do
+  IGNORE+=("--ignore-table=$OLD_DB.$view")
+done
+
+# --set-gtid-purged exists in MySQL's mysqldump only; MariaDB's (Hostinger shared hosting) rejects it.
+GTID=()
+if mysqldump --help 2>/dev/null | grep -q -- '--set-gtid-purged'; then GTID=(--set-gtid-purged=OFF); fi
 
 mysqldump ${CONN[@]+"${CONN[@]}"} \
   --single-transaction --no-tablespaces --skip-triggers --skip-routines \
-  --set-gtid-purged=OFF --default-character-set=utf8mb4 \
+  ${GTID[@]+"${GTID[@]}"} --default-character-set=utf8mb4 \
   ${IGNORE[@]+"${IGNORE[@]}"} "$OLD_DB" | gzip -c > "$OUT"
 
 TABLES=$(mysql ${CONN[@]+"${CONN[@]}"} -N -B -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '$OLD_DB' AND table_type = 'BASE TABLE'")

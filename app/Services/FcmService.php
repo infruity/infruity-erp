@@ -140,6 +140,9 @@ class FcmService
 
     protected function payload(string $token, string $title, string $body, array $data): array
     {
+        // The notification must open (and take its icon from) the site that sent it, not a fixed address.
+        $site = rtrim((string) config('app.url'), '/');
+
         return [
             'message' => [
                 'token' => $token,
@@ -148,11 +151,11 @@ class FcmService
                     'notification' => [
                         'title' => (string) $title,
                         'body' => (string) $body,
-                        'icon' => 'https://infruity.com/icon.png',
-                        'click_action' => 'https://infruity.com',
+                        'icon' => $site . '/icon.png',
+                        'click_action' => $site,
                     ],
                     'fcm_options' => [
-                        'link' => 'https://infruity.com',
+                        'link' => $site,
                     ],
                 ],
             ],
