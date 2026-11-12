@@ -803,14 +803,17 @@
 
             $('#products-table').on('click', '.editable-price', function(event) {
             event.stopPropagation();
+            // Only one price editor is open at a time: opening another closes the previous one.
+            $('#products-table .price-editor').each(function() { $(this).data('close')(); });
             var $span = $(this);
             var currentValue = $span.data('value');
             var id = $span.data('id');
-            var $editor = $('<span class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 p-1 ring-1 ring-emerald-500"></span>');
+            var $editor = $('<span class="price-editor inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 p-1 ring-1 ring-emerald-500"></span>');
             var $input = $('<input type="number" min="0" step="1" aria-label="Harga baru" class="w-20 md:w-28 bg-transparent px-1 text-right text-sm font-semibold text-emerald-900 outline-none">').val(currentValue);
             var $save = $('<button type="button" aria-label="Simpan harga" class="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500 text-white"><i class="ph-bold ph-check text-xs"></i></button>');
             var $cancel = $('<button type="button" aria-label="Batal ubah harga" class="hidden md:flex h-7 w-7 items-center justify-center rounded-md bg-gray-100 text-gray-500"><i class="ph-bold ph-x text-xs"></i></button>');
             function closeEditor() { $editor.remove(); $span.show(); }
+            $editor.data('close', closeEditor);
             function saveEditor() {
                 var value = $input.val();
                 if (value === '' || Number(value) < 0) { $input.focus(); return; }
