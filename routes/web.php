@@ -12,9 +12,16 @@ Route::get('/infruity-ui/{page?}', [InfruityUiController::class, 'show'])
     ->name('infruity-ui');
 
 // Route::get('/', [ProductController::class, 'index'])->name('products-data');
-Route::get('/', 'DashboardController@landing')->name('landing');
+// First visit goes to the login page; a signed-in user goes on to the dashboard. The landing page stays at /landing.
+Route::get('/', function () {
+    return redirect(auth()->check() ? \App\Providers\RouteServiceProvider::HOME : route('login'));
+});
+Route::get('/landing', 'DashboardController@landing')->name('landing');
 Route::get('/login', 'Auth\LoginController@showLogin')->name('login');
-Route::post('/login/guest', [GuestLoginController::class, 'store'])->name('login.guest');
+// Guest demo login only exists when GUEST_LOGIN_ENABLED=true (never on live).
+if (config('app.guest_login')) {
+    Route::post('/login/guest', [GuestLoginController::class, 'store'])->name('login.guest');
+}
 Route::get('/forgot-password', 'DashboardController@forgot_password')->name('forgot-password');
 Route::post('/forgot-password', 'DashboardController@forgot_password_check')->name('forgot-password.request');
 Route::get('/register', 'Auth\RegisterController@showRegister')->name('register');

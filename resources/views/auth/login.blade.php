@@ -204,17 +204,21 @@
                         Masuk ke Sistem
                     </button>
 
+                    @if (config('app.guest_login'))
                     <!-- Guest Button -->
                     <button type="submit" form="guest-login-form"
                         class="flex-none flex items-center justify-center py-4 px-6 border-2 border-primary rounded-2xl text-sm font-bold tracking-wide text-primary bg-transparent hover:bg-primary/5 transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                         title="Masuk sebagai Guest">
                         Guest
                     </button>
+                    @endif
                 </div>
             </form>
-            <form id="guest-login-form" action="{{ route('login.guest') }}" method="POST">
-                @csrf
-            </form>
+            @if (config('app.guest_login'))
+                <form id="guest-login-form" action="{{ route('login.guest') }}" method="POST">
+                    @csrf
+                </form>
+            @endif
 
             <!-- Footer Text -->
             <div class="mt-8 text-center text-sm text-gray-500">
