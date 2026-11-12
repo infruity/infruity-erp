@@ -25,7 +25,7 @@
             <h2>Logo toko</h2>
             <p>Logo yang akan digunakan pada struk.</p>
             <div class="nota-logo-preview">
-                <img id="nota-logo-preview" src="{{ isset($data) && $data->logo ? asset('storage/' . $data->logo) : asset('assets/media/svg/files/blank-image.svg') }}" alt="Pratinjau logo toko">
+                <img id="nota-logo-preview" src="{{ isset($data) && $data->logo && \Illuminate\Support\Facades\Storage::disk('public')->exists($data->logo) ? asset('storage/' . $data->logo) : asset('assets/media/svg/files/blank-image.svg') }}" alt="Pratinjau logo toko">
             </div>
             <label class="erp-action" for="nota-logo"><i class="ph ph-upload-simple" aria-hidden="true"></i>Pilih logo</label>
             <input id="nota-logo" name="avatar" type="file" accept="image/png,image/jpeg" class="visually-hidden" aria-describedby="nota-logo-help">

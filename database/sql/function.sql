@@ -147,12 +147,11 @@ BEGIN
 		JOIN pos_transaction_detail AS B ON A.id = B.pos_id
 		LEFT JOIN products AS P ON B.product_id = P.id
 		LEFT JOIN product_units AS PC ON P.product_unit = PC.id
-		LEFT JOIN pos_payment AS pp ON pp.pos_id = A.id
 		LEFT JOIN customer AS C ON A.customer_id = C.id
 		LEFT JOIN branch AS D ON D.id = A.branch_id
-		LEFT JOIN reg_regencies AS kabupaten ON kabupaten.id = C.city
-		LEFT JOIN reg_districts AS kecamatan ON kecamatan.id = C.district
-		LEFT JOIN reg_villages AS kelurahan ON kelurahan.id = C.village
+		LEFT JOIN reg_regencies AS kabupaten ON kabupaten.id = CAST(C.city AS CHAR(4))
+		LEFT JOIN reg_districts AS kecamatan ON kecamatan.id = CAST(C.district AS CHAR(6))
+		LEFT JOIN reg_villages AS kelurahan ON kelurahan.id = CAST(C.village AS CHAR(10))
 	WHERE
 		A.date BETWEEN start_date AND end_date
         AND A.deleted_at IS NULL

@@ -339,6 +339,8 @@ class UserController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('user.index');
+
         if (class_exists(\Debugbar::class)) {
             \Debugbar::disable();
         }

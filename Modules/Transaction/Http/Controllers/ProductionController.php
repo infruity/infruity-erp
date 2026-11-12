@@ -611,7 +611,7 @@ class ProductionController extends Controller
                 return $html;
             })
             ->addColumn('hpp', function ($item) {
-                return 'Rp' . toNumber($item->products->hpp * $item->quantity);
+                return 'Rp' . tonumberround($item->products->hpp * $item->quantity);
             })
             ->addColumn('harga_jual', function ($item) {
                 return toNumber($item->products->price * $item->quantity);

@@ -14,6 +14,18 @@ class FcmService
     /** Requests sent at the same time. */
     private const CONCURRENCY = 30;
 
+    /**
+     * FCM error codes that say the TOKEN is dead, so it is deleted: UNREGISTERED (app removed / token expired) and
+     * SENDER_ID_MISMATCH (token belongs to another Firebase project, e.g. copied from the legacy database).
+     * Other failures (payload, quota, outage) must not delete tokens.
+     */
+    private const DEAD_TOKEN_CODES = ['UNREGISTERED', 'SENDER_ID_MISMATCH'];
+
+    public static function isDeadTokenError(?string $code): bool
+    {
+        return $code !== null && in_array($code, self::DEAD_TOKEN_CODES, true);
+    }
+
     protected $projectId;
     protected $credentialsPath;
 
@@ -83,7 +95,7 @@ class FcmService
                     $error = $response->json();
                     $code = $error['error']['details'][0]['errorCode'] ?? null;
 
-                    if ($code === 'UNREGISTERED') {
+                    if (self::isDeadTokenError($code)) {
                         $invalidTokens[] = $token;
                         Log::warning("🧹 Token invalid ditemukan: {$token}");
                     } else {
@@ -128,6 +140,9 @@ class FcmService
 
     protected function payload(string $token, string $title, string $body, array $data): array
     {
+        // The notification must open (and take its icon from) the site that sent it, not a fixed address.
+        $site = rtrim((string) config('app.url'), '/');
+
         return [
             'message' => [
                 'token' => $token,
@@ -136,11 +151,11 @@ class FcmService
                     'notification' => [
                         'title' => (string) $title,
                         'body' => (string) $body,
-                        'icon' => 'https://infruity.com/icon.png',
-                        'click_action' => 'https://infruity.com',
+                        'icon' => $site . '/icon.png',
+                        'click_action' => $site,
                     ],
                     'fcm_options' => [
-                        'link' => 'https://infruity.com',
+                        'link' => $site,
                     ],
                 ],
             ],

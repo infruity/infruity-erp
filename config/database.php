@@ -2,7 +2,17 @@
 
 use Illuminate\Support\Str;
 
+// Hostinger shared hosting (production) runs MariaDB; local dev/CI usually runs MySQL 8. The two name the
+// recursive-CTE depth limit differently, and setting an unknown session variable aborts the connection.
+// DB_SERVER=mariadb switches to MariaDB's name. Anything else keeps the MySQL 8 behaviour.
+$cteVariable = strtolower((string) env('DB_SERVER', 'mysql')) === 'mariadb'
+    ? 'max_recursive_iterations'
+    : 'cte_max_recursion_depth';
+
 return [
+
+    // Name of the session variable that caps recursive-CTE depth on the connected server (see above).
+    'cte_recursion_variable' => $cteVariable,
 
     /*
     |--------------------------------------------------------------------------
@@ -56,7 +66,11 @@ return [
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
             'prefix_indexes' => true,
-            'strict' => false,
+            // Off by default: MySQL then stores 0 / '' / a truncated value for what does not fit. Turn on with
+            // DB_STRICT=true (Laravel's full strict set, includes ONLY_FULL_GROUP_BY) or pick the modes with
+            // DB_SQL_MODES=STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION. See docs/qa/strict-mode-evaluation.md.
+            'strict' => (bool) env('DB_STRICT', false),
+            'modes' => env('DB_SQL_MODES') ? array_map('trim', explode(',', env('DB_SQL_MODES'))) : null,
             'engine' => null,
             // PHP 8.5 deprecates the PDO::MYSQL_* constants; Pdo\Mysql::ATTR_* is the
             // supported form and exists since PHP 8.4 (the minimum for this app).
@@ -64,7 +78,7 @@ return [
                 Pdo\Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
                 // product_hpp recurses once per ledger row of a product, so the depth
                 // must exceed the longest product history (it grows every day).
-                Pdo\Mysql::ATTR_INIT_COMMAND => 'SET SESSION cte_max_recursion_depth = ' . max(1000, (int) env('DB_CTE_MAX_RECURSION_DEPTH', 1000000)),
+                Pdo\Mysql::ATTR_INIT_COMMAND => 'SET SESSION ' . $cteVariable . ' = ' . max(1000, (int) env('DB_CTE_MAX_RECURSION_DEPTH', 1000000)),
             ]) : [],
         ],
 
@@ -79,7 +93,8 @@ return [
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
-            'strict' => false,
+            'strict' => (bool) env('DB_STRICT', false),
+            'modes' => env('DB_SQL_MODES') ? array_map('trim', explode(',', env('DB_SQL_MODES'))) : null,
             'engine' => null,
         ],
 

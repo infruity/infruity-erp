@@ -42,6 +42,11 @@ class WholesaleSaveButtonsTest extends TestCase
         });
         Schema::create('product_hpp', function (Blueprint $t) { $t->increments('id'); $t->integer('product_id'); $t->integer('seq'); $t->decimal('hpp_berjalan', 30, 6); $t->timestamps(); });
         Schema::create('product_child', function (Blueprint $t) { $t->increments('id'); $t->integer('parent_id'); $t->integer('product_id'); });
+        // Needed by the item validation (exists:products) and the never-negative stock guard.
+        Schema::create('products', function (Blueprint $t) { $t->increments('id'); $t->string('name')->nullable(); });
+        Schema::create('product_stock', function (Blueprint $t) { $t->integer('id'); $t->integer('branch_id'); $t->decimal('stock_available', 15, 2)->default(0); });
+        DB::table('products')->insert(['id' => 11, 'name' => 'Apel']);
+        DB::table('product_stock')->insert(['id' => 11, 'branch_id' => 1, 'stock_available' => 0]);
         DB::table('role')->insert(['id_role' => 2]);
         DB::table('role_user')->insert(['id_user' => 7, 'id_role' => 2]);
         DB::table('role_menu')->insert(['id_role' => 2, 'permission' => 'wholesale.save-transaction']);

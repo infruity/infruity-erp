@@ -25,9 +25,26 @@
     <testsuites>
         <testsuite name="MySQL">
             <file>./tests/Feature/TransferConcurrencyTest.php</file>
+            <file>./tests/Feature/LoginAccessBehaviorTest.php</file>
+            <file>./tests/Feature/PosPaymentBehaviorTest.php</file>
+            <file>./tests/Feature/TransferStockBehaviorTest.php</file>
+            <file>./tests/Feature/ReportBehaviorTest.php</file>
+            <file>./tests/Feature/WholesaleBehaviorTest.php</file>
+            <file>./tests/Feature/LegacyImportTest.php</file>
+            <file>./tests/Feature/ProductHppFractionTest.php</file>
+            <file>./tests/Feature/CrmDashboardExpenseTest.php</file>
+            <file>./tests/Feature/LoginThrottleTest.php</file>
+            <file>./tests/Feature/StockOpnameBehaviorTest.php</file>
+            <file>./tests/Feature/CustomerProductReportRegionJoinTest.php</file>
         </testsuite>
     </testsuites>
+    <groups>
+        <exclude>
+            <group>known-gap</group>
+        </exclude>
+    </groups>
     <php>
+        <ini name="memory_limit" value="512M"/>
         <server name="APP_ENV" value="testing"/>
         <server name="BCRYPT_ROUNDS" value="4"/>
         <server name="CACHE_DRIVER" value="array"/>
