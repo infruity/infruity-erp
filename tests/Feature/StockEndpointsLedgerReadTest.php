@@ -129,4 +129,16 @@ final class StockEndpointsLedgerReadTest extends TestCase
         $this->giveStock($apel, $this->branch, 5);
         $this->assertEquals(17.0, $stockOf(), 'the new movement is there on the very next read');
     }
+
+    public function test_the_stock_list_shows_a_stock_change_at_once_despite_the_cache(): void
+    {
+        $url = '/products/stock-data?draw=1&start=0&length=100&stock_filter=ada&search[value]=Apel%20Ledger';
+        $stockOf = fn () => (float) collect($this->getJson($url)->assertOk()->json('data'))->firstWhere('id', $this->products['apel'])['stock_raw'];
+
+        $this->assertEquals(12.0, $stockOf());
+        $this->assertEquals(12.0, $stockOf(), 'second read, from the cache');
+
+        $this->giveStock($this->products['apel'], $this->branch, 8);
+        $this->assertEquals(20.0, $stockOf(), 'the new movement is there on the very next read');
+    }
 }

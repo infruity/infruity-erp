@@ -1527,8 +1527,15 @@ class ProductController extends Controller
             DB::raw('SUM(child_consumed) AS child_consumed'),
             DB::raw('SUM(stock_available) AS stock_available')
         )->groupBy('id');
+
+        // The totals come from the product_stock view (the whole ledger, ~0.3 s) and every count/page query of the
+        // list used to rebuild it. Read once, kept until a ledger row changes, then joined as a small literal table.
+        $totalRows = LedgerCache::remember(
+            'stock_list_totals:' . md5(implode(',', $allowedBranchIds) . '|' . $branch),
+            fn () => $totals->get()->map(fn ($r) => [(int) $r->id, (string) $r->parent_stock, (string) $r->child_consumed, (string) $r->stock_available])->all()
+        );
         $query = DB::table('products as p')
-            ->leftJoinSub($totals, 'stock_totals', 'stock_totals.id', '=', 'p.id')
+            ->leftJoinSub($this->stockTotalsTable($totalRows), 'stock_totals', 'stock_totals.id', '=', 'p.id')
             ->leftJoin('product_units as u', 'u.id', '=', 'p.product_unit')
             ->whereNull('p.is_variant')
             ->where('p.tipe', '!=', 'parcel')
@@ -1677,6 +1684,30 @@ class ProductController extends Controller
             })
             ->rawColumns(['name', 'action', 'price', 'stock_available', 'hpp', 'category'])
             ->make(true);
+    }
+
+    /**
+     * The (id, parent_stock, child_consumed, stock_available) totals as an inline SELECT. Every value was read from the
+     * database as a number and is re-checked here, so nothing user-controlled reaches the SQL.
+     *
+     * @param  list<array{0:int,1:string,2:string,3:string}>  $rows
+     */
+    private function stockTotalsTable(array $rows): string
+    {
+        $number = fn (string $v) => preg_match('/^-?\d+(\.\d+)?$/', $v) ? $v : '0';
+
+        if ($rows === []) {
+            return 'SELECT NULL AS id, NULL AS parent_stock, NULL AS child_consumed, NULL AS stock_available FROM (SELECT 1) AS empty_totals WHERE 1 = 0';
+        }
+
+        $selects = [];
+        foreach ($rows as $i => [$id, $parent, $consumed, $available]) {
+            $selects[] = $i === 0
+                ? sprintf('SELECT %d AS id, %s AS parent_stock, %s AS child_consumed, %s AS stock_available', $id, $number($parent), $number($consumed), $number($available))
+                : sprintf('SELECT %d, %s, %s, %s', $id, $number($parent), $number($consumed), $number($available));
+        }
+
+        return implode(' UNION ALL ', $selects);
     }
 
     public function get_data_available(Request $request)
