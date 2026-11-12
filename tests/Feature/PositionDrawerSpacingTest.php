@@ -13,6 +13,6 @@ final class PositionDrawerSpacingTest extends TestCase
         $sharedView = file_get_contents($root . '/Modules/Master/Resources/views/partials/mobile-index.blade.php');
 
         self::assertStringContainsString("\$formBodyClass = 'px-5 pt-3 pb-5 space-y-3';", $positionView);
-        self::assertStringContainsString("{{ \$formBodyClass ?? 'px-5 py-5 space-y-5' }}", $sharedView);
+        self::assertStringContainsString("{{ \$formBodyClass ?? 'px-5 pb-2 pt-5 flex flex-col gap-5' }}", $sharedView);
     }
 }
