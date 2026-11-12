@@ -123,6 +123,29 @@
                             </template>
                             <div x-show="detail.updated_at" class="flex gap-3 items-start"><i class="ph-duotone ph-clock mt-0.5 text-2xl text-emerald-500 shrink-0"></i><div class="min-w-0"><div class="text-xs font-bold text-gray-800 leading-snug" x-text="detail.updated_by_name || 'Terakhir diperbarui'"></div><div class="text-[11px] text-gray-400 mt-0.5" x-text="formatUpdatedAt(detail.updated_at)"></div></div></div>
                         </div>
+                    @elseif ($routeBase === 'customers')
+                        <div class="min-h-0 overflow-y-auto px-6 pb-8 pt-2 flex flex-col gap-4 text-sm break-words">
+                            <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-user text-lg"></i></div><div><div class="font-bold text-gray-800" x-text="label(detail)"></div><div class="text-[11px] text-gray-400 font-medium">Nama Pelanggan</div></div></div>
+                            <div x-show="ageLabel(detail.birth_of_date)" class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-calendar-blank text-lg"></i></div><div><div class="font-bold text-gray-800" x-text="ageLabel(detail.birth_of_date)"></div><div class="text-[11px] text-gray-400 font-medium">Usia Pelanggan</div></div></div>
+                            <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-phone text-lg"></i></div>
+                                <div class="min-w-0">
+                                    <a :href="detail.whatsapp ? 'https://wa.me/' + String(detail.whatsapp).replace(/\D/g, '') : '#'" :target="detail.whatsapp ? '_blank' : '_self'" rel="noopener noreferrer"
+                                        :class="detail.whatsapp ? 'text-emerald-600 hover:text-emerald-700 border-b border-dashed border-emerald-400 hover:border-emerald-600 cursor-pointer' : 'text-gray-700 cursor-default'"
+                                        class="text-sm font-bold pb-0.5 inline-flex items-center gap-1.5 transition-colors"><span x-text="detail.whatsapp || '-'"></span><i x-show="detail.whatsapp" class="ph-bold ph-arrow-up-right text-xs"></i></a>
+                                    <div class="text-[11px] text-gray-400 font-medium" x-text="detail.whatsapp ? 'Nomor WhatsApp (Klik untuk Chat)' : 'Nomor WhatsApp'"></div>
+                                </div>
+                            </div>
+                            <div x-show="detail.address || detail.city_name" class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-map-pin text-lg"></i></div>
+                                <div class="min-w-0">
+                                    <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(detail.address || detail.city_name || '')" target="_blank" rel="noopener noreferrer"
+                                        class="text-sm font-bold text-blue-600 hover:text-blue-700 border-b border-dashed border-blue-400 hover:border-blue-600 pb-0.5 inline-flex items-center gap-1.5 transition-colors truncate max-w-full cursor-pointer"><span class="truncate" x-text="detail.address || detail.city_name"></span><i class="ph-bold ph-arrow-up-right text-xs shrink-0"></i></a>
+                                    <div class="text-[11px] text-gray-400 font-medium">Lokasi Domisili (Klik untuk Buka Google Maps)</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-clock text-lg"></i></div>
+                                <div class="min-w-0"><div class="text-xs font-bold text-gray-800 leading-snug" x-text="detail.updated_by_name || 'Administrator'"></div><div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Memperbarui pada ' + formatDetailDate(detail.updated_at || detail.created_at)"></div></div>
+                            </div>
+                        </div>
                     @else
                         <div class="min-h-0 overflow-y-auto px-6 pb-6 space-y-5 text-sm break-words">
                             <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center shrink-0"><i class="ph ph-storefront text-xl"></i></div><div><div class="font-bold text-gray-800" x-text="label(detail)"></div><div class="text-[11px] text-gray-400" x-text="fields.find(field => field.key === nameKey)?.label || 'Nama'"></div></div></div>
@@ -309,6 +332,22 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
             if (key === 'email') return 'ph-envelope';
             if (key === 'description') return 'ph-note';
             return 'ph-info';
+        },
+        ageLabel(value) {
+            if (!value) return '';
+            const born = new Date(String(value).replace(' ', 'T'));
+            if (Number.isNaN(born.getTime())) return '';
+            const now = new Date();
+            let age = now.getFullYear() - born.getFullYear();
+            if (now.getMonth() < born.getMonth() || (now.getMonth() === born.getMonth() && now.getDate() < born.getDate())) age--;
+            return age > 0 ? age + ' Tahun' : '';
+        },
+        formatDetailDate(value) {
+            const date = value ? new Date(String(value).replace(' ', 'T')) : new Date();
+            if (Number.isNaN(date.getTime())) return '-';
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const pad = number => String(number).padStart(2, '0');
+            return `${pad(date.getDate())} ${months[date.getMonth()]} ${date.getFullYear()}, ${pad(date.getHours())}:${pad(date.getMinutes())}`;
         },
         formatUpdatedAt(value) {
             const date = new Date(String(value).replace(' ', 'T'));

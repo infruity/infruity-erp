@@ -60,7 +60,7 @@ final class CustomersLoadMoreTest extends TestCase
         $this->assertCount(50, $second['data']);
         $this->assertSame(120, $second['total']);
         $this->assertSame(3, $second['next_page']);
-        $this->assertSame(['id', 'name', 'code', 'whatsapp', 'email', 'address', 'gender', 'birth_of_date'], array_keys($second['data'][0]));
+        $this->assertSame(['id', 'name', 'code', 'whatsapp', 'email', 'address', 'gender', 'birth_of_date', 'created_at', 'updated_at', 'updated_by_name', 'city_name'], array_keys($second['data'][0]));
 
         $third = $this->getJson('/customers?page=3')->assertOk()->json();
         $this->assertCount(20, $third['data']);

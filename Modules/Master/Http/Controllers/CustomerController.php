@@ -42,16 +42,22 @@ class CustomerController extends Controller
 
         $search = mb_substr(trim((string) $request->query('q', '')), 0, 100);
         $records = Customer::query()
-            ->select('id', 'name', 'code', 'whatsapp', 'email', 'address', 'gender', 'birth_of_date')
+            ->leftJoin('users as editor', 'editor.id_user', '=', 'customer.updated_by')
+            ->leftJoin('reg_regencies as regency', 'regency.id', '=', 'customer.city')
+            ->select(
+                'customer.id', 'customer.name', 'customer.code', 'customer.whatsapp', 'customer.email', 'customer.address',
+                'customer.gender', 'customer.birth_of_date', 'customer.created_at', 'customer.updated_at',
+                'editor.nm_user as updated_by_name', 'regency.name as city_name'
+            )
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
-                    $query->where('name', 'like', Like::contains($search))
-                        ->orWhere('code', 'like', Like::contains($search))
-                        ->orWhere('whatsapp', 'like', Like::contains($search))
-                        ->orWhere('email', 'like', Like::contains($search));
+                    $query->where('customer.name', 'like', Like::contains($search))
+                        ->orWhere('customer.code', 'like', Like::contains($search))
+                        ->orWhere('customer.whatsapp', 'like', Like::contains($search))
+                        ->orWhere('customer.email', 'like', Like::contains($search));
                 });
             })
-            ->orderByDesc('id')
+            ->orderByDesc('customer.id')
             ->paginate(50)
             ->withQueryString();
 
