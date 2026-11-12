@@ -22,7 +22,7 @@
             <x-slot:filter><button type="button" @click="filterOpen = true" aria-label="Filter resep" class="erp-mobile-search__filter {{ $category !== 'all' || $type !== 'all' ? 'is-active' : '' }}"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></x-slot:filter>
         </x-erp.mobile-search>
     </form>
-    <div class="relative erp-surface bg-white rounded-none lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
+    <div x-data="{ scrolled: false, scrollTimer: null }" class="relative erp-surface bg-white rounded-none lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
         <div class="hidden md:flex gap-3 items-center p-4 border-b border-gray-100">
             <form action="{{ route('receipt.index') }}" method="GET" class="relative flex-1">
                 @if($type !== 'all')<input type="hidden" name="type" value="{{ $type }}">@endif
@@ -39,8 +39,16 @@
                 <a href="{{ route('receipt.create') }}" @click.prevent="openRecipeCreate()" class="h-11 px-5 rounded-full bg-[#0b595b] text-white text-[13px] font-semibold flex items-center gap-2"><i class="ph-bold ph-plus"></i> Tambah Resep</a>
             @endif
         </div>
-        <div class="hidden md:block px-5 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-500">Menampilkan <span class="font-semibold text-gray-700" x-text="loadedCount"></span> dari <span class="font-semibold text-gray-700" x-text="totalCount"></span> resep</div>
-        <div class="mobile-list-edge-fade flex-1 overflow-y-auto pb-28 md:pb-0">
+        <div class="hidden md:flex px-4 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-400 font-medium">
+            Menampilkan <span class="mx-1 text-gray-700 font-semibold" x-text="loadedCount"></span> dari
+            <span class="ml-1 text-gray-700 font-semibold" x-text="totalCount"></span> resep
+        </div>
+        <div x-show="scrolled" x-cloak class="md:hidden absolute top-2 left-0 right-0 z-20 flex justify-center pointer-events-none">
+            <span class="bg-white/95 backdrop-blur-md border border-gray-200 rounded-full px-4 py-1.5 shadow-lg text-[11px] text-gray-700 font-medium">
+                Menampilkan <strong x-text="loadedCount"></strong> dari <strong x-text="totalCount"></strong> resep
+            </span>
+        </div>
+        <div class="mobile-list-edge-fade flex-1 overflow-y-auto pb-28 md:pb-0" @scroll.passive="scrolled = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => scrolled = false, 600)">
             <div id="recipe-list-items">
                 @include('transaction::receipt.partials.items', ['receipts' => $receipts])
             </div>
