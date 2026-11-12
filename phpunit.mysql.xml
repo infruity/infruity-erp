@@ -35,6 +35,7 @@
             <file>./tests/Feature/CrmDashboardExpenseTest.php</file>
             <file>./tests/Feature/LoginThrottleTest.php</file>
             <file>./tests/Feature/StockOpnameBehaviorTest.php</file>
+            <file>./tests/Feature/CustomerProductReportRegionJoinTest.php</file>
         </testsuite>
     </testsuites>
     <groups>
