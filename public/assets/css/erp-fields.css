@@ -78,3 +78,29 @@
     box-shadow: var(--erp-active-ring);
     outline: 0;
 }
+
+/*
+ * Status / tag pill (<x-erp.badge>, App\Support\StatusBadge). Same colours and shape as the legacy Metronic
+ * "badge badge-light-*" pills on the ERP theme (erp-theme.css maps --bs-* onto the --erp-* tokens used here).
+ */
+.erp-badge { display: inline-flex; align-items: center; gap: 4px; padding: 5px 9px; border-radius: 999px; background: var(--erp-surface-muted, #f9fafb); color: var(--erp-muted, #6b7280); font-size: 11px; font-weight: 600; line-height: 1.4; white-space: nowrap; vertical-align: baseline; }
+.erp-badge > i { font-size: 12px; line-height: 1; }
+.erp-badge--success { background: var(--erp-success-soft, #ecfdf5); color: var(--erp-success, #047857); }
+.erp-badge--warning { background: var(--erp-warning-soft, #fffbeb); color: var(--erp-warning, #b45309); }
+.erp-badge--danger { background: var(--erp-danger-soft, #fef2f2); color: var(--erp-danger, #dc2626); }
+.erp-badge--info { background: var(--erp-info-soft, #eff6ff); color: var(--erp-info, #2563eb); }
+.erp-badge--primary { background: var(--erp-primary-soft, #ecfdf5); color: var(--erp-primary, #0b595b); }
+.erp-badge--neutral { background: #f3f4f6; color: #4b5563; }
+
+/* Field wrapper (<x-erp.field>): label with the required star, hint, help text, validation error. Sizes are the ones the
+   Tailwind forms already used (text-xs font-semibold text-gray-600 mb-1.5), so migrating a form changes nothing visible. */
+.erp-field { min-width: 0; }
+.erp-field__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.erp-field__label { display: block; margin: 0; color: #4b5563; font-size: 12px; font-weight: 600; line-height: 1.4; }
+.erp-field__req { margin-left: 3px; color: var(--erp-danger, #dc2626); }
+.erp-field__hint { color: #9ca3af; font-size: 11px; font-weight: 400; }
+.erp-field__help { margin: 4px 0 0; color: var(--erp-muted, #6b7280); font-size: 11px; }
+.erp-field__error { margin: 4px 0 0; color: var(--erp-danger, #dc2626); font-size: 12px; }
+
+/* Metronic's "secondary" pill is nearly white (#f9fafb); the neutral tone of the shared pill is the one grey for both. */
+.erp-legacy .badge.badge-light-secondary { background-color: #f3f4f6; color: #4b5563; }

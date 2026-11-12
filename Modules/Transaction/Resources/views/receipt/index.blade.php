@@ -317,8 +317,7 @@ function recipeIndex(initialCount, total, hasMore, nextPageUrl, createFormInitia
 }
 
 async function deleteReceipt(id) {
-    const confirmed = await Swal.fire({title: 'Hapus resep?', text: 'Data resep akan dihapus permanen.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Hapus', cancelButtonText: 'Batal', confirmButtonColor: '#ef4444'});
-    if (!confirmed.isConfirmed) return;
+    if (!await ErpDialog.confirmDelete({what: 'resep', text: 'Data resep akan dihapus permanen.'})) return;
     try {
         const response = await fetch(`{{ url('receipt') }}/${id}`, {method: 'DELETE', headers: {'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content}});
         const result = await response.json();

@@ -92,4 +92,12 @@ final class FieldActiveStateContractTest extends TestCase
         $this->assertStringContainsString('ph-x so-close-x', $view);
         $this->assertStringContainsString('#kt_modal_add_customer .so-close-back { display: none; }', $css);
     }
+
+    public function test_the_theme_lets_sweetalert_buttons_keep_the_colours_the_dialog_asks_for(): void
+    {
+        $theme = $this->css('erp-theme');
+
+        $this->assertStringContainsString('.erp-ui .swal2-styled.swal2-confirm { background-color: var(--swal2-confirm-button-background-color, var(--erp-primary)); }', $theme);
+        $this->assertStringContainsString('.erp-ui .swal2-styled.swal2-cancel { background-color: var(--swal2-cancel-button-background-color, #4b5563); }', $theme);
+    }
 }

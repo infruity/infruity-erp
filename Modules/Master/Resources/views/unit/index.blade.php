@@ -78,8 +78,8 @@
                 </div>
                 <form @submit.prevent="save()" class="flex-1 min-h-0 flex flex-col">
                     <div class="flex-1 overflow-y-auto bg-gray-50/60 px-5 py-5 space-y-5">
-                        <div><label for="unit-name" class="text-xs font-semibold text-gray-600 mb-1.5 block">Nama Satuan <span class="text-red-400">*</span></label><input id="unit-name" x-model.trim="form.name" required maxlength="255" type="text" placeholder="Masukkan nama satuan" class="w-full h-10 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></div>
-                        <div><label for="unit-abbreviation" class="text-xs font-semibold text-gray-600 mb-1.5 block">Simbol Satuan <span class="text-red-400">*</span></label><input id="unit-abbreviation" x-model.trim="form.abbreviation" required maxlength="255" type="text" placeholder="Masukkan simbol (contoh: kg, pcs)" class="w-full h-10 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></div>
+                        <x-erp.field label="Nama Satuan" for="unit-name" required><input id="unit-name" x-model.trim="form.name" required maxlength="255" type="text" placeholder="Masukkan nama satuan" class="w-full h-10 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
+                        <x-erp.field label="Simbol Satuan" for="unit-abbreviation" required><input id="unit-abbreviation" x-model.trim="form.abbreviation" required maxlength="255" type="text" placeholder="Masukkan simbol (contoh: kg, pcs)" class="w-full h-10 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
                         <p x-show="error" x-text="error" role="alert" class="text-xs text-red-600"></p>
                     </div>
                     <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3">
@@ -149,14 +149,13 @@ function unitPage(units) {
             } catch (error) { this.error = error.message; this.saving = false; }
         },
         async confirmDelete(unit) {
-            const result = await Swal.fire({ title: 'Hapus Satuan?', text: `Satuan ${unit.name} akan dihapus permanen.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Hapus', cancelButtonText: 'Batal', confirmButtonColor: '#ef4444' });
-            if (!result.isConfirmed) return;
+            if (!await ErpDialog.confirmDelete({ what: 'Satuan', name: unit.name })) return;
             try {
                 const response = await fetch(`{{ url('/unit') }}/${unit.id}`, { method: 'DELETE', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } });
                 const data = await response.json();
                 if (!response.ok || data.success === false) throw new Error(data.message || 'Gagal menghapus satuan.');
                 window.location.reload();
-            } catch (error) { Swal.fire('Gagal', error.message, 'error'); }
+            } catch (error) { ErpDialog.error(error.message); }
         }
     };
 }

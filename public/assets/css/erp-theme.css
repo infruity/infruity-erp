@@ -221,8 +221,10 @@ html.erp-html { font-size:16px; }
 .erp-ui .swal2-html-container { font-size: 14px; line-height: 1.6; }
 .erp-ui .swal2-actions { gap: 10px; }
 .erp-ui .swal2-styled { min-height: 44px; border-radius: 12px; padding: 10px 20px; font: 600 14px var(--erp-font); }
-.erp-ui .swal2-styled.swal2-confirm { background-color: var(--erp-primary); }
-.erp-ui .swal2-styled.swal2-cancel { background-color: #4b5563; }
+/* SweetAlert2 11 passes confirmButtonColor / cancelButtonColor as these variables (erp-dialog.js sets them: red for a destructive
+   confirmation); the fixed colours that used to be here ignored them, so every dialog came out teal. They stay the defaults. */
+.erp-ui .swal2-styled.swal2-confirm { background-color: var(--swal2-confirm-button-background-color, var(--erp-primary)); }
+.erp-ui .swal2-styled.swal2-cancel { background-color: var(--swal2-cancel-button-background-color, #4b5563); }
 .erp-ui .swal2-styled:focus-visible { box-shadow: 0 0 0 3px rgba(11,89,91,.16); }
 .erp-ui .swal2-input { border-radius: 12px; border-color: var(--erp-border); font: 16px var(--erp-font); }
 .erp-ui .tooltip { --bs-tooltip-bg: #111827; --bs-tooltip-color: white; --bs-tooltip-border-radius: 8px; font-family: var(--erp-font); }

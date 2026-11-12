@@ -3,6 +3,7 @@ namespace Modules\Transaction\Http\Controllers;
 
 use App\Support\Like;
 use App\Support\InventorySnapshot;
+use App\Support\StatusBadge;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -713,15 +714,8 @@ class TransferController extends Controller
                 $time = date('H:i', strtotime($item->created_at));
                 $html = '<span class="text-muted d-block fs-8">' . $date . ' ' . $time . '</span>';
 
-                $statusBadges = [
-                    'temp'    => '<span class="badge badge-light-danger">Draft</span>',
-                    'draft'   => '<span class="badge badge-light-danger">Draft</span>',
-                    'pending' => '<span class="badge badge-light-secondary">Pending</span>',
-                    'proses'  => '<span class="badge badge-light-warning">Proses</span>',
-                    'selesai' => '<span class="badge badge-light-success">Selesai</span>',
-                ];
-
-                $html .= $statusBadges[$item->status] ?? '<span class="badge badge-light-dark">' . $item->status . '</span>';
+                // temp and draft are both shown as "Draft"; any other status keeps its own word (escaped).
+                $html .= StatusBadge::for($item->status, in_array($item->status, ['temp', 'draft'], true) ? 'Draft' : null);
                 if ($item->picPenerima) {
                     $html .= '<br><span class="badge badge-light-success mt-1">' . ucwords(strtolower($item->picPenerima->nm_user ?? $item->picPenerima->name ?? 'unknown')) . '</span>';
                 }
