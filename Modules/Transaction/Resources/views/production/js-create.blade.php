@@ -1398,7 +1398,7 @@
                     </div>
                 </td>
                 <td class="text-center">
-                    <span class="fw-bold text-gray-800">Rp ${new Intl.NumberFormat('id-ID').format(ingredient.hpp)}</span>
+                    <span class="fw-bold text-gray-800">Rp ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(ingredient.hpp || 0)}</span>
                 </td>
                 <td class="text-center">
                     <span class="fw-bold text-primary">Rp ${new Intl.NumberFormat('id-ID').format(total)}</span>

@@ -325,7 +325,7 @@ class ProductionParcelController extends Controller
                 return $html;
             })
             ->addColumn('hpp', function ($item) {
-                return 'Rp' . toNumber($item->product->hpp * $item->quantity);
+                return 'Rp' . tonumberround($item->product->hpp * $item->quantity);
             })
             ->addColumn('harga_jual', function ($item) {
                 return toNumber($item->product->price * $item->quantity);

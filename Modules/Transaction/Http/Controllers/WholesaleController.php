@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\InventorySnapshot;
 use App\Support\Like;
 use App\Support\ProductHpp;
 use Exception;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Modules\Master\Entities\Branch;
 use Modules\Master\Entities\Product;
 use Modules\Master\Entities\ProductBranch;
@@ -84,7 +86,7 @@ class WholesaleController extends Controller
             ->where('created_by', Auth::user()->id_user)
             ->where('status', 'temp')
             ->where(function ($query) use ($userBranches) {
-                $query->whereNull('branch_id')->orWhereIn('branch_id', $userBranches);
+                $query->whereNull('branch_id')->orWhere('branch_id', 0)->orWhereIn('branch_id', $userBranches);
             })
             ->orderBy('id', 'desc')
             ->first();
@@ -432,13 +434,24 @@ class WholesaleController extends Controller
         try {
             DB::beginTransaction();
             $wholesale = Wholesale::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
+            $stockBefore = $this->stockSnapshot(
+                WholesaleProduct::where('wholesale_id', $id)->pluck('product_id')->all(),
+                (int) $wholesale->branch_id
+            );
             $wholesale->delete();
             WholesaleProduct::where('wholesale_id', $id)->delete();
+            $this->assertStockNotNegative($stockBefore, (int) $wholesale->branch_id);
             DB::commit();
             return response()->json([
                 'success' => true,
                 'message' => 'Data berhasil dihapus.',
             ]);
+        } catch (ValidationException $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first(),
+            ], 422);
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json([
@@ -469,8 +482,56 @@ class WholesaleController extends Controller
         return view('transaction::wholesale.receive_product', $data);
     }
 
+    /**
+     * Stock must never go negative. Compare a branch's stock of the given products before and after a
+     * change to a purchase; refuse when it ends below zero AND got worse (old negative data is not blamed).
+     *
+     * @param  array<int,float>  $before  result of stockSnapshot() taken before the change
+     */
+    private function assertStockNotNegative(array $before, int $branchId): void
+    {
+        $after = InventorySnapshot::stockAvailable(array_keys($before), $branchId);
+
+        foreach ($after as $productId => $stock) {
+            if ($stock < 0 && $stock < ($before[$productId] ?? 0)) {
+                $name = DB::table('products')->where('id', $productId)->value('name') ?? ('#' . $productId);
+
+                throw ValidationException::withMessages([
+                    'items' => "Perubahan ditolak: stok \"{$name}\" akan menjadi {$stock} (negatif) karena barang dari nota pengadaan ini sudah terpakai.",
+                ]);
+            }
+        }
+    }
+
+    /** @return array<int,float> */
+    private function stockSnapshot(array $productIds, int $branchId): array
+    {
+        $ids = array_values(array_unique(array_map('intval', array_filter($productIds, 'is_numeric'))));
+
+        return $ids === [] ? [] : InventorySnapshot::stockAvailable($ids, $branchId);
+    }
+
+    /**
+     * Retired legacy "receive" step. wholesale.status only allows draft/posting/temp, and stock enters the
+     * ledger when a purchase is posted (saveTransaction). These endpoints wrote status 'complete', which a
+     * non-strict MySQL stores as '' - dropping the purchase out of the stock ledger. Routes stay registered
+     * so old views that call route(...) still render, but nothing is written any more.
+     */
+    private function legacyReceiveRetired()
+    {
+        $message = 'Langkah "terima/selesai" pengadaan sudah tidak dipakai. Stok masuk saat nota diposting.';
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => false, 'message' => $message], 410);
+        }
+
+        return redirect('wholesale')->with('error', $message);
+    }
+
     public function receive_product(Request $request, $id)
     {
+        return $this->legacyReceiveRetired();
+
         if ($denied = $this->requireAccess('wholesale.receive_product')) {
             return $denied;
         }
@@ -496,6 +557,8 @@ class WholesaleController extends Controller
 
     public function save_receive(Request $request)
     {
+        return $this->legacyReceiveRetired();
+
         if ($denied = $this->requireAccess('wholesale.save-receive')) {
             return $denied;
         }
@@ -732,6 +795,8 @@ class WholesaleController extends Controller
 
     public function set_selesai(Request $request, $id)
     {
+        return $this->legacyReceiveRetired();
+
         if ($denied = $this->requireAccess('wholesale.set_selesai')) {
             return $denied;
         }
@@ -755,6 +820,14 @@ class WholesaleController extends Controller
 
     public function reset_transactions(Request $request)
     {
+        // Truncates every transaction table: a development convenience only, never on a live system.
+        if (! app()->environment(['local', 'testing'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Reset transaksi hanya tersedia di lingkungan local/testing.',
+            ], 403);
+        }
+
         if ($denied = $this->requireAccess('wholesale.reset')) {
             return $denied;
         }
@@ -855,7 +928,7 @@ class WholesaleController extends Controller
         }
 
         // dd($request->all());
-        $data = $request->validate([
+        $rules = [
             'branch_id'      => 'required|exists:branch,id',
             'date'           => 'required|date',
             'invoice_number' => 'nullable',
@@ -863,7 +936,19 @@ class WholesaleController extends Controller
             'total'          => 'required|numeric',
             'subtotal'       => 'required|numeric',
             'status'         => 'nullable|in:temp,draft,posting',
-        ]);
+        ];
+        // The autosave ('temp') stays lenient while the user is still typing; a real save is strict.
+        if ($request->input('status') !== 'temp') {
+            $rules += [
+                'items.*.id'    => 'required|integer|exists:products,id',
+                'items.*.qty'   => 'required|numeric|gt:0',
+                'items.*.price' => 'nullable|numeric|min:0',
+            ];
+        }
+        $data = $request->validate($rules);
+        // validate() only returns fields that have a rule; the cart rows carry more (sell, total_input, ...)
+        // that the save below reads, so keep the full rows.
+        $data['items'] = $request->input('items', []);
 
         $userBranchIds = collect(UserBranch::getUserBranch())->map(fn ($branchId) => (int) $branchId)->all();
         if (! in_array((int) $data['branch_id'], $userBranchIds, true)) {
@@ -874,11 +959,13 @@ class WholesaleController extends Controller
         }
 
         $userId = Auth::user()->id_user;
+        $existingOrder = null;
         if (! empty($data['invoice_number'])) {
             $existingOrder = Wholesale::where('order_number', $data['invoice_number'])->first();
             $isAccessibleOrder = $existingOrder && (
                 ($existingOrder->branch_id !== null && in_array((int) $existingOrder->branch_id, $userBranchIds, true))
-                || ($existingOrder->branch_id === null && (int) $existingOrder->created_by === (int) $userId)
+                // A draft made by opening the form has no branch yet (null, or 0 on non-strict MySQL).
+                || (empty($existingOrder->branch_id) && (int) $existingOrder->created_by === (int) $userId)
             );
 
             if ($existingOrder && ! $isAccessibleOrder) {
@@ -899,6 +986,12 @@ class WholesaleController extends Controller
         try {
             DB::beginTransaction();
 
+            // Stock of every product this purchase touches, before anything changes.
+            $stockBefore = $this->stockSnapshot(array_merge(
+                collect($data['items'])->pluck('id')->all(),
+                $existingOrder ? WholesaleProduct::where('wholesale_id', $existingOrder->id)->pluck('product_id')->all() : []
+            ), (int) $data['branch_id']);
+
             // =========================
             // HEADER (UPDATE / CREATE)
             // =========================
@@ -909,7 +1002,7 @@ class WholesaleController extends Controller
                 $existingTempDraft = Wholesale::where('created_by', $userId)
                     ->where('status', 'temp')
                     ->where(function ($query) use ($userBranchIds) {
-                        $query->whereNull('branch_id')->orWhereIn('branch_id', $userBranchIds);
+                        $query->whereNull('branch_id')->orWhere('branch_id', 0)->orWhereIn('branch_id', $userBranchIds);
                     })
                     ->when(!empty($data['invoice_number']), function($query) use ($data) {
                         return $query->where('order_number', '!=', $data['invoice_number']);
@@ -944,7 +1037,7 @@ class WholesaleController extends Controller
                 $draft = Wholesale::where('created_by', $userId)
                     ->where('status', 'temp')
                     ->where(function ($query) use ($userBranchIds) {
-                        $query->whereNull('branch_id')->orWhereIn('branch_id', $userBranchIds);
+                        $query->whereNull('branch_id')->orWhere('branch_id', 0)->orWhereIn('branch_id', $userBranchIds);
                     })
                     ->first();
 
@@ -1012,6 +1105,8 @@ class WholesaleController extends Controller
 
             }
 
+            $this->assertStockNotNegative($stockBefore, (int) $data['branch_id']);
+
             // Posted: copy the new moving HPP into the product catalog.
             if (($data['status'] ?? 'draft') === 'posting') {
                 ProductHpp::syncCatalog($existingProductIds);
@@ -1027,6 +1122,14 @@ class WholesaleController extends Controller
                 'invoice_number' => $wholesale->order_number,
                 'status'       => $wholesale->status,
             ]);
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            DB::disconnect();
+
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first(),
+            ], 422);
         } catch (\Throwable $e) {
             DB::rollBack();
             DB::disconnect();

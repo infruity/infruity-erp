@@ -130,7 +130,7 @@
             .wholesale-procurement .modal-dialog { margin:0; }
             .wholesale-procurement .modal-content { min-height:100dvh; border-radius:0; }
             body:has(.wholesale-procurement.is-edit-mode) main { overflow:hidden !important; padding:0 !important; }
-            body:has(.wholesale-procurement.is-edit-mode) main > .animate-fade-in-up { min-height:0; }
+            body:has(.wholesale-procurement.is-edit-mode) main > .animate-fade-in-up { min-height:0; animation:none; }
             body:has(.wholesale-procurement.is-edit-mode) .erp-topbar-mobile { height:66px !important; }
             .wholesale-procurement.is-edit-mode { display:flex; width:calc(100% - 8px) !important; min-height:0; flex:1; flex-direction:column; margin:0 auto; padding:17px 0 0; }
             .wholesale-procurement.is-edit-mode .wholesale-form-heading { display:none; }
