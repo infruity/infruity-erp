@@ -786,7 +786,7 @@
             .so-hist-empty { padding:32px 0; color:#9ca3af; text-align:center; font-size:13px; }
         </style>
         <link rel="stylesheet" href="{{ asset('assets/css/stock-opname-reference.css') }}?v={{ filemtime(public_path('assets/css/stock-opname-reference.css')) }}">
-        <x-erp.workspace class="so-workspace" title="Stok Opname" subtitle="Cocokkan stok fisik dan stok sistem."><x-slot:toolbar>
+        <x-erp.workspace count-table="transaction-table" count-noun="stok opname" class="so-workspace" title="Stok Opname" subtitle="Cocokkan stok fisik dan stok sistem."><x-slot:toolbar>
             <div class="erp-search so-desktop-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-so-search placeholder="Cari produk…" aria-label="Cari produk"></div>
             <x-erp.mobile-search class="so-mobile-search"><x-slot:input><input type="search" id="search" data-so-search class="erp-mobile-search__input" placeholder="Cari produk…" aria-label="Cari produk"></x-slot:input><x-slot:clear><button type="button" id="so-search-clear" class="erp-mobile-search__clear" aria-label="Hapus pencarian" hidden><i class="ph ph-x" aria-hidden="true"></i></button></x-slot:clear><x-slot:filter><button type="button" class="erp-mobile-search__filter" data-so-open-filter aria-label="Filter stok opname" aria-haspopup="dialog" aria-controls="so-filter-sheet"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></x-slot:filter></x-erp.mobile-search>
             <button type="button" class="erp-action so-desktop-filter" data-so-open-filter aria-controls="so-filter-sheet"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button>

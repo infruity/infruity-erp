@@ -54,8 +54,8 @@ final class InventoryListFixesTest extends TestCase
         $this->assertMatchesRegularExpression('/zeroRecords:\s*wholesaleNoMatchState/', $view);
         $this->assertStringContainsString('Pengadaan tidak ditemukan', $view);
         $this->assertStringContainsString('Coba kata pencarian lain atau sesuaikan filter.', $view);
-        // The count line under the toolbar must say the same thing as the table body.
-        $this->assertStringContainsString(": (hasCriteria ? 'Pengadaan tidak ditemukan' : 'Belum ada pengadaan')", $view);
+        // The count under the toolbar is the shared component (numbers only); the table body carries the wording.
+        $this->assertStringContainsString('<x-erp.list-count noun="pengadaan"', $view);
         $this->assertStringContainsString('function hasWholesaleFilterCriteria(filters)', $view);
         $this->assertStringContainsString("$('#wholesale-table td.dataTables_empty').html(hasCriteria ? wholesaleNoMatchState : wholesaleEmptyState);", $view);
     }

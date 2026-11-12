@@ -64,7 +64,7 @@
     </style>
     <link rel="stylesheet" href="{{ asset('assets/css/production-list-reference.css') }}?v={{ filemtime(public_path('assets/css/production-list-reference.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/production-detail-reference.css') }}?v={{ filemtime(public_path('assets/css/production-detail-reference.css')) }}">
-    <x-erp.workspace title="Produksi" subtitle="Pantau produksi, bahan baku dan status pengerjaan." icon="cooking-pot">
+    <x-erp.workspace count-table="production-table" count-noun="produksi" title="Produksi" subtitle="Pantau produksi, bahan baku dan status pengerjaan." icon="cooking-pot">
         <x-slot:toolbar>
             <label class="erp-search production-desktop-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-production-search id="search-desktop" aria-label="Cari produksi" placeholder="Cari produksi..."></label>
             <x-erp.mobile-search class="production-mobile-search"><x-slot:input><input type="search" data-production-search id="search" class="erp-mobile-search__input" aria-label="Cari produksi" placeholder="Cari..."></x-slot:input></x-erp.mobile-search>

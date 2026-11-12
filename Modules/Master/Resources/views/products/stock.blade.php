@@ -65,7 +65,7 @@
     </style>
 
     <div class="stock-page">
-        <div class="stock-card">
+        <div class="stock-card relative">
             <div class="stock-toolbar">
                 <x-erp.mobile-search class="stock-search-shell erp-mobile-search-shell--always-visible erp-mobile-search-shell--fill">
                     <x-slot:input>
@@ -108,6 +108,7 @@
                 </select>
                 <button id="stock-filter-reset" type="button" tabindex="-1">Reset filter</button>
             </div>
+            <x-erp.list-count noun="produk" shown-id="stock-count-shown" total-id="stock-count-total" list=".stock-results" />
             <div id="stock-results" class="stock-results" aria-live="polite">
                 <div id="stock-loading" class="stock-loading">Memuat stok barang...</div>
                 <div id="stock-empty" class="stock-empty" hidden>
@@ -245,6 +246,8 @@
                     (payload.data || []).forEach(addRow);
                     shown += (payload.data || []).length;
                     const total = Number(payload.recordsFiltered) || 0;
+                    document.querySelectorAll('#stock-count-shown, #stock-count-shown-mobile').forEach(node => node.textContent = number.format(shown));
+                    document.querySelectorAll('#stock-count-total, #stock-count-total-mobile').forEach(node => node.textContent = number.format(total));
                     el.empty.hidden = total !== 0;
                     el.more.hidden = shown >= total;
                     document.getElementById('stock-more-count').textContent = number.format(Math.min(pageSize, total - shown));

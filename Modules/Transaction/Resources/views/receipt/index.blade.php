@@ -39,7 +39,7 @@
                 <a href="{{ route('receipt.create') }}" @click.prevent="openRecipeCreate()" class="h-11 px-5 rounded-full bg-[#0b595b] text-white text-[13px] font-semibold flex items-center gap-2"><i class="ph-bold ph-plus"></i> Tambah Resep</a>
             @endif
         </div>
-        <div class="hidden md:block px-5 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-500">Menampilkan <span class="font-semibold text-gray-700" x-text="loadedCount"></span> dari <span class="font-semibold text-gray-700" x-text="totalCount"></span> resep</div>
+        <x-erp.list-count noun="resep" shown="loadedCount" total="totalCount" />
         <div class="mobile-list-edge-fade flex-1 overflow-y-auto pb-28 md:pb-0">
             <div id="recipe-list-items">
                 @include('transaction::receipt.partials.items', ['receipts' => $receipts])

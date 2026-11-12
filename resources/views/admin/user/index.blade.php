@@ -120,7 +120,7 @@
             <x-slot:filter><button type="button" @click="$dispatch('user-filter-open')" aria-label="Filter akun" class="erp-mobile-search__filter {{ $selectedRoleId ? 'is-active' : '' }}"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i>@if($selectedRoleId)<span class="erp-mobile-search__filter-dot"></span>@endif</button></x-slot:filter>
         </x-erp.mobile-search>
     </form>
-    <div class="erp-surface bg-white rounded-none lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden">
+    <div class="relative erp-surface bg-white rounded-none lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden">
         <div class="hidden md:flex items-center gap-3 p-4 border-b border-gray-100">
             <form method="GET" action="{{ route('user.index') }}" class="relative flex-1">
                 <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -139,8 +139,8 @@
             <div class="mx-5 mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{{ session('error') ?: $errors->first() }}</div>
         @endif
 
-        <div class="hidden md:flex px-5 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-400 font-medium">Menampilkan <strong class="mx-1 text-gray-700">{{ $users->count() }}</strong> dari <strong class="mx-1 text-gray-700">{{ $users->total() }}</strong> akun pengguna</div>
-        <div class="flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0">
+        <x-erp.list-count noun="akun pengguna" :shown="$users->count()" :total="$users->total()" server />
+        <div class="flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0" data-erp-list>
             @forelse ($users as $user)
                 <button type="button" @click="openDetail({{ $user->id_user }})" class="w-full flex items-center gap-3 md:gap-4 px-5 py-3.5 md:py-4 border-b border-gray-100 hover:bg-gray-50/50 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" aria-label="Detail {{ $user->email }}">
                     <div @class(['w-9 h-9 md:w-10 md:h-10 rounded-xl border flex items-center justify-center shrink-0 font-bold text-sm', 'bg-emerald-50 border-emerald-100 text-emerald-700' => $loop->index % 5 === 0, 'bg-blue-50 border-blue-100 text-blue-700' => $loop->index % 5 === 1, 'bg-amber-50 border-amber-100 text-amber-700' => $loop->index % 5 === 2, 'bg-rose-50 border-rose-100 text-rose-700' => $loop->index % 5 === 3, 'bg-violet-50 border-violet-100 text-violet-700' => $loop->index % 5 === 4])>{{ mb_strtoupper(mb_substr($user->email ?: $user->nm_user, 0, 2)) }}</div>

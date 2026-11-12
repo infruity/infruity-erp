@@ -172,13 +172,6 @@
                 </x-slot:filter>
             </x-erp.mobile-search>
 
-            <!-- Mobile floating count pill: shown only while the product list is scrolling -->
-            <div x-show="isScrolling" x-transition x-cloak class="md:hidden absolute top-2 left-0 right-0 z-30 pointer-events-none flex justify-center px-4">
-                <div class="pointer-events-auto bg-white/95 backdrop-blur-md border border-gray-200/90 px-4 py-1.5 rounded-full shadow-lg text-[11px] text-gray-700 font-medium">
-                    Menampilkan <strong id="products-count-display-mobile" class="text-gray-900 font-semibold">0</strong> dari <strong id="products-count-total-mobile" class="text-gray-900 font-semibold">0</strong> produk
-                </div>
-            </div>
-
             <!-- ================================ -->
             <!-- MOBILE FILTER BOTTOM SHEET       -->
             <!-- ================================ -->
@@ -398,10 +391,7 @@
             <input type="hidden" id="branch-filter-value" data-kt-ecommerce-product-filter="branch">
             <input type="hidden" id="type-filter-value" data-kt-ecommerce-product-filter="type">
             <input type="hidden" id="category-filter-value" data-kt-ecommerce-product-filter="category" value="all">
-            <!-- Product Count (desktop only) -->
-            <div class="hidden md:flex sticky top-0 z-20 px-4 py-3 bg-gray-50/50 backdrop-blur-md border-b border-gray-100 items-center justify-between">
-                <span class="text-xs text-gray-400 font-medium">Menampilkan <span id="products-count-display" class="text-gray-700 font-semibold">0</span> dari <span id="products-count-total" class="text-gray-700 font-semibold">0</span> produk</span>
-            </div>
+            <x-erp.list-count noun="produk" shown-id="products-count-display" total-id="products-count-total" />
 
             <!-- Table -->
             <div class="mobile-list-edge-fade relative z-0 -mt-[72px] flex-1 overflow-auto pt-[72px] pb-24 md:mt-0 md:pt-0 md:pb-0" style="--mobile-list-fade-top:72px; --mobile-list-fade-bottom:72px" @scroll.passive="isScrolling = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => isScrolling = false, 600)">

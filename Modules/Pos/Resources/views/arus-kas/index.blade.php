@@ -132,7 +132,7 @@
 </style>
 
 @if ($pageMode === 'list')
-<section id="arus-kas-index-page" class="arus-kas-page arus-kas-list-page" aria-label="Arus Kas"
+<section id="arus-kas-index-page" class="arus-kas-page arus-kas-list-page relative" aria-label="Arus Kas"
     x-data="arusKasApp({ orders: @js($orders), branches: @js($branchOptions), formOrder: @js($formOrder), selectedBranchId: @js((string) ($selectedBranchId ?? '')), pageMode: @js($pageMode), baseUrl: @js(url('/arus-kas')) })"
     @erp-filter-apply.window="if ($event.detail.id === 'arus-kas') applyMobileFilters($event.detail.values)"
     @erp-filter-close.window="if ($event.detail.id === 'arus-kas') filterOpen = false">
@@ -156,13 +156,14 @@
             <h1 class="text-base font-bold leading-none text-gray-900">Arus Kas</h1>
             <p class="mt-1 text-[11px] text-gray-400">Keuangan <span class="px-1">/</span> Arus Kas</p>
         </div>
-        <p class="hidden text-xs text-gray-500 md:block" x-text="filteredOrders.length + ' transaksi'"></p>
         @if (check_access('expenditure.create'))
             <a href="{{ route('arus-kas.create') }}" class="hidden h-11 items-center gap-2 rounded-full bg-[#0b595b] px-5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#0a4e50] sm:inline-flex">
                 <i class="ph-bold ph-plus text-sm" aria-hidden="true"></i><span>Tambah Arus Kas</span>
             </a>
         @endif
     </div>
+
+    <x-erp.list-count noun="transaksi" shown="visibleOrders.length" total="filteredOrders.length" list="#arus-kas-scroll-container" />
 
     <div class="arus-kas-list" id="arus-kas-scroll-container">
         <div x-show="filteredOrders.length > 0" class="hidden border-b border-gray-100 bg-gray-50 px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-gray-500 lg:grid lg:grid-cols-[minmax(180px,1.3fr)_minmax(130px,1fr)_minmax(140px,1fr)_minmax(160px,1fr)_120px] lg:gap-3">

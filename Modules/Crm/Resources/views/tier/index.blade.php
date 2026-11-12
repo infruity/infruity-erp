@@ -3,7 +3,7 @@
 @section('page-title', 'Tier Pelanggan')
 @section('content')
 @include('crm::partials.assets')
-<x-erp.workspace title="Tier Pelanggan" subtitle="Kelola level dan benefit pelanggan. Pilih tier untuk melihat benefit." icon="ph-medal">
+<x-erp.workspace count-table="transaction-table" count-noun="tier" title="Tier Pelanggan" subtitle="Kelola level dan benefit pelanggan. Pilih tier untuk melihat benefit." icon="ph-medal">
     <x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" placeholder="Cari tier pelanggan…" aria-label="Cari tier pelanggan"></div>
             @if (check_access('tier.create'))
             <button type="button" class="erp-action erp-action--primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer" data-crm-create><i class="ph-bold ph-plus" aria-hidden="true"></i><span>Tambah Tier</span></button>

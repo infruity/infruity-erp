@@ -1,7 +1,7 @@
 @extends('template.root')
 @section('title', 'Analisis Pelanggan')
 
-@section('content')<x-erp.workspace title="Analisis Pelanggan" subtitle="Recency, frekuensi dan nilai belanja pelanggan."><x-slot:toolbar><label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="search" type="search" placeholder="Cari pelanggan…" aria-label="Cari pelanggan"></label></x-slot:toolbar><x-erp.collection table="transaction-table"><table class="table align-middle table-row-dashed fs-6 gy-5" id="transaction-table" width="100%">
+@section('content')<x-erp.workspace count-table="transaction-table" count-noun="pelanggan" title="Analisis Pelanggan" subtitle="Recency, frekuensi dan nilai belanja pelanggan."><x-slot:toolbar><label class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="search" type="search" placeholder="Cari pelanggan…" aria-label="Cari pelanggan"></label></x-slot:toolbar><x-erp.collection table="transaction-table"><table class="table align-middle table-row-dashed fs-6 gy-5" id="transaction-table" width="100%">
                     <thead>
                         <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
                             {{-- <th class="w-10px pe-2">
