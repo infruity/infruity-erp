@@ -195,7 +195,7 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
             const palette = ['bg-emerald-50 border-emerald-100 text-emerald-700', 'bg-blue-50 border-blue-100 text-blue-700', 'bg-amber-50 border-amber-100 text-amber-700', 'bg-rose-50 border-rose-100 text-rose-700', 'bg-violet-50 border-violet-100 text-violet-700'];
             return palette[Math.abs(Number(record.id) || this.label(record).length) % palette.length];
         },
-        subtitle(record) { return this.subtitleFields.map(key => key.split('.').reduce((value, part) => value?.[part], record)).filter(Boolean).join(' • ') || record.code || ''; },
+        subtitle(record) { return this.subtitleFields.map(key => key.split('.').reduce((value, part) => value?.[part], record)).filter(Boolean).join(' • ') || (this.subtitleFields.length ? '' : (record.code || '')); },
         fieldVisible(field) { return !field.visibleWhen || String(this.form[field.visibleWhen.key]) === String(field.visibleWhen.value); },
         fieldRequired(field) { return !!field.required || (!!field.requiredWhen && String(this.form[field.requiredWhen.key]) === String(field.requiredWhen.value)); },
         resetFieldPickerState() { this.fieldPickerOpen = {}; this.fieldPickerSearch = {}; },
