@@ -6,7 +6,7 @@ body:has(.transfer-list-page) main > .animate-fade-in-up { animation:none; }
 .transfer-search > i { color:#0b595b; font-size:18px; }
 .transfer-search input { flex:1; min-width:0; height:100%; padding:0; border:0!important; outline:0!important; box-shadow:none!important; background:transparent; color:#1f2937; font:inherit; font-size:13px!important; }
 .transfer-search input::placeholder { color:#6b7280; }
-.transfer-search:focus-within { border-color:#10b981; }
+.transfer-search:focus-within { border-color:var(--erp-active-border); background:var(--erp-active-bg); box-shadow:var(--erp-active-ring); }
 .transfer-icon-button { display:grid; width:32px; height:32px; flex:none; place-items:center; border:0; border-radius:50%; background:transparent; color:#6b7280; cursor:pointer; }
 .transfer-search-divider { width:1px; height:16px; background:#e5e7eb; }
 .transfer-icon-button.is-active { background:#ecfdf5; color:#0b595b; }

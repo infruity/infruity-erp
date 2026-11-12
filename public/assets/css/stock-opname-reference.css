@@ -25,7 +25,8 @@
 .so-reference-sheet .so-sheet-footer button { display:flex; min-width:0; height:44px; align-items:center; justify-content:center; border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:#4b5563; font-size:12px; line-height:18px; font-weight:700; cursor:pointer; }
 .so-reference-sheet .so-sheet-footer .is-primary { background:#0b595b; border-color:#0b595b; color:#fff; }
 .so-reference-sheet button:disabled { cursor:not-allowed; opacity:.5; }
-.so-reference-sheet :is(button,input,textarea):focus-visible, .so-reference-history button:focus-visible { outline:2px solid #0b595b; outline-offset:2px; }
+.so-reference-sheet button:focus-visible, .so-reference-history button:focus-visible { outline:2px solid #0b595b; outline-offset:2px; }
+.so-reference-sheet :is(input,textarea):focus-visible { outline:0; border-color:var(--erp-active-border); background-color:var(--erp-active-bg); box-shadow:var(--erp-active-ring); }
 .so-reference-sheet .so-filter-section { margin:0 0 18px; padding:0; border:0; min-width:0; }
 .so-reference-sheet .so-filter-section:last-child { margin-bottom:0; }
 .so-reference-sheet .so-filter-section legend { float:none; width:auto; padding:0; margin:0 0 8px; color:#6b7280; font-size:10px; line-height:16px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
@@ -140,3 +141,27 @@
 }
 @media(prefers-reduced-motion:reduce) { .so-reference-sheet.fade .modal-dialog, #kt_stock_opname_history { transition:none; } }
 
+
+#kt_modal_add_customer .so-close-back { display: none; } /* the arrow is for the full-page (mobile) layout below */
+
+/*
+ * "Catat Stock Opname" form: a bottom sheet over the list on desktop, a full page on a phone (below 768px, where the
+ * mobile layout starts): header on top, the form scrolls, the actions stay at the bottom above the safe area.
+ */
+@media (max-width: 767.98px) {
+    #kt_modal_add_customer .modal-dialog { position: fixed; inset: 0; width: 100%; max-width: none; height: 100dvh; margin: 0; padding: 0; }
+    #kt_modal_add_customer .modal-content { height: 100dvh; max-height: none; border: 0; border-radius: 0 !important; background: #fff; }
+    #kt_modal_add_customer form { display: flex; height: 100%; min-height: 0; flex-direction: column; }
+    #kt_modal_add_customer .modal-header { flex: none; align-items: center; padding: calc(14px + env(safe-area-inset-top)) 16px 14px; border-bottom: 1px solid #f3f4f6 !important; }
+    #kt_modal_add_customer .modal-header .modal-title { font-size: 17px !important; }
+    /* a full page goes back, like the other full-page forms: arrow on the left of the title */
+    #kt_modal_add_customer .modal-header { justify-content: flex-start; gap: 10px; }
+    #kt_modal_add_customer .modal-header > div { min-width: 0; flex: 1; }
+    #kt_modal_add_customer #kt_modal_add_customer_close { order: -1; display: grid; width: 40px !important; height: 40px !important; flex: none; margin: 0 0 0 -8px !important; place-items: center; border-radius: 50%; background: transparent !important; color: #374151; }
+    #kt_modal_add_customer .so-close-x { display: none; }
+    #kt_modal_add_customer .so-close-back { display: inline-block; font-size: 22px; }
+    #kt_modal_add_customer .modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px !important; background: #fff; }
+    #kt_modal_add_customer .modal-footer { flex: none; flex-wrap: nowrap; gap: 10px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) !important; border-top: 1px solid #f3f4f6 !important; background: #fff; box-shadow: 0 -10px 24px -14px rgba(31, 41, 55, .18); }
+    #kt_modal_add_customer .modal-footer .btn { flex: 1 1 0; min-height: 46px; margin: 0; border-radius: 12px !important; font-size: 14px; }
+    #kt_modal_add_customer .modal-footer .btn.btn-light { background: #f3f4f6 !important; }
+}

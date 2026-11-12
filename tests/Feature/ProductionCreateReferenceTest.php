@@ -118,7 +118,7 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString("url.searchParams.set('search', query)", $script);
 
         $css = file_get_contents(public_path('assets/css/production-form-reference.css'));
-        $this->assertStringContainsString('.production-create-reference #reference-product-picker .production-reference-picker__search input:focus { outline:none; border-color:#10b981; box-shadow:none; }', $css);
+        $this->assertStringContainsString('.production-create-reference #reference-product-picker .production-reference-picker__search input:focus { outline:none; border-color:var(--erp-active-border); box-shadow:var(--erp-active-ring); }', $css);
         $this->assertStringNotContainsString('.production-create-reference .production-reference-picker__search input:focus { border-color:#10b981; box-shadow:0 0 0 1px #10b981; }', $css);
         foreach (['.production-product-picker-trigger',
             '.production-product-picker-field > .select2-container { display:none !important; }',
@@ -154,7 +154,7 @@ final class ProductionCreateReferenceTest extends TestCase
 
         $this->assertStringContainsString('id="production_notes" name="notes"', preg_replace('/\\s+/', ' ', $create));
         $this->assertStringContainsString('.production-create-reference #production_notes:focus', $css);
-        $this->assertMatchesRegularExpression('/#production_notes:focus(?:,\\s*\\.production-create-reference #production_notes:focus-visible)?\\s*\\{[^}]*border-color:\\s*#10b981;[^}]*box-shadow:\\s*none;/s', $css);
+        $this->assertMatchesRegularExpression('/#production_notes:focus(?:,\\s*\\.production-create-reference #production_notes:focus-visible)?\\s*\\{[^}]*border-color:\\s*var\\(--erp-active-border\\);[^}]*box-shadow:\\s*var\\(--erp-active-ring\\);/s', $css);
     }
 
     public function test_create_quantity_sheet_uses_reference_summary_and_control_styles_without_changing_edit(): void
@@ -285,8 +285,8 @@ final class ProductionCreateReferenceTest extends TestCase
             'font:14px/1.5 var(--erp-font)',
             'border-color:#e5e7eb !important',
             'font-weight:600',
-            'border-color:#10b981 !important',
-            'box-shadow:0 0 0 1px #10b981 !important',
+            'border-color:var(--erp-active-border) !important',
+            'box-shadow:var(--erp-active-ring) !important',
             'body.erp-ui .production-create-reference #quantity:focus',
             'outline:none !important',
         ] as $rule) {

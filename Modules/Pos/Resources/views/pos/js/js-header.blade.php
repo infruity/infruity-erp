@@ -450,6 +450,7 @@
             return suffix ? `${item.name} (${suffix})` : item.name;
         };
         ErpPicker.attach('#customer_id', {
+            anchor: '.pos-customer',
             title: 'Pilih Pelanggan',
             placeholder: 'Cari nama atau nomor WhatsApp...',
             placeholderTrigger: 'Pilih pelanggan',
