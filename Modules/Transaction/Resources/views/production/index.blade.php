@@ -23,9 +23,6 @@
         #production-table_wrapper :is(.dataTables_paginate, .dataTables_length) { display:none !important; }
         .production-load-more { padding:16px 20px; }
         .production-load-more[hidden] { display:none; }
-        .production-load-more__button { display:flex; width:100%; height:44px; align-items:center; justify-content:center; gap:8px; border:2px dashed #e5e7eb; border-radius:12px; background:transparent; color:#6b7280; font-size:14px; font-weight:600; cursor:pointer; transition:color .15s,border-color .15s,background-color .15s; }
-        .production-load-more__button:hover { border-color:#34d399; color:#047857; background:#ecfdf5; }
-        .production-load-more__button:focus-visible { outline:2px solid #0b595b; outline-offset:2px; }
         .production-copy { display:flex; min-width:0; flex-direction:column; gap:2px; text-decoration:none; }
         .production-product { overflow:hidden; color:#1f2937; font-size:14px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
         .production-copy:hover .production-product { color:#0b595b; }
@@ -87,9 +84,7 @@
                     <tbody class=""></tbody>
                 </table>
             <div id="production-load-more" class="production-load-more" hidden>
-                <button type="button" class="production-load-more__button">
-                    <i class="ph ph-arrow-circle-down" aria-hidden="true"></i> Muat Produk Lagi
-                </button>
+                <x-erp.load-more>Muat Produk Lagi</x-erp.load-more>
             </div>
         </div>
     </x-erp.workspace>
