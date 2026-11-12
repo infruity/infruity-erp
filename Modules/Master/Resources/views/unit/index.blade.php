@@ -110,7 +110,6 @@
                             <div class="mt-0.5 text-[11px] font-medium text-gray-400" x-text="'Memperbarui pada ' + formatDate(detail.updatedAt || detail.createdAt)"></div>
                         </div>
                     </div>
-                    <div x-show="detail.description" class="rounded-xl bg-gray-50 px-3.5 py-3 text-xs leading-relaxed text-gray-600"><div class="mb-1 text-[11px] font-medium text-gray-400">Deskripsi</div><div x-text="detail.description"></div></div>
                 </div>
             </template>
             <x-slot:actions>

@@ -10,6 +10,7 @@ class UnitDetailReferenceTest extends TestCase
     {
         $view = file_get_contents(base_path('Modules/Master/Resources/views/unit/index.blade.php'));
 
+        $this->assertStringNotContainsString('detail.description', $view, 'no description block in the detail dialog');
         $this->assertSame(3, substr_count($view, 'w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80'), 'three 40px tiles');
         foreach (['ph-tag', 'ph-text-aa', 'ph-clock'] as $icon) {
             $this->assertStringContainsString('<i class="ph-duotone '.$icon.' text-lg">', $view);
