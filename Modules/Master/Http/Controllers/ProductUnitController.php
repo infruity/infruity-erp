@@ -28,9 +28,20 @@ class ProductUnitController extends Controller
         }
 
         $units = ProductUnit::query()
-            ->select(['id', 'name', 'abbreviation', 'description', 'created_at', 'updated_at'])
+            ->with('updater:id_user,name')
+            ->select(['id', 'name', 'abbreviation', 'description', 'created_at', 'updated_at', 'updated_by'])
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(fn ($unit) => [
+                'id' => $unit->id,
+                'name' => $unit->name,
+                'abbreviation' => $unit->abbreviation,
+                'description' => $unit->description,
+                'createdAt' => $unit->created_at?->toIso8601String(),
+                'updatedAt' => $unit->updated_at?->toIso8601String(),
+                'updatedBy' => $unit->updater?->name,
+            ])
+            ->values();
 
         return view('master::unit.index', compact('units'));
     }
@@ -73,6 +84,8 @@ class ProductUnitController extends Controller
             $unit->name = $validated['name'];
             $unit->abbreviation = $validated['abbreviation'];
             $unit->description = $validated['description'] ?? null;
+            $unit->created_by = Auth::user()?->id_user;
+            $unit->updated_by = Auth::user()?->id_user;
             $unit->save();
             DB::commit();
         } catch (Exception $e) {
@@ -139,6 +152,7 @@ class ProductUnitController extends Controller
             $unit->name = $validated['name'];
             $unit->abbreviation = $validated['abbreviation'];
             $unit->description = $validated['description'] ?? null;
+            $unit->updated_by = Auth::user()?->id_user;
             $unit->save();
             DB::commit();
         } catch (Exception $e) {

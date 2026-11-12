@@ -12,6 +12,11 @@ class ProductUnit extends Model
     protected $table = 'product_units';
     protected $fillable = [];
     
+    public function updater()
+    {
+        return $this->belongsTo(\App\User::class, 'updated_by', 'id_user');
+    }
+
     protected static function newFactory()
     {
         return \Modules\Master\Database\factories\ProductUnitFactory::new();
