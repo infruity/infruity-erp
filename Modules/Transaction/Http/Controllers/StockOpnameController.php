@@ -3,11 +3,12 @@
 namespace Modules\Transaction\Http\Controllers;
 
 use App\Support\Like;
+use App\Support\LedgerSql;
+use App\Support\NegativeStockWarning;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Transaction\Entities\StockOpname;
-use Modules\Transaction\Entities\ProductStock;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -70,13 +71,7 @@ class StockOpnameController extends Controller
         $userBranches = UserBranch::getUserBranch();
         $data['branches'] = Branch::whereIn('id', $userBranches)->get();
 
-        $emptyStockProducts = DB::table('product_stock')
-            ->join('branch', 'product_stock.branch_id', '=', 'branch.id')
-            ->select('product_stock.*', 'branch.name as branch_name')
-            ->whereIn('product_stock.branch_id', $userBranches)
-            ->where('stock_available', '<', 0)
-            ->whereNull('is_variant')
-            ->get();
+        $emptyStockProducts = NegativeStockWarning::forBranches($userBranches);
 
         $data['emptyStockData'] = $emptyStockProducts;
 
@@ -467,8 +462,7 @@ class StockOpnameController extends Controller
         $payload = $response->getData(true);
         $rows = $payload['data'] ?? [];
         if ($rows !== []) {
-            $stocks = ProductStock::query()
-                ->whereIn('id', array_unique(array_column($rows, 'product_id')))
+            $stocks = LedgerSql::stockFor(array_unique(array_column($rows, 'product_id')))
                 ->whereIn('branch_id', array_unique(array_column($rows, 'branch_id')))
                 ->get(['id', 'branch_id', 'stock_available', 'avg_hpp']);
 

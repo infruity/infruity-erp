@@ -2,6 +2,7 @@
 namespace Modules\Transaction\Http\Controllers;
 
 use App\Support\InventorySnapshot;
+use App\Support\NegativeStockWarning;
 use App\Support\Like;
 use App\Support\ProductHpp;
 use Exception;
@@ -42,13 +43,7 @@ class WholesaleController extends Controller
         $userBranches = UserBranch::getUserBranch();
         $data['branches'] = Branch::whereIn('id', $userBranches)->get();
 
-        $emptyStockProducts = DB::table('product_stock')
-            ->join('branch', 'product_stock.branch_id', '=', 'branch.id')
-            ->select('product_stock.*', 'branch.name as branch_name')
-            ->whereIn('product_stock.branch_id', $userBranches)
-            ->where('stock_available', '<', 0)
-            ->whereNull('is_variant')
-            ->get();
+        $emptyStockProducts = NegativeStockWarning::forBranches($userBranches);
 
         $data['emptyStockData'] = $emptyStockProducts;
 

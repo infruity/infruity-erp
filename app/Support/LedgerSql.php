@@ -72,6 +72,22 @@ class LedgerSql
         return ProductStock::query()->fromRaw('(' . $sql . ') as product_stock');
     }
 
+    /** Above this many products one read of the whole view is cheaper (real data: 10 ids 17 ms, 30 ids 86 ms, 200 ids 680 ms, view 335 ms). */
+    public const FILTER_LIMIT = 40;
+
+    /**
+     * product_stock rows of the given products, computed the cheapest way: only theirs when there are few, the view
+     * otherwise. Same rows either way.
+     */
+    public static function stockFor(iterable $productIds): Builder
+    {
+        $ids = self::ids($productIds);
+
+        return count($ids) <= self::FILTER_LIMIT
+            ? self::stock($ids)
+            : ProductStock::query()->whereIn('product_stock.id', $ids);
+    }
+
     private static function filtered(): bool
     {
         return DB::connection()->getDriverName() === 'mysql';

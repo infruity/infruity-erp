@@ -284,8 +284,10 @@ class DashboardController extends Controller
         }
 
         // Query 5 teratas
+        // customer.district is a BIGINT and reg_districts.id a CHAR: compared as they are, MySQL/MariaDB cannot use the
+        // region key and scan the region table for every customer (7-12 s on the real data). Cast to use the key.
         $top5 = DB::table('customer')
-            ->leftJoin('reg_districts as B', 'customer.district', '=', 'B.id')
+            ->leftJoin('reg_districts as B', fn ($join) => $join->whereRaw('B.id = CAST(customer.district AS CHAR(6))'))
             ->select([
                 'customer.district',
                 'B.name',
