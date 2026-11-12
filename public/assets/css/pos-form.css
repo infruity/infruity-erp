@@ -74,7 +74,7 @@
 .pos-form--reference .pos-field:has(#branch_id) .select2-selection:focus,
 .pos-form--reference .pos-field:has(#branch_id):focus-within .select2-selection,
 .pos-form--reference .pos-field:has(#branch_id) .select2-container--open .select2-selection,
-.pos-form--reference .pos-field:has(#branch_id) .select2-container--focus .select2-selection { border:1px solid #10b981 !important; box-shadow:0 0 0 1px #10b981 !important; }
+.pos-form--reference .pos-field:has(#branch_id) .select2-container--focus .select2-selection { border:1px solid var(--erp-active-border) !important; box-shadow:var(--erp-active-ring) !important; }
 .pos-form--reference .pos-field .select2-container--bootstrap5 .select2-selection--single { display:flex; align-items:center; padding:0 12px; }
 .pos-form--reference .pos-customer { display:flex; align-items:stretch; border:1px solid #868e98; border-radius:12px; background:#f9fafb; }
 .pos-form--reference .pos-customer .select2-container--bootstrap5 .select2-selection { border:0; background:transparent; }
@@ -213,7 +213,7 @@
 .pos-ref-cell__label small { color:#6b7280; font-size:inherit; font-weight:500; }
 .pos-ref-required::after { content:" *"; color:#dc2626; }
 .pos-ref-cell__field { display:flex; min-height:44px; overflow:hidden; border:1px solid #868e98; border-radius:12px; background:#fff; }
-.pos-ref-cell__field:focus-within { border-color:#0b595b; box-shadow:0 0 0 2px rgba(11,89,91,.12); }
+.pos-ref-cell__field:focus-within { border-color:var(--erp-active-border); box-shadow:var(--erp-active-ring); }
 .pos-ref-cell__field.is-readonly { background:#f3f4f6; }
 .pos-ref-cell__field > span { display:flex; align-items:center; padding:0 10px; border-right:1px solid #e5e7eb; background:#f9fafb; color:#4b5563; font-size:13px; font-weight:600; }
 .pos-ref-cell__field input { min-width:0; flex:1; border:0; background:transparent; padding:0 12px; color:#111827; font-size:14px; font-weight:700; text-align:left; outline:0; }
@@ -250,7 +250,7 @@
 .pos-pay-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; }
 .pos-form--reference .pos-pay-method, .pos-pay-extra .form-select { min-height:44px; border:1px solid #868e98; border-radius:12px; background-color:#f9fafb; font-size:14px; font-weight:600; }
 .pos-pay-amount { display:flex; min-height:44px; overflow:hidden; border:1px solid #868e98; border-radius:12px; background:#fff; }
-.pos-pay-amount:focus-within { border-color:#0b595b; box-shadow:0 0 0 2px rgba(11,89,91,.12); }
+.pos-pay-amount:focus-within { border-color:var(--erp-active-border); box-shadow:var(--erp-active-ring); }
 .pos-pay-amount > span { display:flex; align-items:center; padding:0 12px; border-right:1px solid #e5e7eb; background:#f9fafb; color:#4b5563; font-size:13px; font-weight:600; }
 .pos-pay-amount input { min-width:0; flex:1; border:0; background:transparent; padding:0 12px; color:#111827; font-size:15px; font-weight:700; outline:0; }
 .pos-pay-split { display:flex; align-items:center; justify-content:space-between; margin:14px 0; color:#374151; font-size:14px; font-weight:600; }
@@ -349,9 +349,9 @@ body:has(.pos-form--reference) .select2-search--dropdown:has(input[aria-controls
 body:has(.pos-form--reference) .select2-search--dropdown:has(input[aria-controls="select2-customer_id-results"])::before { position:absolute; top:24px; left:25px; z-index:1; width:10px; height:10px; border:1.5px solid #94a3b8; border-radius:50%; content:""; pointer-events:none; }
 body:has(.pos-form--reference) .select2-search--dropdown:has(input[aria-controls="select2-customer_id-results"])::after { position:absolute; top:35px; left:36px; width:5px; height:1.5px; transform:rotate(45deg); background:#94a3b8; content:""; pointer-events:none; }
 body:has(.pos-form--reference) .select2-search--dropdown input[aria-controls="select2-customer_id-results"] { min-height:44px; border:2px solid #10b981 !important; border-radius:12px !important; background:#fff; padding-left:34px !important; font-size:13px; }
-.pos-form--reference .pos-customer:has(.select2-container--open) { border-color:#10b981; box-shadow:0 0 0 1px #10b981; }
+.pos-form--reference .pos-customer:has(.select2-container--open) { border-color:var(--erp-active-border); box-shadow:var(--erp-active-ring); }
 .pos-form--reference .pos-customer:has(.select2-container--focus),
-.pos-form--reference .pos-customer:focus-within { border-color:#10b981; box-shadow:0 0 0 1px #10b981; }
+.pos-form--reference .pos-customer:focus-within { border-color:var(--erp-active-border); box-shadow:var(--erp-active-ring); }
 
 /* Reference composition panel proportions for Jus and Parcel; keep existing payload controls. */
 .pos-sheet--ref .pos-ref-card--jus,

@@ -4,13 +4,11 @@
 
 .erp-picker__trigger { display:flex; width:100%; min-height:44px; align-items:center; justify-content:space-between; gap:10px; padding:0 14px; border:1px solid var(--erp-border,#e5e7eb); border-radius:12px; background:#fff; color:var(--erp-text,#111827); font-size:14px; font-weight:600; text-align:left; cursor:pointer; }
 .erp-picker__trigger:hover { border-color:var(--erp-primary,#0b595b); }
-.erp-picker__trigger:focus-visible { outline:0; border-color:var(--erp-primary,#0b595b); box-shadow:0 0 0 3px rgba(11,89,91,.1); }
 .erp-picker__trigger:disabled { background:var(--erp-surface-muted,#f9fafb); color:var(--erp-muted,#6b7280); cursor:not-allowed; }
 .erp-picker__trigger i { flex:none; color:var(--erp-primary,#0b595b); font-size:13px; }
 .erp-picker__label { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .erp-picker__label.is-placeholder { color:#9ca3af; font-weight:500; }
 
-.erp-picker__trigger[aria-expanded="true"] { border-color:var(--erp-primary,#0b595b); box-shadow:0 0 0 3px rgba(11,89,91,.1); }
 .erp-picker__trigger[aria-expanded="true"] i { transform:rotate(180deg); }
 .erp-picker__trigger i { transition:transform .15s; }
 
@@ -21,7 +19,6 @@
 .erp-picker__search[hidden] { display:none; }
 .erp-picker__search i { position:absolute; top:50%; left:22px; transform:translateY(-50%); color:#9ca3af; font-size:15px; pointer-events:none; }
 .erp-picker__search input { width:100%; height:38px; padding:0 12px 0 34px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; color:#111827; font-size:13px; outline:0; }
-.erp-picker__search input:focus { border-color:var(--erp-primary,#0b595b); box-shadow:0 0 0 1px var(--erp-primary,#0b595b); }
 .erp-picker__list { flex:1 1 auto; min-height:0; margin:0; padding:6px; overflow-y:auto; overscroll-behavior:contain; list-style:none; }
 .erp-picker__item { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; border-radius:10px; cursor:pointer; }
 .erp-picker__item:hover, .erp-picker__item:focus-visible { background:rgba(236,253,245,.7); outline:0; }

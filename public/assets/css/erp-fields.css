@@ -1,0 +1,80 @@
+/*
+ * One "active" state for every field of the ERP: the one of the search field (erp-mobile-search.css):
+ * the border turns green, the background turns white and a soft green ring appears.
+ * Metronic's own focus colours (grey/blue) and the dark-teal rings of single pages gave every form a different look.
+ *
+ *   --erp-active-border   border of the field that has the focus / is open
+ *   --erp-active-bg       its background (search and "solid" fields are tinted until then)
+ *   --erp-active-ring     the soft ring around it
+ *
+ * Custom field components (pos-form.css, production-form-reference.css, ...) use the same three variables.
+ */
+:root {
+    --erp-active-border: #34a684;
+    --erp-active-bg: #fff;
+    --erp-active-ring: 0 0 0 2px rgba(16, 185, 129, .13);
+    --erp-active-transition: border-color .16s, background-color .16s, box-shadow .16s;
+}
+
+/* Metronic / Bootstrap fields (template.root forms) */
+.erp-ui :is(.form-control, .form-select),
+.erp-ui .select2-container .select2-selection {
+    transition: var(--erp-active-transition);
+}
+
+.erp-ui :is(.form-control, .form-select, .form-control.form-control-solid, .form-select.form-select-solid, textarea.form-control):focus,
+.erp-ui :is(.form-control, .form-select):focus-visible,
+.erp-ui .select2-container--open .select2-selection,
+.erp-ui .select2-container--focus .select2-selection {
+    /* !important: several forms set their border inline (style="border: 1px solid ...") */
+    border-color: var(--erp-active-border) !important;
+    background-color: var(--erp-active-bg);
+    box-shadow: var(--erp-active-ring);
+    outline: 0;
+}
+
+/* A field with a button/addon next to it (input-group): the whole group lights up, not one half */
+.erp-ui .input-group:focus-within > :is(.form-control, .form-select, .input-group-text) {
+    border-color: var(--erp-active-border);
+}
+
+/*
+ * Picker (erp-picker.js): the field that opens the dropdown and the search box inside it.
+ * The prefix keeps these above erp-theme.css, whose generic ".erp-ui input:focus-visible" draws a dark-teal outline
+ * around every field; the ring below replaces that outline on all the fields styled here.
+ */
+.erp-ui .erp-picker__trigger:focus-visible,
+.erp-ui .erp-picker__trigger[aria-expanded="true"] {
+    border-color: var(--erp-active-border);
+    background-color: var(--erp-active-bg);
+    box-shadow: var(--erp-active-ring);
+    outline: 0;
+}
+
+.erp-ui .erp-picker .erp-picker__search input:focus,
+.erp-ui .erp-picker .erp-picker__search input:focus-visible {
+    border-color: var(--erp-active-border);
+    background-color: var(--erp-active-bg);
+    box-shadow: var(--erp-active-ring);
+    outline: 0;
+}
+
+/*
+ * Tailwind pages style their fields with focus:border-emerald-500 / focus:ring-... (a slightly different green, and
+ * blue or primary on a few). The same active state replaces them, so every field matches the search field.
+ */
+.erp-ui :is(input, select, textarea)[class*="focus:border-"]:focus,
+.erp-ui :is(input, select, textarea)[class*="focus:border-"]:focus-visible {
+    border-color: var(--erp-active-border);
+    background-color: var(--erp-active-bg);
+    box-shadow: var(--erp-active-ring);
+    outline: 0;
+}
+
+/* The select-like buttons of the Tailwind pages (master drawers): focused with the keyboard, or open */
+.erp-ui button[class*="focus:border-"]:is(:focus-visible, [aria-expanded="true"]) {
+    border-color: var(--erp-active-border);
+    background-color: var(--erp-active-bg);
+    box-shadow: var(--erp-active-ring);
+    outline: 0;
+}

@@ -92,9 +92,14 @@ html.erp-html { font-size:16px; }
 }
 .erp-ui ::selection { background: #d1f36e; color: #102f31; }
 .erp-ui :is(input, textarea) { caret-color: var(--erp-primary); }
-.erp-ui :is(button,a,input,select,textarea,[tabindex]):focus-visible {
+.erp-ui :is(button,a,[tabindex]):focus-visible {
     outline: 2px solid var(--erp-primary);
     outline-offset: 3px;
+}
+/* Text fields: the dark-teal outline made them look black when active; they get the ring of the search field (erp-fields.css). */
+.erp-ui :is(input,select,textarea):focus-visible {
+    outline: 2px solid rgba(16, 185, 129, .13);
+    outline-offset: 0;
 }
 .erp-ui :is(input,textarea,select).outline-none:focus-visible {
     outline: none;
@@ -309,7 +314,7 @@ html.erp-html { font-size:16px; }
 .erp-ui .erp-password-control { position:relative; width:100%; }
 .erp-ui .erp-password-input { display:block; box-sizing:border-box; width:100%; height:50px; border:1px solid #d2dcea; border-radius:12px; outline:0; background:#f9fafc; padding:0 48px 0 16px; color:#202b3b; font:400 14px/1.4 var(--erp-font); transition:border-color .16s ease, background-color .16s ease, box-shadow .16s ease; }
 .erp-ui .erp-password-input::placeholder { color:#9aa8c0; opacity:1; }
-.erp-ui .erp-password-input:focus { border-color:#0b595b; background:#fff; box-shadow:0 0 0 3px rgba(11,89,91,.1); }
+.erp-ui .erp-password-input:focus { border-color:var(--erp-active-border); background:var(--erp-active-bg); box-shadow:var(--erp-active-ring); }
 .erp-ui .erp-password-toggle { position:absolute; top:50%; right:12px; display:flex; width:28px; height:28px; align-items:center; justify-content:center; transform:translateY(-50%); border:0; border-radius:8px; background:transparent; padding:0; color:#8d9db8; cursor:pointer; }
 .erp-ui .erp-password-toggle:hover, .erp-ui .erp-password-toggle:focus-visible { color:#0b595b; }
 .erp-ui .erp-password-toggle:focus-visible { outline:2px solid #0b595b; outline-offset:2px; }

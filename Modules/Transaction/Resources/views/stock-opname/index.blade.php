@@ -825,7 +825,8 @@
                         <button type="button" id="kt_modal_add_customer_close" class="btn-close-soft"
                             style="background: transparent; width: 30px; height: 30px; margin-top: -10px;"
                             data-bs-dismiss="modal" aria-label="Close">
-                            <i class="ki-outline ki-cross fs-2"></i>
+                            <i class="ph-bold ph-x so-close-x" aria-hidden="true"></i>
+                            <i class="ph-bold ph-arrow-left so-close-back" aria-hidden="true"></i>
                         </button>
                         <!--end::Close-->
                     </div>
