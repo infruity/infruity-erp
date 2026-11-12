@@ -36,6 +36,8 @@
             <file>./tests/Feature/LoginThrottleTest.php</file>
             <file>./tests/Feature/StockOpnameBehaviorTest.php</file>
             <file>./tests/Feature/CustomerProductReportRegionJoinTest.php</file>
+            <file>./tests/Feature/CrmTopDistributionTest.php</file>
+            <file>./tests/Feature/NegativeStockWarningTest.php</file>
         </testsuite>
     </testsuites>
     <groups>

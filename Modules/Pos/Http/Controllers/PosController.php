@@ -2,6 +2,7 @@
 namespace Modules\Pos\Http\Controllers;
 
 use Illuminate\Support\Facades\Schema;
+use App\Support\NegativeStockWarning;
 use Modules\Pos\Services\PaymentSubmission;
 use App\Support\InventorySnapshot;
 
@@ -50,13 +51,7 @@ class PosController extends Controller
         $data['branches'] = Branch::whereIn('id', $userBranches)->get();
 
         // Cek product_stock yang kosong pada branch yang dimiliki user
-        $emptyStockProducts = DB::table('product_stock')
-            ->join('branch', 'product_stock.branch_id', '=', 'branch.id')
-            ->select('product_stock.*', 'branch.name as branch_name')
-            ->whereIn('product_stock.branch_id', $userBranches)
-            ->where('stock_available', '<', 0)
-            ->whereNull('is_variant')
-            ->get();
+        $emptyStockProducts = NegativeStockWarning::forBranches($userBranches);
 
         $data['emptyStockData'] = $emptyStockProducts;
 
