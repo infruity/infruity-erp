@@ -27,6 +27,14 @@ class ProductController extends Controller
 {
     use \App\Traits\HasAccessControl;
 
+    /** The five product types of the reference (no custom categories): what the list filter and the add-product drawer offer. */
+    private function referenceTypeOptions()
+    {
+        $names = ['Bahan Baku', 'Perlu Resep', 'Produk Olahan', 'Kemasan', 'Jasa / Layanan'];
+
+        return $this->productTypeOptions()->filter(fn ($option) => in_array($option->name, $names, true))->values();
+    }
+
     private function productTypeOptions()
     {
         $categories = ProductCategory::orderBy('name')->get();
@@ -74,7 +82,7 @@ class ProductController extends Controller
         $data['branch'] = Branch::whereIn('id', UserBranch::getUserBranch())->get();
         $data['product_units'] = ProductUnit::all();
         $data['productCategories'] = ProductCategory::orderBy('name')->get();
-        $data['productTypeOptions'] = $this->productTypeOptions();
+        $data['productTypeOptions'] = $this->referenceTypeOptions();
         $data['tipe'] = ['product' => 'Product', 'kemasan' => 'Kemasan'];
         $data['data'] = null;
 

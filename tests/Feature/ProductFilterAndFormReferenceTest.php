@@ -50,4 +50,12 @@ class ProductFilterAndFormReferenceTest extends TestCase
         $this->assertStringContainsString("td:nth-child(1)::before { content: 'Nama Varian'", $form);
         $this->assertStringContainsString("@push('styles')", $view, 'select2 css is a real <link>, not inside <style>');
     }
+
+    public function test_index_offers_only_the_five_reference_types(): void
+    {
+        $controller = $this->source('Modules/Master/Http/Controllers/ProductController.php');
+
+        $this->assertStringContainsString("['Bahan Baku', 'Perlu Resep', 'Produk Olahan', 'Kemasan', 'Jasa / Layanan']", $controller);
+        $this->assertStringContainsString("\$data['productTypeOptions'] = \$this->referenceTypeOptions();\n        \$data['tipe']", $controller);
+    }
 }
