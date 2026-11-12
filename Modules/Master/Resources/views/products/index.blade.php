@@ -583,9 +583,7 @@
             form.querySelector('#product-status').value = '';
             form.querySelector('#category_id').value = '';
             form.querySelector('#product-unit').value = '';
-            const $variantSelects = $(form).find('#kt_ecommerce_edit_order_selected_products_body .select2-hidden-accessible');
-            if ($variantSelects.length) $variantSelects.select2('destroy');
-            form.querySelector('#kt_ecommerce_edit_order_selected_products_body')?.replaceChildren();
+            window.Alpine?.$data(form.querySelector('#product-variants'))?.reset();
             const variantToggle = form.querySelector('#product-has-variants');
             variantToggle.checked = false;
             variantToggle.setAttribute('aria-checked', 'false');
@@ -661,26 +659,8 @@
                 pricing.priceRules = rules.length ? rules : [{ id: Date.now(), price: product.price || '', branches: ['all'] }];
             }
 
-            const $body = $(form).find('#kt_ecommerce_edit_order_selected_products_body');
-            for (const variant of product.variants || []) {
-                const $row = $('<tr>');
-                const $select = $('<select name="variant[id][]" class="form-select mb-2 select2_product">')
-                    .append($('<option selected>').val(variant.id).text(variant.name));
-                $row.append($('<td>').append($select));
-                $row.append($('<td>').append($('<input type="text" name="variant[price][]" class="form-control format-number mb-2">').val(variant.price ?? 0)));
-                $row.append($('<td>').append('<button type="button" class="product-remove-row remove_variant" aria-label="Hapus varian"><i class="ph-bold ph-trash"></i></button>'));
-                $body.append($row);
-            }
-            if ($body.children().length) {
-                $body.find('.select2_product').select2({
-                    placeholder: 'misal: Grade A', tags: true,
-                    ajax: {
-                        url: @js(route('ajax.getProduct')),
-                        dataType: 'json', delay: 250,
-                        data: params => ({ search: params.term }),
-                        processResults: data => ({ results: data.map(item => ({ id: item.id, text: item.name })) })
-                    }
-                });
+            if ((product.variants || []).length) {
+                window.Alpine?.$data(form.querySelector('#product-variants'))?.setVariants(product.variants);
                 const toggle = form.querySelector('#product-has-variants');
                 toggle.checked = true;
                 toggle.dispatchEvent(new Event('change', { bubbles: true }));

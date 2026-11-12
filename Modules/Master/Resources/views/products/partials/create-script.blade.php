@@ -21,76 +21,82 @@
             }
         });
 
+        function productVariantsComponent() {
+            const panel = document.querySelector('#add_product_form #product-variants');
+            return panel && window.Alpine ? window.Alpine.$data(panel) : null;
+        }
+
         function addVariant() {
-            let html = `
-            <tr>
-                <td>
-                    <select name="variant[id][]" class="form-select mb-2 select2_product"></select>
-                </td>
-                <td>
-                    <input type="text" inputmode="numeric" name="variant[price][]" class="form-control format-number mb-2" placeholder="0" />
-                </td>
-                <td class="text-end">
-                    <button type="button" class="product-remove-row remove_variant" aria-label="Hapus varian">
-                        <i class="ph-bold ph-trash"></i>
-                    </button>
-                </td>
-            </tr>
-            `;
-            $('#kt_ecommerce_edit_order_selected_products_body').append(html);
-            $('#kt_ecommerce_edit_order_selected_products_body .select2_product').select2({
-                placeholder: 'misal: Grade A',
-                tags: true, // ini aktifkan fitur menambah item baru
-                ajax: {
-                    url: "{{ route('ajax.getProduct') }}",
-                    dataType: 'json',
-                    delay: 250,
-                    data: function(params) {
-                        return {
-                            search: params.term
-                        };
-                    },
-                    processResults: function(data, params) {
-                        const term = params.term || '';
+            productVariantsComponent()?.addVariant();
+        }
 
-                        // Map hasil dari server
-                        let results = data.map(item => ({
-                            id: item.id, // penting: pastikan id-nya sesuai yg mau kamu simpan
-                            text: item.name
-                        }));
+        function productVariants(root) {
+            let branches = [];
+            try {
+                branches = JSON.parse(root.dataset.branches || '[]').map(branch => ({ id: String(branch.id), name: branch.name || '' }));
+            } catch (error) {
+                console.error('Daftar cabang produk tidak dapat dibaca.', error);
+            }
+            const uid = () => Date.now() + Math.random();
 
-                        // Kalau term (yang diketik user) tidak ada di hasil, tambahkan manual
-                        if (term && !results.some(r => r.text.toLowerCase() === term.toLowerCase())) {
-                            results.push({
-                                id: term, // kita pakai term sebagai id juga (karena produk baru)
-                                text: term
-                            });
-                        }
-
-                        return {
-                            results: results
-                        };
-                    },
-                    cache: true
+            return {
+                branches,
+                variants: [],
+                newVariant() {
+                    return { id: uid(), productId: '', name: '', priceRules: [{ id: uid(), price: '', branches: ['all'] }] };
                 },
-                createTag: function(params) {
-                    const term = $.trim(params.term);
-
-                    if (term === '') {
-                        return null;
+                addVariant() { this.variants.push(this.newVariant()); },
+                ensureOne() { if (!this.variants.length) this.addVariant(); },
+                removeVariant(index) { this.variants.splice(index, 1); },
+                reset() { this.variants = []; },
+                /** list: [{ id, name, price, branchPrices: [{ branchId, price }] }] as sent by the edit endpoint */
+                setVariants(list) {
+                    const allIds = this.branches.map(branch => String(branch.id));
+                    this.variants = (list || []).map(item => {
+                        const groups = new Map();
+                        for (const entry of item.branchPrices || []) {
+                            const key = String(entry.price ?? 0);
+                            if (!groups.has(key)) groups.set(key, []);
+                            groups.get(key).push(String(entry.branchId));
+                        }
+                        let rules = [...groups].map(([price, ids]) => ({
+                            id: uid(),
+                            price,
+                            branches: ids.length === allIds.length && allIds.every(id => ids.includes(id)) ? ['all'] : ids.filter(id => allIds.includes(id))
+                        })).filter(rule => rule.branches.length);
+                        if (!rules.length) rules = [{ id: uid(), price: item.price ?? '', branches: ['all'] }];
+                        return { id: uid(), productId: String(item.id), name: item.name || '', priceRules: rules };
+                    });
+                },
+                addRule(variant) { variant.priceRules.push({ id: uid(), price: '', branches: [] }); },
+                hasOtherBranchRules(variant, rule, branchId) {
+                    return variant.priceRules.some(other => {
+                        if (other.id === rule.id) return false;
+                        if (branchId === 'all') return other.branches.length > 0;
+                        return other.branches.includes('all') || other.branches.includes(String(branchId));
+                    });
+                },
+                toggleBranch(rule, branchId, checked) {
+                    rule.branches = rule.branches.filter(id => id !== 'all');
+                    const id = String(branchId);
+                    if (checked && !rule.branches.includes(id)) rule.branches.push(id);
+                    if (!checked) rule.branches = rule.branches.filter(selected => selected !== id);
+                },
+                branchIdsFor(rule) {
+                    return rule.branches.includes('all') ? this.branches.map(branch => String(branch.id)) : rule.branches;
+                },
+                /** First problem of the variant list as a message, or null when it can be saved. */
+                problem() {
+                    if (!this.variants.length) return 'Tambahkan minimal satu varian produk.';
+                    for (const variant of this.variants) {
+                        if (!variant.name.trim()) return 'Isi nama untuk setiap varian.';
+                        for (const rule of variant.priceRules) {
+                            if (!String(rule.price).trim() || this.branchIdsFor(rule).length === 0) return 'Lengkapi harga dan pilih minimal satu cabang untuk setiap harga varian.';
+                        }
                     }
-
-                    return {
-                        id: term,
-                        text: term,
-                        newTag: true // optional: kalau mau tandai item baru
-                    };
+                    return null;
                 }
-            });
-
-
-
-            bindFormatNumber();
+            };
         }
         $(document).on('click', '#variant_table .remove_variant', function() {
             $(this).closest('tr').remove();
@@ -290,7 +296,7 @@
                 branchPanel.classList.toggle('hidden', this.checked);
                 const price = form.querySelector('#product-price');
                 price.value = this.checked ? '0' : (price.value === '0' ? '' : price.value);
-                if (this.checked && !form.querySelector('#kt_ecommerce_edit_order_selected_products_body tr')) addVariant();
+                if (this.checked) productVariantsComponent()?.ensureOne();
             });
 
             form.querySelectorAll('[data-picker-search]').forEach(function (search) {
@@ -418,11 +424,11 @@
                 }
                 form.querySelectorAll('[data-picker-root]').forEach(picker => picker.classList.remove('!border-red-400'));
                 if (variantToggle?.checked) {
-                    const variantSelect = form.querySelector('#kt_ecommerce_edit_order_selected_products_body select');
-                    if (!variantSelect?.value) {
+                    const problem = productVariantsComponent()?.problem();
+                    if (problem) {
                         event.preventDefault();
-                        variantSelect?.focus();
-                        if (!variantSelect) alert('Tambahkan minimal satu varian produk.');
+                        alert(problem);
+                        form.querySelector('#product-variants')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                     return;
                 }

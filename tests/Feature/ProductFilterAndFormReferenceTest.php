@@ -47,7 +47,10 @@ class ProductFilterAndFormReferenceTest extends TestCase
             $this->assertStringContainsString('<div class="hidden">'."\n".'                <label for="'.$id.'"', $form, $id.' hidden but still submitted');
         }
         $this->assertStringContainsString('Belum ada varian. Klik "Tambah Varian".', $form, 'empty state');
-        $this->assertStringContainsString("td:nth-child(1)::before { content: 'Nama Varian'", $form);
+        $this->assertStringContainsString('placeholder="misal: Grade A"', $form, 'plain name input like the reference');
+        $this->assertStringContainsString('Harga Varian per Cabang', $form);
+        $this->assertStringContainsString('name="variant[id][]"', $form);
+        $this->assertStringContainsString('`variant[branch][${vidx}][id][]`', $form, 'per-variant branch price rules are posted');
         $this->assertStringContainsString("@push('styles')", $view, 'select2 css is a real <link>, not inside <style>');
     }
 

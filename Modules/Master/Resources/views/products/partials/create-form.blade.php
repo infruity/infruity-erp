@@ -17,26 +17,8 @@
     #add_product_form .product-price-input { padding-left: 2.75rem; text-align: right; font-variant-numeric: tabular-nums; }
     #add_product_form .product-remove-row { display: inline-flex; width: 38px; height: 38px; flex: 0 0 38px; align-items: center; justify-content: center; border-radius: .75rem; background: #fef2f2; color: #ef4444; }
     #add_product_form .product-add-row { display: inline-flex; align-items: center; gap: .375rem; color: #047857; font-size: .75rem; font-weight: 600; }
-    #add_product_form #variant_table, #add_product_form #branch_table { width: 100%; font-size: .8125rem; }
-    /* Variant rows look like the reference's variant cards (the table markup is kept: the scripts add/remove <tr>) */
-    #add_product_form #variant_table, #add_product_form #variant_table tbody, #add_product_form #variant_table tr, #add_product_form #variant_table td { display: block; width: 100%; }
     #add_product_form #product-variants:not(.hidden) { display: flex; }
-    #add_product_form #variant_table thead { display: none; }
-    #add_product_form #variant_table tbody { display: flex; flex-direction: column; gap: .75rem; }
-    #add_product_form #variant_table tbody:empty::after { content: 'Belum ada varian. Klik "Tambah Varian".'; display: block; padding: .75rem 0; text-align: center; font-size: .75rem; color: #9ca3af; }
-    #add_product_form #variant_table tbody tr { position: relative; display: flex; flex-direction: column; gap: .75rem; padding: 1rem; background: #fff; border: 1px solid #e5e7eb; border-radius: .75rem; box-shadow: 0 1px 2px rgb(0 0 0 / .05); }
-    #add_product_form #variant_table tbody td { position: relative; padding: 0; border: 0; }
-    #add_product_form #variant_table tbody td:nth-child(1)::before { content: 'Nama Varian'; display: block; margin-bottom: .25rem; font-size: 11px; font-weight: 600; color: #6b7280; }
-    #add_product_form #variant_table tbody td:nth-child(2)::before { content: 'Harga Varian'; display: block; margin-bottom: .25rem; font-size: 11px; font-weight: 600; color: #6b7280; }
-    #add_product_form #variant_table tbody td:nth-child(2)::after { content: 'Rp'; position: absolute; left: .5rem; bottom: 0; height: 2rem; line-height: 2rem; font-size: 10px; font-weight: 500; color: #9ca3af; pointer-events: none; }
-    #add_product_form #variant_table tbody td:nth-child(2) input { height: 2rem; min-height: 2rem; margin: 0 !important; padding: 0 .5rem 0 1.5rem; border-radius: .375rem; font-size: .75rem; font-weight: 600; text-align: right; background: #fff; }
-    #add_product_form #variant_table tbody td:nth-child(1) .select2-container--default .select2-selection--single { height: 2.5rem; border-radius: .5rem; background: #f9fafb; }
-    #add_product_form #variant_table tbody td:nth-child(1) .select2-container--default .select2-selection--single .select2-selection__rendered { padding: 5px 12px; line-height: 28px; font-size: .875rem; }
-    #add_product_form #variant_table tbody td:nth-child(1) .select2-container--default .select2-selection--single .select2-selection__arrow { top: 6px; }
-    #add_product_form #variant_table tbody td:nth-child(3) { position: absolute; top: .75rem; right: .75rem; width: auto; }
-    #add_product_form #variant_table .remove_variant { display: inline-flex; width: auto; height: auto; flex: none; padding: 0; background: transparent; color: #f87171; border: 0; }
-    #add_product_form #variant_table .remove_variant:hover { color: #dc2626; }
-    #add_product_form #variant_table .remove_variant i { font-size: .875rem; }
+    #add_product_form #branch_table { width: 100%; font-size: .8125rem; }
 
     #add_product_form #variant_table th, #add_product_form #branch_table th { padding: .5rem; border-bottom: 1px solid #f3f4f6; color: #9ca3af; font-size: .6875rem; font-weight: 600; text-align: left; }
     #add_product_form #variant_table td, #add_product_form #branch_table td { padding: .5rem; border-bottom: 1px solid #f9fafb; vertical-align: middle; }
@@ -221,12 +203,100 @@
             </template>
         </section>
 
-        <section id="product-variants" class="hidden flex-col gap-3">
+        <section id="product-variants" x-data="productVariants($el)" class="hidden flex-col gap-3"
+            data-branches="{{ ($branch ?? collect())->map(fn ($item) => ['id' => $item->id, 'name' => $item->name])->values()->toJson() }}">
             <div class="flex items-center justify-between">
                 <label class="text-xs font-semibold text-gray-600">Daftar Varian <span class="text-red-400">*</span></label>
-                <button class="flex items-center gap-1 text-xs text-emerald-700 font-semibold hover:underline" type="button" onclick="addVariant()"><i class="ph ph-plus-circle"></i> Tambah Varian</button>
+                <button type="button" @click="addVariant()" class="flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline"><i class="ph ph-plus-circle"></i> Tambah Varian</button>
             </div>
-            <table id="variant_table"><thead><tr><th>Nama Varian</th><th>Harga</th><th></th></tr></thead><tbody id="kt_ecommerce_edit_order_selected_products_body"></tbody></table>
+            <p x-show="variants.length === 0" class="py-3 text-center text-xs text-gray-400">Belum ada varian. Klik "Tambah Varian".</p>
+
+            <template x-for="(variant, vidx) in variants" :key="variant.id">
+                <div class="relative flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                    <button type="button" @click="removeVariant(vidx)" class="absolute right-3 top-3 text-red-400 transition-colors hover:text-red-600" aria-label="Hapus varian">
+                        <i class="ph-bold ph-trash text-sm"></i>
+                    </button>
+
+                    <div>
+                        <label class="mb-1 block text-[11px] font-semibold text-gray-500">Nama Varian</label>
+                        <input type="text" x-model="variant.name" placeholder="misal: Grade A" data-variant-name
+                            class="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm outline-none transition-all focus:border-emerald-500 focus:bg-white">
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <div class="mt-1 flex items-center justify-between">
+                            <label class="text-[11px] font-semibold text-gray-500">Harga Varian per Cabang</label>
+                            <button type="button" @click="addRule(variant)" class="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 hover:underline"><i class="ph ph-plus-circle"></i> Tambah Harga</button>
+                        </div>
+
+                        <template x-for="(rule, ridx) in variant.priceRules" :key="rule.id">
+                            <div class="flex flex-col gap-1.5 rounded-lg border border-gray-100 bg-gray-50 p-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="relative flex-1" x-data="{
+                                        get displayPrice() { return rule.price ? Number(rule.price).toLocaleString('id-ID') : '' },
+                                        set displayPrice(value) { const clean = value.replace(/\D/g, ''); rule.price = clean ? parseInt(clean, 10) : 0; }
+                                    }">
+                                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-medium text-gray-400">Rp</span>
+                                        <input type="text" inputmode="numeric" x-model="displayPrice" placeholder="0"
+                                            class="h-8 w-full rounded-md border border-gray-200 bg-white pl-6 pr-2 text-right text-xs font-semibold outline-none transition-all focus:border-emerald-500">
+                                    </div>
+                                    <button type="button" x-show="variant.priceRules.length > 1" @click="variant.priceRules.splice(ridx, 1)"
+                                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-red-400 hover:bg-red-50" aria-label="Hapus aturan harga">
+                                        <i class="ph-bold ph-trash text-xs"></i>
+                                    </button>
+                                </div>
+
+                                <div x-data="{ pickerOpen: false, pickerSearch: '' }" class="mt-0.5 flex flex-col gap-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <button type="button" @click="pickerOpen = !pickerOpen" :aria-expanded="pickerOpen"
+                                            class="flex h-7 min-w-0 flex-1 items-center justify-between rounded-md border border-gray-200 bg-white px-2 text-left text-[10px] transition-colors hover:bg-gray-50">
+                                            <span class="truncate font-medium text-gray-600" x-text="rule.branches.includes('all') ? 'Semua Cabang' : (rule.branches.length > 0 ? rule.branches.length + ' Cabang Dipilih' : 'Pilih Cabang...')"></span>
+                                            <i class="ph-bold ph-caret-down shrink-0 text-gray-400 transition-transform" :class="pickerOpen ? 'rotate-180' : ''"></i>
+                                        </button>
+                                    </div>
+
+                                    <div x-show="pickerOpen" x-transition class="mt-1 flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+                                        <div class="relative border-b border-gray-100">
+                                            <i class="ph-bold ph-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"></i>
+                                            <input type="text" x-model="pickerSearch" placeholder="Cari cabang..." class="w-full bg-transparent py-1.5 pl-7 pr-2 text-[10px] outline-none transition-colors focus:bg-gray-50">
+                                        </div>
+                                        <div class="flex max-h-[140px] flex-col gap-0.5 overflow-y-auto overscroll-none p-1 scrollbar-hide">
+                                            <label x-show="pickerSearch === ''" class="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-gray-50">
+                                                <div class="relative flex h-4 w-4 shrink-0 items-center justify-center">
+                                                    <input type="checkbox" :checked="rule.branches.includes('all')" :disabled="hasOtherBranchRules(variant, rule, 'all')"
+                                                        @change="rule.branches = $event.target.checked ? ['all'] : []"
+                                                        class="peer h-4 w-4 cursor-pointer appearance-none rounded border-[1.5px] border-gray-300 transition-colors checked:border-emerald-500 checked:bg-emerald-500 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-200">
+                                                    <i class="ph-bold ph-check pointer-events-none absolute text-[10px] text-white opacity-0 peer-checked:opacity-100"></i>
+                                                </div>
+                                                <span class="flex-1 text-[10px] font-bold text-gray-800">Pilih Semua</span>
+                                            </label>
+                                            <template x-for="branch in branches.filter(item => item.name.toLowerCase().includes(pickerSearch.toLowerCase()))" :key="branch.id">
+                                                <label class="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-gray-50">
+                                                    <div class="relative flex h-4 w-4 shrink-0 items-center justify-center">
+                                                        <input type="checkbox" :checked="rule.branches.includes(String(branch.id))" :disabled="hasOtherBranchRules(variant, rule, String(branch.id))"
+                                                            @change="toggleBranch(rule, branch.id, $event.target.checked)"
+                                                            class="peer h-4 w-4 cursor-pointer appearance-none rounded border-[1.5px] border-gray-300 transition-colors checked:border-emerald-500 checked:bg-emerald-500 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-200">
+                                                        <i class="ph-bold ph-check pointer-events-none absolute text-[10px] text-white opacity-0 peer-checked:opacity-100"></i>
+                                                    </div>
+                                                    <span class="min-w-0 flex-1 truncate text-[10px] font-medium text-gray-700" x-text="branch.name"></span>
+                                                </label>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <template x-for="branchId in branchIdsFor(rule)" :key="rule.id + '-' + branchId">
+                                    <span class="hidden"><input type="hidden" :name="`variant[branch][${vidx}][id][]`" :value="branchId"><input type="hidden" :name="`variant[branch][${vidx}][price][]`" :value="rule.price || 0"></span>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
+                    <input type="hidden" name="variant[id][]" :value="variant.productId || variant.name.trim()">
+                    <input type="hidden" name="variant[name][]" :value="variant.name.trim()">
+                    <input type="hidden" name="variant[price][]" :value="variant.priceRules[0]?.price || 0">
+                </div>
+            </template>
         </section>
 
         <div class="flex flex-col gap-4">

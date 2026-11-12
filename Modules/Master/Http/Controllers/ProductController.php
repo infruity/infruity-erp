@@ -27,6 +27,39 @@ class ProductController extends Controller
 {
     use \App\Traits\HasAccessControl;
 
+    /**
+     * Per-variant branch prices posted as variant[branch][<position>][id][] / [price][] (one pair per branch of every price rule).
+     * Returns [] when the variant carries no rules (old forms): the caller then keeps its previous behaviour.
+     */
+    private function variantBranchPrices(Request $request, int $position, array $allowedBranchIds): array
+    {
+        $ids = array_values((array) $request->input("variant.branch.$position.id", []));
+        $prices = array_values((array) $request->input("variant.branch.$position.price", []));
+        $rows = [];
+        foreach ($ids as $i => $branchId) {
+            if (! in_array((int) $branchId, $allowedBranchIds, true)) {
+                abort(403);
+            }
+            $rows[(int) $branchId] = $prices[$i] ?? 0;
+        }
+
+        return $rows;
+    }
+
+    private function saveVariantBranchPrices(Product $variant, array $rows, array $allowedBranchIds): void
+    {
+        ProductBranch::where('product_id', $variant->id)->whereIn('branch_id', $allowedBranchIds)->delete();
+        foreach ($rows as $branchId => $price) {
+            $branch             = new ProductBranch();
+            $branch->product_id = $variant->id;
+            $branch->branch_id  = $branchId;
+            $branch->price      = $price;
+            $branch->save();
+        }
+        $variant->price = reset($rows);
+        $variant->save();
+    }
+
     /** The five product types of the reference (no custom categories): what the list filter and the add-product drawer offer. */
     private function referenceTypeOptions()
     {
@@ -205,7 +238,12 @@ class ProductController extends Controller
 
             $productId = $product->id;
             if (isset($request->variant)) {
-                foreach ($request->variant['id'] as $key => $value) {
+                $allowedBranchIds = UserBranch::getUserBranch();
+                foreach (array_values($request->variant['id']) as $position => $value) {
+                    $key = $position;
+                    if (trim((string) $value) === '') {
+                        continue;
+                    }
                     if (is_numeric($value)) {
                         throw new \InvalidArgumentException('Varian produk baru harus dibuat dengan nama baru.');
                     } else {
@@ -229,12 +267,17 @@ class ProductController extends Controller
                         $variant->description  = strip_tags($request->description ?? '');
                         $variant->save();
 
-                        foreach ($branches as $key => $value) {
-                            $branch             = new ProductBranch();
-                            $branch->product_id = $variant->id;
-                            $branch->branch_id  = $value->id;
-                            $branch->price      = $variant->price;
-                            $branch->save();
+                        $rows = $this->variantBranchPrices($request, $position, $allowedBranchIds);
+                        if ($rows) {
+                            $this->saveVariantBranchPrices($variant, $rows, $allowedBranchIds);
+                        } else {
+                            foreach ($branches as $branchModel) {
+                                $branch             = new ProductBranch();
+                                $branch->product_id = $variant->id;
+                                $branch->branch_id  = $branchModel->id;
+                                $branch->price      = $variant->price;
+                                $branch->save();
+                            }
                         }
                     }
 
@@ -500,6 +543,10 @@ class ProductController extends Controller
                     'name' => $child->product?->name,
                     'price' => $child->product?->productBranches?->firstWhere('branch_id', $selectedBranchId)?->price
                         ?? $child->product?->price,
+                    'branchPrices' => ($child->product?->productBranches ?? collect())->whereIn('branch_id', $allowedBranchIds)->map(fn ($branch) => [
+                        'branchId' => $branch->branch_id,
+                        'price' => $branch->price,
+                    ])->values(),
                 ])->filter(fn ($child) => $child['id'])->values(),
                 'branchPrices' => $product->productBranches->whereIn('branch_id', $allowedBranchIds)->map(fn ($branch) => [
                     'branchId' => $branch->branch_id,
@@ -565,6 +612,13 @@ class ProductController extends Controller
                 abort(403);
             }
         }
+        foreach ((array) $request->input('variant.branch', []) as $variantRule) {
+            foreach ((array) ($variantRule['id'] ?? []) as $branchId) {
+                if (! in_array((int) $branchId, $allowedBranchIds, true)) {
+                    abort(403);
+                }
+            }
+        }
 
         try {
             DB::beginTransaction();
@@ -624,7 +678,11 @@ class ProductController extends Controller
             $productId = $id;
             // Simpan varian baru
             if (isset($request->variant)) {
-                foreach ($request->variant['id'] as $key => $value) {
+                foreach (array_values($request->variant['id']) as $position => $value) {
+                    $key = $position;
+                    if (trim((string) $value) === '') {
+                        continue;
+                    }
                     if (is_numeric($value)) {
                         $variant = Product::whereKey($value)
                             ->where('parent_id', $id)
@@ -633,16 +691,26 @@ class ProductController extends Controller
                             throw new \InvalidArgumentException('Varian tidak terhubung dengan produk ini.');
                         }
                         $variant->is_variant = 1;
-                        $variantPrice = $request->variant['price'][$key] ?? 0;
-                        if ($selectedBranchId) {
-                            ProductBranch::updateOrCreate(
-                                ['product_id' => $variant->id, 'branch_id' => $selectedBranchId],
-                                ['price' => $variantPrice]
-                            );
-                        } else {
-                            $variant->price = $variantPrice;
+                        $newName = trim((string) ($request->input("variant.name.$position") ?? ''));
+                        if ($newName !== '') {
+                            $variant->name = $newName;
                         }
-                        $variant->save();
+                        $variantPrice = $request->variant['price'][$key] ?? 0;
+                        $rows = $this->variantBranchPrices($request, $position, $allowedBranchIds);
+                        if ($rows) {
+                            $variant->save();
+                            $this->saveVariantBranchPrices($variant, $rows, $allowedBranchIds);
+                        } else {
+                            if ($selectedBranchId) {
+                                ProductBranch::updateOrCreate(
+                                    ['product_id' => $variant->id, 'branch_id' => $selectedBranchId],
+                                    ['price' => $variantPrice]
+                                );
+                            } else {
+                                $variant->price = $variantPrice;
+                            }
+                            $variant->save();
+                        }
                     } else {
                         $variant               = new Product();
                         $variant->parent_id    = $productId;
@@ -659,13 +727,18 @@ class ProductController extends Controller
                         $variant->save();
                         $variantId = $variant->id;
 
-                        $listBranch = Branch::all();
-                        foreach ($listBranch as $key => $item) {
-                            $branch             = new ProductBranch();
-                            $branch->product_id = $variantId;
-                            $branch->branch_id  = $item->id;
-                            $branch->price      = $variant->price;
-                            $branch->save();
+                        $rows = $this->variantBranchPrices($request, $position, $allowedBranchIds);
+                        if ($rows) {
+                            $this->saveVariantBranchPrices($variant, $rows, $allowedBranchIds);
+                        } else {
+                            $listBranch = Branch::all();
+                            foreach ($listBranch as $item) {
+                                $branch             = new ProductBranch();
+                                $branch->product_id = $variantId;
+                                $branch->branch_id  = $item->id;
+                                $branch->price      = $variant->price;
+                                $branch->save();
+                            }
                         }
 
                     }
