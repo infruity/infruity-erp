@@ -196,7 +196,7 @@ class ProductHppLedgerTest extends TestCase
     public function test_per_product_queries_match_the_views(): void
     {
         DB::table('product_child')->insert(['parent_id' => self::APEL, 'product_id' => self::APEL_GRADE_A]);
-        DB::table('products')->whereIn('id', [self::APEL, self::SALAD, self::JERUK, self::APEL_GRADE_A])->update(['tipe' => 'buah']);
+        DB::table('products')->whereIn('id', [self::APEL, self::SALAD, self::JERUK, self::APEL_GRADE_A])->update(['tipe' => 'product']);
 
         $this->pengadaan(1, self::APEL, 50, 20000, '10:00');
         $this->pengadaan(2, self::APEL_GRADE_A, 10, 30000, '10:01');
@@ -209,7 +209,7 @@ class ProductHppLedgerTest extends TestCase
         for ($i = 0; $i < 24; $i++) {
             $id = 9100 + $i;
             $ids[] = $id;
-            DB::table('products')->insert(['id' => $id, 'name' => 'Buah ' . $i, 'hpp' => 0, 'tipe' => 'buah']);
+            DB::table('products')->insert(['id' => $id, 'name' => 'Buah ' . $i, 'hpp' => 0, 'tipe' => 'product']);
             $this->pengadaan(100 + $i, $id, 10 + $i, 1000 + $i, '11:00');
             $this->penjualan(100 + $i, $id, 1 + $i % 5, '11:01');
         }

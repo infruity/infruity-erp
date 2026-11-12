@@ -251,11 +251,30 @@ class WholesaleBehaviorTest extends TestCase
         $this->get('/wholesale/create')->assertOk();
         $invoice = $this->adminDraftInvoice();
         $this->assertNotNull($invoice);
+        $this->assertNull(DB::table('wholesale')->where('order_number', $invoice)->value('branch_id'), 'a draft without a branch is NULL, not 0');
 
         $this->save(['invoice_number' => $invoice])->assertOk()->assertJson(['success' => true, 'status' => 'posting']);
 
         $this->assertSame(10.0, $this->stock());
         $this->assertDatabaseHas('wholesale', ['order_number' => $invoice, 'branch_id' => $this->branch, 'status' => 'posting']);
+    }
+
+    public function test_unused_wholesale_columns_are_nullable_in_the_schema(): void
+    {
+        foreach ([['wholesale', 'branch_id'], ['wholesale', 'supplier_id'], ['wholesale', 'uuid'], ['wholesale_product', 'category_id']] as [$table, $column]) {
+            $nullable = DB::selectOne('SELECT is_nullable AS n FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?', [$table, $column])->n;
+            $this->assertSame('YES', $nullable, "{$table}.{$column}");
+        }
+    }
+
+    public function test_a_posted_purchase_stores_no_fake_zero_for_the_columns_the_app_does_not_fill(): void
+    {
+        $id = $this->save()->assertOk()->json('transaksi_id');
+
+        $row = DB::table('wholesale')->where('id', $id)->first();
+        $this->assertNull($row->supplier_id);
+        $this->assertNull($row->uuid);
+        $this->assertNull(DB::table('wholesale_product')->where('wholesale_id', $id)->value('category_id'));
     }
 
     public function test_form_flow_autosave_with_the_drafts_invoice_number_works(): void

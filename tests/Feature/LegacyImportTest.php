@@ -135,6 +135,15 @@ final class LegacyImportTest extends TestCase
         $this->assertTrue((bool) array_filter($wholesale['notes'], fn ($n) => str_starts_with($n, 'skips 2 row(s)')));
     }
 
+    public function test_plan_turns_the_legacy_zero_and_empty_placeholders_into_null(): void
+    {
+        $plan = $this->plan()['tables']['wholesale'];
+
+        $this->assertSame('NULLIF(`branch_id`, 0)', $plan['columns']['branch_id'], 'a draft without a branch');
+        $this->assertSame('NULLIF(`supplier_id`, 0)', $plan['columns']['supplier_id']);
+        $this->assertSame("NULLIF(`uuid`, '')", $plan['columns']['uuid']);
+    }
+
     public function test_plan_reports_a_value_the_target_enum_cannot_store(): void
     {
         DB::statement('INSERT INTO ' . self::SOURCE . ".products VALUES (4, 'Aneh', 1, 'bogus', 'product')");

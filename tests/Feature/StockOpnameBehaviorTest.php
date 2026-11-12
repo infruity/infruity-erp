@@ -206,6 +206,25 @@ class StockOpnameBehaviorTest extends TestCase
         $this->assertSame(10.0, $this->stock(), 'adjusting a pending count must not move stock');
     }
 
+    public function test_a_long_adjustment_reason_is_stored_in_full(): void
+    {
+        $id = $this->createCount(7);
+        $reason = rtrim(str_repeat('Barang ditemukan di rak belakang. ', 18));   // 611 characters (no trailing space: TrimStrings), the form allows 1000
+
+        $this->postJson("/stock-opname/{$id}/adjust", ['qty' => 1, 'type' => 'up', 'reason' => $reason])->assertOk();
+
+        $this->assertSame(strlen($reason), strlen(DB::table('stock_opname_history')->where('stock_opname_id', $id)->orderByDesc('id')->value('note')), 'the note must not be cut at 255 characters');
+    }
+
+    public function test_a_long_count_note_is_stored_in_full(): void
+    {
+        $note = str_repeat('x', 400);
+
+        $id = (int) $this->submitCount(7, ['note' => $note])->assertCreated()->json('data.id');
+
+        $this->assertSame(400, strlen(DB::table('stock_opname_history')->where('stock_opname_id', $id)->where('action', 'INITIAL')->value('note')));
+    }
+
     public function test_adjust_cannot_take_the_count_below_zero_or_use_zero_quantity(): void
     {
         $id = $this->createCount(3);
