@@ -33,7 +33,7 @@
             </div>
             @error('birth_place')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
         </div>
-        <x-erp.field label="Tanggal Lahir" for="birth_of_date"><input id="birth_of_date" name="birth_of_date" value="{{ old('birth_of_date', $data->birth_of_date ?? '') }}" type="date" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
+        <x-erp.field label="Tanggal Lahir" for="birth_of_date"><input id="birth_of_date" name="birth_of_date" value="{{ old('birth_of_date', $data->birth_of_date ?? '') }}" type="date" oninput="this.classList.toggle('is-empty', !this.value)" class="{{ old('birth_of_date', $data->birth_of_date ?? '') ? '' : 'is-empty ' }}w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
     </div>
 
     <div class="border-t border-gray-200 pt-5"><h3 class="text-sm font-bold text-gray-800">Alamat Pelanggan</h3><p class="text-xs text-gray-400 mt-0.5">Isi lokasi dan alamat bila tersedia</p></div>
@@ -53,3 +53,8 @@
     @endforeach
     <x-erp.field label="Tempat Tinggal / Alamat Lengkap" for="address"><textarea id="address" name="address" rows="3" placeholder="Jalan, RT/RW, dan detail alamat" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-none">{{ old('address', $data->address ?? '') }}</textarea></x-erp.field>
 </div>
+<style>
+    /* Placeholder grey for the empty select and date, like the text inputs' placeholders */
+    #gender:has(option[value=""]:checked), #birth_of_date.is-empty { color: #9ca3af; }
+    #gender option { color: #1f2937; }
+</style>
