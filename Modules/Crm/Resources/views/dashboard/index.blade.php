@@ -119,23 +119,23 @@
                             <p class="mt-0.5 text-[11px] font-medium" :style="'color:' + modePalette.subtext">Periode : {{ $periodTitle }}</p>
                         </div>
                         <div class="flex shrink-0 items-center gap-1">
-                            <button type="button" @click="filterOpen = true" aria-label="Filter dashboard" class="h-9 w-9 rounded-full border border-white/15 bg-white/10 flex items-center justify-center hover:bg-white/20"><i class="ph ph-sliders-horizontal text-[17px]"></i></button>
+                            <button type="button" @click="filterOpen = true" aria-label="Filter dashboard" class="h-7 w-7 rounded-full border border-white/15 bg-white/10 flex items-center justify-center hover:bg-white/20"><i class="ph ph-sliders-horizontal text-[16px]"></i></button>
                         </div>
                     </div>
 
                     <div class="mt-3 text-left">
-                        <p class="text-[11.5px] font-medium" :style="'color:' + modePalette.subtext" x-text="modeTitle + ' (' + modeContext + ')' "></p>
-                        <p class="mt-1 flex items-baseline gap-2"><span class="text-[16px] font-medium text-white/90">Rp</span><span class="font-['Poppins'] text-[30px] leading-none font-bold tracking-tight tabular-nums" x-text="number(total)"></span></p>
-                        <div class="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] text-white/75">
+                        <p class="mb-1.5 text-[11.5px] font-medium" :style="'color:' + modePalette.subtext" x-text="modeTitle + ' (' + modeContext + ')' "></p>
+                        <p class="flex items-baseline gap-2"><span class="text-[16px] font-medium text-white/90">Rp</span><span class="font-['Poppins'] text-[30px] leading-none font-bold tracking-tight tabular-nums" x-text="number(total)"></span></p>
+                        <div class="mt-1 flex flex-wrap items-center gap-x-1.5 text-[11px] text-white/75">
                             <span class="inline-flex items-center gap-1 font-bold" :style="'color:' + trendColor"><i class="ph-fill" :class="trendIcon"></i><span x-text="trendLabel"></span></span>
                             <span><span x-text="period === 'week' ? 'vs minggu sebelumnya (' : 'vs periode sebelumnya ('"></span><strong x-text="'Rp ' + number(previousTotal)"></strong>)</span>
                         </div>
                     </div>
 
-                    <div class="mt-4 flex-1 border-t border-white/15 pt-3.5 flex flex-col">
+                    <div class="mt-3.5 flex-1 border-t border-white/15 pt-3.5 flex flex-col">
                         <div class="mb-2 flex items-center justify-between gap-2">
-                            <div class="min-w-0 text-left"><p class="text-[12px] font-bold tracking-wide" x-text="chartTitle"></p><p class="mt-0.5 text-[10px]" :style="'color:' + modePalette.subtext" x-text="chartSubtitle"></p></div>
-                            <div class="shrink-0 text-right"><p class="text-[13px] font-bold leading-tight" :style="'color:' + modePalette.accent" x-text="selectedPoint ? rupiah(selectedPoint[mode]) : 'Rp 0'"></p><p class="mt-0.5 text-[9px] text-white/70" x-text="selectedPoint ? (selectedPoint.date ? formatChartDate(selectedPoint.date) : selectedPoint.label) : ''"></p></div>
+                            <div class="min-w-0 text-left"><p class="text-[12px] font-bold tracking-wide" x-text="chartTitle"></p><p class="text-[10px]" :style="'color:' + modePalette.subtext" x-text="chartSubtitle"></p></div>
+                            <div class="shrink-0 text-right"><p class="text-[13px] font-bold leading-tight" :style="'color:' + modePalette.accent" x-text="selectedPoint ? rupiah(selectedPoint[mode]) : 'Rp 0'"></p><p class="mt-0.5 text-[9.5px] text-white/70" x-text="selectedPoint ? (selectedPoint.date ? formatChartDate(selectedPoint.date) : selectedPoint.label) : ''"></p></div>
                         </div>
                         <div class="dashboard-chart-plot flex items-end justify-between h-[143px] relative w-full gap-2 mt-auto">
                     <template x-for="(point, index) in chart" :key="index">
@@ -154,18 +154,18 @@
                 </div>
             </article>
 
-            <div class="mt-6 mb-4 min-h-[248px] shrink-0 rounded-[24px] border border-white bg-white px-4 py-4 shadow-[0_8px_30px_rgba(0,0,0,.06)] text-gray-900">
-                <div class="mb-3 flex items-center justify-between gap-3">
-                    <div class="min-w-0"><h2 class="text-[15px] font-bold tracking-tight text-slate-900"><span x-text="contributorTitle"></span> <span :class="contributorAccentClass" x-text="contributorSuffix"></span></h2><p class="mt-1 text-[11px] text-slate-400" x-text="contributorSubtitle"></p></div>
-                    <button type="button" @click="showBottom = !showBottom" class="h-10 w-10 shrink-0 rounded-full border flex items-center justify-center active:scale-90 transition" :class="contributorButtonClass" :title="contributorToggleTitle" :aria-label="contributorToggleTitle">
-                        <i class="ph-bold text-[17px]" :class="showBottom ? 'ph-arrow-down-right' : 'ph-arrow-up-right'"></i>
+            <div class="mt-[18px] mb-4 min-h-[248px] shrink-0 rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] text-gray-900">
+                <div class="mb-2 flex items-center justify-between gap-3">
+                    <div class="min-w-0"><h2 class="text-[13.5px] font-bold tracking-tight text-gray-900"><span x-text="contributorTitle"></span> <span :class="contributorAccentClass" x-text="contributorSuffix"></span></h2><p class="text-[10.5px] text-gray-400" x-text="contributorSubtitle"></p></div>
+                    <button type="button" @click="showBottom = !showBottom" class="h-7 w-7 shrink-0 rounded-full border flex items-center justify-center active:scale-90 transition" :class="contributorButtonClass" :title="contributorToggleTitle" :aria-label="contributorToggleTitle">
+                        <i class="ph-bold text-sm" :class="showBottom ? 'ph-arrow-down-right' : 'ph-arrow-up-right'"></i>
                     </button>
                 </div>
                 <div class="flex flex-col divide-y divide-gray-100">
                     <template x-for="(item, index) in filteredContributors" :key="mode + '-' + showBottom + '-' + index">
-                        <div class="flex items-center justify-between gap-2 py-2.5 first:pt-0 last:pb-0">
+                        <div class="flex items-center justify-between gap-2 py-3 first:pt-1 last:pb-1">
                             <div class="flex items-center gap-3 min-w-0">
-                                <span class="w-10 h-10 rounded-xl border flex items-center justify-center text-[22px] leading-none shrink-0" :class="isCostMode ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'" role="img" :aria-label="item.name + ' icon'" x-text="itemIcon(item.name)"></span>
+                                <span class="w-9 h-9 rounded-xl border flex items-center justify-center text-[20px] leading-none shrink-0" :class="isCostMode ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'" role="img" :aria-label="item.name + ' icon'" x-text="itemIcon(item.name)"></span>
                                 <div class="min-w-0"><h3 class="text-[13px] font-semibold text-slate-800 leading-tight truncate" x-text="item.name"></h3><p class="text-[11.5px] font-bold mt-0.5" :class="contributorAmountClass" x-text="rupiah(item.amount)"></p></div>
                             </div>
                             <span class="text-[13px] font-bold shrink-0" :class="contributorPercentClass" x-text="item.percent + '%'"></span>
