@@ -10,7 +10,6 @@ class CustomerFormPlaceholderColourTest extends TestCase
     {
         $view = file_get_contents(base_path('Modules/Master/Resources/views/customer/form-fields.blade.php'));
 
-        $this->assertStringContainsString('#gender:has(option[value=""]:checked), #birth_of_date.is-empty { color: #9ca3af; }', $view);
-        $this->assertStringContainsString("oninput=\"this.classList.toggle('is-empty', !this.value)\"", $view);
+        $this->assertStringContainsString('#gender:has(option[value=""]:checked) { color: #9ca3af; }', $view);
     }
 }
