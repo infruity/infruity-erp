@@ -9,18 +9,20 @@
     <span>Produk</span>
 @endsection
 
-@section('extra-style')
+@push('styles')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-    <style>
-        .product-create-overlay #add_product_form { flex-direction: column !important; padding: 0 !important; }
-        .product-create-overlay #add_product_form > div:first-child { width: 100% !important; margin: 0 !important; }
-        .product-create-overlay #add_product_form > div:last-child { width: 100% !important; }
-        .product-create-overlay #add_product_form .product-form-actions { display: none !important; }
-    </style>
+@endpush
+
+@section('extra-style')
+    .product-create-overlay #add_product_form { flex-direction: column !important; padding: 0 !important; }
+    .product-create-overlay #add_product_form > div:first-child { width: 100% !important; margin: 0 !important; }
+    .product-create-overlay #add_product_form > div:last-child { width: 100% !important; }
+    .product-create-overlay #add_product_form .product-form-actions { display: none !important; }
 @endsection
 
 @section('content')
     <style>
+        .icon-rounded.is-bold { font-variation-settings: 'wght' 600; }
         #products-table.dataTable { border-collapse: collapse !important; border: none !important; table-layout: fixed !important; width: 100% !important; }
         @media (max-width: 767px) {
             .product-list-fullbleed { width: 100vw !important; max-width: 100vw !important; margin-left: calc(50% - 50vw) !important; margin-right: calc(50% - 50vw) !important; }
@@ -280,6 +282,8 @@
                         <div class="mb-0 px-2">
                             <div class="flex justify-between items-center mb-1.5">
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Tipe Produk</label>
+                                <button type="button" x-show="tempSelectedType.length > 0" @click="tempSelectedType = []"
+                                    class="text-[11px] text-[#0b595b] font-semibold hover:underline">Reset</button>
                             </div>
                             <div class="flex flex-wrap gap-2 mt-2">
                                 <button @click="toggleTempType('Semua')"
@@ -313,55 +317,70 @@
 
             <!-- Toolbar: Search + Filter + Add (desktop only; mobile uses the bottom nav pill + mobile header) -->
             <div class="hidden md:flex flex-row gap-3 items-center p-4 border-b border-gray-100 bg-white relative z-10">
-                <!-- Search -->
-                <div class="flex-1 relative w-full">
-                    <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" data-kt-ecommerce-product-filter="search" id="search"
-                        class="w-full bg-gray-50/50 border border-gray-100 rounded-full pl-10 pr-4 h-11 text-[13px] outline-none focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-                        placeholder="Cari produk atau varian..." />
-                </div>
+                <!-- Search with the filter built into the same pill (as in the reference) -->
+                <div x-data="{ isSearchFocused: false, searchText: '' }"
+                    class="flex-1 relative flex items-center rounded-full h-11 pl-4 pr-1.5 transition-all"
+                    :class="isSearchFocused ? 'bg-white border border-emerald-500 ring-1 ring-emerald-500' : 'bg-gray-50/50 border border-gray-200/80'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px] text-[#0b595b]/80 shrink-0 mr-2.5" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" data-kt-ecommerce-product-filter="search" id="search" x-model="searchText"
+                        @focus="isSearchFocused = true" @blur="isSearchFocused = false"
+                        class="flex-1 bg-transparent text-[13.5px] font-medium text-gray-800 placeholder-gray-400 outline-none h-full"
+                        placeholder="Cari produk atau varian..." aria-label="Cari produk atau varian" />
 
-                <!-- Filter (Tipe Produk) -->
-                <div class="relative shrink-0" x-data="{}" @mouseleave="if(!filterOpen) typeExpanded = false">
-                    <button type="button" @click="filterOpen = !filterOpen; typeExpanded = true" @mouseenter="typeExpanded = true"
-                        class="flex items-center bg-white rounded-full border h-11 p-1 shadow-sm transition-colors duration-300 shrink-0"
-                        :class="filterOpen ? 'border-emerald-500' : 'border-gray-200 hover:border-emerald-400'">
-                        <div class="w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-300 z-10 shrink-0"
-                            :class="typeExpanded ? 'bg-emerald-50 text-emerald-600' : 'bg-white text-gray-600'">
-                            <i class="ph ph-funnel text-[20px]"></i>
-                        </div>
-                        <div class="overflow-hidden transition-all duration-500 ease-out flex items-center"
-                             :class="typeExpanded ? 'max-w-[280px] opacity-100 pr-4' : 'max-w-0 opacity-0 pr-0'">
-                            <span class="text-[13px] font-medium text-gray-700 whitespace-nowrap pl-2" x-text="typeLabel"></span>
-                            <i class="ph-bold ph-caret-down text-[10px] ml-2 transition-transform duration-200 text-gray-400" :class="filterOpen ? 'rotate-180' : ''"></i>
-                        </div>
+                    <button type="button" x-show="searchText" x-cloak @click="searchText = ''; $('#search').val('').trigger('keyup'); $el.parentElement.querySelector('input').focus()"
+                        class="w-6 h-6 rounded-full hover:bg-black/5 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors shrink-0 mr-1"
+                        title="Hapus pencarian" aria-label="Hapus pencarian">
+                        <i class="ph-bold ph-x text-xs"></i>
                     </button>
 
-                    <div x-show="filterOpen" x-cloak data-erp-modal @click.outside="filterOpen = false; typeExpanded = false"
-                        x-transition:enter="transition ease-out duration-100"
-                        x-transition:enter-start="opacity-0 scale-95"
-                        x-transition:enter-end="opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-75"
-                        x-transition:leave-start="opacity-100 scale-100"
-                        x-transition:leave-end="opacity-0 scale-95"
-                        class="absolute right-0 top-14 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 py-2">
-                        <div class="px-4 py-2.5 border-b border-gray-50">
-                            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Tipe Produk</p>
-                        </div>
-                        <button @click="toggleType('Semua')"
-                            class="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition flex items-center justify-between"
-                            :class="selectedType.length === 0 ? 'text-emerald-700 font-semibold bg-emerald-50/50' : 'text-gray-600'">
-                            <span>Semua</span>
-                            <i x-show="selectedType.length === 0" class="ph-fill ph-circle text-emerald-500 text-[8px] shrink-0"></i>
+                    <div class="h-4 w-px bg-gray-200 shrink-0 mx-1"></div>
+
+                    <!-- Filter (Tipe Produk) -->
+                    <div class="relative shrink-0">
+                        <button type="button" @click="filterOpen = !filterOpen" aria-label="Filter tipe produk" title="Filter Tipe Produk"
+                            style="-webkit-tap-highlight-color: transparent; outline: none;"
+                            class="w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 relative focus:outline-none select-none active:scale-95"
+                            :class="(filterOpen || selectedType.length > 0) ? 'text-[#0b595b]' : 'text-gray-400 hover:text-[#0b595b]'">
+                            <span class="icon-rounded" :class="(filterOpen || selectedType.length > 0) ? 'is-bold' : ''" style="font-size: 20px;" aria-hidden="true">tune</span>
+                            <span x-show="selectedType.length > 0" x-cloak class="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#0b595b] ring-2 ring-white"></span>
                         </button>
-                        <template x-for="t in allTypes" :key="t.value">
-                            <button @click="toggleType(t.value)"
-                                class="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition flex items-center justify-between capitalize"
-                                :class="selectedType.includes(t.value) ? 'text-emerald-700 font-semibold bg-emerald-50/50' : 'text-gray-600'">
-                                <span x-text="t.name"></span>
-                                <i x-show="selectedType.includes(t.value)" class="ph-fill ph-circle text-emerald-500 text-[8px] shrink-0"></i>
-                            </button>
-                        </template>
+
+                        <div x-show="filterOpen" x-cloak @click.stop.prevent="filterOpen = false"
+                            class="hidden md:block fixed inset-0 z-40 bg-transparent cursor-default pointer-events-auto"></div>
+
+                        <div x-show="filterOpen" x-cloak data-erp-modal @click.outside="filterOpen = false"
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                            class="absolute right-0 top-10 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 py-2">
+                            <div class="px-4 py-2 border-b border-gray-50 flex items-center justify-between">
+                                <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tipe Produk</p>
+                                <button type="button" x-show="selectedType.length > 0" @click="toggleType('Semua')"
+                                    class="text-[11px] text-[#0b595b] font-semibold hover:underline">Reset</button>
+                            </div>
+                            <div class="max-h-60 overflow-y-auto divide-y divide-gray-50/50">
+                                <button type="button" @click="toggleType('Semua')"
+                                    class="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 transition flex items-center justify-between"
+                                    :class="selectedType.length === 0 ? 'text-emerald-700 font-semibold bg-emerald-50/50' : 'text-gray-600'">
+                                    <span>Semua</span>
+                                    <i x-show="selectedType.length === 0" class="ph-fill ph-circle text-emerald-500 text-[8px] shrink-0"></i>
+                                </button>
+                                <template x-for="t in allTypes" :key="t.value">
+                                    <button type="button" @click="toggleType(t.value)"
+                                        class="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 transition flex items-center justify-between capitalize"
+                                        :class="selectedType.includes(t.value) ? 'text-emerald-700 font-semibold bg-emerald-50/50' : 'text-gray-600'">
+                                        <span x-text="t.name"></span>
+                                        <i x-show="selectedType.includes(t.value)" class="ph-fill ph-circle text-emerald-500 text-[8px] shrink-0"></i>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -420,14 +439,14 @@
                     x-transition:leave="transition ease-in duration-200 transform"
                     x-transition:leave-start="translate-y-0 lg:translate-y-0 lg:translate-x-0"
                     x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full"
-                    class="product-create-overlay relative z-10 flex h-[82.5vh] max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border-t border-gray-100 bg-white shadow-2xl md:mx-auto md:max-w-lg lg:mx-0 lg:h-full lg:max-w-sm lg:rounded-none lg:border-l lg:border-t-0">
+                    class="product-create-overlay relative z-10 flex h-[85vh] max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border-t border-gray-100 bg-white shadow-2xl md:mx-auto md:max-w-lg lg:mx-0 lg:h-full lg:max-w-sm lg:rounded-none lg:border-l lg:border-t-0">
                     <div class="flex shrink-0 justify-center pt-3 pb-1 lg:hidden" @click="productCreateOpen = false" style="cursor: pointer;">
                         <div class="h-1.5 w-16 rounded-full bg-gray-300"></div>
                     </div>
-                    <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-5 py-3.5">
+                    <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-5 py-4">
                         <div>
                             <h2 id="product-create-title" class="text-[15px] font-bold text-gray-900" x-text="productEditId ? 'Edit Produk' : 'Tambah Produk'"></h2>
-                            <p class="mt-0.5 text-xs text-gray-400" x-text="productEditId ? 'Perbarui data produk' : 'Isi data produk baru'"></p>
+                            <p class="mt-0.5 text-[12px] text-gray-400" x-text="productEditId ? 'Perbarui data produk' : 'Isi data produk baru'"></p>
                         </div>
                         <button type="button" @click="productCreateOpen = false"
                             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200"
@@ -435,8 +454,30 @@
                             <i class="ph-bold ph-x text-base"></i>
                         </button>
                     </header>
-                    <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-gray-50/60">
-                        @include('master::products.partials.create-form')
+                    <div class="relative min-h-0 flex-1 bg-gray-50/60"
+                        x-data="{
+                            scrollPos: 0, thumbHeight: 0, isScrolling: false, scrollTimeout: null,
+                            updateScroll() {
+                                const el = this.$refs.scrollArea;
+                                if (!el) return;
+                                this.thumbHeight = Math.max(el.clientHeight * (el.clientHeight / el.scrollHeight), 30);
+                                const maxScrollTop = el.scrollHeight - el.clientHeight;
+                                const maxThumbTop = el.clientHeight - this.thumbHeight - 16;
+                                this.scrollPos = maxScrollTop <= 0 ? 0 : (el.scrollTop / maxScrollTop) * maxThumbTop;
+                            }
+                        }"
+                        x-init="$nextTick(() => updateScroll())" @resize.window="updateScroll()">
+                        <div x-ref="scrollArea"
+                            @scroll="updateScroll(); isScrolling = true; clearTimeout(scrollTimeout); scrollTimeout = setTimeout(() => isScrolling = false, 800)"
+                            class="h-full overflow-y-auto overscroll-none scrollbar-hide">
+                            @include('master::products.partials.create-form')
+                        </div>
+                        <!-- Custom smooth scrollbar thumb -->
+                        <div class="pointer-events-none absolute right-1 top-0 h-full w-1.5 py-2">
+                            <div class="w-full rounded-full bg-gray-400/50 transition-opacity duration-300 ease-in-out"
+                                :style="`height: ${thumbHeight}px; transform: translateY(${scrollPos}px);`"
+                                :class="isScrolling ? 'opacity-100' : 'opacity-0'"></div>
+                        </div>
                     </div>
                     <footer class="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-white px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                         <button type="button" @click="productCreateOpen = false"
@@ -531,6 +572,23 @@
             }
         }
 
+        /** The product's own icon (emoji on a tint) in the photo slot, like the reference. icon: { emoji, tint } or null to remove it. */
+        window.setProductAvatarEmoji = function (form, icon) {
+            const slot = form.querySelector('label[for="product-avatar"]');
+            const emoji = form.querySelector('#product-image-emoji');
+            if (!slot || !emoji) return;
+            if (slot.dataset.tint) slot.classList.remove(slot.dataset.tint);
+            delete slot.dataset.tint;
+            emoji.classList.toggle('hidden', !icon);
+            emoji.textContent = icon ? icon.emoji : '';
+            slot.classList.toggle('bg-white', !icon);
+            if (icon) {
+                slot.classList.add(icon.tint);
+                slot.dataset.tint = icon.tint;
+                form.querySelector('#product-image-placeholder')?.classList.add('hidden');
+            }
+        };
+
         function resetProductDrawer() {
             const form = document.getElementById('add_product_form');
             if (!form) return;
@@ -542,9 +600,7 @@
             form.querySelector('#product-status').value = '';
             form.querySelector('#category_id').value = '';
             form.querySelector('#product-unit').value = '';
-            const $variantSelects = $(form).find('#kt_ecommerce_edit_order_selected_products_body .select2-hidden-accessible');
-            if ($variantSelects.length) $variantSelects.select2('destroy');
-            form.querySelector('#kt_ecommerce_edit_order_selected_products_body')?.replaceChildren();
+            window.Alpine?.$data(form.querySelector('#product-variants'))?.reset();
             const variantToggle = form.querySelector('#product-has-variants');
             variantToggle.checked = false;
             variantToggle.setAttribute('aria-checked', 'false');
@@ -555,6 +611,7 @@
             form.querySelector('#product-image-preview').removeAttribute('src');
             form.querySelector('#product-image-preview').classList.add('hidden');
             form.querySelector('#product-image-placeholder').classList.remove('hidden');
+            window.setProductAvatarEmoji(form, null);
             form.querySelectorAll('[data-picker-option], [data-product-type-option]').forEach(option => {
                 option.classList.remove('bg-emerald-50/60');
                 option.querySelector('.product-picker-radio')?.classList.remove('!border-emerald-500');
@@ -594,6 +651,7 @@
             typeOption?.click();
             setValue('#product-unit', product.unitId);
             form.querySelector(`[data-picker-select="product-unit"][data-picker-value="${product.unitId}"]`)?.click();
+            if (!product.imageUrl && product.icon) window.setProductAvatarEmoji(form, { emoji: product.icon, tint: product.iconClass });
             if (product.imageUrl) {
                 const preview = form.querySelector('#product-image-preview');
                 preview.src = product.imageUrl;
@@ -620,26 +678,8 @@
                 pricing.priceRules = rules.length ? rules : [{ id: Date.now(), price: product.price || '', branches: ['all'] }];
             }
 
-            const $body = $(form).find('#kt_ecommerce_edit_order_selected_products_body');
-            for (const variant of product.variants || []) {
-                const $row = $('<tr>');
-                const $select = $('<select name="variant[id][]" class="form-select mb-2 select2_product">')
-                    .append($('<option selected>').val(variant.id).text(variant.name));
-                $row.append($('<td>').append($select));
-                $row.append($('<td>').append($('<input type="text" name="variant[price][]" class="form-control format-number mb-2">').val(variant.price ?? 0)));
-                $row.append($('<td>').append('<button type="button" class="product-remove-row remove_variant" aria-label="Hapus varian"><i class="ph ph-x"></i></button>'));
-                $body.append($row);
-            }
-            if ($body.children().length) {
-                $body.find('.select2_product').select2({
-                    placeholder: 'Ketik nama produk', tags: true,
-                    ajax: {
-                        url: @js(route('ajax.getProduct')),
-                        dataType: 'json', delay: 250,
-                        data: params => ({ search: params.term }),
-                        processResults: data => ({ results: data.map(item => ({ id: item.id, text: item.name })) })
-                    }
-                });
+            if ((product.variants || []).length) {
+                window.Alpine?.$data(form.querySelector('#product-variants'))?.setVariants(product.variants);
                 const toggle = form.querySelector('#product-has-variants');
                 toggle.checked = true;
                 toggle.dispatchEvent(new Event('change', { bubbles: true }));
