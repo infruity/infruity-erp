@@ -36,22 +36,11 @@
             <button type="button" @click="openCreate()" class="flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold shadow-sm"><i class="ph-bold ph-plus"></i> Tambah {{ $singular }}</button>
             @endif
         </div>
-        <div class="hidden md:flex px-4 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-400 font-medium">
-            @if (($pageMode ?? 'ajax') === 'server' && $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
-                Menampilkan <strong class="mx-1 text-gray-700" x-text="records.length"></strong> dari <strong class="mx-1 text-gray-700" x-text="total"></strong> {{ strtolower($pageTitle) }}
-            @else
-                Menampilkan <strong class="mx-1 text-gray-700" x-text="Math.min(visibleCount, filtered.length)"></strong> dari <strong class="mx-1 text-gray-700" x-text="filtered.length"></strong> {{ strtolower($pageTitle) }}
-            @endif
-        </div>
-        <div x-show="scrolled" x-cloak class="md:hidden absolute top-2 left-0 right-0 z-20 flex justify-center pointer-events-none">
-            <span class="bg-white/95 backdrop-blur-md border border-gray-200 rounded-full px-4 py-1.5 shadow-lg text-[11px] text-gray-700 font-medium">
-                @if (($pageMode ?? 'ajax') === 'server' && $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
-                    Menampilkan <strong x-text="records.length"></strong> dari <strong x-text="total"></strong> {{ strtolower($pageTitle) }}
-                @else
-                    Menampilkan <strong x-text="Math.min(visibleCount, filtered.length)"></strong> dari <strong x-text="filtered.length"></strong> {{ strtolower($pageTitle) }}
-                @endif
-            </span>
-        </div>
+        @if (($pageMode ?? 'ajax') === 'server' && $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
+            <x-erp.list-count :noun="strtolower($pageTitle)" shown="records.length" total="total" />
+        @else
+            <x-erp.list-count :noun="strtolower($pageTitle)" shown="Math.min(visibleCount, filtered.length)" total="filtered.length" />
+        @endif
         <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0" @scroll.passive="scrolled = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => scrolled = false, 700)">
             <template x-for="record in visible" :key="record.id">
                 <div class="border-b border-gray-100">

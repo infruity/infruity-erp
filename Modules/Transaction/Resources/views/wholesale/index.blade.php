@@ -68,11 +68,11 @@
                     @endif
                 </div>
 
-                <div id="wholesale-summary" class="mt-3 flex items-center justify-between text-[11px] text-gray-500">
-                    <span id="wholesale-count" aria-live="polite">Memuat pengadaan…</span>
-                    <span id="wholesale-active-filter" class="hidden max-w-[48%] truncate rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-800"></span>
+                <div id="wholesale-summary" class="mt-3 flex items-center justify-end text-[11px] text-gray-500">
+                    <span id="wholesale-active-filter" class="hidden max-w-full truncate rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-800"></span>
                 </div>
             </header>
+            <x-erp.list-count noun="pengadaan" shown-id="wholesale-count-shown" total-id="wholesale-count-total" />
 
             <div class="mobile-list-edge-fade min-h-0 flex-1 overflow-auto pb-24 md:pb-0">
                 <table id="wholesale-table" class="w-full text-sm" width="100%">
@@ -376,7 +376,8 @@
                     if (!info.recordsDisplay) {
                         $('#wholesale-table td.dataTables_empty').html(hasCriteria ? wholesaleNoMatchState : wholesaleEmptyState);
                     }
-                    $('#wholesale-count').text(info.recordsDisplay ? `Menampilkan ${info.start + 1}–${info.end} dari ${info.recordsDisplay} pengadaan` : (hasCriteria ? 'Pengadaan tidak ditemukan' : 'Belum ada pengadaan'));
+                    $('#wholesale-count-shown, #wholesale-count-shown-mobile').text((info.recordsDisplay ? info.end - info.start : 0).toLocaleString('id-ID'));
+                    $('#wholesale-count-total, #wholesale-count-total-mobile').text(Number(info.recordsDisplay).toLocaleString('id-ID'));
                     this.api().rows({ page: 'current' }).every(function () {
                         $(this.node()).toggleClass('is-openable', Boolean(this.data()?.detail_payload));
                     });

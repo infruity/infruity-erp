@@ -3,7 +3,7 @@
 @section('page-title', 'Deposito')
 @section('content')
 @include('crm::partials.assets')
-<x-erp.workspace title="Deposito" subtitle="Kelola deposito pelanggan dan tier yang digunakan." icon="ph-wallet">
+<x-erp.workspace count-table="transaction-table" count-noun="deposito" title="Deposito" subtitle="Kelola deposito pelanggan dan tier yang digunakan." icon="ph-wallet">
     <x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" placeholder="Cari deposito…" aria-label="Cari deposito"></div>
             @if (check_access('deposito.create'))
             <button type="button" class="erp-action erp-action--primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer" data-crm-create><i class="ph-bold ph-plus" aria-hidden="true"></i><span>Tambah Deposito</span></button>

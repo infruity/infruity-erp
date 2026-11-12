@@ -46,14 +46,24 @@ final class HiddenPagesTest extends TestCase
         }
     }
 
+    public function test_tier_pages_are_behind_the_flag_but_the_tier_list_other_pages_read_stays(): void
+    {
+        foreach (['tier.index', 'tier.create', 'tier.store', 'tier.edit', 'tier.update', 'tier.destroy', 'tier.save_detail', 'tier.get-gift', 'tier.data'] as $name) {
+            $this->assertContains(EnsureFeatureEnabled::class . ':tier_pages', $this->middlewareOf($name), $name);
+        }
+        $this->assertNotContains(EnsureFeatureEnabled::class . ':tier_pages', $this->middlewareOf('tier.list-tier'));
+        $this->assertStringContainsString("/tier/list-tier", file_get_contents(base_path('Modules/Crm/Resources/views/deposito/js-deposito.blade.php')));
+    }
+
     public function test_the_pages_are_off_by_default_and_answer_404(): void
     {
         $this->assertFalse(config('features.expenditure_pages'));
         $this->assertFalse(config('features.other_book_pages'));
         $this->assertFalse(config('features.stock_out_pages'));
         $this->assertFalse(config('features.stock_out_type_pages'));
+        $this->assertFalse(config('features.tier_pages'));
 
-        foreach (['expenditure_pages', 'other_book_pages', 'stock_out_pages', 'stock_out_type_pages'] as $feature) {
+        foreach (['expenditure_pages', 'other_book_pages', 'stock_out_pages', 'stock_out_type_pages', 'tier_pages'] as $feature) {
             $middleware = new EnsureFeatureEnabled();
             $request = \Illuminate\Http\Request::create('/x');
 
@@ -81,5 +91,7 @@ final class HiddenPagesTest extends TestCase
 
         $this->assertStringNotContainsString("url('expenditure')", $menu);
         $this->assertStringNotContainsString('Pemasukan / Pengeluaran', $menu);
+        $this->assertStringNotContainsString("url('tier')", $menu);
+        $this->assertStringNotContainsString('Loyalty Tier', $menu);
     }
 }

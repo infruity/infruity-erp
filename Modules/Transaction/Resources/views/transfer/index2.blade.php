@@ -21,7 +21,7 @@
     <script src="{{ asset('assets/js/transfer-list.js') }}?v={{ filemtime(public_path('assets/js/transfer-list.js')) }}"></script>
 @endpush
 @section('content')
-    <section class="transfer-list-page" x-data="transferList({ endpoint: @js(route('transfer-data')), csrf: @js(csrf_token()), side: @js($side), receiving: @js($receiving) })" @erp-filter-apply.window="if ($event.detail.id === 'transfer') applyFilters($event.detail.values)" @erp-filter-close.window="if ($event.detail.id === 'transfer') closeFilter()" aria-label="Daftar Pindah Stok">
+    <section class="transfer-list-page relative" x-data="transferList({ endpoint: @js(route('transfer-data')), csrf: @js(csrf_token()), side: @js($side), receiving: @js($receiving) })" @erp-filter-apply.window="if ($event.detail.id === 'transfer') applyFilters($event.detail.values)" @erp-filter-close.window="if ($event.detail.id === 'transfer') closeFilter()" aria-label="Daftar Pindah Stok">
         <div class="transfer-toolbar">
             <div class="transfer-search">
                 <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
@@ -34,6 +34,7 @@
                 <a class="transfer-list-create" href="{{ route('transfer-pengirim.create') }}"><i class="ph-bold ph-plus" aria-hidden="true"></i>Kirim Stok Baru</a>
             @endif
         </div>
+        <x-erp.list-count noun="transfer stok" shown="rows.length" total="filtered" list=".transfer-list-scroll" />
         <div class="transfer-list-scroll" :aria-busy="loading">
             <div class="transfer-list-head" x-show="rows.length"><span>Cabang &amp; Waktu</span><span>Pengirim / Produk</span><span style="text-align:right">Status / Nomor Pengiriman</span></div>
             <template x-for="row in rows" :key="row.id">
@@ -63,7 +64,6 @@
                     <span x-text="loading ? 'Memuat...' : 'Muat ' + Math.min(20, filtered - rows.length) + ' Transaksi Lagi'"></span>
                 </x-erp.load-more>
             </div>
-            <p class="transfer-list-count" x-show="rows.length && !hasMore" x-cloak x-text="rows.length + ' dari ' + filtered + ' transfer stok'"></p>
         </div>
         <x-erp.filter-sheet
             id="transfer"

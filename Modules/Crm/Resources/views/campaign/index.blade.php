@@ -3,7 +3,7 @@
 @section('page-title', 'Campaign')
 @section('content')
 @include('crm::partials.assets')
-<x-erp.workspace title="Campaign" subtitle="Kelola periode dan nilai promo pelanggan." icon="ph-megaphone">
+<x-erp.workspace count-table="transaction-table" count-noun="campaign" title="Campaign" subtitle="Kelola periode dan nilai promo pelanggan." icon="ph-megaphone">
     <x-slot:toolbar><div class="erp-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search" data-kt-ecommerce-product-filter="search" placeholder="Cari campaign…" aria-label="Cari campaign"></div>
             @if (check_access('campaign.create'))
             <button type="button" class="erp-action erp-action--primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer" data-crm-create><i class="ph-bold ph-plus" aria-hidden="true"></i><span>Tambah Campaign</span></button>

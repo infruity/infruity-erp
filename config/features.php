@@ -13,4 +13,6 @@ return [
     'stock_out_pages' => (bool) env('FEATURE_STOCK_OUT_PAGES', false),
     // Jenis Stok Keluar (/stock-out-type)
     'stock_out_type_pages' => (bool) env('FEATURE_STOCK_OUT_TYPE_PAGES', false),
+    // Loyalty Tier (/tier). /tier/list-tier stays on because the deposito and role pages read the tier names from it.
+    'tier_pages' => (bool) env('FEATURE_TIER_PAGES', false),
 ];

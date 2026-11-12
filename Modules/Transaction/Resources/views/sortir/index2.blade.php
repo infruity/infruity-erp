@@ -17,7 +17,7 @@
             return ['id' => (string) $branch->id, 'name' => ucwords((string) $branch->name)];
         })->values();
     @endphp
-    <section class="sortir-list-page" x-data="sortirList({ endpoint: @js(route('sortir-data')), csrf: @js(csrf_token()) })" @erp-filter-apply.window="if ($event.detail.id === 'sortir') applyFilters($event.detail.values)" @erp-filter-close.window="if ($event.detail.id === 'sortir') closeFilter()" aria-label="Daftar Sortir Barang">
+    <section class="sortir-list-page relative" x-data="sortirList({ endpoint: @js(route('sortir-data')), csrf: @js(csrf_token()) })" @erp-filter-apply.window="if ($event.detail.id === 'sortir') applyFilters($event.detail.values)" @erp-filter-close.window="if ($event.detail.id === 'sortir') closeFilter()" aria-label="Daftar Sortir Barang">
         <div class="sortir-toolbar">
             <div class="sortir-search">
                 <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
@@ -30,6 +30,7 @@
                 <a class="sortir-list-create" href="{{ route('sortir.create') }}"><i class="ph-bold ph-plus" aria-hidden="true"></i>Tambah Sortir</a>
             @endif
         </div>
+        <x-erp.list-count noun="transaksi sortir" shown="rows.length" total="filtered" list=".sortir-list-scroll" />
         <div class="sortir-list-scroll" :aria-busy="loading">
             <div class="sortir-list-head" x-show="rows.length"><span>Cabang &amp; Waktu</span><span>Nomor Sortir / Petugas</span><span style="text-align:right">Status / Nominal</span></div>
             <template x-for="row in rows" :key="row.id">
@@ -58,7 +59,6 @@
                     <span x-text="loading ? 'Memuat...' : 'Muat ' + Math.min(20, filtered - rows.length) + ' Transaksi Lagi'"></span>
                 </x-erp.load-more>
             </div>
-            <p class="sortir-list-count" x-show="rows.length && !hasMore" x-cloak x-text="rows.length + ' dari ' + filtered + ' transaksi sortir'"></p>
         </div>
         <x-erp.filter-sheet
             id="sortir"

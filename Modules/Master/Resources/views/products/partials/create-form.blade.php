@@ -1,11 +1,12 @@
 <style>
     #add_product_form { display: block; padding: 0; }
     #add_product_form .product-create-content { display: flex; flex-direction: column; gap: 1.25rem; padding: 1.25rem 1.25rem .5rem; }
-    #add_product_form .product-field-label { display: block; margin-bottom: .375rem; color: #4b5563; font-size: .75rem; font-weight: 600; }
+    #add_product_form .product-field-label { display: block; margin-bottom: .375rem; color: #4b5563; font-size: .75rem; line-height: 1rem; font-weight: 600; }
     #add_product_form .product-input,
     #add_product_form .product-select,
     #add_product_form .form-control,
-    #add_product_form .form-select { width: 100%; min-height: 44px; border: 1px solid #e5e7eb; border-radius: .75rem; background: #fff; padding: .625rem .875rem; color: #1f2937; font-size: .875rem; outline: none; }
+    #add_product_form .form-select { width: 100%; min-height: 44px; border: 1px solid #e5e7eb; border-radius: .75rem; background: #fff; padding: .625rem .875rem; color: #1f2937; font-size: .875rem; line-height: 1.25rem; outline: none; }
+    #add_product_form textarea.product-input { padding-top: .75rem; padding-bottom: .75rem; }
     #add_product_form .product-input:focus,
     #add_product_form .product-select:focus,
     #add_product_form .form-control:focus,
@@ -16,7 +17,9 @@
     #add_product_form .product-price-input { padding-left: 2.75rem; text-align: right; font-variant-numeric: tabular-nums; }
     #add_product_form .product-remove-row { display: inline-flex; width: 38px; height: 38px; flex: 0 0 38px; align-items: center; justify-content: center; border-radius: .75rem; background: #fef2f2; color: #ef4444; }
     #add_product_form .product-add-row { display: inline-flex; align-items: center; gap: .375rem; color: #047857; font-size: .75rem; font-weight: 600; }
-    #add_product_form #variant_table, #add_product_form #branch_table { width: 100%; font-size: .8125rem; }
+    #add_product_form #product-variants:not(.hidden) { display: flex; }
+    #add_product_form #branch_table { width: 100%; font-size: .8125rem; }
+
     #add_product_form #variant_table th, #add_product_form #branch_table th { padding: .5rem; border-bottom: 1px solid #f3f4f6; color: #9ca3af; font-size: .6875rem; font-weight: 600; text-align: left; }
     #add_product_form #variant_table td, #add_product_form #branch_table td { padding: .5rem; border-bottom: 1px solid #f9fafb; vertical-align: middle; }
     #add_product_form .select2-container { width: 100% !important; }
@@ -33,9 +36,10 @@
     @csrf
 
     <div class="product-create-content">
-        <div class="flex flex-col items-center gap-2">
+        <div class="flex flex-col items-center gap-3">
             <label for="product-avatar" class="group flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-white text-gray-300 transition hover:border-emerald-300 hover:bg-emerald-50/30">
                 <img id="product-image-preview" @if(isset($data) && $data->image) src="{{ asset('storage/' . $data->image) }}" @endif alt="Pratinjau foto produk" class="{{ isset($data) && $data->image ? '' : 'hidden' }} h-full w-full object-cover">
+                <span id="product-image-emoji" class="hidden text-3xl leading-normal text-gray-800" aria-hidden="true"></span>
                 <i id="product-image-placeholder" class="ph ph-image text-2xl {{ isset($data) && $data->image ? 'hidden' : '' }}"></i>
             </label>
             <input id="product-avatar" type="file" name="avatar" accept="image/png,image/jpeg,image/jpg" class="sr-only">
@@ -55,9 +59,9 @@
             <div data-picker-root="product-type" data-product-type-picker class="overflow-hidden rounded-xl border border-gray-200 bg-white">
                 <div class="relative border-b border-gray-100 bg-gray-50/50">
                     <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
-                    <input type="search" data-product-type-search placeholder="Cari tipe produk atau kategori..." class="w-full bg-transparent py-3 pl-9 pr-4 text-sm outline-none" aria-label="Cari tipe produk atau kategori">
+                    <input type="search" data-product-type-search placeholder="Cari tipe produk..." class="w-full bg-transparent py-3 pl-9 pr-4 text-sm outline-none" aria-label="Cari tipe produk atau kategori">
                 </div>
-                <div id="product-type-options" class="max-h-44 overflow-y-auto overscroll-contain scrollbar-hide">
+                <div id="product-type-options" class="max-h-48 overflow-y-auto overscroll-contain scrollbar-hide">
                     @foreach ($productTypeOptions as $option)
                         <button type="button" data-product-type-option data-category-value="{{ $option->category_id }}" data-category-label="{{ $option->name }}" data-product-tipe="{{ $option->tipe }}" data-product-status="{{ $option->status }}" class="flex w-full items-center gap-3 border-b border-gray-100 px-3.5 py-3 text-left last:border-0 hover:bg-gray-50">
                             <span class="product-picker-radio flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-gray-300"><span class="h-2 w-2 scale-0 rounded-full bg-emerald-500"></span></span>
@@ -108,7 +112,7 @@
         <div class="product-option-row rounded-xl border border-gray-200 bg-white px-4 py-3">
             <div class="min-w-0 flex-1">
                 <label for="product-has-variants" class="block text-sm font-semibold text-gray-700">Produk Memiliki Varian</label>
-                <p class="mt-0.5 text-[11px] text-gray-400">Tambahkan pilihan produk seperti ukuran atau grade</p>
+                <p class="mt-0.5 text-[11px] text-gray-400">Misal: Grade Super, Grade A, Grade AB</p>
             </div>
             <label class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center" aria-label="Produk memiliki varian">
                 <input id="product-has-variants" type="checkbox" role="switch" class="peer sr-only" aria-checked="false" aria-controls="product-variants">
@@ -200,36 +204,121 @@
             </template>
         </section>
 
-        <section id="product-variants" class="hidden rounded-xl border border-gray-200 bg-white p-3">
-            <div class="mb-2 flex items-center justify-between">
-                <h3 class="text-xs font-semibold text-gray-700">Daftar Varian <span class="text-red-400">*</span></h3>
-                <button class="product-add-row" type="button" onclick="addVariant()"><i class="ph ph-plus-circle"></i> Tambah Varian</button>
+        <section id="product-variants" x-data="productVariants($el)" class="hidden flex-col gap-3"
+            data-branches="{{ ($branch ?? collect())->map(fn ($item) => ['id' => $item->id, 'name' => $item->name])->values()->toJson() }}">
+            <div class="flex items-center justify-between">
+                <label class="text-xs font-semibold text-gray-600">Daftar Varian <span class="text-red-400">*</span></label>
+                <button type="button" @click="addVariant()" class="flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline"><i class="ph ph-plus-circle"></i> Tambah Varian</button>
             </div>
-            <div class="overflow-x-auto">
-                <table id="variant_table"><thead><tr><th>Nama Varian</th><th>Harga</th><th></th></tr></thead><tbody id="kt_ecommerce_edit_order_selected_products_body"></tbody></table>
-            </div>
-            <p class="mt-2 text-[11px] text-gray-400">Pilih produk yang sudah ada atau ketik nama varian baru.</p>
+            <p x-show="variants.length === 0" class="py-3 text-center text-xs text-gray-400">Belum ada varian. Klik "Tambah Varian".</p>
+
+            <template x-for="(variant, vidx) in variants" :key="variant.id">
+                <div class="relative flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                    <button type="button" @click="removeVariant(vidx)" class="absolute right-3 top-3 text-red-400 transition-colors hover:text-red-600" aria-label="Hapus varian">
+                        <i class="ph-bold ph-trash text-sm"></i>
+                    </button>
+
+                    <div>
+                        <label class="mb-1 block text-[11px] font-semibold text-gray-500">Nama Varian</label>
+                        <input type="text" x-model="variant.name" placeholder="misal: Grade A" data-variant-name
+                            class="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm outline-none transition-all focus:border-emerald-500 focus:bg-white">
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <div class="mt-1 flex items-center justify-between">
+                            <label class="text-[11px] font-semibold text-gray-500">Harga Varian per Cabang</label>
+                            <button type="button" @click="addRule(variant)" class="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 hover:underline"><i class="ph ph-plus-circle"></i> Tambah Harga</button>
+                        </div>
+
+                        <template x-for="(rule, ridx) in variant.priceRules" :key="rule.id">
+                            <div class="flex flex-col gap-1.5 rounded-lg border border-gray-100 bg-gray-50 p-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="relative flex-1" x-data="{
+                                        get displayPrice() { return rule.price ? Number(rule.price).toLocaleString('id-ID') : '' },
+                                        set displayPrice(value) { const clean = value.replace(/\D/g, ''); rule.price = clean ? parseInt(clean, 10) : 0; }
+                                    }">
+                                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-medium text-gray-400">Rp</span>
+                                        <input type="text" inputmode="numeric" x-model="displayPrice" placeholder="0"
+                                            class="h-8 w-full rounded-md border border-gray-200 bg-white pl-6 pr-2 text-right text-xs font-semibold outline-none transition-all focus:border-emerald-500">
+                                    </div>
+                                    <button type="button" x-show="variant.priceRules.length > 1" @click="variant.priceRules.splice(ridx, 1)"
+                                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-red-400 hover:bg-red-50" aria-label="Hapus aturan harga">
+                                        <i class="ph-bold ph-trash text-xs"></i>
+                                    </button>
+                                </div>
+
+                                <div x-data="{ pickerOpen: false, pickerSearch: '' }" class="mt-0.5 flex flex-col gap-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <button type="button" @click="pickerOpen = !pickerOpen" :aria-expanded="pickerOpen"
+                                            class="flex h-7 min-w-0 flex-1 items-center justify-between rounded-md border border-gray-200 bg-white px-2 text-left text-[10px] transition-colors hover:bg-gray-50">
+                                            <span class="truncate font-medium text-gray-600" x-text="rule.branches.includes('all') ? 'Semua Cabang' : (rule.branches.length > 0 ? rule.branches.length + ' Cabang Dipilih' : 'Pilih Cabang...')"></span>
+                                            <i class="ph-bold ph-caret-down shrink-0 text-gray-400 transition-transform" :class="pickerOpen ? 'rotate-180' : ''"></i>
+                                        </button>
+                                    </div>
+
+                                    <div x-show="pickerOpen" x-transition class="mt-1 flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+                                        <div class="relative border-b border-gray-100">
+                                            <i class="ph-bold ph-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"></i>
+                                            <input type="text" x-model="pickerSearch" placeholder="Cari cabang..." class="w-full bg-transparent py-1.5 pl-7 pr-2 text-[10px] outline-none transition-colors focus:bg-gray-50">
+                                        </div>
+                                        <div class="flex max-h-[140px] flex-col gap-0.5 overflow-y-auto overscroll-none p-1 scrollbar-hide">
+                                            <label x-show="pickerSearch === ''" class="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-gray-50">
+                                                <div class="relative flex h-4 w-4 shrink-0 items-center justify-center">
+                                                    <input type="checkbox" :checked="rule.branches.includes('all')" :disabled="hasOtherBranchRules(variant, rule, 'all')"
+                                                        @change="rule.branches = $event.target.checked ? ['all'] : []"
+                                                        class="peer h-4 w-4 cursor-pointer appearance-none rounded border-[1.5px] border-gray-300 transition-colors checked:border-emerald-500 checked:bg-emerald-500 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-200">
+                                                    <i class="ph-bold ph-check pointer-events-none absolute text-[10px] text-white opacity-0 peer-checked:opacity-100"></i>
+                                                </div>
+                                                <span class="flex-1 text-[10px] font-bold text-gray-800">Pilih Semua</span>
+                                            </label>
+                                            <template x-for="branch in branches.filter(item => item.name.toLowerCase().includes(pickerSearch.toLowerCase()))" :key="branch.id">
+                                                <label class="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-gray-50">
+                                                    <div class="relative flex h-4 w-4 shrink-0 items-center justify-center">
+                                                        <input type="checkbox" :checked="rule.branches.includes(String(branch.id))" :disabled="hasOtherBranchRules(variant, rule, String(branch.id))"
+                                                            @change="toggleBranch(rule, branch.id, $event.target.checked)"
+                                                            class="peer h-4 w-4 cursor-pointer appearance-none rounded border-[1.5px] border-gray-300 transition-colors checked:border-emerald-500 checked:bg-emerald-500 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-200">
+                                                        <i class="ph-bold ph-check pointer-events-none absolute text-[10px] text-white opacity-0 peer-checked:opacity-100"></i>
+                                                    </div>
+                                                    <span class="min-w-0 flex-1 truncate text-[10px] font-medium text-gray-700" x-text="branch.name"></span>
+                                                </label>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <template x-for="branchId in branchIdsFor(rule)" :key="rule.id + '-' + branchId">
+                                    <span class="hidden"><input type="hidden" :name="`variant[branch][${vidx}][id][]`" :value="branchId"><input type="hidden" :name="`variant[branch][${vidx}][price][]`" :value="rule.price || 0"></span>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
+                    <input type="hidden" name="variant[id][]" :value="variant.productId || variant.name.trim()">
+                    <input type="hidden" name="variant[name][]" :value="variant.name.trim()">
+                    <input type="hidden" name="variant[price][]" :value="variant.priceRules[0]?.price || 0">
+                </div>
+            </template>
         </section>
 
         <div class="flex flex-col gap-4">
             <div>
-                <label for="description_input" class="product-field-label">Deskripsi <span class="font-normal text-gray-400">(Opsional)</span></label>
+                <label for="description_input" class="product-field-label">Deskripsi <span class="text-gray-300">(Opsional)</span></label>
                 <textarea id="description_input" name="description" rows="3" maxlength="1000" placeholder="Deskripsi singkat produk..." class="product-input resize-none">{{ old('description', $data->description ?? '') }}</textarea>
                 @error('description') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div>
+            <div class="hidden">
                 <label for="product-sku" class="product-field-label">SKU</label>
                 <input id="product-sku" type="text" name="sku" value="{{ old('sku', $data->sku ?? '') }}" placeholder="Nomor SKU" class="product-input">
             </div>
-            <div>
+            <div class="hidden">
                 <label for="product-barcode" class="product-field-label">Barcode</label>
                 <input id="product-barcode" type="text" name="barcode" value="{{ old('barcode', $data->barcode ?? '') }}" placeholder="Nomor barcode" class="product-input">
             </div>
-            <div>
+            <div class="hidden">
                 <label for="product-limit" class="product-field-label">Limit Stok</label>
                 <input id="product-limit" type="number" name="limit" value="{{ old('limit', $data->limit ?? '') }}" placeholder="0" min="0" class="product-input">
             </div>
-            <div>
+            <div class="hidden">
                 <label for="product-handling" class="product-field-label">Kondisi Penanganan</label>
                 <input id="product-handling" type="text" name="handling" value="{{ old('handling', $data->handling ?? '') }}" placeholder="Contoh: simpan di suhu dingin" class="product-input">
             </div>

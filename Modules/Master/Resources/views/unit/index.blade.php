@@ -31,21 +31,12 @@
             @endif
         </div>
 
-        <div class="hidden md:flex px-4 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-400 font-medium">
-            Menampilkan <span class="mx-1 text-gray-700 font-semibold" x-text="Math.min(visibleCount, filtered.length)"></span> dari
-            <span class="ml-1 text-gray-700 font-semibold" x-text="filtered.length"></span> satuan
-        </div>
-
-        <div x-show="scrolled" x-cloak class="md:hidden absolute top-2 left-0 right-0 z-20 flex justify-center pointer-events-none">
-                <span class="bg-white/95 backdrop-blur-md border border-gray-200 rounded-full px-4 py-1.5 shadow-lg text-[11px] text-gray-700 font-medium">
-                    Menampilkan <strong x-text="Math.min(visibleCount, filtered.length)"></strong> dari <strong x-text="filtered.length"></strong> satuan
-                </span>
-        </div>
-        <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0" @scroll.passive="scrolled = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => scrolled = false, 600)">
+        <x-erp.list-count noun="satuan" shown="Math.min(visibleCount, filtered.length)" total="filtered.length" />
+        <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0">
             <template x-for="unit in visible" :key="unit.id">
                 <div class="border-b border-gray-100">
                     <button type="button" @click="showDetail(unit)" class="w-full flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3.5 md:py-4 hover:bg-gray-50/50 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" :aria-label="'Detail ' + unit.name">
-                        <span class="w-9 h-9 md:w-12 md:h-12 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-bold text-xs md:text-base overflow-hidden">
+                        <span class="w-9 h-9 md:w-12 md:h-12 rounded-xl border flex items-center justify-center shrink-0 font-bold text-xs md:text-base overflow-hidden" :class="theme(unit)">
                             <span x-text="unit.abbreviation?.slice(0, 3).toUpperCase()"></span>
                         </span>
                         <span class="flex-1 min-w-0 text-left">
@@ -96,14 +87,20 @@
             <template x-if="detail">
                 <div class="flex flex-col gap-5 text-sm break-words">
                     <div class="flex items-center gap-3">
-                        <i class="ph-duotone ph-ruler shrink-0 text-2xl text-emerald-600"></i>
-                        <div class="min-w-0"><div class="font-bold leading-snug text-gray-800" x-text="detail.name"></div><div class="mt-0.5 text-[11px] font-medium text-gray-400">Nama Satuan</div></div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-tag text-lg"></i></div>
+                        <div class="min-w-0"><div class="font-bold leading-snug text-gray-800" x-text="detail.name"></div><div class="text-[11px] font-medium text-gray-400">Nama Satuan</div></div>
                     </div>
                     <div class="flex items-center gap-3">
-                        <i class="ph-duotone ph-tag shrink-0 text-2xl text-emerald-600"></i>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-text-aa text-lg"></i></div>
                         <div><div class="font-bold text-gray-800" x-text="detail.abbreviation"></div><div class="text-[11px] font-medium text-gray-400">Simbol</div></div>
                     </div>
-                    <div x-show="detail.description" class="rounded-xl bg-gray-50 px-3.5 py-3 text-xs leading-relaxed text-gray-600"><div class="mb-1 text-[11px] font-medium text-gray-400">Deskripsi</div><div x-text="detail.description"></div></div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-clock text-lg"></i></div>
+                        <div class="min-w-0">
+                            <div class="text-xs font-bold leading-snug text-gray-800" x-text="detail.updatedBy || 'Administrator'"></div>
+                            <div class="mt-0.5 text-[11px] font-medium text-gray-400" x-text="'Memperbarui pada ' + formatDate(detail.updatedAt || detail.createdAt)"></div>
+                        </div>
+                    </div>
                 </div>
             </template>
             <x-slot:actions>
@@ -132,6 +129,27 @@ function unitPage(units) {
         form: { name: '', abbreviation: '', description: '' },
         get filtered() { const q = this.search.trim().toLocaleLowerCase('id'); return this.units.filter(unit => [unit.name, unit.abbreviation, unit.description].some(value => String(value || '').toLocaleLowerCase('id').includes(q))); },
         get visible() { return this.filtered.slice(0, this.visibleCount); },
+        formatDate(value) {
+            const date = value ? new Date(value) : new Date();
+            if (Number.isNaN(date.getTime())) return '-';
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const pad = number => String(number).padStart(2, '0');
+            return `${pad(date.getDate())} ${months[date.getMonth()]} ${date.getFullYear()}, ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        },
+        // One tint per unit, in the order of the full list (the reference's avatarThemes), so filtering does not recolour rows.
+        themes: [
+            'bg-emerald-50 text-emerald-600 border-emerald-100',
+            'bg-blue-50 text-blue-600 border-blue-100',
+            'bg-purple-50 text-purple-600 border-purple-100',
+            'bg-amber-50 text-amber-600 border-amber-100',
+            'bg-rose-50 text-rose-600 border-rose-100',
+            'bg-indigo-50 text-indigo-600 border-indigo-100',
+            'bg-sky-50 text-sky-600 border-sky-100',
+            'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100',
+            'bg-teal-50 text-teal-600 border-teal-100',
+            'bg-orange-50 text-orange-600 border-orange-100'
+        ],
+        theme(unit) { return this.themes[Math.max(0, this.units.findIndex(item => item.id === unit.id)) % this.themes.length]; },
         openCreate() { if (!@js(check_access('unit.create'))) return; this.editing = null; this.form = { name: '', abbreviation: '', description: '' }; this.error = ''; this.drawerOpen = true; },
         openEdit(unit) { this.editing = unit.id; this.form = { name: unit.name, abbreviation: unit.abbreviation, description: unit.description || '' }; this.error = ''; this.drawerOpen = true; },
         showDetail(unit) { this.detail = unit; },

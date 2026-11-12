@@ -179,7 +179,7 @@ class UserPermissionOverridesTest extends TestCase
             ->assertSee('Administrator')
             ->assertSee('Operator')
             ->assertSee('Permission Manager')
-            ->assertSee('Menampilkan 3 dari 3 role')
+            ->assertSeeInOrder(['Menampilkan', '3', 'dari', '3', 'role'])
             ->assertDontSee('first@example.test')
             ->assertDontSee('second@example.test');
     }
