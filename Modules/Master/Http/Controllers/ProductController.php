@@ -19,6 +19,7 @@ use Modules\Master\Entities\ProductChild;
 use Modules\Master\Entities\ProductUnit;
 use Modules\Master\Entities\UserBranch;
 use Modules\Master\Support\ProductIcon;
+use App\Support\LedgerCache;
 use App\Support\LedgerSql;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -1075,10 +1076,17 @@ class ProductController extends Controller
             }
         }
 
-        $stock = LedgerSql::stockFor(array_unique($ids))
+        $ids = array_values(array_unique($ids));
+        $load = fn () => LedgerSql::stockFor($ids)
             ->when($branchId !== null, fn ($q) => $q->where('branch_id', $branchId))
-            ->get()
-            ->keyBy('id');
+            ->get();
+
+        // A long list reads the whole stock ledger (~340 ms); keep it until the ledger changes. Short lists are cheap
+        // and varied (one per search term), so they are not stored.
+        $stock = (count($ids) > LedgerSql::FILTER_LIMIT
+            ? LedgerCache::remember('list_product_stock:' . md5(implode(',', $ids) . '|' . $branchId), $load)
+            : $load()
+        )->keyBy('id');
 
         foreach ($products as $product) {
             $product->setRelation('get_stock', $stock->get($product->id));

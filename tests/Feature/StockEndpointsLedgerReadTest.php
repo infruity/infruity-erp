@@ -113,4 +113,20 @@ final class StockEndpointsLedgerReadTest extends TestCase
         $this->assertEquals(12, $byBranch[$this->products['apel']]['get_stock']['stock_available']);
         $this->assertSame((int) $this->branch, (int) $byBranch[$this->products['apel']]['get_stock']['branch_id']);
     }
+
+    public function test_a_long_product_list_shows_a_stock_change_at_once_despite_the_cache(): void
+    {
+        foreach (range(1, 45) as $i) {
+            $this->makeProduct("Panjang {$i}");
+        }
+        $apel = $this->products['apel'];
+        $stockOf = fn () => (float) collect($this->getJson('/ajax/listProduct?term=')->assertOk()->json())
+            ->firstWhere('id', $apel)['get_stock']['stock_available'];
+
+        $this->assertEquals(12.0, $stockOf());
+        $this->assertEquals(12.0, $stockOf(), 'second read, from the cache');
+
+        $this->giveStock($apel, $this->branch, 5);
+        $this->assertEquals(17.0, $stockOf(), 'the new movement is there on the very next read');
+    }
 }

@@ -2,6 +2,7 @@
 namespace Modules\Report\Http\Controllers;
 
 use Illuminate\Contracts\Support\Renderable;
+use App\Support\LedgerCache;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
@@ -874,12 +875,15 @@ class ReportController extends Controller
 
         // Evaluate the moving-HPP view once per request instead of embedding it
         // multiple times in the grouped stock query and DataTables count query.
-        $latestHppByProduct = DB::table('product_hpp')
+        // The view (database/sql/product_hpp.sql) still produces every number; the result is kept until a ledger row
+        // changes (LedgerCache), because rebuilding the moving average takes over a second.
+        $hppQuery = DB::table('product_hpp')
             ->select('product_id', 'total_aset_berjalan', 'hpp_berjalan', 'seq')
-            ->orderByDesc('seq')
-            ->get()
-            ->unique('product_id')
-            ->keyBy('product_id');
+            ->orderByDesc('seq');
+        $latestHppByProduct = LedgerCache::remember(
+            'total_aset_latest_hpp',
+            fn () => $hppQuery->get()->unique('product_id')->keyBy('product_id')
+        );
 
         $stockQuery = DB::table('transaction_stock as A')
             ->join('products as CHILD', 'A.product_id', '=', 'CHILD.id')
@@ -898,7 +902,7 @@ class ReportController extends Controller
         }
         $this->scopeReportBranch($stockQuery, $request, 'A.branch_id');
 
-        $stockRows = $stockQuery->get()->map(function ($row) use ($latestHppByProduct, $branchId) {
+        $stockRows = LedgerCache::rememberQuery($stockQuery, 'total_aset_stock')->map(function ($row) use ($latestHppByProduct, $branchId) {
             $hppRow = $latestHppByProduct->get($row->product_id);
             $stock = (float) $row->total_stock;
             $unitHpp = (float) ($hppRow->hpp_berjalan ?? $row->hpp ?? 0);
