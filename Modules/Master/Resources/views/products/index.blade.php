@@ -559,6 +559,12 @@
     <script type="text/javascript">
         var dataTable;
 
+        // Price field: thousands dots while typing (1.000, 15.000); empty when there is no value.
+        function formatPriceInput(value) {
+            var digits = String(value === null || value === undefined ? '' : value).replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+            return digits === '' ? '' : formatNumber(digits);
+        }
+
         function formatNumber(num) {
             if (num === null || num === undefined) return '0';
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -854,14 +860,14 @@
             var currentValue = $span.data('value');
             var id = $span.data('id');
             var $editor = $('<span class="price-editor inline-flex items-center overflow-hidden rounded-lg bg-emerald-50 ring-1 ring-emerald-500"></span>');
-            var $input = $('<input type="number" min="0" step="1" aria-label="Harga baru" class="w-20 md:w-28 bg-transparent px-1.5 py-1 text-right text-sm font-bold text-emerald-900 outline-none">').val(currentValue);
+            var $input = $('<input type="text" inputmode="numeric" autocomplete="off" aria-label="Harga baru" class="w-20 md:w-28 bg-transparent px-1.5 py-1 text-right text-sm font-bold text-emerald-900 outline-none">').val(formatPriceInput(currentValue));
             var $save = $('<button type="button" aria-label="Simpan harga" class="flex items-center justify-center bg-emerald-500 px-2 py-1.5 text-white transition-colors hover:bg-emerald-600"><i class="ph-bold ph-check text-xs"></i></button>');
             var $cancel = $('<button type="button" aria-label="Batal ubah harga" class="hidden md:m-1 md:flex h-7 w-7 items-center justify-center rounded-md bg-gray-100 text-gray-500"><i class="ph-bold ph-x text-xs"></i></button>');
             function closeEditor() { $editor.remove(); $span.show(); }
             $editor.data('close', closeEditor);
             function saveEditor() {
-                var value = $input.val();
-                if (value === '' || Number(value) < 0) { $input.focus(); return; }
+                var value = $input.val().replace(/\D/g, '');
+                if (value === '') { $input.focus(); return; }
                 if (Number(value) !== Number(currentValue)) updatePrice(id, value);
                 closeEditor();
             }
@@ -871,6 +877,14 @@
             $input.on('contextmenu', function(e) { e.preventDefault(); });
             $save.on('click', saveEditor);
             $cancel.on('click', closeEditor);
+            $input.on('input', function() {
+                var el = this;
+                var digitsBefore = el.value.slice(0, el.selectionStart).replace(/\D/g, '').length;
+                el.value = formatPriceInput(el.value.replace(/\D/g, ''));
+                var pos = 0, count = 0;
+                while (pos < el.value.length && count < digitsBefore) { if (/\d/.test(el.value.charAt(pos))) count++; pos++; }
+                el.setSelectionRange(pos, pos);
+            });
             $input.on('keydown', function(e) {
                 if (e.key === 'Enter') saveEditor();
                 if (e.key === 'Escape') closeEditor();
