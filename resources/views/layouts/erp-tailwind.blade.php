@@ -250,6 +250,7 @@
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/erp-theme.css') }}?v={{ filemtime(public_path('assets/css/erp-theme.css')) }}">
     <script defer src="{{ asset('assets/js/erp-overlays.js') }}?v={{ filemtime(public_path('assets/js/erp-overlays.js')) }}"></script>
+    <script defer src="{{ asset('assets/js/erp-empty-fields.js') }}?v={{ filemtime(public_path('assets/js/erp-empty-fields.js')) }}"></script>
 <link rel="stylesheet" href="{{ asset('assets/fonts/infruity/fonts.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/plugins/phosphor/phosphor.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/css/erp-workspace.css') }}?v={{ filemtime(public_path('assets/css/erp-workspace.css')) }}">
