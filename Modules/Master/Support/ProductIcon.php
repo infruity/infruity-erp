@@ -44,7 +44,40 @@ class ProductIcon
             'durian' => ['🟢', 'bg-green-50'],
             'sirsak' => ['🟢', 'bg-green-50'],
             'kelapa' => ['🥥', 'bg-stone-50'],
+            'pepaya' => ['🍈', 'bg-orange-50'],
+            'buah naga' => ['🐉', 'bg-pink-50'],
+            'dragon' => ['🐉', 'bg-pink-50'],
+            'kiwi' => ['🥝', 'bg-green-50'],
+            'berry' => ['🫐', 'bg-violet-50'],
+            'blueberry' => ['🫐', 'bg-violet-50'],
+            'lemon' => ['🍋', 'bg-yellow-50'],
+            'wortel' => ['🥕', 'bg-orange-50'],
+            'salad' => ['🥗', 'bg-lime-50'],
+            'rujak' => ['🥗', 'bg-lime-50'],
+            'rainbow' => ['🌈', 'bg-purple-50'],
+            'parfait' => ['🍨', 'bg-pink-50'],
+            'dessert' => ['🍨', 'bg-pink-50'],
+            'sticky rice' => ['🍚', 'bg-amber-50'],
+            'fruit box premium' => ['🎁', 'bg-purple-50'],
+            'fruit box' => ['📦', 'bg-sky-50'],
+            'keranjang' => ['🧺', 'bg-amber-50'],
+            'jar' => ['🫙', 'bg-lime-50'],
+            'bowl' => ['🥣', 'bg-orange-50'],
+            'sop buah' => ['🥣', 'bg-sky-50'],
+            'cold press' => ['🧃', 'bg-amber-50'],
+            'detox' => ['🥬', 'bg-green-50'],
+            'infused' => ['💧', 'bg-sky-50'],
+            'smoothie' => ['🥤', 'bg-amber-50'],
+            'milkshake' => ['🥤', 'bg-pink-50'],
+            'jus' => ['🧃', 'bg-orange-50'],
+            'mix fruit' => ['🍱', 'bg-green-50'],
+            'buah potong' => ['🍱', 'bg-green-50'],
+            'buah' => ['🍱', 'bg-green-50'],
         ];
+
+        if (preg_match('/\bes\b/u', $needle)) {
+            return ['🧊', 'bg-sky-50'];
+        }
 
         foreach ($map as $keyword => $icon) {
             if (str_contains($needle, $keyword)) {
