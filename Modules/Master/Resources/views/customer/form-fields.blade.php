@@ -37,19 +37,6 @@
     </div>
 
     <div class="border-t border-gray-200 pt-5"><h3 class="text-sm font-bold text-gray-800">Alamat Pelanggan</h3><p class="text-xs text-gray-400 mt-0.5">Isi lokasi dan alamat bila tersedia</p></div>
-    @foreach([
-        ['key'=>'province','label'=>'Provinsi'],
-        ['key'=>'city','label'=>'Kabupaten / Kota'],
-        ['key'=>'district','label'=>'Kecamatan'],
-        ['key'=>'village','label'=>'Kelurahan'],
-    ] as $region)
-        <div class="relative" data-region-picker="{{ $region['key'] }}">
-            <label for="{{ $region['key'] }}-search" class="text-xs font-semibold text-gray-600 mb-1.5 block">{{ $region['label'] }}</label>
-            <div class="relative"><input id="{{ $region['key'] }}-search" type="text" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="{{ $region['key'] }}-options" value="{{ $regionNames[$region['key']] }}" placeholder="Cari {{ strtolower($region['label']) }}..." class="w-full h-11 bg-white border {{ $errors->has($region['key']) ? 'border-red-400' : 'border-gray-200' }} rounded-xl px-4 pr-10 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"><i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i></div>
-            <input type="hidden" name="{{ $region['key'] }}" value="{{ $regionValues[$region['key']] }}">
-            <div id="{{ $region['key'] }}-options" role="listbox" hidden class="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg"></div>
-            @error($region['key'])<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
-    @endforeach
+    <x-erp.region-pickers :values="$regionValues" :names="$regionNames" />
     <x-erp.field label="Tempat Tinggal / Alamat Lengkap" for="address"><textarea id="address" name="address" rows="3" placeholder="Jalan, RT/RW, dan detail alamat" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-none">{{ old('address', $data->address ?? '') }}</textarea></x-erp.field>
 </div>

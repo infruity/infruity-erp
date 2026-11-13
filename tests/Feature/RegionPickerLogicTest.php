@@ -14,25 +14,26 @@ class RegionPickerLogicTest extends TestCase
     public function test_the_drawer_and_the_customer_form_use_the_same_chain(): void
     {
         $drawer = file_get_contents(base_path('Modules/Master/Resources/views/partials/mobile-index.blade.php'));
-        $customer = file_get_contents(base_path('Modules/Master/Resources/views/customer/js-create.blade.php'));
+        $customer = file_get_contents(base_path('resources/views/components/erp/region-pickers.blade.php'));
 
         $this->assertStringContainsString("({ city: 'province', district: 'city', village: 'district' })[key]", $drawer);
         $this->assertStringContainsString("({ province: ['city', 'district', 'village'], city: ['district', 'village'], district: ['village'] })[key]", $drawer);
-        $this->assertStringContainsString("const dependencies = { city: 'province', district: 'city', village: 'district' };", $customer);
-        $this->assertStringContainsString("const children = { province: ['city', 'district', 'village'], city: ['district', 'village'], district: ['village'] };", $customer);
+        $this->assertStringContainsString("parents: { city: 'province', district: 'city', village: 'district' }", $customer);
+        $this->assertStringContainsString("children: { province: ['city', 'district', 'village'], city: ['district', 'village'], district: ['village'] }", $customer);
     }
 
     public function test_every_level_below_province_is_locked_in_both_implementations(): void
     {
         $drawer = file_get_contents(base_path('Modules/Master/Resources/views/partials/mobile-index.blade.php'));
-        $customer = file_get_contents(base_path('Modules/Master/Resources/views/customer/js-create.blade.php'));
-        $form = file_get_contents(base_path('Modules/Master/Resources/views/customer/form-fields.blade.php'));
+        $customer = file_get_contents(base_path('resources/views/components/erp/region-pickers.blade.php'));
 
         $this->assertStringContainsString(":disabled=\"field.key === 'city' ? !form.province : field.key === 'district' ? !form.city : field.key === 'village' ? !form.district : false\"", $drawer);
         $this->assertStringContainsString('if (parent && !this.form[parent]) return;', $drawer, 'a locked picker cannot be opened');
-        $this->assertStringContainsString('input.disabled = locked;', $customer);
+        $this->assertStringContainsString('locked(key) { const parent = this.parents[key]; return !!parent && !this.values[parent]; }', $customer);
+        $this->assertStringContainsString(':disabled="locked(\'{{ $key }}\')"', $customer);
+        $this->assertStringContainsString('if (this.locked(key)) return;', $customer, 'a locked picker cannot be opened');
         $this->assertStringContainsString('disabled:bg-gray-50 disabled:text-gray-400', $drawer);
-        $this->assertStringContainsString('disabled:bg-gray-50 disabled:text-gray-400', $form);
+        $this->assertStringContainsString('disabled:bg-gray-50 disabled:text-gray-400', $customer);
     }
 
     public function test_no_other_view_builds_its_own_region_picker(): void
@@ -47,9 +48,7 @@ class RegionPickerLogicTest extends TestCase
         sort($owners);
 
         $this->assertSame([
-            'Modules/Master/Resources/views/customer/form-fields.blade.php',
-            'Modules/Master/Resources/views/customer/js-create.blade.php',
             'Modules/Master/Resources/views/partials/mobile-index.blade.php',
-        ], $owners, 'a new region picker must reuse one of these (or this test must be updated with it)');
+        ], $owners, 'a new region picker must reuse x-erp.region-pickers or the drawer (or this test must be updated with it)');
     }
 }
