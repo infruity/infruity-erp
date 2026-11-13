@@ -184,7 +184,7 @@ class UserStaffLinkTest extends TestCase
             ->assertSee('data-staff-edit-overlay', false)
             ->assertSee('id="staff_edit_name"', false)
             ->assertSee('id="staff_edit_date_in"', false)
-            ->assertSee('id="staff_edit_date_in" name="date_in" value=""', false)
+            ->assertSee('<input type="hidden" name="date_in" :value="value">', false)
             ->assertSee('data-staff-form', false)
             ->assertSee('Edit Karyawan')
             ->assertSee('value="Dwi Febbrianti Robbiatul Adawiyah"', false)

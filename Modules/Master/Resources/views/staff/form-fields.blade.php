@@ -33,7 +33,7 @@
 
             <div>
                 <label for="{{ $fieldIdPrefix }}_date_in" class="mb-1.5 block text-xs font-semibold text-gray-600">Tanggal Masuk</label>
-                <input id="{{ $fieldIdPrefix }}_date_in" name="date_in" value="{{ $selectedDate }}" type="date" class="m-0 h-11 w-full rounded-xl border {{ $errors->has('date_in') ? 'border-red-400' : 'border-gray-200' }} bg-white px-4 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+                <x-erp.date-picker id="{{ $fieldIdPrefix }}_date_in" name="date_in" :value="$selectedDate" />
                 @error('date_in')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             </div>
 
