@@ -349,3 +349,8 @@ html.erp-html { font-size:16px; }
 input::placeholder, textarea::placeholder { color: #9ca3af; opacity: 1; }
 select.erp-empty, input.erp-empty { color: #9ca3af !important; }
 select.erp-empty option { color: #1f2937 !important; }
+
+/* Thin scrollbars that are invisible until the element scrolls or is hovered (erp-scrollbars.js adds erp-scrolling) */
+* { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+*.erp-scrolling, *:hover { scrollbar-color: rgba(107, 114, 128, .45) transparent; }
+
