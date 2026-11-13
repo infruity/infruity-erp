@@ -266,8 +266,9 @@ function recipeIndex(initialCount, total, hasMore, nextPageUrl, createFormInitia
         deleteSelectedRecipe() {
             if (!this.selectedRecipe) return;
             const id = this.selectedRecipe.id;
+            const name = this.selectedRecipe.product?.name || '';
             this.detailModalOpen = false;
-            deleteReceipt(id);
+            deleteReceipt(id, name);
         },
         async loadMoreRecipes() {
             if (this.loadingMore || !this.hasMore || !this.nextPageUrl) return;
@@ -315,8 +316,8 @@ function recipeIndex(initialCount, total, hasMore, nextPageUrl, createFormInitia
     };
 }
 
-async function deleteReceipt(id) {
-    if (!await ErpDialog.confirmDelete({what: 'resep', text: 'Data resep akan dihapus permanen.'})) return;
+async function deleteReceipt(id, name = '') {
+    if (!await ErpDialog.confirmDelete(name ? {what: 'Resep', name} : {what: 'Resep', text: 'Data resep akan dihapus permanen.'})) return;
     try {
         const response = await fetch(`{{ url('receipt') }}/${id}`, {method: 'DELETE', headers: {'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content}});
         const result = await response.json();
