@@ -55,9 +55,8 @@
             .erp-mobile-nav .erp-mobile-nav__dock { background: rgba(255, 255, 255, .45); border-color: rgba(255, 255, 255, .6); }
         }
         #products-table.dataTable tbody tr:has(td.dataTables_empty) { border-bottom: 0 !important; }
-        /* Editor harga: angka terseleksi saat dibuka (seperti referensi) tanpa sorotan hijau global */
-        .erp-ui #products-table .price-editor input::selection { background: transparent; color: inherit; }
-        #products-table .price-editor input { -webkit-touch-callout: none; }
+        /* Editor harga: kursor emerald-900 seperti referensi */
+        .erp-ui #products-table .price-editor input { caret-color: #064e3b; -webkit-touch-callout: none; }
         #products-table.dataTable thead { display: none !important; }
         #products-table.dataTable thead th { border: none !important; }
         #products-table.dataTable tbody td { border: none !important; padding: 0 !important; }
@@ -890,9 +889,13 @@
                 if (e.key === 'Escape') closeEditor();
             });
             $span.hide().after($editor);
-            // Like the reference ($nextTick): focus and select after the click has finished, so the same tap is not
-            // read as a tap on the freshly selected number (that opened the browser's text menu on touch).
-            window.setTimeout(function() { $input.trigger('focus').trigger('select'); }, 0);
+            // Like the reference: after the click has finished the field is focused with the caret at the end of the
+            // number (nothing selected), so the text cursor is visible straight away.
+            window.setTimeout(function() {
+                $input.trigger('focus');
+                var end = $input.val().length;
+                $input[0].setSelectionRange(end, end);
+            }, 0);
         });
 
         function updatePrice(id, price) {
