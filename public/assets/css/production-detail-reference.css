@@ -139,3 +139,15 @@
 #production-detail-modal > section:has(.production-detail--ref) { width:min(384px, calc(100vw - 32px)); max-width:384px; border-radius:16px; }
 #production-detail-modal > section:has(.production-detail--ref) > div:first-child { padding:24px; }
 #production-detail-modal > section:has(.production-detail--ref) > div:first-child > div:first-child { margin-bottom:24px; }
+
+/* Line heights as in the reference rows (text-sm: 20px, leading-snug on the first two titles, 11px sub lines inherit 20px). */
+.production-detail-ref__main { line-height:20px; }
+.production-detail-ref__row:nth-child(-n+2) .production-detail-ref__main { line-height:19.25px; }
+.production-detail-ref__main.is-small { line-height:16.5px; }
+.production-detail-ref__sub { line-height:20px; }
+.production-detail-ref__icon--product { box-shadow:none; }
+/* The legacy page scales Tailwind units, so the popup's own shell is sized explicitly: p-6 = 24px, 32px close button, gray-800 title. */
+#production-detail-modal > section:has(.production-detail--ref) > div:first-child { padding:24px !important; }
+#production-detail-modal > section:has(.production-detail--ref) #production-detail-modal-title { color:#1f2937 !important; font-size:18px; line-height:28px; }
+#production-detail-modal > section:has(.production-detail--ref) button[aria-label="Tutup detail produksi"] { width:32px; height:32px; background:#f3f4f6 !important; color:#6b7280 !important; font-size:16px; line-height:24px; }
+#production-detail-modal > section:has(.production-detail--ref) .production-detail-ref__rows { line-height:20px; }

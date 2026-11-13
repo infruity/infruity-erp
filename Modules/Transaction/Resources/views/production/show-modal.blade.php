@@ -31,7 +31,7 @@
         <div class="production-detail-ref__row">
             <span class="production-detail-ref__icon" aria-hidden="true"><i class="ph-duotone ph-clock"></i></span>
             <div class="production-detail-ref__text">
-                <div class="production-detail-ref__main is-small">{{ $staffName }}</div>
+                <div class="production-detail-ref__main is-small">{{ $staffName }} (Dapur)</div>
                 <div class="production-detail-ref__sub">Dibuat pada {{ $madeAt }}</div>
             </div>
         </div>
