@@ -80,7 +80,8 @@
             </div>
 
             <fieldset>
-                <legend class="mb-1.5 block text-xs font-semibold text-gray-600">Hak Akses <span class="text-red-400">*</span></legend>
+                <legend class="mb-0.5 block text-xs font-semibold text-gray-600">Template Akses <span class="text-red-400">*</span></legend>
+                <p class="mb-1.5 text-[11px] text-gray-400">Izin dasar akun. Sesuaikan per akun di Akun Pengguna.</p>
                 <div class="max-h-48 overflow-y-auto divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
                     @forelse ($roles as $role)
                         <label class="flex cursor-pointer items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
