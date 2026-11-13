@@ -145,14 +145,17 @@
                     <div @class(['w-9 h-9 md:w-10 md:h-10 rounded-xl border flex items-center justify-center shrink-0 font-bold text-sm', 'bg-emerald-50 border-emerald-100 text-emerald-700' => $loop->index % 5 === 0, 'bg-blue-50 border-blue-100 text-blue-700' => $loop->index % 5 === 1, 'bg-amber-50 border-amber-100 text-amber-700' => $loop->index % 5 === 2, 'bg-rose-50 border-rose-100 text-rose-700' => $loop->index % 5 === 3, 'bg-violet-50 border-violet-100 text-violet-700' => $loop->index % 5 === 4])>{{ mb_strtoupper(mb_substr($user->email ?: $user->nm_user, 0, 2)) }}</div>
                     <div class="flex-1 min-w-0">
                         <div class="text-sm font-semibold text-gray-900 truncate">{{ $user->email }}</div>
-                        <div class="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5" title="{{ ($user->role_names ? implode(' · ', $user->role_names) : 'Tanpa role') . ' · ' . ($user->is_aktif ? 'Aktif' : 'Nonaktif') . ' · ' . $user->granted_modules_count . '/' . $modulesTotal . ' modul' }}"><span class="text-[11px] font-medium truncate">{{ $user->nm_user ?: 'Belum tertaut' }}</span>@unless ($user->is_aktif)<span class="shrink-0 rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-600">Nonaktif</span>@endunless</div>
+                        <div class="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5" title="{{ ($user->role_names ? implode(' · ', $user->role_names) : 'Tanpa role') . ' · ' . ($user->is_aktif ? 'Aktif' : 'Nonaktif') . ' · ' . $user->granted_modules_count . '/' . $modulesTotal . ' modul' }}"><span class="text-[11px] font-medium truncate">{{ $user->nm_user ?: 'Belum tertaut' }}</span></div>
                     </div>
-                    <div class="hidden lg:flex gap-1.5 max-w-[35%] flex-wrap justify-end">
-                        @forelse ($user->branches as $assignedBranch)
-                            <span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 rounded-full px-2.5 py-1">{{ $assignedBranch->branch?->name ?? 'Cabang tidak tersedia' }}</span>
-                        @empty
-                            <span class="text-xs text-gray-400">Tanpa cabang</span>
-                        @endforelse
+                    <div class="flex shrink-0 flex-col items-end gap-1.5 self-stretch justify-start lg:justify-center lg:max-w-[35%]">
+                        @unless ($user->is_aktif)<span class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600">Nonaktif</span>@endunless
+                        <div class="hidden lg:flex gap-1.5 flex-wrap justify-end">
+                            @forelse ($user->branches as $assignedBranch)
+                                <span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 rounded-full px-2.5 py-1">{{ $assignedBranch->branch?->name ?? 'Cabang tidak tersedia' }}</span>
+                            @empty
+                                <span class="text-xs text-gray-400">Tanpa cabang</span>
+                            @endforelse
+                        </div>
                     </div>
                 </button>
             @empty
