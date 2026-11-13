@@ -53,6 +53,7 @@
         #products-table.dataTable tbody tr:has(td.dataTables_empty) { border-bottom: 0 !important; }
         /* Editor harga: kursor emerald-900 seperti referensi */
         .erp-ui #products-table .price-editor input { caret-color: #064e3b; -webkit-touch-callout: none; }
+        #products-table_processing { display: none !important; }
         #products-table.dataTable thead { display: none !important; }
         #products-table.dataTable thead th { border: none !important; }
         #products-table.dataTable tbody td { border: none !important; padding: 0 !important; }
@@ -773,7 +774,13 @@
                 dataTable.search(this.value).draw();
             });
 
+            // Like the reference, "Muat N Produk Lagi" just reveals the next rows: no "Processing" box, and a second tap
+            // while the rows are being fetched is ignored.
+            var loadingMoreProducts = false;
             $('#products-load-more button').on('click', function() {
+                if (loadingMoreProducts) return;
+                loadingMoreProducts = true;
+                dataTable.one('draw', function() { loadingMoreProducts = false; });
                 dataTable.page.len(dataTable.page.len() + 50).draw();
             });
 
