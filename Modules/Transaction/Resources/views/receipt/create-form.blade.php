@@ -5,23 +5,23 @@
     <div class="flex shrink-0 justify-center pt-3 pb-1 lg:hidden"><div class="h-1.5 w-16 rounded-full bg-gray-300"></div></div>
     <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-5 py-4">
         <div>
-            <h2 id="recipe-create-title" class="text-lg font-bold text-gray-900">Tambah Resep</h2>
-            <p class="mt-0.5 text-sm text-gray-400">Isi data resep baru</p>
+            <h2 id="recipe-create-title" class="text-[15px] font-bold text-gray-900">Tambah Resep</h2>
+            <p class="mt-0.5 text-[12px] text-gray-400">Isi data resep baru</p>
         </div>
-        <button type="button" @click="closeRecipeCreate()" aria-label="Tutup form resep" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200"><i class="ph-bold ph-x text-xl"></i></button>
+        <button type="button" @click="closeRecipeCreate()" aria-label="Tutup form resep" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200"><i class="ph-bold ph-x"></i></button>
     </header>
 
     <form x-data="recipeCreateForm()" action="{{ route('receipt.store') }}" method="POST" class="flex min-h-0 flex-1 flex-col" @submit="if (!productId || !ingredients.length || ingredients.some(item => !item.id || !item.quantity || Number(item.quantity) <= 0)) { $event.preventDefault(); error = 'Pilih produk dan lengkapi semua bahan serta kuantitasnya.'; }">
         @csrf
         <input type="hidden" name="description" value="{{ old('description') }}">
-        <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain bg-gray-50/40 px-5 pt-5 pb-3.5">
+        <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain bg-gray-50/60 px-5 pt-5 pb-3.5">
             @if($errors->any())<div role="alert" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">{{ $errors->first() }}</div>@endif
             @if(session('error'))<div role="alert" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">{{ session('error') }}</div>@endif
 
             <div class="relative shrink-0">
                 <label class="mb-1.5 block text-xs font-semibold text-gray-600">Pilih Produk <span class="text-red-400">*</span></label>
                 <button type="button" @click="toggleProductPicker()" @keydown.escape.stop="closeProductPicker()" :aria-expanded="productOpen" :class="productOpen ? 'border-blue-600 ring-2 ring-blue-600' : ''" class="flex min-h-[48px] w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-left transition hover:border-gray-300 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600">
-                    <span class="flex min-w-0 items-center gap-3"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-base" :class="productId ? selectedProductIconClass : 'bg-gray-100'"><span x-show="productId" x-text="selectedProductEmoji"></span><i x-show="!productId" class="ph ph-bag text-base text-gray-400"></i></span><span class="min-w-0"><span class="block truncate text-sm" :class="productId ? 'font-semibold text-gray-900' : 'font-normal text-gray-400'" x-text="productSearch || 'Pilih produk...'">Pilih produk...</span><span x-show="productId && selectedProductUnit" x-cloak class="mt-0.5 block text-[11px] text-gray-400" x-text="'Satuan hasil: ' + selectedProductUnit"></span></span></span>
+                    <span class="flex min-w-0 items-center gap-3"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base" :class="productId ? selectedProductIconClass : 'bg-gray-100'"><span x-show="productId" x-text="selectedProductEmoji"></span><i x-show="!productId" class="ph ph-bag text-base text-gray-400"></i></span><span class="min-w-0"><span class="block truncate text-sm" :class="productId ? 'font-semibold text-gray-900' : 'font-normal text-gray-400'" x-text="productSearch || 'Pilih produk...'">Pilih produk...</span><span x-show="productId && selectedProductUnit" x-cloak class="mt-0.5 block text-[11px] text-gray-400" x-text="'Satuan hasil: ' + selectedProductUnit"></span></span></span>
                     <i class="ph-bold ph-caret-down ml-3 shrink-0 text-base text-gray-400 transition-transform" :class="productOpen ? 'rotate-180' : ''"></i>
                 </button>
                 <input type="hidden" name="product_id" :value="productId" required>
@@ -41,12 +41,12 @@
 
             <div class="shrink-0">
                 <label class="mb-1.5 block text-xs font-semibold text-gray-600">Harga Pokok Produksi (HPP)</label>
-                <div class="flex h-11 w-full items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 px-3.5"><span class="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-50 text-sm text-emerald-600"><i class="ph-duotone ph-coins"></i></span><span class="text-sm font-extrabold text-gray-900" x-text="'Rp ' + formatMoney(totalHpp)">Rp 0</span><span class="text-[11px] text-gray-400" x-text="selectedProductUnit ? '/' + selectedProductUnit : '/porsi'"></span></div>
+                <div class="flex h-11 w-full items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 px-3.5"><span class="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-50 text-sm text-emerald-600"><i class="ph-duotone ph-coins"></i></span><div class="flex items-baseline gap-1"><span class="text-sm font-extrabold text-gray-900" x-text="'Rp ' + formatMoney(totalHpp)">Rp 0</span><span class="text-[11px] font-normal text-gray-400" x-text="selectedProductUnit ? '/' + selectedProductUnit : '/porsi'"></span></div></div>
             </div>
 
-            <section class="flex min-h-[220px] flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm">
-                <div class="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 pb-2"><div><h3 class="block text-xs font-bold text-gray-800">Daftar Bahan Baku <span class="text-red-400">*</span></h3><p class="text-[10px] text-gray-400" x-text="ingredients.length + ' bahan terdaftar'"></p></div><button type="button" @click="openIngredientPicker()" class="flex items-center gap-1 rounded-lg bg-[#0b595b] px-2.5 py-1 text-[11px] font-semibold text-white shadow-2xs transition-all hover:bg-[#084547] active:scale-95"><i class="ph-bold ph-plus text-[10px]"></i><span>Tambah</span></button></div>
-                <div x-show="ingredients.length === 0" class="flex flex-1 flex-col items-center justify-center py-8 text-center text-xs text-gray-400"><i class="ph ph-basket text-2xl"></i><p class="mt-2">Belum ada bahan baku.</p><button type="button" @click="openIngredientPicker()" class="mt-1 font-semibold text-emerald-700">+ Tambah bahan</button></div>
+            <section class="flex min-h-[220px] flex-1 flex-col gap-2.5 overflow-hidden rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm">
+                <div class="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 pb-2"><div><h3 class="block text-xs font-bold text-gray-800">Daftar Bahan Baku <span class="text-red-400">*</span></h3><span class="text-[10px] text-gray-400" x-text="ingredients.length + ' bahan terdaftar'"></span></div><button type="button" @click="openIngredientPicker()" class="flex items-center gap-1 rounded-lg bg-[#0b595b] px-2.5 py-1 text-[11px] font-semibold text-white shadow-2xs transition-all hover:bg-[#084547] active:scale-95"><i class="ph-bold ph-plus text-[10px]"></i><span>Tambah</span></button></div>
+                <div x-show="ingredients.length === 0" class="flex flex-1 flex-col items-center justify-center gap-0.5 py-6 text-center text-xs leading-relaxed text-gray-400"><span>Belum ada bahan baku.</span><span>Klik <button type="button" @click="openIngredientPicker()" class="font-bold text-emerald-700 hover:underline">+ Tambah</button> untuk</span><span>menambahkan bahan baku.</span></div>
                 <div x-show="ingredients.length > 0" class="min-h-0 flex-1 divide-y divide-gray-100 overflow-y-auto">
                     <template x-for="(ingredient, index) in ingredients" :key="ingredient.key"><div class="flex items-center justify-between gap-3 py-2.5">
                         <div class="flex min-w-0 flex-1 items-center gap-2.5"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-100 text-base shadow-sm" :class="ingredient.materialIconClass || 'bg-gray-100'"><span x-text="ingredient.materialEmoji || '📦'"></span></span><span class="min-w-0 flex-1"><span class="block truncate text-sm font-semibold text-gray-900" x-text="ingredient.search"></span><span class="mt-0.5 block text-xs text-gray-400">Total Modal <strong class="ml-1 font-bold text-emerald-700" x-text="'Rp ' + formatMoney(ingredientCost(ingredient))"></strong></span></span></div>
