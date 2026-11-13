@@ -262,3 +262,14 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
 .production-ref-save:disabled { opacity:.7; cursor:default; }
 @media (max-width:767px) { .production-create-reference { padding-bottom:calc(96px + env(safe-area-inset-bottom)); } }
 @media (min-width:640px) { .production-ref-card { padding:20px; } .production-create-reference .production-ref-footer { margin:0 -24px -24px; padding-right:24px; padding-left:24px; } }
+
+/* The cards keep a fixed size (the page does not grow with the recipe); only the composition list scrolls. */
+.production-create-reference .production-ref { height:calc(100dvh - 200px); min-height:440px; }
+.production-create-reference .production-ref-card--branch { flex:none; }
+.production-create-reference .production-ref-card--main { display:flex; min-height:0; flex:1; flex-direction:column; }
+.production-create-reference .production-ref-card--main .production-ref-field, .production-create-reference .production-ref-totals { flex:none; }
+.production-create-reference .production-ref-composition { display:flex; min-height:0; flex:1; flex-direction:column; }
+.production-create-reference .production-ref-composition__head { flex:none; }
+.production-create-reference .production-ref-composition__body { min-height:0; flex:1; overflow-y:auto; overscroll-behavior:contain; }
+@media (max-width:767px) { .production-create-reference { padding-bottom:16px; } }
+.production-create-reference .production-product-picker-field > select#product_id { display:none; }
