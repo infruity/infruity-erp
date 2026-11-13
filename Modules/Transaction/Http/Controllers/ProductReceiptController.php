@@ -60,6 +60,8 @@ class ProductReceiptController extends Controller
             $category = 'all';
         }
         $receipts = Receipt::with([
+            'updater',
+            'creator',
             'products.category',
             'products.unit',
             'recipeIngredients.ingredients.unit',

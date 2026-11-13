@@ -83,23 +83,23 @@
     <x-erp.detail-dialog open="detailModalOpen" close="closeRecipeDetail()" title="Detail Resep" labelledby="recipe-detail-title" close-label="Tutup detail resep">
         <div class="flex flex-col gap-5 text-sm" x-show="selectedRecipe">
             <div class="flex items-center gap-3">
-                <i class="ph-duotone ph-tag shrink-0 text-2xl text-emerald-600"></i>
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-tag text-lg"></i></div>
                 <div class="min-w-0">
                     <div class="font-bold leading-snug text-gray-800" x-text="selectedRecipe?.product?.name || 'Produk tidak ditemukan'"></div>
                     <div class="mt-0.5 text-[11px] font-medium text-gray-400">Nama Produk</div>
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <i class="ph-duotone ph-coins shrink-0 text-2xl text-emerald-600"></i>
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-coins text-lg"></i></div>
                 <div>
                     <div class="font-bold text-gray-800" x-text="'Rp ' + Math.round(Number(selectedRecipe?.product?.hpp || 0)).toLocaleString('id-ID') + (selectedRecipe?.product?.unit ? ' / ' + selectedRecipe.product.unit : '')"></div>
                     <div class="text-[11px] font-medium text-gray-400">Harga Pokok Produksi</div>
                 </div>
             </div>
-            <div class="flex items-start gap-3">
-                <i class="ph-duotone ph-clock mt-0.5 shrink-0 text-2xl text-emerald-600"></i>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-clock text-lg"></i></div>
                 <div class="min-w-0">
-                    <div class="text-xs font-bold leading-snug text-gray-800">Terakhir diperbarui</div>
+                    <div class="text-xs font-bold leading-snug text-gray-800" x-text="selectedRecipe?.updatedBy || 'Administrator'"></div>
                     <div class="mt-0.5 text-[11px] font-medium text-gray-400" x-text="formatRecipeDate(selectedRecipe?.updatedAt)"></div>
                 </div>
             </div>
@@ -308,10 +308,9 @@ function recipeIndex(initialCount, total, hasMore, nextPageUrl, createFormInitia
             if (!value) return 'Waktu pembaruan tidak tersedia';
             const date = new Date(value);
             if (Number.isNaN(date.getTime())) return 'Waktu pembaruan tidak tersedia';
-            return 'Diperbarui pada ' + new Intl.DateTimeFormat('id-ID', {
-                dateStyle: 'medium',
-                timeStyle: 'short',
-            }).format(date);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+            const pad = (number) => String(number).padStart(2, '0');
+            return 'Memperbarui pada ' + pad(date.getDate()) + ' ' + months[date.getMonth()] + ' ' + date.getFullYear() + ', ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
         },
     };
 }

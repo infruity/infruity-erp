@@ -6,6 +6,7 @@
         'code' => $receipt->code,
         'description' => $receipt->description,
         'updatedAt' => $receipt->updated_at?->toIso8601String(),
+        'updatedBy' => $receipt->updater?->nm_user ?? $receipt->creator?->nm_user ?? 'Administrator',
         'product' => [
             'id' => $product?->id,
             'name' => $product?->name ?? 'Produk tidak ditemukan',
