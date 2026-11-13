@@ -32,7 +32,7 @@
             @endif
         </div>
 
-        <x-erp.list-count noun="satuan" shown="Math.min(visibleCount, filtered.length)" total="filtered.length" />
+        <x-erp.list-count noun="satuan" shown="Math.min(visibleCount, filtered.length)" total="filtered.length" reference />
         <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-20 md:pb-0">
             <template x-for="unit in visible" :key="unit.id">
                 <div class="border-b border-gray-100">

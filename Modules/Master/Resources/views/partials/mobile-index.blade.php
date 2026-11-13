@@ -38,9 +38,9 @@
             @endif
         </div>
         @if (($pageMode ?? 'ajax') === 'server' && $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
-            <x-erp.list-count :noun="strtolower($pageTitle)" shown="records.length" total="total" />
+            <x-erp.list-count :noun="strtolower($pageTitle)" shown="records.length" total="total" reference />
         @else
-            <x-erp.list-count :noun="strtolower($pageTitle)" shown="Math.min(visibleCount, filtered.length)" total="filtered.length" />
+            <x-erp.list-count :noun="strtolower($pageTitle)" shown="Math.min(visibleCount, filtered.length)" total="filtered.length" reference />
         @endif
         <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-20 md:pb-0" @scroll.passive="scrolled = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => scrolled = false, 700)">
             <template x-for="record in visible" :key="record.id">
