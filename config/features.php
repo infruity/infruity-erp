@@ -15,4 +15,6 @@ return [
     'stock_out_type_pages' => (bool) env('FEATURE_STOCK_OUT_TYPE_PAGES', false),
     // Loyalty Tier (/tier). /tier/list-tier stays on because the deposito and role pages read the tier names from it.
     'tier_pages' => (bool) env('FEATURE_TIER_PAGES', false),
+    // Hak Akses / role editor (/roles, /role-menu). Access is managed per account in Akun Pengguna; roles stay as templates.
+    'role_pages' => (bool) env('FEATURE_ROLE_PAGES', false),
 ];

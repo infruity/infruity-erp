@@ -150,7 +150,6 @@
                 <a href="{{ route('staff.index') }}" class="submenu-link {{ request()->routeIs('staff.*') ? 'active' : '' }}"><span>Karyawan</span></a>
                 <a href="{{ route('kurir.index') }}" class="submenu-link {{ request()->routeIs('kurir.*') ? 'active' : '' }}"><span>Kurir</span></a>
                 <a href="{{ route('payment-method.index') }}" class="submenu-link {{ request()->routeIs('payment-method.*') ? 'active' : '' }}"><span>Metode Pembayaran</span></a>
-                <a href="{{ route('roles.index') }}" class="submenu-link {{ request()->routeIs('roles.*') ? 'active' : '' }}"><span>Hak Akses</span></a>
             </div></div>
         </div>
 
