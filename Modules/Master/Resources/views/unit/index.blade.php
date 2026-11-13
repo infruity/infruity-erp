@@ -36,13 +36,13 @@
         <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-20 md:pb-0">
             <template x-for="unit in visible" :key="unit.id">
                 <div class="border-b border-gray-100">
-                    <button type="button" @click="showDetail(unit)" class="w-full flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3.5 md:py-4 hover:bg-gray-50/50 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" :aria-label="'Detail ' + unit.name">
-                        <span class="w-9 h-9 md:w-12 md:h-12 rounded-xl border flex items-center justify-center shrink-0 font-bold text-xs md:text-base overflow-hidden" :class="theme(unit)">
-                            <span x-text="unit.abbreviation?.slice(0, 3).toUpperCase()"></span>
+                    <button type="button" @click="showDetail(unit)" class="w-full flex items-center gap-3 md:gap-4 px-5 py-3.5 md:py-4 hover:bg-gray-50/50 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" :aria-label="'Detail ' + unit.name">
+                        <span class="w-9 h-9 md:w-12 md:h-12 rounded-xl border flex items-center justify-center shrink-0 font-bold text-sm md:text-base overflow-hidden" :class="theme(unit)">
+                            <span x-text="unit.abbreviation?.slice(0, 2).toUpperCase()"></span>
                         </span>
                         <span class="flex-1 min-w-0 text-left">
-                            <span class="block text-sm font-semibold text-gray-800 truncate" x-text="unit.name"></span>
-                            <span class="block text-[11px] text-gray-400 mt-0.5 truncate" x-text="unit.description || 'Simbol (' + unit.abbreviation + ')'"></span>
+                            <span class="block text-sm font-semibold text-gray-900 truncate" x-text="unit.name"></span>
+                            <span class="block text-[11px] text-gray-500 mt-0.5 truncate" x-text="unit.description || 'simbol (' + unit.abbreviation + ')'"></span>
                         </span>
                         <span class="hidden md:block text-sm font-semibold text-gray-700" x-text="unit.abbreviation"></span>
                     </button>

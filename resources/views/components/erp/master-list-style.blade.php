@@ -24,11 +24,10 @@
         /* Bottom of the list: 96px (last row 16px above the dock); 80px while a "Muat N ... Lagi" row ends the list */
         .mobile-list-edge-fade.mobile-list-edge-fade { padding-bottom: 96px; }
         .mobile-list-edge-fade.mobile-list-edge-fade:has([data-load-more]:not(.hidden):not([style*="display: none"])) { padding-bottom: 80px; }
-        /* Reference rows carry their line on top, so the last row of the list has no line below it */
-        .mobile-list-edge-fade > div.border-b:has(+ :not(div.border-b)),
-        .mobile-list-edge-fade > div.border-b:last-child,
-        #recipe-list-items > div:last-child { border-bottom-width: 0; }
-        #products-table.dataTable tbody tr:last-child { border-bottom-width: 0 !important; }
+        /* Reference rows carry their 1px line on top (none under the last row) */
+        .mobile-list-edge-fade > div.border-b,
+        #recipe-list-items > div { border-bottom-width: 0; border-top-width: 1px; border-top-style: solid; border-top-color: #f3f4f6; }
+        body #products-table.dataTable tbody tr { border-top: 1px solid #f3f4f6 !important; border-bottom: 0 !important; }
         .erp-mobile-search:focus-within { border-color: #10b981; background: #fff; box-shadow: 0 0 0 1px #10b981; }
     }
 </style>

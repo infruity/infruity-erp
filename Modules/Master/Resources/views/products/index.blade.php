@@ -24,7 +24,7 @@
     <x-erp.master-list-style />
     <style>
         .icon-rounded.is-bold { font-variation-settings: 'wght' 600; }
-        #products-table.dataTable { border-collapse: collapse !important; border: none !important; table-layout: fixed !important; width: 100% !important; margin-top: 1px !important; margin-bottom: 0 !important; }
+        #products-table.dataTable { border-collapse: collapse !important; border: none !important; table-layout: fixed !important; width: 100% !important; margin-top: 0 !important; margin-bottom: 0 !important; }
         @media (max-width: 767px) {
             .product-list-fullbleed { width: 100vw !important; max-width: 100vw !important; margin-left: calc(50% - 50vw) !important; margin-right: calc(50% - 50vw) !important; }
             #products-table.dataTable,

@@ -42,7 +42,7 @@
         </div>
         <x-erp.list-count noun="resep" shown="loadedCount" total="totalCount" reference />
         <div class="mobile-list-edge-fade flex-1 overflow-y-auto pb-20 md:pb-0">
-            <div id="recipe-list-items" class="border-t border-gray-100">
+            <div id="recipe-list-items">
                 @include('transaction::receipt.partials.items', ['receipts' => $receipts])
             </div>
             @if($receipts->isEmpty())
