@@ -273,3 +273,6 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
 .production-create-reference .production-ref-composition__body { min-height:0; flex:1; overflow-y:auto; overscroll-behavior:contain; }
 @media (max-width:767px) { .production-create-reference { padding-bottom:16px; } }
 .production-create-reference .production-product-picker-field > select#product_id { display:none; }
+/* The product card runs down to the bottom bar, as in the reference (top bar 60 + padding 16 + bar 70 + gap 16). */
+@media (max-width:767px) { .production-create-reference .production-ref { height:calc(100dvh - 162px - env(safe-area-inset-bottom)); } }
+@media (min-width:768px) { .production-create-reference .production-ref { height:calc(100dvh - 120px); } }
