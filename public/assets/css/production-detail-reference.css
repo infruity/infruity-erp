@@ -113,3 +113,25 @@
         padding: 12px;
     }
 }
+
+/* ---- Popup summary in the layout of the HTML reference (show-modal.blade.php) ---- */
+.production-detail--ref { display:block; max-width:none; margin:0; font-family:'Plus Jakarta Sans', sans-serif; }
+.production-detail-ref__title { display:none; }
+.production-detail-ref__rows { display:flex; flex-direction:column; gap:20px; font-size:14px; }
+.production-detail-ref__row { display:flex; align-items:center; gap:12px; }
+.production-detail-ref__icon { display:flex; width:40px; height:40px; flex:none; align-items:center; justify-content:center; border:1px solid rgba(167,243,208,.8); border-radius:12px; background:#ecfdf5; color:#0b595b; font-size:18px; }
+.production-detail-ref__icon--product { border-color:#f3f4f6; font-size:20px; }
+.production-detail-ref__text { min-width:0; flex:1; }
+.production-detail-ref__main { overflow:hidden; color:#1f2937; font-size:14px; font-weight:700; line-height:1.375; text-overflow:ellipsis; white-space:nowrap; }
+.production-detail-ref__main.is-strong { color:#111827; }
+.production-detail-ref__main.is-small { font-size:12px; }
+.production-detail-ref__sub { margin-top:2px; overflow:hidden; color:#9ca3af; font-size:11px; font-weight:500; line-height:16.5px; text-overflow:ellipsis; white-space:nowrap; }
+.production-detail-ref__sub.is-target { color:#047857; font-weight:700; }
+.production-detail-ref__actions { display:flex; margin:24px -24px -24px; border-top:1px solid #f3f4f6; }
+.production-detail-ref__action { display:flex; flex:1; align-items:center; justify-content:center; gap:8px; padding:16px 0; font-size:14px; font-weight:600; text-decoration:none; transition:background-color .16s; }
+.production-detail-ref__action.is-edit { color:#0b595b; }
+.production-detail-ref__action.is-edit:hover { background:#ecfdf5; }
+.production-detail-ref__action.is-delete { color:#ef4444; }
+.production-detail-ref__action.is-delete:hover { background:#fef2f2; }
+.production-detail-ref__divider { width:1px; background:#f3f4f6; }
+.production-detail-ref__locked { flex:1; padding:16px 0; color:#6b7280; font-size:12px; font-weight:600; text-align:center; }

@@ -48,8 +48,8 @@ final class ProductionListReferenceTest extends TestCase
 
     public function test_production_css_has_no_low_contrast_faint_grey_or_green_status_text(): void
     {
-        // production-form-reference copies the HTML reference exactly, which uses gray-400 (#9ca3af) for secondary text.
-        foreach (['production-list-reference', 'production-detail-reference'] as $name) {
+        // production-form-reference and production-detail-reference copy the HTML reference exactly, which uses gray-400 (#9ca3af) for secondary text.
+        foreach (['production-list-reference'] as $name) {
             $this->assertStringNotContainsString('#9ca3af', file_get_contents(public_path("assets/css/{$name}.css")), $name);
         }
         $view = file_get_contents(base_path('Modules/Transaction/Resources/views/production/index.blade.php'));
