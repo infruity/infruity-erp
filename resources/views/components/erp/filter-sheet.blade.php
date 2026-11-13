@@ -89,7 +89,7 @@
     $radio = 'peer h-[16px] w-[16px] cursor-pointer appearance-none rounded-full border-[2px] border-solid border-gray-300 transition-colors checked:border-emerald-500';
     $radioDot = 'absolute h-[8px] w-[8px] scale-0 rounded-full bg-emerald-500 transition-transform duration-200 peer-checked:scale-100';
     $dateButton = 'flex min-w-0 flex-1 cursor-pointer items-center gap-[8px] rounded-[12px] border-[1px] border-solid border-gray-200 bg-white px-[12px] py-[10px] text-left text-[12px] text-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors hover:border-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500';
-    $calendarNav = 'flex h-[36px] w-[36px] items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500';
+    $calendarNav = 'flex h-[32px] w-[32px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-gray-50 text-gray-600 transition hover:bg-gray-100 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500';
     $calendarCell = 'rounded-[12px] px-[8px] py-[12px] text-[14px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500';
 @endphp
 
@@ -227,37 +227,43 @@
 
                         @if ($withDates)
                         <section id="{{ $id }}-mobile-calendar" x-show="calendarOpen" x-cloak class="space-y-[16px]" aria-label="Pilih periode tanggal">
-                            <button x-ref="calendarBack" type="button" data-erp-calendar-back @click="closeCalendar()" class="inline-flex min-h-[36px] items-center gap-[8px] rounded-[8px] px-[4px] text-[14px] font-semibold text-gray-700 transition-colors hover:text-gray-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
-                                <i class="ph-bold ph-arrow-left" aria-hidden="true"></i><span>Kembali</span>
-                            </button>
-                            <div class="rounded-[16px] border-[1px] border-solid border-gray-100 bg-white p-[16px] shadow-sm">
-                                <div class="mb-[16px] flex items-center justify-between">
-                                    <button type="button" @click="moveCalendar(-1)" aria-label="Sebelumnya" class="{{ $calendarNav }}"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button>
-                                    <button type="button" data-erp-calendar-heading @click="cycleCalendarView()" class="rounded-[8px] px-[12px] py-[6px] text-[16px] font-bold text-gray-800 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" x-text="calendarHeading"></button>
-                                    <button type="button" @click="moveCalendar(1)" aria-label="Berikutnya" class="{{ $calendarNav }}"><i class="ph-bold ph-caret-right" aria-hidden="true"></i></button>
+                            <div class="rounded-[16px] border-[1px] border-solid border-gray-100 bg-white p-[16px]">
+                                <div class="mb-[16px] flex items-center justify-between border-b-[1px] border-solid border-gray-100 pb-[8px]">
+                                    <button type="button" data-erp-calendar-heading @click="cycleCalendarView()" class="flex cursor-pointer items-center gap-[6px] text-[14px] font-bold text-gray-800 transition-colors hover:text-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"><span x-text="calendarHeading"></span><i class="ph-bold ph-caret-down text-[12px] text-gray-400" aria-hidden="true"></i></button>
+                                    <div class="flex gap-[6px]">
+                                        <button type="button" @click="moveCalendar(-1)" aria-label="Sebelumnya" class="{{ $calendarNav }}"><i class="ph-bold ph-caret-left text-[12px]" aria-hidden="true"></i></button>
+                                        <button type="button" @click="moveCalendar(1)" aria-label="Berikutnya" class="{{ $calendarNav }}"><i class="ph-bold ph-caret-right text-[12px]" aria-hidden="true"></i></button>
+                                    </div>
                                 </div>
-                                <div x-show="calendarView === 'date'" class="grid grid-cols-7 gap-y-[4px] text-center">
-                                    <template x-for="weekday in weekdays" :key="weekday.name">
-                                        <span class="flex h-[36px] items-center justify-center text-[11px] font-semibold text-gray-400" :aria-label="weekday.name" x-text="weekday.initial"></span>
-                                    </template>
-                                    <template x-for="blank in calendarBlankDays" :key="'blank-' + blank"><span class="h-[36px]"></span></template>
-                                    <template x-for="day in calendarDays" :key="calendarDate(day)">
-                                        <div class="relative flex h-[36px] items-center justify-center">
-                                            <span x-show="isCalendarDateInRange(day)" class="absolute inset-0 bg-emerald-50"></span>
-                                            <button type="button" data-erp-calendar-day @click="selectCalendarDate(day)" :aria-label="formatDate(calendarDate(day))" :aria-pressed="isCalendarDateSelected(day)" :class="isCalendarDateSelected(day) ? 'relative z-10 rounded-full bg-[#c5f037] font-bold text-gray-900 shadow-sm' : (isCalendarDateInRange(day) ? 'relative z-10 font-semibold text-gray-800' : 'relative z-10 rounded-full text-gray-700 hover:bg-gray-100')" class="flex h-[36px] w-[36px] cursor-pointer items-center justify-center text-[14px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" x-text="day"></button>
-                                        </div>
-                                    </template>
+                                <div x-show="calendarView === 'date'">
+                                    <div class="mb-[8px] grid grid-cols-7 gap-[4px] text-center">
+                                        <template x-for="weekday in weekdays" :key="weekday.name">
+                                            <span class="text-[11px] font-bold text-gray-400" :aria-label="weekday.name" x-text="weekday.initial"></span>
+                                        </template>
+                                    </div>
+                                    <div class="grid min-h-[228px] grid-cols-7 items-center gap-y-[4px] text-center">
+                                        <template x-for="blank in calendarBlankDays" :key="'blank-' + blank"><span class="mx-auto h-[32px] w-[32px]"></span></template>
+                                        <template x-for="day in calendarDays" :key="calendarDate(day)">
+                                            <div class="relative flex h-[36px] w-full items-center justify-center">
+                                                <span x-show="start && end && start !== end && (isCalendarDateInRange(day) || isCalendarDateStart(day) || isCalendarDateEnd(day))" :class="isCalendarDateStart(day) ? 'left-1/2 right-0' : (isCalendarDateEnd(day) ? 'left-0 right-1/2' : 'left-0 right-0')" class="pointer-events-none absolute bottom-0 top-0" style="background-color: rgba(197, 240, 55, 0.28)"></span>
+                                                <button type="button" data-erp-calendar-day @click="selectCalendarDate(day)" :aria-label="formatDate(calendarDate(day))" :aria-pressed="isCalendarDateSelected(day)" :class="isCalendarDateSelected(day) ? 'relative z-10 rounded-full bg-[#c5f037] font-bold text-gray-900' : (isCalendarDateInRange(day) ? 'relative z-10 font-semibold text-gray-900' : 'relative z-10 rounded-full text-gray-700 hover:bg-gray-100')" class="mx-auto flex h-[32px] w-[32px] cursor-pointer select-none items-center justify-center text-[12px] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" x-text="day"></button>
+                                            </div>
+                                        </template>
+                                    </div>
                                 </div>
-                                <div x-show="calendarView === 'month'" x-cloak class="grid grid-cols-3 gap-[8px] py-[8px]">
+                                <div x-show="calendarView === 'month'" x-cloak class="mt-[8px] grid grid-cols-3 gap-[8px]">
                                     <template x-for="(month, index) in calendarMonths" :key="month">
-                                        <button type="button" @click="chooseCalendarMonth(index)" :class="calendarMonth === index ? 'bg-[#c5f037] font-bold text-gray-900' : 'text-gray-600 hover:bg-gray-100'" class="{{ $calendarCell }}" x-text="month"></button>
+                                        <button type="button" @click="chooseCalendarMonth(index)" :class="calendarMonth === index ? 'bg-[#c5f037] font-bold text-gray-900' : 'text-gray-700 hover:bg-gray-50'" class="rounded-[12px] py-[10px] text-center text-[12px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" x-text="month"></button>
                                     </template>
                                 </div>
-                                <div x-show="calendarView === 'year'" x-cloak class="grid grid-cols-3 gap-[8px] py-[8px]">
+                                <div x-show="calendarView === 'year'" x-cloak class="mt-[8px] grid grid-cols-3 gap-[8px]">
                                     <template x-for="year in calendarYears" :key="year">
-                                        <button type="button" @click="chooseCalendarYear(year)" :class="calendarYear === year ? 'bg-[#c5f037] font-bold text-gray-900' : 'text-gray-600 hover:bg-gray-100'" class="{{ $calendarCell }}" x-text="year"></button>
+                                        <button type="button" @click="chooseCalendarYear(year)" :class="calendarYear === year ? 'bg-[#c5f037] font-bold text-gray-900' : 'text-gray-700 hover:bg-gray-50'" class="rounded-[12px] py-[10px] text-center text-[12px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" x-text="year"></button>
                                     </template>
                                 </div>
+                                <button x-ref="calendarBack" type="button" data-erp-calendar-back @click="closeCalendar()" class="mt-[16px] flex w-full cursor-pointer items-center justify-center gap-[8px] rounded-[12px] border-0 bg-gray-50 py-[10px] text-[12px] font-bold text-gray-700 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+                                    <i class="ph-bold ph-arrow-left" aria-hidden="true"></i><span>Kembali</span>
+                                </button>
                             </div>
                         </section>
                         @endif
