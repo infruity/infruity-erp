@@ -22,10 +22,11 @@
         .erp-mobile-search__input { font-weight: 500; }
         .erp-mobile-search__filter { color: #9ca3af; }
         /* Bottom of the list: 96px (last row 16px above the dock); 80px while a "Muat N ... Lagi" row ends the list */
-        .mobile-list-edge-fade.mobile-list-edge-fade { padding-bottom: 96px; }
+        .mobile-list-edge-fade.mobile-list-edge-fade, div[data-erp-list] { padding-bottom: 96px; }
         .mobile-list-edge-fade.mobile-list-edge-fade:has([data-load-more]:not(.hidden):not([style*="display: none"])) { padding-bottom: 80px; }
         /* Reference rows carry their 1px line on top (none under the last row) */
         .mobile-list-edge-fade > div.border-b,
+        [data-erp-list] > button.border-b,
         #recipe-list-items > div { border-bottom-width: 0; border-top-width: 1px; border-top-style: solid; border-top-color: #f3f4f6; }
         body #products-table.dataTable tbody tr { border-top: 1px solid #f3f4f6 !important; border-bottom: 0 !important; }
         /* Form fields of the Master sheets: 16px labels and the reference's lighter red star */

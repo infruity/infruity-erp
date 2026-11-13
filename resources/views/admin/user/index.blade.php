@@ -106,6 +106,7 @@
 @endpush
 
 @section('content')
+<x-erp.master-list-style />
 <div x-data="userMaster(@js($editableUsers), @js(route('user.store')), @js(url('user')), @js(old('_user_id')), @js(old('full_name')), @js(old('email')), @js(old('role_ids', [])), @js(old('id_branch', [])), @js($accessGroups), @js($nextAutoEmail), @js(old('email_type')), @js(old('staff_id')), @js($staffOptions))"
      x-init="if (@js($errors->any())) restoreOld(); else if (new URLSearchParams(location.search).has('create')) openCreate()"
      @user-filter-open.window="filterOpen = true"
@@ -114,7 +115,7 @@
     <form x-data="{ mobileSearch: @js(request('q', '')) }" method="GET" action="{{ route('user.index') }}" class="md:hidden">
         <input type="hidden" name="role_id" value="{{ $selectedRoleId }}">
         <x-erp.mobile-search>
-            <x-slot:input><input x-ref="mobileSearch" x-model="mobileSearch" name="q" type="search" placeholder="Cari akun..." aria-label="Cari akun pengguna" class="erp-mobile-search__input"></x-slot:input>
+            <x-slot:input><input x-ref="mobileSearch" x-model="mobileSearch" name="q" type="search" placeholder="Cari..." aria-label="Cari akun pengguna" class="erp-mobile-search__input"></x-slot:input>
             <x-slot:clear><button type="button" x-show="mobileSearch" x-cloak @click="mobileSearch = ''; $refs.mobileSearch.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
             <x-slot:filter><button type="button" @click="$dispatch('user-filter-open')" aria-label="Filter akun" class="erp-mobile-search__filter {{ $selectedRoleId ? 'is-active' : '' }}"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i>@if($selectedRoleId)<span class="erp-mobile-search__filter-dot"></span>@endif</button></x-slot:filter>
         </x-erp.mobile-search>
@@ -138,7 +139,7 @@
             <div class="mx-5 mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{{ session('error') ?: $errors->first() }}</div>
         @endif
 
-        <x-erp.list-count noun="akun pengguna" :shown="$users->count()" :total="$users->total()" server />
+        <x-erp.list-count noun="akun pengguna" :shown="$users->count()" :total="$users->total()" server reference />
         <div class="flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0" data-erp-list>
             @forelse ($users as $user)
                 <button type="button" @click="openDetail({{ $user->id_user }})" class="w-full flex items-center gap-3 md:gap-4 px-5 py-3.5 md:py-4 border-b border-gray-100 hover:bg-gray-50/50 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" aria-label="Detail {{ $user->email }}">
