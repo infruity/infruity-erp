@@ -28,7 +28,7 @@
         .mobile-list-edge-fade > div.border-b:has(+ :not(div.border-b)),
         .mobile-list-edge-fade > div.border-b:last-child,
         #recipe-list-items > div:last-child { border-bottom-width: 0; }
-        #products-table tbody tr:last-child { border-bottom-width: 0 !important; }
+        #products-table.dataTable tbody tr:last-child { border-bottom-width: 0 !important; }
         .erp-mobile-search:focus-within { border-color: #10b981; background: #fff; box-shadow: 0 0 0 1px #10b981; }
     }
 </style>
