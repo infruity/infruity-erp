@@ -2,7 +2,7 @@
 @section('title', 'Produksi')
 
 @section('content')
-    @php($productionCreateReference = request()->routeIs('production.create'))
+    @php($productionCreateReference = request()->routeIs('production.create', 'production.edit'))
     @if($productionCreateReference)
         <link rel="stylesheet" href="{{ asset('assets/css/production-form-reference.css') }}?v={{ filemtime(public_path('assets/css/production-form-reference.css')) }}">
     @endif

@@ -131,7 +131,7 @@
             <a href="{{ route('production.index') }}" class="production-ref-icon-btn" title="Kembali ke Daftar Produksi" aria-label="Kembali ke Daftar Produksi">
                 <i class="ph-bold ph-arrow-left" aria-hidden="true"></i>
             </a>
-            <button type="button" class="production-ref-icon-btn" title="Simpan sebagai Draf" aria-label="Simpan sebagai Draf" :disabled="savingDraft || saving"
+            <button type="button" class="production-ref-icon-btn" title="{{ request()->routeIs('production.edit') ? 'Simpan Perubahan' : 'Simpan sebagai Draf' }}" aria-label="{{ request()->routeIs('production.edit') ? 'Simpan Perubahan' : 'Simpan sebagai Draf' }}" :disabled="savingDraft || saving"
                 @click="savingDraft = true; saveProduction('temp', () => savingDraft = false)">
                 <x-erp.spinner size="sm" x-show="savingDraft" />
                 <i class="ph-bold ph-bookmark-simple" aria-hidden="true" x-show="!savingDraft"></i>
@@ -139,7 +139,7 @@
             <button type="button" class="production-ref-save" :disabled="saving || savingDraft"
                 @click="saving = true; saveProduction('posting', () => saving = false)">
                 <x-erp.spinner size="sm" x-show="saving" class="!text-white" />
-                <span x-text="saving ? 'Menyimpan…' : 'Tambah'"></span>
+                <span x-text="saving ? 'Menyimpan…' : '{{ request()->routeIs('production.edit') ? 'Simpan' : 'Tambah' }}'"></span>
             </button>
         </div>
     </div>

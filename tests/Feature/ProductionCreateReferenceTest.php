@@ -36,7 +36,8 @@ final class ProductionCreateReferenceTest extends TestCase
     {
         $create = $this->renderForm('production.create');
         $this->assertStringContainsString('production-form-reference.css', $create);
-        $this->assertStringNotContainsString('production-form-reference.css', $this->renderForm('production.edit'));
+        $this->assertStringContainsString('production-form-reference.css', $this->renderForm('production.edit'));
+        $this->assertStringNotContainsString('production-form-reference.css', $this->renderForm('production.legacy'));
         $css = file_get_contents(public_path('assets/css/production-form-reference.css'));
         foreach (['.production-create-reference {', 'width:100%', 'gap:24px',
             '[aria-labelledby="production-ingredients-title"]', 'min-height:260px',
@@ -73,7 +74,8 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString('href="'.route('production.index').'"', $create);
         $this->assertStringContainsString('aria-label="Kembali ke Riwayat Produksi"', $create);
         $this->assertStringNotContainsString('data-erp-sidebar-toggle', $create);
-        $this->assertStringContainsString('data-erp-sidebar-toggle', $render('production.edit'));
+        $this->assertStringNotContainsString('data-erp-sidebar-toggle', $render('production.edit'));
+        $this->assertStringContainsString('data-erp-sidebar-toggle', $render('production.legacy'));
         $this->assertStringContainsString('href="'.route('wholesale.index').'"', $render('wholesale.create'));
     }
 
@@ -84,7 +86,7 @@ final class ProductionCreateReferenceTest extends TestCase
             $this->assertStringContainsString($part, $create);
         }
         $this->assertStringNotContainsString('Selesaikan Produksi', $create);
-        $edit = $this->renderForm('production.edit');
+        $edit = $this->renderForm('production.legacy');
         $this->assertStringContainsString('<span>Total Biaya</span>', $edit);
         $this->assertStringContainsString('<span>Simpan Draft</span>', $edit);
         $this->assertStringContainsString('<span>Selesai</span>', $edit);
@@ -94,7 +96,7 @@ final class ProductionCreateReferenceTest extends TestCase
     public function test_create_product_picker_matches_reference_without_changing_edit_selector(): void
     {
         $create = $this->renderForm('production.create');
-        $edit = $this->renderForm('production.edit');
+        $edit = $this->renderForm('production.legacy');
 
         $this->assertStringContainsString('production-product-picker-field', $create);
         $this->assertStringContainsString('data-placeholder="Pilih produk olahan..."', $create);
@@ -121,7 +123,7 @@ final class ProductionCreateReferenceTest extends TestCase
     public function test_create_ingredient_picker_matches_reference_without_changing_edit_flow(): void
     {
         $create = $this->renderForm('production.create', true);
-        $edit = $this->renderForm('production.edit', true);
+        $edit = $this->renderForm('production.legacy', true);
 
         foreach (['production-reference-ingredient-modal', 'Tambah Bahan Baku', 'Pilih bahan baku dan tentukan kuantitas / takaran', 'Cari bahan baku...',
             'production-ref-ingredient-option', 'selectedIngredient = ingredient', 'x-show="filteredIngredients.length === 0"', 'Kuantitas / Takaran', 'addIngredientToCart()', 'Tambah Bahan'] as $part) {
@@ -145,7 +147,7 @@ final class ProductionCreateReferenceTest extends TestCase
     public function test_create_quantity_sheet_uses_reference_summary_and_control_styles_without_changing_edit(): void
     {
         $create = $this->renderForm('production.create', true);
-        $edit = $this->renderForm('production.edit', true);
+        $edit = $this->renderForm('production.legacy', true);
         $css = file_get_contents(public_path('assets/css/production-form-reference.css'));
 
         $this->assertStringContainsString('production-reference-quantity-modal', $create);
@@ -159,7 +161,7 @@ final class ProductionCreateReferenceTest extends TestCase
     public function test_create_shows_modal_total_price_and_quantity_like_the_reference_without_changing_edit(): void
     {
         $create = $this->renderForm('production.create');
-        $edit = $this->renderForm('production.edit');
+        $edit = $this->renderForm('production.legacy');
 
         foreach (['Modal / Satuan', 'Total Modal', 'Harga Jual', 'Kuantitas', '(PORSI)', 'formatNumber(hppPerUnit)', 'formatNumber(totalHpp)', 'formatNumber(sellPrice)', 'x-model="productionQuantity"'] as $part) {
             $this->assertStringContainsString($part, $create);
@@ -171,7 +173,7 @@ final class ProductionCreateReferenceTest extends TestCase
     public function test_create_composition_rows_use_reference_swipe_delete_and_inline_quantity(): void
     {
         $create = $this->renderForm('production.create');
-        $edit = $this->renderForm('production.edit');
+        $edit = $this->renderForm('production.legacy');
 
         foreach (['Komposisi Produk', '+ Tambah', 'Pilih Produk di Atas', 'production-ref-row__delete', 'revealed', 'formatCurrency(ingredient.hpp)',
             'formatNumber(ingredient.total)', ':value="inlineQuantityDrafts[ingredient.id] ?? ingredient.quantity"',
@@ -218,7 +220,7 @@ final class ProductionCreateReferenceTest extends TestCase
         }
         $this->assertStringNotContainsString('<details', $html);
         $this->assertStringNotContainsString('Informasi Hasil Produksi', $html);
-        $edit = $this->renderForm('production.edit');
+        $edit = $this->renderForm('production.legacy');
         $this->assertStringNotContainsString('production-create-reference', $edit);
         preg_match_all('/(?:input|select)[^>]+\bid="([^"]+)"/', $edit, $editControls);
         $this->assertSame(['branch_id', 'production_date', 'product_id', 'quantity', 'sell_price', 'production_number', 'production_id', 'service_cost', 'production_notes'], $editControls[1]);
@@ -244,7 +246,7 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString('x-model="sellPrice"', $payload[1]);
         $this->assertStringContainsString('x-model="serviceCost"', $payload[1]);
 
-        $edit = $this->renderForm('production.edit');
+        $edit = $this->renderForm('production.legacy');
         $this->assertStringNotContainsString('production-payload-fields', $edit);
         $this->assertStringContainsString('id="production_date" name="production_date"', $edit);
         $this->assertStringContainsString('id="sell_price" class="form-control format-number"', $edit);
@@ -275,5 +277,16 @@ final class ProductionCreateReferenceTest extends TestCase
 
         $theme = file_get_contents(public_path('assets/css/erp-theme.css'));
         $this->assertStringContainsString('.erp-ui .select2-dropdown { border-color: var(--erp-border); border-radius: 12px;', $theme);
+    }
+
+    public function test_edit_opens_the_same_reference_form_with_a_save_button(): void
+    {
+        $edit = $this->renderForm('production.edit');
+
+        foreach (['production-create-reference', 'production-ref-footer', 'Komposisi Produk', 'Simpan Perubahan', "'Simpan'"] as $part) {
+            $this->assertStringContainsString($part, $edit);
+        }
+        $this->assertStringNotContainsString("'Tambah'", $edit);
+        $this->assertSame(1, substr_count($edit, 'id="production_id"'));
     }
 }
