@@ -15,9 +15,9 @@ class KurirDrawerPresentationTest extends TestCase
         $this->assertStringContainsString("'key' => 'type'", $view);
         $this->assertStringContainsString("'key' => 'name'", $view);
         $this->assertStringContainsString("'key' => 'staff_id'", $view);
-        $this->assertStringContainsString("'key' => 'description'", $view);
+        $this->assertStringNotContainsString("'key' => 'description'", $view, 'the reference form has no description');
         $this->assertStringContainsString("'visibleWhen' => ['key' => 'type', 'value' => 'internal']", $view);
-        $this->assertStringContainsString("\$formBodyClass = 'px-5 pt-5 pb-6 space-y-5';", $view);
+        $this->assertStringContainsString("\$formBodyClass = 'px-5 pb-6 pt-5 flex flex-col gap-5';", $view);
     }
 
     public function test_name_input_is_only_visible_and_required_for_external_couriers(): void

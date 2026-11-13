@@ -422,7 +422,7 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
             }
             if (this.mode !== 'ajax') { window.location.href = `/${this.routeBase}/create`; return; }
             this.editing = null;
-            this.form = Object.fromEntries(this.fields.map(field => [field.key, '']));
+            this.form = Object.fromEntries(this.fields.map(field => [field.key, field.default ?? '']));
             this.resetFieldPickerState();
             this.resetRegionPickerState();
             this.error = '';
