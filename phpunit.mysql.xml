@@ -44,6 +44,7 @@
             <file>./tests/Feature/WarmLedgerCacheTest.php</file>
             <file>./tests/Feature/CustomersLoadMoreTest.php</file>
             <file>./tests/Feature/ProductVariantBranchPricesTest.php</file>
+            <file>./tests/Feature/PositionNameOnlyFormTest.php</file>
         </testsuite>
     </testsuites>
     <groups>
