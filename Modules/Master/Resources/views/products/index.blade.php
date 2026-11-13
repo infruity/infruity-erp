@@ -46,7 +46,7 @@
         }
         /* Referensi halaman Produk (mobile): pencarian 44px, header 80%, dock 45%. Hanya halaman ini. */
         @media (max-width: 767px) {
-            .erp-mobile-search-shell { padding: 16px 16px 17px; }
+            .erp-mobile-search-shell { padding: 16px; border-bottom: 1px solid #f3f4f6; }
             .erp-mobile-search { height: 44px; padding: 0 6px 0 16px; border-color: rgba(229, 231, 235, .8); }
             .erp-mobile-search__input { font-weight: 500; }
             .erp-mobile-search__filter { color: #9ca3af; }
