@@ -55,7 +55,7 @@
 ])
 
 @once
-    <script src="{{ asset('assets/js/erp-filter-sheet.js') }}"></script>
+    <script src="{{ asset('assets/js/erp-filter-sheet.js') }}?v={{ filemtime(public_path('assets/js/erp-filter-sheet.js')) }}"></script>
 @endonce
 
 @php
