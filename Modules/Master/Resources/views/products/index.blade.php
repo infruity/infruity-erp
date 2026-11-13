@@ -402,7 +402,7 @@
             <input type="hidden" id="branch-filter-value" data-kt-ecommerce-product-filter="branch">
             <input type="hidden" id="type-filter-value" data-kt-ecommerce-product-filter="type">
             <input type="hidden" id="category-filter-value" data-kt-ecommerce-product-filter="category" value="all">
-            <x-erp.list-count noun="produk" shown-id="products-count-display" total-id="products-count-total" />
+            <x-erp.list-count noun="produk" shown-id="products-count-display" total-id="products-count-total" reference />
 
             <!-- Table -->
             <div class="mobile-list-edge-fade relative z-0 -mt-[72px] flex-1 overflow-auto pt-[72px] pb-24 md:mt-0 md:pt-0 md:pb-0" style="--mobile-list-fade-top:72px; --mobile-list-fade-bottom:72px" @scroll.passive="isScrolling = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => isScrolling = false, 600)">
