@@ -35,7 +35,12 @@ class PositionController extends Controller
         $departments = Department::all();
         $data = [
             'departments' => $departments,
-            'records' => Position::query()->with('department:id,name')->select('id', 'name', 'code', 'department_id', 'description')->orderByDesc('id')->get(),
+            'records' => Position::query()
+                ->leftJoin('users as editor', 'editor.id_user', '=', 'position.updated_by')
+                ->with('department:id,name')
+                ->select('position.id', 'position.name', 'position.code', 'position.department_id', 'position.description', 'position.created_at', 'position.updated_at', 'editor.nm_user as updated_by_name')
+                ->orderByDesc('position.id')
+                ->get(),
         ];
         return view('master::position.index', $data);
     }
@@ -101,6 +106,8 @@ class PositionController extends Controller
             $position->department_id = $validated['department_id'];
             $position->description = $validated['description'] ?? null;
             $position->code = $newCode;
+            $position->created_by = Auth::user()?->id_user;
+            $position->updated_by = Auth::user()?->id_user;
             $position->save();
             DB::commit();
         } catch (Exception $e) {
@@ -195,6 +202,7 @@ class PositionController extends Controller
             if ($position->getOriginal('department_id') != $validated['department_id']) {
                 $position->code = $newCode;
             }
+            $position->updated_by = Auth::user()?->id_user;
             $position->save();
             DB::commit();
         } catch (Exception $e) {
