@@ -373,4 +373,34 @@ class UserPermissionOverridesTest extends TestCase
         $this->assertTrue(RoleMenu::checkAccess('products.index'));
         $this->assertFalse(RoleMenu::checkAccess('products.create'));
     }
+
+    public function test_reset_drops_every_override_of_that_account_and_nobody_elses(): void
+    {
+        $this->putJson('/user/200/permissions', ['overrides' => ['products.index' => false, 'products.create' => true]])->assertOk();
+        $this->putJson('/user/201/permissions', ['overrides' => ['products.create' => true]])->assertOk();
+
+        $this->deleteJson('/user/200/permissions')->assertOk()->assertJsonPath('success', true);
+
+        $this->assertSame(0, DB::table('user_permissions')->where('id_user', 200)->count());
+        $this->assertSame(1, DB::table('user_permissions')->where('id_user', 201)->count(), 'other accounts keep their overrides');
+    }
+
+    public function test_an_account_cannot_reset_its_own_overrides(): void
+    {
+        DB::table('user_permissions')->insert(['id_user' => 100, 'permission' => 'products.index', 'is_allowed' => 1]);
+
+        $this->deleteJson('/user/100/permissions')->assertForbidden();
+
+        $this->assertSame(1, DB::table('user_permissions')->where('id_user', 100)->count());
+    }
+
+    public function test_the_account_detail_shows_the_template_and_how_many_permissions_were_customised(): void
+    {
+        $view = file_get_contents(resource_path('views/admin/user/index.blade.php'));
+
+        $this->assertStringContainsString('Template:', $view);
+        $this->assertStringContainsString("customAccessCount(selected) + ' izin disesuaikan'", $view);
+        $this->assertStringContainsString('Kembalikan ke template', $view);
+        $this->assertStringContainsString("method: 'DELETE'", $view);
+    }
 }
