@@ -23,7 +23,7 @@
 @section('content')
     <style>
         .icon-rounded.is-bold { font-variation-settings: 'wght' 600; }
-        #products-table.dataTable { border-collapse: collapse !important; border: none !important; table-layout: fixed !important; width: 100% !important; margin-top: 1px !important; }
+        #products-table.dataTable { border-collapse: collapse !important; border: none !important; table-layout: fixed !important; width: 100% !important; margin-top: 1px !important; margin-bottom: 0 !important; }
         @media (max-width: 767px) {
             .product-list-fullbleed { width: 100vw !important; max-width: 100vw !important; margin-left: calc(50% - 50vw) !important; margin-right: calc(50% - 50vw) !important; }
             #products-table.dataTable,
@@ -407,7 +407,7 @@
             <x-erp.list-count noun="produk" shown-id="products-count-display" total-id="products-count-total" reference />
 
             <!-- Table -->
-            <div class="mobile-list-edge-fade relative z-0 -mt-[72px] flex-1 overflow-auto pt-[72px] pb-24 md:mt-0 md:pt-0 md:pb-0" style="--mobile-list-fade-top:72px; --mobile-list-fade-bottom:72px" @scroll.passive="isScrolling = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => isScrolling = false, 600)">
+            <div class="mobile-list-edge-fade relative z-0 -mt-[72px] flex-1 overflow-auto pt-[72px] pb-20 md:mt-0 md:pt-0 md:pb-0" style="--mobile-list-fade-top:72px; --mobile-list-fade-bottom:72px" @scroll.passive="isScrolling = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => isScrolling = false, 600)">
                 <table class="w-full text-sm" id="products-table" width="100%">
                     <thead class="hidden md:table-header-group">
                         <tr class="text-left text-gray-400 font-semibold text-[11px] uppercase tracking-wide">
