@@ -21,6 +21,10 @@
         .erp-mobile-search__divider { height: 16px; margin: 0 4px; }
         .erp-mobile-search__input { font-weight: 500; }
         .erp-mobile-search__filter { color: #9ca3af; }
+        .erp-mobile-search__filter .icon-rounded { font-size: 20px; line-height: 1; }
+        .erp-mobile-search__filter.is-active .icon-rounded { font-variation-settings: 'FILL' 0, 'wght' 600; }
+        /* Pages without a filter keep the reference's muted, non-interactive icon */
+        .erp-mobile-search__filter--idle { display: flex; align-items: center; justify-content: center; color: #d1d5db; cursor: default; pointer-events: none; user-select: none; }
         /* Bottom of the list: 96px (last row 16px above the dock); 80px while a "Muat N ... Lagi" row ends the list */
         .mobile-list-edge-fade.mobile-list-edge-fade, div[data-erp-list] { padding-bottom: 96px; }
         .mobile-list-edge-fade.mobile-list-edge-fade:has([data-load-more]:not(.hidden):not([style*="display: none"])) { padding-bottom: 80px; }

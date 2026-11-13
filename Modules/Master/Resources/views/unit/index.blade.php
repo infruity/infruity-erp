@@ -16,7 +16,7 @@
     <x-erp.mobile-search class="md:hidden">
         <x-slot:input><input x-ref="mobileSearch" x-model.debounce.200ms="search" type="search" placeholder="Cari..." aria-label="Cari satuan" class="erp-mobile-search__input"></x-slot:input>
         <x-slot:clear><button type="button" x-show="search" x-cloak @click="search = ''; $refs.mobileSearch.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
-        <x-slot:filter></x-slot:filter>
+        <x-slot:filter><div class="erp-mobile-search__filter erp-mobile-search__filter--idle" title="Filter tidak tersedia" aria-hidden="true"><span class="icon-rounded" style="font-size: 20px;">tune</span></div></x-slot:filter>
     </x-erp.mobile-search>
     <div class="erp-surface bg-white rounded-none lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden relative">
         <div class="hidden md:flex gap-3 items-center p-4 border-b border-gray-100">

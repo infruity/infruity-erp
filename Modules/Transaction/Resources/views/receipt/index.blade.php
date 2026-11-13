@@ -20,7 +20,7 @@
         <x-erp.mobile-search>
             <x-slot:input><input x-ref="search" x-model="mobileSearch" name="q" type="search" placeholder="Cari..." aria-label="Cari resep produk" class="erp-mobile-search__input"></x-slot:input>
             <x-slot:clear><button type="button" x-show="mobileSearch" x-cloak @click="mobileSearch = ''; $refs.search.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
-            <x-slot:filter><button type="button" @click="filterOpen = true" aria-label="Filter resep" class="erp-mobile-search__filter {{ $category !== 'all' || $type !== 'all' ? 'is-active' : '' }}"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></x-slot:filter>
+            <x-slot:filter><button type="button" @click="filterOpen = true" aria-label="Filter resep" class="erp-mobile-search__filter {{ $category !== 'all' || $type !== 'all' ? 'is-active' : '' }}"><span class="icon-rounded" aria-hidden="true" style="font-size: 20px;">tune</span></button></x-slot:filter>
         </x-erp.mobile-search>
     </form>
     <div class="relative erp-surface bg-white rounded-none lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">

@@ -117,7 +117,7 @@
         <x-erp.mobile-search>
             <x-slot:input><input x-ref="mobileSearch" x-model="mobileSearch" name="q" type="search" placeholder="Cari..." aria-label="Cari akun pengguna" class="erp-mobile-search__input"></x-slot:input>
             <x-slot:clear><button type="button" x-show="mobileSearch" x-cloak @click="mobileSearch = ''; $refs.mobileSearch.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
-            <x-slot:filter><button type="button" @click="$dispatch('user-filter-open')" aria-label="Filter akun" class="erp-mobile-search__filter {{ $selectedRoleId ? 'is-active' : '' }}"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i>@if($selectedRoleId)<span class="erp-mobile-search__filter-dot"></span>@endif</button></x-slot:filter>
+            <x-slot:filter><button type="button" @click="$dispatch('user-filter-open')" aria-label="Filter akun" class="erp-mobile-search__filter {{ $selectedRoleId ? 'is-active' : '' }}"><span class="icon-rounded" aria-hidden="true" style="font-size: 20px;">tune</span>@if($selectedRoleId)<span class="erp-mobile-search__filter-dot"></span>@endif</button></x-slot:filter>
         </x-erp.mobile-search>
     </form>
     <div class="relative erp-surface bg-white rounded-none lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden">
