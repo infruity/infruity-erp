@@ -415,7 +415,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-50 text-gray-700"></tbody>
                 </table>
-                <div id="products-load-more" class="hidden px-5 py-4">
+                <div id="products-load-more" data-load-more class="hidden px-5 py-4">
                     <x-erp.load-more>Muat Produk Lagi</x-erp.load-more>
                 </div>
             </div>

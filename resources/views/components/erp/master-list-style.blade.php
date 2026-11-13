@@ -21,6 +21,9 @@
         .erp-mobile-search__divider { height: 16px; margin: 0 4px; }
         .erp-mobile-search__input { font-weight: 500; }
         .erp-mobile-search__filter { color: #9ca3af; }
+        /* Bottom of the list: 96px (last row 16px above the dock); 80px while a "Muat N ... Lagi" row ends the list */
+        .mobile-list-edge-fade.mobile-list-edge-fade { padding-bottom: 96px; }
+        .mobile-list-edge-fade.mobile-list-edge-fade:has([data-load-more]:not(.hidden):not([style*="display: none"])) { padding-bottom: 80px; }
         .erp-mobile-search:focus-within { border-color: #10b981; background: #fff; box-shadow: 0 0 0 1px #10b981; }
     }
 </style>

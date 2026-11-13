@@ -56,9 +56,9 @@
             </template>
             <div x-show="filtered.length === 0" class="py-12 text-center"><div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3"><i class="ph ph-magnifying-glass text-gray-400 text-xl"></i></div><p class="text-sm text-gray-500 font-medium">{{ $pageTitle }} tidak ditemukan</p><p class="text-xs text-gray-400 mt-1">Coba ubah pencarian</p></div>
             @if (($pageMode ?? 'ajax') === 'server' && $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
-                <div x-show="nextPage" x-cloak class="px-5 py-4"><x-erp.load-more @click="loadMore()" loading="loadingMore">Muat {{ $pageTitle }} Lagi</x-erp.load-more></div>
+                <div x-show="nextPage" x-cloak data-load-more class="px-5 py-4"><x-erp.load-more @click="loadMore()" loading="loadingMore">Muat {{ $pageTitle }} Lagi</x-erp.load-more></div>
             @else
-                <div x-show="visibleCount < filtered.length" class="px-5 py-4"><x-erp.load-more @click="visibleCount += 50">Muat <span x-text="Math.min(50, filtered.length - visibleCount)"></span> {{ $pageTitle }} Lagi</x-erp.load-more></div>
+                <div x-show="visibleCount < filtered.length" data-load-more class="px-5 py-4"><x-erp.load-more @click="visibleCount += 50">Muat <span x-text="Math.min(50, filtered.length - visibleCount)"></span> {{ $pageTitle }} Lagi</x-erp.load-more></div>
             @endif
         </div>
     </div>

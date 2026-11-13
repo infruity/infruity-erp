@@ -53,7 +53,7 @@
                 <p class="text-sm text-gray-500 font-medium">Satuan tidak ditemukan</p>
                 <p class="text-xs text-gray-400 mt-1">Coba ubah pencarian</p>
             </div>
-            <div x-show="visibleCount < filtered.length" class="px-5 py-4">
+            <div x-show="visibleCount < filtered.length" data-load-more class="px-5 py-4">
                 <x-erp.load-more @click="visibleCount += 50">Muat <span x-text="Math.min(50, filtered.length - visibleCount)"></span> Satuan Lagi</x-erp.load-more>
             </div>
         </div>

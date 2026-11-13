@@ -48,7 +48,7 @@
             @if($receipts->isEmpty())
                 <div class="py-16 text-center text-gray-400"><i class="ph ph-receipt text-3xl"></i><p class="mt-2 text-sm">Resep produk tidak ditemukan</p></div>
             @endif
-            <div x-show="hasMore" class="px-5 py-4">
+            <div x-show="hasMore" data-load-more class="px-5 py-4">
                 <x-erp.load-more @click="loadMoreRecipes()" loading="loadingMore"><span x-text="loadingMore ? 'Memuat resep...' : 'Muat Resep Lagi'"></span></x-erp.load-more>
             </div>
         </div>
