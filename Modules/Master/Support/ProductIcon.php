@@ -30,6 +30,7 @@ class ProductIcon
             'stroberi' => ['🍓', 'bg-pink-100'],
             'strawberry' => ['🍓', 'bg-pink-100'],
             'mangga' => ['🥭', 'bg-amber-50'],
+            'mango' => ['🥭', 'bg-amber-50'],
             'jambu' => ['🍎', 'bg-rose-50'],
             'pisang' => ['🍌', 'bg-yellow-50'],
             'jeruk' => ['🍊', 'bg-orange-50'],
