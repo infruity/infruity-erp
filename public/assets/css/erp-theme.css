@@ -400,3 +400,19 @@ select.erp-empty option { color: #1f2937 !important; }
 .erp-ui .erp-tone-7 { background:#f0fdfa; color:#0f766e; border-color:#99f6e4; }
 .erp-ui .erp-tone-8 { background:#fff1f2; color:#be123c; border-color:#fecdd3; }
 .erp-ui .erp-tone-9 { background:#fff7ed; color:#c2410c; border-color:#fed7aa; }
+
+/* ---- Pengaturan: sizes and colours of the HTML reference (009. Pengaturan / 002. Pengaturan) ---- */
+.erp-ui .erp-settings-page .erp-settings-details { display:flex; flex-direction:column; padding:16px; }
+.erp-ui .erp-settings-page .erp-settings-detail { padding:0; }
+.erp-ui .erp-settings-page .erp-settings-detail + .erp-settings-detail { margin-top:14px; padding-top:14px; border-top:1px solid #f3f4f6; }
+.erp-ui .erp-settings-page .erp-settings-label { display:block; margin:0 0 4px; color:#9ca3af; font-size:11px; font-weight:600; line-height:24px; letter-spacing:.05em; }
+.erp-ui .erp-settings-page .erp-settings-value { margin:0; color:#1f2937; font-size:13.5px; font-weight:600; line-height:20.25px; }
+.erp-ui .erp-settings-page .erp-settings-email { color:#6b7280; line-height:16px; }
+.erp-ui .erp-settings-page .erp-settings-chevron { color:#9ca3af; font-size:12px; }
+.erp-ui .erp-settings-page .erp-settings-profile .erp-settings-chevron { display:flex; width:28px; height:28px; align-items:center; justify-content:center; }
+.erp-ui .erp-settings-page .erp-settings-option { min-height:0; padding:14px 16px; }
+.erp-ui .erp-settings-page .erp-settings-option-label { color:#1f2937; line-height:20.25px; }
+.erp-ui .erp-settings-page .erp-settings-option-icon { color:#6b7280; }
+.erp-ui .erp-settings-page .erp-settings-option-value { color:#9ca3af; font-size:12px; line-height:16px; }
+.erp-ui .erp-settings-page .erp-settings-options > .erp-settings-option + .erp-settings-option, .erp-ui .erp-settings-page .erp-settings-options > a.erp-settings-option:first-child { border-color:#f3f4f6; }
+@media (min-width:641px) { .erp-ui .erp-settings-page .erp-settings-details { padding:20px; } .erp-ui .erp-settings-page .erp-settings-option { padding:14px 16px; } }
