@@ -127,3 +127,19 @@ body:has(.transfer-form) main { overflow:hidden; }
 .transfer-form .transfer-error { margin:0 0 12px; }
 
 .transfer-form .transfer-action-primary:disabled { opacity:1; border-color:#e5e7eb; background:#e5e7eb; color:#6b7280; box-shadow:none; cursor:not-allowed; }
+
+/* ---- Sizes taken from the HTML reference (Pindah Stok - Mengirim): card shadow, label/trigger/header/button/footer metrics ---- */
+.transfer-form .transfer-canvas { padding-top:16px; }
+.transfer-form .transfer-branch-card, .transfer-form .transfer-items-card { box-shadow:0 1px 3px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.04); }
+.transfer-form .transfer-field-label { margin-bottom:6px; line-height:16px; }
+.transfer-form .transfer-branch-trigger { padding:0 16px; background:rgba(249,250,251,.7); line-height:20px; }
+.transfer-form .transfer-branch-trigger i { color:#9ca3af; font-size:14px; }
+.transfer-form .transfer-items-header h1 { line-height:20px; }
+.transfer-form .transfer-add-button { padding:6px 14px; min-height:0; line-height:16px; border-color:rgba(167,243,208,.8); background:rgba(236,253,245,.8); }
+.transfer-form .transfer-empty { padding:24px; }
+.transfer-form .transfer-empty h2 { line-height:20px; }
+.transfer-form .transfer-empty p, .transfer-form .transfer-empty button { line-height:16px; }
+.transfer-form .transfer-summary { padding-top:14px; padding-bottom:calc(14px + env(safe-area-inset-bottom, 0px)); }
+.transfer-form .transfer-action { padding:0 12px; line-height:16px; }
+.transfer-form .transfer-action-primary { border:0; }
+.transfer-form .transfer-action-primary:disabled { color:#9ca3af; }

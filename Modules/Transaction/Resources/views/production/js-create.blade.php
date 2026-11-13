@@ -408,6 +408,8 @@
                 this.showAddIngredientModal = true;
                 this.loadAvailableIngredients();
                 this.ingredientSearchTerm = '';
+                this.selectedIngredient = null;
+                this.ingredientQuantity = '';
                 const modal = new bootstrap.Modal(document.getElementById('modal-add-ingredient'));
                 modal.show();
             },
@@ -637,7 +639,7 @@
                 }
 
                 // Close modal and reset
-                bootstrap.Modal.getInstance(document.getElementById('modal-input-quantity')).hide();
+                ['modal-input-quantity', 'modal-add-ingredient'].forEach(id => bootstrap.Modal.getInstance(document.getElementById(id))?.hide());
                 this.selectedIngredient = null;
                 this.ingredientQuantity = 0;
 
@@ -781,6 +783,11 @@
             refreshProduct() {
                 this.loadAvailableIngredients();
                 this.showNotification('Product list refreshed', 'info');
+            },
+
+            // The number alone (the form prints the "Rp" next to it, as in the reference)
+            formatNumber(amount) {
+                return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(Math.round(Number(amount) || 0));
             },
 
             // Format currency
@@ -1084,6 +1091,22 @@
         });
 
         // Searchable pickers replace the select2 look; the selects, their ids and the select2 handlers stay the source of truth.
+        @if($productionCreateReference ?? false)
+        // Create form (reference): the page's own product button opens the dropdown; price per portion is the second line.
+        ErpPicker.attach('#product_id', {
+            trigger: document.querySelector('.production-ref-product'),
+            title: 'Pilih Produk',
+            placeholder: 'Cari nama produk...',
+            emptyText: 'Produk olahan tidak ditemukan',
+            clearable: false,
+            url: '{{ route('products.get-receipt') }}',
+            map: item => ({ id: item.product_id, text: item.products?.name || 'Unknown Product', meta: 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(item.products?.price) || 0) + ' / porsi' })
+        });
+        window.jQuery('#product_id').on('change', () => {
+            const root = document.querySelector('[x-data*="productionApp"]');
+            if (root && window.Alpine) window.Alpine.$data(root).syncReferenceProductSelection();
+        });
+        @else
         ErpPicker.attach('#product_id', {
             title: 'Pilih Produk Olahan',
             subtitle: 'Produk yang akan diproduksi',
@@ -1094,12 +1117,14 @@
             url: '{{ route('products.get-receipt') }}',
             map: item => ({ id: item.product_id, text: item.products?.name || 'Unknown Product' })
         });
+        @endif
         ErpPicker.attach('#branch_id', {
             title: 'Pilih Cabang / Dapur',
             placeholder: 'Cari cabang...',
             placeholderTrigger: 'Pilih cabang...',
             emptyText: 'Cabang tidak ditemukan',
-            clearable: true,
+            clearable: {{ ($productionCreateReference ?? false) ? 'false' : 'true' }},
+            search: {{ ($productionCreateReference ?? false) ? 'false' : 'true' }},
             url: '{{ route('ajax.getBranch') }}',
             map: item => ({ id: item.id, text: item.name })
         });

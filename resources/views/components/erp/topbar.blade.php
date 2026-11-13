@@ -3,7 +3,7 @@
     $sortirFormHeader = request()->routeIs('sortir.create', 'sortir.edit', 'sortir.show');
     $transferFormHeader = request()->routeIs('transfer-pengirim.create', 'transfer-pengirim.edit', 'transfer-pengirim.show', 'transfer-penerima.show');
     $arusKasFormHeader = request()->routeIs('arus-kas.create', 'arus-kas.edit');
-    $productionCreateHeader = request()->routeIs('production.create');
+    $productionCreateHeader = request()->routeIs('production.create', 'production.edit');
     $posCreateHeader = request()->routeIs('pos.create');
     $transactionFormHeader = $productionCreateHeader || $posCreateHeader || $transferFormHeader || $sortirFormHeader || $arusKasFormHeader || request()->routeIs('wholesale.create', 'wholesale.edit');
     $transactionBackRoute = $posCreateHeader ? 'pos.index' : ($arusKasFormHeader ? 'arus-kas.index' : ($transferFormHeader ? request()->segment(1) . '.index' : ($sortirFormHeader ? 'sortir.index' : 'wholesale.index')));

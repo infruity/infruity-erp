@@ -356,6 +356,12 @@
                 const date = this.calendarDate(day);
                 return date === this.start || date === this.end;
             },
+            isCalendarDateStart(day) {
+                return !!this.start && this.calendarDate(day) === this.start;
+            },
+            isCalendarDateEnd(day) {
+                return !!this.end && this.calendarDate(day) === this.end;
+            },
             isCalendarDateInRange(day) {
                 if (!this.start || !this.end) return false;
                 const date = this.calendarDate(day);

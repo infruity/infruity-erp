@@ -2,7 +2,7 @@
 @section('title', 'Produksi')
 
 @section('content')
-    @php($productionCreateReference = request()->routeIs('production.create'))
+    @php($productionCreateReference = request()->routeIs('production.create', 'production.edit'))
     @if($productionCreateReference)
         <link rel="stylesheet" href="{{ asset('assets/css/production-form-reference.css') }}?v={{ filemtime(public_path('assets/css/production-form-reference.css')) }}">
     @endif
@@ -146,6 +146,9 @@
 
     <!--begin::Main column-->
     <div class="w-100 flex-lg-row-auto {{ $productionCreateReference ? 'production-create-reference' : '' }}" @if($productionCreateReference) data-reference-product-url="{{ route('products.get-receipt') }}" @endif x-data="productionApp()" x-init="init()">
+        @if($productionCreateReference)
+            @include('transaction::production.segment.reference-form')
+        @else
         <div class="production-form">
             @if($productionCreateReference && isset($data) && $data?->status === 'temp')
                 <p class="production-resume-note" role="status" x-init="setTimeout(() => $el.remove(), 5000)">Melanjutkan draf sementara #{{ $data->production_number }}. Menyimpan akan memperbarui draf ini.</p>
@@ -259,13 +262,11 @@
             <!-- Footer: total biaya dan aksi simpan -->
             @include('transaction::production.segment.summary')
         </div>
+        @endif
 
         <!-- Modals -->
         @include('transaction::production.segment.modal-ingredient')
         @include('transaction::production.segment.modal-recipe')
-        @if($productionCreateReference)
-            @include('transaction::production.segment.reference-product-picker')
-        @endif
     </div>
     <!--end::Main column-->
 

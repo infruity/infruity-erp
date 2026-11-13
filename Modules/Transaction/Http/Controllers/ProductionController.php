@@ -239,14 +239,14 @@ class ProductionController extends Controller
      * @param int $id
      * @return Renderable
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         if ($denied = $this->requireAccess('production.detail')) {
             return $denied;
         }
 
         try {
-            $data['data']              = Production::with(['products', 'products.unit', 'staff', 'creator', 'pos.customer'])->findOrFail($id);
+            $data['data']              = Production::with(['products', 'products.unit', 'staff', 'creator', 'branch', 'pos.customer'])->findOrFail($id);
             $data['production_detail'] = ProductionDetail::with(['products', 'products.unit', 'products.category'])->where('production_id', $id)->get();
 
             // Calculate totals with null safety
@@ -260,6 +260,13 @@ class ProductionController extends Controller
             if ($data['data']->hpp_per_unit !== null) {
                 $data['hpp_per_unit'] = (float) $data['data']->hpp_per_unit;
                 $data['total_hpp']    = $data['hpp_per_unit'] * (float) $data['data']->quantity;
+            }
+
+            // The list's popup asks for the compact summary of the reference; a direct visit keeps the full page.
+            if ($request->ajax()) {
+                [$data['emoji'], $data['icon_class']] = \Modules\Master\Support\ProductIcon::resolve($data['data']->products);
+
+                return view('transaction::production.show-modal', $data);
             }
 
             return view('transaction::production.show', $data);

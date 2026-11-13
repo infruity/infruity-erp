@@ -15,7 +15,7 @@
   return Number(value).toLocaleString('id-ID',{maximumFractionDigits:20});
  }
  const detailTags=new Set(['div','section','span','i','h1','h2','p','dl','dt','dd','a','strong','small','br','em','ul','ol','li','time']);
- const detailClasses=new Set(['btn','btn-light','btn-light-info','btn-light-primary','btn-success','is-done','is-note','is-pos','is-ready','is-temp','me-1','ph','ph-arrow-left','ph-check','ph-orange','ph-pencil-simple','ph-printer','production-detail','production-detail__actions','production-detail__avatar','production-detail__badge','production-detail__body','production-detail__card','production-detail__empty','production-detail__head','production-detail__ingredient','production-detail__ingredient-cost','production-detail__ingredient-name','production-detail__meta','production-detail__note','production-detail__section-title','production-detail__status','production-detail__title','production-detail__total','pt-0']);
+ const detailClasses=new Set(['production-detail--ref','production-detail-ref__title','production-detail-ref__rows','production-detail-ref__row','production-detail-ref__icon','production-detail-ref__icon--product','production-detail-ref__text','production-detail-ref__main','production-detail-ref__sub','production-detail-ref__actions','production-detail-ref__action','production-detail-ref__divider','production-detail-ref__locked','production-detail-ref__delete','is-strong','is-small','is-target','is-edit','is-delete','ph-duotone','ph-receipt','ph-coins','ph-clock','ph-trash','bg-amber-50','bg-emerald-50','bg-gray-100','bg-green-50','bg-lime-50','bg-orange-50','bg-pink-100','bg-purple-50','bg-red-50','bg-rose-50','bg-stone-50','bg-yellow-50','btn','btn-light','btn-light-info','btn-light-primary','btn-success','is-done','is-note','is-pos','is-ready','is-temp','me-1','ph','ph-arrow-left','ph-check','ph-orange','ph-pencil-simple','ph-printer','production-detail','production-detail__actions','production-detail__avatar','production-detail__badge','production-detail__body','production-detail__card','production-detail__empty','production-detail__head','production-detail__ingredient','production-detail__ingredient-cost','production-detail__ingredient-name','production-detail__meta','production-detail__note','production-detail__section-title','production-detail__status','production-detail__title','production-detail__total','pt-0']);
  const detailIds=new Set(['production-detail-title','production-ingredients-title','production-extra-title']);
  const detailAttributes=new Set(['class','id','aria-label','aria-hidden','aria-labelledby','href']);
  const detailVoidTags=new Set(['br']);
@@ -132,6 +132,8 @@
     clickHandler=event=>{
      const closeLink=event.target?.closest?.('[data-production-detail-back]');
      if(closeLink){event.preventDefault();this.closeProductionDetail();return;}
+     const remove=event.target?.closest?.('a.production-detail-ref__delete');
+     if(remove){event.preventDefault();this.deleteProductionFromDetail(remove.getAttribute('href'));return;}
      const link=event.target?.closest?.('a.production-copy');
      if(!link||!isPlainClick(event,link))return;
      event.preventDefault();this.openProductionDetail(link.href);
@@ -201,6 +203,24 @@
      finishClose(this);
      if(replaceHistoryEntry)win.location.replace(fallbackUrl);
      else win.location.assign(fallbackUrl);
+    }
+   },
+   async deleteProductionFromDetail(href){
+    const id=/\/production\/(\d+)\/detail/.exec(String(href||''))?.[1];
+    if(!id||!fetcher)return;
+    const dialog=win.ErpDialog;
+    const ok=dialog?await dialog.confirmDelete({what:'Produksi'}):win.confirm('Hapus produksi ini?');
+    if(!ok)return;
+    try{
+     const token=doc.querySelector('meta[name="csrf-token"]')?.content||'';
+     const response=await fetcher(`${listUrl.origin}/production/${id}`,{method:'DELETE',credentials:'same-origin',headers:{Accept:'application/json','X-CSRF-TOKEN':token,'X-Requested-With':'XMLHttpRequest'}});
+     const result=await response.json().catch(()=>({}));
+     if(!response.ok||result.success===false)throw new Error(result.message||'Gagal menghapus data.');
+     this.closeProductionDetail();
+     if(dialog?.toast)dialog.toast('success',result.message||'Data berhasil dihapus.');
+     win.location.reload();
+    }catch(error){
+     if(dialog)dialog.error(error.message||'Gagal menghapus data.');
     }
    },
    trapProductionDetailFocus(event){
