@@ -67,8 +67,8 @@ class ListCountPositionTest extends TestCase
         $html = Blade::render('<x-erp.list-count noun="role" :shown="3" :total="5" server />');
 
         $this->assertStringContainsString('hidden md:flex px-4 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-400 font-medium', $html);
-        $this->assertStringContainsString('erp-list-count-mobile md:hidden', $html);
-        $this->assertStringNotContainsString('absolute', $html, 'the mobile count is a line under the search, not a floating pill');
+        $this->assertStringContainsString('md:hidden relative z-20 h-0 flex-none pointer-events-none', $html);
+        $this->assertStringContainsString('x-show="scrolled"', $html, 'the mobile count stays a pill that shows while scrolling');
         $this->assertStringContainsString('Menampilkan', $html);
         $this->assertMatchesRegularExpression('/>3<\/span> dari\s*<span[^>]*>5<\/span>&nbsp;role/', $html);
     }
@@ -78,7 +78,7 @@ class ListCountPositionTest extends TestCase
         $html = Blade::render('<x-erp.list-count noun="pesanan" shown-id="a" total-id="b" window-scroll />');
 
         $this->assertStringContainsString('id="a-mobile"', $html);
-        $this->assertStringNotContainsString('fixed top-', $html);
+        $this->assertStringContainsString("window.addEventListener('scroll'", $html);
         $this->assertStringContainsString('erp-workspace-sticky', file_get_contents(base_path('resources/views/components/erp/workspace.blade.php')));
         $this->assertStringContainsString('.erp-workspace-sticky { position:sticky', file_get_contents(public_path('assets/css/erp-workspace.css')));
     }
