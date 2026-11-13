@@ -132,3 +132,15 @@ test('both layouts load the dialog script right after SweetAlert, and the delete
     }
     assert.ok(!/js\.map|innerHTML/.test(read('public/assets/js/erp-dialog.js')));
 });
+
+test('ErpDialog.toast shows a self-closing corner toast and install() keeps working for it', () => {
+    const swal = fakeSwal();
+    ErpDialog.install(swal);
+    ErpDialog.toast('success', 'Tersimpan.');
+    const o = swal.calls.at(-1);
+    assert.equal(o.toast, true);
+    assert.equal(o.icon, 'success');
+    assert.equal(o.title, 'Tersimpan.');
+    assert.equal(o.showConfirmButton, false);
+    assert.ok(o.timer > 0);
+});
