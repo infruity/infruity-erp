@@ -15,7 +15,6 @@
             ['key' => 'customers', 'label' => 'Pelanggan'], ['key' => 'branch', 'label' => 'Cabang'],
             ['key' => 'position', 'label' => 'Jabatan'], ['key' => 'staff', 'label' => 'Karyawan'],
             ['key' => 'payment-method', 'label' => 'Metode Pembayaran'], ['key' => 'user', 'label' => 'Akun Pengguna'],
-            ['key' => 'role-menu', 'label' => 'Hak Akses'], ['key' => 'role', 'label' => 'Peran'],
             ['key' => 'account', 'label' => 'Akun'], ['key' => 'product-stock', 'label' => 'Stok Produk'],
             ['key' => 'location', 'label' => 'Lokasi'], ['key' => 'handling', 'label' => 'Penanganan'],
             ['key' => 'department', 'label' => 'Departemen'],
