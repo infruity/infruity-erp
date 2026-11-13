@@ -25,7 +25,7 @@
         <span class="ml-1 text-gray-700 font-semibold"{!! $numberAttrs($total, $totalId) !!}>{{ $server ? $total : ($totalId ? '0' : '') }}</span>&nbsp;{{ $noun }}
     </div>
     <div class="md:hidden relative z-20 h-0 flex-none pointer-events-none">
-        <div x-show="scrolled" x-cloak style="display: none{{ $reference ? '; top: -66px' : '' }}" class="absolute inset-x-0 {{ $reference ? '' : 'top-1' }} flex justify-center"
+        <div x-show="scrolled" x-cloak style="display: none" class="absolute inset-x-0 top-1 flex justify-center"
             @if ($reference)
                 x-transition:enter="transition duration-300 ease-out"
                 x-transition:enter-start="opacity-0 -translate-y-3 scale-95"
