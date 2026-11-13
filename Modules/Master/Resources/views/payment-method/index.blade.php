@@ -3,7 +3,7 @@
     $singular = 'Metode';
     $routeBase = 'payment-method';
     $nameField = 'name';
-    $subtitleFields = ['code'];
+    $subtitleFields = [];
     $formFields = [['key'=>'name','label'=>'Nama Metode Pembayaran','required'=>true]];
     $pageMode = 'ajax';
 @endphp
