@@ -5,9 +5,13 @@
 @props(['title', 'subtitle' => '', 'icon' => 'squares-four', 'countTable' => null, 'countNoun' => null])
 <section {{ $attributes->class(['erp-workspace']) }} aria-label="{{ $title }}">
     <header class="erp-workspace-heading"><div><h2>{{ $title }}</h2>@if($subtitle)<p>{{ $subtitle }}</p>@endif</div></header>
+    <div class="erp-workspace-sticky">
     @isset($toolbar)<div class="erp-workspace-toolbar">{{ $toolbar }}</div>@endisset
     @if ($countTable)
-        <x-erp.list-count :noun="$countNoun ?? strtolower($title)" :shown-id="$countTable.'-count-shown'" :total-id="$countTable.'-count-total'" window-scroll />
+        <x-erp.list-count :noun="$countNoun ?? strtolower($title)" :shown-id="$countTable.'-count-shown'" :total-id="$countTable.'-count-total'" />
+    @endif
+    </div>
+    @if ($countTable)
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 if (!window.jQuery) return;

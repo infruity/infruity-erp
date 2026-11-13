@@ -62,22 +62,24 @@ class ListCountPositionTest extends TestCase
         $this->assertMatchesRegularExpression('/<x-erp\.workspace [^>]*count-table="[a-z-]+" count-noun="[^"]+"/', $view);
     }
 
-    public function test_the_component_renders_the_bar_and_the_pill_in_the_units_place(): void
+    public function test_the_component_renders_the_bar_and_the_mobile_line_in_the_units_place(): void
     {
         $html = Blade::render('<x-erp.list-count noun="role" :shown="3" :total="5" server />');
 
         $this->assertStringContainsString('hidden md:flex px-4 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-400 font-medium', $html);
-        $this->assertStringContainsString('md:hidden absolute top-2 z-20 left-0 right-0 flex justify-center pointer-events-none', $html);
+        $this->assertStringContainsString('erp-list-count-mobile md:hidden', $html);
+        $this->assertStringNotContainsString('absolute', $html, 'the mobile count is a line under the search, not a floating pill');
         $this->assertStringContainsString('Menampilkan', $html);
         $this->assertMatchesRegularExpression('/>3<\/span> dari\s*<span[^>]*>5<\/span>&nbsp;role/', $html);
     }
 
-    public function test_pages_that_scroll_as_a_whole_get_a_fixed_pill(): void
+    public function test_pages_that_scroll_as_a_whole_keep_search_and_count_sticky(): void
     {
         $html = Blade::render('<x-erp.list-count noun="pesanan" shown-id="a" total-id="b" window-scroll />');
 
-        $this->assertStringContainsString('fixed top-[76px] z-30', $html);
-        $this->assertStringContainsString("window.addEventListener('scroll'", $html);
         $this->assertStringContainsString('id="a-mobile"', $html);
+        $this->assertStringNotContainsString('fixed top-', $html);
+        $this->assertStringContainsString('erp-workspace-sticky', file_get_contents(base_path('resources/views/components/erp/workspace.blade.php')));
+        $this->assertStringContainsString('.erp-workspace-sticky { position:sticky', file_get_contents(public_path('assets/css/erp-workspace.css')));
     }
 }
