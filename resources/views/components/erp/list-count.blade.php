@@ -19,7 +19,7 @@
     };
 @endphp
 <div class="contents" x-data="{ scrolled: false, scrollTimer: null }"
-    x-init="const show = () => { scrolled = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => scrolled = false, {{ $reference ? 1400 : 600 }}); }; @if ($windowScroll) window.addEventListener('scroll', show, { passive: true, capture: true }); @else const list = $el.parentElement.querySelector(@js($list)); if (list) { list.addEventListener('scroll', show, { passive: true }); @if ($reference) list.addEventListener('wheel', show, { passive: true }); list.addEventListener('touchmove', show, { passive: true }); @endif } @endif">
+    x-init="const show = () => { scrolled = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => scrolled = false, {{ $reference ? 1400 : 600 }}); }; @if ($windowScroll) window.addEventListener('scroll', show, { passive: true, capture: true }); @else const list = $el.parentElement.querySelector(@js($list)); if (list) list.addEventListener('scroll', show, { passive: true }); @endif">
     <div class="hidden md:flex px-4 py-3 bg-gray-50/50 border-b border-gray-100 text-xs text-gray-400 font-medium">
         Menampilkan <span class="mx-1 text-gray-700 font-semibold"{!! $numberAttrs($shown, $shownId) !!}>{{ $server ? $shown : ($shownId ? '0' : '') }}</span> dari
         <span class="ml-1 text-gray-700 font-semibold"{!! $numberAttrs($total, $totalId) !!}>{{ $server ? $total : ($totalId ? '0' : '') }}</span>&nbsp;{{ $noun }}
