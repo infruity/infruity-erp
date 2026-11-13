@@ -86,7 +86,7 @@
     <template x-teleport="body">
         <x-erp.detail-dialog open="detail" close="detail = null" title="Detail Satuan" labelledby="unit-detail-title" close-label="Tutup detail satuan" data-erp-modal>
             <template x-if="detail">
-                <div class="flex flex-col gap-5 text-sm break-words">
+                <div class="my-2 flex flex-col gap-5 text-sm break-words">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-tag text-lg"></i></div>
                         <div class="min-w-0"><div class="font-bold leading-snug text-gray-800" x-text="detail.name"></div><div class="text-[11px] font-medium text-gray-400">Nama Satuan</div></div>
