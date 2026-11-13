@@ -6,7 +6,7 @@
     $subtitleFields = ['type','description'];
     $formEditSubtitle = 'Perbarui data metode';
     $formCreateSubtitle = 'Isi data metode baru';
-    $formBodyClass = 'px-5 pt-5 pb-6 space-y-5';
+    $formBodyClass = 'px-5 pb-6 pt-5 flex flex-col gap-5';
     $formFields = [
         [
             'key' => 'type',
@@ -15,6 +15,7 @@
             'type' => 'select',
             'presentation' => 'picker',
             'placeholder' => 'Pilih Tipe Kurir',
+            'default' => 'internal',
             'options' => [
                 ['value' => 'internal', 'label' => 'Internal'],
                 ['value' => 'external', 'label' => 'Eksternal'],
@@ -40,11 +41,6 @@
             ])->values(),
             'visibleWhen' => ['key' => 'type', 'value' => 'internal'],
             'requiredWhen' => ['key' => 'type', 'value' => 'internal'],
-        ],
-        [
-            'key' => 'description',
-            'label' => 'Deskripsi',
-            'type' => 'textarea',
         ],
     ];
     $pageMode = 'ajax';
