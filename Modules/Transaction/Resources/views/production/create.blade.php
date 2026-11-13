@@ -267,9 +267,6 @@
         <!-- Modals -->
         @include('transaction::production.segment.modal-ingredient')
         @include('transaction::production.segment.modal-recipe')
-        @if($productionCreateReference)
-            @include('transaction::production.segment.reference-product-picker')
-        @endif
     </div>
     <!--end::Main column-->
 

@@ -100,11 +100,9 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString('data-placeholder="Pilih produk olahan..."', $create);
         $this->assertStringContainsString('production-ref-product', $create);
         $this->assertStringContainsString("formatCurrency(sellPrice) + ' / porsi'", $create);
-        $this->assertStringContainsString('openReferenceProductPicker()', $create);
-        $this->assertStringContainsString('reference-product-picker', $create);
-        $this->assertStringContainsString('x-text="referenceProductEmoji(product.text)"', $create);
         $this->assertStringNotContainsString('production-product-picker-field', $edit);
-        $this->assertStringNotContainsString('reference-product-picker', $edit);
+        $this->assertStringNotContainsString('reference-product-picker', $create);
+        $this->assertStringContainsString('trigger: document.querySelector(\'.production-ref-product\')', file_get_contents(base_path('Modules/Transaction/Resources/views/production/js-create.blade.php')));
         $this->assertStringNotContainsString('data-placeholder="Pilih produk olahan..."', $edit);
 
         $script = file_get_contents(base_path('Modules/Transaction/Resources/views/production/js-create.blade.php'));
@@ -115,8 +113,7 @@ final class ProductionCreateReferenceTest extends TestCase
 
         $css = file_get_contents(public_path('assets/css/production-form-reference.css'));
         $this->assertStringContainsString('.production-create-reference #reference-product-picker .production-reference-picker__search input:focus { outline:none; border-color:var(--erp-active-border); box-shadow:var(--erp-active-ring); }', $css);
-        foreach (['.production-ref-product {', '.production-product-picker-field > .select2-container { display:none !important; }',
-            '.production-reference-picker__panel', '.production-reference-picker__option'] as $rule) {
+        foreach (['.production-ref-product {', '.production-product-picker-field > .select2-container { display:none !important; }'] as $rule) {
             $this->assertStringContainsString($rule, $css);
         }
     }
@@ -126,16 +123,10 @@ final class ProductionCreateReferenceTest extends TestCase
         $create = $this->renderForm('production.create', true);
         $edit = $this->renderForm('production.edit', true);
 
-        $this->assertStringContainsString('production-reference-ingredient-modal', $create);
-        $this->assertStringContainsString('Pilih Bahan Baku', $create);
-        $this->assertStringContainsString('Pilih buah atau bahan pelengkap produksi', $create);
-        $this->assertStringContainsString('Cari bahan (misal: Stroberi, Susu)...', $create);
-        $this->assertStringContainsString('production-reference-ingredient-option', $create);
-        $this->assertStringContainsString('x-text="referenceProductEmoji(ingredient.name)"', $create);
-        $this->assertStringNotContainsString('<i class="ph ph-package" aria-hidden="true"></i>', $create);
-        $this->assertStringContainsString('selectIngredient(ingredient)', $create);
-        $this->assertStringContainsString('x-show="filteredIngredients.length === 0"', $create);
-        $this->assertStringNotContainsString('Memuat bahan…', $create);
+        foreach (['production-reference-ingredient-modal', 'Tambah Bahan Baku', 'Pilih bahan baku dan tentukan kuantitas / takaran', 'Cari bahan baku...',
+            'production-ref-ingredient-option', 'selectedIngredient = ingredient', 'x-show="filteredIngredients.length === 0"', 'Kuantitas / Takaran', 'addIngredientToCart()', 'Tambah Bahan'] as $part) {
+            $this->assertStringContainsString($part, $create);
+        }
         $this->assertStringContainsString('id="modal-input-quantity"', $create);
         $this->assertStringNotContainsString('production-reference-ingredient-modal', $edit);
         $this->assertStringContainsString('Tambah Bahan Baku', $edit);

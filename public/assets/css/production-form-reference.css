@@ -276,3 +276,40 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
 /* The product card runs down to the bottom bar, as in the reference (top bar 60 + padding 16 + bar 70 + gap 16). */
 @media (max-width:767px) { .production-create-reference .production-ref { height:calc(100dvh - 162px - env(safe-area-inset-bottom)); } }
 @media (min-width:768px) { .production-create-reference .production-ref { height:calc(100dvh - 120px); } }
+
+/* ---- Dropdowns and the add-ingredient dialog, as in the reference ---- */
+/* Branch / product dropdown: a rounded popover, the chosen row in soft green with a green dot. */
+body:has(.production-create-reference) .erp-picker { border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 10px 24px rgba(17,24,39,.1); }
+body:has(.production-create-reference) .erp-picker__list { padding:4px 0; }
+body:has(.production-create-reference) .erp-picker__item { gap:12px; border-radius:0; padding:10px 14px; }
+body:has(.production-create-reference) .erp-picker__item + .erp-picker__item { margin-top:0; }
+body:has(.production-create-reference) .erp-picker__item.is-selected .erp-picker__text strong { color:#0b595b; }
+body:has(.production-create-reference) .erp-picker__item > i { display:none; }
+body:has(.production-create-reference) .erp-picker__item.is-selected::after { content:''; width:8px; height:8px; flex:none; border-radius:50%; background:#10b981; }
+body:has(.production-create-reference) .erp-picker__text strong { font-size:13px; }
+body:has(.production-create-reference) .erp-picker__text span { color:#6b7280; }
+/* Tambah Bahan Baku */
+.production-create-reference .production-reference-ingredient-modal__header { background:rgba(249,250,251,.5); }
+.production-create-reference .production-reference-ingredient-modal__body { gap:6px; overflow-y:auto; padding:16px; }
+.production-create-reference .production-reference-ingredient-modal__body .production-ref-label:not(:first-child) { margin-top:10px; }
+.production-ref-ingredient-box { overflow:hidden; border:1px solid #868e98; border-radius:12px; background:#fff; }
+.production-create-reference .production-ref-ingredient-box .production-reference-ingredient-modal__search { border-top:0; border-bottom:1px solid #f3f4f6; padding:0; }
+.production-create-reference .production-ref-ingredient-box .production-reference-ingredient-modal__search input { height:40px; border:0; border-radius:0; background:#fff; padding:0 36px 0 36px; font-size:13px; }
+.production-create-reference .production-ref-ingredient-box .production-reference-ingredient-modal__search > i { left:12px; }
+.production-create-reference .production-ref-ingredient-box .production-reference-ingredient-modal__search > button { right:8px; }
+.production-ref-ingredient-list { max-height:176px; overflow-y:auto; overscroll-behavior:contain; }
+.production-ref-ingredient-option { display:flex; width:100%; align-items:center; gap:10px; border:0; border-bottom:1px solid #f3f4f6; background:#fff; padding:10px 12px; text-align:left; cursor:pointer; }
+.production-ref-ingredient-option:last-child { border-bottom:0; }
+.production-ref-ingredient-option:hover { background:#f9fafb; }
+.production-ref-ingredient-option.is-selected { background:#ecfdf5; }
+.production-ref-ingredient-option__radio { display:flex; width:16px; height:16px; flex:none; align-items:center; justify-content:center; border:1.5px solid #868e98; border-radius:50%; }
+.production-ref-ingredient-option.is-selected .production-ref-ingredient-option__radio { border-color:#0b595b; }
+.production-ref-ingredient-option.is-selected .production-ref-ingredient-option__radio::after { content:''; width:8px; height:8px; border-radius:50%; background:#0b595b; }
+.production-ref-ingredient-option__name { min-width:0; flex:1; overflow:hidden; color:#1f2937; font-size:13px; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
+.production-ref-ingredient-option__price { flex:none; color:#6b7280; font-size:11px; }
+.production-ref-qty-input { display:flex; height:44px; align-items:center; gap:8px; border:1px solid #868e98; border-radius:12px; background:#fff; padding:0 14px; }
+.production-ref-qty-input:focus-within { border-color:var(--erp-active-border); box-shadow:var(--erp-active-ring); }
+.production-ref-qty-input input { min-width:0; flex:1; border:0; outline:none; background:transparent; color:#1f2937; font-size:14px; font-weight:700; }
+.production-ref-qty-input span { color:#6b7280; font-size:12px; font-weight:600; }
+.production-reference-ingredient-modal__footer { flex:none; border-top:1px solid #f3f4f6; padding:16px; }
+.production-reference-ingredient-modal__footer .production-ref-save { width:100%; }

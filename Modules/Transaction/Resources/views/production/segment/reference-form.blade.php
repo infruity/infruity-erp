@@ -29,8 +29,7 @@
                     <option value="">Pilih produk olahan...</option>
                 @endif
             </select>
-            <button type="button" class="production-ref-product" @click="openReferenceProductPicker()"
-                aria-haspopup="dialog" aria-controls="reference-product-picker"
+            <button type="button" class="production-ref-product"
                 :aria-label="referenceSelectedProductName ? 'Ganti produk: ' + referenceSelectedProductName : 'Pilih produk olahan'">
                 <span class="production-ref-product__text">
                     <strong :class="referenceSelectedProductName ? '' : 'is-placeholder'" x-text="referenceSelectedProductName || 'Pilih produk olahan...'"></strong>

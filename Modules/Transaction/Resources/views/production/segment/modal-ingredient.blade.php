@@ -1,42 +1,47 @@
 @if($productionCreateReference ?? false)
-<!-- Create-route ingredient picker following the reference modal layout. -->
+<!-- Create-route "Tambah Bahan Baku": pick an ingredient from the list and enter the amount in one dialog, as in the reference. -->
 <div class="modal fade production-reference-ingredient-modal" id="modal-add-ingredient" tabindex="-1" aria-labelledby="modalAddIngredientLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="production-reference-ingredient-modal__header">
                 <div>
-                    <h5 class="modal-title" id="modalAddIngredientLabel">Pilih Bahan Baku</h5>
-                    <p>Pilih buah atau bahan pelengkap produksi</p>
+                    <h5 class="modal-title" id="modalAddIngredientLabel">Tambah Bahan Baku</h5>
+                    <p>Pilih bahan baku dan tentukan kuantitas / takaran</p>
                 </div>
-                <button type="button" class="production-reference-ingredient-modal__close" data-bs-dismiss="modal" aria-label="Tutup pilihan bahan">
+                <button type="button" class="production-reference-ingredient-modal__close" data-bs-dismiss="modal" aria-label="Tutup">
                     <i class="ph-bold ph-x" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="production-reference-ingredient-modal__body">
-                <div class="production-reference-ingredient-modal__list">
-                    <template x-for="ingredient in filteredIngredients" :key="ingredient.id">
-                        <button type="button" class="production-reference-ingredient-option" @click="selectIngredient(ingredient)">
-                            <span class="production-reference-ingredient-option__icon" aria-hidden="true" x-text="referenceProductEmoji(ingredient.name)"></span>
-                            <span class="production-reference-ingredient-option__text">
-                                <strong x-text="ingredient.name"></strong>
-                                <small x-text="toRupiah(ingredient.hpp) + (ingredient.unit ? ' / ' + ingredient.unit : '')"></small>
-                            </span>
-                            <span class="production-reference-ingredient-option__add"><i class="ph-bold ph-plus" aria-hidden="true"></i></span>
+                <span class="production-ref-label">Pilih Bahan Baku <span class="production-ref-required">*</span></span>
+                <div class="production-ref-ingredient-box">
+                    <div class="production-reference-ingredient-modal__search">
+                        <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+                        <input type="search" x-ref="ingredientPickerSearch" x-model="ingredientSearchTerm" placeholder="Cari bahan baku..." autocomplete="off">
+                        <button type="button" x-show="ingredientSearchTerm" aria-label="Hapus pencarian bahan" @click="ingredientSearchTerm = ''; $refs.ingredientPickerSearch.focus()">
+                            <i class="ph-bold ph-x" aria-hidden="true"></i>
                         </button>
-                    </template>
-                    <div x-show="filteredIngredients.length === 0" class="production-reference-ingredient-modal__state">
-                        Bahan baku tidak ditemukan
+                    </div>
+                    <div class="production-ref-ingredient-list" role="listbox" aria-label="Bahan baku">
+                        <template x-for="ingredient in filteredIngredients" :key="ingredient.id">
+                            <button type="button" role="option" class="production-ref-ingredient-option" :class="selectedIngredient?.id === ingredient.id ? 'is-selected' : ''"
+                                :aria-selected="selectedIngredient?.id === ingredient.id" @click="selectedIngredient = ingredient">
+                                <span class="production-ref-ingredient-option__radio" aria-hidden="true"></span>
+                                <span class="production-ref-ingredient-option__name" x-text="ingredient.name + (ingredient.unit ? ' (' + ingredient.unit + ')' : '')"></span>
+                                <span class="production-ref-ingredient-option__price" x-text="toRupiah(ingredient.hpp) + (ingredient.unit ? '/' + ingredient.unit : '')"></span>
+                            </button>
+                        </template>
+                        <div x-show="filteredIngredients.length === 0" class="production-reference-ingredient-modal__state">Bahan baku tidak ditemukan</div>
                     </div>
                 </div>
-                <div class="production-reference-ingredient-modal__search">
-                    <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-                    <input type="search" x-ref="ingredientPickerSearch" x-model="ingredientSearchTerm"
-                        placeholder="Cari bahan (misal: Stroberi, Susu)..." autocomplete="off">
-                    <button type="button" x-show="ingredientSearchTerm" aria-label="Hapus pencarian bahan"
-                        @click="ingredientSearchTerm = ''; $refs.ingredientPickerSearch.focus()">
-                        <i class="ph-bold ph-x" aria-hidden="true"></i>
-                    </button>
+                <label class="production-ref-label" for="ingredient-quantity-input">Kuantitas / Takaran <span class="production-ref-required">*</span></label>
+                <div class="production-ref-qty-input">
+                    <input type="number" id="ingredient-quantity-input" inputmode="decimal" step="0.01" min="0" placeholder="0" x-model="ingredientQuantity" @keyup.enter="addIngredientToCart()">
+                    <span x-show="selectedIngredient?.unit" x-text="selectedIngredient?.unit"></span>
                 </div>
+            </div>
+            <div class="production-reference-ingredient-modal__footer">
+                <button type="button" class="production-ref-save" :disabled="!selectedIngredient || !ingredientQuantity || ingredientQuantity <= 0" @click="addIngredientToCart()">Tambah Bahan</button>
             </div>
         </div>
     </div>

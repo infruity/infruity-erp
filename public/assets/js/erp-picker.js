@@ -231,7 +231,7 @@
             active.more = false;
             active.items = optionItems(active.select);
             // A short fixed list needs no search box (and no on-screen keyboard on a phone).
-            dialog.searchWrap.hidden = active.items.length <= 7;
+            dialog.searchWrap.hidden = options.search === false || active.items.length <= 7;
             renderList(filterItems(active.items, term), false);
             return Promise.resolve();
         }
@@ -276,7 +276,7 @@
         dialog.overlay.setAttribute('aria-label', options.title || 'Pilih');
         dialog.search.placeholder = options.placeholder || 'Cari...';
         dialog.search.value = '';
-        dialog.searchWrap.hidden = false;
+        dialog.searchWrap.hidden = options.search === false; // search:false = a short list that needs no search box
         dialog.empty.textContent = options.emptyText || 'Data tidak ditemukan';
         dialog.empty.hidden = true;
         dialog.clear.hidden = !(options.clearable && select.value !== '');
@@ -319,15 +319,19 @@
         select.dataset.erpPicker = 'true';
         select.classList.add('erp-picker-source');
 
-        var trigger = el('button', 'erp-picker__trigger');
+        // options.trigger: a page-made button (its own look and text) opens the dropdown instead of the standard one.
+        var trigger = options.trigger || el('button', 'erp-picker__trigger');
         trigger.type = 'button';
         trigger.setAttribute('aria-haspopup', 'listbox');
         trigger.setAttribute('aria-expanded', 'false');
         var label = el('span', 'erp-picker__label');
-        trigger.append(label, el('i', 'ph-bold ph-caret-down'));
-        select.insertAdjacentElement('afterend', trigger);
+        if (!options.trigger) {
+            trigger.append(label, el('i', 'ph-bold ph-caret-down'));
+            select.insertAdjacentElement('afterend', trigger);
+        }
 
         var sync = function () {
+            if (options.trigger) { trigger.disabled = select.disabled; return; }
             var value = selectedLabel(select);
             label.textContent = value || options.placeholderTrigger || 'Pilih';
             label.classList.toggle('is-placeholder', !value);
