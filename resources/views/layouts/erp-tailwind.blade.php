@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="{{ asset('assets/css/erp-mobile-search.css') }}?v={{ filemtime(public_path('assets/css/erp-mobile-search.css')) }}">
 
     <!-- Google Fonts -->
+    <!-- The icon font is large: start loading it first and keep icons invisible (not as their ligature names) until it is ready -->
+    <link rel="preload" href="{{ asset('assets/fonts/infruity/font-0.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
