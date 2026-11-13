@@ -4,8 +4,8 @@
     $routeBase = 'position';
     $nameField = 'name';
     $subtitleFields = [];
-    $formFields = [['key'=>'name','label'=>'Nama Posisi','required'=>true],['key'=>'department_id','label'=>'Departemen','required'=>true,'type'=>'select','options'=>$departments->map(fn($department)=>['value'=>$department->id,'label'=>$department->name])->values()],['key'=>'description','label'=>'Deskripsi','type'=>'textarea']];
-    $formBodyClass = 'px-5 pt-3 pb-5 space-y-3';
+    $formFields = [['key'=>'name','label'=>'Nama Posisi','required'=>true,'placeholder'=>'Misal: Kru Toko']];
+    $formBodyClass = 'px-5 pb-6 pt-5 flex flex-col gap-5';
     $pageMode = 'ajax';
 @endphp
 @include('master::partials.mobile-index')

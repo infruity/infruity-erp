@@ -22,6 +22,19 @@ class PositionController extends Controller
 {
     use \App\Traits\HasAccessControl;
 
+    /** Next free code of a department: its initials + 3 digits (IT014). */
+    private function nextCode(?Department $department): string
+    {
+        $acronym = '';
+        foreach (preg_split('/\s+/', trim((string) ($department?->name ?? 'Jabatan'))) as $word) {
+            $acronym .= strtoupper(mb_substr($word, 0, 1));
+        }
+        $lastCode = Position::where('code', 'LIKE', $acronym . '%')->orderBy('code', 'desc')->value('code');
+        $number = $lastCode ? (int) substr($lastCode, strlen($acronym)) + 1 : 1;
+
+        return $acronym . str_pad($number, 3, '0', STR_PAD_LEFT);
+    }
+
     /**
      * Display a listing of the resource.
      * @return Renderable
@@ -72,31 +85,15 @@ class PositionController extends Controller
         // Validasi input
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'department_id' => 'required|exists:department,id',
+            'department_id' => 'nullable|exists:department,id',
             'description' => 'nullable|string|max:1000',
         ]);
 
         // Simpan data ke database
-        // Step 1: Buat akronim dari nama
-        $name = Department::find($validated['department_id'])->name;
-        $words = preg_split('/\s+/', trim($name));
-        $acronym = '';
-        foreach ($words as $word) {
-            $acronym .= strtoupper($word[0]);
-        }
-        // Step 2: Cari kode terakhir dari akronim
-        $lastCode = Position::where('code', 'LIKE', $acronym . '%')
-            ->orderBy('code', 'desc')
-            ->value('code'); // ambil 1 kolom
-
-        // Step 3: Ambil angka terakhir
-        $number = 1;
-        if ($lastCode) {
-            $number = (int) substr($lastCode, strlen($acronym)) + 1;
-        }
-
-        // Step 4: Format kode baru
-        $newCode = $acronym . str_pad($number, 3, '0', STR_PAD_LEFT);
+        // The form only asks for the position name (like the reference): without a department the first one is used.
+        $department = Department::find($validated['department_id'] ?? null) ?? Department::orderBy('id')->first();
+        $validated['department_id'] = $department?->id;
+        $newCode = $this->nextCode($department);
         // Simpan data ke database
         // dd($newCode);
         try {
@@ -165,37 +162,21 @@ class PositionController extends Controller
         // Validasi input
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'department_id' => 'required|exists:department,id',
+            'department_id' => 'nullable|exists:department,id',
             'description' => 'nullable|string|max:1000',
         ]);
 
         // Simpan data ke database
 
-        // Step 1: Buat akronim dari nama
-        $name = Department::find($validated['department_id'])->name;
-        $words = preg_split('/\s+/', trim($name));
-        $acronym = '';
-        foreach ($words as $word) {
-            $acronym .= strtoupper($word[0]);
-        }
-        // Step 2: Cari kode terakhir dari akronim
-        $lastCode = Position::where('code', 'LIKE', $acronym . '%')
-            ->orderBy('code', 'desc')
-            ->value('code'); // ambil 1 kolom
-
-        // Step 3: Ambil angka terakhir
-        $number = 1;
-        if ($lastCode) {
-            $number = (int) substr($lastCode, strlen($acronym)) + 1;
-        }
-
-        // Step 4: Format kode baru
-        $newCode = $acronym . str_pad($number, 3, '0', STR_PAD_LEFT);
+        $position = Position::findOrFail($id);
+        // No department sent (the form no longer has the field): keep the one the position has and its code.
+        $department = Department::find($validated['department_id'] ?? $position->department_id);
+        $validated['department_id'] = $validated['department_id'] ?? $position->department_id;
+        $newCode = $this->nextCode($department);
         // Simpan data ke database
         // dd($newCode);
         try {
             DB::beginTransaction();
-            $position = Position::findOrFail($id);
             $position->name = $validated['name'];
             $position->department_id = $validated['department_id'];
             $position->description = $validated['description'] ?? null;
