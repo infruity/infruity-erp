@@ -26,7 +26,7 @@ class KurirController extends Controller
         }
 
         return view('master::kurir.index', [
-            'records' => Kurir::query()->select('id', 'name', 'type', 'staff_id', 'description')->orderByDesc('id')->get(),
+            'records' => Kurir::query()->select('id', 'name', 'type', 'staff_id', 'description', 'created_at', 'updated_at')->orderByDesc('id')->get(),
             'staffOptions' => \Modules\Master\Entities\Staff::query()->select('id', 'name')->orderBy('name')->get(),
         ]);
     }
