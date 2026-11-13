@@ -21,7 +21,8 @@
                 const locked = !pickers[parent]?.querySelector('input[type="hidden"]').value;
                 const input = node.querySelector('input[role="combobox"]');
                 input.disabled = locked;
-                if (locked) { input.value = ''; node.querySelector('[role="listbox"]').hidden = true; }
+                // like the master drawer: a locked level keeps what it shows (reset() already emptied it when a parent changed)
+                if (locked) node.querySelector('[role="listbox"]').hidden = true;
             }
         }
 
