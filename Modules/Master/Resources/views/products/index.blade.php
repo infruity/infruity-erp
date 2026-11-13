@@ -57,6 +57,7 @@
         #products-table.dataTable tbody tr:has(td.dataTables_empty) { border-bottom: 0 !important; }
         /* Editor harga: angka terseleksi saat dibuka (seperti referensi) tanpa sorotan hijau global */
         .erp-ui #products-table .price-editor input::selection { background: transparent; color: inherit; }
+        #products-table .price-editor input { -webkit-touch-callout: none; }
         #products-table.dataTable thead { display: none !important; }
         #products-table.dataTable thead th { border: none !important; }
         #products-table.dataTable tbody td { border: none !important; padding: 0 !important; }
@@ -866,6 +867,8 @@
             }
             $editor.append($('<span class="pl-2 text-xs font-semibold text-emerald-700">Rp</span>'), $input, $save, $cancel);
             $editor.on('click', function(e) { e.stopPropagation(); });
+            // No native text menu (Look Up / Cut / Copy ...) on the price field: the reference has none.
+            $input.on('contextmenu', function(e) { e.preventDefault(); });
             $save.on('click', saveEditor);
             $cancel.on('click', closeEditor);
             $input.on('keydown', function(e) {
