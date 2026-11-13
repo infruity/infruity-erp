@@ -338,7 +338,7 @@ class UserPermissionOverridesTest extends TestCase
             ->assertSee('data-role-delete-action', false);
     }
 
-    public function test_mobile_topbar_component_uses_opaque_white_background(): void
+    public function test_mobile_topbar_component_uses_the_reference_glass_background(): void
     {
         DB::table('role_menu')->insert([
             ['id_role' => 3, 'permission' => 'role.index'],
@@ -347,7 +347,7 @@ class UserPermissionOverridesTest extends TestCase
         $this->get('/roles')
             ->assertOk()
             ->assertSee('.erp-topbar-mobile {', false)
-            ->assertSee('border-bottom:1px solid rgba(255,255,255,.6); background:#fff; box-shadow:', false);
+            ->assertSee('border-bottom:1px solid rgba(255,255,255,.6); background:rgba(255,255,255,.65); box-shadow:', false);
     }
 
     public function test_administrator_role_delete_action_is_visible_but_disabled(): void
