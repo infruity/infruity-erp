@@ -13,12 +13,25 @@
     window.initCustomerForms = (root = document) => {
         const pickers = Object.fromEntries([...root.querySelectorAll('[data-region-picker]')].map(node => [node.dataset.regionPicker, node]));
 
+        // A level stays locked until the level above it has a chosen value (province -> city -> district -> village).
+        function syncLocks() {
+            for (const [key, parent] of Object.entries(dependencies)) {
+                const node = pickers[key];
+                if (!node) continue;
+                const locked = !pickers[parent]?.querySelector('input[type="hidden"]').value;
+                const input = node.querySelector('input[role="combobox"]');
+                input.disabled = locked;
+                if (locked) { input.value = ''; node.querySelector('[role="listbox"]').hidden = true; }
+            }
+        }
+
         function reset(key) {
             const node = pickers[key];
             if (!node) return;
             node.querySelector('input[type="hidden"]').value = '';
             node.querySelector('input[role="combobox"]').value = '';
             node.querySelector('[role="listbox"]').hidden = true;
+            syncLocks();
         }
 
         async function search(key) {
@@ -53,6 +66,7 @@
                         list.hidden = true;
                         input.setAttribute('aria-expanded', 'false');
                         (children[key] || []).forEach(reset);
+                        syncLocks();
                     });
                     list.append(option);
                 }
@@ -79,10 +93,12 @@
             const hidden = node.querySelector('input[type="hidden"]');
             let timer;
             input.addEventListener('focus', () => search(key));
-            input.addEventListener('input', () => { hidden.value = ''; (children[key] || []).forEach(reset); clearTimeout(timer); timer = setTimeout(() => search(key), 200); });
+            input.addEventListener('input', () => { hidden.value = ''; (children[key] || []).forEach(reset); syncLocks(); clearTimeout(timer); timer = setTimeout(() => search(key), 200); });
             input.addEventListener('blur', () => setTimeout(() => { node.querySelector('[role="listbox"]').hidden = true; input.setAttribute('aria-expanded', 'false'); }, 150));
             input.addEventListener('keydown', event => { if (event.key === 'Escape') { node.querySelector('[role="listbox"]').hidden = true; input.setAttribute('aria-expanded', 'false'); } });
         }
+
+        syncLocks();
 
         for (const form of root.querySelectorAll('form#customer-form')) {
             if (form.dataset.submitBound === 'true') continue;
