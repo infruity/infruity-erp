@@ -873,7 +873,9 @@
                 if (e.key === 'Escape') closeEditor();
             });
             $span.hide().after($editor);
-            $input.trigger('focus').trigger('select');
+            // Like the reference ($nextTick): focus and select after the click has finished, so the same tap is not
+            // read as a tap on the freshly selected number (that opened the browser's text menu on touch).
+            window.setTimeout(function() { $input.trigger('focus').trigger('select'); }, 0);
         });
 
         function updatePrice(id, price) {
