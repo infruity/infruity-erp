@@ -199,6 +199,10 @@
                     <label for="user-access-search" class="sr-only">Cari modul atau sub modul</label>
                     <div class="relative"><i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true"></i><input id="user-access-search" type="text" x-model="modalSearchQuery" placeholder="Cari modul atau sub modul..." class="h-9 w-full rounded-xl border border-gray-100 bg-gray-50 pl-9 pr-9 text-[13px] text-gray-800 placeholder-gray-400 outline-none transition-all focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"><button x-show="modalSearchQuery.length > 0" x-cloak type="button" @click="modalSearchQuery = ''" aria-label="Hapus pencarian modul" class="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 text-gray-500 transition-colors hover:bg-gray-300"><i class="ph-bold ph-x text-[10px]"></i></button></div>
                 </div>
+                <div class="flex shrink-0 items-center justify-between gap-3 px-5 pt-2 text-[11px]">
+                    <p class="min-w-0 truncate text-gray-400"><span class="font-semibold text-gray-500">Template:</span> <span x-text="selected?.roles?.length ? selected.roles.map(role => role.name).join(' · ') : 'Tanpa template'"></span><span x-show="customAccessCount(selected) > 0" x-cloak> · <span class="font-semibold text-amber-700" x-text="customAccessCount(selected) + ' izin disesuaikan'"></span></span><span x-show="customAccessCount(selected) === 0"> · <span class="font-semibold text-emerald-700">Sesuai template</span></span></p>
+                    <button type="button" x-show="customAccessCount(selected) > 0 && selected?.can_change_permissions" x-cloak :disabled="selected?.permission_saving" @click="resetAccess(selected)" class="shrink-0 font-semibold text-[#0b595b] hover:underline disabled:opacity-50">Kembalikan ke template</button>
+                </div>
                 <p x-show="selected?.permission_saving" x-cloak role="status" class="px-5 pt-2 text-[11px] font-medium text-emerald-700">Menyimpan perubahan akses…</p>
                 <div class="max-h-[300px] overflow-y-auto overscroll-none px-4 py-2 scrollbar-hide flex flex-col gap-2">
                     <template x-for="group in filteredAccessGroups" :key="group.label">
@@ -355,6 +359,33 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
         },
         hasFullGroupAccess(user, group) {
             return Boolean(user) && group.modules.length > 0 && group.modules.every(module => this.hasModuleAccess(user, module));
+        },
+        // Overrides that really differ from what the role template gives (an override equal to the default changes nothing).
+        customAccessCount(user) {
+            if (!user) return 0;
+            const isAdmin = (user.roles || []).some(role => Number(role.id) === 1);
+            return Object.entries(user.permission_overrides || {}).filter(([permission, allowed]) => {
+                const byRole = isAdmin || (user.permissions || []).includes(permission);
+                return Boolean(allowed) !== byRole;
+            }).length;
+        },
+        async resetAccess(user) {
+            if (!user?.can_change_permissions || user.permission_saving || this.customAccessCount(user) === 0) return;
+            if (!await ErpDialog.confirm({ title: 'Kembalikan ke template?', text: 'Semua penyesuaian izin akun ini dihapus dan akses mengikuti template peran.', confirmButtonText: 'Kembalikan' })) return;
+            const previous = { ...(user.permission_overrides || {}) };
+            user.permission_saving = true;
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                const response = await fetch(this.baseUrl + '/' + user.id + '/permissions', { method: 'DELETE', headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' } });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || !result.success) throw new Error(result.message || 'Silakan coba lagi.');
+                user.permission_overrides = {};
+            } catch (error) {
+                user.permission_overrides = previous;
+                ErpDialog.error(error.message);
+            } finally {
+                user.permission_saving = false;
+            }
         },
         async savePermissionOverrides(user, changes) {
             if (!user?.can_change_permissions || user.permission_saving || Object.keys(changes).length === 0) return false;

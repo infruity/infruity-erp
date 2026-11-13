@@ -286,6 +286,19 @@ class UserController extends Controller
         ]);
     }
 
+    /** Drops every per-account override: the account goes back to what its role template gives. */
+    public function resetPermissions($id)
+    {
+        $this->authorizeAccess('user.update');
+
+        $user = User::findOrFail($id);
+        abort_if((int) $user->id_user === (int) Auth::id(), 403, 'Hak akses akun sendiri tidak dapat diubah.');
+
+        UserPermission::where('id_user', $user->id_user)->delete();
+
+        return response()->json(['success' => true, 'overrides' => new \stdClass()]);
+    }
+
     public function destroy($id)
     {
         if ($denied = $this->requireAccess('user.destroy')) {

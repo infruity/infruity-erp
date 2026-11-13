@@ -25,6 +25,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 	Route::get('user/impersonate/{id}', [UserController::class, 'impersonate'])->name('user.impersonate');
 	Route::post('role/switch', [RoleContextController::class, 'switch'])->name('role.switch');
 	Route::put('user/{id}/permissions', [UserController::class, 'updatePermissions'])->name('user.permissions.update');
+	Route::delete('user/{id}/permissions', [UserController::class, 'resetPermissions'])->name('user.permissions.reset');
 	Route::resource('user', UserController::class)->names('user')->except('show');
 	Route::resource('role-menu', P_rolemenu::class);
 	Route::resource('roles', P_role::class)->names('roles')->except('show');
