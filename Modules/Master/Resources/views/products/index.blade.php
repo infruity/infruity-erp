@@ -55,6 +55,8 @@
             .erp-mobile-nav .erp-mobile-nav__dock { background: rgba(255, 255, 255, .45); border-color: rgba(255, 255, 255, .6); }
         }
         #products-table.dataTable tbody tr:has(td.dataTables_empty) { border-bottom: 0 !important; }
+        /* Editor harga: angka terseleksi saat dibuka (seperti referensi) tanpa sorotan hijau global */
+        .erp-ui #products-table .price-editor input::selection { background: transparent; color: inherit; }
         #products-table.dataTable thead { display: none !important; }
         #products-table.dataTable thead th { border: none !important; }
         #products-table.dataTable tbody td { border: none !important; padding: 0 !important; }
