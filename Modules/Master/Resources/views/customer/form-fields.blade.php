@@ -21,7 +21,7 @@
     <x-erp.field label="Nama Pelanggan" for="customer_name" required><input id="customer_name" name="customer_name" value="{{ old('customer_name', $data->name ?? '') }}" required maxlength="255" type="text" placeholder="Masukkan nama pelanggan" class="w-full h-11 bg-white border {{ $errors->has('customer_name') ? 'border-red-400' : 'border-gray-200' }} rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
     <x-erp.field label="No WhatsApp" for="phone"><input id="phone" name="phone" value="{{ old('phone', $data->whatsapp ?? '') }}" type="tel" inputmode="tel" placeholder="Contoh: 081234567890" class="w-full h-11 bg-white border {{ $errors->has('phone') ? 'border-red-400' : 'border-gray-200' }} rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
     <x-erp.field label="E-mail" for="email"><input id="email" name="email" value="{{ old('email', $data->email ?? '') }}" type="email" placeholder="contoh@email.com" class="w-full h-11 bg-white border {{ $errors->has('email') ? 'border-red-400' : 'border-gray-200' }} rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
-    <x-erp.field label="Jenis Kelamin" for="gender"><select id="gender" name="gender" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"><option value="">Pilih jenis kelamin</option><option value="male" @selected(old('gender', $data->gender ?? '') === 'male')>Pria</option><option value="female" @selected(old('gender', $data->gender ?? '') === 'female')>Wanita</option></select></x-erp.field>
+    <x-erp.field label="Jenis Kelamin" for="gender"><x-erp.picker-select id="gender" name="gender" :options="[['value' => 'male', 'label' => 'Laki-laki'], ['value' => 'female', 'label' => 'Perempuan']]" :value="old('gender', $data->gender ?? '')" placeholder="Pilih Jenis Kelamin" /></x-erp.field>
     <div class="grid grid-cols-2 gap-4">
         <div x-data="{ pickerOpen: false, pickerSearch: '', pickerDirection: 'down', selected: @js(old('birth_place', $data->birth_place ?? '')), places: @js($birthPlaces ?? []) }" class="relative" @click.outside="pickerOpen = false">
             <label class="text-xs font-semibold text-gray-600 mb-1.5 block">Tempat Lahir</label>
@@ -33,7 +33,7 @@
             </div>
             @error('birth_place')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
         </div>
-        <x-erp.field label="Tanggal Lahir" for="birth_of_date"><input id="birth_of_date" name="birth_of_date" value="{{ old('birth_of_date', $data->birth_of_date ?? '') }}" type="date" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
+        <x-erp.field label="Tanggal Lahir" for="birth_of_date"><x-erp.date-picker id="birth_of_date" name="birth_of_date" :value="old('birth_of_date', $data->birth_of_date ?? '')" /></x-erp.field>
     </div>
 
     <div class="border-t border-gray-200 pt-5"><h3 class="text-sm font-bold text-gray-800">Alamat Pelanggan</h3><p class="text-xs text-gray-400 mt-0.5">Isi lokasi dan alamat bila tersedia</p></div>
