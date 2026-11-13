@@ -783,6 +783,11 @@
                 this.showNotification('Product list refreshed', 'info');
             },
 
+            // The number alone (the form prints the "Rp" next to it, as in the reference)
+            formatNumber(amount) {
+                return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(Math.round(Number(amount) || 0));
+            },
+
             // Format currency
             formatCurrency(amount) {
                 return new Intl.NumberFormat('id-ID', {
@@ -1084,6 +1089,7 @@
         });
 
         // Searchable pickers replace the select2 look; the selects, their ids and the select2 handlers stay the source of truth.
+        @unless($productionCreateReference ?? false)
         ErpPicker.attach('#product_id', {
             title: 'Pilih Produk Olahan',
             subtitle: 'Produk yang akan diproduksi',
@@ -1094,6 +1100,7 @@
             url: '{{ route('products.get-receipt') }}',
             map: item => ({ id: item.product_id, text: item.products?.name || 'Unknown Product' })
         });
+        @endunless
         ErpPicker.attach('#branch_id', {
             title: 'Pilih Cabang / Dapur',
             placeholder: 'Cari cabang...',
