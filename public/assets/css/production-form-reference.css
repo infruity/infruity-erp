@@ -201,68 +201,6 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
 .production-create-reference .production-reference-ingredient-modal__search input:not(:focus) { border-color:#868e98; }
 .production-create-reference .production-resume-note { position:fixed; top:calc(env(safe-area-inset-top, 0px) + 72px); left:50%; z-index:1040; width:calc(100vw - 32px); max-width:560px; transform:translateX(-50%); margin:0; border:1px solid #fde68a; border-radius:12px; background:#fffbeb; padding:10px 14px; color:#92400e; font-size:12px; font-weight:600; box-shadow:0 12px 28px rgba(17,24,39,.16); pointer-events:none; }
 
-/* ---- Create form in the layout of the HTML reference (segment/reference-form.blade.php) ---- */
-.production-create-reference .production-ref { gap:16px; }
-.production-ref-card { border:1px solid rgba(229,231,235,.9); border-radius:16px; background:#fff; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,.025); }
-.production-ref-card--branch { position:relative; z-index:3; }
-.production-ref-label { display:block; margin:0 0 6px; color:#374151; font-size:11px; font-weight:700; line-height:16px; letter-spacing:.05em; text-transform:uppercase; }
-.production-ref-label em { color:#6b7280; font-style:normal; font-weight:400; text-transform:none; letter-spacing:0; }
-.production-ref-required { color:#ef4444; }
-.production-ref-field { min-width:0; }
-.production-ref-product { display:flex; width:100%; min-height:44px; align-items:center; justify-content:space-between; gap:12px; border:1px solid #868e98; border-radius:12px; background:#fff; padding:8px 14px; text-align:left; cursor:pointer; transition:border-color .16s, background-color .16s; }
-.production-ref-product:hover { border-color:#a7f3d0; background:#f9fafb; }
-.production-ref-product:focus-visible { outline:none; border-color:var(--erp-active-border); box-shadow:var(--erp-active-ring); }
-.production-ref-product__text { display:flex; min-width:0; flex-direction:column; }
-.production-ref-product__text strong { overflow:hidden; color:#111827; font-size:13px; font-weight:700; line-height:18px; text-overflow:ellipsis; white-space:nowrap; }
-.production-ref-product__text strong.is-placeholder { color:#6b7280; font-weight:500; }
-.production-ref-product__text small { color:#6b7280; font-size:11px; line-height:16px; }
-.production-ref-product > i { flex:none; color:#6b7280; font-size:12px; }
-.production-ref-composition { margin-top:12px; overflow:hidden; border:1px solid rgba(229,231,235,.9); border-radius:12px; background:#fff; }
-.production-ref-composition__head { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f3f4f6; background:rgba(249,250,251,.8); padding:10px 14px; }
-.production-ref-composition__head > span { color:#1f2937; font-size:12px; font-weight:700; }
-.production-ref-composition__head > button { border:0; background:transparent; padding:0; color:#0b595b; font-size:12px; font-weight:700; cursor:pointer; }
-.production-ref-composition__head > button:hover { color:#08484a; text-decoration:underline; }
-.production-ref-composition__body { min-height:140px; }
-.production-ref-empty { display:flex; min-height:140px; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:16px; text-align:center; }
-.production-ref-empty strong { color:#374151; font-size:12px; font-weight:700; }
-.production-ref-empty span { max-width:260px; color:#6b7280; font-size:11px; line-height:16px; }
-.production-ref-row { position:relative; overflow:hidden; border-bottom:1px solid #f3f4f6; background:#ef4444; user-select:none; }
-.production-ref-row:last-child { border-bottom:0; }
-.production-ref-row__delete { position:absolute; top:0; right:0; bottom:0; display:flex; width:68px; flex-direction:column; align-items:center; justify-content:center; border:0; background:#ef4444; color:#fff; font-size:10px; font-weight:700; cursor:pointer; }
-.production-ref-row__delete i { font-size:16px; }
-.production-ref-row__content { position:relative; z-index:1; display:flex; flex-direction:column; gap:6px; background:#fff; padding:10px 14px; transition:transform .2s ease-out; }
-.production-ref-row__content.is-revealed { transform:translateX(-68px); }
-.production-ref-row__line { display:flex; min-height:24px; align-items:center; justify-content:space-between; gap:12px; }
-.production-ref-row__line strong { overflow:hidden; color:#1f2937; font-size:13px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
-.production-ref-row__price { flex:none; color:#6b7280; font-size:11px; }
-.production-ref-row__total { display:flex; flex:none; align-items:baseline; gap:4px; }
-.production-ref-row__total small { color:#6b7280; font-size:12px; font-weight:700; }
-.production-ref-row__total b { color:#374151; font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; }
-.production-ref-row__qty { display:flex; flex:none; align-items:center; gap:4px; }
-.production-ref-row__qty input { width:52px; height:24px; border:0; border-bottom:2px dashed #d1d5db; border-radius:0; background:transparent; padding:0; color:#374151; font-size:12px; font-weight:700; text-align:right; outline:none; box-shadow:none; }
-.production-ref-row__qty input:hover { border-bottom-color:#059669; }
-.production-ref-row__qty input:focus { border-bottom:2px solid #10b981; color:#065f46; }
-.production-ref-row__qty > span { min-width:24px; color:#6b7280; font-size:11px; font-weight:500; }
-.production-ref-totals { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; border-top:1px solid #f3f4f6; padding-top:12px; }
-.production-ref-readout { display:flex; height:44px; align-items:center; gap:6px; overflow:hidden; border:1px solid #868e98; border-radius:12px; background:#fff; padding:0 14px; }
-.production-ref-readout small { flex:none; color:#6b7280; font-size:13px; font-weight:700; }
-.production-ref-readout b { overflow:hidden; color:#1f2937; font-size:13px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums; }
-.production-create-reference .production-ref-totals #quantity { background-color:#fff; padding:0 14px; font-size:13px; font-weight:700; }
-.production-create-reference .production-ref-card .form-select { height:44px; }
-/* Bottom bar: back, draft, save. */
-.production-create-reference .production-ref-footer { min-height:0; padding:12px 16px calc(14px + env(safe-area-inset-bottom)); }
-.production-ref-footer__inner { display:flex; width:100%; max-width:896px; align-items:center; gap:10px; margin:0 auto; }
-.production-ref-icon-btn { display:flex; width:44px; height:44px; flex:none; align-items:center; justify-content:center; border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:#374151; font-size:18px; text-decoration:none; cursor:pointer; transition:background-color .16s, transform .1s; }
-.production-ref-icon-btn:hover { background:#f9fafb; color:#111827; }
-.production-ref-icon-btn:active { transform:scale(.95); }
-.production-ref-icon-btn:disabled { opacity:.6; cursor:default; }
-.production-ref-save { display:flex; height:44px; min-width:0; flex:1; align-items:center; justify-content:center; gap:8px; border:0; border-radius:12px; background:#0b595b; color:#fff; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(11,89,91,.15); transition:background-color .16s, transform .1s; }
-.production-ref-save:hover { background:#08484a; }
-.production-ref-save:active { transform:scale(.98); }
-.production-ref-save:disabled { opacity:.7; cursor:default; }
-@media (max-width:767px) { .production-create-reference { padding-bottom:calc(96px + env(safe-area-inset-bottom)); } }
-@media (min-width:640px) { .production-ref-card { padding:20px; } .production-create-reference .production-ref-footer { margin:0 -24px -24px; padding-right:24px; padding-left:24px; } }
-
 /* The cards keep a fixed size (the page does not grow with the recipe); only the composition list scrolls. */
 .production-create-reference .production-ref { height:calc(100dvh - 200px); min-height:440px; }
 .production-create-reference .production-ref-card--branch { flex:none; }
@@ -277,39 +215,145 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
 @media (max-width:767px) { .production-create-reference .production-ref { height:calc(100dvh - 162px - env(safe-area-inset-bottom)); } }
 @media (min-width:768px) { .production-create-reference .production-ref { height:calc(100dvh - 120px); } }
 
-/* ---- Dropdowns and the add-ingredient dialog, as in the reference ---- */
-/* Branch / product dropdown: a rounded popover, the chosen row in soft green with a green dot. */
-body:has(.production-create-reference) .erp-picker { border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 10px 24px rgba(17,24,39,.1); }
+/* ---- Create form: sizes, colours and strokes taken from the HTML reference (infruity-frontend 003. ERP/005. Produksi) ----
+   Tailwind there: text-xs = 12px (sm: 14px), labels 11px (sm: 12px) bold uppercase tracking-wider #374151, strokes gray-200 #e5e7eb,
+   dividers gray-100 #f3f4f6, muted text gray-400 #9ca3af. Breakpoint sm = 640px. */
+.production-create-reference .production-ref { gap:16px; }
+.production-ref-card { border:1px solid rgba(229,231,235,.9); border-radius:16px; background:#fff; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.04); }
+.production-ref-card--branch { position:relative; z-index:3; }
+.production-ref-label { display:block; margin:0 0 6px; color:#374151; font-size:11px; font-weight:700; line-height:16.5px; letter-spacing:.05em; text-transform:uppercase; }
+.production-ref-label em { color:#9ca3af; font-style:normal; font-weight:400; }
+.production-ref-required { color:#ef4444; }
+.production-ref-field { min-width:0; }
+/* Branch trigger (the ErpPicker button) and the product button: h-11, gray-200 stroke, radius 12. */
+.production-create-reference .production-ref-card--branch .erp-picker__trigger { height:44px; min-height:44px; padding:0 14px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:#1f2937; font-size:12px; font-weight:700; }
+.production-create-reference .production-ref-card--branch .erp-picker__trigger:hover { border-color:#d1d5db; }
+.production-create-reference .production-ref-card--branch .erp-picker__trigger i { color:#9ca3af; font-size:12px; }
+.production-ref-product { display:flex; width:100%; min-height:44px; align-items:center; justify-content:space-between; gap:12px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; padding:8px 14px; text-align:left; cursor:pointer; transition:border-color .16s; }
+.production-ref-product:hover { border-color:#d1d5db; }
+.production-ref-product:focus-visible { outline:none; border-color:var(--erp-active-border); box-shadow:var(--erp-active-ring); }
+.production-ref-product__text { display:flex; min-width:0; flex-direction:column; }
+.production-ref-product__text strong { overflow:hidden; color:#111827; font-size:12px; font-weight:700; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
+.production-ref-product__text strong.is-placeholder { color:#9ca3af; font-weight:500; }
+.production-ref-product__text small { margin-top:2px; color:#9ca3af; font:400 11px/16.5px Poppins, sans-serif; }
+.production-ref-product > i { flex:none; color:#9ca3af; font-size:12px; }
+/* Composition box */
+.production-ref-composition { margin-top:12px; overflow:hidden; border:1px solid rgba(229,231,235,.9); border-radius:12px; background:#fff; }
+.production-ref-composition__head { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f3f4f6; background:rgba(249,250,251,.8); padding:10px 14px; }
+.production-ref-composition__head > span { color:#1f2937; font-size:12px; font-weight:700; line-height:16px; }
+.production-ref-composition__head > button { border:0; background:transparent; padding:0; color:#0b595b; font-size:12px; font-weight:700; line-height:16px; cursor:pointer; }
+.production-ref-composition__head > button:hover { color:#08484a; text-decoration:underline; }
+.production-ref-composition__body { min-height:140px; }
+.production-ref-empty { display:flex; min-height:140px; flex-direction:column; align-items:center; justify-content:center; padding:16px; text-align:center; }
+.production-ref-empty strong { color:#374151; font-size:12px; font-weight:700; line-height:16px; }
+.production-ref-empty span { max-width:260px; margin-top:4px; color:#9ca3af; font-size:11px; line-height:16.5px; }
+.production-ref-row { position:relative; overflow:hidden; border-bottom:1px solid #f3f4f6; background:#ef4444; user-select:none; }
+.production-ref-row:last-child { border-bottom:0; }
+.production-ref-row__delete { position:absolute; top:0; right:0; bottom:0; display:flex; width:68px; flex-direction:column; align-items:center; justify-content:center; border:0; background:#ef4444; color:#fff; font-size:10px; font-weight:700; cursor:pointer; }
+.production-ref-row__delete i { font-size:16px; }
+.production-ref-row__content { position:relative; z-index:1; display:flex; flex-direction:column; gap:6px; background:#fff; padding:10px 12px; transition:transform .2s ease-out; }
+.production-ref-row__content.is-revealed { transform:translateX(-68px); }
+.production-ref-row__line { display:flex; min-height:24px; align-items:center; justify-content:space-between; gap:12px; }
+.production-ref-row__line strong { overflow:hidden; color:#1f2937; font-size:12px; font-weight:700; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
+.production-ref-row__price { flex:none; color:#9ca3af; font:400 11px/16.5px Poppins, sans-serif; }
+.production-ref-row__total { display:flex; flex:none; align-items:center; font-family:Poppins, sans-serif; }
+.production-ref-row__total small { margin-right:4px; color:#9ca3af; font-size:12px; font-weight:700; line-height:16px; }
+.production-ref-row__total b { display:flex; width:56px; height:22px; align-items:center; border-bottom:2px dashed #d1d5db; color:#374151; font-size:12px; font-weight:700; line-height:16px; font-variant-numeric:tabular-nums; }
+.production-ref-row__qty { display:flex; flex:none; align-items:center; font-family:Poppins, sans-serif; }
+.production-ref-row__qty input { width:44px; height:22px; border:0; border-bottom:2px dashed #d1d5db; border-radius:0; background:transparent; padding:0; color:#374151; font:700 12px/16px Poppins, sans-serif; text-align:right; outline:none; box-shadow:none; }
+.production-ref-row__qty input:hover { border-bottom-color:#059669; }
+.production-ref-row__qty input:focus { border-bottom:2px solid #10b981; color:#065f46; }
+.production-ref-row__qty > span { width:28px; margin-left:4px; overflow:hidden; color:#9ca3af; font-size:11px; font-weight:500; line-height:16.5px; text-overflow:ellipsis; white-space:nowrap; }
+/* Modal / Total / Harga jual / Kuantitas */
+.production-ref-totals { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; border-top:1px solid #f3f4f6; padding-top:12px; }
+.production-ref-readout { display:flex; height:44px; align-items:center; overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; background:#fff; padding:0 14px; }
+.production-ref-readout small { flex:none; margin-right:6px; color:#9ca3af; font-size:12px; font-weight:700; }
+.production-ref-readout b { overflow:hidden; color:#1f2937; font-size:12px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
+.production-create-reference .production-ref-totals #quantity { height:44px; min-height:44px; padding:0 14px; border:1px solid #e5e7eb; border-radius:12px; background-color:#fff; color:#1f2937; font-size:12px; font-weight:700; box-shadow:none; }
+.production-create-reference .production-ref-totals #quantity::placeholder { color:#d1d5db; font-weight:400; opacity:1; }
+body.erp-ui .production-create-reference .production-ref-totals #quantity:focus { border-color:var(--erp-active-border) !important; box-shadow:none !important; }
+/* Bottom bar: px-4 pt-3.5 pb-4, back and draft 44px squares, save h-11 with a green shadow. */
+.production-create-reference .production-ref-footer { min-height:0; border-top:1px solid #f3f4f6; background:#fff; padding:14px 16px calc(16px + env(safe-area-inset-bottom)); box-shadow:0 -4px 20px rgba(0,0,0,.03); }
+.production-ref-footer__inner { display:flex; width:100%; max-width:896px; align-items:center; gap:10px; margin:0 auto; }
+.production-ref-icon-btn { display:flex; width:44px; height:44px; flex:none; align-items:center; justify-content:center; border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:#374151; font-size:18px; text-decoration:none; cursor:pointer; transition:background-color .16s, transform .1s; }
+.production-ref-icon-btn:hover { background:#f9fafb; color:#111827; }
+.production-ref-icon-btn:active { transform:scale(.95); }
+.production-ref-icon-btn:disabled { opacity:.6; cursor:default; }
+.production-ref-save { display:flex; height:44px; min-width:0; flex:1; align-items:center; justify-content:center; gap:6px; border:0; border-radius:12px; background:#0b595b; padding:0 12px; color:#fff; font-size:12px; font-weight:700; cursor:pointer; box-shadow:0 4px 6px -1px rgba(11,89,91,.15), 0 2px 4px -2px rgba(11,89,91,.15); transition:background-color .16s, transform .1s; }
+.production-ref-save:hover { background:#08484a; }
+.production-ref-save:active { transform:scale(.95); }
+.production-ref-save:disabled { background:#e5e7eb; color:#9ca3af; box-shadow:none; cursor:not-allowed; }
+@media (min-width:640px) {
+    .production-ref-card { padding:20px; }
+    .production-ref-label { font-size:12px; line-height:16px; }
+    .production-create-reference .production-ref-card--branch .erp-picker__trigger, .production-ref-product__text strong, .production-ref-readout b, .production-ref-readout small, .production-create-reference .production-ref-totals #quantity, .production-ref-save { font-size:14px; }
+    .production-ref-product__text strong, .production-ref-row__line strong { line-height:20px; }
+    .production-ref-row__line strong { font-size:14px; }
+    .production-ref-row__content { padding:10px 14px; }
+    .production-create-reference .production-ref-footer { margin:0 -24px -24px; padding-right:24px; padding-left:24px; }
+}
+
+/* ---- Dropdowns and the "Tambah Bahan Baku" dialog, in the reference's sizes and colours ---- */
+body:has(.production-create-reference) .erp-picker { border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1); }
+body:has(.production-create-reference) .erp-picker__search { padding:8px; border-bottom:1px solid #f3f4f6; background:rgba(249,250,251,.8); }
+body:has(.production-create-reference) .erp-picker__search i { left:20px; color:#9ca3af; font-size:12px; }
+body:has(.production-create-reference) .erp-picker__search input { height:32px; padding:0 10px 0 32px; border:1px solid #e5e7eb; border-radius:8px; font-size:12px; font-weight:500; color:#1f2937; }
+body:has(.production-create-reference) .erp-picker__search input:focus { border-color:#9ca3af; box-shadow:none; outline:none; }
 body:has(.production-create-reference) .erp-picker__list { padding:4px 0; }
-body:has(.production-create-reference) .erp-picker__item { gap:12px; border-radius:0; padding:10px 14px; }
+body:has(.production-create-reference) .erp-picker__item { gap:12px; border-radius:0; padding:10px 14px; color:#374151; }
 body:has(.production-create-reference) .erp-picker__item + .erp-picker__item { margin-top:0; }
+body:has(.production-create-reference) .erp-picker__item:hover { background:#f9fafb; }
+body:has(.production-create-reference) .erp-picker__item.is-selected { background:#ecfdf5; }
 body:has(.production-create-reference) .erp-picker__item.is-selected .erp-picker__text strong { color:#0b595b; }
 body:has(.production-create-reference) .erp-picker__item > i { display:none; }
 body:has(.production-create-reference) .erp-picker__item.is-selected::after { content:''; width:8px; height:8px; flex:none; border-radius:50%; background:#10b981; }
-body:has(.production-create-reference) .erp-picker__text strong { font-size:13px; }
-body:has(.production-create-reference) .erp-picker__text span { color:#6b7280; }
-/* Tambah Bahan Baku */
-.production-create-reference .production-reference-ingredient-modal__header { background:rgba(249,250,251,.5); }
-.production-create-reference .production-reference-ingredient-modal__body { gap:6px; overflow-y:auto; padding:16px; }
-.production-create-reference .production-reference-ingredient-modal__body .production-ref-label:not(:first-child) { margin-top:10px; }
-.production-ref-ingredient-box { overflow:hidden; border:1px solid #868e98; border-radius:12px; background:#fff; }
-.production-create-reference .production-ref-ingredient-box .production-reference-ingredient-modal__search { border-top:0; border-bottom:1px solid #f3f4f6; padding:0; }
-.production-create-reference .production-ref-ingredient-box .production-reference-ingredient-modal__search input { height:40px; border:0; border-radius:0; background:#fff; padding:0 36px 0 36px; font-size:13px; }
-.production-create-reference .production-ref-ingredient-box .production-reference-ingredient-modal__search > i { left:12px; }
+body:has(.production-create-reference) .erp-picker__text strong { color:#1f2937; font-size:12px; font-weight:700; }
+body:has(.production-create-reference) .erp-picker__text span { margin-top:2px; color:#9ca3af; font:400 11px/16.5px Poppins, sans-serif; }
+@media (min-width:640px) { body:has(.production-create-reference) .erp-picker__text strong { font-size:13px; } }
+body:has(.production-reference-ingredient-modal.show) .modal-backdrop.show { background:#000; opacity:.4; -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
+.production-create-reference .production-reference-ingredient-modal .modal-content { border:1px solid #e5e7eb; border-radius:24px; box-shadow:0 25px 50px -12px rgba(0,0,0,.25); }
+.production-create-reference .production-reference-ingredient-modal__header { border-bottom:1px solid #f3f4f6; background:rgba(249,250,251,.5); padding:16px 20px 14px; }
+.production-create-reference .production-reference-ingredient-modal__header .modal-title { color:#111827; font-size:16px; font-weight:700; line-height:20px; }
+.production-create-reference .production-reference-ingredient-modal__header p { margin:2px 0 0; color:#6b7280; font-size:12px; line-height:16px; }
+.production-create-reference .production-reference-ingredient-modal__close { background:#fff; color:#9ca3af; font-size:14px; }
+.production-create-reference .production-reference-ingredient-modal__close:hover { background:#f3f4f6; color:#4b5563; }
+.production-create-reference .production-reference-ingredient-modal__body { display:flex; flex-direction:column; gap:0; overflow-y:auto; padding:16px; }
+.production-create-reference .production-reference-ingredient-modal__body .production-ref-label { margin-bottom:6px; }
+.production-create-reference .production-reference-ingredient-modal__body .production-ref-label:not(:first-child) { margin-top:16px; }
+.production-ref-ingredient-box { overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
+.production-create-reference .production-ref-ingredient-box .production-reference-ingredient-modal__search { border:0; border-bottom:1px solid #f3f4f6; background:transparent; padding:0; }
+.production-create-reference .production-ref-ingredient-box .production-reference-ingredient-modal__search input { height:auto; border:0; border-radius:0; background:transparent; padding:10px 12px 10px 32px; color:#1f2937; font-size:12px; line-height:16px; }
+.production-create-reference .production-ref-ingredient-box .production-reference-ingredient-modal__search input:focus { background:rgba(249,250,251,.5); border:0; box-shadow:none; }
+.production-create-reference .production-ref-ingredient-box .production-reference-ingredient-modal__search > i { left:12px; color:#9ca3af; font-size:12px; }
 .production-create-reference .production-ref-ingredient-box .production-reference-ingredient-modal__search > button { right:8px; }
-.production-ref-ingredient-list { max-height:176px; overflow-y:auto; overscroll-behavior:contain; }
-.production-ref-ingredient-option { display:flex; width:100%; align-items:center; gap:10px; border:0; border-bottom:1px solid #f3f4f6; background:#fff; padding:10px 12px; text-align:left; cursor:pointer; }
+.production-ref-ingredient-list { height:140px; overflow-y:auto; overscroll-behavior:contain; background:#fff; }
+.production-ref-ingredient-option { display:flex; width:100%; align-items:center; gap:12px; border:0; border-bottom:1px solid #f3f4f6; background:#fff; padding:10px 14px; text-align:left; cursor:pointer; }
 .production-ref-ingredient-option:last-child { border-bottom:0; }
-.production-ref-ingredient-option:hover { background:#f9fafb; }
-.production-ref-ingredient-option.is-selected { background:#ecfdf5; }
-.production-ref-ingredient-option__radio { display:flex; width:16px; height:16px; flex:none; align-items:center; justify-content:center; border:1.5px solid #868e98; border-radius:50%; }
-.production-ref-ingredient-option.is-selected .production-ref-ingredient-option__radio { border-color:#0b595b; }
-.production-ref-ingredient-option.is-selected .production-ref-ingredient-option__radio::after { content:''; width:8px; height:8px; border-radius:50%; background:#0b595b; }
-.production-ref-ingredient-option__name { min-width:0; flex:1; overflow:hidden; color:#1f2937; font-size:13px; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
-.production-ref-ingredient-option__price { flex:none; color:#6b7280; font-size:11px; }
-.production-ref-qty-input { display:flex; height:44px; align-items:center; gap:8px; border:1px solid #868e98; border-radius:12px; background:#fff; padding:0 14px; }
-.production-ref-qty-input:focus-within { border-color:var(--erp-active-border); box-shadow:var(--erp-active-ring); }
-.production-ref-qty-input input { min-width:0; flex:1; border:0; outline:none; background:transparent; color:#1f2937; font-size:14px; font-weight:700; }
-.production-ref-qty-input span { color:#6b7280; font-size:12px; font-weight:600; }
-.production-reference-ingredient-modal__footer { flex:none; border-top:1px solid #f3f4f6; padding:16px; }
-.production-reference-ingredient-modal__footer .production-ref-save { width:100%; }
+.production-ref-ingredient-option:hover { background:rgba(249,250,251,.8); }
+.production-ref-ingredient-option__radio { position:relative; display:flex; width:16px; height:16px; flex:none; align-items:center; justify-content:center; border:2px solid #d1d5db; border-radius:50%; }
+.production-ref-ingredient-option.is-selected .production-ref-ingredient-option__radio { border-color:var(--erp-active-border); }
+.production-ref-ingredient-option.is-selected .production-ref-ingredient-option__radio::after { content:''; position:absolute; width:8px; height:8px; border-radius:50%; background:#10b981; }
+.production-ref-ingredient-option__name { min-width:0; flex:1; overflow:hidden; color:#1f2937; font-size:12px; font-weight:500; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
+.production-ref-ingredient-option.is-selected .production-ref-ingredient-option__name { color:#111827; font-weight:700; }
+.production-ref-ingredient-option__price { flex:none; color:#9ca3af; font:600 11px/16.5px Poppins, sans-serif; }
+.production-ref-qty-input { position:relative; display:flex; height:44px; align-items:center; border:1px solid #e5e7eb; border-radius:12px; background:#fff; padding:0 14px; }
+.production-ref-qty-input:focus-within { border-color:var(--erp-active-border); }
+.production-ref-qty-input input { min-width:0; flex:1; border:0; outline:none; background:transparent; padding:0; color:#1f2937; font-size:12px; font-weight:700; box-shadow:none; }
+.production-ref-qty-input input::placeholder { color:#d1d5db; font-weight:400; }
+.production-ref-qty-input span { margin-left:8px; color:#9ca3af; font-size:12px; font-weight:600; }
+.production-reference-ingredient-modal__footer { flex:none; border-top:1px solid #f3f4f6; background:rgba(249,250,251,.5); padding:16px; }
+.production-reference-ingredient-modal__footer .production-ref-save { width:100%; box-shadow:0 4px 6px -1px rgba(11,89,91,.2), 0 2px 4px -2px rgba(11,89,91,.2); }
+@media (min-width:640px) {
+    .production-create-reference .production-reference-ingredient-modal__header { padding:20px 24px 14px; }
+    .production-create-reference .production-reference-ingredient-modal__body, .production-reference-ingredient-modal__footer { padding:20px; }
+    .production-ref-qty-input input { font-size:14px; }
+}
+
+/* Same font and line heights as the reference (Plus Jakarta Sans; Tailwind text-xs = 16px line, text-sm = 20px). */
+.production-create-reference .production-ref, .production-create-reference .production-reference-ingredient-modal, body:has(.production-create-reference) .erp-picker { font-family:'Plus Jakarta Sans', sans-serif; }
+.production-create-reference .production-ref-card--branch .erp-picker__trigger, .production-ref-readout b, .production-ref-readout small, .production-ref-save, .production-ref-qty-input input, .production-create-reference .production-ref-totals #quantity { line-height:16px; }
+.production-ref-row__line:first-child { min-height:0; }
+.production-ref-row__qty > span { font-family:Poppins, sans-serif; }
+@media (min-width:640px) {
+    .production-create-reference .production-ref-card--branch .erp-picker__trigger, .production-ref-readout b, .production-ref-readout small, .production-ref-save, .production-ref-qty-input input, .production-create-reference .production-ref-totals #quantity { line-height:20px; }
+}
