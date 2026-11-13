@@ -18,12 +18,12 @@ final class WholeRupiahDisplayTest extends TestCase
         $this->assertStringContainsString('maximumFractionDigits: 0', $body);
     }
 
-    public function test_recipe_detail_shows_the_product_cost_in_whole_rupiah(): void
+    public function test_recipe_detail_no_longer_shows_the_product_cost(): void
     {
         $view = file_get_contents(base_path('Modules/Transaction/Resources/views/receipt/index.blade.php'));
 
-        // toLocaleString defaults to three decimals, which rendered "Rp 9.365,301".
-        $this->assertStringContainsString("Math.round(Number(selectedRecipe?.product?.hpp || 0)).toLocaleString('id-ID')", $view);
-        $this->assertStringNotContainsString("Number(selectedRecipe?.product?.hpp || 0).toLocaleString('id-ID')", $view);
+        // The recipe screens show no cost any more (it used to be rounded to whole rupiah: "Rp 9.365,301" bug).
+        $this->assertStringNotContainsString('selectedRecipe?.product?.hpp', $view);
+        $this->assertStringNotContainsString('Harga Pokok Produksi', $view);
     }
 }

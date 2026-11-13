@@ -90,13 +90,6 @@
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-coins text-lg"></i></div>
-                <div>
-                    <div class="font-bold text-gray-800" x-text="'Rp ' + Math.round(Number(selectedRecipe?.product?.hpp || 0)).toLocaleString('id-ID') + (selectedRecipe?.product?.unit ? ' / ' + selectedRecipe.product.unit : '')"></div>
-                    <div class="text-[11px] font-medium text-gray-400">Harga Pokok Produksi</div>
-                </div>
-            </div>
-            <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-clock text-lg"></i></div>
                 <div class="min-w-0">
                     <div class="text-xs font-bold leading-snug text-gray-800" x-text="selectedRecipe?.updatedBy || 'Administrator'"></div>

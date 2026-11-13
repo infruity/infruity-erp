@@ -49,7 +49,6 @@
         @endif
         <div class="min-w-0 flex-1">
             <span class="block truncate text-sm font-semibold text-gray-900">{{ $product?->name ?? 'Produk tidak ditemukan' }}</span>
-            <span class="mt-0.5 flex items-center text-xs"><span class="font-bold text-gray-800">Rp {{ number_format((float) ($product?->hpp ?? 0), 0, ',', '.') }}</span>@if($product?->unit?->abbreviation)<span class="text-[11px] font-normal text-gray-400">/{{ $product->unit->abbreviation }}</span>@endif</span>
         </div>
     </div>
 @endforeach
