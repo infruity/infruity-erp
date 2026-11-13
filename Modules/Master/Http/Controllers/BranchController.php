@@ -33,7 +33,8 @@ class BranchController extends Controller
             ->leftJoin('reg_regencies as cities', 'branch.city', '=', 'cities.id')
             ->leftJoin('reg_districts as districts', 'branch.district', '=', 'districts.id')
             ->leftJoin('reg_villages as villages', 'branch.village', '=', 'villages.id')
-            ->select('branch.id', 'branch.name', 'branch.code', 'branch.address', 'branch.province', 'branch.city', 'branch.district', 'branch.village', 'branch.map_link', 'provinces.name as province_name', 'cities.name as city_name', 'districts.name as district_name', 'villages.name as village_name')
+            ->leftJoin('users as editor', 'editor.id_user', '=', 'branch.updated_by')
+            ->select('branch.id', 'branch.name', 'branch.code', 'branch.address', 'branch.province', 'branch.city', 'branch.district', 'branch.village', 'branch.map_link', 'provinces.name as province_name', 'cities.name as city_name', 'districts.name as district_name', 'villages.name as village_name', 'branch.created_at', 'branch.updated_at', 'editor.nm_user as updated_by_name')
             ->orderByDesc('branch.id')
             ->get();
 
@@ -86,6 +87,8 @@ class BranchController extends Controller
             $branch->district = $validated['district'];
             $branch->village = $validated['village'];
             $branch->map_link = $validated['map_link'] ?? null;
+            $branch->created_by = \Illuminate\Support\Facades\Auth::user()?->id_user;
+            $branch->updated_by = \Illuminate\Support\Facades\Auth::user()?->id_user;
             $branch->save();
             DB::commit();
         } catch (Exception $e) {
@@ -159,6 +162,7 @@ class BranchController extends Controller
             $branch->district = $validated['district'];
             $branch->village = $validated['village'];
             $branch->map_link = $validated['map_link'] ?? null;
+            $branch->updated_by = \Illuminate\Support\Facades\Auth::user()?->id_user;
             $branch->save();
             DB::commit();
         } catch (Exception $e) {
