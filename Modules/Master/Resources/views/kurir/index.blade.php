@@ -3,7 +3,7 @@
     $singular = 'Kurir';
     $routeBase = 'kurir';
     $nameField = 'name';
-    $subtitleFields = ['type','description'];
+    $subtitleFields = ['type'];
     $formEditSubtitle = 'Perbarui data metode';
     $formCreateSubtitle = 'Isi data metode baru';
     $formBodyClass = 'px-5 pt-5 pb-6 space-y-5';
