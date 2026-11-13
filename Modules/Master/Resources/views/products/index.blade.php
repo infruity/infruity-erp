@@ -21,6 +21,7 @@
 @endsection
 
 @section('content')
+    <x-erp.master-list-style />
     <style>
         .icon-rounded.is-bold { font-variation-settings: 'wght' 600; }
         #products-table.dataTable { border-collapse: collapse !important; border: none !important; table-layout: fixed !important; width: 100% !important; margin-top: 1px !important; margin-bottom: 0 !important; }
@@ -44,13 +45,8 @@
             #products-table.dataTable tbody td:nth-child(3),
             #products-table.dataTable tbody td:nth-child(4) { display: none !important; }
         }
-        /* Referensi halaman Produk (mobile): pencarian 44px, header 80%, dock 45%. Hanya halaman ini. */
+        /* Referensi halaman Produk (mobile): header 80%, dock 45%. Pencarian ada di x-erp.master-list-style. */
         @media (max-width: 767px) {
-            .erp-mobile-search-shell { padding: 16px; border-bottom: 1px solid #f3f4f6; }
-            .erp-mobile-search { height: 44px; padding: 0 6px 0 16px; border-color: rgba(229, 231, 235, .8); }
-            .erp-mobile-search__input { font-weight: 500; }
-            .erp-mobile-search__filter { color: #9ca3af; }
-            .erp-mobile-search:focus-within { border-color: #10b981; background: #fff; box-shadow: 0 0 0 1px #10b981; }
             .erp-topbar-mobile { background: rgba(255, 255, 255, .8); }
             .erp-mobile-nav .erp-mobile-nav__dock { background: rgba(255, 255, 255, .45); border-color: rgba(255, 255, 255, .6); }
         }

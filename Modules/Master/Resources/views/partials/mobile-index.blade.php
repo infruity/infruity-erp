@@ -13,6 +13,7 @@
 @if ($routeBase === 'customers')
     @include('master::customer.js-create')
 @endif
+<x-erp.master-list-style />
 <div x-data="masterList(@js($visibleRecords), @js($formFields), @js($routeBase), @js($nameField), @js($subtitleFields), @js($pageTitle), @js($pageMode ?? 'ajax'), @js(request('q', '')), @js(in_array($routeBase, ['supplier', 'branch'], true) ? ['province' => route('ajax.province'), 'city' => route('ajax.city'), 'district' => route('ajax.district'), 'village' => route('ajax.village')] : []), @js($routeBase === 'customers' ? ($customerCreateOpen ?? false) : false), @js($routeBase === 'customers' ? route('customers.index') : ''), @js($routeBase === 'customers' ? route('customers.create') : ''), @js($routeBase === 'customers' && isset($editingCustomer)), @js($routeBase === 'customers' && isset($editingCustomer) ? route('customers.edit', $editingCustomer->id) : ''), @js(($pageMode ?? 'ajax') === 'server' && $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator ? ['total' => $records->total(), 'nextPage' => $records->hasMorePages() ? $records->currentPage() + 1 : null] : null))"
      x-init="if (new URLSearchParams(location.search).has('create')) openCreate()"
      x-effect="search; visibleCount = 50"
@@ -21,7 +22,7 @@
      @customer-edit-closed.window="customerEditOpen = false; $nextTick(() => window.initCustomerForms?.(document))"
      class="flex-1 flex flex-col min-h-0 -mx-4 md:mx-0">
     <x-erp.mobile-search class="md:hidden">
-        <x-slot:input><input x-ref="mobileSearch" x-model="search" @keydown.enter.prevent="if (mode === 'server') searchServer()" type="search" :placeholder="'Cari ' + title.toLowerCase() + '...'" :aria-label="'Cari ' + title.toLowerCase()" class="erp-mobile-search__input"></x-slot:input>
+        <x-slot:input><input x-ref="mobileSearch" x-model="search" @keydown.enter.prevent="if (mode === 'server') searchServer()" type="search" placeholder="Cari..." :aria-label="'Cari ' + title.toLowerCase()" class="erp-mobile-search__input"></x-slot:input>
         <x-slot:clear><button type="button" x-show="search" x-cloak @click="search = ''; if (mode === 'server') searchServer(); else $refs.mobileSearch.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
     </x-erp.mobile-search>
     <div class="erp-surface bg-white rounded-none lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden relative">
@@ -41,7 +42,7 @@
         @else
             <x-erp.list-count :noun="strtolower($pageTitle)" shown="Math.min(visibleCount, filtered.length)" total="filtered.length" />
         @endif
-        <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0" @scroll.passive="scrolled = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => scrolled = false, 700)">
+        <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-20 md:pb-0" @scroll.passive="scrolled = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => scrolled = false, 700)">
             <template x-for="record in visible" :key="record.id">
                 <div class="border-b border-gray-100">
                     <button type="button" @click="detail = record" class="w-full flex items-center gap-3 md:gap-4 px-5 py-3.5 md:py-4 hover:bg-gray-50/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600 text-left transition-colors" :aria-label="'Detail ' + label(record)">

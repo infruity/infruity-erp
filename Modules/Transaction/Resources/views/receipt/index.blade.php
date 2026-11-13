@@ -16,8 +16,9 @@
     <form x-data="{ mobileSearch: @js($search) }" action="{{ route('receipt.index') }}" method="GET" class="md:hidden">
         @if($type !== 'all')<input type="hidden" name="type" value="{{ $type }}">@endif
         @if($category !== 'all')<input type="hidden" name="category" value="{{ $category }}">@endif
+<x-erp.master-list-style />
         <x-erp.mobile-search>
-            <x-slot:input><input x-ref="search" x-model="mobileSearch" name="q" type="search" placeholder="Cari resep produk..." aria-label="Cari resep produk" class="erp-mobile-search__input"></x-slot:input>
+            <x-slot:input><input x-ref="search" x-model="mobileSearch" name="q" type="search" placeholder="Cari..." aria-label="Cari resep produk" class="erp-mobile-search__input"></x-slot:input>
             <x-slot:clear><button type="button" x-show="mobileSearch" x-cloak @click="mobileSearch = ''; $refs.search.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
             <x-slot:filter><button type="button" @click="filterOpen = true" aria-label="Filter resep" class="erp-mobile-search__filter {{ $category !== 'all' || $type !== 'all' ? 'is-active' : '' }}"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></x-slot:filter>
         </x-erp.mobile-search>
@@ -40,8 +41,8 @@
             @endif
         </div>
         <x-erp.list-count noun="resep" shown="loadedCount" total="totalCount" />
-        <div class="mobile-list-edge-fade flex-1 overflow-y-auto pb-28 md:pb-0">
-            <div id="recipe-list-items">
+        <div class="mobile-list-edge-fade flex-1 overflow-y-auto pb-20 md:pb-0">
+            <div id="recipe-list-items" class="border-t border-gray-100">
                 @include('transaction::receipt.partials.items', ['receipts' => $receipts])
             </div>
             @if($receipts->isEmpty())

@@ -35,20 +35,20 @@
          @click="openRecipeDetail(@js($detail))"
          @keydown.enter.prevent="openRecipeDetail(@js($detail))"
          @keydown.space.prevent="openRecipeDetail(@js($detail))"
-         class="flex cursor-pointer items-center gap-3 border-b border-gray-100 px-5 py-4 hover:bg-gray-50/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-600">
+         class="flex cursor-pointer items-center gap-3 border-b border-gray-100 px-5 py-3.5 hover:bg-gray-50/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-600">
         @if($product?->image)
-            <div class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-100 text-lg shadow-sm md:h-12 md:w-12 md:text-xl">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-100 text-lg md:h-12 md:w-12 md:text-xl">
                 <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="h-full w-full object-cover">
             </div>
         @else
             @php($productIcon = $product ? \Modules\Master\Support\ProductIcon::resolve($product) : ['📦', 'bg-gray-100'])
-            <div class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-gray-100 text-lg shadow-sm md:h-12 md:w-12 md:text-xl {{ $productIcon[1] }}">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-gray-100 text-lg md:h-12 md:w-12 md:text-xl {{ $productIcon[1] }}">
                 {{ $productIcon[0] }}
             </div>
         @endif
         <div class="min-w-0 flex-1">
             <span class="block truncate text-sm font-semibold text-gray-900">{{ $product?->name ?? 'Produk tidak ditemukan' }}</span>
-            <span class="mt-0.5 block truncate text-[11px] font-medium text-emerald-700">Rp {{ number_format((float) ($product?->hpp ?? 0), 0, ',', '.') }}{{ $product?->unit?->abbreviation ? ' / ' . $product->unit->abbreviation : '' }}</span>
+            <span class="mt-0.5 flex items-center text-xs"><span class="font-bold text-gray-800">Rp {{ number_format((float) ($product?->hpp ?? 0), 0, ',', '.') }}</span>@if($product?->unit?->abbreviation)<span class="text-[11px] font-normal text-gray-400">/{{ $product->unit->abbreviation }}</span>@endif</span>
         </div>
     </div>
 @endforeach

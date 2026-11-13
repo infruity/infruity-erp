@@ -12,8 +12,9 @@
      x-effect="search; visibleCount = 50"
      @mobile-add-toggle.window="openCreate()"
      class="flex-1 flex flex-col min-h-0 -mx-4 md:mx-0">
+<x-erp.master-list-style />
     <x-erp.mobile-search class="md:hidden">
-        <x-slot:input><input x-ref="mobileSearch" x-model.debounce.200ms="search" type="search" placeholder="Cari satuan..." aria-label="Cari satuan" class="erp-mobile-search__input"></x-slot:input>
+        <x-slot:input><input x-ref="mobileSearch" x-model.debounce.200ms="search" type="search" placeholder="Cari..." aria-label="Cari satuan" class="erp-mobile-search__input"></x-slot:input>
         <x-slot:clear><button type="button" x-show="search" x-cloak @click="search = ''; $refs.mobileSearch.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
         <x-slot:filter></x-slot:filter>
     </x-erp.mobile-search>
@@ -32,7 +33,7 @@
         </div>
 
         <x-erp.list-count noun="satuan" shown="Math.min(visibleCount, filtered.length)" total="filtered.length" />
-        <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0">
+        <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-20 md:pb-0">
             <template x-for="unit in visible" :key="unit.id">
                 <div class="border-b border-gray-100">
                     <button type="button" @click="showDetail(unit)" class="w-full flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3.5 md:py-4 hover:bg-gray-50/50 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" :aria-label="'Detail ' + unit.name">
