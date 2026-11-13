@@ -9,7 +9,16 @@
 <style>
     @media (max-width: 767px) {
         .erp-mobile-search-shell { padding: 16px; border-bottom: 1px solid #f3f4f6; }
-        .erp-mobile-search { height: 44px; padding: 0 6px 0 16px; border-color: rgba(229, 231, 235, .8); }
+        .erp-mobile-search { height: 44px; gap: 0; padding: 0 6px 0 16px; border-color: rgba(229, 231, 235, .8); box-shadow: none; }
+        .erp-mobile-search__icon { margin-right: 10px; }
+        /* Reference magnifier: 18px SVG, stroke 2 (the global one is the thin Phosphor glyph) */
+        i.erp-mobile-search__icon::before {
+            content: ''; display: block; width: 18px; height: 18px; background: currentColor;
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") center / contain no-repeat;
+        }
+        .erp-mobile-search__clear { width: 24px; height: 24px; }
+        .erp-mobile-search__divider { height: 16px; margin: 0 4px; }
         .erp-mobile-search__input { font-weight: 500; }
         .erp-mobile-search__filter { color: #9ca3af; }
         .erp-mobile-search:focus-within { border-color: #10b981; background: #fff; box-shadow: 0 0 0 1px #10b981; }
