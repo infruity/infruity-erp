@@ -1401,7 +1401,7 @@ class ProductController extends Controller
                         default => 'Bahan Baku',
                     };
                 }
-                $subtitle = '<div class="mt-0.5 truncate text-[11px] text-gray-400 md:text-xs">' . e($categoryName) . '</div>';
+                $subtitle = '<div class="mt-0.5 truncate text-xs leading-4 text-gray-400">' . e($categoryName) . '</div>';
 
                 $mobilePrice = (float) ($product->display_price ?? $product->price ?? 0);
                 $mobilePriceLabel = 'Rp ' . number_format($mobilePrice, 0, ',', '.');
@@ -1429,9 +1429,9 @@ class ProductController extends Controller
 
                 $parentRow = '<div class="flex items-center gap-3 md:gap-4 px-5 py-3.5 min-h-[64px] md:min-h-[76px]">' . $avatar . '
                     <div class="flex-1 min-w-0">
-                        <button type="button" class="product-detail-trigger block w-full truncate text-left text-[15px] md:text-base font-semibold text-gray-900 hover:text-emerald-700" data-product-detail="' . $detail . '" data-kt-ecommerce-product-filter="product_name">' . e($product->name) . '</button>' . $subtitle . '
+                        <button type="button" class="product-detail-trigger block w-full truncate text-left text-[14px] leading-5 md:text-base md:leading-6 font-semibold text-gray-900 hover:text-emerald-700" data-product-detail="' . $detail . '" data-kt-ecommerce-product-filter="product_name">' . e($product->name) . '</button>' . $subtitle . '
                     </div>
-                    <span class="md:hidden shrink-0 whitespace-nowrap text-[13px] font-semibold text-emerald-800 ' . ($hasChildren ? 'product-detail-trigger cursor-pointer' : ($canUpdatePrice ? 'editable-price cursor-pointer' : '')) . '" ' . ($hasChildren ? 'role="button" tabindex="0" data-product-detail="' . $detail . '"' : ($canUpdatePrice ? 'role="button" tabindex="0" data-id="' . $product->id . '" data-value="' . $mobilePrice . '"' : '')) . '>' . $mobilePriceLabel . ($hasChildren ? '' : '<span class="font-normal text-gray-400">/' . e($unit) . '</span>') . '</span>
+                    <span class="md:hidden shrink-0 whitespace-nowrap text-[12px] font-bold text-emerald-700 ' . ($hasChildren ? 'product-detail-trigger cursor-pointer' : ($canUpdatePrice ? 'editable-price cursor-pointer' : '')) . '" ' . ($hasChildren ? 'role="button" tabindex="0" data-product-detail="' . $detail . '"' : ($canUpdatePrice ? 'role="button" tabindex="0" data-id="' . $product->id . '" data-value="' . $mobilePrice . '"' : '')) . '>' . $mobilePriceLabel . ($hasChildren ? '' : '<span class="font-normal text-gray-400">/' . e($unit) . '</span>') . '</span>
                 </div>';
 
                 if (!$hasChildren) {
@@ -1445,15 +1445,15 @@ class ProductController extends Controller
                     $childName = $child->product->name ?? '';
                     $childPrice = (float) ($child->product?->productBranches?->first()?->price ?? $child->product?->price ?? 0);
                     $unit = mb_strtolower($product->unit_abbreviation ?? 'kg');
-                    $childrenHtml .= '<div class="product-detail-row relative min-h-[40px] md:min-h-[44px] flex items-center pr-3 text-[13px] text-gray-500 font-medium cursor-pointer" data-product-detail="' . $detail . '">
+                    $childrenHtml .= '<div class="product-detail-row relative min-h-[40px] md:min-h-[44px] flex items-center pr-4 md:pr-3 text-[13px] text-gray-500 font-medium cursor-pointer" data-product-detail="' . $detail . '">
                         <span aria-hidden="true" class="absolute left-0 top-1/2 -translate-y-1/2 w-[26px] md:w-8 h-px bg-emerald-100"></span>
-                        <span class="flex-1 min-w-0 truncate pl-[34px] md:pl-10 text-[14px] md:text-[13px]">' . e($childName) . '</span>
-                        <span class="md:hidden shrink-0 whitespace-nowrap text-[13px] font-semibold text-gray-700 ' . ($canUpdatePrice ? 'editable-price cursor-pointer' : '') . '" ' . ($canUpdatePrice ? 'role="button" tabindex="0" data-id="' . e($child->product?->id) . '" data-value="' . $childPrice . '"' : '') . '>Rp ' . number_format($childPrice, 0, ',', '.') . '<span class="font-normal text-gray-400">/' . e($unit) . '</span></span>
+                        <span class="flex-1 min-w-0 truncate pl-[28px] md:pl-10 text-[14px] md:text-[13px]">' . e($childName) . '</span>
+                        <span class="md:hidden shrink-0 inline-flex h-7 items-center whitespace-nowrap rounded-lg px-2 text-[14px] leading-[18px] font-semibold text-gray-700 ' . ($canUpdatePrice ? 'editable-price cursor-pointer' : '') . '" ' . ($canUpdatePrice ? 'role="button" tabindex="0" data-id="' . e($child->product?->id) . '" data-value="' . $childPrice . '"' : '') . '>Rp ' . number_format($childPrice, 0, ',', '.') . '<span class="text-[12px] font-normal text-gray-400">/' . e($unit) . '</span></span>
                     </div>';
                 }
                 $childrenHtml .= '</div></div>';
 
-                return '<div class="border-b border-emerald-50"><div class="product-detail-row cursor-pointer" data-product-detail="' . $detail . '">' . $parentRow . '</div>' . $childrenHtml . '</div>';
+                return '<div class="border-b border-gray-100 bg-emerald-50/10"><div class="product-detail-row cursor-pointer" data-product-detail="' . $detail . '">' . $parentRow . '</div>' . $childrenHtml . '</div>';
             })
             ->editColumn('price', function ($product) use ($branchFilter, $canUpdatePrice) {
                 $hasChildren = $product->childProducts && $product->childProducts->count() > 0;

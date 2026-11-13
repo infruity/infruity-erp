@@ -44,6 +44,15 @@
             #products-table.dataTable tbody td:nth-child(3),
             #products-table.dataTable tbody td:nth-child(4) { display: none !important; }
         }
+        /* Referensi halaman Produk (mobile): pencarian 44px, header 80%, dock 45%. Hanya halaman ini. */
+        @media (max-width: 767px) {
+            .erp-mobile-search-shell { padding: 16px 16px 17px; }
+            .erp-mobile-search { height: 44px; padding: 0 6px 0 16px; border-color: rgba(229, 231, 235, .8); }
+            .erp-mobile-search__input { font-weight: 500; }
+            .erp-mobile-search__filter { color: #9ca3af; }
+            .erp-topbar-mobile { background: rgba(255, 255, 255, .8); }
+            .erp-mobile-nav .erp-mobile-nav__dock { background: rgba(255, 255, 255, .45); border-color: rgba(255, 255, 255, .6); }
+        }
         #products-table.dataTable thead { display: none !important; }
         #products-table.dataTable thead th { border: none !important; }
         #products-table.dataTable tbody td { border: none !important; padding: 0 !important; }
@@ -159,14 +168,14 @@
         <div class="erp-surface bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
             <x-erp.mobile-search class="md:hidden">
                 <x-slot:input>
-                    <input x-ref="mobileSearch" x-model="mobileSearchQuery" type="search" placeholder="Cari produk atau varian..." oninput="$('#search').val(this.value).trigger('keyup')" aria-label="Cari produk atau varian" class="erp-mobile-search__input">
+                    <input x-ref="mobileSearch" x-model="mobileSearchQuery" type="search" placeholder="Cari..." oninput="$('#search').val(this.value).trigger('keyup')" aria-label="Cari produk atau varian" class="erp-mobile-search__input">
                 </x-slot:input>
                 <x-slot:clear>
                     <button type="button" x-show="mobileSearchQuery" x-cloak @click="mobileSearchQuery = ''; $('#search').val('').trigger('keyup'); $refs.mobileSearch.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button>
                 </x-slot:clear>
                 <x-slot:filter>
                     <button type="button" @click="openMobileFilter()" aria-label="Filter produk" class="erp-mobile-search__filter">
-                        <i class="ph ph-sliders-horizontal" aria-hidden="true"></i>
+                        <span class="icon-rounded" aria-hidden="true" style="font-size: 20px;">tune</span>
                         <span x-show="hasActiveFilters" x-cloak class="erp-mobile-search__filter-dot"></span>
                     </button>
                 </x-slot:filter>
