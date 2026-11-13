@@ -57,8 +57,18 @@
                     const option = document.createElement('button');
                     option.type = 'button';
                     option.setAttribute('role', 'option');
-                    option.className = 'w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-emerald-50 focus:bg-emerald-50';
-                    option.textContent = row.name;
+                    const selected = String(node.querySelector('input[type="hidden"]').value) === String(row.id);
+                    option.className = 'w-full flex items-center gap-3 px-3 py-2.5 border-b border-gray-100 text-left hover:bg-gray-50 transition-colors last:border-b-0';
+                    option.setAttribute('aria-selected', selected ? 'true' : 'false');
+                    const circle = document.createElement('span');
+                    circle.className = 'w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ' + (selected ? 'border-emerald-500' : 'border-gray-300');
+                    const dot = document.createElement('span');
+                    dot.className = 'w-2 h-2 rounded-full bg-emerald-500 transition-transform duration-200 ' + (selected ? 'scale-100' : 'scale-0');
+                    circle.append(dot);
+                    const label = document.createElement('span');
+                    label.className = 'text-xs ' + (selected ? 'font-bold text-gray-900' : 'font-medium text-gray-700');
+                    label.textContent = row.name;
+                    option.append(circle, label);
                     option.addEventListener('mousedown', event => event.preventDefault());
                     option.addEventListener('click', () => {
                         node.querySelector('input[type="hidden"]').value = row.id;
