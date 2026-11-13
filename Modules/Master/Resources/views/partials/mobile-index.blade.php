@@ -162,6 +162,13 @@
                                 <div class="min-w-0"><div class="text-xs font-bold text-gray-800 leading-snug" x-text="detail.updated_by_name || 'Administrator'"></div><div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Memperbarui pada ' + formatDetailDate(detail.updated_at || detail.created_at)"></div></div>
                             </div>
                         </div>
+                    @elseif ($routeBase === 'kurir')
+                        <div class="min-h-0 overflow-y-auto px-6 pb-8 pt-2 flex flex-col gap-5 text-sm break-words">
+                            <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-truck text-lg"></i></div><div class="min-w-0"><div class="font-bold text-gray-800 break-words" x-text="label(detail)"></div><div class="text-[11px] text-gray-400 font-medium">Nama Kurir</div></div></div>
+                            <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-clock text-lg"></i></div>
+                                <div class="min-w-0"><div class="text-xs font-bold text-gray-800 leading-snug" x-text="detail.updated_by_name || 'Administrator'"></div><div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Memperbarui pada ' + formatDetailDate(detail.updated_at || detail.created_at)"></div></div>
+                            </div>
+                        </div>
                     @else
                         <div class="min-h-0 overflow-y-auto px-6 pb-6 space-y-5 text-sm break-words">
                             <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center shrink-0"><i class="ph ph-storefront text-xl"></i></div><div><div class="font-bold text-gray-800" x-text="label(detail)"></div><div class="text-[11px] text-gray-400" x-text="fields.find(field => field.key === nameKey)?.label || 'Nama'"></div></div></div>
