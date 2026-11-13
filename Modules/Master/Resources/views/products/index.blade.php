@@ -23,7 +23,7 @@
 @section('content')
     <style>
         .icon-rounded.is-bold { font-variation-settings: 'wght' 600; }
-        #products-table.dataTable { border-collapse: collapse !important; border: none !important; table-layout: fixed !important; width: 100% !important; }
+        #products-table.dataTable { border-collapse: collapse !important; border: none !important; table-layout: fixed !important; width: 100% !important; margin-top: 1px !important; }
         @media (max-width: 767px) {
             .product-list-fullbleed { width: 100vw !important; max-width: 100vw !important; margin-left: calc(50% - 50vw) !important; margin-right: calc(50% - 50vw) !important; }
             #products-table.dataTable,
@@ -50,9 +50,11 @@
             .erp-mobile-search { height: 44px; padding: 0 6px 0 16px; border-color: rgba(229, 231, 235, .8); }
             .erp-mobile-search__input { font-weight: 500; }
             .erp-mobile-search__filter { color: #9ca3af; }
+            .erp-mobile-search:focus-within { border-color: #10b981; background: #fff; box-shadow: 0 0 0 1px #10b981; }
             .erp-topbar-mobile { background: rgba(255, 255, 255, .8); }
             .erp-mobile-nav .erp-mobile-nav__dock { background: rgba(255, 255, 255, .45); border-color: rgba(255, 255, 255, .6); }
         }
+        #products-table.dataTable tbody tr:has(td.dataTables_empty) { border-bottom: 0 !important; }
         #products-table.dataTable thead { display: none !important; }
         #products-table.dataTable thead th { border: none !important; }
         #products-table.dataTable tbody td { border: none !important; padding: 0 !important; }
@@ -93,7 +95,7 @@
             },
             isScrolling: false,
             scrollTimer: null,
-            branchSearchQuery: '',
+            branchFilterQuery: '',
             allBranches: @js($branch->map(fn($item) => ['id' => $item->id, 'name' => ucwords($item->name)])->values()),
             allTypes: @js($productTypes->values()),
             defaultBranchId: {{ $branch->first()->id ?? 0 }},
@@ -110,7 +112,7 @@
                 return this.selectedType.length + ' Tipe';
             },
             get filteredBranches() {
-                const q = this.branchSearchQuery.toLowerCase();
+                const q = this.branchFilterQuery.toLowerCase();
                 return this.allBranches.filter(b => b.name.toLowerCase().includes(q));
             },
             syncHiddenInputs() {
@@ -145,7 +147,7 @@
             openMobileFilter() {
                 this.tempSelectedType = [...this.selectedType];
                 this.tempSelectedBranchId = this.selectedBranchId;
-                this.branchSearchQuery = '';
+                this.branchFilterQuery = '';
                 this.filterOpen = true;
             },
             applyMobileFilters() {
@@ -230,7 +232,7 @@
                                 <!-- Search Box -->
                                 <div class="relative border-b border-gray-100 shrink-0">
                                     <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                                    <input type="text" x-model="branchSearchQuery" placeholder="Cari cabang..."
+                                    <input type="text" x-model="branchFilterQuery" placeholder="Cari cabang..."
                                            class="w-full bg-transparent pl-8 pr-3 py-3 text-xs outline-none focus:bg-gray-50 transition-colors">
                                 </div>
 
@@ -256,7 +258,7 @@
                                              this.scrollTimeout = setTimeout(() => { this.isScrolling = false; }, 800);
                                          }
                                      }"
-                                     x-init="$watch('branchSearchQuery', () => { $nextTick(() => updateScroll()) })">
+                                     x-init="$watch('branchFilterQuery', () => { $nextTick(() => updateScroll()) })">
                                     <div x-ref="scrollArea" @scroll="updateScroll()" class="h-full overflow-y-auto overscroll-none bg-gray-50/30 scrollbar-hide">
                                         <template x-for="b in filteredBranches" :key="b.id">
                                             <label class="flex items-center gap-3 px-3 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors last:border-b-0">
@@ -508,21 +510,21 @@
                     </button>
                 </div>
                 <div class="flex items-center gap-3">
-                    <i class="ph-duotone ph-tag shrink-0 text-2xl text-emerald-500"></i>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-tag text-lg"></i></div>
                     <div class="min-w-0">
                         <div class="font-bold leading-snug text-gray-800" x-text="productDetail?.name"></div>
                         <div class="mt-0.5 text-[11px] font-medium text-gray-400" x-text="productDetail?.type"></div>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <i class="ph-duotone ph-coins shrink-0 text-2xl text-emerald-500"></i>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-coins text-lg"></i></div>
                     <div>
                         <div class="font-bold text-gray-800" x-text="productDetail?.price"></div>
-                        <div class="mt-0.5 text-[11px] font-medium text-gray-400">Harga Jual</div>
+                        <div class="text-[11px] font-medium text-gray-400">Harga Jual</div>
                     </div>
                 </div>
-                <div class="flex items-start gap-3">
-                    <i class="ph-duotone ph-clock mt-0.5 shrink-0 text-2xl text-emerald-500"></i>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-clock text-lg"></i></div>
                     <div class="min-w-0">
                         <div class="text-xs font-bold leading-snug text-gray-800" x-text="productDetail?.updatedBy || 'Administrator'"></div>
                         <div class="mt-0.5 text-[11px] font-medium text-gray-400" x-text="'Memperbarui pada ' + (productDetail?.updatedAt || '-')"></div>
@@ -693,8 +695,8 @@
                 processing: true,
                 serverSide: true,
                 language: {
-                    emptyTable: '<div class="py-12 text-center text-sm text-gray-500">Produk tidak ditemukan</div>',
-                    zeroRecords: '<div class="py-12 text-center"><div class="text-sm font-medium text-gray-500">Produk tidak ditemukan</div><div class="mt-1 text-xs text-gray-400">Coba ubah kata kunci pencarian atau filter</div></div>'
+                    emptyTable: '<div class="py-12 text-center"><div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100"><i class="ph ph-magnifying-glass text-xl text-gray-400"></i></div><p class="text-sm font-medium text-gray-500">Produk tidak ditemukan</p><p class="mt-1 text-xs text-gray-400">Coba ubah pencarian atau filter</p></div>',
+                    zeroRecords: '<div class="py-12 text-center"><div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100"><i class="ph ph-magnifying-glass text-xl text-gray-400"></i></div><p class="text-sm font-medium text-gray-500">Produk tidak ditemukan</p><p class="mt-1 text-xs text-gray-400">Coba ubah pencarian atau filter</p></div>'
                 },
                 order: [],
                 columnDefs: [{
@@ -706,6 +708,7 @@
                     $('#products-count-display, #products-count-display-mobile').text(formatNumber(info.end - info.start));
                     $('#products-count-total, #products-count-total-mobile').text(formatNumber(info.recordsDisplay));
                     $('#products-load-more').toggleClass('hidden', info.end >= info.recordsDisplay);
+                    $('#products-load-more button span').text('Muat ' + formatNumber(Math.min(50, info.recordsDisplay - info.end)) + ' Produk Lagi');
                 },
                 ajax: {
                     url: "{{ route('products-data') }}",
@@ -847,10 +850,10 @@
             var $span = $(this);
             var currentValue = $span.data('value');
             var id = $span.data('id');
-            var $editor = $('<span class="price-editor inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 p-1 ring-1 ring-emerald-500"></span>');
-            var $input = $('<input type="number" min="0" step="1" aria-label="Harga baru" class="w-20 md:w-28 bg-transparent px-1 text-right text-sm font-semibold text-emerald-900 outline-none">').val(currentValue);
-            var $save = $('<button type="button" aria-label="Simpan harga" class="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500 text-white"><i class="ph-bold ph-check text-xs"></i></button>');
-            var $cancel = $('<button type="button" aria-label="Batal ubah harga" class="hidden md:flex h-7 w-7 items-center justify-center rounded-md bg-gray-100 text-gray-500"><i class="ph-bold ph-x text-xs"></i></button>');
+            var $editor = $('<span class="price-editor inline-flex items-center overflow-hidden rounded-lg bg-emerald-50 ring-1 ring-emerald-500"></span>');
+            var $input = $('<input type="number" min="0" step="1" aria-label="Harga baru" class="w-20 md:w-28 bg-transparent px-1.5 py-1 text-right text-sm font-bold text-emerald-900 outline-none">').val(currentValue);
+            var $save = $('<button type="button" aria-label="Simpan harga" class="flex items-center justify-center bg-emerald-500 px-2 py-1.5 text-white transition-colors hover:bg-emerald-600"><i class="ph-bold ph-check text-xs"></i></button>');
+            var $cancel = $('<button type="button" aria-label="Batal ubah harga" class="hidden md:m-1 md:flex h-7 w-7 items-center justify-center rounded-md bg-gray-100 text-gray-500"><i class="ph-bold ph-x text-xs"></i></button>');
             function closeEditor() { $editor.remove(); $span.show(); }
             $editor.data('close', closeEditor);
             function saveEditor() {
@@ -859,7 +862,7 @@
                 if (Number(value) !== Number(currentValue)) updatePrice(id, value);
                 closeEditor();
             }
-            $editor.append($('<span class="pl-1 text-xs font-semibold text-emerald-700">Rp</span>'), $input, $save, $cancel);
+            $editor.append($('<span class="pl-2 text-xs font-semibold text-emerald-700">Rp</span>'), $input, $save, $cancel);
             $editor.on('click', function(e) { e.stopPropagation(); });
             $save.on('click', saveEditor);
             $cancel.on('click', closeEditor);

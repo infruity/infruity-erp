@@ -16,7 +16,7 @@
     #add_product_form .product-price-prefix { position: absolute; left: .875rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: .8125rem; pointer-events: none; }
     #add_product_form .product-price-input { padding-left: 2.75rem; text-align: right; font-variant-numeric: tabular-nums; }
     #add_product_form .product-remove-row { display: inline-flex; width: 38px; height: 38px; flex: 0 0 38px; align-items: center; justify-content: center; border-radius: .75rem; background: #fef2f2; color: #ef4444; }
-    #add_product_form .product-add-row { display: inline-flex; align-items: center; gap: .375rem; color: #047857; font-size: .75rem; font-weight: 600; }
+    #add_product_form .product-add-row { display: inline-flex; align-items: center; gap: .25rem; color: #047857; font-size: .75rem; line-height: 1rem; font-weight: 600; }
     #add_product_form #product-variants:not(.hidden) { display: flex; }
     #add_product_form #branch_table { width: 100%; font-size: .8125rem; }
 
@@ -40,7 +40,7 @@
             <label for="product-avatar" class="group flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-white text-gray-300 transition hover:border-emerald-300 hover:bg-emerald-50/30">
                 <img id="product-image-preview" @if(isset($data) && $data->image) src="{{ asset('storage/' . $data->image) }}" @endif alt="Pratinjau foto produk" class="{{ isset($data) && $data->image ? '' : 'hidden' }} h-full w-full object-cover">
                 <span id="product-image-emoji" class="hidden text-3xl leading-normal text-gray-800" aria-hidden="true"></span>
-                <i id="product-image-placeholder" class="ph ph-image text-2xl {{ isset($data) && $data->image ? 'hidden' : '' }}"></i>
+                <i id="product-image-placeholder" class="ph ph-image text-3xl {{ isset($data) && $data->image ? 'hidden' : '' }}"></i>
             </label>
             <input id="product-avatar" type="file" name="avatar" accept="image/png,image/jpeg,image/jpg" class="sr-only">
             <span class="text-[11px] text-gray-400">Foto Produk (Opsional)</span>
@@ -114,10 +114,10 @@
                 <label for="product-has-variants" class="block text-sm font-semibold text-gray-700">Produk Memiliki Varian</label>
                 <p class="mt-0.5 text-[11px] text-gray-400">Misal: Grade Super, Grade A, Grade AB</p>
             </div>
-            <label class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center" aria-label="Produk memiliki varian">
+            <label class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center" aria-label="Produk memiliki varian">
                 <input id="product-has-variants" type="checkbox" role="switch" class="peer sr-only" aria-checked="false" aria-controls="product-variants">
                 <span class="absolute inset-0 rounded-full bg-gray-200 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-300 peer-focus-visible:ring-offset-2"></span>
-                <span class="absolute left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></span>
+                <span class="absolute left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></span>
             </label>
         </div>
 

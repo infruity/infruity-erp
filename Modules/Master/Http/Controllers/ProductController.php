@@ -1438,7 +1438,7 @@ class ProductController extends Controller
                     return '<div class="product-detail-row cursor-pointer" data-product-detail="' . $detail . '">' . $parentRow . '</div>';
                 }
 
-                $childrenHtml = '<div class="border-t border-emerald-100/60 bg-emerald-50/20">
+                $childrenHtml = '<div class="border-t border-emerald-100/60 bg-emerald-50/20 py-1.5 md:py-0">
                     <div class="relative ml-[34px] md:ml-[44px]">
                         <span aria-hidden="true" class="absolute left-0 top-0 bottom-0 w-[2px] bg-emerald-100"></span>';
                 foreach ($product->childProducts as $child) {
@@ -1453,7 +1453,7 @@ class ProductController extends Controller
                 }
                 $childrenHtml .= '</div></div>';
 
-                return '<div class="border-b border-gray-100 bg-emerald-50/10"><div class="product-detail-row cursor-pointer" data-product-detail="' . $detail . '">' . $parentRow . '</div>' . $childrenHtml . '</div>';
+                return '<div class="bg-emerald-50/10"><div class="product-detail-row cursor-pointer" data-product-detail="' . $detail . '">' . $parentRow . '</div>' . $childrenHtml . '</div>';
             })
             ->editColumn('price', function ($product) use ($branchFilter, $canUpdatePrice) {
                 $hasChildren = $product->childProducts && $product->childProducts->count() > 0;
