@@ -26,6 +26,7 @@
 
     <!-- SweetAlert2 (used by existing page scripts) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/js/erp-tone.js') }}?v={{ filemtime(public_path('assets/js/erp-tone.js')) }}"></script>
     <script src="{{ asset('assets/js/erp-dialog.js') }}?v={{ filemtime(public_path('assets/js/erp-dialog.js')) }}"></script>
 
     <!-- Alpine.js -->

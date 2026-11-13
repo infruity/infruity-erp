@@ -1,8 +1,9 @@
 const {test}=require('node:test');
+globalThis.ErpTone=require('../../public/assets/js/erp-tone.js');
 const assert=require('node:assert/strict');
 const vm=require('node:vm');
 const fs=require('node:fs');
-function setup(){const requests=[];const context={URLSearchParams,fetch:async url=>{requests.push(url);return {ok:true,json:async()=>({data:[{id:requests.length}],recordsTotal:50,recordsFiltered:30})}}};vm.createContext(context);vm.runInContext(fs.readFileSync('public/assets/js/transfer-list.js','utf8'),context);const app=context.transferList({endpoint:'/data',side:'transfer-penerima',receiving:true});return {app,context,requests};}
+function setup(){const requests=[];const context={ErpTone:require('../../public/assets/js/erp-tone.js'),URLSearchParams,fetch:async url=>{requests.push(url);return {ok:true,json:async()=>({data:[{id:requests.length}],recordsTotal:50,recordsFiltered:30})}}};vm.createContext(context);vm.runInContext(fs.readFileSync('public/assets/js/transfer-list.js','utf8'),context);const app=context.transferList({endpoint:'/data',side:'transfer-penerima',receiving:true});return {app,context,requests};}
 test('list sends side, search, filters and paginates without losing loaded rows',async()=>{const t=setup();t.app.search='Apel';t.app.filters.status='pending';await t.app.load();assert.match(t.requests[0],/url=transfer-penerima/);assert.match(t.requests[0],/search=Apel/);assert.match(t.requests[0],/status_filter=pending/);await t.app.load(true);assert.match(t.requests[1],/start=1/);assert.equal(t.app.rows.length,2);assert.equal(t.app.hasMore,true);});
 test('list status and counterpart branch correspond to receiving workflow',()=>{const {app}=setup();assert.equal(app.statusLabel('pending'),'Dalam Perjalanan');assert.equal(app.statusLabel('selesai'),'Sudah Diterima');assert.equal(app.branchName({origin:'GKB',destination:'GBA'}),'GKB');});
 test('latest search wins when old request finishes later',async()=>{const t=setup();let a,b;t.context.fetch=()=>new Promise(r=>{if(!a)a=r;else b=r});const first=t.app.load();t.app.search='Naga';const second=t.app.load();b({ok:true,json:async()=>({data:[{id:2}],recordsFiltered:1})});await second;a({ok:true,json:async()=>({data:[{id:1}],recordsFiltered:1})});await first;assert.equal(t.app.rows[0].id,2);assert.equal(t.app.loading,false);});
@@ -33,17 +34,11 @@ test('reset clears branch, status, dates and search before reloading',()=>{
     const query=new URL(t.requests[0],'http://localhost').searchParams;
     assert.equal(query.get('cabang_filter'),'all');assert.equal(query.get('status_filter'),'all');assert.equal(query.get('start_date'),'');assert.equal(query.get('search'),'');
 });
-test('sender list gives GKB and GBA distinct avatar accents',()=>{
+test('sender and receiver lists tint a branch the same way, and different branches differently',()=>{
     const createTransferList=require('../../public/assets/js/transfer-list.js');
     const sender=createTransferList({receiving:false});
-    assert.deepEqual(sender.branchTheme('Toko GKB'),{background:'#fff1f2',color:'#be123c',borderColor:'#fecdd3'});
-    assert.deepEqual(sender.branchTheme('Toko GBA'),{background:'#eef2ff',color:'#4338ca',borderColor:'#c7d2fe'});
-});
-test('receiver uses the same GKB and GBA accents without changing other branch themes',()=>{
-    const createTransferList=require('../../public/assets/js/transfer-list.js');
     const receiver=createTransferList({receiving:true});
-    assert.deepEqual(receiver.branchTheme('Toko GKB'),{background:'#fff1f2',color:'#be123c',borderColor:'#fecdd3'});
-    assert.deepEqual(receiver.branchTheme('Toko GBA'),{background:'#eef2ff',color:'#4338ca',borderColor:'#c7d2fe'});
-    assert.deepEqual(receiver.branchTheme('Cabang Baru'),{background:'#ecfdf5',color:'#0b595b',borderColor:'#a7f3d0'});
-    assert.deepEqual(receiver.branchTheme('Rungkut'),{background:'#eff6ff',color:'#1d4ed8',borderColor:'#bfdbfe'});
+    assert.deepEqual(sender.branchTheme('Toko GKB'),receiver.branchTheme('Toko GKB'));
+    assert.deepEqual(sender.branchTheme('Toko GKB'),ErpTone.style('Toko GKB'));
+    assert.notDeepEqual(sender.branchTheme('Toko GKB'),sender.branchTheme('Toko GBA'));
 });

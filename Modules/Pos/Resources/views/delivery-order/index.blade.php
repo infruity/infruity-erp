@@ -77,13 +77,6 @@
     .erp-collection[data-erp-collection="pos-table"] .delivery-order-card__head:hover { background:#f9fafb; }
     .delivery-order-card__customer { display:flex; min-width:0; flex:1; align-items:center; gap:12px; }
     .delivery-order-card__avatar { position:relative; display:flex; width:36px; height:36px; flex:0 0 36px; align-items:center; justify-content:center; border:1px solid; border-radius:12px; font:700 12px/1 var(--erp-font); }
-    .delivery-order-card__avatar[data-avatar-theme="emerald"] { border-color:#a7f3d0; background:#ecfdf5; color:#047857; }
-    .delivery-order-card__avatar[data-avatar-theme="blue"] { border-color:#bfdbfe; background:#eff6ff; color:#1d4ed8; }
-    .delivery-order-card__avatar[data-avatar-theme="purple"] { border-color:#e9d5ff; background:#faf5ff; color:#7e22ce; }
-    .delivery-order-card__avatar[data-avatar-theme="amber"] { border-color:#fde68a; background:#fffbeb; color:#b45309; }
-    .delivery-order-card__avatar[data-avatar-theme="teal"] { border-color:#99f6e4; background:#f0fdfa; color:#0f766e; }
-    .delivery-order-card__avatar[data-avatar-theme="rose"] { border-color:#fecdd3; background:#fff1f2; color:#be123c; }
-    .delivery-order-card__avatar[data-avatar-theme="indigo"] { border-color:#c7d2fe; background:#eef2ff; color:#4338ca; }
     .delivery-order-card__payment { position:absolute; right:-5px; bottom:-4px; display:flex; width:16px; height:16px; align-items:center; justify-content:center; border:2px solid #fff; border-radius:50%; color:#fff; font-size:9px; box-shadow:0 1px 2px rgb(15 23 42 / 16%); }
     .delivery-order-card__payment[data-payment-state="paid"] { background:#059669; }
     .delivery-order-card__payment[data-payment-state="unpaid"] { background:#f43f5e; }

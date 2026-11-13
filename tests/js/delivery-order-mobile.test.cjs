@@ -1,5 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
+globalThis.ErpTone=require('../../public/assets/js/erp-tone.js');
 const cards=require('../../public/assets/js/delivery-order-mobile.js');
 
 test('mobile delivery card matches the reference customer, amount and status hierarchy',()=>{
@@ -21,7 +22,7 @@ test('mobile delivery card matches the reference customer, amount and status hie
         paymentLabel:'Belum Lunas',
         paymentState:'unpaid',
         courierName:'Muhammad Chamim',
-        avatarTheme:'teal'
+        avatarTone:ErpTone.className('Kak Alvi')
     });
 });
 

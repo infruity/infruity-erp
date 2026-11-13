@@ -5,8 +5,6 @@
 })(typeof window !== 'undefined' ? window : globalThis, function () {
     'use strict';
 
-    const avatarThemes = ['emerald', 'blue', 'purple', 'amber', 'teal', 'rose', 'indigo'];
-
     function phoneSuffix(phone) {
         const digits = String(phone || '').replace(/\D/g, '');
         return digits.length >= 4 ? digits.slice(-4) : '';
@@ -19,15 +17,6 @@
         return parts.length === 1
             ? parts[0].slice(0, 2).toUpperCase()
             : (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-
-    function avatarTheme(name) {
-        const value = String(name || '');
-        let hash = 0;
-        for (let index = 0; index < value.length; index += 1) {
-            hash = value.charCodeAt(index) + ((hash << 5) - hash);
-        }
-        return avatarThemes[Math.abs(hash) % avatarThemes.length];
     }
 
     function deliveryState(status) {
@@ -106,7 +95,7 @@
                 : order.billing?.available && order.billing.previousPaid > 0 && order.billing.remaining > 0 ? 'Bayar Sebagian' : 'Belum Lunas',
             paymentState: payment,
             courierName: String(order.courierName || 'Kurir belum dipilih').trim(),
-            avatarTheme: avatarTheme(customerName)
+            avatarTone: ErpTone.className(customerName)
         };
     }
 
@@ -641,7 +630,7 @@
         const view = buildViewModel(order);
         const customer = element('span', 'delivery-order-card__customer');
         const avatar = element('span', 'delivery-order-card__avatar', view.initials);
-        avatar.dataset.avatarTheme = view.avatarTheme;
+        avatar.classList.add(view.avatarTone);
         const payment = element('span', 'delivery-order-card__payment');
         payment.dataset.paymentState = view.paymentState;
         payment.title = view.paymentLabel;

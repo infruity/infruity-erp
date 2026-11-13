@@ -33,16 +33,6 @@
     .order-book-workspace .order-book-record__status--process { color:#f97316; }
     .order-book-workspace .order-book-record__status--done { color:#059669; }
     .order-book-workspace .order-book-record__invoice { max-width:124px; overflow-wrap:anywhere; color:#6b7280; font-size:12px; line-height:18px; }
-    .order-book-workspace .order-book-record--tone-0 .erp-record__avatar { border-color:#99f6e4; background:#f0fdfa; color:#0f766e; }
-    .order-book-workspace .order-book-record--tone-1 .erp-record__avatar { border-color:#fde68a; background:#fffbeb; color:#b45309; }
-    .order-book-workspace .order-book-record--tone-2 .erp-record__avatar { border-color:#a7f3d0; background:#ecfdf5; color:#047857; }
-    .order-book-workspace .order-book-record--tone-3 .erp-record__avatar { border-color:#99f6e4; background:#f0fdfa; color:#0f766e; }
-    .order-book-workspace .order-book-record--tone-4 .erp-record__avatar { border-color:#a7f3d0; background:#ecfdf5; color:#047857; }
-    .order-book-workspace .order-book-record--tone-5 .erp-record__avatar { border-color:#a7f3d0; background:#ecfdf5; color:#047857; }
-    .order-book-workspace .order-book-record--tone-6 .erp-record__avatar { border-color:#e9d5ff; background:#faf5ff; color:#7e22ce; }
-    .order-book-workspace .order-book-record--tone-7 .erp-record__avatar { border-color:#a7f3d0; background:#ecfdf5; color:#047857; }
-    .order-book-workspace .order-book-record--tone-8 .erp-record__avatar { border-color:#c7d2fe; background:#eef2ff; color:#4338ca; }
-    .order-book-workspace .order-book-record--tone-9 .erp-record__avatar { border-color:#c7d2fe; background:#eef2ff; color:#4338ca; }
 
     @media (max-width:767px) {
         .order-book-workspace { width:100vw; margin-inline:calc(50% - 50vw); }
@@ -314,7 +304,9 @@
                     const signature = JSON.stringify([index, customerName, formattedDate, status, invoice]);
                     if (record.dataset.orderBookSignature === signature) return;
                     record.dataset.orderBookSignature = signature;
-                    record.classList.add('order-book-record', `order-book-record--tone-${index % 10}`);
+                    record.classList.add('order-book-record');
+                    Array.from(record.classList).filter(name => name.indexOf('erp-tone-') === 0).forEach(name => record.classList.remove(name));
+                    avatar.classList.add(ErpTone.className(customerName));
                     avatar.textContent = orderBookReferenceUi.initials(customerName);
                     avatar.setAttribute('aria-hidden', 'true');
                     meta.textContent = formattedDate;
