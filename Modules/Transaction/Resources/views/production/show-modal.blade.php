@@ -1,7 +1,6 @@
 {{-- The production detail popup of the list, as in the HTML reference: product, number + kitchen, grand total, who and when, then Edit / Hapus. --}}
 @php
     $unit = $data->products->unit->abbreviation ?? 'porsi';
-    $locked = (bool) $data->pos_id;
     $staffName = $data->staff->name ?? $data->creator->nm_user ?? 'Petugas';
     $madeAt = $data->created_at?->locale('id')->translatedFormat('d M Y, H:i') ?? '—';
 @endphp
@@ -38,12 +37,8 @@
         </div>
     </div>
     <div class="production-detail-ref__actions">
-        @if ($locked)
-            <span class="production-detail-ref__locked">Terkunci, terhubung ke POS</span>
-        @else
             <a href="{{ route('production.edit', $data->id) }}" class="production-detail-ref__action is-edit"><i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>Edit</a>
             <span class="production-detail-ref__divider" aria-hidden="true"></span>
             <a href="{{ route('production.detail', $data->id) }}" class="production-detail-ref__action is-delete production-detail-ref__delete"><i class="ph-bold ph-trash" aria-hidden="true"></i>Hapus</a>
-        @endif
     </div>
 </div>

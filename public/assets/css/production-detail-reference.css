@@ -134,4 +134,8 @@
 .production-detail-ref__action.is-delete { color:#ef4444; }
 .production-detail-ref__action.is-delete:hover { background:#fef2f2; }
 .production-detail-ref__divider { width:1px; background:#f3f4f6; }
-.production-detail-ref__locked { flex:1; padding:16px 0; color:#6b7280; font-size:12px; font-weight:600; text-align:center; }
+
+/* The summary popup is as narrow as the reference's (max-w-sm = 384px, p-6, rounded-2xl). */
+#production-detail-modal > section:has(.production-detail--ref) { width:min(384px, calc(100vw - 32px)); max-width:384px; border-radius:16px; }
+#production-detail-modal > section:has(.production-detail--ref) > div:first-child { padding:24px; }
+#production-detail-modal > section:has(.production-detail--ref) > div:first-child > div:first-child { margin-bottom:24px; }
