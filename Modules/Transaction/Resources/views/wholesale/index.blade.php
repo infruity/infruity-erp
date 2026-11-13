@@ -148,12 +148,6 @@
     <style>
         .wholesale-order-cell { display:flex; align-items:center; gap:12px; min-width:0; }
         .wholesale-order-avatar { display:flex; width:40px; height:40px; flex:none; align-items:center; justify-content:center; border:1px solid #d1fae5; border-radius:12px; background:#ecfdf5; color:#0b595b; font-size:11px; font-weight:700; }
-        .wholesale-order-avatar.is-branch-gr { border-color:#99f6d5; background:#effcf6; color:#0b595b; }
-        .wholesale-order-avatar.is-branch-sr { border-color:#b6d4ff; background:#eff6ff; color:#1d4ed8; }
-        .wholesale-order-avatar.is-branch-sb { border-color:#e9c8ff; background:#faf5ff; color:#7e22ce; }
-        .wholesale-order-avatar.is-branch-sd { border-color:#ffdd62; background:#fffbeb; color:#b45309; }
-        .wholesale-order-avatar.is-branch-ml { border-color:#99f6e4; background:#f0fdfa; color:#0f766e; }
-        .wholesale-order-avatar.is-branch-default { border-color:#d1fae5; background:#ecfdf5; color:#0b595b; }
         .wholesale-order-copy { display:flex; min-width:0; flex-direction:column; align-items:flex-start; gap:2px; text-decoration:none; }
         .wholesale-order-number { overflow:hidden; max-width:100%; color:#1f2937; font-size:14px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
         .wholesale-order-number:hover { color:#0b595b; }

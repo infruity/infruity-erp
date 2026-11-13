@@ -128,8 +128,14 @@
         return target;
     }
 
+    /** A small corner notice that goes away by itself (replaces toastr): ErpDialog.toast('success', 'Tersimpan.') */
+    function toast(icon, text) {
+        return fire({ toast: true, position: 'top-end', icon: icon, title: text, showConfirmButton: false, timer: 3200, timerProgressBar: true });
+    }
+
     var api = {
         COLORS: COLORS,
+        toast: toast,
         normalize: normalize,
         install: install,
         confirm: confirm,
@@ -141,6 +147,14 @@
     };
 
     if (typeof window !== 'undefined' && window.Swal) install(window.Swal);
+
+    // toastr is not loaded on any page; code written for it (toastr[type](message)) lands here instead.
+    if (typeof window !== 'undefined' && !window.toastr) {
+        window.toastr = {};
+        ['success', 'error', 'warning', 'info'].forEach(function (type) {
+            window.toastr[type] = function (message) { return window.Swal ? toast(type, message) : undefined; };
+        });
+    }
 
     return api;
 });

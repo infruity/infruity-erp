@@ -136,6 +136,7 @@
     <!--begin::Global Javascript Bundle(mandatory for all pages)-->
     <script src="{{ asset('assets/plugins/global/plugins.bundle.js') }}"></script>
     <script src="{{ asset('assets/js/scripts.bundle.js') }}"></script>
+    <script src="{{ asset('assets/js/erp-tone.js') }}?v={{ filemtime(public_path('assets/js/erp-tone.js')) }}"></script>
     <script src="{{ asset('assets/js/erp-dialog.js') }}?v={{ filemtime(public_path('assets/js/erp-dialog.js')) }}"></script>
     <!--end::Global Javascript Bundle-->
     <!--begin::Vendors Javascript(used for this page only)-->

@@ -357,3 +357,46 @@ select.erp-empty option { color: #1f2937 !important; }
 .erp-thumb--y { width: 4px; }
 .erp-thumb--x { height: 4px; }
 .erp-thumb.is-on { opacity: 1; }
+
+/* ---- Feedback & status colours of the legacy (Metronic/Bootstrap) markup, in the Infruity palette ---- */
+.erp-ui .btn.btn-danger { --bs-btn-bg:var(--erp-danger); --bs-btn-border-color:var(--erp-danger); --bs-btn-hover-bg:#b91c1c; --bs-btn-hover-border-color:#b91c1c; --bs-btn-active-bg:#b91c1c; --bs-btn-active-border-color:#b91c1c; background:var(--erp-danger); border-color:var(--erp-danger); color:#fff; }
+.erp-ui .btn.btn-danger:hover { background:#b91c1c; border-color:#b91c1c; }
+.erp-ui .btn.btn-success { --bs-btn-bg:var(--erp-success); --bs-btn-border-color:var(--erp-success); --bs-btn-hover-bg:#065f46; --bs-btn-hover-border-color:#065f46; --bs-btn-active-bg:#065f46; --bs-btn-active-border-color:#065f46; background:var(--erp-success); border-color:var(--erp-success); color:#fff; }
+.erp-ui .btn.btn-success:hover { background:#065f46; border-color:#065f46; }
+.erp-ui .btn.btn-warning { --bs-btn-bg:var(--erp-warning); --bs-btn-border-color:var(--erp-warning); --bs-btn-hover-bg:#92400e; --bs-btn-hover-border-color:#92400e; --bs-btn-active-bg:#92400e; --bs-btn-active-border-color:#92400e; background:var(--erp-warning); border-color:var(--erp-warning); color:#fff; }
+.erp-ui .btn.btn-warning:hover { background:#92400e; border-color:#92400e; }
+.erp-legacy .btn.btn-light-primary { background:var(--erp-primary-soft); color:var(--erp-primary); }
+.erp-legacy .btn.btn-light-success { background:var(--erp-success-soft); border-color:#a7f3d0; color:var(--erp-success); }
+.erp-legacy .btn.btn-light-danger { background:var(--erp-danger-soft); border-color:#fecaca; color:var(--erp-danger); }
+.erp-legacy .btn.btn-light-warning { background:var(--erp-warning-soft); border-color:#fde68a; color:var(--erp-warning); }
+.erp-legacy .btn.btn-light-info { background:var(--erp-info-soft); border-color:#bfdbfe; color:var(--erp-info); }
+.erp-legacy .btn.btn-light-success:hover { background:var(--erp-success); border-color:var(--erp-success); color:#fff; }
+.erp-legacy .btn.btn-light-danger:hover { background:var(--erp-danger); border-color:var(--erp-danger); color:#fff; }
+.erp-legacy .btn.btn-light-warning:hover { background:var(--erp-warning); border-color:var(--erp-warning); color:#fff; }
+.erp-legacy .btn.btn-light-info:hover { background:var(--erp-info); border-color:var(--erp-info); color:#fff; }
+.erp-legacy .btn.btn-light-primary:hover { background:var(--erp-primary); border-color:var(--erp-primary); color:#fff; }
+.erp-legacy .badge.badge-light { background:#f3f4f6; color:#4b5563; }
+.erp-legacy .badge.badge-light-primary { background:var(--erp-primary-soft); color:var(--erp-primary); }
+.erp-legacy .badge.badge-light-success { background:var(--erp-success-soft); color:var(--erp-success); }
+.erp-legacy .badge.badge-light-danger { background:var(--erp-danger-soft); color:var(--erp-danger); }
+.erp-legacy .badge.badge-light-warning { background:var(--erp-warning-soft); color:var(--erp-warning); }
+.erp-legacy .badge.badge-light-info { background:var(--erp-info-soft); color:var(--erp-info); }
+.erp-ui .alert { border-width: 1px; padding: 12px 16px; }
+.erp-ui :is(.spinner-border,.spinner-grow) { color: var(--erp-primary); }
+.erp-ui :is(.btn-primary,.btn-danger,.btn-success,.btn-warning) :is(.spinner-border,.spinner-grow) { color: currentColor; }
+.erp-ui .indicator-progress .spinner-border, .erp-ui .indicator-progress .spinner-border-sm { color: currentColor; }
+.erp-ui .overlay .overlay-layer { background-color: rgba(255,255,255,.7); }
+.erp-ui .blockui .blockui-message, .erp-ui .blockui-message { border-radius: 12px; box-shadow: var(--erp-shadow-soft); color: var(--erp-muted); font-size: 13px; font-weight: 500; }
+.erp-ui .swal2-toast { border-radius: 12px; font-family: var(--erp-font); box-shadow: var(--erp-shadow-soft); }
+
+/* ---- Avatar tints (ErpTone / App\Support\AvatarTone): one colour per name, ten colours of the reference ---- */
+.erp-ui .erp-tone-0 { background:#ecfdf5; color:#047857; border-color:#a7f3d0; }
+.erp-ui .erp-tone-1 { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+.erp-ui .erp-tone-2 { background:#faf5ff; color:#7e22ce; border-color:#e9d5ff; }
+.erp-ui .erp-tone-3 { background:#fffbeb; color:#b45309; border-color:#fde68a; }
+.erp-ui .erp-tone-4 { background:#eef2ff; color:#4338ca; border-color:#c7d2fe; }
+.erp-ui .erp-tone-5 { background:#f0f9ff; color:#0369a1; border-color:#bae6fd; }
+.erp-ui .erp-tone-6 { background:#fdf4ff; color:#a21caf; border-color:#f5d0fe; }
+.erp-ui .erp-tone-7 { background:#f0fdfa; color:#0f766e; border-color:#99f6e4; }
+.erp-ui .erp-tone-8 { background:#fff1f2; color:#be123c; border-color:#fecdd3; }
+.erp-ui .erp-tone-9 { background:#fff7ed; color:#c2410c; border-color:#fed7aa; }

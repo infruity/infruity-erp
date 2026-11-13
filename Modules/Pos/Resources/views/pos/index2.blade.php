@@ -16,12 +16,6 @@
     .pos-list-row { display:flex; min-width:0; align-items:center; gap:12px; }
     .pos-list-avatar-wrap { position:relative; flex:none; }
     .pos-list-avatar { display:flex; width:36px; height:36px; align-items:center; justify-content:center; border:1px solid #a7f3d0; border-radius:12px; background:#ecfdf5; color:#047857; font-size:12px; font-weight:700; line-height:1; }
-    .pos-list-avatar.is-theme-1 { border-color:#bfdbfe; background:#eff6ff; color:#1d4ed8; }
-    .pos-list-avatar.is-theme-2 { border-color:#e9d5ff; background:#faf5ff; color:#7e22ce; }
-    .pos-list-avatar.is-theme-3 { border-color:#fde68a; background:#fffbeb; color:#b45309; }
-    .pos-list-avatar.is-theme-4 { border-color:#99f6e4; background:#f0fdfa; color:#0f766e; }
-    .pos-list-avatar.is-theme-5 { border-color:#fecdd3; background:#fff1f2; color:#be123c; }
-    .pos-list-avatar.is-theme-6 { border-color:#c7d2fe; background:#eef2ff; color:#4338ca; }
     .pos-list-parcel-badge { position:absolute; right:-4px; bottom:-4px; display:flex; width:18px; height:18px; align-items:center; justify-content:center; border-radius:999px; background:#fff; box-shadow:0 0 0 1px #fff, 0 1px 2px rgba(0,0,0,.12); }
     .pos-list-parcel-badge i { display:flex; width:14px; height:14px; align-items:center; justify-content:center; border-radius:999px; background:#d97706; color:#fff; font-size:9px; }
     .pos-list-copy { display:flex; min-width:0; flex-direction:column; gap:2px; text-decoration:none; }
@@ -258,7 +252,7 @@
             const full = label.textContent.trim();
             const match = full.match(/^(.*?)\s*\((\d{4})\)$/);
             const name = match ? match[1] : full;
-            avatar.className = 'pos-list-avatar is-theme-' + PosListUi.avatarTheme(name);
+            avatar.className = 'pos-list-avatar ' + ErpTone.className(name);
             avatar.textContent = PosListUi.customerInitial(name);
             avatar.setAttribute('aria-hidden', 'true');
             const wrap = document.createElement('span');

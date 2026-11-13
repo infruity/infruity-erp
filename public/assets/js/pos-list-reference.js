@@ -6,7 +6,6 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
     'use strict';
 
-    const THEME_COUNT = 7;
 
     // Same growth rule as the other load-more lists: from the larger of the current length and one step.
     function nextLength(current, step) {
@@ -26,13 +25,6 @@
         if (parts.length === 0) return '??';
         if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
         return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-
-    function avatarTheme(name) {
-        if (!name) return 0;
-        let hash = 0;
-        for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-        return Math.abs(hash) % THEME_COUNT;
     }
 
     function parseDetail(text) {
@@ -150,5 +142,5 @@
         };
     }
 
-    return {createFilters, parseDetail, detailPrimary, canDelete, whatsappUrl, nextLength, remainingLabel, customerInitial, avatarTheme};
+    return {createFilters, parseDetail, detailPrimary, canDelete, whatsappUrl, nextLength, remainingLabel, customerInitial};
 });

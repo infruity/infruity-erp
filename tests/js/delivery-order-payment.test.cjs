@@ -1,3 +1,4 @@
+globalThis.ErpTone = require('../../public/assets/js/erp-tone.js');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const cards = require('../../public/assets/js/delivery-order-mobile.js');

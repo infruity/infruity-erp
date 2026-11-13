@@ -22,14 +22,7 @@
                 if (branch.includes('MALANG') || branch.includes('KLOJEN')) return 'ML';
                 return branch.slice(0,2) || 'CB';
             },
-            branchTheme(name) {
-                const branch = String(name || '').toUpperCase();
-                if (branch.includes('RUNGKUT')) return {background:'#eff6ff',color:'#1d4ed8',borderColor:'#bfdbfe'};
-                if (branch.includes('BARAT')) return {background:'#faf5ff',color:'#7e22ce',borderColor:'#e9d5ff'};
-                if (branch.includes('SIDOARJO') || branch.includes('WARU')) return {background:'#fffbeb',color:'#b45309',borderColor:'#fde68a'};
-                if (branch.includes('MALANG') || branch.includes('KLOJEN')) return {background:'#f0fdfa',color:'#0f766e',borderColor:'#99f6e4'};
-                return {background:'#ecfdf5',color:'#0b595b',borderColor:'#a7f3d0'};
-            },
+            branchTheme(name) { return ErpTone.style(name); },
             get activeFilters() { return this.filters.status !== 'all' || this.filters.branch !== 'all' || !!this.filters.start || !!this.filters.end; },
             get hasMore() { return this.rows.length < this.filtered; },
             openFilter() {

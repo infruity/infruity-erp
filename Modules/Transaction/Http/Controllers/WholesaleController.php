@@ -1161,14 +1161,7 @@ class WholesaleController extends Controller
                     str_contains($normalizedBranch, 'malang') => 'ML',
                     default => mb_strtoupper(mb_substr(preg_replace('/[^\pL\pN]/u', '', $branchName) ?: '—', 0, 2)),
                 };
-                $avatarClass = match ($branchInitial) {
-                    'GR' => 'is-branch-gr',
-                    'SR' => 'is-branch-sr',
-                    'SB' => 'is-branch-sb',
-                    'SD' => 'is-branch-sd',
-                    'ML' => 'is-branch-ml',
-                    default => 'is-branch-default',
-                };
+                $avatarClass = \App\Support\AvatarTone::cssClass($branchName);
                 $dateTime = \Carbon\Carbon::parse($item->order_date ?? $item->created_at);
                 if (! empty($item->created_at)) {
                     $dateTime->setTimeFrom(\Carbon\Carbon::parse($item->created_at));

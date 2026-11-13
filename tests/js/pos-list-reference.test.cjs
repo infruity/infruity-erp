@@ -83,16 +83,6 @@ test('avatar initials follow the reference rules', () => {
     assert.equal(PosListUi.customerInitial('  (1234) '), '??');
 });
 
-test('avatar theme is stable per name and always one of the seven themes', () => {
-    const a = PosListUi.avatarTheme('Noorman');
-    assert.equal(PosListUi.avatarTheme('Noorman'), a);
-    assert.equal(PosListUi.avatarTheme(''), 0);
-    for (const name of ['A', 'Budi Santoso', 'Pelanggan Umum', 'x'.repeat(40)]) {
-        const theme = PosListUi.avatarTheme(name);
-        assert.ok(Number.isInteger(theme) && theme >= 0 && theme < 7);
-    }
-});
-
 test('a single-branch user keeps their branch as the default and does not show an active dot', () => {
     const f = PosListUi.createFilters({branches: [{id: '1', name: 'GKB'}], defaultBranch: '1'});
     assert.equal(f.applied.branch, '1');
