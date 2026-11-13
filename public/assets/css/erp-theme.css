@@ -349,3 +349,11 @@ html.erp-html { font-size:16px; }
 input::placeholder, textarea::placeholder { color: #9ca3af; opacity: 1; }
 select.erp-empty, input.erp-empty { color: #9ca3af !important; }
 select.erp-empty option { color: #1f2937 !important; }
+
+/* Overlay scrollbars: the native ones take layout space, so they are off and erp-scrollbars.js draws a thumb on top */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }
+.erp-thumb { position: fixed; z-index: 9999; border-radius: 9999px; background: rgba(107, 114, 128, .45); pointer-events: none; opacity: 0; transition: opacity .3s ease; }
+.erp-thumb--y { width: 4px; }
+.erp-thumb--x { height: 4px; }
+.erp-thumb.is-on { opacity: 1; }
