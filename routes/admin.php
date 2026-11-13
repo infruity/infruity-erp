@@ -26,14 +26,17 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 	Route::post('role/switch', [RoleContextController::class, 'switch'])->name('role.switch');
 	Route::put('user/{id}/permissions', [UserController::class, 'updatePermissions'])->name('user.permissions.update');
 	Route::resource('user', UserController::class)->names('user')->except('show');
-	Route::resource('role-menu', P_rolemenu::class);
-	Route::resource('roles', P_role::class)->names('roles')->except('show');
-	Route::get('roles/detail/{id}', [P_role::class, 'show'])->name('roles.show');
-	Route::post('roles/duplicate/{id}', [P_role::class, 'duplicate'])->name('roles.duplicate');
+	// The role editor is hidden (FEATURE_ROLE_PAGES): permissions are managed per account in Akun Pengguna.
+	Route::middleware(\App\Http\Middleware\EnsureFeatureEnabled::class . ':role_pages')->group(function () {
+		Route::resource('role-menu', P_rolemenu::class);
+		Route::resource('roles', P_role::class)->names('roles')->except('show');
+		Route::get('roles/detail/{id}', [P_role::class, 'show'])->name('roles.show');
+		Route::post('roles/duplicate/{id}', [P_role::class, 'duplicate'])->name('roles.duplicate');
+	});
 });
 Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 	Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.crm-dashboard');
-	Route::get('roles/data', [P_role::class, 'get_data'])->name('roles.data');
+	Route::get('roles/data', [P_role::class, 'get_data'])->name('roles.data')->middleware(\App\Http\Middleware\EnsureFeatureEnabled::class . ':role_pages');
 	Route::get('user/data', [UserController::class, 'get_data'])->name('user.data');
 	Route::post('/api/save-fcm-token', [FCMController::class, 'store']);
 	// Route::get('/test-fcm', [FCMController::class, 'testNotification']);

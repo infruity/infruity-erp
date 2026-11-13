@@ -16,6 +16,8 @@ class UserPermissionOverridesTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // These tests drive the role editor itself, which is hidden by default (features.role_pages).
+        config(['features.role_pages' => true]);
         config(['database.default' => 'user_permission_test', 'database.connections.user_permission_test' => [
             'driver' => 'sqlite', 'database' => ':memory:', 'prefix' => '', 'foreign_key_constraints' => true,
         ]]);

@@ -123,6 +123,7 @@ class LoginAccessBehaviorTest extends TestCase
 
     public function test_role_without_permission_cannot_read_role_list(): void
     {
+        config(['features.role_pages' => true]); // the role list is hidden by default; these tests check its permission
         $roleId = $this->makeRole('Kasir');
         $kasir = $this->makeUser($roleId);
         $this->actAsRole($kasir, $roleId);
@@ -159,6 +160,7 @@ class LoginAccessBehaviorTest extends TestCase
 
     public function test_permission_override_grants_access_to_a_role_without_menu_rights(): void
     {
+        config(['features.role_pages' => true]); // the role list is hidden by default; these tests check its permission
         $roleId = $this->makeRole('Kasir');
         $user = $this->makeUser($roleId);
         DB::table('user_permissions')->insert(['id_user' => $user->id_user, 'permission' => 'role.index', 'is_allowed' => 1]);

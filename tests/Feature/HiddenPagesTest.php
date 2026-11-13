@@ -55,6 +55,18 @@ final class HiddenPagesTest extends TestCase
         $this->assertStringContainsString("/tier/list-tier", file_get_contents(base_path('Modules/Crm/Resources/views/deposito/js-deposito.blade.php')));
     }
 
+    public function test_role_editor_routes_are_behind_the_flag_while_the_role_switch_and_account_permissions_stay(): void
+    {
+        foreach (['roles.index', 'roles.create', 'roles.store', 'roles.edit', 'roles.update', 'roles.destroy', 'roles.show', 'roles.duplicate', 'roles.data', 'role-menu.index', 'role-menu.update'] as $name) {
+            $this->assertContains(EnsureFeatureEnabled::class . ':role_pages', $this->middlewareOf($name), $name);
+        }
+        foreach (['role.switch', 'user.permissions.update'] as $name) {
+            $this->assertNotContains(EnsureFeatureEnabled::class . ':role_pages', $this->middlewareOf($name), $name);
+        }
+        $this->assertFalse(config('features.role_pages'));
+        $this->assertStringNotContainsString("route('roles.index')", file_get_contents(resource_path('views/components/erp/sidebar.blade.php')));
+    }
+
     public function test_the_pages_are_off_by_default_and_answer_404(): void
     {
         $this->assertFalse(config('features.expenditure_pages'));
