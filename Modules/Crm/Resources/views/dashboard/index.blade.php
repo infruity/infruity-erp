@@ -105,7 +105,7 @@
 
 
 
-        <div class="flex-1 overflow-y-auto dashboard-scroll pt-5 pb-[112px] px-4 flex flex-col relative z-10">
+        <div class="flex-1 overflow-y-auto dashboard-scroll pt-[19px] pb-[96px] px-4 flex flex-col relative z-10">
             <article class="dashboard-hero relative shrink-0 md:min-h-[422px] overflow-hidden touch-pan-y select-none" @touchstart.passive="startSwipe($event)" @touchend.passive="endSwipe($event)" @mousedown="startSwipe($event)" @mouseup="endSwipe($event)" @mouseleave="swipeStartX = null" @click.outside="resetSelectedDay()">
                 <div class="dashboard-hero-shine pointer-events-none absolute -right-[60px] -top-[60px] h-40 w-40 rounded-full"></div>
                 <div class="relative z-10">
@@ -115,7 +115,7 @@
                             <p class="mt-0.5 text-[11px] font-medium" :style="'color:' + modePalette.subtext">Periode : {{ $periodTitle }}</p>
                         </div>
                         <div class="flex shrink-0 items-center gap-1">
-                            <button type="button" @click="filterOpen = true" aria-label="Filter dashboard" class="h-7 w-7 rounded-full border border-white/15 bg-white/10 flex items-center justify-center hover:bg-white/20"><i class="ph ph-sliders-horizontal text-[16px]"></i></button>
+                            <button type="button" @click="filterOpen = true" aria-label="Filter dashboard" class="h-7 w-7 rounded-full border border-white/15 bg-white/10 flex items-center justify-center hover:bg-white/20"><span class="icon-rounded" aria-hidden="true" style="font-size: 16px;">tune</span></button>
                         </div>
                     </div>
 
@@ -153,14 +153,14 @@
                         </div>
                         <div class="mt-3.5 pt-0.5 flex items-center justify-center gap-0" role="group" aria-label="Pilih metrik dashboard">
                             <template x-for="item in metricModes" :key="item.key">
-                                <button type="button" @click="selectMode(item.key)" :aria-pressed="mode === item.key" :title="item.label" :aria-label="item.label" class="inline-flex h-11 -my-[19px] px-[3px] items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"><span :class="mode === item.key ? 'w-5' : 'w-1.5 bg-white/25'" :style="mode === item.key ? 'background-color:' + modePalette.accent : ''" class="h-1.5 rounded-full" aria-hidden="true"></span></button>
+                                <button type="button" @click="selectMode(item.key)" :aria-pressed="mode === item.key" :title="item.label" :aria-label="item.label" class="inline-flex h-11 -my-[19px] px-[3px] items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"><span :class="mode === item.key ? 'w-5' : 'w-1.5 bg-white/25'" :style="mode === item.key ? 'background-color:' + modePalette.accent + '; box-shadow: 0 0 8px ' + modePalette.accent + '99;' : ''" class="h-1.5 rounded-full" aria-hidden="true"></span></button>
                             </template>
                         </div>
                     </div>
                 </div>
             </article>
 
-            <div class="mt-[18px] mb-4 min-h-[248px] shrink-0 rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] text-gray-900">
+            <div class="mt-[18px] min-h-[248px] shrink-0 rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] text-gray-900">
                 <div class="mb-2 flex items-center justify-between gap-3">
                     <div class="min-w-0"><h2 class="text-[13.5px] font-bold tracking-tight text-gray-900"><span x-text="contributorTitle"></span> <span :class="contributorAccentClass" x-text="contributorSuffix"></span></h2><p class="text-[10.5px] text-gray-400" x-text="contributorSubtitle"></p></div>
                     <button type="button" @click="showBottom = !showBottom" class="h-7 w-7 shrink-0 rounded-full border flex items-center justify-center active:scale-90 transition" :class="contributorButtonClass" :title="contributorToggleTitle" :aria-label="contributorToggleTitle">

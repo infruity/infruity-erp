@@ -32,12 +32,12 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="10" x="13" y="11" rx="1" fill="currentColor"/><rect width="8" height="6" x="3" y="15" rx="1" fill="currentColor"/><rect width="8" height="6" x="13" y="3" rx="1" fill="currentColor"/><rect width="8" height="10" x="3" y="3" rx="1" fill="currentColor"/></svg>
         </a>
         <a href="{{ route('reports.hub') }}" @if(request()->routeIs('reports.hub', 'report-*')) aria-current="page" @endif aria-label="Laporan" title="Laporan" class="erp-mobile-nav__item {{ request()->routeIs('reports.hub', 'report-*') ? 'is-active' : '' }}">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="3" width="4" height="18" rx="1"/><rect x="17" y="8" width="4" height="13" rx="1"/></svg>
+            <span class="icon-rounded" aria-hidden="true">bar_chart</span>
         </a>
 
         @if (request()->is('dashboard') || (! $action['url'] && ! $action['canCreate']))
             <button type="button" @click="sidebarOpen = true" aria-label="Buka navigasi" title="Navigasi" class="erp-mobile-nav__add">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 6h14M5 12h14M5 18h14"/></svg>
+                <span class="icon-rounded" aria-hidden="true" style="font-size:24px; color:#fff; font-variation-settings:'FILL' 1, 'wght' 500;">add</span>
             </button>
         @elseif ($action['url'])
             <a href="{{ $action['url'] }}" aria-label="Tambah" title="Tambah" class="erp-mobile-nav__add">
