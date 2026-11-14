@@ -98,21 +98,27 @@
                 <div class="flex shrink-0 items-center justify-between px-6 pt-6 pb-4"><h3 class="text-lg font-bold text-gray-800">Detail {{ $singular }}</h3><button type="button" @click="detail = null" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div>
                 <template x-if="detail">
                     @if ($routeBase === 'supplier')
-                        <div class="min-h-0 overflow-y-auto px-6 pb-6 space-y-5 text-sm break-words">
-                            <div class="flex gap-3 items-center"><i class="ph-duotone ph-storefront text-2xl text-emerald-500 shrink-0"></i><div><div class="font-bold text-gray-800" x-text="label(detail)"></div><div class="text-[11px] text-gray-400" x-text="fields.find(field => field.key === nameKey)?.label || 'Nama'"></div></div></div>
-                            <template x-for="field in fields.filter(field => field.key !== nameKey)" :key="field.key">
-                                <div x-show="fieldValue(detail, field.key)" class="flex gap-3 items-center">
-                                    <i class="ph-duotone text-2xl text-emerald-500 shrink-0" :class="detailIcon(field.key)"></i>
-                                    <div class="min-w-0 flex-1">
-                                        <template x-if="fieldHref(field, fieldValue(detail, field.key))">
-                                            <a :href="fieldHref(field, fieldValue(detail, field.key))" target="_blank" rel="noopener noreferrer" class="inline-flex max-w-full items-center gap-1.5 border-b border-dashed pb-0.5 font-semibold transition-colors hover:underline" :class="field.key === 'address' ? 'text-blue-600 border-blue-400 hover:text-blue-700' : 'text-emerald-700 border-emerald-400 hover:text-emerald-800'"><span class="truncate" x-text="displayField(field, fieldValue(detail, field.key), detail)"></span><i x-show="['pic_whatsapp', 'address'].includes(field.key)" class="ph-bold ph-arrow-up-right shrink-0 text-xs"></i></a>
-                                        </template>
-                                        <template x-if="!fieldHref(field, fieldValue(detail, field.key))"><div class="font-semibold text-gray-700 break-words" x-text="displayField(field, fieldValue(detail, field.key), detail)"></div></template>
-                                        <div class="text-[11px] text-gray-400" x-text="field.label"></div>
-                                    </div>
+                        <div class="min-h-0 overflow-y-auto px-6 pb-8 pt-4 flex flex-col gap-5 text-sm break-words">
+                            <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-storefront text-lg"></i></div><div><div class="font-bold text-gray-800" x-text="label(detail)"></div><div class="text-[11px] text-gray-400 font-medium">Nama Pemasok</div></div></div>
+                            <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-user text-lg"></i></div><div><div class="font-bold text-gray-800" x-text="detail.pic_name || '-'"></div><div class="text-[11px] text-gray-400 font-medium">Kontak PIC</div></div></div>
+                            <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-phone text-lg"></i></div>
+                                <div class="min-w-0">
+                                    <a :href="detail.pic_whatsapp ? 'https://wa.me/' + String(detail.pic_whatsapp).replace(/\D/g, '') : '#'" :target="detail.pic_whatsapp ? '_blank' : '_self'" rel="noopener noreferrer"
+                                        :class="detail.pic_whatsapp ? 'text-emerald-600 hover:text-emerald-700 border-b border-dashed border-emerald-400 hover:border-emerald-600 cursor-pointer' : 'text-gray-800 border-none pointer-events-none'"
+                                        class="text-sm font-bold pb-0.5 inline-flex items-center gap-1.5 transition-colors"><span x-text="detail.pic_whatsapp || '-'"></span><i x-show="detail.pic_whatsapp" class="ph-bold ph-arrow-up-right text-xs"></i></a>
+                                    <div class="text-[11px] text-gray-400 font-medium" x-text="detail.pic_whatsapp ? 'Nomor WhatsApp (Klik untuk Chat)' : 'Nomor WhatsApp'"></div>
                                 </div>
-                            </template>
-                            <div x-show="detail.updated_at" class="flex gap-3 items-start"><i class="ph-duotone ph-clock mt-0.5 text-2xl text-emerald-500 shrink-0"></i><div class="min-w-0"><div class="text-xs font-bold text-gray-800 leading-snug" x-text="detail.updated_by_name || 'Terakhir diperbarui'"></div><div class="text-[11px] text-gray-400 mt-0.5" x-text="formatUpdatedAt(detail.updated_at)"></div></div></div>
+                            </div>
+                            <div x-show="detail.address && detail.address.trim() !== '' && detail.address !== '-'" class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-map-pin text-lg"></i></div>
+                                <div class="min-w-0">
+                                    <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(detail.address || '')" target="_blank" rel="noopener noreferrer"
+                                        class="text-sm font-bold text-blue-600 hover:text-blue-700 border-b border-dashed border-blue-400 hover:border-blue-600 pb-0.5 inline-flex items-center gap-1.5 transition-colors truncate max-w-full cursor-pointer"><span class="truncate" x-text="detail.address"></span><i class="ph-bold ph-arrow-up-right text-xs shrink-0"></i></a>
+                                    <div class="text-[11px] text-gray-400 font-medium">Alamat Pemasok (Klik untuk Buka Google Maps)</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-clock text-lg"></i></div>
+                                <div class="min-w-0"><div class="text-xs font-bold text-gray-800 leading-snug" x-text="detail.updated_by_name || 'Administrator'"></div><div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Memperbarui pada ' + formatDetailDate(detail.updated_at || detail.created_at)"></div></div>
+                            </div>
                         </div>
                     @elseif ($routeBase === 'customers')
                         <div class="min-h-0 overflow-y-auto px-6 pb-8 pt-2 flex flex-col gap-4 text-sm break-words">
@@ -193,13 +199,13 @@
                 </template>
                 <div class="flex shrink-0 border-t border-gray-100">
                     @if (check_access($routeBase . '.edit'))
-                        <button type="button" @click="editDetail()" class="flex-1 h-12 text-sm font-semibold text-[#0b595b] hover:bg-emerald-50"><i class="ph ph-pencil-simple mr-1"></i> Edit</button>
+                        <button type="button" @click="editDetail()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-[#0b595b] transition-colors hover:bg-emerald-50"><i class="ph-bold ph-pencil-simple"></i> Edit</button>
                     @endif
                     @if (check_access($routeBase . '.destroy'))
-                        <button type="button" @click="deleteDetail()" class="flex-1 h-12 text-sm font-semibold text-red-600 hover:bg-red-50 border-l border-gray-100"><i class="ph ph-trash mr-1"></i> Hapus</button>
+                        <div class="w-px bg-gray-100"></div><button type="button" @click="deleteDetail()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50"><i class="ph-bold ph-trash"></i> Hapus</button>
                     @endif
                     @unless (check_access($routeBase . '.edit') || check_access($routeBase . '.destroy'))
-                        <button type="button" @click="detail = null" class="w-full h-12 text-sm font-semibold text-gray-600">Tutup</button>
+                        <button type="button" @click="detail = null" class="flex w-full items-center justify-center py-4 text-sm font-semibold text-gray-600">Tutup</button>
                     @endunless
                 </div>
             </div>

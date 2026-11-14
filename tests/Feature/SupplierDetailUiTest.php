@@ -11,8 +11,9 @@ final class SupplierDetailUiTest extends TestCase
         $view = file_get_contents(dirname(__DIR__, 2) . '/Modules/Master/Resources/views/partials/mobile-index.blade.php');
 
         self::assertStringContainsString('@if ($routeBase === \'supplier\')', $view);
-        self::assertStringContainsString('ph-duotone ph-storefront text-2xl text-emerald-500 shrink-0', $view);
-        self::assertStringContainsString("field.key === 'address' ? 'text-blue-600", $view);
+        self::assertStringContainsString('border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-storefront text-lg"></i>', $view);
+        self::assertStringContainsString('Alamat Pemasok (Klik untuk Buka Google Maps)', $view);
+        self::assertStringContainsString('text-sm font-bold text-blue-600 hover:text-blue-700', $view);
         self::assertStringContainsString('ph-arrow-up-right', $view);
         self::assertStringContainsString('https://wa.me/', $view);
         self::assertStringContainsString('https://www.google.com/maps/search/', $view);
