@@ -48,14 +48,14 @@
                 <div class="border-b border-gray-100">
                     <button type="button" @click="detail = record" class="w-full flex items-center gap-3 md:gap-4 px-5 py-3.5 md:py-4 hover:bg-gray-50/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600 text-left transition-colors" :aria-label="'Detail ' + label(record)">
                         <span class="w-9 h-9 md:w-10 md:h-10 rounded-xl border flex items-center justify-center shrink-0 font-bold text-sm" :class="avatarClass(record)" x-text="label(record).slice(0, 2).toUpperCase()"></span>
-                        <span class="flex-1 min-w-0"><span class="block text-sm font-semibold text-gray-900 truncate" x-text="label(record)"></span>@if (! empty($subtitleFields))<span class="block text-[11px] text-gray-400 mt-0.5 truncate" x-text="subtitle(record)"></span>@endif</span>
+                        <span class="flex-1 min-w-0{{ empty($trailingField ?? null) ? ' max-md:mr-2' : '' }}"><span class="block text-sm font-semibold text-gray-900 truncate" x-text="label(record)"></span>@if (! empty($subtitleFields))<span class="block text-[11px] font-medium text-gray-400 mt-0.5 truncate" x-text="subtitle(record)"></span>@endif</span>
                         @if (!empty($trailingField ?? null))
                             <span class="w-24 shrink-0 text-right"><span class="block text-[12px] font-semibold text-gray-700" x-text="fieldValue(record, @js($trailingField))"></span><span class="block text-[10px] text-gray-400 mt-0.5">Masa Kerja</span></span>
                         @endif
                     </button>
                 </div>
             </template>
-            <div x-show="filtered.length === 0" class="py-12 text-center"><div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3"><i class="ph ph-magnifying-glass text-gray-400 text-xl"></i></div><p class="text-sm text-gray-500 font-medium">{{ $pageTitle }} tidak ditemukan</p><p class="text-xs text-gray-400 mt-1">Coba ubah pencarian</p></div>
+            <div x-show="filtered.length === 0" class="py-12 text-center border-t border-gray-100"><div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px] text-gray-400" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div><p class="text-sm text-gray-500 font-medium">{{ $pageTitle }} tidak ditemukan</p><p class="text-xs text-gray-400 mt-1">Coba ubah pencarian atau filter</p></div>
             @if (($pageMode ?? 'ajax') === 'server' && $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
                 <div x-show="nextPage" x-cloak data-load-more class="px-5 py-4"><x-erp.load-more @click="loadMore()" loading="loadingMore">Muat {{ $pageTitle }} Lagi</x-erp.load-more></div>
             @else

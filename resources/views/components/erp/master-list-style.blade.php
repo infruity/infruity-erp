@@ -7,6 +7,19 @@
     Only the pages that include this component change; the shared erp-mobile-search.css stays as it is for the rest of the app.
 --}}
 <style>
+    /* Master modules draw their avatar tiles with the -600 text / -100 border shades of the reference. */
+    .erp-ui .erp-tone-0{color:#059669;border-color:#d1fae5;}
+    .erp-ui .erp-tone-1{color:#2563eb;border-color:#dbeafe;}
+    .erp-ui .erp-tone-2{color:#9333ea;border-color:#f3e8ff;}
+    .erp-ui .erp-tone-3{color:#d97706;border-color:#fef3c7;}
+    .erp-ui .erp-tone-4{color:#4f46e5;border-color:#e0e7ff;}
+    .erp-ui .erp-tone-5{color:#0284c7;border-color:#e0f2fe;}
+    .erp-ui .erp-tone-6{color:#c026d3;border-color:#fae8ff;}
+    .erp-ui .erp-tone-7{color:#0d9488;border-color:#ccfbf1;}
+    .erp-ui .erp-tone-8{color:#e11d48;border-color:#ffe4e6;}
+    .erp-ui .erp-tone-9{color:#ea580c;border-color:#ffedd5;}
+</style>
+<style>
     @media (max-width: 767px) {
         .erp-mobile-search-shell { padding: 16px; border-bottom: 1px solid #f3f4f6; }
         .erp-mobile-search { height: 44px; gap: 0; padding: 0 6px 0 16px; border-color: rgba(229, 231, 235, .8); box-shadow: none; }
