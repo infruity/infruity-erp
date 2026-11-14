@@ -145,7 +145,20 @@
 .production-detail-ref__row:nth-child(-n+2) .production-detail-ref__main { line-height:19.25px; }
 .production-detail-ref__main.is-small { line-height:16.5px; }
 .production-detail-ref__sub { line-height:20px; }
-.production-detail-ref__icon--product { box-shadow:none; border:0; background:transparent !important; }
+.production-detail-ref__icon--product { box-shadow:none; }
+/* Same per-product tint as the list tile (ProductIcon). */
+.production-detail-ref__icon--product.bg-emerald-50 { background:#ecfdf5; }
+.production-detail-ref__icon--product.bg-rose-50 { background:#fff1f2; }
+.production-detail-ref__icon--product.bg-amber-50 { background:#fffbeb; }
+.production-detail-ref__icon--product.bg-pink-100 { background:#fce7f3; }
+.production-detail-ref__icon--product.bg-yellow-50 { background:#fefce8; }
+.production-detail-ref__icon--product.bg-orange-50 { background:#fff7ed; }
+.production-detail-ref__icon--product.bg-red-50 { background:#fef2f2; }
+.production-detail-ref__icon--product.bg-purple-50 { background:#faf5ff; }
+.production-detail-ref__icon--product.bg-lime-50 { background:#f7fee7; }
+.production-detail-ref__icon--product.bg-green-50 { background:#f0fdf4; }
+.production-detail-ref__icon--product.bg-stone-50 { background:#fafaf9; }
+.production-detail-ref__icon--product.bg-gray-100 { background:#f3f4f6; }
 /* The legacy page scales Tailwind units, so the popup's own shell is sized explicitly: p-6 = 24px, 32px close button, gray-800 title. */
 #production-detail-modal > section:has(.production-detail--ref) > div:first-child { padding:24px !important; }
 #production-detail-modal > section:has(.production-detail--ref) #production-detail-modal-title { color:#1f2937 !important; font-size:18px; line-height:28px; }
