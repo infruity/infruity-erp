@@ -89,11 +89,11 @@
 <style>
     @media (max-width: 1023px) {
         .user-account-drawer-panel:not(.is-editing) {
-            max-height: 71.5dvh;
+            max-height: 90dvh;
         }
 
         .user-account-drawer-panel.is-editing {
-            max-height: 71.5dvh;
+            max-height: 90dvh;
         }
     }
 
@@ -121,14 +121,51 @@
         </x-erp.mobile-search>
     </form>
     <div class="relative erp-surface bg-white rounded-none lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div class="hidden md:flex items-center gap-3 p-4 border-b border-gray-100">
-            <form method="GET" action="{{ route('user.index') }}" class="relative flex-1">
-                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                <input name="q" value="{{ request('q') }}" type="search" placeholder="Cari nama atau email pengguna..." class="w-full h-11 rounded-full border border-gray-100 bg-gray-50/50 pl-11 pr-20 text-[13px] outline-none focus:border-emerald-500">
-                <button type="submit" class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#0b595b]">Cari</button>
+        <div class="hidden md:flex items-center gap-3 p-4 border-b border-gray-100 bg-white relative z-10 transition-all duration-300">
+            <!-- Integrated Single Unified Pill Container -->
+            <form method="GET" action="{{ route('user.index') }}" x-data="{ isSearchFocused: false, searchVal: @js(request('q', '')) }" class="flex-1">
+                <input type="hidden" name="role_id" value="{{ $selectedRoleId }}">
+                <div class="relative flex items-center rounded-full h-11 pl-4 pr-1.5 transition-all"
+                     :class="isSearchFocused ? 'bg-white border border-emerald-500 ring-1 ring-emerald-500' : 'bg-gray-50/50 border border-gray-200/80'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px] text-[#0b595b]/80 shrink-0 mr-2.5">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input name="q" 
+                           x-model="searchVal"
+                           @focus="isSearchFocused = true" 
+                           @blur="isSearchFocused = false"
+                           @keydown.enter="$el.form.submit()"
+                           id="masterSearchInput"
+                           type="text" 
+                           placeholder="Cari..."
+                           class="flex-1 bg-transparent text-[13.5px] font-medium text-gray-800 placeholder-gray-400 outline-none h-full">
+                    
+                    <!-- Clear button -->
+                    <button type="button" x-show="searchVal" @click="searchVal = ''; $el.form.submit()" x-cloak
+                        class="w-6 h-6 rounded-full hover:bg-black/5 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors shrink-0 mr-1"
+                        title="Hapus pencarian">
+                        <i class="ph-bold ph-x text-xs"></i>
+                    </button>
+
+                    <!-- Divider -->
+                    <div class="h-4 w-px bg-gray-200 shrink-0 mx-1"></div>
+
+                    <!-- Filter Icon (Disabled / View Only) -->
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-gray-300 select-none cursor-default pointer-events-none"
+                         title="Filter tidak tersedia">
+                        <span class="icon-rounded" style="font-size: 20px;">tune</span>
+                    </div>
+                </div>
             </form>
+
+            <!-- Add Button (Desktop Only) -->
             @if (check_access('user.create'))
-            <button type="button" @click="openCreate()" class="flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold shadow-sm"><i class="ph-bold ph-plus"></i> Tambah Akun</button>
+            <button type="button" @click="openCreate()"
+                class="hidden sm:flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold transition-colors shadow-sm shrink-0">
+                <i class="ph-bold ph-plus text-sm"></i>
+                <span>Tambah Akun</span>
+            </button>
             @endif
         </div>
 
@@ -182,21 +219,21 @@
     </template>
 
     <template x-teleport="body">
-        <div x-show="selected" x-cloak data-erp-modal role="dialog" aria-modal="true" aria-label="Detail Akun"
+        <div x-show="selectedOpen" x-cloak data-erp-modal role="dialog" aria-modal="true" aria-label="Detail Akun"
              x-transition:enter="transition-opacity ease-out duration-300"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
              x-transition:leave="transition-opacity ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-[120] flex items-end justify-center sm:items-center sm:px-4" @keydown.escape.window="selected = null">
-            <div class="absolute inset-0 bg-black/60" @click="selected = null"></div>
-            <div x-show="selected" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full sm:translate-y-4 sm:scale-95" x-transition:enter-end="translate-y-0 sm:scale-100" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 sm:scale-100" x-transition:leave-end="translate-y-full sm:translate-y-4 sm:scale-95" class="relative z-10 flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-xl sm:max-w-sm sm:rounded-2xl">
+             class="fixed inset-0 z-[120] flex items-end justify-center sm:items-center sm:px-4" @keydown.escape.window="selectedOpen = false">
+            <div x-show="selectedOpen" x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute inset-0 bg-black/60" @click="selectedOpen = false"></div>
+            <div x-show="selectedOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full sm:translate-y-4 sm:scale-95" x-transition:enter-end="translate-y-0 sm:scale-100" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 sm:scale-100" x-transition:leave-end="translate-y-full sm:translate-y-4 sm:scale-95" class="relative z-10 flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-xl sm:max-w-sm sm:rounded-2xl">
                 <div class="flex shrink-0 justify-center pt-3 pb-1 sm:hidden"><div class="h-1.5 w-16 rounded-full bg-gray-300"></div></div>
                 <div class="flex shrink-0 items-center gap-3 border-b border-gray-100 px-5 pt-2 pb-4 sm:pt-5">
                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-sm font-bold text-emerald-700"><span x-text="selected?.email ? selected.email[0].toUpperCase() : '?'" aria-hidden="true"></span></div>
                     <div class="min-w-0 flex-1"><h3 class="truncate text-[14px] font-bold text-gray-900" x-text="selected?.email || ''"></h3><p class="truncate text-[11px] text-gray-400" x-text="selected?.name || 'Belum tertaut'"></p></div>
-                    <button type="button" @click="selected = null" aria-label="Tutup detail akun" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"><i class="ph-bold ph-x text-sm"></i></button>
+                    <button type="button" @click="selectedOpen = false" aria-label="Tutup detail akun" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"><i class="ph-bold ph-x text-sm"></i></button>
                 </div>
                 <div class="shrink-0 px-4 pt-3 pb-1">
                     <label for="user-access-search" class="sr-only">Cari modul atau sub modul</label>
@@ -250,7 +287,7 @@
              class="fixed inset-0 z-[100] flex flex-col justify-end lg:flex-row lg:justify-end" @keydown.escape.window="closeDrawer()">
             <div class="absolute inset-0 bg-black/70" @click="closeDrawer()"></div>
             <div x-show="drawerOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full" x-transition:enter-end="translate-y-0 lg:translate-x-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 lg:translate-x-0" x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full" :class="editing ? 'is-editing' : ''" class="user-account-drawer-panel relative w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col max-h-[90dvh] lg:max-h-full lg:h-full rounded-t-3xl lg:rounded-none overflow-hidden border-t border-gray-100">
-                <div class="flex justify-center pt-3 pb-1 lg:hidden"><div class="w-16 h-1.5 bg-gray-300 rounded-full"></div></div>
+                <div class="w-full flex justify-center pt-3 pb-1 lg:hidden shrink-0" @click="closeDrawer()" style="cursor: pointer;"><div class="w-16 h-1.5 bg-gray-300 rounded-full"></div></div>
                 <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between"><div><h3 class="text-[15px] font-bold text-gray-900" x-text="editing ? 'Edit Akun' : 'Tambah Akun'"></h3><p class="text-[12px] text-gray-400 mt-0.5" x-text="editing ? 'Perbarui data akun' : 'Isi data akun baru'"></p></div><button type="button" @click="closeDrawer()" class="w-9 h-9 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div>
                 <form method="POST" :action="editing ? baseUrl + '/' + editing : storeUrl" class="flex-1 min-h-0 flex flex-col">
                     @csrf
@@ -319,7 +356,7 @@
 <script>
 function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRoles, oldBranches, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions = []) {
     return {
-        users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, modalSearchQuery: '',
+        users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, selectedOpen: false, modalSearchQuery: '',
         form: { email: '', emailType: 'auto', password: '', staffId: '' },
         get filteredAccessGroups() {
             const query = this.modalSearchQuery.toLowerCase().trim();
@@ -428,9 +465,9 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
             group.modules.forEach(module => (module.permissions || []).forEach(permission => { changes[permission] = allow; }));
             return this.savePermissionOverrides(user, changes);
         },
-        openDetail(id) { this.modalSearchQuery = ''; this.selected = this.users.find(user => user.id === id) || null; },
-        editSelected() { const user = this.selected; this.selected = null; if (user) this.openEdit(user.id); },
-        removeSelected() { const user = this.selected; this.selected = null; if (user) this.remove(user.id, user.name); },
+        openDetail(id) { this.modalSearchQuery = ''; this.selected = this.users.find(user => user.id === id) || null; this.selectedOpen = !!this.selected; },
+        editSelected() { const user = this.selected; this.selectedOpen = false; if (user) this.openEdit(user.id); },
+        removeSelected() { const user = this.selected; this.selectedOpen = false; if (user) this.remove(user.id, user.name); },
         setEmailType(type) {
             this.form.emailType = type === 'auto' ? 'auto' : 'custom';
             this.form.email = this.form.emailType === 'auto' ? this.nextAutoEmail : '';
