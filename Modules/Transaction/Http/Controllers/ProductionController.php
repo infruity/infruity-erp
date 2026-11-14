@@ -295,6 +295,7 @@ class ProductionController extends Controller
 
         $data['alpinejs']          = true;
         $data['data']              = Production::with(['branch', 'products'])->find($id);
+        abort_if(in_array($data['data']?->status, ['posting', 'complete'], true), 403, 'Produksi yang sudah selesai tidak dapat diedit.');
         $data['production_detail'] = ProductionDetail::with('products')->where('production_id', $id)->get();
         $data['receipt']           = Receipt::with('products')->where('product_id', $data['data']->product_id)->first();
         $data['production_number'] = $data['data']->production_number;
@@ -342,6 +343,7 @@ class ProductionController extends Controller
             $productId = $receipt->product_id;
             DB::beginTransaction();
             $production                  = Production::findOrFail($id);
+            abort_if(in_array($production->status, ['posting', 'complete'], true), 403, 'Produksi yang sudah selesai tidak dapat diedit.');
             $production->product_id      = $productId;
             $production->production_date = $request->production_date;
             $production->status          = $request->submit_type;
@@ -884,7 +886,7 @@ class ProductionController extends Controller
                     <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
                     
                     if (! $row->pos_id) {
-                        $html .= '
+                        if (! in_array($row->status, ['posting', 'complete'], true)) $html .= '
                             <li>
                                 <a class="dropdown-item text-primary d-flex justify-content-center" href="' . $editUrl . '" title="Edit">
                                     <i class="bi bi-pencil"></i>
