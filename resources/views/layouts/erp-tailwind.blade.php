@@ -11,6 +11,9 @@
     <!-- Google Fonts -->
     <!-- The icon font is large: start loading it first and keep icons invisible (not as their ligature names) until it is ready -->
     <link rel="preload" href="{{ asset('assets/fonts/infruity/font-0.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+    <link rel="preconnect" href="https://code.jquery.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -264,6 +267,12 @@
 <script defer src="{{ asset('assets/js/erp-picker.js') }}?v={{ filemtime(public_path('assets/js/erp-picker.js')) }}"></script>
 <link rel="stylesheet" href="{{ asset('assets/css/erp-shell.css') }}?v={{ filemtime(public_path('assets/css/erp-shell.css')) }}">
 <link rel="stylesheet" href="{{ asset('assets/css/erp-filters.css') }}?v={{ filemtime(public_path('assets/css/erp-filters.css')) }}">
+    <style>
+        /* Navigation feedback: a thin bar under the top edge while the next page loads (each sub module is a full page). */
+        #erp-nav-progress { position:fixed; z-index:2147483000; top:0; left:0; height:3px; width:0; opacity:0; background:linear-gradient(90deg,#0b595b,#d1f36e); box-shadow:0 0 8px rgba(209,243,110,.7); pointer-events:none; transition:width .25s ease, opacity .2s ease; }
+        #erp-nav-progress.is-active { opacity:1; }
+        @media (prefers-reduced-motion: reduce) { #erp-nav-progress { transition:none; } }
+    </style>
 </head>
 
 <body class="erp-ui font-sans bg-[#e5e9f3] text-gray-800 antialiased h-[100dvh] min-h-[100dvh] overflow-hidden">
@@ -328,6 +337,31 @@
 
     @stack('scripts')
     @yield('script')
+<div id="erp-nav-progress" aria-hidden="true"></div>
+<script>
+    (function () {
+        var bar = document.getElementById('erp-nav-progress'), timer = null, width = 0;
+        function stop() { clearInterval(timer); bar.classList.remove('is-active'); bar.style.width = '0'; width = 0; }
+        function start() {
+            stop();
+            bar.classList.add('is-active');
+            width = 12; bar.style.width = width + '%';
+            // Creeps toward 90% and waits there until the browser swaps in the new page.
+            timer = setInterval(function () { width += (90 - width) * 0.12; bar.style.width = width.toFixed(1) + '%'; }, 120);
+        }
+        document.addEventListener('click', function (event) {
+            if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            var link = event.target.closest && event.target.closest('a[href]');
+            if (!link || link.target === '_blank' || link.hasAttribute('download')) return;
+            var url;
+            try { url = new URL(link.href, location.href); } catch (e) { return; }
+            if (url.origin !== location.origin || (url.pathname === location.pathname && url.search === location.search) || /^(javascript|mailto|tel):/i.test(link.getAttribute('href') || '')) return;
+            // Let other handlers cancel the navigation first.
+            setTimeout(function () { if (!event.defaultPrevented) start(); }, 0);
+        });
+        window.addEventListener('pageshow', stop);
+    })();
+</script>
 </body>
 
 </html>
