@@ -48,7 +48,7 @@
                 <div class="border-b border-gray-100">
                     <button type="button" @click="detail = record; detailOpen = true" class="w-full flex items-center gap-3 md:gap-4 px-5 py-3.5 md:py-4 hover:bg-gray-50/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600 text-left transition-colors" :aria-label="'Detail ' + label(record)">
                         <span class="w-9 h-9 md:w-10 md:h-10 rounded-xl border flex items-center justify-center shrink-0 font-bold text-sm" :class="avatarClass(record)" x-text="label(record).slice(0, 2).toUpperCase()"></span>
-                        <span class="flex-1 min-w-0{{ empty($trailingField ?? null) ? ' max-md:mr-2' : '' }}"><span class="block text-sm font-semibold text-gray-900 truncate" x-text="label(record)"></span>@if (! empty($subtitleFields))<span class="block text-[11px] font-medium text-gray-400 mt-0.5 truncate" x-text="subtitle(record)"></span>@endif</span>
+                        <span class="flex-1 min-w-0{{ empty($trailingField ?? null) ? ' max-md:mr-2' : '' }}"><span class="block text-sm font-semibold text-gray-900 truncate" x-text="label(record)"></span>@if (! empty($subtitleFields))<span class="block text-[11px] font-medium text-gray-400 mt-0.5 truncate{{ $routeBase === 'branch' ? ' leading-4' : '' }}" x-text="subtitle(record)"></span>@endif</span>
                         @if (!empty($trailingField ?? null))
                             <span class="w-24 shrink-0 text-right"><span class="block text-[12px] font-semibold text-gray-700" x-text="fieldValue(record, @js($trailingField))"></span><span class="block text-[10px] text-gray-400 mt-0.5">Masa Kerja</span></span>
                         @endif
@@ -257,7 +257,7 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
         get visible() { return this.mode === 'server' ? this.filtered : this.filtered.slice(0, this.visibleCount); },
         label(record) { return String(record[this.nameKey] || record.name || ''); },
         avatarClass(record) { return ErpTone.className(this.label(record)); },
-        subtitle(record) { return this.subtitleFields.map(key => key.split('.').reduce((value, part) => value?.[part], record)).filter(Boolean).join(' • ') || (this.subtitleFields.length ? '' : (record.code || '')); },
+        subtitle(record) { if (this.routeBase === 'branch') return record.address || 'Alamat belum diinput'; return this.subtitleFields.map(key => key.split('.').reduce((value, part) => value?.[part], record)).filter(Boolean).join(' • ') || (this.subtitleFields.length ? '' : (record.code || '')); },
         fieldVisible(field) { return !field.visibleWhen || String(this.form[field.visibleWhen.key]) === String(field.visibleWhen.value); },
         fieldRequired(field) { return !!field.required || (!!field.requiredWhen && String(this.form[field.requiredWhen.key]) === String(field.requiredWhen.value)); },
         resetFieldPickerState() { this.fieldPickerOpen = {}; this.fieldPickerSearch = {}; },
