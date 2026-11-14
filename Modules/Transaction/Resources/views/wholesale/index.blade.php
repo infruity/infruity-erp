@@ -117,7 +117,7 @@
                     item: null,
                     show(detail) { this.item = detail; this.visible = true; this.$nextTick(() => { this.open = true; }); document.body.classList.add('overflow-hidden'); this.$nextTick(() => this.$refs.close?.focus()); },
                     close() { this.open = false; document.body.classList.remove('overflow-hidden'); setTimeout(() => { if (!this.open) this.visible = false; }, 220); },
-                    remove() { const id = this.item?.id; this.close(); if (id) window.deleteProduct(id); }
+                    remove() { const id = this.item?.id; const label = this.item?.order_number; this.close(); if (id) window.deleteProduct(id, label); }
                 }"
                 @wholesale-detail-open.window="show($event.detail)"
                 @keydown.escape.window="close()"
@@ -453,15 +453,9 @@
             if (wholesaleDataTable) wholesaleDataTable.ajax.reload(null, false);
         }
 
-        function deleteProduct(id) {
-            Swal.fire({
-                title: 'Hapus pengadaan ini?',
-                text: 'Transaksi dan rincian pengadaan akan dihapus.',
-                icon: 'warning', showCancelButton: true,
-                confirmButtonText: 'Hapus', cancelButtonText: 'Batal',
-                confirmButtonColor: '#be123c', cancelButtonColor: '#6b7280'
-            }).then(result => {
-                if (!result.isConfirmed) return;
+        function deleteProduct(id, label) {
+            ErpDialog.confirmDelete({ what: 'Pengadaan', name: label || '', subject: 'Pengadaan', suffix: 'akan dihapus permanen beserta rinciannya.' }).then(confirmed => {
+                if (!confirmed) return;
                 $.ajax({
                     url: `/wholesale/${id}`, type: 'DELETE',
                     data: { _token: $('meta[name="csrf-token"]').attr('content') },
