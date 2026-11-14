@@ -283,7 +283,7 @@ final class ProductionCreateReferenceTest extends TestCase
     {
         $edit = $this->renderForm('production.edit');
 
-        foreach (['production-create-reference', 'production-ref-footer', 'Komposisi Produk', 'Simpan Perubahan', "'Simpan'"] as $part) {
+        foreach (['production-create-reference', 'production-ref-footer', 'Komposisi Produk', 'Simpan Perubahan', "'Submit'"] as $part) {
             $this->assertStringContainsString($part, $edit);
         }
         $this->assertStringNotContainsString("'Tambah'", $edit);

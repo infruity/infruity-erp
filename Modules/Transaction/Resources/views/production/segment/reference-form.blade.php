@@ -139,7 +139,7 @@
             <button type="button" class="production-ref-save" :disabled="saving || savingDraft"
                 @click="saving = true; saveProduction('posting', () => saving = false)">
                 <x-erp.spinner size="sm" x-show="saving" class="!text-white" />
-                <span x-text="saving ? 'Menyimpan…' : '{{ request()->routeIs('production.edit') ? 'Simpan' : 'Tambah' }}'"></span>
+                <span x-text="saving ? 'Menyimpan…' : '{{ request()->routeIs('production.edit') ? 'Submit' : 'Tambah' }}'"></span>
             </button>
         </div>
     </div>

@@ -397,7 +397,8 @@
                 // For now, just use console.log
                 console.log(`${type.toUpperCase()}: ${message}`);
 
-                // If you have a notification system like toastr, use it here
+                // No success popups on this form; warnings and errors still show.
+                if (type === 'success') return;
                 if (typeof toastr !== 'undefined') {
                     toastr[type](message);
                 }
@@ -507,7 +508,8 @@
                 // For now, just use console.log
                 console.log(`${type.toUpperCase()}: ${message}`);
 
-                // If you have a notification system like toastr, use it here
+                // No success popups on this form; warnings and errors still show.
+                if (type === 'success') return;
                 if (typeof toastr !== 'undefined') {
                     toastr[type](message);
                 }
@@ -934,12 +936,8 @@
                     console.log('Response data:', result);
 
                     if (response.ok && result.success) {
-                        this.showNotification(result.message || 'Produksi berhasil disimpan', 'success');
-
-                        // Always redirect to production index after success (regardless of submit type)
-                        setTimeout(() => {
-                            window.location.href = '{{ route('production.index') }}';
-                        }, 1500);
+                        // No success popup: go straight back to the list (regardless of submit type).
+                        window.location.href = '{{ route('production.index') }}';
                     } else {
                         // Handle error responses - tampilkan Swal.fire seperti di PosController
                         Swal.fire({
@@ -1477,18 +1475,8 @@
     function showSuccessNotification(message) {
         console.log('SUCCESS: ' + message);
 
-        if (typeof Swal !== 'undefined') {
-            Swal.close(); // Close loading
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: message,
-                timer: 2000,
-                showConfirmButton: false
-            });
-        } else {
-            alert('Success: ' + message);
-        }
+        // No success popup on the production form: only close a loading dialog if one is open.
+        if (typeof Swal !== 'undefined') Swal.close();
     }
 
     function showInfoNotification(message) {
