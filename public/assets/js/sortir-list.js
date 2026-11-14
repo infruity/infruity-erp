@@ -74,7 +74,7 @@
                 try { decision = (typeof ErpDialog !== 'undefined' && ErpDialog.confirmDelete)
                     ? { isConfirmed: await ErpDialog.confirmDelete({ what: 'Sortir', name: row.invoice_number, subject: 'Transaksi', suffix: 'akan dihapus. Perhitungan stok akan mengikuti perubahan ini.' }) }
                     : await Swal.fire({title:'Hapus transaksi sortir?',text:'Transaksi ' + row.invoice_number + ' akan dihapus. Perhitungan stok akan mengikuti perubahan ini.',icon:'warning',showCancelButton:true,confirmButtonText:'Hapus',cancelButtonText:'Batal',confirmButtonColor:'#dc2626'}); } finally { this.confirmingDelete = false; }
-                if (!decision.isConfirmed) return;
+                if (!decision.isConfirmed) { this.selected = null; return; } // cancel goes back to the list, no popup left
                 this.deleting = true;
                 try {
                     const response = await fetch(row.delete_url,{method:'DELETE',headers:{'X-CSRF-TOKEN':config.csrf,Accept:'application/json'}});
