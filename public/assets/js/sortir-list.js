@@ -7,7 +7,7 @@
             selected: null, deleting: false, returnFocus: null,
             init() { this.load(); },
             money(value) { return 'Rp ' + Number(value || 0).toLocaleString('id-ID', {maximumFractionDigits: 2}); },
-            statusLabel(status) { return ['paid', 'debt'].includes(status) ? 'Selesai' : (status === 'canceled' ? 'Dibatalkan' : 'Draf'); },
+            statusLabel(status) { return ['paid', 'debt'].includes(status) ? 'Selesai' : (status === 'canceled' ? 'Dibatalkan' : 'Pending'); },
             dateLabel(value) {
                 if (!value) return '—';
                 const date = new Date(String(value).replace(' ', 'T'));

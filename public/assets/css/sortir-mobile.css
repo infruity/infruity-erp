@@ -63,3 +63,27 @@ body:has(.sortir-list-page) main > .animate-fade-in-up { animation:none; }
     .sortir-row-amount { flex:none; max-width:35%; }
 }
 
+/* Phone list, measured against the Sortir Barang reference at 400px. */
+@media (max-width:767.98px) {
+    .sortir-search { gap:0; border-color:rgba(229,231,235,.8); background:rgba(249,250,251,.5); }
+    .sortir-search > i { margin-right:10px; color:rgba(11,89,91,.8); }
+    .sortir-search input { font-size:16px!important; }
+    .sortir-search-divider { margin:0 4px; }
+    .sortir-icon-button { color:#9ca3af; }
+    .sortir-icon-button.is-active { color:#0b595b; background:#ecfdf5; }
+    .sortir-row { border-top:1px solid #f3f4f6; border-bottom:0; }
+    .sortir-branch-name { line-height:16px; }
+    .sortir-row-date { margin-top:2px; line-height:16.5px; }
+    .sortir-row-amount { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+    .sortir-row-status { color:#9ca3af; line-height:16px; }
+    .sortir-row-status.is-final { color:#059669; font-weight:700; }
+    .sortir-row-total { margin-top:0; line-height:16px; font-weight:700; }
+    .sortir-list-state { min-height:calc(100dvh - 234px); gap:0; padding:16px; }
+    .sortir-list-state > i { border-color:rgba(167,243,208,.8); background:rgba(236,253,245,.8); }
+    .sortir-list-state h2 { margin:16px 0 0; font-size:14px; line-height:20px; }
+    .sortir-list-state p { max-width:260px; margin-top:8px; font-size:12px; line-height:19.5px; }
+    .sortir-list-state .sortir-add-tile { display:inline-flex; width:24px; height:24px; align-items:center; justify-content:center; margin:0 4px; vertical-align:middle; border:1px solid rgba(167,243,208,.8); border-radius:8px; background:#ecfdf5; color:#0b595b; text-decoration:none; }
+    .sortir-list-state .sortir-add-tile i { font-size:12px; }
+    body.erp-ui #sortir-filter-sheet .erp-filter-sheet__footer { background:rgba(249,250,251,.7); }
+    body.erp-ui #sortir-filter-sheet#sortir-filter-sheet [x-show="!calendarOpen"] :is(label, span).uppercase { font-weight:600 !important; line-height:15px !important; }
+}

@@ -21,7 +21,7 @@
         <div class="sortir-toolbar">
             <div class="sortir-search">
                 <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
-                <input id="sortir-search" type="search" x-model="search" @input.debounce.300ms="load()" placeholder="Cari cabang, nomor sortir, atau barang..." aria-label="Cari transaksi sortir" autocomplete="off">
+                <input id="sortir-search" type="search" x-model="search" @input.debounce.300ms="load()" placeholder="Cari..." aria-label="Cari transaksi sortir" autocomplete="off">
                 <button type="button" x-show="search" x-cloak @click="clearSearch()" class="sortir-icon-button" aria-label="Hapus pencarian"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
                 <span class="sortir-search-divider" aria-hidden="true"></span>
                 <button type="button" @click="openFilter($event)" class="sortir-icon-button" :class="activeFilters || filterOpen ? 'is-active' : ''" :aria-expanded="filterOpen" aria-label="Filter sortir barang"><span class="icon-rounded" aria-hidden="true">tune</span></button>
@@ -50,7 +50,7 @@
                 <h2 x-text="search || activeFilters ? 'Transaksi tidak ditemukan' : 'Belum ada sortir barang'"></h2>
                 <p x-show="search || activeFilters">Coba kata pencarian lain atau sesuaikan filter.</p>
                 @if (check_access('sortir.create'))
-                    <p x-show="!search && !activeFilters">Klik tombol <a href="{{ route('sortir.create') }}" class="sortir-text-button" aria-label="Tambah sortir barang">+</a> untuk menambahkan<br>transaksi sortir baru.</p>
+                    <p x-show="!search && !activeFilters">Klik tombol <a href="{{ route('sortir.create') }}" class="sortir-add-tile" aria-label="Tambah sortir barang"><i class="ph-bold ph-plus" aria-hidden="true"></i></a> untuk menambahkan<br>sortir baru</p>
                 @endif
                 <button type="button" class="sortir-text-button" x-show="search || activeFilters" @click="search = ''; resetFilters()">Reset pencarian &amp; filter</button>
             </div>
@@ -68,10 +68,11 @@
             branch-all-label="Semua Cabang"
             status-label="Status Sortir"
             :branches="$sortirFilterBranches"
-            :statuses="['all' => 'Semua Status', 'draft' => 'Draf', 'paid' => 'Selesai']"
+            :statuses="['all' => 'Semua', 'draft' => 'Pending', 'paid' => 'Selesai']"
             :timezone="config('app.timezone')"
             desktop="modal"
             reset-applies
+            reset-label="Reset Filter"
             apply-label="Terapkan Filter"
         />
         <template x-teleport="body">
