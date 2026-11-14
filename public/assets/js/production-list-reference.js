@@ -98,7 +98,7 @@
   const setTimer=environment.setTimeout||setTimeout,clearTimer=environment.clearTimeout||clearTimeout;
   const listUrl=new URL(indexUrl,win.location.href);
   const modalStateKey='infruityProductionDetailModal',modalUrlKey='infruityProductionDetailUrl',modalEntryKey='infruityProductionDetailEntry';
-  let generation=0,previousFocus=null,previousContentInert=null,clickHandler=null,popstateHandler=null,closeTimer=null,modalEntrySequence=0,fallbackListEntry=null;
+  let generation=0,previousFocus=null,previousContentInert=null,clickHandler=null,prefetchHandler=null,popstateHandler=null,closeTimer=null,modalEntrySequence=0,fallbackListEntry=null;
   const modalHistoryEntries=new Map();
   const isPlainClick=(event,link)=>event.button===0&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey&&(!link.target||link.target==='_self')&&!link.hasAttribute('download');
   function activeModalHistoryUrl(state=win.history.state){
@@ -113,14 +113,43 @@
    cancelCloseTimer();
    generation+=1;
    controller.productionDetailOpen=false;
+   // Keep the content while the popup fades out, like the reference (it never empties mid-transition).
    controller.productionDetailLoading=false;
-   controller.productionDetailHtml='';
+   if(controller.productionDetailHtml)setTimer(()=>{if(!controller.productionDetailOpen)controller.productionDetailHtml='';},320);
    const content=doc.getElementById('kt_content');
    content?.classList.remove('production-detail-open');
    if(content&&previousContentInert!==null)content.inert=previousContentInert;
    previousContentInert=null;
    const focusTarget=previousFocus;previousFocus=null;
    if(focusTarget?.isConnected)focusTarget.focus();
+  }
+  // Details are fetched ahead (touch start / hover) and kept for a short while, so the popup opens with its content already there.
+  const detailCache=new Map();
+  const detailTtl=30000;
+  async function loadDetail(targetUrl){
+   const cached=detailCache.get(targetUrl.href);
+   if(cached&&cached.expires>Date.now())return cached.value?cached.value:await cached.promise;
+   const promise=(async()=>{
+    const response=await fetcher(targetUrl.href,{credentials:'same-origin',headers:{Accept:'text/html','X-Requested-With':'XMLHttpRequest'}});
+    if(!response.ok)throw new Error(`Detail request failed: ${response.status}`);
+    const html=await response.text();
+    const parsed=new Parser().parseFromString(html,'text/html');
+    const detail=parsed.querySelector('.production-detail');
+    if(!detail||detail.tagName.toLowerCase()!=='div')throw new Error('Rendered production detail is missing');
+    const title=detail.querySelector('#production-detail-title')?.textContent.trim()||'Detail Produksi';
+    sanitizeDetailElement(detail,targetUrl.href);
+    namespaceDetailIds(detail,doc);
+    detail.querySelectorAll('.production-detail__actions a[href]').forEach(link=>{
+     if(new URL(link.getAttribute('href'),targetUrl.href).pathname===listUrl.pathname)link.dataset.productionDetailBack='true';
+    });
+    return {title,html:serializeDetailNode(detail)};
+   })();
+   const entry={promise,value:null,expires:Date.now()+detailTtl};
+   detailCache.set(targetUrl.href,entry);
+   try{entry.value=await promise;return entry.value;}catch(error){detailCache.delete(targetUrl.href);throw error;}
+  }
+  function prefetchDetail(href){
+   try{const target=new URL(href,win.location.href);if(target.origin===win.location.origin)loadDetail(target).catch(()=>{});}catch(_error){}
   }
   return {
    productionDetailOpen:false,
@@ -138,12 +167,15 @@
      if(!link||!isPlainClick(event,link))return;
      event.preventDefault();this.openProductionDetail(link.href);
     };
+    prefetchHandler=event=>{const row=event.target?.closest?.('tr.is-openable, a.production-copy');const href=row&&(row.dataset?.href||row.getAttribute?.('href'));if(href)prefetchDetail(href);};
+    ['pointerdown','touchstart','mouseover'].forEach(name=>doc.addEventListener(name,prefetchHandler,{passive:true}));
     popstateHandler=event=>this.handleProductionDetailPopState(event);
     doc.addEventListener('click',clickHandler);
     win.addEventListener('popstate',popstateHandler);
    },
    destroy(){
     if(clickHandler)doc.removeEventListener('click',clickHandler);
+    if(prefetchHandler)['pointerdown','touchstart','mouseover'].forEach(name=>doc.removeEventListener(name,prefetchHandler));
     if(popstateHandler)win.removeEventListener('popstate',popstateHandler);
     if(win.openProductionDetail)delete win.openProductionDetail;
     finishClose(this);
@@ -179,22 +211,11 @@
      const focusCloseButton=()=>raf(()=>doc.querySelector('.production-detail-dialog [aria-label="Tutup detail produksi"]')?.focus());
      if(typeof this.$nextTick==='function')this.$nextTick(focusCloseButton);else focusCloseButton();
 
-     const response=await fetcher(targetUrl.href,{credentials:'same-origin',headers:{Accept:'text/html','X-Requested-With':'XMLHttpRequest'}});
+     const loaded=await loadDetail(targetUrl);
      if(requestId!==generation)return;
-     if(!response.ok)throw new Error(`Detail request failed: ${response.status}`);
-     const html=await response.text();
-     if(requestId!==generation)return;
-     const parsed=new Parser().parseFromString(html,'text/html');
-     const detail=parsed.querySelector('.production-detail');
-     if(!detail||detail.tagName.toLowerCase()!=='div')throw new Error('Rendered production detail is missing');
-     const title=detail.querySelector('#production-detail-title')?.textContent.trim()||'Detail Produksi';
-     sanitizeDetailElement(detail,targetUrl.href);
-     namespaceDetailIds(detail,doc);
-     detail.querySelectorAll('.production-detail__actions a[href]').forEach(link=>{
-      if(new URL(link.getAttribute('href'),targetUrl.href).pathname===listUrl.pathname)link.dataset.productionDetailBack='true';
-     });
+     const title=loaded.title;
      this.productionDetailTitle=title;
-     this.productionDetailHtml=serializeDetailNode(detail);
+     this.productionDetailHtml=loaded.html;
      this.productionDetailLoading=false;
     }catch(error){
      if(requestId!==generation)return;

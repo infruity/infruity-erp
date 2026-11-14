@@ -16,12 +16,6 @@
             </div>
         </div>
         <div class="production-detail-ref__row">
-            <span class="production-detail-ref__icon" aria-hidden="true"><i class="ph-duotone ph-receipt"></i></span>
-            <div class="production-detail-ref__text">
-                <div class="production-detail-ref__main">{{ $data->production_number }}</div>
-            </div>
-        </div>
-        <div class="production-detail-ref__row">
             <span class="production-detail-ref__icon" aria-hidden="true"><i class="ph-duotone ph-cooking-pot"></i></span>
             <div class="production-detail-ref__text">
                 <div class="production-detail-ref__main">{{ rtrim(rtrim(number_format((float) $data->quantity, 2, ',', '.'), '0'), ',') }} {{ $unit }}</div>
