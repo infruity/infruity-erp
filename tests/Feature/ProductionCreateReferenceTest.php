@@ -211,7 +211,7 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString('production-create-reference', $html);
         preg_match('/<section class="production-ref-card production-ref-card--branch">(.*?)<\/section>/s', $html, $branch);
         $this->assertStringContainsString('id="branch_id"', $branch[1]);
-        $this->assertStringContainsString('Cabang / Dapur Produksi', $branch[1]);
+        $this->assertStringContainsString('>Cabang <span', $branch[1]);
         preg_match('/<section class="production-ref-card production-ref-card--main">(.*?)<\/section>/s', $html, $main);
         preg_match_all('/(?:input|select)[^>]+\bid="([^"]+)"/', $main[1], $controls);
         $this->assertSame(['product_id', 'sell_price_display', 'quantity'], $controls[1]);

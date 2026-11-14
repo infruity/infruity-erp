@@ -10,7 +10,7 @@
 
     <!-- Kartu 1: cabang / dapur produksi -->
     <section class="production-ref-card production-ref-card--branch">
-        <label class="production-ref-label" for="branch_id">Cabang / Dapur Produksi <span class="production-ref-required">*</span></label>
+        <label class="production-ref-label" for="branch_id">Cabang <span class="production-ref-required">*</span></label>
         <select class="form-select" id="branch_id" name="branch_id">
             <option value="">Pilih Branch</option>
         </select>

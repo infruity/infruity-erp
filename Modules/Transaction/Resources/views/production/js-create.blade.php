@@ -1139,7 +1139,7 @@
         });
         @endif
         ErpPicker.attach('#branch_id', {
-            title: 'Pilih Cabang / Dapur',
+            title: 'Pilih Cabang',
             placeholder: 'Cari cabang...',
             placeholderTrigger: 'Pilih cabang...',
             emptyText: 'Cabang tidak ditemukan',
