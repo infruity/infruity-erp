@@ -102,12 +102,12 @@
             </div>
             <div class="production-ref-field">
                 <span class="production-ref-label">Harga Jual <em>/porsi</em></span>
-                <div class="production-ref-readout"><small>Rp</small><b x-text="formatNumber(sellPrice)"></b></div>
+                <div class="production-ref-readout is-locked"><small>Rp</small><b x-text="formatNumber(sellPrice)"></b></div>
             </div>
             <div class="production-ref-field">
                 <label class="production-ref-label" for="quantity">Kuantitas <em>(PORSI)</em> <span class="production-ref-required">*</span></label>
                 <input type="number" inputmode="decimal" name="quantity" id="quantity" class="form-control"
-                    placeholder="0" step="0.01" min="1" max="9999" x-model="productionQuantity"
+                    placeholder="0" step="0.01" min="1" max="9999" x-model="productionQuantity" :disabled="!referenceProductId"
                     value="{{ isset($data) ? $data->quantity : '' }}" />
             </div>
         </div>

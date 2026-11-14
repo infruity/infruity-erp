@@ -366,3 +366,6 @@ body:has(.production-reference-ingredient-modal.show) .modal-backdrop.show { bac
 @media (min-width:640px) {
     .production-create-reference .production-ref-card--branch .erp-picker__trigger, .production-ref-readout b, .production-ref-readout small, .production-ref-save, .production-ref-qty-input input, .production-create-reference .production-ref-totals #quantity { line-height:20px; }
 }
+
+/* Quantity stays locked (grey, like the read-only fields) until a product is chosen. */
+.production-create-reference .production-ref-totals #quantity:disabled { background:rgba(243,244,246,.8); color:#9ca3af; cursor:not-allowed; }
