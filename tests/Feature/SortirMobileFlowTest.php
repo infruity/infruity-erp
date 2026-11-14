@@ -198,4 +198,19 @@ class SortirMobileFlowTest extends TestCase
         $this->assertDatabaseCount('sortir_transaction', 0);
         $this->assertDatabaseCount('sortir_transaction_detail', 0);
     }
+
+    public function test_products_with_stock_are_ordered_before_products_without_stock(): void
+    {
+        DB::table('products')->insert([
+            ['id' => 12, 'name' => 'Apel Green Smith', 'product_unit' => 1, 'hpp' => 5000, 'tipe' => 'buah'],
+            ['id' => 13, 'name' => 'Mangga Harum Manis', 'product_unit' => 1, 'hpp' => 5000, 'tipe' => 'buah'],
+        ]);
+        DB::table('product_stock')->insert([
+            ['id' => 12, 'branch_id' => 1, 'stock_available' => 0, 'avg_hpp' => 5000],
+            ['id' => 13, 'branch_id' => 1, 'stock_available' => 15, 'avg_hpp' => 5000],
+        ]);
+        $response = $this->getJson('/_test/sortir-products?branch_id=1')->assertOk();
+        $names = array_column($response->json(), 'name');
+        $this->assertSame(['Anggur', 'Mangga Harum Manis', 'Apel Green Smith'], $names);
+    }
 }

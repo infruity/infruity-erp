@@ -119,8 +119,17 @@
             scrollActivityTimer = window.setTimeout(() => nav.classList.remove('is-scrolled'), 600);
         };
         // Scroll tidak bubbling; capture menangkap scroll dari container manapun (window, #kt_content, daftar internal).
+        // The dock only shrinks for a list that really scrolls (more rows than fit). A short list, or an element that
+        // barely overflows, leaves it alone.
+        const reallyScrolls = target => {
+            const scroller = target === document || target === document.documentElement || target === document.body
+                ? document.scrollingElement
+                : target;
+            return Boolean(scroller) && scroller.scrollHeight - scroller.clientHeight > 24;
+        };
         window.addEventListener('scroll', event => {
             if (nav.contains(event.target)) return;
+            if (!reallyScrolls(event.target)) return;
             handleScrollActivity();
         }, { passive: true, capture: true });
     })();
