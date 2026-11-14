@@ -69,16 +69,16 @@
         <span class="truncate" x-text="selectedFieldOption(field)?.label || field.placeholder || ('Pilih ' + field.label)"></span>
         <i class="ph-bold ph-caret-down text-gray-400 shrink-0 transition-transform" :class="fieldPickerOpen[field.key] ? 'rotate-180' : ''" aria-hidden="true"></i>
     </button>
-    <div x-show="fieldPickerOpen[field.key]" x-cloak x-transition class="absolute z-30 mt-1 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+    <div x-show="fieldPickerOpen[field.key]" x-cloak x-transition class="absolute z-30 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xl" :class="field.searchable ? '' : 'py-1'">
         <template x-if="field.searchable">
             <label class="relative block border-b border-gray-100">
-                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400" aria-hidden="true"></i>
-                <input type="search" x-model="fieldPickerSearch[field.key]" placeholder="Cari..." :aria-label="'Cari ' + field.label.toLowerCase()" class="w-full border-0 bg-transparent py-3 pl-9 pr-3 text-xs outline-none focus:bg-gray-50">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" x-model="fieldPickerSearch[field.key]" placeholder="Cari..." :aria-label="'Cari ' + field.label.toLowerCase()" class="w-full border-0 bg-transparent py-3 pl-8 pr-3 text-xs outline-none transition-colors focus:bg-gray-50">
             </label>
         </template>
-        <div role="listbox" :aria-label="field.label" class="max-h-48 overflow-y-auto overscroll-contain">
+        <div role="listbox" :aria-label="field.label" class="overflow-y-auto overscroll-none scrollbar-hide" :class="field.searchable ? 'max-h-32' : ''">
             <template x-for="option in filteredFieldOptions(field)" :key="option.value">
-                <button type="button" role="option" @click="selectFieldOption(field, option)" :aria-selected="String(form[field.key]) === String(option.value)" class="flex w-full items-center gap-3 border-b border-gray-100 px-3 py-2.5 text-left transition-colors last:border-b-0 hover:bg-gray-50">
+                <button type="button" role="option" @click="selectFieldOption(field, option)" :aria-selected="String(form[field.key]) === String(option.value)" class="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-gray-50" :class="field.searchable ? 'border-b border-gray-100 last:border-b-0' : ''">
                     <span class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors" :class="String(form[field.key]) === String(option.value) ? 'border-emerald-500' : 'border-gray-300'"><span class="h-2 w-2 rounded-full bg-emerald-500 transition-transform" :class="String(form[field.key]) === String(option.value) ? 'scale-100' : 'scale-0'"></span></span>
                     <span class="text-xs" :class="String(form[field.key]) === String(option.value) ? 'font-bold text-gray-900' : 'font-medium text-gray-700'" x-text="option.label"></span>
                 </button>
@@ -182,7 +182,7 @@
                             </div>
                         </div>
                     @elseif ($routeBase === 'kurir')
-                        <div class="min-h-0 overflow-y-auto px-6 pb-8 pt-2 flex flex-col gap-5 text-sm break-words">
+                        <div class="min-h-0 overflow-y-auto px-6 pb-8 pt-4 flex flex-col gap-5 text-sm break-words">
                             <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-truck text-lg"></i></div><div class="min-w-0"><div class="font-bold text-gray-800 break-words" x-text="label(detail)"></div><div class="text-[11px] text-gray-400 font-medium">Nama Kurir</div></div></div>
                             <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-clock text-lg"></i></div>
                                 <div class="min-w-0"><div class="text-xs font-bold text-gray-800 leading-snug" x-text="detail.updated_by_name || 'Administrator'"></div><div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Memperbarui pada ' + formatDetailDate(detail.updated_at || detail.created_at)"></div></div>
