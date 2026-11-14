@@ -260,7 +260,7 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
 .production-ref-row__price-unit { width:28px; flex:none; margin-left:4px; overflow:hidden; font-weight:500; text-align:left; text-overflow:ellipsis; white-space:nowrap; }
 .production-ref-row__total { display:flex; flex:none; align-items:center; font-family:"Plus Jakarta Sans", sans-serif; }
 .production-ref-row__total small { margin-right:4px; color:#9ca3af; font-size:12px; font-weight:700; line-height:16px; }
-.production-ref-row__total b { display:flex; width:56px; height:22px; align-items:center; border-bottom:2px dashed #d1d5db; color:#374151; font-size:12px; font-weight:700; line-height:16px; font-variant-numeric:tabular-nums; }
+.production-ref-row__total b { display:flex; width:auto; height:22px; align-items:center; border-bottom:0; color:#374151; font-size:12px; font-weight:700; line-height:16px; font-variant-numeric:tabular-nums; }
 .production-ref-row__qty { display:flex; flex:none; align-items:center; font-family:"Plus Jakarta Sans", sans-serif; }
 .production-ref-row__qty input { width:44px; height:22px; border:0; border-bottom:2px dashed #d1d5db; border-radius:0; background:transparent; padding:0; color:#374151; font:700 12px/16px "Plus Jakarta Sans", sans-serif; text-align:right; outline:none; box-shadow:none; }
 .production-ref-row__qty input:hover { border-bottom-color:#059669; }
