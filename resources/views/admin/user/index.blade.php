@@ -344,7 +344,11 @@
                             <div class="h-full w-full rounded-full bg-gray-400/50 transition-opacity duration-300 ease-in-out" :style="`height: ${thumbHeight}px; transform: translateY(${scrollPos}px);`" :class="isScrolling ? 'opacity-100' : 'opacity-0'"></div>
                         </div>
                     </div>
-                    <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3"><button type="button" @click="closeDrawer()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold" x-text="editing ? 'Simpan Perubahan' : 'Tambah Akun'"></button></div>
+                    <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 bg-white flex items-center gap-3 shrink-0">
+                        <button type="button" @click="closeDrawer()" class="h-11 flex-1 whitespace-nowrap rounded-xl border border-gray-200 text-[13px] font-semibold text-gray-600 transition-colors hover:bg-gray-50 sm:text-sm">Batal</button>
+                        <button type="button" x-show="editing" x-cloak @click="promptResetPassword(editing)" class="h-11 flex-[1.2] whitespace-nowrap rounded-xl border border-rose-200 bg-rose-50 text-[13px] font-semibold text-rose-700 transition-colors hover:bg-rose-100">Reset Password</button>
+                        <button type="submit" :class="editing ? 'flex-[1.4]' : 'flex-1'" class="h-11 whitespace-nowrap rounded-xl bg-[#0b595b] text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#0a4e50] sm:text-sm" x-text="editing ? 'Simpan Perubahan' : 'Tambah Akun'"></button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -356,7 +360,7 @@
 <script>
 function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRoles, oldBranches, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions = []) {
     return {
-        users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, selectedOpen: false, modalSearchQuery: '',
+        users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, selectedOpen: false, defaultPassword: 'Rantau16', modalSearchQuery: '',
         form: { email: '', emailType: 'auto', password: '', staffId: '' },
         get filteredAccessGroups() {
             const query = this.modalSearchQuery.toLowerCase().trim();
@@ -498,6 +502,25 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
             this.staffSearch = '';
             this.form = { email: user.email || '', emailType: 'custom', password: '', staffId: String(user.staff_id || '') };
             this.drawerOpen = true;
+        },
+        async promptResetPassword(id) {
+            const user = this.users.find(item => item.id === id);
+            if (!user) return;
+            const label = user.name || user.email;
+            if (!await ErpDialog.confirm({ title: 'Reset password?', text: 'Kata sandi akun ' + label + ' akan diubah menjadi ' + this.defaultPassword + '.', icon: 'warning', confirmButtonText: 'Reset', cancelButtonText: 'Batal' })) return;
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                const response = await fetch(this.baseUrl + '/' + id + '/reset-password', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || !result.success) throw new Error(result.message || 'Gagal mereset kata sandi.');
+                ErpDialog.success('Kata sandi akun ' + label + ' sekarang ' + this.defaultPassword + '.', 'Berhasil');
+            } catch (error) {
+                ErpDialog.error(error.message || 'Terjadi kesalahan saat mereset kata sandi.');
+            }
         },
         async remove(id, name) {
             const user = this.users.find(item => item.id === id);
