@@ -20,13 +20,14 @@ final class UserResetPasswordTest extends TestCase
         self::assertStringContainsString("->name('user.reset-password')", $routes);
     }
 
-    public function test_account_sheet_action_buttons_have_no_icons(): void
+    public function test_account_sheet_closes_with_an_icon_back_button_and_the_other_actions_are_text_only(): void
     {
         $view = file_get_contents(dirname(__DIR__, 2) . '/resources/views/admin/user/index.blade.php');
-        $footer = substr($view, strpos($view, 'Reset Password</button>') - 700, 1500);
+        $footer = substr($view, strpos($view, 'Reset Password</button>') - 900, 1700);
 
         self::assertStringContainsString('border-rose-200 bg-rose-50', $footer);
         self::assertStringNotContainsString('ph-key', $footer);
-        self::assertStringNotContainsString('ph-arrow-left', $footer);
+        self::assertStringContainsString('ph-bold ph-arrow-left', $footer);
+        self::assertStringNotContainsString('>Batal</button>', $footer);
     }
 }

@@ -344,10 +344,12 @@
                             <div class="h-full w-full rounded-full bg-gray-400/50 transition-opacity duration-300 ease-in-out" :style="`height: ${thumbHeight}px; transform: translateY(${scrollPos}px);`" :class="isScrolling ? 'opacity-100' : 'opacity-0'"></div>
                         </div>
                     </div>
-                    <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 bg-white flex items-center gap-3 shrink-0">
-                        <button type="button" @click="closeDrawer()" class="h-11 flex-1 whitespace-nowrap rounded-xl border border-gray-200 text-[13px] font-semibold text-gray-600 transition-colors hover:bg-gray-50 sm:text-sm">Batal</button>
-                        <button type="button" x-show="editing" x-cloak @click="promptResetPassword(editing)" class="h-11 flex-[1.2] whitespace-nowrap rounded-xl border border-rose-200 bg-rose-50 text-[13px] font-semibold text-rose-700 transition-colors hover:bg-rose-100">Reset Password</button>
-                        <button type="submit" :class="editing ? 'flex-[1.4]' : 'flex-1'" class="h-11 whitespace-nowrap rounded-xl bg-[#0b595b] text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#0a4e50] sm:text-sm" x-text="editing ? 'Simpan Perubahan' : 'Tambah Akun'"></button>
+                    <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 bg-white flex items-center gap-2.5 shrink-0">
+                        <button type="button" @click="closeDrawer()" title="Kembali" aria-label="Kembali" class="w-11 h-11 shrink-0 rounded-xl border border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 flex items-center justify-center transition-colors">
+                            <i class="ph-bold ph-arrow-left text-lg"></i>
+                        </button>
+                        <button type="button" x-show="editing" x-cloak @click="promptResetPassword(editing)" class="h-11 flex-1 whitespace-nowrap rounded-xl border border-rose-200 bg-rose-50 text-[13px] font-semibold text-rose-700 transition-colors hover:bg-rose-100">Reset Password</button>
+                        <button type="submit" class="h-11 flex-1 whitespace-nowrap rounded-xl bg-[#0b595b] text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#0a4e50] sm:text-sm" x-text="editing ? 'Simpan Perubahan' : 'Tambah Akun'"></button>
                     </div>
                 </form>
             </div>
