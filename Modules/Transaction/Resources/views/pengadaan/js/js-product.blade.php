@@ -80,6 +80,8 @@
                 if (this.initialized) return;
                 this.initialized = true;
                 const self = this; // simpan konteks Alpine
+                // Warm the product list so the add/edit dialogs open with their list already there.
+                this.fetchProducts('');
                 
                 // Check if there's existing data from create() or edit() method
                 const data = @json($data ?? null);
@@ -258,35 +260,45 @@
                 }, 0);
             },
 
+            // The empty-term list is fetched once per page and reused by the add and edit dialogs.
+            fetchProducts(term) {
+                const key = String(term || '');
+                if (key === '') {
+                    if (!window.__wholesaleProductList) {
+                        window.__wholesaleProductList = new Promise((resolve, reject) => {
+                            $.ajax({ url: '/ajax/listProduct', dataType: 'json', data: { term: '', status: 'aktif', variant: '0', limit: 10 }, success: resolve, error: (xhr) => { window.__wholesaleProductList = null; reject(xhr); } });
+                        });
+                    }
+                    return window.__wholesaleProductList.then(list => (Array.isArray(list) ? list.slice() : []));
+                }
+                return new Promise((resolve, reject) => {
+                    $.ajax({ url: '/ajax/listProduct', dataType: 'json', data: { term: key, status: 'aktif', variant: '0', limit: 10 }, success: resolve, error: reject });
+                });
+            },
+
             loadEditProducts() {
                 const requestId = ++this.editProductsRequest;
                 this.editProductsLoading = true;
-                $.ajax({
-                    url: '/ajax/listProduct',
-                    dataType: 'json',
-                    data: { term: this.editProductSearch, status: 'aktif', variant: '0', limit: 10 },
-                    success: (products) => {
-                        if (requestId !== this.editProductsRequest) return;
-                        const list = Array.isArray(products) ? products : [];
-                        const current = this.editItem;
-                        // The product being edited always stays in the list, first, so it can be seen as chosen.
-                        if (current && !this.editProductSearch && !list.some(p => String(p.id) === String(current.id))) {
-                            list.unshift({ id: current.id, name: current.name, unit: { abbreviation: current.unit }, last_price: current.price, last_sell_price: current.sell, hpp: current.hpp });
-                        }
-                        this.editProducts = list;
-                        this.editProductsLoading = false;
-                        // Show the chosen product at the top of the list when the dialog opens.
-                        if (!this.editProductSearch) this.$nextTick(() => setTimeout(() => {
-                            const box = document.querySelector('#editModal .wholesale-product-options');
-                            const chosen = box && [...box.querySelectorAll('.wholesale-product-option')].find(o => o.querySelector('input')?.checked);
-                            if (chosen) box.scrollTop += chosen.getBoundingClientRect().top - box.getBoundingClientRect().top;
-                        }, 350));
-                    },
-                    error: () => {
-                        if (requestId !== this.editProductsRequest) return;
-                        this.editProducts = this.editItem ? [{ id: this.editItem.id, name: this.editItem.name, unit: { abbreviation: this.editItem.unit } }] : [];
-                        this.editProductsLoading = false;
-                    },
+                this.fetchProducts(this.editProductSearch).then((products) => {
+                    if (requestId !== this.editProductsRequest) return;
+                    const list = Array.isArray(products) ? products : [];
+                    const current = this.editItem;
+                    // The product being edited always stays in the list, first, so it can be seen as chosen.
+                    if (current && !this.editProductSearch && !list.some(p => String(p.id) === String(current.id))) {
+                        list.unshift({ id: current.id, name: current.name, unit: { abbreviation: current.unit }, last_price: current.price, last_sell_price: current.sell, hpp: current.hpp });
+                    }
+                    this.editProducts = list;
+                    this.editProductsLoading = false;
+                    // Show the chosen product at the top of the list when the dialog opens.
+                    if (!this.editProductSearch) this.$nextTick(() => setTimeout(() => {
+                        const box = document.querySelector('#editModal .wholesale-product-options');
+                        const chosen = box && [...box.querySelectorAll('.wholesale-product-option')].find(o => o.querySelector('input')?.checked);
+                        if (chosen) box.scrollTop += chosen.getBoundingClientRect().top - box.getBoundingClientRect().top;
+                    }, 350));
+                }).catch(() => {
+                    if (requestId !== this.editProductsRequest) return;
+                    this.editProducts = this.editItem ? [{ id: this.editItem.id, name: this.editItem.name, unit: { abbreviation: this.editItem.unit } }] : [];
+                    this.editProductsLoading = false;
                 });
             },
 
@@ -449,21 +461,15 @@ set formattedEditSell(val) {
                 const requestId = ++this.addProductsRequest;
                 this.addProductsLoading = true;
                 this.addProductsError = false;
-                $.ajax({
-                    url: '/ajax/listProduct',
-                    dataType: 'json',
-                    data: { term: this.addProductSearch, status: 'aktif', variant: '0', limit: 10 },
-                    success: (products) => {
-                        if (requestId !== this.addProductsRequest) return;
-                        this.addProducts = products;
-                        this.addProductsLoading = false;
-                    },
-                    error: () => {
-                        if (requestId !== this.addProductsRequest) return;
-                        this.addProducts = [];
-                        this.addProductsLoading = false;
-                        this.addProductsError = true;
-                    },
+                this.fetchProducts(this.addProductSearch).then((products) => {
+                    if (requestId !== this.addProductsRequest) return;
+                    this.addProducts = products;
+                    this.addProductsLoading = false;
+                }).catch(() => {
+                    if (requestId !== this.addProductsRequest) return;
+                    this.addProducts = [];
+                    this.addProductsLoading = false;
+                    this.addProductsError = true;
                 });
             },
             selectAddProduct(product) {
