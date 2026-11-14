@@ -502,8 +502,7 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
         async remove(id, name) {
             const user = this.users.find(item => item.id === id);
             if (!user || user.is_aktif === false) return;
-            const confirmed = await Swal.fire({ title: 'Hapus akun ' + name + '?', text: 'Akun pengguna akan dinonaktifkan.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Hapus', cancelButtonText: 'Batal', confirmButtonColor: '#dc2626' });
-            if (!confirmed.isConfirmed) return;
+            if (!await ErpDialog.confirmDelete({ what: 'Akun', name, suffix: 'akan dinonaktifkan.' })) return;
             try {
                 const response = await fetch(this.baseUrl + '/' + id, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' } });
                 const result = await response.json();

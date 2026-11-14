@@ -110,7 +110,8 @@
     function confirmDelete(options) {
         options = options || {};
         var what = options.what || 'data';
-        var text = options.text || (options.name ? what + ' ' + options.name + ' akan dihapus permanen.' : 'Data akan dihapus permanen.');
+        var suffix = options.suffix || 'akan dihapus permanen.';
+        var text = options.text || (options.name ? what + ' ' + options.name + ' ' + suffix : 'Data ' + suffix);
         var dialog = {
             icon: 'warning', tone: 'danger', title: 'Hapus ' + what + '?', text: text, confirmButtonText: options.confirmText || 'Hapus',
             // The look of the HTML reference's delete modal (erp-theme.css, .erp-delete-dialog): trash tile, bold name, two equal buttons.
@@ -120,7 +121,7 @@
             showClass: { popup: 'erp-del-show', backdrop: 'erp-del-bd-show' },
             hideClass: { popup: 'erp-del-hide', backdrop: 'erp-del-bd-hide' }
         };
-        if (!options.text && options.name) dialog.html = escapeHtml(what) + ' <strong>' + escapeHtml(options.name) + '</strong> akan dihapus permanen.';
+        if (!options.text && options.name) dialog.html = escapeHtml(what) + ' <strong>' + escapeHtml(options.name) + '</strong> ' + escapeHtml(suffix);
         return confirm(dialog);
     }
 
