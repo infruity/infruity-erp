@@ -109,7 +109,7 @@ body:has(.transfer-form) main { overflow:hidden; }
 .transfer-form .transfer-cart-line strong { font-size:13px; }
 .transfer-form .transfer-cart-item { gap:6px; }
 .transfer-form .transfer-cart-item:disabled { opacity:1; cursor:default; }
-.transfer-form .transfer-product-option input[type=radio] { width:14px; min-width:14px; height:14px; }
+.transfer-form .transfer-product-option input[type=radio] { width:16px; min-width:16px; height:16px; }
 .transfer-form .transfer-modal-input[readonly] { background:#f3f4f6; color:#6b7280; }
 .transfer-form .transfer-product-summary { font-size:13px; font-weight:700; padding:12px 0 0; }
 .transfer-form .transfer-unit-field { position:relative; }
@@ -143,3 +143,24 @@ body:has(.transfer-form) main { overflow:hidden; }
 .transfer-form .transfer-action { padding:0 12px; line-height:16px; }
 .transfer-form .transfer-action-primary { border:0; }
 .transfer-form .transfer-action-primary:disabled { color:#9ca3af; }
+
+/* Add-product dialog, measured on the reference at 400px. */
+.transfer-modal .modal-content { border-color:#f3f4f6; }
+.transfer-modal .modal-header { padding:16px 20px 15px; background:rgba(249,250,251,.5); }
+.transfer-modal .modal-header h2 { font-size:16px; line-height:20px; }
+.transfer-modal .modal-header p { margin:2px 0 0; line-height:16px; }
+.transfer-close { width:32px; height:32px; color:#9ca3af; font-size:14px!important; }
+.transfer-modal-label { margin:0 0 6px; line-height:16.5px; }
+.transfer-product-picker .transfer-search-wrap i { font-size:12px; color:#9ca3af; }
+.transfer-product-search { padding:10px 10px!important; font-size:16px!important; }
+.transfer-product-options { height:118px; }
+.transfer-product-option { min-height:0; gap:12px; padding:10px 14px; }
+.transfer-product-option input[type=radio] { width:16px; height:16px; min-width:16px; border:2px solid #d1d5db; }
+.transfer-product-option span { font-size:12px; font-weight:500; line-height:16px; }
+.transfer-modal-input { height:40px; font-size:16px!important; font-weight:700!important; }
+.transfer-modal .modal-header { padding-bottom:14px; }
+.transfer-product-search { line-height:20px!important; }
+.transfer-modal .modal-body { padding-top:16px; }
+.transfer-form .transfer-modal-fields { margin-top:14px; }
+.transfer-modal .modal-body { padding-bottom:16px; }
+.transfer-form .transfer-quantity-full { margin-top:14px; }
