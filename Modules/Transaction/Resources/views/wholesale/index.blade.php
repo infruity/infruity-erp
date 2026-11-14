@@ -49,8 +49,8 @@
                                 <button type="button" class="text-xs font-semibold text-[#0b595b] hover:underline" data-wholesale-filter-reset>Reset</button>
                             </div>
                             <label class="mb-3 block text-xs font-semibold text-gray-600">Status
-                                <select data-wholesale-filter="status" class="mt-1.5 h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none focus:border-emerald-500">
-                                    <option value="all">Semua status</option><option value="draft">Pending</option><option value="complete">Selesai</option>
+                                <select data-wholesale-filter="status" autocomplete="off" class="mt-1.5 h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none focus:border-emerald-500">
+                                    <option value="all" selected>Semua</option><option value="draft">Pending</option><option value="complete">Selesai</option>
                                 </select>
                             </label>
                             <label class="mb-3 block text-xs font-semibold text-gray-600">Cabang
@@ -109,7 +109,7 @@
             status-label="Status Pengadaan"
             :branches="$branches"
             :show-branch-all="count($branches) > 1"
-            :statuses="['all' => 'Semua Status', 'draft' => 'Pending', 'complete' => 'Selesai']"
+            :statuses="['all' => 'Semua', 'draft' => 'Pending', 'complete' => 'Selesai']"
         />
         <template x-teleport="body">
             <div x-data="{
