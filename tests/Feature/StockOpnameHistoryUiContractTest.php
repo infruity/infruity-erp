@@ -24,7 +24,7 @@ final class StockOpnameHistoryUiContractTest extends TestCase
     {
         $source = $this->source();
 
-        foreach (['Awal', 'Kredit', 'Saldo', 'Stok Awal', 'Kredit Lebih', 'Kredit Kurang', 'Alasan Pergerakan'] as $label) {
+        foreach (['Awal', 'Kredit', 'Total', 'Stok Awal', 'Kredit Lebih', 'Kredit Kurang', 'Alasan Pergerakan'] as $label) {
             $this->assertStringContainsString($label, $source, "Label hilang: {$label}");
         }
         $this->assertStringContainsString('so-hist-row', $source);
