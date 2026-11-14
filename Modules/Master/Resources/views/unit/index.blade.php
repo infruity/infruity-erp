@@ -88,7 +88,7 @@
     </template>
 
     <template x-teleport="body">
-        <x-erp.detail-dialog open="detail" close="detail = null" title="Detail Satuan" labelledby="unit-detail-title" close-label="Tutup detail satuan" data-erp-modal>
+        <x-erp.detail-dialog open="detailOpen" close="detailOpen = false" title="Detail Satuan" labelledby="unit-detail-title" close-label="Tutup detail satuan" data-erp-modal>
             <template x-if="detail">
                 <div class="my-2 flex flex-col gap-5 text-sm break-words">
                     <div class="flex items-center gap-3">
@@ -117,7 +117,7 @@
                     <button type="button" @click="deleteDetail()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50"><i class="ph-bold ph-trash"></i> Hapus</button>
                 @endif
                 @unless (check_access('unit.edit') || check_access('unit.destroy'))
-                    <button type="button" @click="detail = null" class="flex flex-1 items-center justify-center py-4 text-sm font-semibold text-gray-600">Tutup</button>
+                    <button type="button" @click="detailOpen = false" class="flex flex-1 items-center justify-center py-4 text-sm font-semibold text-gray-600">Tutup</button>
                 @endunless
             </x-slot:actions>
         </x-erp.detail-dialog>
@@ -130,7 +130,7 @@
 function unitPage(units) {
     return {
         units, search: '', searchOpen: false, visibleCount: 50, scrolled: false, scrollTimer: null,
-        drawerOpen: false, editing: null, detail: null, saving: false, error: '',
+        drawerOpen: false, editing: null, detail: null, detailOpen: false, saving: false, error: '',
         form: { name: '', abbreviation: '', description: '' },
         get filtered() { const q = this.search.trim().toLocaleLowerCase('id'); return this.units.filter(unit => [unit.name, unit.abbreviation, unit.description].some(value => String(value || '').toLocaleLowerCase('id').includes(q))); },
         get visible() { return this.filtered.slice(0, this.visibleCount); },
@@ -157,9 +157,9 @@ function unitPage(units) {
         theme(unit) { return this.themes[Math.max(0, this.units.findIndex(item => item.id === unit.id)) % this.themes.length]; },
         openCreate() { if (!@js(check_access('unit.create'))) return; this.editing = null; this.form = { name: '', abbreviation: '', description: '' }; this.error = ''; this.drawerOpen = true; },
         openEdit(unit) { this.editing = unit.id; this.form = { name: unit.name, abbreviation: unit.abbreviation, description: unit.description || '' }; this.error = ''; this.drawerOpen = true; },
-        showDetail(unit) { this.detail = unit; },
-        editDetail() { const unit = this.detail; this.detail = null; if (unit) this.openEdit(unit); },
-        deleteDetail() { const unit = this.detail; this.detail = null; if (unit) this.confirmDelete(unit); },
+        showDetail(unit) { this.detail = unit; this.detailOpen = true; },
+        editDetail() { const unit = this.detail; this.detailOpen = false; if (unit) this.openEdit(unit); },
+        deleteDetail() { const unit = this.detail; this.detailOpen = false; if (unit) this.confirmDelete(unit); },
         async save() {
             if (this.saving) return;
             this.saving = true; this.error = '';
