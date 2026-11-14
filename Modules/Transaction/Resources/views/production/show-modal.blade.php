@@ -11,7 +11,7 @@
             <span class="production-detail-ref__icon production-detail-ref__icon--product {{ $icon_class }}" aria-hidden="true">{{ $emoji }}</span>
             <div class="production-detail-ref__text">
                 <div class="production-detail-ref__main is-strong">{{ $data->products->name ?? 'Produksi Barang' }}</div>
-                <div class="production-detail-ref__sub is-target">Target: {{ tonumber($data->quantity) }} {{ $unit }}</div>
+                <div class="production-detail-ref__sub is-target">Target: {{ rtrim(rtrim(number_format((float) $data->quantity, 2, ',', '.'), '0'), ',') }} {{ $unit }}</div>
             </div>
         </div>
         <div class="production-detail-ref__row">
