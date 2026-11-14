@@ -127,8 +127,15 @@
                 : target;
             return Boolean(scroller) && scroller.scrollHeight - scroller.clientHeight > 24;
         };
+        // Scrolls the page makes by itself (restoring a position, loading rows, scrollIntoView) must not shrink the dock:
+        // only a scroll that follows a real gesture (touch, wheel, key, scrollbar drag) counts.
+        let lastGesture = 0;
+        const markGesture = () => { lastGesture = Date.now(); };
+        ['touchstart', 'touchmove', 'wheel', 'keydown', 'pointerdown', 'mousedown'].forEach(name =>
+            window.addEventListener(name, markGesture, { passive: true, capture: true }));
         window.addEventListener('scroll', event => {
             if (nav.contains(event.target)) return;
+            if (Date.now() - lastGesture > 1200 && !nav.classList.contains('is-scrolled')) return;
             if (!reallyScrolls(event.target)) return;
             handleScrollActivity();
         }, { passive: true, capture: true });

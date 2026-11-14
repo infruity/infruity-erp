@@ -19,4 +19,12 @@ final class MobileNavbarScrollContractTest extends TestCase
             strpos($view, 'if (!reallyScrolls(event.target)) return;'),
         );
     }
+
+    public function test_dock_ignores_scrolls_the_page_makes_by_itself(): void
+    {
+        $view = file_get_contents(dirname(__DIR__, 2) . '/resources/views/components/erp/mobile-navbar.blade.php');
+
+        $this->assertStringContainsString("['touchstart', 'touchmove', 'wheel', 'keydown', 'pointerdown', 'mousedown']", $view);
+        $this->assertStringContainsString('Date.now() - lastGesture > 1200', $view);
+    }
 }
