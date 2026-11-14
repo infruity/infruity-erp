@@ -51,11 +51,11 @@ final class ProductionListReferenceTest extends TestCase
 
     public function test_production_css_status_colours_follow_the_reference(): void
     {
-        // The list copies the HTML reference: gray-400 secondary text, emerald-600 Selesai, amber-600 Pending.
+        // The list copies the HTML reference: gray-400 secondary text, emerald-600 Selesai, gray-400 Pending, as in Pengadaan.
         $css = file_get_contents(public_path('assets/css/production-list-reference.css'));
         $this->assertStringContainsString('.is-complete { color:#059669; }', $css);
-        $this->assertStringContainsString('.is-draft { color:#d97706; }', $css);
-        $this->assertStringContainsString('.is-temp { color:#d97706; }', $css);
+        $this->assertStringContainsString('.is-draft { color:#9ca3af; }', $css);
+        $this->assertStringContainsString('.is-temp { color:#9ca3af; }', $css);
     }
 
     public function test_branch_select_boundary_matches_the_other_form_fields(): void
