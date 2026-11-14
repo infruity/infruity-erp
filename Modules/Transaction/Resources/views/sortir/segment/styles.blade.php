@@ -86,7 +86,7 @@
     .sortir-product-picker { overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
     .sortir-search-wrap { display:flex; align-items:center; padding-left:12px; border-bottom:1px solid #f3f4f6; }
     .sortir-search-wrap i { font-size:14px; color:#9ca3af; flex:none; }
-    .sortir-product-search, .sortir-product-search:focus, .sortir-product-search:active, .sortir-product-search:focus-visible { appearance:none; width:100%; padding:12px 10px!important; font-size:13px!important; border:0!important; outline:0!important; box-shadow:none!important; background:transparent!important; color:#1f2937; min-width:0; }
+    .sortir-product-search, .sortir-product-search:focus, .sortir-product-search:active, .sortir-product-search:focus-visible { appearance:none; width:100%; padding:8px 10px!important; font-size:16px!important; line-height:24px!important; border:0!important; outline:0!important; box-shadow:none!important; background:transparent!important; color:#1f2937; min-width:0; }
     .sortir-product-search::placeholder { color:#6b7280; }
     .sortir-product-options { height:132px; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:#d1d5db transparent; }
     .sortir-product-option { display:flex; align-items:center; gap:12px; padding:10px 14px; min-height:44px; border-bottom:1px solid #f3f4f6; cursor:pointer; margin:0; }
