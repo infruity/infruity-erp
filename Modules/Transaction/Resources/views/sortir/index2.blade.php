@@ -76,7 +76,7 @@
             apply-label="Terapkan Filter"
         />
         <template x-teleport="body">
-            <div x-show="selected" x-cloak class="sortir-overlay" @click.self="closeDetail()" @keydown.escape.window="if (selected) closeDetail()" @keydown.tab="trapFocus($event)">
+            <div x-show="selected && !confirmingDelete" x-cloak class="sortir-overlay" @click.self="closeDetail()" @keydown.escape.window="if (selected) closeDetail()" @keydown.tab="trapFocus($event)">
                 <section class="sortir-dialog" id="sortir-detail-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="sortir-detail-title">
                     <div class="sortir-dialog-head">
                         <h3 id="sortir-detail-title">Detail Sortir Barang</h3>

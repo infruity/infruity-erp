@@ -4,7 +4,7 @@
             rows: [], total: 0, filtered: 0, search: '', loading: false, error: '', requestId: 0,
             filters: {status: 'all', branch: 'all', start: '', end: ''},
             filterOpen: false,
-            selected: null, deleting: false, returnFocus: null,
+            selected: null, deleting: false, confirmingDelete: false, returnFocus: null,
             init() { this.load(); },
             money(value) { return 'Rp ' + Number(value || 0).toLocaleString('id-ID', {maximumFractionDigits: 2}); },
             statusLabel(status) { return ['paid', 'debt'].includes(status) ? 'Selesai' : (status === 'canceled' ? 'Dibatalkan' : 'Pending'); },
@@ -69,9 +69,11 @@
             async deleteSelected() {
                 const row = this.selected;
                 if (!row?.can_delete || this.deleting) return;
-                const decision = (typeof ErpDialog !== 'undefined' && ErpDialog.confirmDelete)
+                this.confirmingDelete = true; // the detail popup steps aside so only the confirmation shows
+                let decision;
+                try { decision = (typeof ErpDialog !== 'undefined' && ErpDialog.confirmDelete)
                     ? { isConfirmed: await ErpDialog.confirmDelete({ what: 'Sortir', name: row.invoice_number, subject: 'Transaksi', suffix: 'akan dihapus. Perhitungan stok akan mengikuti perubahan ini.' }) }
-                    : await Swal.fire({title:'Hapus transaksi sortir?',text:'Transaksi ' + row.invoice_number + ' akan dihapus. Perhitungan stok akan mengikuti perubahan ini.',icon:'warning',showCancelButton:true,confirmButtonText:'Hapus',cancelButtonText:'Batal',confirmButtonColor:'#dc2626'});
+                    : await Swal.fire({title:'Hapus transaksi sortir?',text:'Transaksi ' + row.invoice_number + ' akan dihapus. Perhitungan stok akan mengikuti perubahan ini.',icon:'warning',showCancelButton:true,confirmButtonText:'Hapus',cancelButtonText:'Batal',confirmButtonColor:'#dc2626'}); } finally { this.confirmingDelete = false; }
                 if (!decision.isConfirmed) return;
                 this.deleting = true;
                 try {
