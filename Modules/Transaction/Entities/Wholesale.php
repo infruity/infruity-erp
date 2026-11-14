@@ -93,10 +93,14 @@ class Wholesale extends Model
             $query->whereDate('wholesale.order_date', '<=', $request->end_date);
         }
         if ($request->status && $request->status != 'all') {
-            // Two statuses are shown: Pending (saved, not finished: temp / draft / posting) and Selesai.
-            $request->status === 'draft'
-                ? $query->whereIn('wholesale.status', ['temp', 'draft', 'posting'])
-                : $query->where('wholesale.status', $request->status);
+            // Two statuses are shown: Pending (draft / temp) and Selesai (posting / complete).
+            if (in_array($request->status, ['draft', 'pending'], true)) {
+                $query->whereIn('wholesale.status', ['temp', 'draft']);
+            } elseif (in_array($request->status, ['posting', 'complete', 'selesai'], true)) {
+                $query->whereIn('wholesale.status', ['posting', 'complete']);
+            } else {
+                $query->where('wholesale.status', $request->status);
+            }
         }
         if ($request->cabang_filter && $request->cabang_filter != 'all') {
             $query->where('wholesale.branch_id', $request->cabang_filter);

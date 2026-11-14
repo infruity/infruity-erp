@@ -264,6 +264,13 @@ class SortirController extends Controller
                 'hpp' => (float) ($productStock->avg_hpp ?? $product->hpp ?? 0),
                 'stock_available' => (float) ($productStock->stock_available ?? 0)
                     + (float) ($ownQuantities[$product->id] ?? 0)];
+        })->sort(function ($a, $b) {
+            $hasStockA = $a['stock_available'] > 0 ? 1 : 0;
+            $hasStockB = $b['stock_available'] > 0 ? 1 : 0;
+            if ($hasStockA !== $hasStockB) {
+                return $hasStockB <=> $hasStockA;
+            }
+            return strcasecmp($a['name'], $b['name']);
         })->values());
     }
 

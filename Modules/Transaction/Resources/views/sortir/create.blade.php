@@ -18,8 +18,14 @@
         ];
     @endphp
     @include('transaction::sortir.segment.styles')
-    <div class="sortir-form" x-data="sortirForm(@js($sortirConfig))" @keydown.escape.window="branchOpen = false">
+    <div class="sortir-form" x-data="sortirForm(@js($sortirConfig))" @keydown.escape.window="branchOpen = false; confirmModalOpen = false">
         <div class="sortir-canvas">
+            <div class="sortir-canvas-head">
+                <a href="{{ route('sortir.index') }}" class="sortir-desktop-back" aria-label="Kembali ke daftar sortir">
+                    <i class="ph-bold ph-arrow-left" aria-hidden="true"></i>
+                    <span>Kembali</span>
+                </a>
+            </div>
             <section class="sortir-branch-card" aria-label="Cabang sortir">
                 <label class="sortir-field-label" id="sortir-branch-label">Cabang <span class="sortir-required">*</span></label>
                 <div class="sortir-branch-picker" @click.outside="branchOpen = false" @keydown.escape.stop="branchOpen = false">
@@ -54,6 +60,7 @@
         </div>
         @include('transaction::sortir.segment.ringkasan')
         @include('transaction::sortir.segment.modal-product')
+        @include('transaction::sortir.segment.modal-confirm')
     </div>
     @include('transaction::sortir.js-create')
 @endsection
