@@ -117,7 +117,7 @@
 /* ---- Popup summary in the layout of the HTML reference (show-modal.blade.php) ---- */
 .production-detail--ref { display:block; max-width:none; margin:0; font-family:'Plus Jakarta Sans', sans-serif; }
 .production-detail-ref__title { display:none; }
-.production-detail-ref__address { margin:-18px 0 14px; overflow:hidden; color:#9ca3af; font-size:11px; font-weight:500; line-height:16.5px; text-overflow:ellipsis; white-space:nowrap; }
+.production-detail-ref__address { margin:-18px 0 23.3px; overflow:hidden; color:#9ca3af; font-size:11px; font-weight:500; line-height:16.5px; text-overflow:ellipsis; white-space:nowrap; }
 .production-detail-ref__rows { display:flex; flex-direction:column; gap:20px; margin-top:6px; font-size:14px; }
 .production-detail-ref__row { display:flex; align-items:center; gap:12px; }
 .production-detail-ref__icon { display:flex; width:40px; height:40px; flex:none; align-items:center; justify-content:center; border:1px solid rgba(167,243,208,.8); border-radius:12px; background:#ecfdf5; color:#0b595b; font-size:18px; }
