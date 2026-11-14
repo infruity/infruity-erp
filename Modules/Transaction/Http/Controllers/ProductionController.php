@@ -749,7 +749,10 @@ class ProductionController extends Controller
                 ->whereNotNull('product_id');
 
             if ($request->has('status_filter') && $request->status_filter !== 'all' && ! empty($request->status_filter)) {
-                $query->where('status', $request->status_filter);
+                // "complete" (Selesai) covers the posting and complete states, like the list label.
+                $request->status_filter === 'complete'
+                    ? $query->whereIn('status', ['posting', 'complete'])
+                    : $query->where('status', $request->status_filter);
             } else {
                 $statusColumnSearch = trim((string) data_get($request->input('columns', []), '1.search.value', ''));
                 if ($statusColumnSearch !== '') {

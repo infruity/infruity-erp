@@ -33,28 +33,29 @@ final class ProductionListReferenceTest extends TestCase
         }
     }
 
-    public function test_list_has_no_filter_controls_and_keeps_search_and_add(): void
+    public function test_list_has_the_reference_filter_sheet_and_keeps_search_and_add(): void
     {
         $view = file_get_contents(base_path('Modules/Transaction/Resources/views/production/index.blade.php'));
 
+        // The old desktop filter widgets stay out; the phone list has the reference's filter button and sheet.
         foreach (['production-list-filter', 'erp-operations-filter', 'production-status-segments', 'production-branch-pill',
             'data-production-filter-toggle', 'kt_ecommerce_sales_flatpickr', 'data-kt-ecommerce-product-filter',
-            'status_filter', 'cabang_filter', 'start_date', 'active-branch-button-label'] as $removed) {
+            'active-branch-button-label'] as $removed) {
             $this->assertStringNotContainsString($removed, $view, $removed);
         }
+        $this->assertStringContainsString('<x-erp.filter-sheet id="production"', $view);
+        $this->assertStringContainsString("'draft' => 'Pending', 'complete' => 'Selesai'", $view);
         $this->assertStringContainsString('data-production-search', $view);
         $this->assertStringContainsString("url('production/create')", $view);
     }
 
-    public function test_production_css_has_no_low_contrast_faint_grey_or_green_status_text(): void
+    public function test_production_css_status_colours_follow_the_reference(): void
     {
-        // production-form-reference and production-detail-reference copy the HTML reference exactly, which uses gray-400 (#9ca3af) for secondary text.
-        foreach (['production-list-reference'] as $name) {
-            $this->assertStringNotContainsString('#9ca3af', file_get_contents(public_path("assets/css/{$name}.css")), $name);
-        }
-        $view = file_get_contents(base_path('Modules/Transaction/Resources/views/production/index.blade.php'));
-        $this->assertStringNotContainsString('#9ca3af', $view);
-        $this->assertStringNotContainsString('color:#059669; }', file_get_contents(public_path('assets/css/production-list-reference.css')));
+        // The list copies the HTML reference: gray-400 secondary text, emerald-600 Selesai, amber-600 Pending.
+        $css = file_get_contents(public_path('assets/css/production-list-reference.css'));
+        $this->assertStringContainsString('.is-complete { color:#059669; }', $css);
+        $this->assertStringContainsString('.is-draft { color:#d97706; }', $css);
+        $this->assertStringContainsString('.is-temp { color:#9ca3af; }', $css);
     }
 
     public function test_branch_select_boundary_matches_the_other_form_fields(): void

@@ -7,9 +7,9 @@
   const [day,month,year,hour,minute]=m.slice(1).map(Number);
   const d=new Date(Date.UTC(year,month-1,day,hour,minute));
   if(d.getUTCFullYear()!==year||d.getUTCMonth()!==month-1||d.getUTCDate()!==day||d.getUTCHours()!==hour||d.getUTCMinutes()!==minute)return '—';
-  return `${day} ${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][month-1]} ${year} · ${m[4]}:${m[5]}`;
+  return `${String(day).padStart(2,'0')} ${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][month-1]} ${year}, ${m[4]}:${m[5]}`;
  }
- function statusLabel(kind){return {'is-temp':'Draf','is-draft':'Siap Produksi','is-posting':'Selesai','is-complete':'Selesai'}[kind]||null;}
+ function statusLabel(kind){return {'is-temp':'Draft','is-draft':'Pending','is-posting':'Selesai','is-complete':'Selesai'}[kind]||null;}
  function quantity(value){
   if(value==null||value===''||!Number.isFinite(Number(value)))return null;
   return Number(value).toLocaleString('id-ID',{maximumFractionDigits:20});
@@ -82,7 +82,7 @@
   const copy=row.querySelector('.production-copy');
   if(copy&&!copy.querySelector('.production-reference-time')){
    const stamp=row.querySelector('td:nth-child(3) span');
-   const time=document.createElement('span');time.className='production-reference-time';time.setAttribute('aria-label','Waktu dibuat');time.textContent=recordedTime(stamp?.textContent.trim());copy.append(time);
+   const time=document.createElement('span');time.className='production-reference-time';time.setAttribute('aria-label','Waktu dibuat');const branch=row.querySelector('td:nth-child(3) .badge')?.textContent.trim();time.textContent=recordedTime(stamp?.textContent.trim())+(branch?' · '+branch:'');copy.append(time);
   }
   const status=row.querySelector('.production-status');
   if(status){const label=[...status.classList].map(statusLabel).find(Boolean);if(label)status.textContent=label;}

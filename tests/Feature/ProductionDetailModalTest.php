@@ -19,7 +19,7 @@ final class ProductionDetailModalTest extends TestCase
         $this->assertStringContainsString('production-detail-reference.css', $list);
         $this->assertStringContainsString('production-list-reference.js', $list);
         $this->assertStringContainsString('createDetailModal', file_get_contents(public_path('assets/js/production-list-reference.js')));
-        $this->assertStringContainsString("</x-erp.workspace>\n    </div>\n    <div data-production-detail-modal", $list);
+        $this->assertStringContainsString("<div data-production-detail-modal", $list);
         $this->assertStringContainsString("route('production.index')", $list);
 
         // Direct URLs and normal navigation fallback keep the complete server-rendered detail page.

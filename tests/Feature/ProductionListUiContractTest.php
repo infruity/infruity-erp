@@ -43,9 +43,9 @@ final class ProductionListUiContractTest extends TestCase
     {
         $view = $this->listView();
 
-        // The list no longer shows or sends filters; the endpoint still accepts them.
+        // The phone list sends the sheet's filters; the endpoint accepts them.
         foreach (['status_filter', 'cabang_filter', 'start_date', 'end_date'] as $param) {
-            $this->assertStringNotContainsString($param, $view);
+            $this->assertStringContainsString($param, $view);
             $this->assertStringContainsString($param, $this->controller());
         }
         foreach (["route('production-data')", 'deleteProduct('] as $contract) {
