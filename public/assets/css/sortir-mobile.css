@@ -28,7 +28,8 @@ body:has(.sortir-list-page) main > .animate-fade-in-up { animation:none; }
 .sortir-row-status.is-final { color:#059669; }
 .sortir-row-total { display:block; overflow-wrap:anywhere; margin-top:3px; color:#111827; font-weight:700; font-variant-numeric:tabular-nums; }
 .sortir-list-state { display:flex; min-height:50vh; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:32px; text-align:center; }
-.sortir-list-state > i { display:grid; width:64px; height:64px; place-items:center; border:1px solid #d1fae5; border-radius:24px; background:#f0fdf8; color:#0b595b; font-size:30px; }
+.sortir-list-state > i, .sortir-state-icon { display:flex; width:64px; height:64px; align-items:center; justify-content:center; border:1px solid #d1fae5; border-radius:24px; background:#f0fdf8; color:#0b595b; font-size:30px; }
+.sortir-state-icon > i { display:block; line-height:1; }
 .sortir-list-state h2 { margin:4px 0 0; color:#1f2937; font-size:15px; font-weight:700; }
 .sortir-list-state p { max-width:280px; margin:0; color:#6b7280; font-size:12px; line-height:1.7; }
 .sortir-text-button { border:0; padding:4px; background:transparent; color:#0b595b; font:inherit; font-size:12px; font-weight:600; text-decoration:underline; cursor:pointer; }
@@ -79,7 +80,7 @@ body:has(.sortir-list-page) main > .animate-fade-in-up { animation:none; }
     .sortir-row-status.is-final { color:#059669; font-weight:700; }
     .sortir-row-total { margin-top:0; line-height:16px; font-weight:700; }
     .sortir-list-state { min-height:calc(100dvh - 234px); gap:0; padding:16px; }
-    .sortir-list-state > i { border-color:rgba(167,243,208,.8); background:rgba(236,253,245,.8); }
+    .sortir-list-state > i, .sortir-state-icon { border-color:rgba(167,243,208,.8); background:rgba(236,253,245,.8); }
     .sortir-list-state h2 { margin:16px 0 0; font-size:14px; line-height:20px; }
     .sortir-list-state p { max-width:260px; margin-top:8px; font-size:12px; line-height:19.5px; }
     .sortir-list-state .sortir-add-tile { display:inline-flex; width:24px; height:24px; align-items:center; justify-content:center; margin:0 4px; vertical-align:middle; border:1px solid rgba(167,243,208,.8); border-radius:8px; background:#ecfdf5; color:#0b595b; text-decoration:none; }

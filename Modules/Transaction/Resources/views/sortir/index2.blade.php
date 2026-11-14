@@ -46,7 +46,7 @@
             <div class="sortir-list-state" x-show="loading && !rows.length" role="status"><i class="ph ph-circle-notch" aria-hidden="true"></i><p>Memuat transaksi sortir...</p></div>
             <div class="sortir-list-state" x-show="error" x-cloak role="alert"><h2>Daftar sortir belum dapat dimuat</h2><p x-text="error"></p><button type="button" class="sortir-text-button" @click="load(rows.length > 0)">Coba lagi</button></div>
             <div class="sortir-list-state" x-show="!loading && !error && !rows.length" x-cloak>
-                <i class="ph-duotone ph-receipt" aria-hidden="true"></i>
+                <span class="sortir-state-icon" aria-hidden="true"><i class="ph-duotone ph-receipt"></i></span>
                 <h2 x-text="search || activeFilters ? 'Transaksi tidak ditemukan' : 'Belum ada sortir barang'"></h2>
                 <p x-show="search || activeFilters">Coba kata pencarian lain atau sesuaikan filter.</p>
                 @if (check_access('sortir.create'))
