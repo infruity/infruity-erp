@@ -19,7 +19,7 @@
     .erp-ui .erp-tone-8{color:#e11d48;border-color:#ffe4e6;}
     .erp-ui .erp-tone-9{color:#ea580c;border-color:#ffedd5;}
     /* Form sheet fields follow the reference: emerald-500 border + 1px ring, dark caret. */
-    .erp-ui [id^="master-field-"]:focus, .erp-ui [id^="master-field-"]:focus-visible { border-color:#10b981; box-shadow:0 0 0 1px #10b981; outline:0; caret-color:#1f2937; }
+    .erp-ui :is(input, textarea, button)[id^="master-field-"][id]:is(:focus, :focus-visible) { border-color:#10b981; box-shadow:0 0 0 1px #10b981; outline:0; caret-color:#1f2937; }
 </style>
 <style>
     @media (max-width: 767px) {
