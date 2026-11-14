@@ -43,7 +43,7 @@
         <div class="production-ref-composition">
             <div class="production-ref-composition__head">
                 <span>Komposisi Produk</span>
-                <button type="button" @click="openAddIngredientModal()" aria-label="Tambah bahan produksi">+ Tambah</button>
+                <button type="button" @click="openAddIngredientModal()" :disabled="!referenceProductId" aria-label="Tambah bahan produksi">+ Tambah</button>
             </div>
             <div class="production-ref-composition__body" id="ingredients-container">
                 <template x-if="isLoadingIngredients">
@@ -94,11 +94,11 @@
         <div class="production-ref-totals">
             <div class="production-ref-field">
                 <span class="production-ref-label">Modal / Satuan</span>
-                <div class="production-ref-readout"><small>Rp</small><b x-text="formatNumber(hppPerUnit)"></b></div>
+                <div class="production-ref-readout is-locked"><small>Rp</small><b x-text="formatNumber(hppPerUnit)"></b></div>
             </div>
             <div class="production-ref-field">
                 <span class="production-ref-label">Total Modal</span>
-                <div class="production-ref-readout"><small>Rp</small><b x-text="formatNumber(totalHpp)"></b></div>
+                <div class="production-ref-readout is-locked"><small>Rp</small><b x-text="formatNumber(totalHpp)"></b></div>
             </div>
             <div class="production-ref-field">
                 <span class="production-ref-label">Harga Jual <em>/porsi</em></span>
@@ -135,7 +135,7 @@
                 <x-erp.spinner size="sm" x-show="savingDraft" />
                 <i class="ph-bold ph-bookmark-simple" aria-hidden="true" x-show="!savingDraft"></i>
             </button>
-            <button type="button" class="production-ref-save" :disabled="saving || savingDraft"
+            <button type="button" class="production-ref-save" :disabled="saving || savingDraft || !referenceProductId"
                 @click="saving = true; saveProduction('posting', () => saving = false)">
                 <x-erp.spinner size="sm" x-show="saving" class="!text-white" />
                 <span x-text="saving ? 'Menyimpan…' : 'Submit'"></span>

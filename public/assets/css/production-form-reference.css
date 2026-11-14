@@ -243,6 +243,7 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
 .production-ref-composition__head > span { color:#1f2937; font-size:12px; font-weight:700; line-height:16px; }
 .production-ref-composition__head > button { border:0; background:transparent; padding:0; color:#0b595b; font-size:12px; font-weight:700; line-height:16px; cursor:pointer; }
 .production-ref-composition__head > button:hover { color:#08484a; text-decoration:underline; }
+.production-ref-composition__head > button:disabled { color:#9ca3af; cursor:not-allowed; text-decoration:none; }
 .production-ref-composition__body { min-height:140px; }
 .production-ref-composition__body:has(> .production-ref-empty) { display:flex; flex-direction:column; }
 .production-ref-composition__body > .production-ref-empty { flex:1; }
@@ -274,6 +275,7 @@ body.erp-ui .production-create-reference .production-ref-row__qty input:is(:focu
 /* Modal / Total / Harga jual / Kuantitas */
 .production-ref-totals { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; border-top:1px solid #f3f4f6; padding-top:12px; }
 .production-ref-readout { display:flex; height:44px; align-items:center; overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; background:#fff; padding:0 14px; }
+.production-ref-readout.is-locked { background:rgba(243,244,246,.8); }
 .production-ref-readout small { flex:none; margin-right:6px; color:#9ca3af; font-size:12px; font-weight:700; }
 .production-ref-readout b { overflow:hidden; color:#1f2937; font-size:12px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
 .production-create-reference .production-ref-totals #quantity { height:44px; min-height:44px; padding:0 14px; border:1px solid #e5e7eb; border-radius:12px; background-color:#fff; color:#1f2937; font-size:12px; font-weight:700; box-shadow:none; }
