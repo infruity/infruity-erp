@@ -271,6 +271,9 @@
         /* Navigation feedback: a thin bar under the top edge while the next page loads (each sub module is a full page). */
         #erp-nav-progress { position:fixed; z-index:2147483000; top:0; left:0; height:3px; width:0; opacity:0; background:linear-gradient(90deg,#0b595b,#d1f36e); box-shadow:0 0 8px rgba(209,243,110,.7); pointer-events:none; transition:width .25s ease, opacity .2s ease; }
         #erp-nav-progress.is-active { opacity:1; }
+        /* Like the reference shell: the current page dims to 85% while the next one loads, and the tapped menu item is highlighted at once. */
+        .erp-main { transition:opacity .15s ease-out; }
+        html.erp-navigating .erp-main { opacity:.85; }
         @media (prefers-reduced-motion: reduce) { #erp-nav-progress { transition:none; } }
     </style>
     <!-- Chromium starts rendering the destination while the finger is still pressing a menu link, so the page swaps in almost instantly. Other browsers ignore this. -->
@@ -345,10 +348,11 @@
 <script>
     (function () {
         var bar = document.getElementById('erp-nav-progress'), timer = null, width = 0;
-        function stop() { clearInterval(timer); bar.classList.remove('is-active'); bar.style.width = '0'; width = 0; }
+        function stop() { clearInterval(timer); bar.classList.remove('is-active'); bar.style.width = '0'; width = 0; document.documentElement.classList.remove('erp-navigating'); }
         function start() {
             stop();
             bar.classList.add('is-active');
+            document.documentElement.classList.add('erp-navigating');
             width = 12; bar.style.width = width + '%';
             // Creeps toward 90% and waits there until the browser swaps in the new page.
             timer = setInterval(function () { width += (90 - width) * 0.12; bar.style.width = width.toFixed(1) + '%'; }, 120);
@@ -361,7 +365,18 @@
             try { url = new URL(link.href, location.href); } catch (e) { return; }
             if (url.origin !== location.origin || (url.pathname === location.pathname && url.search === location.search) || /^(javascript|mailto|tel):/i.test(link.getAttribute('href') || '')) return;
             // Let other handlers cancel the navigation first.
-            setTimeout(function () { if (!event.defaultPrevented) start(); }, 0);
+            setTimeout(function () {
+                if (event.defaultPrevented) return;
+                start();
+                var menu = link.closest('aside.erp-sidebar');
+                if (menu) {
+                    menu.querySelectorAll('.sidebar-link.active, .submenu-link.active').forEach(function (item) { item.classList.remove('active'); });
+                    link.classList.add('active');
+                    var group = link.closest('.erp-sidebar__group');
+                    var header = group && group.querySelector('a[data-type="header"]');
+                    if (header) header.classList.add('active');
+                }
+            }, 0);
         });
         window.addEventListener('pageshow', stop);
     })();
