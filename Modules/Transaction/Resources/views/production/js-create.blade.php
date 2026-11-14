@@ -1455,21 +1455,8 @@
 
     // Notification functions
     function showLoadingNotification(message) {
-        // You can integrate with your notification system here
+        // No loading popup: the composition panel shows its own "loading" state (isLoadingIngredients).
         console.log('LOADING: ' + message);
-
-        // Simple implementation - replace with your notification system
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'Memuat...',
-                text: message,
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-        }
     }
 
     function showSuccessNotification(message) {
