@@ -1105,7 +1105,8 @@
             emptyText: 'Produk olahan tidak ditemukan',
             clearable: false,
             url: '{{ route('products.get-receipt') }}',
-            map: item => ({ id: item.product_id, text: item.products?.name || 'Unknown Product', meta: 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(item.products?.price) || 0) + ' / Porsi' })
+            params: () => ({ branch: document.getElementById('branch_id')?.value || '' }),
+            map: item => ({ id: item.product_id, text: item.products?.name || 'Unknown Product', meta: 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(item.products?.price) || 0) + ' / Porsi', aside: 'Stok ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(Number(item.products?.stock_available) || 0) })
         });
         window.jQuery('#product_id').on('change', () => {
             const root = document.querySelector('[x-data*="productionApp"]');

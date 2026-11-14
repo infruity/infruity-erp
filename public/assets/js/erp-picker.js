@@ -15,7 +15,7 @@
         list.forEach(function (row) {
             var mapped = map ? map(row) : row;
             if (!mapped || mapped.id === undefined || mapped.id === null || mapped.id === '') return;
-            var item = { id: String(mapped.id), text: String(mapped.text == null ? '' : mapped.text), meta: mapped.meta == null ? '' : String(mapped.meta) };
+            var item = { id: String(mapped.id), text: String(mapped.text == null ? '' : mapped.text), meta: mapped.meta == null ? '' : String(mapped.meta), aside: mapped.aside == null ? '' : String(mapped.aside) };
             // Extra fields (tier, address, stock...) that page handlers read from the select2 data object.
             if (mapped.data !== undefined) item.data = mapped.data;
             items.push(item);
@@ -212,6 +212,7 @@
             text.append(el('strong', '', item.text));
             if (item.meta) text.append(el('span', '', item.meta));
             row.append(text);
+            if (item.aside) row.append(el('em', 'erp-picker__aside', item.aside));
             if (item.id === current) row.append(el('i', 'ph-bold ph-check'));
             row.addEventListener('click', function () { choose(item); });
             row.addEventListener('keydown', function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose(item); } });
