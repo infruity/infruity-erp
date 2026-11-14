@@ -5,6 +5,7 @@
             // Data properties
             ingredients: [],
             availableIngredients: [],
+            ingredientsRequest: null,
             availableRecipes: [],
             selectedIngredient: null,
             selectedRecipe: null,
@@ -348,11 +349,17 @@
             },
 
             // Load available ingredients
-            async loadAvailableIngredients() {
+            async loadAvailableIngredients(force = false) {
+                // One request per page: the list is fetched when the form opens and reused by the dialog.
+                if (!force && this.ingredientsRequest) return this.ingredientsRequest;
+                this.ingredientsRequest = this.fetchAvailableIngredients();
+                return this.ingredientsRequest;
+            },
+
+            async fetchAvailableIngredients() {
                 try {
                     const response = await fetch('{{ route('ajax.getProduct') }}');
                     const data = await response.json();
-                    console.log('API Response:', data); // Temporary debug
                     this.availableIngredients = data.map(item => ({
                         id: item.id,
                         name: item.name,
@@ -362,8 +369,8 @@
                         unit: item.unit?.abbreviation || 'pcs',
                         category: item.category?.name || 'Umum'
                     }));
-                    console.log('Mapped ingredients:', this.availableIngredients); // Temporary debug
                 } catch (error) {
+                    this.ingredientsRequest = null; // allow a retry
                     console.error('Error loading ingredients:', error);
                     this.showNotification('Error loading ingredients', 'error');
                 }
@@ -407,12 +414,19 @@
             // Open modals
             openAddIngredientModal() {
                 this.showAddIngredientModal = true;
+                // The list is already there (loaded with the form); no new request on every tap.
                 this.loadAvailableIngredients();
                 this.ingredientSearchTerm = '';
                 this.selectedIngredient = null;
                 this.ingredientQuantity = '';
-                const modal = new bootstrap.Modal(document.getElementById('modal-add-ingredient'));
-                modal.show();
+                // The dim layer is the modal's own background and fades in with the card, like the reference. Bootstrap's separate
+                // backdrop made the card wait for its ~190 ms fade before it appeared (that was the "loading" feel).
+                const addModal = document.getElementById('modal-add-ingredient');
+                if (!addModal.dataset.sharedFade) {
+                    addModal.dataset.sharedFade = 'true';
+                    addModal.addEventListener('mousedown', event => { if (event.target === addModal) bootstrap.Modal.getInstance(addModal)?.hide(); });
+                }
+                bootstrap.Modal.getOrCreateInstance(addModal, { backdrop: false }).show();
             },
 
             // Open edit ingredient modal
