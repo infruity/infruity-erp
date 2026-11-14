@@ -334,3 +334,11 @@
 #kt_modal_add_customer .so-form-diff__row.is-sub { margin-top:4px; }
 #kt_modal_add_customer .so-form-diff__row.is-sub strong { line-height:16px; }
 #kt_modal_add_customer .so-create-footer > * { margin:0; }
+/* The Stok Opname reference page has no notification bell in its phone header (the logo stays centred). */
+@media (max-width:767.98px) { body:has(.stock-opname-page) .erp-topbar-mobile__notify { visibility:hidden; } }
+@media (max-width:767.98px) {
+    body:has(.stock-opname-page) .erp-topbar-mobile [aria-label="Buka navigasi"] { margin-left:-4px; }
+    body:has(.stock-opname-page) .erp-topbar-mobile__logo { transform:translateX(calc(-50% - 2px)); }
+}
+.so-reference-sheet .so-title-edit { flex:none; padding:0; border:0; background:transparent; color:#0b595b; font-size:11px; font-weight:600; line-height:1.5; cursor:pointer; }
+.so-reference-sheet .so-title-edit[hidden] { display:none; }
