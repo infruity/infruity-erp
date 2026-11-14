@@ -344,3 +344,18 @@
 .so-reference-sheet .so-title-edit[hidden] { display:none; }
 #kt_modal_stock_detail.is-final .so-sheet-footer .so-history-button { background:#0b595b; border-color:#0b595b; color:#fff; font-size:12px !important; }
 #kt_modal_stock_detail .so-detail-summary b { font-weight:700; }
+
+/* ---- Enter / exit motion, as in the reference ----
+   Sheets: the dim fades (300ms in, 200ms out) while the panel slides up from the bottom (300ms ease-out in, 200ms ease-in out).
+   The history page and the add form just appear, like the reference's view switch. */
+@media (max-width:767.98px) {
+    .so-reference-sheet.fade { opacity:1 !important; background-color:rgba(0,0,0,0); transition:background-color .2s cubic-bezier(.4,0,1,1), backdrop-filter .2s cubic-bezier(.4,0,1,1); }
+    .so-reference-sheet.fade.show { background-color:rgba(0,0,0,.6); backdrop-filter:blur(4px); transition:background-color .3s cubic-bezier(0,0,.2,1), backdrop-filter .3s cubic-bezier(0,0,.2,1); }
+    .so-reference-sheet.fade .modal-dialog { transform:translateY(100%); transition:transform .2s cubic-bezier(.4,0,1,1); }
+    .so-reference-sheet.fade.show .modal-dialog { transform:none; transition:transform .3s cubic-bezier(0,0,.2,1); }
+    #so-history-filter .modal-content { background:#fff; }
+    #kt_modal_add_customer.fade { opacity:1 !important; transition:none !important; }
+    #kt_modal_add_customer.fade .modal-dialog { transform:none !important; transition:none !important; }
+}
+body:has(.stock-opname-page) > .modal-backdrop { display:none !important; }
+#kt_stock_opname_history, #kt_stock_opname_history.drawer-on { transition:none !important; }

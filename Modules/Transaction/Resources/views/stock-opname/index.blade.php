@@ -998,7 +998,7 @@
 
     <!--begin::Stock Opname History Drawer-->
     <div id="kt_stock_opname_history" class="so-reference-history bg-body" data-kt-drawer="true" data-kt-drawer-name="stock-opname-history"
-        data-kt-drawer-activate="true" data-kt-drawer-overlay="true" data-kt-drawer-width="{default:'100%', 'md': '760px'}" data-kt-drawer-direction="end" data-kt-drawer-close="#kt_stock_opname_history_close" role="dialog" aria-modal="true" aria-hidden="true" inert aria-labelledby="so-history-title" tabindex="-1">
+        data-kt-drawer-activate="true" data-kt-drawer-overlay="false" data-kt-drawer-width="{default:'100%', 'md': '760px'}" data-kt-drawer-direction="end" data-kt-drawer-close="#kt_stock_opname_history_close" role="dialog" aria-modal="true" aria-hidden="true" inert aria-labelledby="so-history-title" tabindex="-1">
         <div class="so-history-page">
             <header class="so-history-topbar"><button type="button" id="kt_stock_opname_history_close" aria-label="Kembali ke detail"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button><h2 id="so-history-title">Riwayat Stok Opname</h2><span></span></header>
             <div class="so-history-subheader"><div class="so-history-context"><div><p>Riwayat Stok Opname</p><div class="so-history-title"><h3 id="history-transaction-code">—</h3><i class="ph-fill ph-check-circle so-history-check" title="Selesai" aria-hidden="true" hidden></i></div></div><div class="so-history-tools"><button type="button" data-so-history-toggle aria-label="Ubah tampilan menjadi Alasan" aria-pressed="false">Kredit</button><button type="button" id="so-history-filter-open" aria-label="Filter riwayat stok opname" aria-haspopup="dialog" aria-controls="so-history-filter"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></div></div><div id="so-history-columns" class="so-hist-head"></div></div>
@@ -1275,9 +1275,9 @@
                 edit: () => editProduct(id),
             }[action];
             if (!run) return;
-            // Close the sheet first so the next modal/drawer does not stack on its backdrop.
-            $sheet.one('hidden.bs.modal', run);
+            // The sheet slides away while the next view comes up (the reference does both at once).
             bootstrap.Modal.getOrCreateInstance($sheet[0]).hide();
+            run();
         });
 
         $(document).ready(function() {
