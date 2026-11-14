@@ -28,6 +28,7 @@ final class UserResetPasswordTest extends TestCase
         self::assertStringContainsString('border-rose-200 bg-rose-50', $footer);
         self::assertStringNotContainsString('ph-key', $footer);
         self::assertStringContainsString('ph-bold ph-arrow-left', $footer);
-        self::assertStringNotContainsString('>Batal</button>', $footer);
+        self::assertStringContainsString('x-show="!editing" @click="closeDrawer()"', $footer);
+        self::assertStringContainsString('>Batal</button>', $footer);
     }
 }
