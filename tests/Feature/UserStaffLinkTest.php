@@ -89,6 +89,13 @@ class UserStaffLinkTest extends TestCase
             $table->string('name');
             $table->unsignedBigInteger('department_id')->nullable();
         });
+        Schema::create('staff_position', function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedBigInteger('staff_id');
+            $table->unsignedBigInteger('position_id');
+            $table->timestamps();
+            $table->unique(['staff_id', 'position_id']);
+        });
         Schema::create('department', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -149,7 +156,7 @@ class UserStaffLinkTest extends TestCase
             ->assertSee('data-staff-create-overlay', false)
             ->assertSee('name="staff_name"', false)
             ->assertSee('name="date_in"', false)
-            ->assertSee('name="position"', false)
+            ->assertSee('name="positions[]"', false)
             ->assertSee('name="branch_id"', false)
             ->assertSee('name="role_ids[]"', false)
             ->assertDontSee('name="create_account"', false)
@@ -190,7 +197,7 @@ class UserStaffLinkTest extends TestCase
             ->assertSee('value="Dwi Febbrianti Robbiatul Adawiyah"', false)
             ->assertSee('name="staff_name"', false)
             ->assertSee('name="date_in"', false)
-            ->assertSee('name="position"', false)
+            ->assertSee('name="positions[]"', false)
             ->assertSee('name="branch_id"', false)
             ->assertSee('name="role_ids[]"', false)
             ->assertDontSee('Kembali ke karyawan')
@@ -229,11 +236,48 @@ class UserStaffLinkTest extends TestCase
             ->assertSee('action="http://localhost/staff/10"', false)
             ->assertSee('name="staff_name"', false)
             ->assertSee('name="date_in"', false)
-            ->assertSee('name="position"', false)
+            ->assertSee('name="positions[]"', false)
             ->assertSee('name="branch_id"', false)
             ->assertSee('name="role_ids[]"', false)
             ->assertDontSee('data-staff-edit-overlay', false)
             ->assertDontSee('Kembali ke karyawan');
+    }
+
+    public function test_an_employee_can_hold_several_positions_and_the_first_one_stays_the_main_position(): void
+    {
+        DB::table('position')->insert(['id' => 2, 'name' => 'Kasir', 'department_id' => 1]);
+
+        $this->post('/staff', [
+            'staff_name' => 'Multi Role Employee',
+            'date_in' => '2026-10-28',
+            'positions' => [2, 1],
+            'branch_id' => 1,
+            'role_ids' => [2],
+        ])->assertRedirect('/staff');
+
+        $staff = DB::table('staff')->where('name', 'Multi Role Employee')->first();
+        $this->assertSame(2, (int) $staff->position_id);
+        $this->assertEqualsCanonicalizing([1, 2], DB::table('staff_position')->where('staff_id', $staff->id)->pluck('position_id')->map(fn ($id) => (int) $id)->all());
+
+        $this->put('/staff/' . $staff->id, [
+            'staff_name' => 'Multi Role Employee',
+            'date_in' => '2026-10-28',
+            'positions' => [1],
+            'branch_id' => 1,
+            'role_ids' => [2],
+        ])->assertRedirect('/staff');
+
+        $this->assertSame([1], DB::table('staff_position')->where('staff_id', $staff->id)->pluck('position_id')->map(fn ($id) => (int) $id)->all());
+        $this->assertSame(1, (int) DB::table('staff')->find($staff->id)->position_id);
+    }
+
+    public function test_the_join_date_and_at_least_one_position_are_required(): void
+    {
+        $base = ['staff_name' => 'Incomplete', 'positions' => [1], 'date_in' => '2026-10-28', 'branch_id' => 1, 'role_ids' => [2]];
+
+        $this->post('/staff', array_merge($base, ['date_in' => '']))->assertSessionHasErrors('date_in');
+        $this->post('/staff', array_merge($base, ['positions' => []]))->assertSessionHasErrors('positions');
+        $this->assertNull(DB::table('staff')->where('name', 'Incomplete')->first());
     }
 
     public function test_staff_creation_persists_the_selected_position_date_and_branch(): void
@@ -241,7 +285,7 @@ class UserStaffLinkTest extends TestCase
         $this->post('/staff', [
             'staff_name' => 'New Employee',
             'date_in' => '2026-10-28',
-            'position' => 1,
+            'positions' => [1],
             'branch_id' => 1,
             'role_ids' => [2, 3],
         ])->assertRedirect('/staff');
@@ -260,7 +304,7 @@ class UserStaffLinkTest extends TestCase
         $this->from('/staff?create=1')->post('/staff', [
             'staff_name' => 'Employee Without Role',
             'date_in' => '2026-10-28',
-            'position' => 1,
+            'positions' => [1],
             'branch_id' => 1,
         ])->assertRedirect('/staff?create=1')
             ->assertSessionHasErrors(['role_ids']);
@@ -282,7 +326,7 @@ class UserStaffLinkTest extends TestCase
         $this->put('/staff/10', [
             'staff_name' => 'Updated Employee',
             'date_in' => '2025-02-03',
-            'position' => 1,
+            'positions' => [1],
             'branch_id' => 1,
             'role_ids' => [2],
         ])->assertRedirect('/staff');
@@ -304,7 +348,7 @@ class UserStaffLinkTest extends TestCase
         $this->post('/staff', [
             'staff_name' => 'Employee Account Name',
             'date_in' => '2026-01-10',
-            'position' => 1,
+            'positions' => [1],
             'branch_id' => 1,
             'create_account' => '1',
             'account_email_type' => 'custom',
@@ -325,7 +369,7 @@ class UserStaffLinkTest extends TestCase
         $this->put('/staff/10', [
             'staff_name' => 'Updated Employee Name',
             'date_in' => '2026-01-10',
-            'position' => 1,
+            'positions' => [1],
             'branch_id' => 1,
             'role_ids' => [2],
         ])->assertRedirect('/staff');
@@ -341,7 +385,7 @@ class UserStaffLinkTest extends TestCase
         $this->put('/staff/10', [
             'staff_name' => 'Updated Employee Name',
             'date_in' => '2026-01-10',
-            'position' => 1,
+            'positions' => [1],
             'branch_id' => 1,
             'role_ids' => [2, 3],
         ])->assertRedirect('/staff');

@@ -3,7 +3,9 @@
     $fieldIdPrefix = $editing ? 'staff_edit' : 'staff';
     $selectedName = old('staff_name', $data->name ?? '');
     $selectedDate = old('date_in', $data->date_in ?? ($editing ? '' : now()->toDateString()));
-    $selectedPosition = (string) old('position', $data->position_id ?? '');
+    $selectedPositions = collect(old('positions', $editing ? ($data->positions->pluck('id')->all() ?: array_filter([$data->position_id])) : []))
+        ->map(fn ($id) => (string) $id)
+        ->all();
     $selectedBranch = (string) old('branch_id', $data->branch_id ?? '');
     $selectedRoleIds = collect(old('role_ids', $editing ? $data->pendingRoles->pluck('id_role')->all() : []))
         ->map(fn ($id) => (int) $id)
@@ -32,13 +34,13 @@
             </div>
 
             <div>
-                <label for="{{ $fieldIdPrefix }}_date_in" class="mb-1.5 block text-xs font-semibold text-gray-600">Tanggal Masuk</label>
+                <label for="{{ $fieldIdPrefix }}_date_in" class="mb-1.5 block text-xs font-semibold text-gray-600">Tanggal Masuk <span class="text-red-400">*</span></label>
                 <x-erp.date-picker id="{{ $fieldIdPrefix }}_date_in" name="date_in" :value="$selectedDate" />
                 @error('date_in')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             </div>
 
-            <div x-data="{ pickerSearch: '' }" class="w-full">
-                <label class="mb-1.5 block text-xs font-semibold text-gray-600">Jabatan <span class="text-red-400">*</span></label>
+            <div x-data="{ pickerSearch: '', chosen: {{ count($selectedPositions) }} }" class="w-full" @change="chosen = $el.querySelectorAll('input[name=\'positions[]\']:checked').length">
+                <label class="mb-1.5 block text-xs font-semibold text-gray-600">Jabatan <span class="text-red-400">*</span> <span class="font-normal text-gray-400">· boleh lebih dari satu</span></label>
                 <div class="flex w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white">
                     <div class="relative shrink-0 border-b border-gray-100 bg-gray-50/50">
                         <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
@@ -47,7 +49,7 @@
                     <div class="max-h-48 overflow-y-auto overscroll-none bg-white">
                         @forelse ($positions as $position)
                             <label x-show="!pickerSearch || @js(mb_strtolower($position->name)).includes(pickerSearch.trim().toLocaleLowerCase('id'))" class="flex cursor-pointer items-center gap-3 border-b border-gray-100 px-3.5 py-3 transition-colors last:border-b-0 hover:bg-gray-50">
-                                <input type="radio" name="position" value="{{ $position->id }}" @checked($selectedPosition === (string) $position->id) required class="h-4 w-4 shrink-0 accent-emerald-600">
+                                <input type="checkbox" name="positions[]" value="{{ $position->id }}" @checked(in_array((string) $position->id, $selectedPositions, true)) :required="chosen === 0" class="h-4 w-4 shrink-0 rounded accent-emerald-600">
                                 <span class="flex-1 text-[13px] font-medium text-gray-700">{{ $position->name }}</span>
                             </label>
                         @empty
@@ -55,7 +57,8 @@
                         @endforelse
                     </div>
                 </div>
-                @error('position')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                @error('positions')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                @error('positions.*')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             </div>
 
             <div x-data="{ pickerSearch: '' }" class="w-full">

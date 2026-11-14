@@ -71,13 +71,14 @@ class StaffController extends Controller
 
         $rules = [
             'staff_name' => ['required', 'string', 'max:255'],
-            'date_in' => ['nullable', 'date_format:Y-m-d'],
-            'position' => ['required', 'integer', 'exists:position,id'],
+            'date_in' => ['required', 'date_format:Y-m-d'],
+            'positions' => ['required', 'array', 'min:1'],
+            'positions.*' => ['required', 'integer', 'distinct', 'exists:position,id'],
             'branch_id' => ['required', 'integer', Rule::in($this->availableBranchIds())],
             'role_ids' => ['required', 'array', 'min:1'],
             'role_ids.*' => ['required', 'integer', 'distinct', 'exists:role,id_role'],
         ];
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), $rules, $this->validationMessages());
 
         if ($validator->fails()) {
             return redirect()->route('staff.index', ['create' => 1])
@@ -85,16 +86,19 @@ class StaffController extends Controller
                 ->withInput($request->except(['account_password', 'password']));
         }
 
+        $positionIds = $this->positionIds($request);
+
         try {
             DB::beginTransaction();
             $staff = new Staff();
             $staff->name = $request->staff_name;
             $staff->date_in = $request->date_in;
-            $staff->position_id = $request->position;
+            $staff->position_id = $positionIds[0];
             $staff->branch_id = $request->branch_id;
             $staff->status = 'aktif';
             $staff->created_by = Auth::user()->id_user;
             $staff->save();
+            $this->syncPositions($staff->id, $positionIds);
             $this->syncPendingRoles($staff->id, $request->input('role_ids', []));
 
             DB::commit();
@@ -134,7 +138,7 @@ class StaffController extends Controller
             return $denied;
         }
 
-        $editingStaff = Staff::with(['account', 'pendingRoles'])->findOrFail($id);
+        $editingStaff = Staff::with(['account', 'pendingRoles', 'positions'])->findOrFail($id);
         $formData = array_merge(['data' => $editingStaff], $this->staffFormData());
 
         if ($request->boolean('overlay')) {
@@ -168,13 +172,14 @@ class StaffController extends Controller
 
         $rules = [
             'staff_name' => ['required', 'string', 'max:255'],
-            'date_in' => ['nullable', 'date_format:Y-m-d'],
-            'position' => ['required', 'integer', 'exists:position,id'],
+            'date_in' => ['required', 'date_format:Y-m-d'],
+            'positions' => ['required', 'array', 'min:1'],
+            'positions.*' => ['required', 'integer', 'distinct', 'exists:position,id'],
             'branch_id' => ['required', 'integer', Rule::in($this->availableBranchIds())],
             'role_ids' => ['required', 'array', 'min:1'],
             'role_ids.*' => ['required', 'integer', 'distinct', 'exists:role,id_role'],
         ];
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), $rules, $this->validationMessages());
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -182,15 +187,18 @@ class StaffController extends Controller
                 ->withInput($request->except(['account_password', 'password']));
         }
 
+        $positionIds = $this->positionIds($request);
+
         try {
             DB::beginTransaction();
             $staff = Staff::findOrFail($id);
             $staff->name = $request->staff_name;
             $staff->date_in = $request->date_in;
-            $staff->position_id = $request->position;
+            $staff->position_id = $positionIds[0];
             $staff->branch_id = $request->branch_id;
             $staff->updated_by = Auth::user()->id_user;
             $staff->save();
+            $this->syncPositions($staff->id, $positionIds);
             $this->syncPendingRoles($staff->id, $request->input('role_ids', []));
 
             $accountId = User::withoutGlobalScope('is_aktif')
@@ -371,7 +379,7 @@ class StaffController extends Controller
     private function staffListRecords(?int $onlyId = null)
     {
         $query = Staff::query()
-            ->with(['department:id,name', 'position:id,name', 'branch:id,name'])
+            ->with(['department:id,name', 'position:id,name', 'positions:id,name', 'branch:id,name'])
             ->leftJoin('users as editor', 'editor.id_user', '=', 'staff.updated_by')
             ->select('staff.id', 'staff.name', 'staff.department_id', 'staff.position_id', 'staff.branch_id', 'staff.status', 'staff.date_in', 'staff.created_at', 'staff.updated_at', 'editor.nm_user as updated_by_name')
             ->orderByDesc('staff.id');
@@ -381,7 +389,7 @@ class StaffController extends Controller
         }
 
         return $query->get()->each(function ($staff) {
-            $staff->position_label = $staff->position?->name ?: 'Belum diatur';
+            $staff->position_label = $staff->positions->pluck('name')->implode(', ') ?: ($staff->position?->name ?: 'Belum diatur');
             $staff->branch_label = $staff->branch?->name ?: 'Belum diatur';
 
             if (!$staff->date_in) {
@@ -395,6 +403,36 @@ class StaffController extends Controller
             if ($tenure->m > 0) $parts[] = $tenure->m . ' Bln';
             $staff->tenure_label = $parts ? implode(' ', $parts) : 'Baru bergabung';
         });
+    }
+
+    private function validationMessages(): array
+    {
+        return [
+            'staff_name.required' => 'Nama Karyawan wajib diisi.',
+            'date_in.required' => 'Tanggal Masuk wajib diisi.',
+            'positions.required' => 'Pilih minimal satu Jabatan.',
+            'positions.min' => 'Pilih minimal satu Jabatan.',
+            'positions.*.exists' => 'Jabatan yang dipilih tidak valid.',
+            'positions.*.distinct' => 'Jabatan yang dipilih tidak boleh sama.',
+        ];
+    }
+
+    /** @return array<int, int> the chosen position ids, main (first) position first */
+    private function positionIds(Request $request): array
+    {
+        return collect($request->input('positions', []))->map(fn ($id) => (int) $id)->unique()->values()->all();
+    }
+
+    private function syncPositions(int $staffId, array $positionIds): void
+    {
+        $now = now();
+        DB::table('staff_position')->where('staff_id', $staffId)->whereNotIn('position_id', $positionIds)->delete();
+        foreach ($positionIds as $positionId) {
+            DB::table('staff_position')->updateOrInsert(
+                ['staff_id' => $staffId, 'position_id' => $positionId],
+                ['updated_at' => $now, 'created_at' => $now]
+            );
+        }
     }
 
     private function staffFormData(): array
