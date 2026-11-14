@@ -146,5 +146,11 @@ return [
     */
 
     'attributes' => [
+        'province' => 'Provinsi',
+        'city' => 'Kabupaten / Kota',
+        'district' => 'Kecamatan',
+        'village' => 'Kelurahan',
+        'address' => 'Alamat',
+        'map_link' => 'Link Google Maps',
     ],
 ];
