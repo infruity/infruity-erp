@@ -9,7 +9,7 @@
     <div class="production-detail-ref__address">{{ $data->branch->name ?? '—' }}</div>
     <div class="production-detail-ref__rows">
         <div class="production-detail-ref__row">
-            <span class="production-detail-ref__icon production-detail-ref__icon--product {{ $icon_class }}" aria-hidden="true">{{ $emoji }}</span>
+            <span class="production-detail-ref__icon" aria-hidden="true"><i class="ph-duotone ph-orange"></i></span>
             <div class="production-detail-ref__text">
                 <div class="production-detail-ref__main is-strong">{{ $data->products->name ?? 'Produksi Barang' }}</div>
                 <div class="production-detail-ref__sub">Nama Produk</div>
