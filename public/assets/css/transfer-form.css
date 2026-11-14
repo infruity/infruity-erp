@@ -164,3 +164,10 @@ body:has(.transfer-form) main { overflow:hidden; }
 .transfer-form .transfer-modal-fields { margin-top:14px; }
 .transfer-modal .modal-body { padding-bottom:16px; }
 .transfer-form .transfer-quantity-full { margin-top:14px; }
+
+/* Cart rows, measured on the reference at 400px. */
+.transfer-form .transfer-cart-item { width:calc(100% + 16px); margin:0 -8px; gap:4px; padding:12px 10px; border-bottom:0; border-top:1px solid #f3f4f6; }
+.transfer-form .transfer-cart-item:first-of-type { border-top:0; padding:4px 10px 12px; }
+.transfer-form .transfer-cart-line { align-items:center; }
+.transfer-form .transfer-cart-line strong { font-size:14px; line-height:20px; }
+.transfer-form .transfer-cart-line b { font-size:12px; font-weight:800; line-height:16px; }
