@@ -82,7 +82,7 @@ final class ProductionCreateReferenceTest extends TestCase
     public function test_create_footer_is_the_reference_back_draft_save_bar_and_keeps_save_actions(): void
     {
         $create = $this->renderForm('production.create');
-        foreach (['production-ref-footer', 'Kembali ke Daftar Produksi', 'Simpan sebagai Draf', "saveProduction('temp', () => savingDraft = false)", "saveProduction('posting', () => saving = false)", "'Menyimpan…' : 'Tambah'"] as $part) {
+        foreach (['production-ref-footer', 'Kembali ke Daftar Produksi', 'Simpan sebagai Draf', "saveProduction('temp', () => savingDraft = false)", "saveProduction('posting', () => saving = false)", "'Menyimpan…' : 'Submit'"] as $part) {
             $this->assertStringContainsString($part, $create);
         }
         $this->assertStringNotContainsString('Selesaikan Produksi', $create);
@@ -283,7 +283,7 @@ final class ProductionCreateReferenceTest extends TestCase
     {
         $edit = $this->renderForm('production.edit');
 
-        foreach (['production-create-reference', 'production-ref-footer', 'Komposisi Produk', 'Simpan Perubahan', "'Submit'"] as $part) {
+        foreach (['production-create-reference', 'production-ref-footer', 'Komposisi Produk', 'Simpan Perubahan', "'Menyimpan…' : 'Submit'"] as $part) {
             $this->assertStringContainsString($part, $edit);
         }
         $this->assertStringNotContainsString("'Tambah'", $edit);
