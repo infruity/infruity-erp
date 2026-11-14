@@ -13,10 +13,10 @@ final class UserResetPasswordTest extends TestCase
         $view = file_get_contents($root . '/resources/views/admin/user/index.blade.php');
         $routes = file_get_contents($root . '/routes/admin.php');
 
-        self::assertStringContainsString("public const DEFAULT_RESET_PASSWORD = 'Rantau16';", $controller);
+        self::assertStringContainsString("public const DEFAULT_RESET_PASSWORD = 'infruity123';", $controller);
         self::assertStringContainsString('Hash::make(self::DEFAULT_RESET_PASSWORD)', $controller);
         self::assertStringNotContainsString("'password' => ['required', 'string', 'min:8']", $controller);
-        self::assertStringContainsString("defaultPassword: 'Rantau16'", $view);
+        self::assertStringContainsString("defaultPassword: 'infruity123'", $view);
         self::assertStringContainsString("->name('user.reset-password')", $routes);
     }
 

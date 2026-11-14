@@ -20,7 +20,7 @@ use Yajra\DataTables\Facades\DataTables;
 class UserController extends Controller
 {
     /** The password an administrator's reset puts on an account. */
-    public const DEFAULT_RESET_PASSWORD = 'Rantau16';
+    public const DEFAULT_RESET_PASSWORD = 'infruity123';
 
     use \App\Traits\HasAccessControl;
 
