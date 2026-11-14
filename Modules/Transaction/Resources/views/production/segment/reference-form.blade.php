@@ -78,7 +78,7 @@
                             <div class="production-ref-row__line">
                                 <span class="production-ref-row__total"><small>Rp</small><b x-text="formatNumber(ingredient.total)"></b></span>
                                 <span class="production-ref-row__qty">
-                                    <input type="text" inputmode="decimal" maxlength="7" :value="inlineQuantityDrafts[ingredient.id] ?? ingredient.quantity"
+                                    <input type="text" inputmode="decimal" maxlength="7" :value="inlineQuantityDrafts[ingredient.id] ?? formatInlineQuantity(ingredient.quantity)"
                                         @input="updateIngredientInline(index, $event.target.value)"
                                         @blur="normalizeIngredientInline(index, $event.target)" @keydown.enter.prevent="$el.blur()"
                                         aria-label="Jumlah bahan">

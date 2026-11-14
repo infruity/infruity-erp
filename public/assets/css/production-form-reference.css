@@ -37,7 +37,7 @@ body.erp-ui:has(.production-create-reference #branch_id + .select2-container--op
 body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option { position:relative; border-radius:8px; padding:10px 14px; color:#374151; font-size:13px; line-height:18px; }
 body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option--highlighted { background:#f9fafb; color:#374151; }
 body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option[aria-selected="true"] { display:flex; align-items:center; justify-content:space-between; background:#ecfdf5; color:#047857; font-weight:600; }
-body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option[aria-selected="true"]::after { width:8px; height:8px; margin-left:8px; border-radius:50%; background:#10b981; content:""; flex:none; }
+body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option[aria-selected="true"]::after { content:none; display:none; }
 body.erp-ui .production-create-reference #quantity:focus { outline:none !important; border-color:var(--erp-active-border) !important; box-shadow:var(--erp-active-ring) !important; }
 .production-create-reference [aria-labelledby="production-ingredients-title"] { display:flex; flex-direction:column; min-height:260px; }
 .production-create-reference [aria-labelledby="production-ingredients-title"] .production-card__head { padding:16px 20px; }
@@ -311,7 +311,7 @@ body:has(.production-create-reference) .erp-picker__item:hover { background:#f9f
 body:has(.production-create-reference) .erp-picker__item.is-selected { background:#ecfdf5; }
 body:has(.production-create-reference) .erp-picker__item.is-selected .erp-picker__text strong { color:#0b595b; }
 body:has(.production-create-reference) .erp-picker__item > i { display:none; }
-body:has(.production-create-reference) .erp-picker__item.is-selected::after { content:''; width:8px; height:8px; flex:none; border-radius:50%; background:#10b981; }
+body:has(.production-create-reference) .erp-picker__item.is-selected::after { content:none; display:none; }
 body:has(.production-create-reference) .erp-picker__text strong { color:#1f2937; font-size:12px; font-weight:700; }
 body:has(.production-create-reference) .erp-picker__text span { margin-top:2px; color:#9ca3af; font:400 11px/16.5px "Plus Jakarta Sans", sans-serif; }
 @media (min-width:640px) { body:has(.production-create-reference) .erp-picker__text strong { font-size:13px; } }

@@ -655,6 +655,12 @@
                 return Number.isFinite(quantity) && quantity > 0 ? quantity : null;
             },
 
+            // Quantities read with a decimal comma (2,5), without trailing zeros, as in the reference.
+            formatInlineQuantity(quantity) {
+                const number = Number(quantity);
+                return Number.isFinite(number) ? String(number).replace('.', ',') : String(quantity ?? '');
+            },
+
             // Update an inline ingredient quantity without changing its request shape.
             updateIngredientInline(index, rawQuantity) {
                 const ingredient = this.ingredients[index];
@@ -692,13 +698,13 @@
                 const quantity = this.parseInlineQuantity(input.value);
                 if (quantity === null) {
                     if (this.inlineQuantityDrafts) delete this.inlineQuantityDrafts[ingredient.id];
-                    input.value = String(ingredient.quantity ?? '');
+                    input.value = this.formatInlineQuantity(ingredient.quantity);
                     return;
                 }
 
                 this.updateIngredientInline(index, quantity);
                 if (this.inlineQuantityDrafts) delete this.inlineQuantityDrafts[ingredient.id];
-                input.value = String(quantity);
+                input.value = this.formatInlineQuantity(quantity);
             },
 
             // Update ingredient quantity

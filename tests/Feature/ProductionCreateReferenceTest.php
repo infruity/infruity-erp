@@ -176,7 +176,7 @@ final class ProductionCreateReferenceTest extends TestCase
         $edit = $this->renderForm('production.legacy');
 
         foreach (['Komposisi Produk', '+ Tambah', 'Pilih Produk di Atas', 'production-ref-row__delete', 'revealed', 'formatCurrency(ingredient.hpp)',
-            'formatNumber(ingredient.total)', ':value="inlineQuantityDrafts[ingredient.id] ?? ingredient.quantity"',
+            'formatNumber(ingredient.total)', ':value="inlineQuantityDrafts[ingredient.id] ?? formatInlineQuantity(ingredient.quantity)"',
             'updateIngredientInline(index, $event.target.value)', 'removeIngredient(index)', 'openAddIngredientModal()'] as $part) {
             $this->assertStringContainsString($part, $create);
         }

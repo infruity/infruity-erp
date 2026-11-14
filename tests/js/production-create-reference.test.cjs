@@ -90,6 +90,7 @@ test('create inline quantity draft survives output scaling when temporarily empt
     baseRecipeIngredients: [{ id: 7, name: 'Flour', base_quantity: 0.75, hpp: 500, unit: 'kg' }],
     inlineQuantityDrafts: {},
     parseInlineQuantity: extractMethod('parseInlineQuantity'),
+    formatInlineQuantity: extractMethod('formatInlineQuantity'),
     updateIngredientInline,
   };
   const input = { value: '' };
@@ -151,6 +152,7 @@ test('create inline quantity rejects partial numeric input on input and blur', (
     baseRecipeIngredients: [{ id: 7, name: 'Flour', base_quantity: 0.5, hpp: 500, unit: 'kg' }],
     inlineQuantityDrafts: {},
     parseInlineQuantity: extractMethod('parseInlineQuantity'),
+    formatInlineQuantity: extractMethod('formatInlineQuantity'),
     updateIngredientInline,
   };
   const input = { value: '3abc' };
