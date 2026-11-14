@@ -65,9 +65,11 @@
     .sortir-action-primary { color:#fff; border-color:#0b595b; background:#0b595b; box-shadow:0 4px 10px rgba(11,89,91,.15); }
     .sortir-action-primary:hover { color:#fff; background:#08484a; }
     .sortir-action-primary:disabled { border-color:#e5e7eb; background:#e5e7eb; color:#9ca3af; box-shadow:none; cursor:not-allowed; }
-    .sortir-icon-action { display:flex; width:44px; height:44px; flex:none; align-items:center; justify-content:center; border:1px solid #d1d5db; border-radius:12px; background:#fff; color:#1f2937; font-size:18px; text-decoration:none; }
-    .sortir-icon-action:hover:not(:disabled) { border-color:#34a684; color:#0b595b; }
-    .sortir-icon-action:disabled { opacity:.6; cursor:not-allowed; }
+    .sortir-icon-action { display:flex; width:44px; height:44px; flex:none; align-items:center; justify-content:center; border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:#374151; text-decoration:none; cursor:pointer; transition:transform .1s, background-color .15s; }
+    .sortir-icon-action i { font-size:18px !important; line-height:1; }
+    .sortir-icon-action:hover:not(:disabled) { background:#f9fafb; color:#111827; }
+    .sortir-icon-action:active:not(:disabled) { transform:scale(.95); }
+    .sortir-icon-action:disabled { opacity:.6; cursor:default; }
     .sortir-action-danger { color:#dc2626; background:#fef2f2; border-color:#fecaca; flex:0 0 auto; }
     .sortir-error { font-size:12px; line-height:1.6; color:#b91c1c; margin:10px 0 0; }
     dialog.sortir-modal { position:fixed; inset:0; width:calc(100% - 32px); max-width:512px; max-height:calc(100dvh - 32px); margin:auto; border:0; padding:0; background:transparent; overflow:visible; color:#1f2937; }
