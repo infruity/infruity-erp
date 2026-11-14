@@ -1,6 +1,9 @@
 @php
     $pageTitle = 'Metode Pembayaran';
     $singular = 'Metode';
+    $detailTitle = 'Detail Metode Pembayaran';
+    $emptyLabel = 'Metode pembayaran';
+    $loadMoreNoun = 'Metode';
     $routeBase = 'payment-method';
     $nameField = 'name';
     $subtitleFields = [];
