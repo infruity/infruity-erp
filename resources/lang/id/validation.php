@@ -147,6 +147,9 @@ return [
 
     'attributes' => [
         'name' => 'Nama',
+        'date_in' => 'Tanggal Masuk',
+        'position_id' => 'Jabatan',
+        'branch_id' => 'Cabang',
         'province' => 'Provinsi',
         'city' => 'Kabupaten / Kota',
         'district' => 'Kecamatan',
