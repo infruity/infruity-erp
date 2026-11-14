@@ -15,7 +15,7 @@
                     </label></template>
                 </div>
             </div>
-            <p class="sortir-stock" x-show="modalItem.id && modalItem.stock !== null" x-text="'Stok tersedia: ' + number(modalItem.stock) + ' ' + modalItem.unit"></p>
+            <p class="sortir-stock" :class="modalItem.id && modalItem.stock !== null ? '' : 'is-empty'" x-text="'Stok tersedia: ' + number(modalItem.stock) + ' ' + modalItem.unit"></p>
             <div class="sortir-modal-fields"><div><label for="sortir-qty" class="sortir-modal-label">Kuantitas <span x-text="modalItem.unit ? '(' + modalItem.unit + ')' : ''"></span></label><input id="sortir-qty" class="sortir-modal-input" type="text" inputmode="decimal" :value="qtyInput" @input="updateQuantity($event)" placeholder="0" autocomplete="off"></div>
                 <div><label for="sortir-price" class="sortir-modal-label">HPP / Satuan</label><input id="sortir-price" class="sortir-modal-input" type="text" inputmode="decimal" :value="number(modalItem.price)" @input="updatePrice($event)" placeholder="0" autocomplete="off"></div></div>
             <div class="sortir-modal-total"><span>Total HPP / Modal</span><strong x-text="rupiah(modalItem.qty * modalItem.price)"></strong></div>

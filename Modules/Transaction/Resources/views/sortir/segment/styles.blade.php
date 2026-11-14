@@ -99,7 +99,9 @@
     .sortir-products-state button { border:0; background:none; color:#0b595b; text-decoration:underline; }
     .sortir-modal-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-top:18px; }
     .sortir-modal-input { width:100%; min-width:0; height:44px; padding:10px 14px; border:1px solid #e5e7eb; border-radius:12px; background:#f9fafb; color:#1f2937; font-size:14px!important; font-weight:600!important; }
-    .sortir-stock { color:#6b7280; font-size:11px; margin:7px 0 0; }
+    /* The line always takes its space (hidden, not removed), so the card keeps its size when a product is chosen. */
+    .sortir-stock { min-height:16.5px; color:#6b7280; font-size:11px; line-height:16.5px; margin:7px 0 0; }
+    .sortir-stock.is-empty { visibility:hidden; }
     .sortir-modal-total { display:flex; justify-content:space-between; align-items:center; gap:12px; background:#f0fdf8; border:1px solid #a7f3d0; border-radius:12px; padding:14px 12px; color:#065f46; font-size:12px; font-weight:600; margin-top:16px; }
     .sortir-modal-total strong { font-size:15px; color:#0b595b; }
     .sortir-modal .modal-footer { display:flex; flex-wrap:nowrap; gap:12px; padding:16px; border-top:1px solid #f3f4f6; background:#f9fafb; flex:none; }
