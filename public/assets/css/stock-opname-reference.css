@@ -226,3 +226,21 @@
 .so-reference-sheet.is-final .so-history-button > i,
 .so-reference-sheet.is-final .so-history-button > span[data-so-count] { display:none; }
 .so-reference-sheet.is-final .so-history-label { display:inline; }
+
+/* Filter sheet: footer and close icon as in the Stok Opname reference. */
+[data-erp-filter-sheet][id="so-filter-sheet"] .erp-filter-sheet__footer { background:rgba(249,250,251,.7); }
+[data-erp-filter-sheet][id="so-filter-sheet"] .erp-filter-sheet__primary { border-width:0; }
+[data-erp-filter-sheet][id="so-filter-sheet"] [aria-label="Tutup"] i { font-size:14px; }
+/* Metronic redefines .text-gray-* (bluish); this sheet uses the reference's Tailwind greys. */
+[data-erp-filter-sheet][id="so-filter-sheet"] .text-gray-400 { color:#9ca3af !important; }
+[data-erp-filter-sheet][id="so-filter-sheet"] .text-gray-500 { color:#6b7280 !important; }
+[data-erp-filter-sheet][id="so-filter-sheet"] .text-gray-600 { color:#4b5563 !important; }
+[data-erp-filter-sheet][id="so-filter-sheet"] .text-gray-700 { color:#374151 !important; }
+[data-erp-filter-sheet][id="so-filter-sheet"] .text-gray-800 { color:#1f2937 !important; }
+[data-erp-filter-sheet][id="so-filter-sheet"] .text-gray-900 { color:#111827 !important; }
+[data-erp-filter-sheet][id="so-filter-sheet"] .uppercase.tracking-wider { line-height:15px !important; }
+[data-erp-filter-sheet][id="so-filter-sheet"] .erp-filter-sheet__subtitle { line-height:16.5px !important; }
+[data-erp-filter-sheet][id="so-filter-sheet"] [id$="-date-trigger"] span { line-height:16px !important; }
+[data-erp-filter-sheet][id="so-filter-sheet"] .erp-filter-sheet__footer { display:flex !important; gap:12px; }
+[data-erp-filter-sheet][id="so-filter-sheet"] .erp-filter-sheet__footer > button { flex:1 1 0 !important; min-width:0; }
+[data-erp-filter-sheet][id="so-filter-sheet"] [aria-label="Tutup"] i { font-size:14px !important; }

@@ -8,7 +8,8 @@
     status-label="Status Opname"
     :branches="$branches"
     :statuses="['all' => 'Semua Status', 'selesai' => 'Selesai', 'draft' => 'Draf']"
-    :groups="[['key' => 'result', 'label' => 'Hasil Opname', 'options' => ['all' => 'Semua', 'lebih' => 'Lebih', 'kurang' => 'Kurang', 'sesuai' => 'Sesuai']]]"
+    variant="opname"
+    :groups="[['key' => 'result', 'label' => 'Hasil Opname', 'tiles' => true, 'icons' => ['lebih' => 'ph-arrow-down-left', 'kurang' => 'ph-arrow-up-right'], 'options' => ['all' => 'Semua', 'lebih' => 'Lebih', 'kurang' => 'Kurang', 'sesuai' => 'Sesuai']]]"
     :timezone="config('app.timezone')"
     desktop="modal"
     reset-applies
