@@ -16,6 +16,8 @@
                         qty: Number(detail.quantity), expected: Number(detail.quantity), sent: Number(detail.sent_quantity ?? history.at(-1)?.old_quantity ?? detail.quantity),
                         price: Number(detail.price) || 0, discount: Number(detail.discount) || 0, note: history[0]?.note || '', stock: null};
                 });
+                // A new shipment starts with the first possible destination chosen, as in the reference.
+                if (!this.readOnly && !this.receiving && !this.destinationId && !this.cart.length && this.status === 'temp') this.destinationId = this.availableDestinations[0]?.id ?? '';
                 this._beforeUnload = event => { if (this.dirty && !this.navigationAllowed) { event.preventDefault(); event.returnValue = ''; } };
                 this._linkClick = event => {
                     const link = event.target.closest('a[href]');
