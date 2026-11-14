@@ -1832,7 +1832,18 @@ class ProductController extends Controller
             }
         }
 
-        return $rows->take(20)->values();
+        $rows = $rows->take(20)->values();
+        // The unit rides along so a form can say "39,5 Kg" instead of assuming Kg.
+        $units = DB::table('products')
+            ->leftJoin('product_units', 'product_units.id', '=', 'products.product_unit')
+            ->whereIn('products.id', $rows->pluck('id'))
+            ->pluck('product_units.abbreviation', 'products.id');
+
+        return $rows->map(function ($row) use ($units) {
+            $row->unit = $units[$row->id] ?? null;
+
+            return $row;
+        });
     }
 
     public function get_data_stock_show(Request $request)

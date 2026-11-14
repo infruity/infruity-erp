@@ -845,7 +845,8 @@
                             <div class="so-create-info">
                                 <div>
                                     <p class="so-create-info__label">Stok Sistem</p>
-                                    <input type="text" class="so-create-info__value" name="quantity" value="" placeholder="-" readonly aria-label="Stok sistem saat ini" />
+                                    <input type="text" class="d-none" name="quantity" value="" readonly aria-label="Stok sistem saat ini" />
+                                    <p class="so-create-info__value" id="stock-system-display">-</p>
                                     <p class="so-create-info__hint">Catatan buku saat ini</p>
                                 </div>
                                 <div>
@@ -1131,7 +1132,8 @@
             const systemStock = Number($('input[name="quantity"]').val() || 0);
             const realRaw = $('input[name="real_stock"]').val();
             const realStock = Number(realRaw || 0);
-            const difference = hasProduct ? realStock - systemStock : 0;
+            // Nothing typed yet means no difference to show (the reference reads 0,00 Kg / Rp 0 until a count is entered).
+            const difference = hasProduct && realRaw !== '' && realRaw !== null ? realStock - systemStock : 0;
             const price = Number(unitPrice ?? $('#product_id').data('unit-price') ?? 0);
             const unit = $('#product_id').data('unit') || 'Kg';
             const value = difference * price;
@@ -1141,6 +1143,7 @@
             $('#stock-hpp-value').text(price > 0 ? `Rp ${formatRupiah(Math.round(price))}` : '-');
             $('#stock-hpp-hint').text(price > 0 ? `per ${unit}` : '-');
             $('#so-physical-unit').text(unit);
+            $('#stock-system-display').text(hasProduct ? `${systemStock.toLocaleString('id-ID', {maximumFractionDigits: 3})} ${unit}` : '-');
             $('#stock-difference-label').text('Status Selisih');
             $('#stock-difference-text').text(`${diffRounded > 0 ? '+' : ''}${fixed(diffRounded)} ${unit}`);
             $('#stock-difference-value').text(`${value < 0 ? '-' : (value > 0 ? '+' : '')}Rp ${formatRupiah(Math.abs(Math.round(value)))}`);
@@ -2145,6 +2148,7 @@
                 const data = e.params.data;
                 $quantity.val(data.stock_available || 0);
                 $product.data('unit-price', data.unit_price || 0);
+                $product.data('unit', data.unit || 'Kg');
                 updateStockSummary(data.unit_price || 0);
             });
 
@@ -2178,6 +2182,7 @@
                     meta: item.stock_available !== undefined ? 'Stok: ' + item.stock_available : '',
                     data: {
                         stock_available: item.stock_available,
+                        unit: item.unit || 'Kg',
                         unit_price: item.hpp || item.price || item.cost_price || item.purchase_price || 0
                     }
                 })
@@ -2213,6 +2218,7 @@
 
                         if (selected) {
                             $quantity.val(selected.stock_available || 0);
+                            $product.data('unit', selected.unit || 'Kg');
                             $product.data('unit-price', selected.hpp || selected.price ||
                                 selected.cost_price ||
                                 selected.purchase_price || 0);

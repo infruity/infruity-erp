@@ -359,3 +359,4 @@
 }
 body:has(.stock-opname-page) > .modal-backdrop { display:none !important; }
 #kt_stock_opname_history, #kt_stock_opname_history.drawer-on { transition:none !important; }
+#kt_modal_add_customer .so-create-label span { margin-left:2.7px; }
