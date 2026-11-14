@@ -113,3 +113,15 @@ body:has(.transfer-list-page) main > .animate-fade-in-up { animation:none; }
     .transfer-dialog.is-document .transfer-document-table tr { break-inside:avoid; }
     .transfer-document-table thead { display:table-header-group; }
 }
+
+/* Row type, measured on the reference at 400px. */
+.transfer-branch-name { line-height:16px; }
+.transfer-row-date { margin-top:2px; color:#9ca3af; line-height:16.5px; }
+.transfer-row-status-line { display:flex; align-items:center; justify-content:flex-end; gap:4px; }
+.transfer-row-warning { flex:none; color:#f59e0b; font-size:14px; line-height:1; }
+.transfer-row-status { line-height:16px; }
+.transfer-row-status.is-pending { color:#f97316; }
+.transfer-row-status.is-final { color:#059669; font-weight:700; }
+.transfer-row-total { margin-top:2px; font-size:12px; line-height:16px; }
+.transfer-row.has-deficit { background:rgba(255,251,235,.2); }
+@media (max-width:767.98px) { .transfer-row { border-bottom:0; border-top:1px solid #f3f4f6; } }

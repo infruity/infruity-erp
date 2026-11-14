@@ -7,13 +7,21 @@
             selected: null, documentOpen: false, deleting: false, returnFocus: null,
             init() { this.load(); },
             money(value) { return 'Rp ' + Number(value || 0).toLocaleString('id-ID', {maximumFractionDigits: 2}); },
-            statusLabel(status) { return ({temp:'Draf',draft:'Draf',pending:'Dalam Perjalanan',proses:'Sedang Diperiksa',selesai:'Sudah Diterima'})[status] || status; },
+            statusLabel(status) { return ({temp:'Sedang Disiapkan',draft:'Sedang Disiapkan',pending:'Dalam Perjalanan',proses:'Sedang Diperiksa',selesai:'Sudah Diterima'})[status] || status; },
             branchName(row) { return config.receiving ? row.origin : row.destination; },
             dateLabel(value) {
                 if (!value) return '—';
                 const date = new Date(String(value).replace(' ', 'T'));
                 return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString('id-ID', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
             },
+            // "Dikirim : 09 Okt 2026, 08:00" while on its way, "Diterima : ..." once received (the reference's wording).
+            rowDate(row) {
+                const received = row.status === 'selesai';
+                const value = received ? (row.received_at || row.created_at || row.date) : (row.created_at || row.date);
+                return (received ? 'Diterima : ' : 'Dikirim : ') + this.dateLabel(value).replace(/(\d{2})\.(\d{2})$/, '$1:$2');
+            },
+            // A received transfer where less arrived than was sent.
+            hasDeficit(row) { return row.status === 'selesai' && (row.items || []).some(item => Number(item.sent) > Number(item.quantity)); },
             initials(name) {
                 const branch = String(name || '').toUpperCase();
                 if (branch.includes('GRESIK')) return 'GR';
