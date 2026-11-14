@@ -230,6 +230,8 @@
     const id=/\/production\/(\d+)\/detail/.exec(String(href||''))?.[1];
     if(!id||!fetcher)return;
     const dialog=win.ErpDialog;
+    // The detail popup closes first, so only the confirmation shows and Batal leaves the plain list.
+    this.closeProductionDetail();
     const ok=dialog?await dialog.confirmDelete({what:'Produksi'}):win.confirm('Hapus produksi ini?');
     if(!ok)return;
     try{
@@ -237,7 +239,6 @@
      const response=await fetcher(`${listUrl.origin}/production/${id}`,{method:'DELETE',credentials:'same-origin',headers:{Accept:'application/json','X-CSRF-TOKEN':token,'X-Requested-With':'XMLHttpRequest'}});
      const result=await response.json().catch(()=>({}));
      if(!response.ok||result.success===false)throw new Error(result.message||'Gagal menghapus data.');
-     this.closeProductionDetail();
      if(dialog?.toast)dialog.toast('success',result.message||'Data berhasil dihapus.');
      win.location.reload();
     }catch(error){
