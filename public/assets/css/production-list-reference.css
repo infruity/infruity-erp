@@ -15,7 +15,8 @@
  .production-list-page .erp-mobile-search { height:44px; gap:0; padding:0 6px 0 16px; box-shadow:none; }
  .production-list-page .erp-mobile-search__icon { margin-right:10px; }
  .production-list-page .erp-mobile-search__divider { height:16px; margin:0 4px; }
- .production-list-page .erp-mobile-search__filter { font-size:20px; }
+ .production-list-page .erp-mobile-search__filter .icon-rounded { font-family:'Material Symbols Rounded'; font-size:20px; font-weight:300; line-height:1; }
+ .production-list-page .erp-mobile-search__filter.is-active .icon-rounded { font-variation-settings:'FILL' 1, 'wght' 400; }
  .production-list-page .erp-mobile-search__filter.is-active { background:#ecfdf5; }
  body.erp-ui #production-filter-sheet .erp-filter-sheet__footer { background:rgba(249,250,251,.7); }
  body.erp-ui #production-filter-sheet#production-filter-sheet [x-show="!calendarOpen"] :is(label, span).uppercase { font-weight:600 !important; line-height:15px !important; }
@@ -45,4 +46,5 @@
 /* Search boundary needs 3:1 (WCAG 1.4.11); focus keeps its own green border. */
 .production-list-page .erp-workspace-toolbar .erp-search:not(:focus-within),
 .production-list-page .erp-mobile-search:not(:focus-within) { border-color:#868e98; }
-@media(max-width:767px) { .production-list-page .erp-mobile-search:not(:focus-within) { border-color:rgba(229,231,235,.8); } }
+@media(max-width:767px) { .production-list-page .erp-mobile-search:not(:focus-within) { border-color:rgba(229,231,235,.8); }
+ .production-list-page .erp-mobile-search:focus-within { border-color:#10b981; background:#fff; box-shadow:0 0 0 1px #10b981; } }
