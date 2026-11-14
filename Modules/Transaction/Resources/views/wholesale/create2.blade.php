@@ -349,9 +349,7 @@
                                 <label class="form-label">Status</label>
                                 @php
                                     [$statusLabel, $statusClass] = match ($data->status) {
-                                        'temp' => ['Draft', 'wholesale-status-muted'],
-                                        'draft' => ['Pending', 'wholesale-status-pending'],
-                                        'posting' => ['Dalam Pengiriman', 'wholesale-status-shipping'],
+                                        'temp', 'draft', 'posting' => ['Pending', 'wholesale-status-pending'],
                                         'complete' => ['Selesai', 'wholesale-status-complete'],
                                         default => [ucfirst($data->status ?: 'Tidak diketahui'), 'wholesale-status-muted'],
                                     };

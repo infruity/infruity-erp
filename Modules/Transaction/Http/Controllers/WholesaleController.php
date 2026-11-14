@@ -1214,9 +1214,7 @@ class WholesaleController extends Controller
             ->addColumn('status', function ($item) {
                 $status = (string) ($item->status ?? '');
                 [$label, $class] = match ($status) {
-                    'temp' => ['Draft', 'is-muted'],
-                    'draft' => ['Pending', 'is-draft'],
-                    'posting' => ['Dalam Pengiriman', 'is-posting'],
+                    'temp', 'draft', 'posting' => ['Pending', 'is-draft'],
                     'complete' => ['Selesai', 'is-complete'],
                     default => [ucfirst($status ?: 'Tidak diketahui'), 'is-muted'],
                 };
