@@ -337,8 +337,6 @@
     body:has(.stock-opname-page) .erp-topbar-mobile [aria-label="Buka navigasi"] { margin-left:-4px; }
     body:has(.stock-opname-page) .erp-topbar-mobile__logo { transform:translateX(calc(-50% - 2px)); }
 }
-.so-reference-sheet .so-title-edit { flex:none; padding:0; border:0; background:transparent; color:#0b595b; font-size:11px; font-weight:600; line-height:1.5; cursor:pointer; }
-.so-reference-sheet .so-title-edit[hidden] { display:none; }
 #kt_modal_stock_detail.is-final .so-sheet-footer .so-history-button { background:#0b595b; border-color:#0b595b; color:#fff; font-size:12px !important; }
 #kt_modal_stock_detail .so-detail-summary b { font-weight:700; }
 

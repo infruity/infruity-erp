@@ -909,7 +909,7 @@
     <div class="modal fade stock-opname-modal so-detail so-reference-sheet" id="kt_modal_stock_detail" tabindex="-1" aria-labelledby="so-detail-title" aria-hidden="true">
         <div class="modal-dialog"><div class="modal-content">
             <div class="so-sheet-handle" aria-hidden="true"><span></span></div>
-            <header class="so-sheet-header"><div><div class="so-title-row"><h2 id="so-detail-title" data-so-field="name"></h2><i class="ph-fill ph-check-circle so-title-check" title="Selesai" aria-hidden="true" hidden></i>@if(check_access('stock-opname.edit'))<button type="button" class="so-title-edit" data-so-action="edit" hidden>Edit</button>@endif</div><p data-so-field="branch"></p></div><button type="button" class="so-close" data-bs-dismiss="modal" aria-label="Tutup detail"><i class="ph ph-x" aria-hidden="true"></i></button></header>
+            <header class="so-sheet-header"><div><div class="so-title-row"><h2 id="so-detail-title" data-so-field="name"></h2><i class="ph-fill ph-check-circle so-title-check" title="Selesai" aria-hidden="true" hidden></i></div><p data-so-field="branch"></p></div><button type="button" class="so-close" data-bs-dismiss="modal" aria-label="Tutup detail"><i class="ph ph-x" aria-hidden="true"></i></button></header>
             <div class="so-sheet-body">
                 <div class="so-detail-meta"><div><span><i class="ph ph-clock" aria-hidden="true"></i>Waktu Dibuat</span><strong data-so-field="created"></strong></div><div><span><i class="ph ph-user" aria-hidden="true"></i>Dibuat oleh</span><strong data-so-field="creator"></strong></div></div>
                 <div class="so-detail-summary"><div><span>Sistem → Fisik</span><strong><span data-so-field="system"></span><span class="so-summary-arrow"> → </span><b data-so-field="physical"></b></strong></div><div><span>HPP / Satuan</span><strong data-so-field="hpp"></strong></div><div class="so-detail-difference"><strong data-so-field="diff"></strong><strong data-so-field="value"></strong></div></div>
@@ -1279,7 +1279,6 @@
             // A finished entry is read-only in the reference: summary plus one full-width "Riwayat (n)" button.
             $sheet.toggleClass('is-final', !info.isPending);
             $sheet.find('.so-title-check').prop('hidden', info.isPending);
-            $sheet.find('.so-title-edit').prop('hidden', !info.isPending);
             $sheet.find('[data-so-history-label]').text('Riwayat (' + (info.historyCount || 0) + ')');
             $sheet.find('[data-so-action="finalize"]').toggleClass('d-none', !info.isPending);
             const canCorrect = info.isPending && @json(check_access('stock-opname.update'));
@@ -1302,7 +1301,6 @@
             const run = {
                 history: () => showHistory(id),
                 finalize: () => finalizeStockOpname(id),
-                edit: () => editProduct(id),
             }[action];
             if (!run) return;
             // The sheet slides away while the next view comes up (the reference does both at once).
