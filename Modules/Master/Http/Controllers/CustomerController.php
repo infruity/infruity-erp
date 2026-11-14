@@ -123,7 +123,7 @@ class CustomerController extends Controller
             'village' => 'nullable|exists:reg_villages,id',
             'address' => 'nullable',
             'phone' => [
-                'nullable',
+                'required',
                 'string',
                 function ($attribute, $value, $fail) {
                     if ($value !== null && $value !== '' && !Customer::isValidWhatsapp($value)) {
@@ -257,7 +257,7 @@ class CustomerController extends Controller
             'village' => 'nullable|exists:reg_villages,id',
             'address' => 'nullable',
             'phone' => [
-                'nullable',
+                'required',
                 'string',
                 function ($attribute, $value, $fail) {
                     if ($value !== null && $value !== '' && !Customer::isValidWhatsapp($value)) {
