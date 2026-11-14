@@ -115,7 +115,10 @@
             icon: 'warning', tone: 'danger', title: 'Hapus ' + what + '?', text: text, confirmButtonText: options.confirmText || 'Hapus',
             // The look of the HTML reference's delete modal (erp-theme.css, .erp-delete-dialog): trash tile, bold name, two equal buttons.
             iconHtml: '<i class="ph-fill ph-trash"></i>',
-            customClass: { popup: 'erp-delete-dialog', icon: 'erp-delete-dialog__icon' }
+            customClass: { popup: 'erp-delete-dialog', icon: 'erp-delete-dialog__icon', container: 'erp-delete-container' },
+            // Same enter/exit motion as the reference modal (see erp-theme.css).
+            showClass: { popup: 'erp-del-show', backdrop: 'erp-del-bd-show' },
+            hideClass: { popup: 'erp-del-hide', backdrop: 'erp-del-bd-hide' }
         };
         if (!options.text && options.name) dialog.html = escapeHtml(what) + ' <strong>' + escapeHtml(options.name) + '</strong> akan dihapus permanen.';
         return confirm(dialog);
