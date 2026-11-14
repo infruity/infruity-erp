@@ -782,7 +782,6 @@
             .so-hist-side .so-hist-col.is-surplus { color:#047857; font-weight:700; }
             .so-hist-side .so-hist-col.is-loss { color:#be123c; font-weight:700; }
             .so-hist-reason { max-width:240px; color:#4b5563; font-size:12px; line-height:1.5; text-align:right; overflow-wrap:anywhere; }
-            .so-hist-details { display:grid; grid-template-columns:1fr auto; gap:2px 10px; margin-top:6px; border-radius:8px; background:#f9fafb; padding:6px 8px; color:#6b7280; font-size:11px; text-align:left; }
             .so-hist-empty { padding:32px 0; color:#9ca3af; text-align:center; font-size:13px; }
         </style>
         <link rel="stylesheet" href="{{ asset('assets/css/stock-opname-reference.css') }}?v={{ filemtime(public_path('assets/css/stock-opname-reference.css')) }}">
@@ -1912,9 +1911,7 @@
                     const cell = (value,cls='',isSigned=false) => `<span class="so-hist-col ${cls}">${isSigned ? signed(value) : num(value)}${value !== null ? `<small>${unit}</small>` : ''}</span>`;
                     side = cell(item.before) + cell(item.delta,tone,true) + cell(item.after,'is-strong');
                 } else {
-                    const details = Array.isArray(item.details) && item.details.length
-                        ? '<div class="so-hist-details">' + item.details.map(det => `<span>${escapeHtml(det.name)}</span><b>${num(det.qty)} ${unit}</b>`).join('') + '</div>' : '';
-                    side = `<div class="so-hist-reason">${escapeHtml(item.note || '—')}${details}</div>`;
+                    side = `<div class="so-hist-reason">${escapeHtml(item.note || '—')}</div>`;
                 }
                 $list.append(`<div class="so-hist-row"><div class="so-hist-main"><span class="so-hist-kind">${kind}${badge}</span><span class="so-hist-by">${escapeHtml(item.creator_name || '—')}</span><span class="so-hist-time">${escapeHtml(formatLongDateTime(item.created_at))}</span></div><div class="so-hist-side ${reasonMode ? 'is-reason' : ''}">${side}</div></div>`);
             });
