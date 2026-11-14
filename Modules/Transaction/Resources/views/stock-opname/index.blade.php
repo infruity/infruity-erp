@@ -1234,7 +1234,7 @@
             const info = describeStockOpname(row);
             window.stockOpnameRows[info.id] = info;
             const tone = info.diff > 0 ? 'is-surplus' : (info.diff < 0 ? 'is-loss' : 'is-match');
-            const pending = info.isPending ? '<span class="so-row__status">Draf</span>' : '';
+            const pending = info.isPending ? '' : '<i class="ph-fill ph-check-circle so-row__check" title="Selesai" aria-hidden="true"></i>';
             const value = info.diff !== 0
                 ? `<span class="so-row__value ${tone}">${escapeHtml(formatSignedRupiah(info.value))}</span>`
                 : '';

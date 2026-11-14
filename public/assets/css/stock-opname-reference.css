@@ -1,11 +1,15 @@
 /* Stock opname only: do not change the ERP root font, shell or other dialogs. */
 .stock-opname-page .so-mobile-search { display:none; }
-.stock-opname-page .so-row { padding:14px 8px; border-top:1px solid #f3f4f6; border-radius:10px 10px 0 0; }
-.stock-opname-page .so-row__name { font-size:14px; line-height:20px; }
-.stock-opname-page .so-row__time { font-size:12px; line-height:18px; margin-top:4px; }
-.stock-opname-page .so-row__diff { font-size:14px; line-height:20px; }
-.stock-opname-page .so-row__diff small { font-size:12px; }
-.stock-opname-page .so-row__value { font-size:12px; line-height:18px; }
+.stock-opname-page .so-row { padding:10px 8px; border-top:1px solid #f3f4f6; border-radius:8px; }
+.stock-opname-page .so-row__title { gap:6px; line-height:1.375; }
+.stock-opname-page .so-row__name { font-size:12px; line-height:1.375; }
+.stock-opname-page .so-row__check { flex:none; color:#10b981; font-size:13px; line-height:1; }
+.stock-opname-page .so-row__time { font-size:10.5px; line-height:1.5; margin-top:2px; }
+.stock-opname-page .so-row__diff { font-size:12px; line-height:1.375; }
+.stock-opname-page .so-row__diff small { font-size:10.5px; }
+.stock-opname-page .so-row__value { font-size:10.5px; line-height:1.5; }
+.stock-opname-page .so-row__value.is-surplus { color:rgba(5,150,105,.9); }
+.stock-opname-page .so-row__value.is-loss { color:rgba(225,29,72,.9); }
 .stock-opname-page .so-row__status { background:#f3f4f6; color:#6b7280; }
 .so-reference-sheet,
 .so-reference-history { font:400 14px/1.5 'Plus Jakarta Sans',sans-serif; color:#1f2937; }
@@ -110,11 +114,13 @@
     .stock-opname-page .erp-workspace-heading { display:none; }
     .stock-opname-page .erp-workspace-toolbar { padding:16px; border-bottom:1px solid #f3f4f6; gap:0; }
     .stock-opname-page .so-mobile-search { display:block; width:100%; padding:0; }
-    .stock-opname-page .erp-mobile-search { height:44px; box-shadow:none; }
+    .stock-opname-page .erp-mobile-search { height:44px; box-shadow:none; gap:0; padding:0 6px 0 16px; }
+    .stock-opname-page .erp-mobile-search__icon { margin-right:10px; }
+    .stock-opname-page .erp-mobile-search__divider { height:16px; margin:0 4px; }
     .stock-opname-page #so-search-clear[hidden] { display:none; }
     .stock-opname-page :is(.so-desktop-search,.so-desktop-filter,.so-desktop-create) { display:none; }
     .stock-opname-page .erp-workspace-content { padding:8px 16px calc(96px + env(safe-area-inset-bottom)); }
-    .stock-opname-page .so-row { padding:12px 8px; min-width:0; }
+    .stock-opname-page .so-row { padding:10px 8px; min-width:0; }
     .stock-opname-page .so-row__main { flex:1 1 0; }
     .stock-opname-page .so-row__name { min-width:0; white-space:normal; overflow-wrap:anywhere; }
     .stock-opname-page .so-row__side { flex:0 1 auto; min-width:0; max-width:45%; overflow-wrap:anywhere; }
