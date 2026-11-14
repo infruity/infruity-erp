@@ -31,7 +31,7 @@
                         <div x-show="productLoading" class="px-4 py-4 text-center text-xs text-gray-400">Memuat produk...</div>
                         <template x-for="item in productResults" :key="item.id"><button type="button" @click="selectProduct(item)" :class="String(productId) === String(item.id) ? 'bg-emerald-50' : ''" class="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-emerald-50/50">
                             <span class="flex min-w-0 flex-1 items-center gap-2.5"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-sm shadow-2xs" :class="item.material_icon_class || 'bg-gray-100'"><span x-text="item.material_emoji || '📦'"></span></span><span class="truncate text-xs font-bold text-gray-900" x-text="item.name"></span></span>
-                            <span class="flex shrink-0 items-center gap-2"><span class="text-xs font-medium text-gray-400" x-text="item.unit || 'unit'"></span><i x-show="String(productId) === String(item.id)" class="ph-bold ph-check text-sm text-emerald-600"></i></span>
+                            <span class="flex shrink-0 items-center gap-2"><span class="text-xs font-medium text-gray-400" x-text="item.unit || 'unit'"></span></span>
                         </button></template>
                         <p x-show="!productLoading && !productLookupError && productResults.length === 0" class="px-4 py-6 text-center text-xs text-gray-400">Produk tidak ditemukan</p>
                         <p x-show="productLookupError" x-text="productLookupError" role="alert" class="px-4 py-4 text-center text-xs text-red-500"></p>
