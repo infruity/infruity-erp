@@ -7,7 +7,7 @@
             selected: null, documentOpen: false, deleting: false, returnFocus: null,
             init() { this.load(); },
             money(value) { return 'Rp ' + Number(value || 0).toLocaleString('id-ID', {maximumFractionDigits: 2}); },
-            statusLabel(status) { return ({temp:'Sedang Disiapkan',draft:'Sedang Disiapkan',pending:'Dalam Perjalanan',proses:'Sedang Diperiksa',selesai:'Sudah Diterima'})[status] || status; },
+            statusLabel(status) { return ({temp:'Sedang Disiapkan',draft:'Sedang Disiapkan',pending:'Dalam Perjalanan',proses:'Dalam Perjalanan',selesai:'Sudah Diterima'})[status] || status; },
             branchName(row) { return config.receiving ? row.origin : row.destination; },
             dateLabel(value) {
                 if (!value) return '—';

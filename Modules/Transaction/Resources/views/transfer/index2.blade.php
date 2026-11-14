@@ -4,9 +4,10 @@
     $filterBranches = $branches->map(fn ($branch) => ['id' => (string) $branch->id, 'name' => ucwords($branch->name)])->values();
     $side = $receiving ? 'transfer-penerima' : 'transfer-pengirim';
     $pageTitle = $receiving ? 'Pindah Stok - Menerima' : 'Pindah Stok - Mengirim';
+    // Three states, as in the reference: being prepared, on its way, received (an unfinished receiving check still counts as on its way).
     $statuses = [['value' => 'all', 'label' => 'Semua Status']];
-    if (!$receiving) $statuses[] = ['value' => 'draft', 'label' => 'Draf'];
-    $statuses = array_merge($statuses, [['value' => 'pending', 'label' => 'Dalam Perjalanan'], ['value' => 'proses', 'label' => 'Sedang Diperiksa'], ['value' => 'selesai', 'label' => 'Sudah Diterima']]);
+    if (!$receiving) $statuses[] = ['value' => 'draft', 'label' => 'Sedang Disiapkan'];
+    $statuses = array_merge($statuses, [['value' => 'pending', 'label' => 'Dalam Perjalanan'], ['value' => 'selesai', 'label' => 'Sudah Diterima']]);
 @endphp
 @section('title', $pageTitle . ' - Inventaris')
 @section('page-title', $pageTitle)
@@ -44,7 +45,7 @@
                         <span class="transfer-branch-copy"><strong class="transfer-branch-name" x-text="branchName(row)"></strong><span class="transfer-row-date" x-text="rowDate(row)"></span></span>
                     </span>
                     <span class="transfer-desktop-meta"><span x-text="row.staff_name || '—'"></span><br><small x-text="row.items.length + ' produk'"></small></span>
-                    <span class="transfer-row-amount"><span class="transfer-row-status-line"><i class="ph-fill ph-warning-circle transfer-row-warning" x-show="hasDeficit(row)" x-cloak title="Terdapat Selisih Kurang" aria-hidden="true"></i><span class="transfer-row-status" :class="row.status === 'selesai' ? 'is-final' : (row.status === 'pending' ? 'is-pending' : '')" x-text="statusLabel(row.status)"></span></span><strong class="transfer-row-total" x-text="row.invoice_number"></strong></span>
+                    <span class="transfer-row-amount"><span class="transfer-row-status-line"><i class="ph-fill ph-warning-circle transfer-row-warning" x-show="hasDeficit(row)" x-cloak title="Terdapat Selisih Kurang" aria-hidden="true"></i><span class="transfer-row-status" :class="row.status === 'selesai' ? 'is-final' : (['pending','proses'].includes(row.status) ? 'is-pending' : '')" x-text="statusLabel(row.status)"></span></span><strong class="transfer-row-total" x-text="row.invoice_number"></strong></span>
                 </button>
             </template>
             <div class="transfer-list-state" x-show="loading && !rows.length" role="status"><i class="ph ph-circle-notch" aria-hidden="true"></i><p>Memuat transfer stok...</p></div>
@@ -67,10 +68,10 @@
         </div>
         <x-erp.filter-sheet
             id="transfer"
-            title="Filter Pindah Stok"
+            title="Filter Pindah Stok - {{ $receiving ? 'Menerima' : 'Mengirim' }}"
             aria-label="Filter pindah stok"
-            subtitle="Saring cabang dan status {{ $receiving ? 'penerimaan' : 'pengiriman' }}"
-            :branch-label="$receiving ? 'Cabang Penerima' : 'Cabang Pengirim'"
+            subtitle="{{ $receiving ? 'Saring cabang, status penerimaan, dan periode tanggal' : 'Saring cabang tujuan, status, dan periode tanggal' }}"
+            :branch-label="'Cabang Tujuan'"
             branch-all-label="Semua Cabang"
             :status-label="'Status ' . ($receiving ? 'Penerimaan' : 'Pengiriman')"
             :branches="$filterBranches"

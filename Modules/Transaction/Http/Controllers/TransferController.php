@@ -608,7 +608,7 @@ class TransferController extends Controller
         }
         $side = $request->input('url');
         $total = (clone $query)->count();
-        if ($request->filled('status_filter') && $request->status_filter !== 'all') $query->where('status', $request->status_filter);
+        if ($request->filled('status_filter') && $request->status_filter !== 'all') $request->status_filter === 'pending' ? $query->whereIn('status', ['pending', 'proses']) : $query->where('status', $request->status_filter);
         if ($request->filled('cabang_filter') && $request->cabang_filter !== 'all') $query->where($side === 'transfer-penerima' ? 'branch_destination_id' : 'branch_id', $request->cabang_filter);
         if ($request->filled('start_date')) $query->whereDate('date', '>=', $request->start_date);
         if ($request->filled('end_date')) $query->whereDate('date', '<=', $request->end_date);
