@@ -37,7 +37,7 @@
     :is(#addModal, #editModal) .wholesale-item-submit { width:100%; min-height:44px; border:0; border-radius:12px; background:#0b595b; color:#fff; box-shadow:0 4px 6px -1px rgba(11,89,91,.2), 0 2px 4px -2px rgba(11,89,91,.2); font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
     :is(#addModal, #editModal) .wholesale-item-submit:hover { background:#08484a; }
     :is(#addModal, #editModal) button:focus-visible, :is(#addModal, #editModal) input:focus-visible { outline:2px solid #0b595b; outline-offset:2px; }
-    #editModal #wholesale-edit-search { -webkit-appearance:none; appearance:none; border:0 !important; outline:0 !important; box-shadow:none !important; background:#fff !important; }
+    #editModal #wholesale-edit-search:focus, #editModal #wholesale-edit-search:focus-visible, #editModal #wholesale-edit-search { -webkit-appearance:none; appearance:none; border:0 !important; outline:0 !important; box-shadow:none !important; background:#fff !important; }
     :is(#addModal, #editModal) #wholesale-product-search,
     :is(#addModal, #editModal) #wholesale-product-search:focus,
     :is(#addModal, #editModal) #wholesale-product-search:focus-visible,
@@ -131,13 +131,17 @@
                         <div class="wholesale-product-picker">
                             <div class="wholesale-product-search">
                                 <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
-                                <input id="wholesale-edit-search" type="search" placeholder="Cari produk / bahan..." aria-label="Cari produk atau bahan" autocomplete="off" disabled>
+                                <input id="wholesale-edit-search" type="search" x-model="editProductSearch" @input.debounce.250ms="loadEditProducts()" placeholder="Cari produk / bahan..." aria-label="Cari produk atau bahan" autocomplete="off">
                             </div>
                             <div class="wholesale-product-options">
-                                <label class="wholesale-product-option">
-                                    <input type="radio" name="wholesale-edit-product" checked disabled>
-                                    <span x-text="editProductName + (editProductUnit ? ' (' + editProductUnit + ')' : '')"></span>
-                                </label>
+                                <p class="wholesale-picker-message" x-show="editProductsLoading" role="status">Memuat produk...</p>
+                                <p class="wholesale-picker-message" x-show="!editProductsLoading && editProducts.length === 0" x-cloak role="status">Produk tidak ditemukan</p>
+                                <template x-for="product in editProducts" :key="product.id">
+                                    <label class="wholesale-product-option" x-show="!editProductsLoading">
+                                        <input type="radio" name="wholesale-edit-product" :value="product.id" :checked="String(editProduct && editProduct.id) === String(product.id)" @change="selectEditProduct(product)">
+                                        <span x-text="product.name + (product.unit?.abbreviation ? ' (' + product.unit.abbreviation + ')' : '')"></span>
+                                    </label>
+                                </template>
                             </div>
                         </div>
                     </div>
