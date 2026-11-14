@@ -1236,7 +1236,7 @@ class WholesaleController extends Controller
                 if ($item->status !== 'complete' && $canEditWholesale) {
                     $html .= '<a class="wholesale-action-button" href="' . route('wholesale.edit', $item->id) . '" aria-label="Edit pengadaan ' . e($item->order_number) . '"><i class="ph ph-pencil-simple" aria-hidden="true"></i></a>';
                 }
-                if ($item->status !== 'complete' && $canDeleteWholesale) {
+                if ($canDeleteWholesale) {
                     $html .= '<button class="wholesale-action-button is-danger" type="button" onclick="deleteProduct(' . (int) $item->id . ')" aria-label="Hapus pengadaan ' . e($item->order_number) . '"><i class="ph ph-trash" aria-hidden="true"></i></button>';
                 }
                 return $html . '</div>';
@@ -1270,7 +1270,7 @@ class WholesaleController extends Controller
                     'order_date_label' => $mobileDate,
                     'edit_url' => $canEdit ? route('wholesale.edit', $item->id) : null,
                     'can_edit' => (bool) $canEdit,
-                    'can_delete' => $item->status !== 'complete' && $canDeleteWholesale,
+                    'can_delete' => $canDeleteWholesale,
                 ];
             })
             ->rawColumns(['branch', 'po', 'staff', 'items', 'action', 'status', 'address'])
