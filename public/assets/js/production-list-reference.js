@@ -9,7 +9,7 @@
   if(d.getUTCFullYear()!==year||d.getUTCMonth()!==month-1||d.getUTCDate()!==day||d.getUTCHours()!==hour||d.getUTCMinutes()!==minute)return '—';
   return `${String(day).padStart(2,'0')} ${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][month-1]} ${year}, ${m[4]}:${m[5]}`;
  }
- function statusLabel(kind){return {'is-temp':'Draft','is-draft':'Pending','is-posting':'Selesai','is-complete':'Selesai'}[kind]||null;}
+ function statusLabel(kind){return {'is-temp':'Pending','is-draft':'Pending','is-posting':'Selesai','is-complete':'Selesai'}[kind]||null;}
  function quantity(value){
   if(value==null||value===''||!Number.isFinite(Number(value)))return null;
   return Number(value).toLocaleString('id-ID',{maximumFractionDigits:20});

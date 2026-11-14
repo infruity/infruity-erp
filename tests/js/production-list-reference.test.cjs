@@ -7,7 +7,7 @@ test('recorded server clock is formatted without browser timezone conversion',()
  for(const text of ['',null,'31/02/2026 10:00','19/08/2026 25:03','<img onerror=x>']) assert.equal(ui.recordedTime(text),'—');
 });
 test('status captions preserve the ready-to-produce distinction',()=>{
- assert.equal(ui.statusLabel('is-temp'),'Draft');
+ assert.equal(ui.statusLabel('is-temp'),'Pending');
  assert.equal(ui.statusLabel('is-draft'),'Pending');
  assert.equal(ui.statusLabel('is-posting'),'Selesai');
  assert.equal(ui.statusLabel('is-complete'),'Selesai');
@@ -37,7 +37,7 @@ test('row enhancement reuses server clock and is idempotent without inventing mi
   ui.enhanceRow(row, { quantity: '12.25' });
   assert.equal(nodes['.production-sub'].textContent, 'PRO202608391 · 1 bahan');
   assert.equal(time.textContent, '19 Agu 2026, 02:03');
-  assert.equal(status.textContent, 'Draft');
+  assert.equal(status.textContent, 'Pending');
   assert.equal(qty.textContent, '12,25');
   assert.equal(attributes['aria-label'], 'Hasil produksi: 12,25');
   ui.enhanceRow(row, { quantity: null });

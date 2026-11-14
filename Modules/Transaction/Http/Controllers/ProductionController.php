@@ -750,9 +750,12 @@ class ProductionController extends Controller
 
             if ($request->has('status_filter') && $request->status_filter !== 'all' && ! empty($request->status_filter)) {
                 // "complete" (Selesai) covers the posting and complete states, like the list label.
-                $request->status_filter === 'complete'
-                    ? $query->whereIn('status', ['posting', 'complete'])
-                    : $query->where('status', $request->status_filter);
+                // Two statuses: Pending (temp / draft, not finished) and Selesai (posting / complete).
+                match ($request->status_filter) {
+                    'complete' => $query->whereIn('status', ['posting', 'complete']),
+                    'draft' => $query->whereIn('status', ['temp', 'draft']),
+                    default => $query->where('status', $request->status_filter),
+                };
             } else {
                 $statusColumnSearch = trim((string) data_get($request->input('columns', []), '1.search.value', ''));
                 if ($statusColumnSearch !== '') {
@@ -850,8 +853,8 @@ class ProductionController extends Controller
                     $labels = [
                         'posting'  => ['Completed', 'is-posting'],
                         'complete' => ['Complete', 'is-complete'],
-                        'draft'    => ['Draft', 'is-draft'],
-                        'temp'     => ['Temp', 'is-temp'],
+                        'draft'    => ['Pending', 'is-draft'],
+                        'temp'     => ['Pending', 'is-temp'],
                     ];
                     [$label, $class] = $labels[$item->status] ?? [ucfirst($item->status ?? 'Unknown'), 'is-muted'];
                     $quantity        = number_format($item->quantity ?? 0, 0, ',', '.');

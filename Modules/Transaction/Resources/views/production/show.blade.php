@@ -62,10 +62,8 @@
             <div class="production-detail__status">
                 @if(in_array($data->status, ['posting', 'complete'], true))
                     <span class="production-detail__badge is-done">Selesai</span>
-                @elseif($data->status == 'draft')
-                    <span class="production-detail__badge is-ready">Siap Produksi</span>
-                @elseif($data->status == 'temp')
-                    <span class="production-detail__badge is-temp">Draft Sementara</span>
+                @elseif(in_array($data->status, ['draft', 'temp'], true))
+                    <span class="production-detail__badge is-ready">Pending</span>
                 @else
                     <span class="production-detail__badge is-temp">{{ ucfirst($data->status) }}</span>
                 @endif

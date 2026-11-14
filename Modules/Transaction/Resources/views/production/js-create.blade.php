@@ -803,9 +803,10 @@
             // Get status text
             getStatusText(status) {
                 const statusMap = {
-                    'temp': 'Draft Sementara',
-                    'draft': 'Siap Produksi',
-                    'posting': 'Selesai Produksi'
+                    'temp': 'Pending',
+                    'draft': 'Pending',
+                    'posting': 'Selesai',
+                    'complete': 'Selesai'
                 };
                 return statusMap[status] || 'Unknown';
             },
