@@ -290,7 +290,7 @@
                     this.editProducts = list;
                     this.editProductsLoading = false;
                     // Show the chosen product at the top of the list when the dialog opens.
-                    if (!this.editProductSearch) this.$nextTick(() => setTimeout(() => {
+                    if (!this.editProductSearch && typeof this.$nextTick === 'function') this.$nextTick(() => setTimeout(() => {
                         const box = document.querySelector('#editModal .wholesale-product-options');
                         const chosen = box && [...box.querySelectorAll('.wholesale-product-option')].find(o => o.querySelector('input')?.checked);
                         if (chosen) box.scrollTop += chosen.getBoundingClientRect().top - box.getBoundingClientRect().top;

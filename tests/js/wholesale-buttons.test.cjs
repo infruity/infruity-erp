@@ -52,11 +52,18 @@ test('missing product and quantity do not add; margin is calculated',()=>{
     app.selectAddProduct({id:1,name:'Buah',unit:null,price:10000,last_price:10000,last_sell_price:12500});
     assert.equal(app.addProduct_HPPPercent,'20.00');app.saveAddToCart();assert.equal(app.cart.length,0);
 });
-test('search ignores older results and supports failure/retry',()=>{
-    const {app,requests}=setup();app.loadAddProducts();app.addProductSearch='Buah';app.loadAddProducts();
-    requests[1].success([{id:2}]);requests[0].success([{id:1}]);assert.equal(app.addProducts[0].id,2);
-    app.loadAddProducts();requests[2].error();assert.equal(app.addProductsError,true);
-    app.loadAddProducts();requests[3].success([]);assert.equal(app.addProductsError,false);
+test('search ignores older results and supports failure/retry',async()=>{
+    const settle=()=>new Promise(setImmediate);
+    const {app,requests}=setup();app.addProductSearch='Buah';app.loadAddProducts();app.addProductSearch='Apel';app.loadAddProducts();
+    requests[1].success([{id:2}]);requests[0].success([{id:1}]);await settle();assert.equal(app.addProducts[0].id,2);
+    app.loadAddProducts();requests[2].error();await settle();assert.equal(app.addProductsError,true);
+    app.loadAddProducts();requests[3].success([]);await settle();assert.equal(app.addProductsError,false);
+});
+test('the empty-term product list is fetched once and shared by the add and edit dialogs',async()=>{
+    const settle=()=>new Promise(setImmediate);
+    const {app,requests}=setup();app.addProductSearch='';app.loadAddProducts();app.editProductSearch='';app.loadEditProducts();
+    assert.equal(requests.length,1);requests[0].success([{id:7,name:'Alpukat',unit:{abbreviation:'Kg'}}]);await settle();
+    assert.equal(app.addProducts[0].id,7);assert.equal(app.editProducts[0].id,7);
 });
 for (const [method,status] of [['saveTransaction','draft'],['saveToOrderBook','posting']]) {
     test(`${method} sends correct status and redirects only on success`,async()=>{
@@ -89,8 +96,9 @@ test('validation and network errors show one error, preserve cart, allow retry',
 test('deleting last item autosaves empty temp; edit/detail do not autosave',async()=>{
     const t=setup();add(t.app);t.app.openEditModal(t.app.cart[0]);t.app.deleteFromCart();
     t.app.autoSaveTemp();await [...t.timers.values()].at(-1)();await t.app.autoSaveRequest;
-    assert.equal(JSON.parse(t.requests[0].body).items.length,0);
-    assert.equal(JSON.parse(t.requests[0].body).status,'temp');
+    const saves=t.requests.filter(r=>r.body);
+    assert.equal(JSON.parse(saves[0].body).items.length,0);
+    assert.equal(JSON.parse(saves[0].body).status,'temp');
     t.app.autoSaveEnabled=false;t.timers.clear();t.app.autoSaveTemp();assert.equal(t.timers.size,0);
 });
 test('loading branches preserves an existing draft selection; defaults only if empty',()=>{
