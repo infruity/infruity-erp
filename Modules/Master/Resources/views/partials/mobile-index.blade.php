@@ -164,7 +164,7 @@
                             </div>
                         </div>
                     @elseif ($routeBase === 'position')
-                        <div class="min-h-0 overflow-y-auto px-6 pb-8 pt-2 flex flex-col gap-5 text-sm break-words">
+                        <div class="min-h-0 overflow-y-auto px-6 pb-8 pt-4 flex flex-col gap-5 text-sm break-words">
                             <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-briefcase text-lg"></i></div><div class="min-w-0"><div class="font-bold text-gray-800 break-words" x-text="label(detail)"></div><div class="text-[11px] text-gray-400 font-medium">Nama Jabatan</div></div></div>
                             <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-clock text-lg"></i></div>
                                 <div class="min-w-0"><div class="text-xs font-bold text-gray-800 leading-snug" x-text="detail.updated_by_name || 'Administrator'"></div><div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Memperbarui pada ' + formatDetailDate(detail.updated_at || detail.created_at)"></div></div>

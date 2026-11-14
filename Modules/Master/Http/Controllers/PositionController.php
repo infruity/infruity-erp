@@ -72,6 +72,30 @@ class PositionController extends Controller
     }
 
     /**
+     * A position name may exist only once (case-insensitive), like the reference. An unchanged name of an existing
+     * position always passes, so older duplicates can still be edited.
+     */
+    private function uniquePositionName(?int $ignoreId = null): \Closure
+    {
+        return function ($attribute, $value, $fail) use ($ignoreId) {
+            $name = trim((string) $value);
+
+            if ($ignoreId !== null && mb_strtolower((string) Position::whereKey($ignoreId)->value('name')) === mb_strtolower($name)) {
+                return;
+            }
+
+            $exists = Position::query()
+                ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+                ->when($ignoreId !== null, fn ($query) => $query->whereKeyNot($ignoreId))
+                ->exists();
+
+            if ($exists) {
+                $fail('Jabatan "' . $name . '" sudah ada!');
+            }
+        };
+    }
+
+    /**
      * Store a newly created resource in storage.
      * @param Request $request
      * @return Renderable
@@ -84,7 +108,7 @@ class PositionController extends Controller
 
         // Validasi input
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => ['required', 'string', 'max:255', $this->uniquePositionName()],
             'department_id' => 'nullable|exists:department,id',
             'description' => 'nullable|string|max:1000',
         ]);
@@ -161,7 +185,7 @@ class PositionController extends Controller
 
         // Validasi input
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => ['required', 'string', 'max:255', $this->uniquePositionName((int) $id)],
             'department_id' => 'nullable|exists:department,id',
             'description' => 'nullable|string|max:1000',
         ]);
