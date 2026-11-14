@@ -244,3 +244,36 @@
 [data-erp-filter-sheet][id="so-filter-sheet"] .erp-filter-sheet__footer { display:flex !important; gap:12px; }
 [data-erp-filter-sheet][id="so-filter-sheet"] .erp-filter-sheet__footer > button { flex:1 1 0 !important; min-width:0; }
 [data-erp-filter-sheet][id="so-filter-sheet"] [aria-label="Tutup"] i { font-size:14px !important; }
+
+/* History page metrics, measured on the reference at 400px. */
+.so-reference-history, .so-reference-history .so-history-page { border:0; box-shadow:none; }
+.so-reference-history .so-history-topbar { height:61px; background:rgba(255,255,255,.8); border-bottom:1px solid rgba(229,231,235,.6); }
+.so-reference-history .so-history-context { align-items:center; margin-bottom:10px; padding-bottom:2px; }
+.so-reference-history .so-history-context p { margin:0; font-size:11px; font-weight:500; line-height:1.25; }
+.so-reference-history .so-history-title { display:flex; align-items:center; gap:6px; }
+.so-reference-history .so-history-context h3 { font-size:14px; font-weight:800; line-height:1.25; color:#111827; }
+.so-reference-history .so-history-check { flex:none; color:#10b981; font-size:14px; line-height:20px; }
+.so-reference-history .so-history-tools button { background:rgba(243,244,246,.9); border-color:rgba(229,231,235,.8); }
+.so-reference-history [data-so-history-toggle] { height:26.5px; }
+.so-reference-history .so-hist-head { padding:8px 10px; font-size:10.5px; line-height:1.5; }
+.so-reference-history .so-hist-head__side { gap:8px; }
+.so-reference-history .so-hist-head__side .so-hist-col:last-child { color:#0b595b; }
+.so-reference-history .so-hist-row { padding:10px 8px; align-items:flex-start; }
+.so-reference-history .so-hist-main { gap:4px; }
+.so-reference-history .so-hist-kind { display:flex; align-items:center; gap:6px; line-height:16px; color:#111827; }
+.so-reference-history .so-hist-direction { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; padding:0; margin:0; border-radius:4px; font-size:10px; }
+.so-reference-history .so-hist-direction.is-surplus { color:#16a34a; background:#dcfce7; }
+.so-reference-history .so-hist-direction.is-loss { color:#dc2626; background:#fee2e2; }
+.so-reference-history .so-hist-by { font-size:11px; font-weight:500; line-height:1.25; }
+.so-reference-history .so-hist-time { font-size:10.5px; line-height:1.25; }
+.so-reference-history .so-hist-side { gap:8px; margin-top:8px; line-height:15px; }
+.so-reference-history .so-hist-side .so-hist-col { font-weight:500; color:#4b5563; }
+.so-reference-history .so-hist-side small { margin-left:4.7px; font-size:10px; font-weight:400; color:#9ca3af; }
+.so-reference-history .so-hist-side .so-hist-col.is-surplus { color:#047857; font-weight:700; }
+.so-reference-history .so-hist-side .so-hist-col.is-loss { color:#be123c; font-weight:700; }
+.so-reference-history .so-hist-side .so-hist-col.is-surplus small { color:#047857; }
+.so-reference-history .so-hist-side .so-hist-col.is-loss small { color:#be123c; }
+.so-reference-history .so-hist-side .so-hist-col.is-strong { color:#111827; font-weight:700; }
+#kt_stock_opname_history { border:0 !important; box-shadow:none !important; }
+.so-reference-history .so-history-context p { margin-bottom:2px; }
+.so-reference-history .so-history-tools [data-so-history-toggle] { height:26.5px; }

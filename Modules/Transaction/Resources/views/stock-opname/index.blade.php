@@ -1032,7 +1032,7 @@
         data-kt-drawer-activate="true" data-kt-drawer-overlay="true" data-kt-drawer-width="{default:'100%', 'md': '760px'}" data-kt-drawer-direction="end" data-kt-drawer-close="#kt_stock_opname_history_close" role="dialog" aria-modal="true" aria-hidden="true" inert aria-labelledby="so-history-title" tabindex="-1">
         <div class="so-history-page">
             <header class="so-history-topbar"><button type="button" id="kt_stock_opname_history_close" aria-label="Kembali ke detail"><i class="ph ph-caret-left" aria-hidden="true"></i></button><h2 id="so-history-title">Riwayat Stok Opname</h2><span></span></header>
-            <div class="so-history-subheader"><div class="so-history-context"><div><p>Riwayat Stok Opname</p><h3 id="history-transaction-code">—</h3></div><div class="so-history-tools"><button type="button" data-so-history-toggle aria-label="Ubah tampilan menjadi Alasan" aria-pressed="false">Kredit</button><button type="button" id="so-history-filter-open" aria-label="Filter riwayat stok opname" aria-haspopup="dialog" aria-controls="so-history-filter"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></div></div><div id="so-history-columns" class="so-hist-head"></div></div>
+            <div class="so-history-subheader"><div class="so-history-context"><div><p>Riwayat Stok Opname</p><div class="so-history-title"><h3 id="history-transaction-code">—</h3><i class="ph-fill ph-check-circle so-history-check" title="Selesai" aria-hidden="true" hidden></i></div></div><div class="so-history-tools"><button type="button" data-so-history-toggle aria-label="Ubah tampilan menjadi Alasan" aria-pressed="false">Kredit</button><button type="button" id="so-history-filter-open" aria-label="Filter riwayat stok opname" aria-haspopup="dialog" aria-controls="so-history-filter"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></div></div><div id="so-history-columns" class="so-hist-head"></div></div>
             <div id="kt_stock_opname_history_scroll" class="so-history-scroll"><div id="history-timeline-items" class="so-hist"></div></div>
         </div>
     </div>
@@ -1890,7 +1890,7 @@
             entries.forEach(item => {
                 const tone = item.delta > 0 ? 'is-surplus' : item.delta < 0 ? 'is-loss' : '';
                 const kind = {initial:'Stok Awal',plus:'Kredit Lebih',minus:'Kredit Kurang',note:'Catatan',unknown:'Perubahan',snapshot:'Snapshot Tersedia'}[item.kind];
-                const badge = tone ? `<span class="so-hist-direction ${tone}" aria-label="${item.delta > 0 ? 'Lebih' : 'Kurang'}">${item.delta > 0 ? '↙' : '↗'}</span>` : '';
+                const badge = tone ? `<span class="so-hist-direction ${tone}" aria-label="${item.delta > 0 ? 'Lebih' : 'Kurang'}"><i class="ph-bold ${item.delta > 0 ? 'ph-arrow-down-left' : 'ph-arrow-up-right'}" aria-hidden="true"></i></span>` : '';
                 let side;
                 if (!reasonMode) {
                     const cell = (value,cls='',isSigned=false) => `<span class="so-hist-col ${cls}">${isSigned ? signed(value) : num(value)}${value !== null ? `<small>${unit}</small>` : ''}</span>`;
@@ -1913,6 +1913,7 @@
         function showHistory(id) {
             $.ajax({url:`/stock-opname/${id}/history`,type:'GET',success:function(response) {
                 $('#history-transaction-code').text(response.product_name || window.stockOpnameRows[id]?.name || response.code || '—');
+                $('.so-history-check').prop('hidden', !!window.stockOpnameRows[id]?.isPending);
                 window.stockOpnameHistory = {id,entries:response.history || [],unit:response.unit || 'Kg',tab:'credit',direction:'all'};
                 renderStockOpnameHistory();
                 const drawerEl = document.getElementById('kt_stock_opname_history');
