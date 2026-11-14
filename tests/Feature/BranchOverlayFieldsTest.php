@@ -6,38 +6,34 @@ use PHPUnit\Framework\TestCase;
 
 final class BranchOverlayFieldsTest extends TestCase
 {
-    public function test_branch_add_and_edit_drawer_use_persisted_region_and_map_fields(): void
+    public function test_branch_form_asks_for_name_address_and_map_link_only(): void
     {
         $root = dirname(__DIR__, 2);
         $branchView = file_get_contents($root . '/Modules/Master/Resources/views/branch/index.blade.php');
-        $sharedView = file_get_contents($root . '/Modules/Master/Resources/views/partials/mobile-index.blade.php');
         $controller = file_get_contents($root . '/Modules/Master/Http/Controllers/BranchController.php');
-        $migrationPath = $root . '/database/migrations/2026_10_26_233900_add_branch_region_and_map_fields.php';
 
-        self::assertFileExists($migrationPath);
-
-        foreach (['province', 'city', 'district', 'village'] as $field) {
+        foreach (['name', 'address', 'map_link'] as $field) {
             self::assertStringContainsString("'key'=>'{$field}'", $branchView);
-            self::assertStringContainsString("\$branch->{$field} = \$validated['{$field}'];", $controller);
-            self::assertStringContainsString("'{$field}'", file_get_contents($migrationPath));
+        }
+        foreach (['province', 'city', 'district', 'village', 'code'] as $field) {
+            self::assertStringNotContainsString("'key'=>'{$field}'", $branchView);
         }
 
-        self::assertStringNotContainsString("'key'=>'name'", $branchView);
-        self::assertStringNotContainsString("'key'=>'code'", $branchView);
-        self::assertStringContainsString('generateBranchIdentity', $controller);
+        // The region columns stay in the table but are no longer asked for or required.
+        self::assertStringNotContainsString("'province' => ['required'", $controller);
+        self::assertStringNotContainsString('generateBranchIdentity', $controller);
+        self::assertStringContainsString('generateBranchCode', $controller);
         self::assertStringContainsString('CBG-', $controller);
-        self::assertStringContainsString("'key'=>'map_link'", $branchView);
+        self::assertStringContainsString("\$branch->name = trim(\$validated['name']);", $controller);
         self::assertStringContainsString("\$branch->map_link = \$validated['map_link'] ?? null;", $controller);
-        self::assertStringContainsString('closeDrawer()', $sharedView);
-        self::assertStringContainsString("searchParams.delete('create')", $sharedView);
-        self::assertStringContainsString("@js(in_array(\$routeBase, ['supplier', 'branch'], true)", $sharedView);
-        self::assertStringContainsString("'province' => route('ajax.province')", $sharedView);
-        self::assertStringContainsString("'city' => route('ajax.city')", $sharedView);
-        self::assertStringContainsString("'district' => route('ajax.district')", $sharedView);
-        self::assertStringContainsString("'village' => route('ajax.village')", $sharedView);
-        self::assertStringContainsString('province_name', $controller);
-        self::assertStringContainsString('city_name', $controller);
-        self::assertStringContainsString('district_name', $controller);
-        self::assertStringContainsString('village_name', $controller);
+    }
+
+    public function test_branch_detail_shows_a_linked_address_on_a_single_line(): void
+    {
+        $view = file_get_contents(dirname(__DIR__, 2) . '/Modules/Master/Resources/views/partials/mobile-index.blade.php');
+
+        self::assertStringContainsString('inline-flex max-w-full items-center gap-1 transition-colors cursor-pointer"><span class="truncate" x-text="detail.address">', $view);
+        // Without a link the address may wrap.
+        self::assertStringContainsString('text-sm font-bold text-gray-800 leading-snug break-words" x-text="detail.address"', $view);
     }
 }

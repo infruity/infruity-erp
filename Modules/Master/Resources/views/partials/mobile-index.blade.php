@@ -150,7 +150,7 @@
                                 <div class="min-w-0 flex-1">
                                     <template x-if="detail.map_link && detail.map_link.trim() !== ''">
                                         <div>
-                                            <a :href="detail.map_link" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-blue-600 hover:text-blue-700 border-b border-dashed border-blue-400 hover:border-blue-600 pb-0.5 inline transition-colors break-words cursor-pointer"><span x-text="detail.address"></span><i class="ph-bold ph-arrow-up-right text-xs inline-block ml-1 align-middle"></i></a>
+                                            <a :href="detail.map_link" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-blue-600 hover:text-blue-700 border-b border-dashed border-blue-400 hover:border-blue-600 pb-0.5 inline-flex max-w-full items-center gap-1 transition-colors cursor-pointer"><span class="truncate" x-text="detail.address"></span><i class="ph-bold ph-arrow-up-right text-xs shrink-0"></i></a>
                                             <div class="text-[11px] text-gray-400 font-medium mt-0.5">Alamat Cabang (Klik untuk Buka Google Maps)</div>
                                         </div>
                                     </template>
