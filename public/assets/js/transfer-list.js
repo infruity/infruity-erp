@@ -20,6 +20,8 @@
                 const value = received ? (row.received_at || row.created_at || row.date) : (row.created_at || row.date);
                 return (received ? 'Diterima : ' : 'Dikirim : ') + this.dateLabel(value).replace(/(\d{2})\.(\d{2})$/, '$1:$2');
             },
+            // "09 Okt 2026, 08:00" (24-hour clock with a colon, like the reference).
+            timeLabel(value) { return this.dateLabel(value).replace(/(\d{2})\.(\d{2})$/, '$1:$2'); },
             // A received transfer where less arrived than was sent.
             hasDeficit(row) { return row.status === 'selesai' && (row.items || []).some(item => Number(item.sent) > Number(item.quantity)); },
             initials(name) {
