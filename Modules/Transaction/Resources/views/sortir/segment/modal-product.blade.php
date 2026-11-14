@@ -12,6 +12,7 @@
                     <template x-for="product in products" :key="product.id"><label class="sortir-product-option" x-show="!loadingProducts && !productsError" :class="String(modalItem.id) === String(product.id) ? 'is-selected' : ''">
                         <input type="radio" name="sortir_product" :value="product.id" :checked="String(modalItem.id) === String(product.id)" @change="selectProduct(product)">
                         <span x-text="product.name + (product.unit?.abbreviation ? ' (' + product.unit.abbreviation + ')' : '')"></span>
+                        <em class="sortir-product-stock" x-text="'Stok ' + number(product.stock_available || 0)"></em>
                     </label></template>
                 </div>
             </div>
