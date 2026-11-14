@@ -387,3 +387,10 @@ body:has(.stock-opname-page) > .modal-backdrop { display:none !important; }
 #kt_modal_add_customer, #kt_modal_add_customer *:not(i):not([class*="ph-"]) { font-family:'Plus Jakarta Sans', sans-serif; }
 #kt_modal_add_customer .erp-picker__label { line-height:20px; }
 #kt_modal_add_customer .so-create-btn span { line-height:16px; }
+/* The reference draws its filter icon with Material Symbols Rounded ("tune"), not Phosphor. */
+.stock-opname-page .erp-mobile-search__filter .icon-rounded,
+.so-reference-history #so-history-filter-open .icon-rounded { font-family:'Material Symbols Rounded'; font-weight:300; line-height:1; font-style:normal; font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24; }
+.stock-opname-page .erp-mobile-search__filter .icon-rounded { font-size:20px; }
+.stock-opname-page .erp-mobile-search__filter.is-active .icon-rounded { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+.so-reference-history #so-history-filter-open .icon-rounded { font-size:18px; }
+.stock-opname-page .erp-mobile-search__filter { color:#9ca3af; }
