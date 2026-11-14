@@ -318,7 +318,7 @@ class WholesaleController extends Controller
         $data['data']           = Wholesale::with('branch')
             ->whereIn('branch_id', UserBranch::getUserBranch())
             ->findOrFail($id);
-        abort_if($data['data']->status === 'complete', 403, 'Pengadaan yang sudah selesai tidak dapat diedit.');
+        abort_if(in_array($data['data']->status, ['complete', 'posting'], true), 403, 'Pengadaan yang sudah selesai tidak dapat diedit.');
         $data['detail']         = $this->hydrateWholesaleDetailPricing(
             WholesaleProduct::with('product', 'product.unit')->where('wholesale_id', $id)->get(),
             $data['data']->branch_id
@@ -384,7 +384,7 @@ class WholesaleController extends Controller
         try {
             DB::beginTransaction();
             $wholesale = Wholesale::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
-            if ($wholesale->status === 'complete') {
+            if (in_array($wholesale->status, ['complete', 'posting'], true)) {
                 DB::rollBack();
                 return redirect()->back()->with('error', 'Pengadaan yang sudah selesai tidak dapat diubah.');
             }
@@ -1233,7 +1233,7 @@ class WholesaleController extends Controller
                 if ($canViewWholesale) {
                     $html .= '<button class="wholesale-action-button wholesale-open-detail" type="button" aria-label="Lihat pengadaan ' . e($item->order_number) . '"><i class="ph ph-eye" aria-hidden="true"></i></button>';
                 }
-                if ($item->status !== 'complete' && $canEditWholesale) {
+                if (! in_array($item->status, ['complete', 'posting'], true) && $canEditWholesale) {
                     $html .= '<a class="wholesale-action-button" href="' . route('wholesale.edit', $item->id) . '" aria-label="Edit pengadaan ' . e($item->order_number) . '"><i class="ph ph-pencil-simple" aria-hidden="true"></i></a>';
                 }
                 if ($canDeleteWholesale) {
@@ -1252,7 +1252,7 @@ class WholesaleController extends Controller
                     return null;
                 }
 
-                $canEdit = $item->status !== 'complete' && $canEditWholesale;
+                $canEdit = ! in_array($item->status, ['complete', 'posting'], true) && $canEditWholesale;
                 // The list row shows the order date with the recorded time; the popup shows the same value.
                 $dateTime = \Carbon\Carbon::parse($item->order_date ?? $item->created_at);
                 if (! empty($item->created_at)) {
