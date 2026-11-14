@@ -891,12 +891,9 @@
                         </div>
                     </div>
                     <div class="modal-footer so-create-footer">
-                        <button type="submit" id="kt_modal_add_customer_submit" data-so-submit="draft" class="so-create-btn">
-                            <span class="indicator-label">Draft</span>
-                            <span class="indicator-progress">Mohon tunggu...</span>
-                        </button>
-                        <button type="submit" id="kt_modal_add_customer_final" data-so-submit="final" class="so-create-btn is-primary">
-                            <span class="indicator-label">Opname Selesai</span>
+                        <button type="button" id="kt_modal_add_customer_back" class="so-create-btn" data-bs-dismiss="modal">Kembali</button>
+                        <button type="submit" id="kt_modal_add_customer_submit" class="so-create-btn is-primary">
+                            <span class="indicator-label">Tambah</span>
                             <span class="indicator-progress">Mohon tunggu...</span>
                         </button>
                     </div>
@@ -1569,7 +1566,7 @@
 
                 form.attr('action', '{{ url(Request::segment(1)) }}');
                 $('#kt_modal_add_customer_header h2').text('Tambah Stok Opname');
-                $('#kt_modal_add_customer_submit .indicator-label').text('Draft');
+                $('#kt_modal_add_customer_submit .indicator-label').text('Tambah');
                 $('#detail-qty-container').empty();
                 if (typeof detailRowCount !== 'undefined') {
                     detailRowCount = 0;
@@ -1598,8 +1595,7 @@
                 var form = $(this);
                 var url = form.attr('action');
                 var isUpdate = form.find('input[name="_method"]').length > 0;
-                var finalRun = !isUpdate && e.originalEvent?.submitter?.dataset.soSubmit === 'final';
-                var submitBtn = $(e.originalEvent?.submitter || '#kt_modal_add_customer_submit');
+                var submitBtn = $('#kt_modal_add_customer_submit');
 
                 if (!isUpdate && ($('#real_stock').val() === '' || !String($('#so_note').val() || '').trim())) {
                     Swal.fire({
@@ -1625,7 +1621,7 @@
                         const done = () => Swal.fire({
                             icon: 'success',
                             title: 'Berhasil',
-                            text: finalRun ? 'Opname selesai.' : (response.message || 'Data berhasil disimpan.'),
+                            text: response.message || 'Data berhasil disimpan.',
                             showConfirmButton: false,
                             timer: 1500 // notifikasi akan hilang otomatis setelah 1.5 detik
                         }).then(() => {
@@ -1646,7 +1642,7 @@
                             $('#kt_modal_add_customer_header h2').text(
                                 'Tambah Stok Opname');
 
-                            $('#kt_modal_add_customer_submit .indicator-label').text('Draft');
+                            $('#kt_modal_add_customer_submit .indicator-label').text('Tambah');
                             updateStockSummary();
 
                             // 5. Tutup modal
@@ -1660,25 +1656,7 @@
                             }
                         });
 
-                        // "Opname Selesai": the entry is saved as pending first, then finished right away.
-                        if (finalRun && response.data && response.data.id) {
-                            $.ajax({
-                                url: `/stock-opname/${response.data.id}/finalize`,
-                                type: 'POST',
-                                data: {_token: $('meta[name="csrf-token"]').attr('content')},
-                                success: done,
-                                error: function(xhr) {
-                                    done();
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Disimpan sebagai draft',
-                                        text: xhr.responseJSON?.message || 'Opname belum bisa diselesaikan.'
-                                    });
-                                }
-                            });
-                        } else {
-                            done();
-                        }
+                        done();
                     },
                     error: function(xhr) {
                         var msg = 'Terjadi kesalahan saat menyimpan data.';
@@ -2145,7 +2123,7 @@
 
             if (!$form.find('input[name="_method"]').length) {
                 $('#kt_modal_add_customer_header h2').text('Tambah Stok Opname');
-                $('#kt_modal_add_customer_submit .indicator-label').text('Draft');
+                $('#kt_modal_add_customer_submit .indicator-label').text('Tambah');
                 $('textarea[name="note"]').val('');
                 $('#detail-qty-container').empty();
                 detailRowCount = 0;
