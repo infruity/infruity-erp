@@ -372,11 +372,12 @@ class StaffController extends Controller
     {
         $query = Staff::query()
             ->with(['department:id,name', 'position:id,name', 'branch:id,name'])
-            ->select('id', 'name', 'department_id', 'position_id', 'branch_id', 'status', 'date_in')
-            ->orderByDesc('id');
+            ->leftJoin('users as editor', 'editor.id_user', '=', 'staff.updated_by')
+            ->select('staff.id', 'staff.name', 'staff.department_id', 'staff.position_id', 'staff.branch_id', 'staff.status', 'staff.date_in', 'staff.created_at', 'staff.updated_at', 'editor.nm_user as updated_by_name')
+            ->orderByDesc('staff.id');
 
         if ($onlyId !== null) {
-            $query->whereKey($onlyId);
+            $query->where('staff.id', $onlyId);
         }
 
         return $query->get()->each(function ($staff) {
