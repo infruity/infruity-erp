@@ -73,7 +73,7 @@
                             @mousedown="down($event)" @mousemove="startX && move($event)" @mouseup="up()" @mouseleave="up()">
                             <div class="production-ref-row__line">
                                 <strong x-text="ingredient.name"></strong>
-                                <span class="production-ref-row__price" x-text="formatCurrency(ingredient.hpp) + ' / ' + ingredient.unit"></span>
+                                <span class="production-ref-row__price"><span x-text="formatCurrency(ingredient.hpp) + ' /'"></span><span class="production-ref-row__price-unit" x-text="ingredient.unit"></span></span>
                             </div>
                             <div class="production-ref-row__line">
                                 <span class="production-ref-row__total"><small>Rp</small><b x-text="formatNumber(ingredient.total)"></b></span>

@@ -255,7 +255,9 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
 .production-ref-row__content.is-revealed { transform:translateX(-68px); }
 .production-ref-row__line { display:flex; min-height:24px; align-items:center; justify-content:space-between; gap:12px; }
 .production-ref-row__line strong { overflow:hidden; color:#1f2937; font-size:12px; font-weight:700; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
-.production-ref-row__price { flex:none; color:#9ca3af; font:400 11px/16.5px Poppins, sans-serif; }
+.production-ref-row__price { display:flex; flex:none; align-items:center; color:#9ca3af; font:400 11px/16.5px Poppins, sans-serif; }
+/* The unit sits in the same 28px slot as the quantity's unit below it, so the two units line up (as in the reference). */
+.production-ref-row__price-unit { width:28px; flex:none; margin-left:4px; overflow:hidden; font-weight:500; text-align:left; text-overflow:ellipsis; white-space:nowrap; }
 .production-ref-row__total { display:flex; flex:none; align-items:center; font-family:Poppins, sans-serif; }
 .production-ref-row__total small { margin-right:4px; color:#9ca3af; font-size:12px; font-weight:700; line-height:16px; }
 .production-ref-row__total b { display:flex; width:56px; height:22px; align-items:center; border-bottom:2px dashed #d1d5db; color:#374151; font-size:12px; font-weight:700; line-height:16px; font-variant-numeric:tabular-nums; }
