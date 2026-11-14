@@ -37,6 +37,7 @@
                     </div>
                 </div>
                 <p class="sortir-error" x-show="!branches.length" x-cloak>Tidak ada cabang yang dapat diakses. Hubungi administrator.</p>
+                @isset($data)
                 <details class="sortir-metadata">
                     <summary>Detail transaksi <span x-text="invoiceNumber"></span><i class="ph ph-caret-down" aria-hidden="true"></i></summary>
                     <div class="sortir-metadata-fields">
@@ -44,9 +45,10 @@
                         <div><label for="sortir-invoice">Nomor Faktur</label><input id="sortir-invoice" name="invoice_number" type="text" :value="invoiceNumber" readonly></div>
                     </div>
                 </details>
+                @endisset
             </section>
             <section class="sortir-items-card" aria-label="Daftar item sortir">
-                <div class="sortir-items-header"><h1>Daftar Item Sortir</h1><button type="button" class="sortir-add-button" @click="openAddModal()" :disabled="saving || !branchId">+ Tambah Item</button></div>
+                <div class="sortir-items-header"><h1>Daftar Item Sortir</h1><button type="button" class="sortir-add-button" @click="openAddModal()" :disabled="saving || !branchId">+ Tambah</button></div>
                 @include('transaction::sortir.segment.cart')
             </section>
         </div>
