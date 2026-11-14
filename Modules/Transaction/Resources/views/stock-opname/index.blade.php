@@ -862,7 +862,7 @@
                                     <span class="so-create-hint">Hasil timbang aktual</span>
                                 </div>
                                 <div class="so-create-physical">
-                                    <input type="number" step="0.01" inputmode="decimal" id="real_stock" name="real_stock" value="" placeholder="0,00" />
+                                    <input type="text" inputmode="decimal" id="real_stock" name="real_stock" value="" placeholder="0,00" autocomplete="off" />
                                     <span class="so-create-unit" id="so-physical-unit">Kg</span>
                                 </div>
                             </div>
@@ -1127,31 +1127,61 @@
             return new Intl.NumberFormat('id-ID').format(Number(value || 0));
         }
 
+        // "1.234,5" -> 1234.5 (dots are thousands, the comma is the decimal mark, like the reference's field).
+        function parsePhysical(text) {
+            const clean = String(text ?? '').trim();
+            if (clean === '') return 0;
+            const number = Number(clean.replace(/\./g, '').replace(',', '.'));
+            return Number.isFinite(number) ? number : 0;
+        }
+
+        function formatPhysical(value) {
+            const number = Number(value);
+            return Number.isFinite(number) ? number.toLocaleString('id-ID', {maximumFractionDigits: 3}) : '';
+        }
+
+        // Typing keeps the field readable: thousands dots, one decimal comma (a typed "." becomes ",").
+        function maskPhysical(input) {
+            let text = String(input.value || '').trim();
+            if (text === '') { input.value = ''; return; }
+            const endsWithDot = text.endsWith('.') && !text.includes(',');
+            if (endsWithDot) text = text.slice(0, -1) + ',';
+            if (text.includes(',')) {
+                const parts = text.split(',');
+                const intDigits = parts[0].replace(/\D/g, '');
+                const decimals = parts.slice(1).join('').replace(/\D/g, '').slice(0, 3);
+                input.value = (intDigits ? parseInt(intDigits, 10).toLocaleString('id-ID') : '0') + ',' + decimals;
+                return;
+            }
+            const digits = text.replace(/\D/g, '');
+            input.value = digits ? parseInt(digits, 10).toLocaleString('id-ID') : '';
+        }
+
         function updateStockSummary(unitPrice = null) {
             const hasProduct = !!$('#product_id').val();
             const systemStock = Number($('input[name="quantity"]').val() || 0);
-            const realRaw = $('input[name="real_stock"]').val();
-            const realStock = Number(realRaw || 0);
-            // Nothing typed yet means no difference to show (the reference reads 0,00 Kg / Rp 0 until a count is entered).
-            const difference = hasProduct && realRaw !== '' && realRaw !== null ? realStock - systemStock : 0;
+            const realRaw = String($('input[name="real_stock"]').val() ?? '');
+            const typed = hasProduct && realRaw !== '';
+            const realStock = parsePhysical(realRaw);
+            const difference = typed ? Math.round((realStock - systemStock) * 1000) / 1000 : 0;
             const price = Number(unitPrice ?? $('#product_id').data('unit-price') ?? 0);
             const unit = $('#product_id').data('unit') || 'Kg';
-            const value = difference * price;
-            const diffRounded = Math.round(difference * 100) / 100;
-            const fixed = number => number.toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            const value = Math.round(difference * price);
+            const qty = number => number.toLocaleString('id-ID', {maximumFractionDigits: 3});
+            const signedQty = number => number === 0 ? '0' : (number > 0 ? '+' : '-') + qty(Math.abs(number));
+            const signedRupiah = number => number === 0 ? 'Rp 0' : (number > 0 ? '+Rp ' : '-Rp ') + formatRupiah(Math.abs(number));
+            const state = !typed ? 'is-empty' : (difference > 0 ? 'is-surplus' : (difference < 0 ? 'is-loss' : 'is-match'));
+            const label = !typed ? 'Status Selisih' : (systemStock === 0 ? 'Stok Awal' : (difference > 0 ? 'Selisih Lebih' : (difference < 0 ? 'Selisih Kurang' : 'Sesuai')));
 
-            $('#stock-hpp-value').text(price > 0 ? `Rp ${formatRupiah(Math.round(price))}` : '-');
-            $('#stock-hpp-hint').text(price > 0 ? `per ${unit}` : '-');
+            $('#stock-hpp-value').text(hasProduct && price > 0 ? `Rp ${formatRupiah(Math.round(price))}` : '-');
+            $('#stock-hpp-hint').text(hasProduct && price > 0 ? `per ${unit}` : '-');
             $('#so-physical-unit').text(unit);
-            $('#stock-system-display').text(hasProduct ? `${systemStock.toLocaleString('id-ID', {maximumFractionDigits: 3})} ${unit}` : '-');
-            $('#stock-difference-label').text('Status Selisih');
-            $('#stock-difference-text').text(`${diffRounded > 0 ? '+' : ''}${fixed(diffRounded)} ${unit}`);
-            $('#stock-difference-value').text(`${value < 0 ? '-' : (value > 0 ? '+' : '')}Rp ${formatRupiah(Math.abs(Math.round(value)))}`);
+            $('#stock-system-display').text(hasProduct ? `${qty(systemStock)} ${unit}` : '-');
+            $('#stock-difference-label').text(label);
+            $('#stock-difference-text').text(typed ? `${signedQty(difference)} ${unit}` : '0,00 Kg');
+            $('#stock-difference-value').text(typed ? signedRupiah(value) : 'Rp 0');
 
-            $('.so-form-diff')
-                .toggleClass('is-surplus', diffRounded > 0)
-                .toggleClass('is-loss', diffRounded < 0)
-                .toggleClass('is-match', diffRounded === 0);
+            $('.so-form-diff').removeClass('is-empty is-surplus is-loss is-match').addClass(state);
         }
 
         function formatLongDateTime(dateValue) {
@@ -1588,7 +1618,9 @@
                 $.ajax({
                     type: 'POST',
                     url: url,
-                    data: form.serialize(), // gunakan FormData(form)[... jika pakai file]
+                    data: form.serializeArray().map(function (field) {
+                        return field.name === 'real_stock' ? {name: field.name, value: parsePhysical(field.value)} : field;
+                    }),
                     success: function(response) {
                         const done = () => Swal.fire({
                             icon: 'success',
@@ -1752,7 +1784,7 @@
 
                     // Set form fields from database values (not live stock)
                     $('input[name="quantity"]').val(response.stock);
-                    $('input[name="real_stock"]').val(response.real_stock);
+                    $('input[name="real_stock"]').val(formatPhysical(response.real_stock));
                     $('textarea[name="note"]').val(response.note || '');
                     $('#product_id').data('unit', response.product?.unit?.abbreviation || response.unit || 'Kg');
                     updateStockSummary(response.avg_price || 0);
@@ -1830,7 +1862,7 @@
 
                     // Set form fields from database values (not live stock)
                     $('input[name="quantity"]').val(response.stock);
-                    $('input[name="real_stock"]').val(response.real_stock);
+                    $('input[name="real_stock"]').val(formatPhysical(response.real_stock));
                     $('textarea[name="note"]').val(response.note || '');
                     $('#product_id').data('unit', response.product?.unit?.abbreviation || response.unit || 'Kg');
                     updateStockSummary(response.avg_price || 0);
@@ -2165,14 +2197,14 @@
             ErpPicker.attach('#branch_id', {
                 title: 'Pilih Cabang',
                 placeholder: 'Cari cabang...',
-                placeholderTrigger: 'Pilih cabang',
+                placeholderTrigger: 'Pilih Cabang',
                 emptyText: 'Cabang tidak ditemukan'
             });
             ErpPicker.attach('#product_id', {
                 title: 'Pilih Produk',
                 subtitle: 'Produk yang stoknya dicocokkan',
                 placeholder: 'Cari nama produk...',
-                placeholderTrigger: 'Pilih produk',
+                placeholderTrigger: 'Pilih Produk',
                 emptyText: 'Produk tidak ditemukan',
                 url: '{{ route('ajax.stock-available') }}',
                 params: () => ({ branch_id: $('#branch_id').val() }),
@@ -2236,6 +2268,7 @@
 
             $realStock.off('input.stockSummary change.stockSummary').on('input.stockSummary change.stockSummary',
                 function() {
+                    maskPhysical(this);
                     updateStockSummary();
                 });
 
@@ -2276,7 +2309,7 @@
                     total += val;
                 }
             });
-            $('input[name="real_stock"]').val(total);
+            $('input[name="real_stock"]').val(formatPhysical(total));
             updateStockSummary();
         }
 

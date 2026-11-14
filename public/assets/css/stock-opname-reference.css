@@ -300,13 +300,10 @@
 #kt_modal_add_customer .so-create-physical input::placeholder { color:#9ca3af; font-weight:700; }
 #kt_modal_add_customer .so-create-unit { position:absolute; right:16px; top:50%; transform:translateY(-50%); color:#9ca3af; font-size:12px; font-weight:700; }
 #kt_modal_add_customer .so-form-diff { padding:12px; border:1px solid rgba(229,231,235,.8); border-radius:12px; background:rgba(249,250,251,.7); color:#6b7280; }
-#kt_modal_add_customer .so-form-diff.is-surplus, #kt_modal_add_customer .so-form-diff.is-loss { background:rgba(249,250,251,.7); border-color:rgba(229,231,235,.8); color:#6b7280; }
 #kt_modal_add_customer .so-form-diff__row { font-size:12px; font-weight:600; line-height:16px; }
 #kt_modal_add_customer .so-form-diff__row strong { font-size:14px; font-weight:500; line-height:20px; color:#9ca3af; }
 #kt_modal_add_customer .so-form-diff__row.is-sub { margin-top:6px; padding-top:6px; border-top:1px solid rgba(229,231,235,.7); font-size:11px; font-weight:400; color:#9ca3af; }
 #kt_modal_add_customer .so-form-diff__row.is-sub strong { font-size:12px; }
-#kt_modal_add_customer .so-form-diff.is-surplus .so-form-diff__row strong { color:#059669; }
-#kt_modal_add_customer .so-form-diff.is-loss .so-form-diff__row strong { color:#e11d48; }
 #kt_modal_add_customer .so-create-note { display:flex; flex:1 1 auto; flex-direction:column; min-height:140px; margin-top:-4px; }
 #kt_modal_add_customer .so-create-note textarea { flex:1 1 auto; min-height:120px; padding:12px 16px; border:1px solid #e5e7eb; border-radius:12px; background:rgba(249,250,251,.6); font-size:16px; resize:none; }
 #kt_modal_add_customer .so-create-footer { display:flex; gap:12px; }
@@ -360,3 +357,35 @@
 body:has(.stock-opname-page) > .modal-backdrop { display:none !important; }
 #kt_stock_opname_history, #kt_stock_opname_history.drawer-on { transition:none !important; }
 #kt_modal_add_customer .so-create-label span { margin-left:2.7px; }
+
+/* Difference box: the reference colours it by result once a count is typed. */
+#kt_modal_add_customer .so-form-diff { transition:background-color .15s, border-color .15s, color .15s; }
+#kt_modal_add_customer .so-form-diff.is-empty { background:rgba(249,250,251,.7); border-color:rgba(229,231,235,.8); color:#6b7280; }
+#kt_modal_add_customer .so-form-diff.is-surplus { background:rgba(236,253,245,.7); border-color:#a7f3d0; color:#064e3b; }
+#kt_modal_add_customer .so-form-diff.is-loss { background:rgba(255,241,242,.7); border-color:#fecdd3; color:#881337; }
+#kt_modal_add_customer .so-form-diff.is-match { background:#f9fafb; border-color:#e5e7eb; color:#1f2937; }
+#kt_modal_add_customer .so-form-diff.is-empty .so-form-diff__row strong { color:#9ca3af; font-weight:500; }
+#kt_modal_add_customer .so-form-diff:not(.is-empty) .so-form-diff__row span { font-weight:700; }
+#kt_modal_add_customer .so-form-diff:not(.is-empty) .so-form-diff__row strong { color:inherit; font-weight:900; font-size:14px; }
+#kt_modal_add_customer .so-form-diff:not(.is-empty) .so-form-diff__row.is-sub span { font-size:11px; font-weight:400; opacity:.8; }
+#kt_modal_add_customer .so-form-diff:not(.is-empty) .so-form-diff__row.is-sub strong { font-size:12px; font-weight:800; }
+#kt_modal_add_customer .so-form-diff.is-surplus .so-form-diff__row.is-sub { border-top-color:rgba(167,243,208,.8); }
+#kt_modal_add_customer .so-form-diff.is-loss .so-form-diff__row.is-sub { border-top-color:rgba(254,205,211,.8); }
+#kt_modal_add_customer .so-form-diff.is-match .so-form-diff__row.is-sub { border-top-color:#e5e7eb; }
+#kt_modal_add_customer .so-form-diff.is-empty .so-form-diff__row:not(.is-sub) span { font-weight:600; color:#6b7280; }
+/* Focus, shadows and the field's own look. */
+#kt_modal_add_customer .so-create-physical input { box-shadow:0 1px 2px rgba(0,0,0,.05); }
+#kt_modal_add_customer .so-create-physical input:focus { border-color:#0b595b; box-shadow:0 0 0 1px #0b595b; outline:0; }
+#kt_modal_add_customer .so-create-note textarea { box-shadow:0 1px 2px rgba(0,0,0,.05); }
+#kt_modal_add_customer .so-create-note textarea:focus { background:#fff; border-color:#0b595b; outline:0; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+@media (max-width:767.98px) {
+    #kt_modal_add_customer .so-create-card { box-shadow:0 1px 3px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.04); }
+    #kt_modal_add_customer .modal-header.so-create-top { backdrop-filter:blur(12px) saturate(1.8); box-shadow:0 4px 20px -4px rgba(0,0,0,.04); }
+    #kt_modal_add_customer .modal-footer.so-create-footer { box-shadow:0 -4px 20px rgba(0,0,0,.03); }
+}
+#kt_modal_add_customer .so-create-btn { box-shadow:0 1px 2px rgba(0,0,0,.05); }
+#kt_modal_add_customer .so-create-btn.is-primary { box-shadow:0 4px 6px -1px rgba(11,89,91,.15), 0 2px 4px -2px rgba(11,89,91,.15); }
+/* The add form had fallen back to the system font; the reference uses Plus Jakarta Sans throughout. */
+#kt_modal_add_customer, #kt_modal_add_customer *:not(i):not([class*="ph-"]) { font-family:'Plus Jakarta Sans', sans-serif; }
+#kt_modal_add_customer .erp-picker__label { line-height:20px; }
+#kt_modal_add_customer .so-create-btn span { line-height:16px; }
