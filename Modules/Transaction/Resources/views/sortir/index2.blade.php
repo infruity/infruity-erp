@@ -50,7 +50,7 @@
                 <h2 x-text="search || activeFilters ? 'Transaksi tidak ditemukan' : 'Belum ada sortir barang'"></h2>
                 <p x-show="search || activeFilters">Coba kata pencarian lain atau sesuaikan filter.</p>
                 @if (check_access('sortir.create'))
-                    <p x-show="!search && !activeFilters">Klik tombol <a href="{{ route('sortir.create') }}" class="sortir-add-tile" aria-label="Tambah sortir barang"><i class="ph-bold ph-plus" aria-hidden="true"></i></a> untuk menambahkan<br>sortir baru</p>
+                    <p x-show="!search && !activeFilters">Klik tombol <a href="{{ route('sortir.create') }}" class="sortir-add-tile" aria-label="Tambah sortir barang">+</a> untuk menambahkan sortir baru</p>
                 @endif
                 <button type="button" class="sortir-text-button" x-show="search || activeFilters" @click="search = ''; resetFilters()">Reset pencarian &amp; filter</button>
             </div>

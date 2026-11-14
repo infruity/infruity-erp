@@ -82,9 +82,9 @@ body:has(.sortir-list-page) main > .animate-fade-in-up { animation:none; }
     .sortir-list-state { min-height:calc(100dvh - 234px); gap:0; padding:16px; }
     .sortir-list-state > i, .sortir-state-icon { border-color:rgba(167,243,208,.8); background:rgba(236,253,245,.8); }
     .sortir-list-state h2 { margin:16px 0 0; font-size:14px; line-height:20px; }
-    .sortir-list-state p { max-width:260px; margin-top:8px; font-size:12px; line-height:19.5px; }
-    .sortir-list-state .sortir-add-tile { display:inline-flex; width:24px; height:24px; align-items:center; justify-content:center; margin:0 4px; vertical-align:middle; border:1px solid rgba(167,243,208,.8); border-radius:8px; background:#ecfdf5; color:#0b595b; text-decoration:none; }
-    .sortir-list-state .sortir-add-tile i { font-size:12px; }
+    .sortir-list-state p { max-width:218px; margin-top:8px; font-size:12px; line-height:19.5px; text-wrap:balance; }
+    .sortir-list-state .sortir-add-tile { color:#0b595b; font-weight:700; text-decoration:none; }
+    .sortir-list-state .sortir-add-tile:hover { text-decoration:underline; }
     body.erp-ui #sortir-filter-sheet .erp-filter-sheet__footer { background:rgba(249,250,251,.7); }
     body.erp-ui #sortir-filter-sheet#sortir-filter-sheet [x-show="!calendarOpen"] :is(label, span).uppercase { font-weight:600 !important; line-height:15px !important; }
 }
