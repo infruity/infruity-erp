@@ -1895,7 +1895,7 @@
                 .attr('aria-pressed', String(reasonMode)).attr('aria-label', reasonMode ? 'Ubah tampilan menjadi Kredit' : 'Ubah tampilan menjadi Alasan');
             $('#so-history-filter-open').toggleClass('is-active', state.direction !== 'all');
             const head = reasonMode ? '<span class="so-hist-reason-head">Alasan Pergerakan</span>'
-                : '<div class="so-hist-head__side"><span class="so-hist-col">Awal</span><span class="so-hist-col">Kredit</span><span class="so-hist-col">Saldo</span></div>';
+                : '<div class="so-hist-head__side"><span class="so-hist-col">Awal</span><span class="so-hist-col">Kredit</span><span class="so-hist-col">Total</span></div>';
             $('#so-history-columns').html(`<span>Aktivitas</span>${head}`);
             const $list = $('#history-timeline-items').empty();
             if (!entries.length) {
