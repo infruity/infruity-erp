@@ -271,9 +271,13 @@
             .wholesale-procurement.is-create-mode .wholesale-summary { padding:14px 16px 16px !important; }
             .wholesale-procurement.is-create-mode .wholesale-summary-total { align-items:center; min-height:39px; padding-bottom:14px; font-weight:800; }
             .wholesale-procurement.is-create-mode .wholesale-summary-total span, .wholesale-procurement.is-create-mode .wholesale-summary-total strong { line-height:20px; font-weight:800; }
+            .wholesale-procurement.is-create-mode .wholesale-summary-count { color:#065f46; font-size:16px; font-weight:800; line-height:20px; }
             .wholesale-procurement.is-create-mode .wholesale-summary-total .rounded-pill { padding:2px 10px !important; border-radius:9999px; font-size:12px !important; line-height:15px; }
             .wholesale-procurement.is-create-mode .wholesale-summary .row { display:flex; gap:12px !important; margin-top:14px !important; }
             .wholesale-procurement.is-create-mode .wholesale-summary .row > .col { display:contents; }
+            .wholesale-procurement.is-create-mode .wholesale-summary .wholesale-summary-icons { display:flex; gap:12px; flex:none; }
+            .wholesale-procurement.is-create-mode .wholesale-summary .btn.wholesale-summary-icon { display:inline-flex; flex:none; align-items:center; justify-content:center; width:44px !important; height:44px; padding:0; font-size:20px; text-decoration:none; }
+            .wholesale-procurement.is-create-mode .wholesale-summary .wholesale-summary-icon i { display:inline-block !important; color:#1f2937 !important; font-size:20px !important; line-height:1; }
             .wholesale-procurement.is-create-mode .wholesale-summary .btn { flex:1 1 0%; width:auto !important; height:44px; padding:0 12px; font-size:12px; line-height:16px; }
             .wholesale-procurement.is-create-mode .wholesale-summary .btn-primary { border:1px solid #e5e7eb !important; color:#1f2937 !important; box-shadow:0 1px 2px 0 rgba(0,0,0,.05) !important; }
             .wholesale-procurement.is-create-mode .wholesale-summary .btn-success { border:0 !important; box-shadow:0 4px 6px -1px rgba(11,89,91,.15), 0 2px 4px -2px rgba(11,89,91,.15) !important; }
