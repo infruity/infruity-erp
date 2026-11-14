@@ -14,7 +14,7 @@ class RecipeIngredientAddButtonSizeTest extends TestCase
             $this->assertStringContainsString('text-xs font-bold text-[#0b595b] outline-none transition hover:text-[#08484a]"><span>+ Tambah</span>', $view, $file);
             $this->assertStringNotContainsString('rounded-lg bg-[#0b595b] px-2.5 py-1 text-[11px]', $view, $file);
             $this->assertStringNotContainsString('h-10 shrink-0 items-center gap-1.5 rounded-xl bg-[#0b595b]', $view, $file);
-            $this->assertStringContainsString('<h3 class="block text-xs font-bold text-gray-800">Daftar Bahan Baku', $view, $file);
+            $this->assertStringContainsString('<h3 class="block text-sm font-extrabold tracking-tight text-gray-900">Daftar Bahan Baku', $view, $file);
         }
     }
 }
