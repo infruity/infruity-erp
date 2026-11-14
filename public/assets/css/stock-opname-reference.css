@@ -138,6 +138,33 @@
     #kt_modal_stock_detail .so-sheet-header h2 { font-size:15px; }
     #kt_modal_stock_detail .so-sheet-header p { color:#6b7280; font-size:11px; }
     #kt_stock_opname_history { width:100%!important; max-width:none; }
+    /* Detail sheet metrics, measured on the reference at 400px. */
+    #kt_modal_stock_detail .modal-content { border-bottom:1px solid #e5e7eb; }
+    #kt_modal_stock_detail .so-sheet-handle span { width:40px; height:4px; }
+    #kt_modal_stock_detail .so-sheet-header { padding:10px 20px 12px; align-items:flex-start; }
+    #kt_modal_stock_detail .so-title-row { display:flex; align-items:center; gap:6px; min-height:24px; }
+    #kt_modal_stock_detail .so-sheet-header h2 { font-size:15px; line-height:1.375; font-weight:800; color:#111827; }
+    #kt_modal_stock_detail .so-title-check { flex:none; color:#10b981; font-size:16px; line-height:24px; }
+    #kt_modal_stock_detail .so-sheet-header p { margin:2px 0 0; color:#6b7280; font-size:11px; line-height:1.5; font-weight:500; }
+    #kt_modal_stock_detail .so-close { width:28px; height:28px; font-size:12px; color:#9ca3af; }
+    #kt_modal_stock_detail .so-sheet-body { padding:14px 20px; }
+    #kt_modal_stock_detail .so-detail-meta { padding:10px; margin-bottom:12px; background:rgba(249,250,251,.8); border-color:#f3f4f6; }
+    #kt_modal_stock_detail .so-detail-meta > div { gap:8px; padding:0; line-height:16px; }
+    #kt_modal_stock_detail .so-detail-meta > div + div { margin-top:4px; padding-top:4px; border-top-color:#f3f4f6; }
+    #kt_modal_stock_detail .so-detail-meta span { display:flex; align-items:center; font-weight:500; line-height:16px; }
+    #kt_modal_stock_detail .so-detail-meta i { margin-right:0; font-size:11px; }
+    #kt_modal_stock_detail .so-detail-meta span { gap:6px; }
+    #kt_modal_stock_detail .so-detail-meta strong { font-weight:700; color:#1f2937; line-height:16px; }
+    #kt_modal_stock_detail .so-detail-meta > div:last-child strong { font-weight:500; color:#374151; }
+    #kt_modal_stock_detail .so-detail-summary { border-color:#f3f4f6; border-radius:16px; margin-bottom:0; }
+    #kt_modal_stock_detail .so-detail-summary > div { padding:10px 14px; line-height:16px; }
+    #kt_modal_stock_detail .so-detail-summary strong { font-weight:700; line-height:16px; }
+    #kt_modal_stock_detail .so-detail-summary > div:first-child > span { color:#6b7280; }
+    #kt_modal_stock_detail .so-detail-summary strong > span:not(.so-summary-arrow) { font-weight:400; color:#4b5563; }
+    #kt_modal_stock_detail .so-detail-summary [data-so-field="hpp"] { color:#374151; }
+    #kt_modal_stock_detail .so-detail-difference.is-surplus { background:rgba(236,253,245,.75); }
+    #kt_modal_stock_detail .so-detail-difference.is-loss { background:rgba(255,241,242,.75); }
+    #kt_modal_stock_detail .so-sheet-footer { padding:10px 20px calc(16px + env(safe-area-inset-bottom)); }
 }
 @media(max-width:375px) {
     .so-reference-history .so-hist-head__side,.so-reference-history .so-hist-side { grid-template-columns:54px 58px 54px; }
@@ -171,3 +198,15 @@
     #kt_modal_add_customer .modal-footer .btn { flex: 1 1 0; min-height: 46px; margin: 0; border-radius: 12px !important; font-size: 14px; }
     #kt_modal_add_customer .modal-footer .btn.btn-light { background: #f3f4f6 !important; }
 }
+
+/* Finished entry: read-only sheet, one full-width history button (as in the reference). */
+.so-reference-sheet .so-history-label { display:none; font-style:normal; }
+.so-reference-sheet.is-final #so-detail-correction,
+.so-reference-sheet.is-final #so-correction-save,
+.so-reference-sheet.is-final #so-detail-done,
+.so-reference-sheet.is-final [data-so-action="finalize"] { display:none!important; }
+.so-reference-sheet.is-final .so-detail-footer { grid-template-columns:1fr; }
+.so-reference-sheet.is-final .so-history-button { width:100%; background:#0b595b; border-color:#0b595b; color:#fff; font-size:12px!important; font-weight:700; }
+.so-reference-sheet.is-final .so-history-button > i,
+.so-reference-sheet.is-final .so-history-button > span[data-so-count] { display:none; }
+.so-reference-sheet.is-final .so-history-label { display:inline; }
