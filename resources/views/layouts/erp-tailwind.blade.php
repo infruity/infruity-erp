@@ -273,6 +273,10 @@
         #erp-nav-progress.is-active { opacity:1; }
         @media (prefers-reduced-motion: reduce) { #erp-nav-progress { transition:none; } }
     </style>
+    <!-- Chromium starts rendering the destination while the finger is still pressing a menu link, so the page swaps in almost instantly. Other browsers ignore this. -->
+    <script type="speculationrules">
+    {"prerender":[{"where":{"and":[{"selector_matches":"aside.erp-sidebar a.sidebar-link[href], aside.erp-sidebar a.submenu-link[href], .erp-mobile-nav a[href]"},{"not":{"href_matches":"/logout*"}},{"not":{"href_matches":"#*"}}]},"eagerness":"conservative"}]}
+    </script>
 </head>
 
 <body class="erp-ui font-sans bg-[#e5e9f3] text-gray-800 antialiased h-[100dvh] min-h-[100dvh] overflow-hidden">
