@@ -363,7 +363,7 @@
 <script>
 function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRoles, oldBranches, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions = []) {
     return {
-        users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, selectedOpen: false, defaultPassword: 'infruity123', modalSearchQuery: '',
+        users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, selectedOpen: false, modalSearchQuery: '',
         form: { email: '', emailType: 'auto', password: '', staffId: '' },
         get filteredAccessGroups() {
             const query = this.modalSearchQuery.toLowerCase().trim();
@@ -509,8 +509,8 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
         async promptResetPassword(id) {
             const user = this.users.find(item => item.id === id);
             if (!user) return;
-            const label = user.name || user.email;
-            if (!await ErpDialog.confirm({ title: 'Reset password?', text: 'Kata sandi akun ' + label + ' akan diubah menjadi ' + this.defaultPassword + '.', icon: 'warning', confirmButtonText: 'Reset', cancelButtonText: 'Batal' })) return;
+            const label = user.email;
+            if (!await ErpDialog.confirm({ title: 'Reset password?', text: 'Kata sandi akun ' + label + ' akan direset ke kata sandi bawaan.', icon: 'warning', confirmButtonText: 'Reset', cancelButtonText: 'Batal' })) return;
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
                 const response = await fetch(this.baseUrl + '/' + id + '/reset-password', {
@@ -520,7 +520,7 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
                 });
                 const result = await response.json().catch(() => ({}));
                 if (!response.ok || !result.success) throw new Error(result.message || 'Gagal mereset kata sandi.');
-                ErpDialog.success('Kata sandi akun ' + label + ' sekarang ' + this.defaultPassword + '.', 'Berhasil');
+                ErpDialog.success('Kata sandi akun ' + label + ' berhasil direset.', 'Berhasil');
             } catch (error) {
                 ErpDialog.error(error.message || 'Terjadi kesalahan saat mereset kata sandi.');
             }

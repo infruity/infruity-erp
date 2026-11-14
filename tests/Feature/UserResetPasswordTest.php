@@ -16,7 +16,8 @@ final class UserResetPasswordTest extends TestCase
         self::assertStringContainsString("public const DEFAULT_RESET_PASSWORD = 'infruity123';", $controller);
         self::assertStringContainsString('Hash::make(self::DEFAULT_RESET_PASSWORD)', $controller);
         self::assertStringNotContainsString("'password' => ['required', 'string', 'min:8']", $controller);
-        self::assertStringContainsString("defaultPassword: 'infruity123'", $view);
+        self::assertStringNotContainsString('infruity123', $view, 'the default password is never shown on the page');
+        self::assertStringContainsString("const label = user.email;", $view);
         self::assertStringContainsString("->name('user.reset-password')", $routes);
     }
 
