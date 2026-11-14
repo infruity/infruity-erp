@@ -69,7 +69,9 @@
             async deleteSelected() {
                 const row = this.selected;
                 if (!row?.can_delete || this.deleting) return;
-                const decision = await Swal.fire({title:'Hapus transaksi sortir?',text:'Transaksi ' + row.invoice_number + ' akan dihapus. Perhitungan stok akan mengikuti perubahan ini.',icon:'warning',showCancelButton:true,confirmButtonText:'Hapus',cancelButtonText:'Batal',confirmButtonColor:'#dc2626'});
+                const decision = (typeof ErpDialog !== 'undefined' && ErpDialog.confirmDelete)
+                    ? { isConfirmed: await ErpDialog.confirmDelete({ what: 'Sortir', name: row.invoice_number, subject: 'Transaksi', suffix: 'akan dihapus. Perhitungan stok akan mengikuti perubahan ini.' }) }
+                    : await Swal.fire({title:'Hapus transaksi sortir?',text:'Transaksi ' + row.invoice_number + ' akan dihapus. Perhitungan stok akan mengikuti perubahan ini.',icon:'warning',showCancelButton:true,confirmButtonText:'Hapus',cancelButtonText:'Batal',confirmButtonColor:'#dc2626'});
                 if (!decision.isConfirmed) return;
                 this.deleting = true;
                 try {
