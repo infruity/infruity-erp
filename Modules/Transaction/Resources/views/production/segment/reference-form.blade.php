@@ -101,8 +101,8 @@
                 <div class="production-ref-readout is-locked"><small>Rp</small><b x-text="formatNumber(totalHpp)"></b></div>
             </div>
             <div class="production-ref-field">
-                <span class="production-ref-label">Harga Jual <em>/porsi</em></span>
-                <div class="production-ref-readout is-locked"><small>Rp</small><b x-text="formatNumber(sellPrice)"></b></div>
+                <label class="production-ref-label" for="sell_price_display">Harga Jual <em>/porsi</em></label>
+                <div class="production-ref-readout" :class="referenceProductId ? '' : 'is-locked'"><small>Rp</small><input id="sell_price_display" type="text" inputmode="numeric" autocomplete="off" class="production-ref-readout__input" :disabled="!referenceProductId" :value="formatNumber(sellPrice)" @input="sellPrice = $event.target.value.replace(/\D/g, '')" aria-label="Harga jual per porsi"></div>
             </div>
             <div class="production-ref-field">
                 <label class="production-ref-label" for="quantity">Kuantitas <em>(PORSI)</em> <span class="production-ref-required">*</span></label>
