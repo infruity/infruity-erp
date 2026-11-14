@@ -13,7 +13,7 @@
         'village' => $regionValues['village'] ? (\Modules\Master\Entities\Region::getVillage($regionValues['village'])->name ?? '') : '',
     ];
 @endphp
-<div class="flex-1 min-h-0 overflow-y-auto bg-gray-50/60 px-5 py-5 pb-8 space-y-5">
+<div class="erp-master-form flex-1 min-h-0 overflow-y-auto bg-gray-50/60 px-5 py-5 pb-8 space-y-5">
     @if($errors->any())
         <div role="alert" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">Periksa kembali data yang ditandai di bawah.</div>
     @endif
