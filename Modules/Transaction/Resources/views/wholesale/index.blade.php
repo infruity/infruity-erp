@@ -93,6 +93,7 @@
                     </thead>
                     <tbody></tbody>
                 </table>
+                <div id="wholesale-load-more" data-load-more class="hidden px-5 py-4 xl:hidden"><x-erp.load-more id="wholesale-load-more-button">Muat <span id="wholesale-load-more-count">20</span> Pengadaan Lagi</x-erp.load-more></div>
             </div>
         </section>
 
@@ -235,6 +236,7 @@
             #wholesale-summary { display:none; }
             .wholesale-search-shell { padding:16px; }
             #wholesale-table { margin:0 !important; }
+            #wholesale-table_wrapper .dataTables_processing { display:none !important; }
             .wholesale-search-shell .erp-mobile-search__filter.is-active { background:#ecfdf5; }
             body.erp-ui #wholesale-filter-sheet .erp-filter-sheet__footer { background:rgba(249,250,251,.7); }
             body.erp-ui #wholesale-filter-sheet#wholesale-filter-sheet [x-show="!calendarOpen"] :is(label, span).uppercase { font-weight:600 !important; line-height:15px !important; }
@@ -388,6 +390,10 @@
                         $(this.node()).toggleClass('is-openable', Boolean(this.data()?.detail_payload));
                     });
                     wholesaleLoadMorePending = false;
+                    const remaining = info.recordsDisplay - info.end;
+                    $('#wholesale-load-more').toggleClass('hidden', remaining <= 0);
+                    $('#wholesale-load-more-count').text(Math.min(20, Math.max(remaining, 0)));
+                    $('#wholesale-load-more-button').prop('disabled', false).removeAttr('aria-busy').find('i').removeClass('animate-spin');
                 }
             });
 
@@ -406,19 +412,14 @@
                 openWholesaleDetail($(this).closest('tr'));
             });
 
-            const wholesaleListViewport = document.querySelector('.mobile-list-edge-fade');
-            wholesaleListViewport?.addEventListener('scroll', function () {
-                if (!window.matchMedia('(max-width: 1279px)').matches || wholesaleLoadMorePending) return;
-
+            $('#wholesale-load-more-button').on('click', function () {
+                if (wholesaleLoadMorePending) return;
                 const info = wholesaleDataTable.page.info();
                 if (info.end >= info.recordsDisplay) return;
-
-                const nearBottom = this.scrollTop + this.clientHeight >= this.scrollHeight - 180;
-                if (!nearBottom) return;
-
                 wholesaleLoadMorePending = true;
+                $(this).prop('disabled', true).attr('aria-busy', 'true').find('i').addClass('animate-spin');
                 wholesaleDataTable.page.len(info.end + 20).draw(false);
-            }, { passive: true });
+            });
 
             let searchTimer;
             $('#wholesale-search').on('input', function () {
