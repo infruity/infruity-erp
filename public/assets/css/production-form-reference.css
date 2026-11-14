@@ -212,7 +212,7 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
 @media (max-width:767px) { .production-create-reference { padding-bottom:16px; } }
 .production-create-reference .production-product-picker-field > select#product_id { display:none; }
 /* The product card runs down to the bottom bar, as in the reference (top bar 60 + padding 16 + bar 70 + gap 16). */
-@media (max-width:767px) { .production-create-reference .production-ref { height:calc(100dvh - 162px - env(safe-area-inset-bottom)); } }
+@media (max-width:767px) { .production-create-reference .production-ref { height:calc(100dvh - 168px - env(safe-area-inset-bottom)); } }
 @media (min-width:768px) { .production-create-reference .production-ref { height:calc(100dvh - 120px); } }
 
 /* ---- Create form: sizes, colours and strokes taken from the HTML reference (infruity-frontend 003. ERP/005. Produksi) ----

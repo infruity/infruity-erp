@@ -101,7 +101,7 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString('production-product-picker-field', $create);
         $this->assertStringContainsString('data-placeholder="Pilih produk olahan..."', $create);
         $this->assertStringContainsString('production-ref-product', $create);
-        $this->assertStringContainsString("formatCurrency(sellPrice) + ' / porsi'", $create);
+        $this->assertStringContainsString("formatCurrency(sellPrice) + ' / Porsi'", $create);
         $this->assertStringNotContainsString('production-product-picker-field', $edit);
         $this->assertStringNotContainsString('reference-product-picker', $create);
         $this->assertStringContainsString('trigger: document.querySelector(\'.production-ref-product\')', file_get_contents(base_path('Modules/Transaction/Resources/views/production/js-create.blade.php')));

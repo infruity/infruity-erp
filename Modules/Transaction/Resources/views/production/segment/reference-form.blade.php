@@ -33,7 +33,7 @@
                 :aria-label="referenceSelectedProductName ? 'Ganti produk: ' + referenceSelectedProductName : 'Pilih produk olahan'">
                 <span class="production-ref-product__text">
                     <strong :class="referenceSelectedProductName ? '' : 'is-placeholder'" x-text="referenceSelectedProductName || 'Pilih produk olahan...'"></strong>
-                    <small x-show="referenceSelectedProductName" x-text="formatCurrency(sellPrice) + ' / porsi'"></small>
+                    <small x-show="referenceSelectedProductName" x-text="formatCurrency(sellPrice) + ' / Porsi'"></small>
                 </span>
                 <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
             </button>
