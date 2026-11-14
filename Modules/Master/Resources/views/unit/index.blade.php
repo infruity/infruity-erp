@@ -52,12 +52,12 @@
                     </button>
                 </div>
             </template>
-            <div x-show="filtered.length === 0" class="py-12 text-center border-t border-gray-100">
+            <div x-cloak x-show="filtered.length === 0" class="py-12 text-center border-t border-gray-100">
                 <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px] text-gray-400" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
                 <p class="text-sm text-gray-500 font-medium">Satuan tidak ditemukan</p>
                 <p class="text-xs text-gray-400 mt-1">Coba ubah pencarian atau filter</p>
             </div>
-            <div x-show="visibleCount < filtered.length" data-load-more class="px-5 py-4">
+            <div x-cloak x-show="visibleCount < filtered.length" data-load-more class="px-5 py-4">
                 <x-erp.load-more @click="visibleCount += 50">Muat <span x-text="Math.min(50, filtered.length - visibleCount)"></span> Satuan Lagi</x-erp.load-more>
             </div>
         </div>

@@ -54,6 +54,7 @@
         /* Editor harga: kursor emerald-900 seperti referensi */
         .erp-ui #products-table .price-editor input { caret-color: #064e3b; -webkit-touch-callout: none; }
         #products-table_processing { display: none !important; }
+        #products-table.is-first-load .dataTables_empty { visibility: hidden; }
         #products-table.dataTable thead { display: none !important; }
         #products-table.dataTable thead th { border: none !important; }
         #products-table.dataTable tbody td { border: none !important; padding: 0 !important; }
@@ -694,6 +695,8 @@
 
         $(document).ready(function() {
             $.fn.dataTable.ext.errMode = 'none';
+            // Until the first answer arrives DataTables shows its empty-table row; keep that message invisible so the list never flashes "tidak ditemukan" first.
+            $('#products-table').addClass('is-first-load').one('xhr.dt error.dt', function () { $(this).removeClass('is-first-load'); });
             dataTable = $('#products-table').DataTable({
                 pageLength: 50,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
