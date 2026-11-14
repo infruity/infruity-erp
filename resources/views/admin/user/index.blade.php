@@ -346,7 +346,7 @@
                     </div>
                     <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 bg-white flex items-center gap-2.5 shrink-0">
                         <button type="button" x-show="!editing" @click="closeDrawer()" class="h-11 flex-1 whitespace-nowrap rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50">Batal</button>
-                        <button type="button" x-show="editing" x-cloak @click="closeDrawer()" title="Kembali" aria-label="Kembali" class="w-11 h-11 shrink-0 rounded-xl border border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 flex items-center justify-center transition-colors">
+                        <button type="button" x-show="editing" x-cloak @click="backToDetail()" title="Kembali ke pengaturan akses" aria-label="Kembali" class="w-11 h-11 shrink-0 rounded-xl border border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 flex items-center justify-center transition-colors">
                             <i class="ph-bold ph-arrow-left text-lg"></i>
                         </button>
                         <button type="button" x-show="editing" x-cloak @click="promptResetPassword(editing)" class="h-11 flex-1 whitespace-nowrap rounded-xl border border-rose-200 bg-rose-50 text-[13px] font-semibold text-rose-700 transition-colors hover:bg-rose-100">Reset Password</button>
@@ -485,6 +485,12 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
             if (!url.searchParams.has('create')) return;
             url.searchParams.delete('create');
             window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+        },
+        // Editing starts from the account's access sheet, so the back arrow returns there instead of just closing.
+        backToDetail() {
+            const id = this.editing;
+            this.closeDrawer();
+            if (id) this.openDetail(id);
         },
         openCreate() {
             this.editing = null;
