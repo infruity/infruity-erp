@@ -105,6 +105,7 @@
 
 <div class="erp-sidebar-overlay" x-show="sidebarOpen" x-transition:enter="transition-opacity duration-300" x-transition:leave="transition-opacity duration-200" @click="sidebarOpen = false" x-cloak></div>
 <aside class="erp-sidebar {{ $mobileOnly ? 'erp-sidebar--mobile-only' : '' }}"
+    @click="if ($event.target.closest('a[href]:not([href=\'#\'])')) sidebarOpen = false"
     :class="[sidebarOpen ? 'is-open' : '', sidebarCollapsed ? 'sidebar-collapsed' : '', theme === 'light' ? 'light-sidebar' : 'dark-sidebar']"
     aria-label="Navigasi utama">
     <div class="erp-sidebar__brand-row">
