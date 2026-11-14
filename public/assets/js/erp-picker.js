@@ -15,7 +15,8 @@
         list.forEach(function (row) {
             var mapped = map ? map(row) : row;
             if (!mapped || mapped.id === undefined || mapped.id === null || mapped.id === '') return;
-            var item = { id: String(mapped.id), text: String(mapped.text == null ? '' : mapped.text), meta: mapped.meta == null ? '' : String(mapped.meta), aside: mapped.aside == null ? '' : String(mapped.aside) };
+            var item = { id: String(mapped.id), text: String(mapped.text == null ? '' : mapped.text), meta: mapped.meta == null ? '' : String(mapped.meta) };
+            if (mapped.aside != null && mapped.aside !== '') item.aside = String(mapped.aside);
             // Extra fields (tier, address, stock...) that page handlers read from the select2 data object.
             if (mapped.data !== undefined) item.data = mapped.data;
             items.push(item);
