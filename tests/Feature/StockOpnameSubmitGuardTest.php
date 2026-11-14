@@ -11,7 +11,7 @@ final class StockOpnameSubmitGuardTest extends TestCase
         $view = file_get_contents(base_path('Modules/Transaction/Resources/views/stock-opname/index.blade.php'));
         $start = strpos($view, "$('#kt_modal_add_customer_form').on('submit'");
         $this->assertNotFalse($start);
-        $handler = substr($view, $start, 1400);
+        $handler = substr($view, $start, 2600);
 
         $guard = strpos($handler, "if (!$('#product_id').val())");
         $this->assertNotFalse($guard, 'The submit handler must check the product before it sends anything.');

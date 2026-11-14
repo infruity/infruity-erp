@@ -27,7 +27,7 @@ final class StockOpnameFormUiContractTest extends TestCase
         $form = $this->form();
 
         foreach ([
-            'so-form-panel',
+            'so-create-info',
             'Stok Sistem',
             'HPP / Satuan',
             'id="stock-hpp-value"',

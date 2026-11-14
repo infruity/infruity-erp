@@ -277,3 +277,60 @@
 #kt_stock_opname_history { border:0 !important; box-shadow:none !important; }
 .so-reference-history .so-history-context p { margin-bottom:2px; }
 .so-reference-history .so-history-tools [data-so-history-toggle] { height:26.5px; }
+
+/* ---- Tambah Stok Opname: a full page on phones, measured on the reference at 400px ---- */
+#kt_modal_add_customer .so-create-top { display:grid; grid-template-columns:36px 1fr 36px; align-items:center; gap:8px; border:0; }
+#kt_modal_add_customer .so-create-top .modal-title { margin:0; text-align:center; font-size:14px; font-weight:800; color:#111827; }
+#kt_modal_add_customer .so-create-top__spacer { display:block; }
+#kt_modal_add_customer .so-create-card { display:flex; flex-direction:column; gap:16px; }
+#kt_modal_add_customer .so-create-label { display:block; margin:0 0 6px; color:#374151; font-size:12px; font-weight:700; line-height:16px; }
+#kt_modal_add_customer .so-create-label span { color:#ef4444; }
+#kt_modal_add_customer .so-create-label-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+#kt_modal_add_customer .so-create-label-row .so-create-label { margin:0; }
+#kt_modal_add_customer .so-create-hint { color:#9ca3af; font-size:11px; line-height:16.5px; }
+#kt_modal_add_customer .so-create-info { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:14px; border:1px solid rgba(229,231,235,.7); border-radius:12px; background:rgba(249,250,251,.9); font-variant-numeric:tabular-nums; }
+#kt_modal_add_customer .so-create-info > div + div { border-left:1px solid rgba(229,231,235,.7); padding-left:12px; }
+#kt_modal_add_customer .so-create-info p { margin:0; }
+#kt_modal_add_customer .so-create-info__label { color:#9ca3af; font-size:10.5px; font-weight:700; line-height:1.5; letter-spacing:.05em; text-transform:uppercase; }
+#kt_modal_add_customer .so-create-info__value { display:block; width:100%; height:20px; margin:2px 0; padding:0; border:0; background:transparent; color:#111827; font-size:14px; font-weight:800; line-height:20px; box-shadow:none; outline:0; }
+#kt_modal_add_customer .so-create-info__value.is-brand { color:#0b595b; }
+#kt_modal_add_customer .so-create-info__hint { color:#9ca3af; font-size:10px; line-height:15px; }
+#kt_modal_add_customer .so-create-physical { position:relative; }
+#kt_modal_add_customer .so-create-physical input { width:100%; height:44px; padding:0 48px 0 16px; border:1px solid #d1d5db; border-radius:12px; background:#fff; color:#111827; font-size:16px; font-weight:700; text-align:left; }
+#kt_modal_add_customer .so-create-physical input::placeholder { color:#9ca3af; font-weight:700; }
+#kt_modal_add_customer .so-create-unit { position:absolute; right:16px; top:50%; transform:translateY(-50%); color:#9ca3af; font-size:12px; font-weight:700; }
+#kt_modal_add_customer .so-form-diff { padding:12px; border:1px solid rgba(229,231,235,.8); border-radius:12px; background:rgba(249,250,251,.7); color:#6b7280; }
+#kt_modal_add_customer .so-form-diff.is-surplus, #kt_modal_add_customer .so-form-diff.is-loss { background:rgba(249,250,251,.7); border-color:rgba(229,231,235,.8); color:#6b7280; }
+#kt_modal_add_customer .so-form-diff__row { font-size:12px; font-weight:600; line-height:16px; }
+#kt_modal_add_customer .so-form-diff__row strong { font-size:14px; font-weight:500; line-height:20px; color:#9ca3af; }
+#kt_modal_add_customer .so-form-diff__row.is-sub { margin-top:6px; padding-top:6px; border-top:1px solid rgba(229,231,235,.7); font-size:11px; font-weight:400; color:#9ca3af; }
+#kt_modal_add_customer .so-form-diff__row.is-sub strong { font-size:12px; }
+#kt_modal_add_customer .so-form-diff.is-surplus .so-form-diff__row strong { color:#059669; }
+#kt_modal_add_customer .so-form-diff.is-loss .so-form-diff__row strong { color:#e11d48; }
+#kt_modal_add_customer .so-create-note { display:flex; flex:1 1 auto; flex-direction:column; min-height:140px; margin-top:-4px; }
+#kt_modal_add_customer .so-create-note textarea { flex:1 1 auto; min-height:120px; padding:12px 16px; border:1px solid #e5e7eb; border-radius:12px; background:rgba(249,250,251,.6); font-size:16px; resize:none; }
+#kt_modal_add_customer .so-create-footer { display:flex; gap:12px; }
+#kt_modal_add_customer .so-create-btn { display:flex; flex:1 1 0; min-width:0; height:44px; align-items:center; justify-content:center; border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:#1f2937; font-size:12px; font-weight:700; cursor:pointer; }
+#kt_modal_add_customer .so-create-btn.is-primary { border-width:0; background:#0b595b; color:#fff; }
+#kt_modal_add_customer .so-create-btn .indicator-progress { display:none; }
+#kt_modal_add_customer .so-create-btn:disabled { opacity:.6; cursor:not-allowed; }
+#kt_modal_add_customer form:has(input[name="_method"]) #kt_modal_add_customer_final { display:none; }
+@media (max-width:767.98px) {
+    #kt_modal_add_customer .modal-content { background:#e5e9f3; }
+    #kt_modal_add_customer .modal-header.so-create-top { height:61px; padding:0 16px !important; background:rgba(255,255,255,.8); border-bottom:1px solid rgba(229,231,235,.6) !important; }
+    #kt_modal_add_customer .so-create-top .modal-title { font-size:14px !important; }
+    #kt_modal_add_customer .so-create-top #kt_modal_add_customer_close { order:0; width:36px !important; height:36px !important; margin:0 !important; color:#0b595b; }
+    #kt_modal_add_customer .so-close-back { font-size:24px; }
+    #kt_modal_add_customer .modal-body.so-create-body { display:flex; flex-direction:column; padding:16px 16px 24px !important; background:#e5e9f3; overflow-y:auto; }
+    #kt_modal_add_customer .so-create-card { flex:1 1 auto; padding:16px; border:1px solid rgba(229,231,235,.9); border-radius:16px; background:#fff; }
+    #kt_modal_add_customer .modal-footer.so-create-footer { height:75px; padding:14px 16px 16px !important; background:#fff; border-top:1px solid #f3f4f6 !important; box-shadow:none; }
+    #kt_modal_add_customer .so-create-details { display:none; }
+}
+#kt_modal_add_customer .erp-picker__trigger { padding:0 16px; background:rgba(249,250,251,.7); }
+#kt_modal_add_customer .erp-picker__trigger i { color:#9ca3af; font-size:14px; }
+#kt_modal_add_customer .erp-picker__trigger .is-placeholder { color:#9ca3af; font-weight:400; }
+#kt_modal_add_customer .so-create-info p.so-create-info__value { margin:2px 0; }
+#kt_modal_add_customer .so-create-unit { right:14px; line-height:16px; }
+#kt_modal_add_customer .so-form-diff__row.is-sub { margin-top:4px; }
+#kt_modal_add_customer .so-form-diff__row.is-sub strong { line-height:16px; }
+#kt_modal_add_customer .so-create-footer > * { margin:0; }
