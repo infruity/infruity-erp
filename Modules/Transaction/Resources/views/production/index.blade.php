@@ -213,6 +213,15 @@
                 dataTable.page.len(Math.max(dataTable.page.len(), 50) + 50).draw();
             });
 
+            // /production/{id}/detail visited directly (or reloaded) lands here as ?detail={id}: open the popup over the list.
+            (function () {
+                const id = new URLSearchParams(window.location.search).get('detail');
+                if (!/^\d+$/.test(id || '')) return;
+                window.history.replaceState(window.history.state, '', window.location.pathname);
+                const open = () => typeof window.openProductionDetail === 'function' ? window.openProductionDetail(@json(url('production')) + '/' + id + '/detail') : setTimeout(open, 50);
+                open();
+            })();
+
             // A tap on the row opens the detail popup; the route remains the no-JS fallback.
             $('#production-table tbody').on('click', 'tr.is-openable', function(event) {
                 if ($(event.target).closest('a, button, .dropdown, .dropdown-menu').length) return;

@@ -132,6 +132,12 @@
 .production-detail-ref__action.is-edit { color:#0b595b; }
 .production-detail-ref__action.is-edit:hover { background:#ecfdf5; }
 .production-detail-ref__action.is-delete { color:#ef4444; }
+.production-detail-ref__actions--more { margin:24px -24px 0; }
+.production-detail-ref__actions--more + .production-detail-ref__actions { margin-top:0; }
+.production-detail-ref__action.is-print { color:#4b5563; }
+.production-detail-ref__action.is-print:hover { background:#f9fafb; }
+.production-detail-ref__action.is-finish { color:#059669; }
+.production-detail-ref__action.is-finish:hover { background:#ecfdf5; }
 .production-detail-ref__action.is-delete:hover { background:#fef2f2; }
 .production-detail-ref__divider { width:1px; background:#f3f4f6; }
 

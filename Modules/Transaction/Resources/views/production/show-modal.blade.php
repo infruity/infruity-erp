@@ -36,6 +36,13 @@
             </div>
         </div>
     </div>
+    <div class="production-detail-ref__actions production-detail-ref__actions--more">
+        <a href="{{ route('production.print', $data->id) }}" class="production-detail-ref__action is-print"><i class="ph-bold ph-printer" aria-hidden="true"></i>Print</a>
+        @if ($data->status === 'draft')
+            <span class="production-detail-ref__divider" aria-hidden="true"></span>
+            <a href="{{ route('production.payment', $data->id) }}" class="production-detail-ref__action is-finish"><i class="ph-bold ph-check" aria-hidden="true"></i>Selesaikan</a>
+        @endif
+    </div>
     <div class="production-detail-ref__actions">
             <a href="{{ route('production.edit', $data->id) }}" class="production-detail-ref__action is-edit"><i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>Edit</a>
             <span class="production-detail-ref__divider" aria-hidden="true"></span>

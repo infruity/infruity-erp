@@ -269,6 +269,11 @@ class ProductionController extends Controller
                 return view('transaction::production.show-modal', $data);
             }
 
+            // Like the reference, the detail lives in the list's popup: a direct visit (or a reload) opens the list with it.
+            if (! $request->boolean('full')) {
+                return redirect()->route('production.index', ['detail' => $id]);
+            }
+
             return view('transaction::production.show', $data);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('production.index')->with('error', 'Data produksi tidak ditemukan.');
