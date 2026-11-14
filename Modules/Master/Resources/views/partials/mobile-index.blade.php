@@ -46,7 +46,7 @@
         <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-20 md:pb-0" @scroll.passive="scrolled = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => scrolled = false, 700)">
             <template x-for="record in visible" :key="record.id">
                 <div class="border-b border-gray-100">
-                    <button type="button" @click="detail = record" class="w-full flex items-center gap-3 md:gap-4 px-5 py-3.5 md:py-4 hover:bg-gray-50/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600 text-left transition-colors" :aria-label="'Detail ' + label(record)">
+                    <button type="button" @click="detail = record; detailOpen = true" class="w-full flex items-center gap-3 md:gap-4 px-5 py-3.5 md:py-4 hover:bg-gray-50/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600 text-left transition-colors" :aria-label="'Detail ' + label(record)">
                         <span class="w-9 h-9 md:w-10 md:h-10 rounded-xl border flex items-center justify-center shrink-0 font-bold text-sm" :class="avatarClass(record)" x-text="label(record).slice(0, 2).toUpperCase()"></span>
                         <span class="flex-1 min-w-0{{ empty($trailingField ?? null) ? ' max-md:mr-2' : '' }}"><span class="block text-sm font-semibold text-gray-900 truncate" x-text="label(record)"></span>@if (! empty($subtitleFields))<span class="block text-[11px] font-medium text-gray-400 mt-0.5 truncate" x-text="subtitle(record)"></span>@endif</span>
                         @if (!empty($trailingField ?? null))
@@ -92,10 +92,10 @@
 <select :id="'master-field-' + field.key" x-model="form[field.key]" :required="fieldRequired(field)" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"><option value="" x-text="field.placeholder || ('Pilih ' + field.label)"></option><template x-for="option in field.options" :key="option.value"><option :value="option.value" x-text="option.label"></option></template></select>
 </template><template x-if="field.type === 'textarea'"><textarea :id="'master-field-' + field.key" x-model="form[field.key]" :required="fieldRequired(field)" :placeholder="field.placeholder || ''" rows="3" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500"></textarea></template><template x-if="!['select', 'textarea', 'region'].includes(field.type)"><input :id="'master-field-' + field.key" x-model="form[field.key]" :type="field.type || 'text'" :required="fieldRequired(field)" :placeholder="field.placeholder || ('Masukkan ' + field.label.toLowerCase())" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500"></template></div></template><p x-show="error" x-text="error" role="alert" class="text-xs text-red-600"></p></div><div class="pointer-events-none absolute right-1 top-0 h-full w-1.5 py-2"><div class="w-full rounded-full bg-gray-400/50 transition-opacity duration-300 ease-in-out" :style="`height: ${thumbHeight}px; transform: translateY(${scrollPos}px);`" :class="isScrolling ? 'opacity-100' : 'opacity-0'"></div></div></div><div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3"><button type="button" @click="closeDrawer()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" :disabled="saving" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold disabled:opacity-50" x-text="saving ? 'Menyimpan...' : (editing ? 'Simpan Perubahan' : 'Tambah {{ $singular }}')"></button></div></form></div></div></template>
     <template x-teleport="body">
-        <div x-show="detail" x-cloak data-erp-modal role="dialog" aria-modal="true" aria-label="Detail {{ $singular }}" class="fixed inset-0 z-[110] flex items-center justify-center px-4" @keydown.escape.window="detail = null">
-            <div class="absolute inset-0 bg-black/60" @click="detail = null"></div>
-            <div class="relative bg-white w-full max-w-sm max-h-[calc(100dvh-2rem)] rounded-2xl shadow-xl overflow-hidden flex flex-col">
-                <div class="flex shrink-0 items-center justify-between px-6 pt-6 pb-4"><h3 class="text-lg font-bold text-gray-800">Detail {{ $singular }}</h3><button type="button" @click="detail = null" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div>
+        <div x-show="detailOpen" x-cloak data-erp-modal role="dialog" aria-modal="true" aria-label="Detail {{ $singular }}" class="fixed inset-0 z-[110] flex items-center justify-center px-4" @keydown.escape.window="detailOpen = false">
+            <div x-show="detailOpen" x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute inset-0 bg-black/60" @click="detailOpen = false"></div>
+            <div x-show="detailOpen" x-transition:enter="transition-all duration-300" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0" x-transition:leave="transition-all duration-200 ease-in" x-transition:leave-start="opacity-100 scale-100 translate-y-0" x-transition:leave-end="opacity-0 scale-95 translate-y-2" class="relative bg-white w-full max-w-sm max-h-[calc(100dvh-2rem)] rounded-2xl shadow-xl overflow-hidden flex flex-col">
+                <div class="flex shrink-0 items-center justify-between px-6 pt-6 pb-4"><h3 class="text-lg font-bold text-gray-800">Detail {{ $singular }}</h3><button type="button" @click="detailOpen = false" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div>
                 <template x-if="detail">
                     @if ($routeBase === 'supplier')
                         <div class="min-h-0 overflow-y-auto px-6 pb-8 pt-4 flex flex-col gap-5 text-sm break-words">
@@ -205,7 +205,7 @@
                         <div class="w-px bg-gray-100"></div><button type="button" @click="deleteDetail()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50"><i class="ph-bold ph-trash"></i> Hapus</button>
                     @endif
                     @unless (check_access($routeBase . '.edit') || check_access($routeBase . '.destroy'))
-                        <button type="button" @click="detail = null" class="flex w-full items-center justify-center py-4 text-sm font-semibold text-gray-600">Tutup</button>
+                        <button type="button" @click="detailOpen = false" class="flex w-full items-center justify-center py-4 text-sm font-semibold text-gray-600">Tutup</button>
                     @endunless
                 </div>
             </div>
@@ -245,7 +245,7 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
         records, fields, routeBase, nameKey, subtitleFields, title, mode, regionEndpoints, createIndexUrl, createPageUrl,
         search: initialSearch, visibleCount: 50, scrolled: false, scrollTimer: null,
         total: pagination?.total ?? records.length, nextPage: pagination?.nextPage ?? null, loadingMore: false,
-        drawerOpen: false, editing: null, detail: null, saving: false, error: '', form: {}, fieldPickerOpen: {}, fieldPickerSearch: {},
+        drawerOpen: false, editing: null, detail: null, detailOpen: false, saving: false, error: '', form: {}, fieldPickerOpen: {}, fieldPickerSearch: {},
         customerCreateOpen: initialCreateOpen,
         createReturnUrl: initialCreateOpen ? createIndexUrl : `${window.location.pathname}${window.location.search}`,
         customerEditOpen: initialEditOpen,
@@ -388,8 +388,8 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
             if (field.key === 'email') return 'mailto:' + value;
             return '';
         },
-        editDetail() { const record = this.detail; this.detail = null; if (record) this.openEdit(record); },
-        deleteDetail() { const record = this.detail; this.detail = null; if (record) this.confirmDelete(record); },
+        editDetail() { const record = this.detail; this.detailOpen = false; if (record) this.openEdit(record); },
+        deleteDetail() { const record = this.detail; this.detailOpen = false; if (record) this.confirmDelete(record); },
         async loadMore() {
             if (this.mode !== 'server' || !this.nextPage || this.loadingMore) return;
             this.loadingMore = true;
@@ -532,7 +532,7 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
                 this.saving = false;
             }
         },
-        async confirmDelete(record) { if (!await ErpDialog.confirmDelete({ what: title, text: `${this.label(record)} akan dihapus.` })) return; try { const response = await fetch(`/${this.routeBase}/${record.id}`, { method: 'DELETE', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } }); const data = await response.json(); if (!response.ok || data.success === false) throw new Error(data.message || 'Gagal menghapus data.'); window.location.reload(); } catch (error) { Swal.fire({ icon: 'error', title: 'Gagal', text: error.message }); } },
+        async confirmDelete(record) { if (!await ErpDialog.confirmDelete({ what: title, name: this.label(record) })) return; try { const response = await fetch(`/${this.routeBase}/${record.id}`, { method: 'DELETE', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } }); const data = await response.json(); if (!response.ok || data.success === false) throw new Error(data.message || 'Gagal menghapus data.'); window.location.reload(); } catch (error) { Swal.fire({ icon: 'error', title: 'Gagal', text: error.message }); } },
     };
 }
 </script>
