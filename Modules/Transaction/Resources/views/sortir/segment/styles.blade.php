@@ -93,6 +93,11 @@
     .sortir-product-option:hover, .sortir-product-option.is-selected { background:#f9fafb; }
     .sortir-product-option:last-child { border:0; }
     .sortir-product-option input[type=radio] { appearance:none; width:12px; height:12px; min-width:12px; border:1.5px solid #9ca3af; border-radius:50%; margin:0; padding:0; background:#fff; flex:none; cursor:pointer; }
+    /* Out of stock: cannot be sorted, so it is shown but cannot be chosen. */
+    .sortir-product-option.is-disabled { cursor:not-allowed; background:#fff; }
+    .sortir-product-option.is-disabled:hover { background:#fff; }
+    .sortir-product-option.is-disabled span, .sortir-product-option.is-disabled .sortir-product-stock { color:#9ca3af; }
+    .sortir-product-option.is-disabled input[type=radio] { cursor:not-allowed; border-color:#d1d5db; background:#f3f4f6; }
     .sortir-product-option input[type=radio]:checked { border:3.5px solid #10b981; }
     .sortir-product-option span { min-width:0; font-size:12px; color:#1f2937; line-height:1.5; }
     .sortir-product-option .sortir-product-stock { flex:none; margin-left:auto; color:#6b7280; font-size:11px; font-style:normal; font-weight:600; white-space:nowrap; }
