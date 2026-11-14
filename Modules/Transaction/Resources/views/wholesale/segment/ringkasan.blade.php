@@ -11,13 +11,13 @@
             <a href="{{ route('wholesale.index') }}" class="btn btn-primary wholesale-summary-icon" aria-label="Kembali ke daftar pengadaan" title="Kembali"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a>
             <button type="button" class="btn btn-primary wholesale-summary-icon" @click="loadingDraft = true; saveTransaction(() => loadingDraft = false)"
                 :disabled="loadingDraft || isSubmitting" aria-label="{{ request()->routeIs('wholesale.edit') ? 'Simpan perubahan' : 'Simpan sebagai draf' }}" title="Simpan">
-                <template x-if="!loadingDraft"><i class="ph-bold ph-floppy-disk" aria-hidden="true"></i></template>
+                <template x-if="!loadingDraft"><i class="ph-bold ph-bookmark-simple" aria-hidden="true"></i></template>
                 <template x-if="loadingDraft"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></template>
             </button>
         </div>
         <div class="col" x-data="{ loadingFinal: false }">
             <button class="btn btn-success w-100" @click="loadingFinal = true; saveToOrderBook(() => loadingFinal = false)"
-                :disabled="loadingFinal || isSubmitting">
+                :disabled="loadingFinal || isSubmitting || cart.length === 0">
                 <template x-if="!loadingFinal">
                     <span>Submit</span>
                 </template>

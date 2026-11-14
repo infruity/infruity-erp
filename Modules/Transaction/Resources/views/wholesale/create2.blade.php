@@ -251,7 +251,8 @@
             .wholesale-procurement.is-create-mode #branch_id + .select2-container.has-branch-choices .select2-selection--single::after { right:17px; width:14px; height:14px; margin-top:-7px; border:0; transform:none; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%239ca3af'%3E%3Cpath d='M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z'/%3E%3C/svg%3E") center / 14px no-repeat; }
             .wholesale-procurement.is-create-mode #branch_id + .select2-container.has-branch-choices.select2-container--open .select2-selection--single::after { margin-top:-7px; transform:rotate(180deg); }
             .wholesale-procurement.is-create-mode .wholesale-products-heading h2 { font-weight:800; line-height:24px; letter-spacing:normal; }
-            .wholesale-procurement.is-create-mode .wholesale-add-item { height:30px; min-height:30px; padding:0 14px !important; border:1px solid rgba(167,243,208,.8) !important; border-radius:8px !important; background:rgba(236,253,245,.8) !important; box-shadow:0 1px 2px 0 rgba(0,0,0,.05); line-height:16px; font-weight:700 !important; }
+            .wholesale-procurement.is-create-mode .wholesale-add-item { height:auto; min-height:0; padding:2px 0 !important; border:0 !important; border-radius:6px !important; background:transparent !important; box-shadow:none; color:#0b595b !important; font-size:12px !important; line-height:16px; font-weight:700 !important; }
+            .wholesale-procurement.is-create-mode .wholesale-add-item:hover { background:transparent !important; text-decoration:underline; }
             .wholesale-procurement.is-create-mode .wholesale-cart-empty { gap:6px; }
             .wholesale-procurement.is-create-mode .wholesale-cart-empty strong { line-height:20px; }
             .wholesale-procurement.is-create-mode .wholesale-cart-empty > span:last-child { line-height:16px; }
@@ -271,13 +272,15 @@
             .wholesale-procurement.is-create-mode .wholesale-summary { padding:14px 16px 16px !important; }
             .wholesale-procurement.is-create-mode .wholesale-summary-total { align-items:center; min-height:39px; padding-bottom:14px; font-weight:800; }
             .wholesale-procurement.is-create-mode .wholesale-summary-total span, .wholesale-procurement.is-create-mode .wholesale-summary-total strong { line-height:20px; font-weight:800; }
-            .wholesale-procurement.is-create-mode .wholesale-summary-count { color:#065f46; font-size:16px; font-weight:800; line-height:20px; }
+            .wholesale-procurement.is-create-mode .wholesale-summary-count { color:#9ca3af; font-size:14px; font-weight:600; line-height:20px; }
             .wholesale-procurement.is-create-mode .wholesale-summary-total .rounded-pill { padding:2px 10px !important; border-radius:9999px; font-size:12px !important; line-height:15px; }
             .wholesale-procurement.is-create-mode .wholesale-summary .row { display:flex; gap:12px !important; margin-top:14px !important; }
             .wholesale-procurement.is-create-mode .wholesale-summary .row > .col { display:contents; }
             .wholesale-procurement.is-create-mode .wholesale-summary .wholesale-summary-icons { display:flex; gap:12px; flex:none; }
-            .wholesale-procurement.is-create-mode .wholesale-summary .btn.wholesale-summary-icon { display:inline-flex; flex:none; align-items:center; justify-content:center; width:44px !important; height:44px; padding:0; font-size:20px; text-decoration:none; }
-            .wholesale-procurement.is-create-mode .wholesale-summary .wholesale-summary-icon i { display:inline-block !important; color:#1f2937 !important; font-size:20px !important; line-height:1; }
+            .wholesale-procurement.is-create-mode .wholesale-summary .btn.wholesale-summary-icon { display:inline-flex; flex:none; align-items:center; justify-content:center; width:44px !important; height:44px; padding:0; border:1px solid #d1d5db !important; border-radius:12px; background:#fff !important; box-shadow:none !important; color:#1f2937 !important; font-size:18px; text-decoration:none; }
+            .wholesale-procurement.is-create-mode .wholesale-summary .btn.wholesale-summary-icon:hover { border-color:#34a684 !important; }
+            .wholesale-procurement.is-create-mode .wholesale-summary .btn-success:disabled { background:#e5e7eb !important; border:0 !important; color:#6b7280 !important; box-shadow:none !important; cursor:not-allowed; opacity:1; }
+            .wholesale-procurement.is-create-mode .wholesale-summary .wholesale-summary-icon i { display:inline-block !important; color:#1f2937 !important; font-size:18px !important; line-height:1; }
             .wholesale-procurement.is-create-mode .wholesale-summary .btn { flex:1 1 0%; width:auto !important; height:44px; padding:0 12px; font-size:12px; line-height:16px; }
             .wholesale-procurement.is-create-mode .wholesale-summary .btn-primary { border:1px solid #e5e7eb !important; color:#1f2937 !important; box-shadow:0 1px 2px 0 rgba(0,0,0,.05) !important; }
             .wholesale-procurement.is-create-mode .wholesale-summary .btn-success { border:0 !important; box-shadow:0 4px 6px -1px rgba(11,89,91,.15), 0 2px 4px -2px rgba(11,89,91,.15) !important; }
@@ -377,7 +380,7 @@
                         @if (!request()->routeIs('wholesale.show', 'wholesale-show'))
                             <button type="button" class="btn wholesale-add-item"
                                 @click="openAddModal()">
-                                <span>+ Tambah Item</span>
+                                <span>+ Tambah</span>
                             </button>
                         @endif
                     </div>
