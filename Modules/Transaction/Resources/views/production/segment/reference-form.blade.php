@@ -47,9 +47,8 @@
             </div>
             <div class="production-ref-composition__body" id="ingredients-container">
                 <template x-if="isLoadingIngredients">
-                    <div class="production-ref-empty" role="status">
-                        <x-erp.spinner size="sm" />
-                        <span>Memuat bahan dari resep…</span>
+                    <div class="production-ref-empty is-loading" role="status" aria-label="Memuat bahan dari resep">
+                        <x-erp.spinner size="lg" />
                     </div>
                 </template>
                 <template x-if="!isLoadingIngredients && ingredients.length === 0">
@@ -58,7 +57,7 @@
                         <span>Daftar bahan dan takaran komposisi racikan akan ditampilkan secara otomatis</span>
                     </div>
                 </template>
-                <template x-for="(ingredient,index) in ingredients" :key="ingredient.id">
+                <template x-for="(ingredient,index) in (isLoadingIngredients ? [] : ingredients)" :key="ingredient.id">
                     <div class="production-ref-row" x-data="{ startX: 0, startY: 0, revealed: false,
                             down(e) { if (e.target.closest('input,button')) return; const t = e.touches ? e.touches[0] : e; this.startX = t.clientX; this.startY = t.clientY; },
                             move(e) { if (!this.startX) return; const t = e.touches ? e.touches[0] : e; const dx = this.startX - t.clientX; const dy = Math.abs(this.startY - t.clientY);
