@@ -234,7 +234,9 @@ class BranchController extends Controller
             $query->whereIn('id', UserBranch::getUserBranch());
         }
 
+        // A to Z: the first row is the default branch of the forms that preselect one.
         $data = $query
+            ->orderBy('name')
             ->limit(10)
             ->get();
 

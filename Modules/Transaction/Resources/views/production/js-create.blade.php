@@ -1135,6 +1135,14 @@
             map: item => ({ id: item.id, text: item.name })
         });
 
+        // New production: preselect the user's own branch (the first one A to Z when the user has several).
+        @unless(isset($data) && $data->branch_id)
+            $.getJSON('{{ route('ajax.getBranch') }}', function (rows) {
+                if (!Array.isArray(rows) || !rows.length || $('#branch_id').val()) return;
+                $('#branch_id').append(new Option(rows[0].name, rows[0].id, true, true)).trigger('change');
+            });
+        @endunless
+
         // Set branch_id for editing
         @if(isset($data) && $data->branch_id && isset($data->branch))
             setTimeout(() => {
