@@ -389,7 +389,7 @@ class StaffController extends Controller
         }
 
         return $query->get()->each(function ($staff) {
-            $staff->position_label = $staff->positions->pluck('name')->implode(', ') ?: ($staff->position?->name ?: 'Belum diatur');
+            $staff->position_label = $this->positionLabel($staff->positions->pluck('name')->all()) ?: ($staff->position?->name ?: 'Belum diatur');
             $staff->branch_label = $staff->branch?->name ?: 'Belum diatur';
 
             if (!$staff->date_in) {
@@ -403,6 +403,18 @@ class StaffController extends Controller
             if ($tenure->m > 0) $parts[] = $tenure->m . ' Bln';
             $staff->tenure_label = $parts ? implode(' ', $parts) : 'Baru bergabung';
         });
+    }
+
+    /** "A", "A & B", "A, B & C" — the way the reference lists several positions. */
+    private function positionLabel(array $names): string
+    {
+        $names = array_values(array_filter(array_map('trim', $names)));
+        if (count($names) <= 1) {
+            return $names[0] ?? '';
+        }
+        $last = array_pop($names);
+
+        return implode(', ', $names) . ' & ' . $last;
     }
 
     private function validationMessages(): array

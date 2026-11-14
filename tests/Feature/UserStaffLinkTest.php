@@ -259,6 +259,9 @@ class UserStaffLinkTest extends TestCase
         $this->assertSame(2, (int) $staff->position_id);
         $this->assertEqualsCanonicalizing([1, 2], DB::table('staff_position')->where('staff_id', $staff->id)->pluck('position_id')->map(fn ($id) => (int) $id)->all());
 
+        $listed = $this->get('/staff')->viewData('records')->firstWhere('id', $staff->id);
+        $this->assertSame('Kasir & Operator', $listed->position_label);
+
         $this->put('/staff/' . $staff->id, [
             'staff_name' => 'Multi Role Employee',
             'date_in' => '2026-10-28',
