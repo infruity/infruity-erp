@@ -438,3 +438,6 @@ select.erp-empty option { color: #1f2937 !important; }
 .erp-ui .erp-settings-page .erp-settings-option-value { color:#9ca3af; font-size:12px; line-height:16px; }
 .erp-ui .erp-settings-page .erp-settings-options > .erp-settings-option + .erp-settings-option, .erp-ui .erp-settings-page .erp-settings-options > a.erp-settings-option:first-child { border-color:#f3f4f6; }
 @media (min-width:641px) { .erp-ui .erp-settings-page .erp-settings-details { padding:20px; } .erp-ui .erp-settings-page .erp-settings-option { padding:14px 16px; } }
+
+/* Dialog titles and messages wrap into lines of similar length instead of one long line and a short tail. */
+.erp-ui .swal2-title, .erp-ui .swal2-html-container { text-wrap: balance; }
