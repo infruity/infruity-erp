@@ -147,6 +147,8 @@ return [
 
     'attributes' => [
         'name' => 'Nama',
+        'type' => 'Tipe Kurir',
+        'staff_id' => 'Karyawan',
         'date_in' => 'Tanggal Masuk',
         'position_id' => 'Jabatan',
         'branch_id' => 'Cabang',
