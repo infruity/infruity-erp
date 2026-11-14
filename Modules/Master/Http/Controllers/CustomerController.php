@@ -137,7 +137,7 @@ class CustomerController extends Controller
                 },
             ],
             'email' => 'nullable',
-        ]);
+        ], ['customer_name.required' => 'Nama Pelanggan wajib diisi.', 'phone.required' => 'No Whatsapp wajib diisi.']);
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -271,7 +271,7 @@ class CustomerController extends Controller
                 },
             ],
             'email' => 'nullable',
-        ]);
+        ], ['customer_name.required' => 'Nama Pelanggan wajib diisi.', 'phone.required' => 'No Whatsapp wajib diisi.']);
 
         if ($validator->fails()) {
             return redirect()->back()
