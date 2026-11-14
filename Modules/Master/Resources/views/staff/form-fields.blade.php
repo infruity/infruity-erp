@@ -12,7 +12,19 @@
         ->all();
 @endphp
 
-<form id="{{ $editing ? 'staff-edit-form' : 'staff-form' }}" action="{{ $editing ? route('staff.update', $data->id) : route('staff.store') }}" method="POST" class="flex min-h-0 flex-1 flex-col" data-staff-form>
+<form id="{{ $editing ? 'staff-edit-form' : 'staff-form' }}" action="{{ $editing ? route('staff.update', $data->id) : route('staff.store') }}" method="POST" class="flex min-h-0 flex-1 flex-col" data-staff-form
+          x-data="{
+              ready: false,
+              check() {
+                  const f = this.$root;
+                  const filled = name => (f.querySelector(`[name='${name}']`)?.value || '').trim() !== '';
+                  this.ready = filled('staff_name') && filled('date_in')
+                      && f.querySelectorAll(`input[name='positions[]']:checked`).length > 0
+                      && f.querySelector(`input[name='branch_id']:checked`) !== null
+                      && f.querySelectorAll(`input[name='role_ids[]']:checked`).length > 0;
+              }
+          }"
+          x-init="$nextTick(() => check())" @input="check()" @change="check()" @click="$nextTick(() => check())">
     @csrf
     @if ($editing)
         @method('PUT')
@@ -110,7 +122,7 @@
             @else
                 <a href="{{ route('staff.index') }}" class="flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</a>
             @endif
-            <button type="submit" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white" data-submit>{{ $editing ? 'Simpan Perubahan' : 'Tambah Karyawan' }}</button>
+            <button type="submit" :disabled="!ready" class="h-11 flex-1 rounded-xl bg-[#0b595b] text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400" data-submit>{{ $editing ? 'Simpan Perubahan' : 'Tambah Karyawan' }}</button>
         </div>
     </div>
 </form>
