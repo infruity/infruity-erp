@@ -276,6 +276,7 @@
         const wholesaleNoMatchState = '<div class="wholesale-empty-state"><span class="wholesale-empty-icon"><i class="ph ph-magnifying-glass"></i></span><span class="wholesale-empty-title">Pengadaan tidak ditemukan</span><span class="wholesale-empty-copy">Coba kata pencarian lain atau sesuaikan filter.</span></div>';
         let wholesaleDataTable;
         let wholesaleLoadMorePending = false;
+        let wholesaleInitialRows = @json($initialRows ?? null);
 
         function getWholesaleFilter(name) {
             const $visible = $('[data-wholesale-filter="' + name + '"]:visible');
@@ -335,15 +336,22 @@
                 lengthChange: false,
                 autoWidth: false,
                 order: [[7, 'desc']],
-                ajax: {
-                    url: @json(route('wholesale-data')),
-                    data: function (data) {
-                        data.url = 'wholesale';
-                        data.status = getWholesaleFilter('status') || 'all';
-                        data.cabang_filter = getWholesaleFilter('branch') || 'all';
-                        data.start_date = getWholesaleFilter('start') || null;
-                        data.end_date = getWholesaleFilter('end') || null;
+                ajax: function (data, callback) {
+                    // The first page comes with the HTML; every later draw asks the server.
+                    if (wholesaleInitialRows) {
+                        const first = wholesaleInitialRows;
+                        wholesaleInitialRows = null;
+                        callback(Object.assign({}, first, { draw: data.draw }));
+                        return;
                     }
+                    data.url = 'wholesale';
+                    data.status = getWholesaleFilter('status') || 'all';
+                    data.cabang_filter = getWholesaleFilter('branch') || 'all';
+                    data.start_date = getWholesaleFilter('start') || null;
+                    data.end_date = getWholesaleFilter('end') || null;
+                    $.ajax({ url: @json(route('wholesale-data')), data: data, dataType: 'json' })
+                        .done(callback)
+                        .fail(function () { callback({ draw: data.draw, recordsTotal: 0, recordsFiltered: 0, data: [], error: 'Pengadaan gagal dimuat.' }); });
                 },
                 columnDefs: [
                     { targets: 5, orderable: false, searchable: false },

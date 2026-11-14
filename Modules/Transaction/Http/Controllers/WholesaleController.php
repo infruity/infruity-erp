@@ -46,6 +46,7 @@ class WholesaleController extends Controller
         $emptyStockProducts = NegativeStockWarning::forBranches($userBranches);
 
         $data['emptyStockData'] = $emptyStockProducts;
+        $data['initialRows'] = $this->initialRows($data['branches']);
 
         return view('transaction::wholesale.index', $data);
     }
@@ -1274,6 +1275,42 @@ class WholesaleController extends Controller
             })
             ->rawColumns(['branch', 'po', 'staff', 'items', 'action', 'status', 'address'])
             ->make(true);
+    }
+
+    /**
+     * The first DataTables response (page 1, newest first, default filters), computed with the page so the list is
+     * drawn without waiting for a second request. Null when it cannot be built; the table then loads it by ajax.
+     */
+    private function initialRows($branches): ?array
+    {
+        try {
+            $columns = [
+                ['branch.name', true, true], ['wholesale.order_number', true, true], ['users.nm_user', true, true],
+                ['wholesale_totals.item_names', true, true], ['wholesale.status', true, true], ['action', true, false],
+                ['wholesale.status', false, true], ['wholesale.order_date', false, true], ['wholesale.id', false, true],
+                ['wholesale_totals.supplier_names', false, false],
+            ];
+            $names = ['branch', 'po', 'staff', 'items', 'status', 'action', 'status_raw', 'order_date', 'wholesale_id', 'supplier_search'];
+            $params = [
+                'draw' => 1, 'start' => 0, 'length' => 20,
+                'order' => [['column' => 7, 'dir' => 'desc']],
+                'search' => ['value' => '', 'regex' => 'false'],
+                'columns' => [],
+                'url' => 'wholesale', 'status' => 'all',
+                // Same default as the branch filter of the page: "all" when there is more than one branch.
+                'cabang_filter' => count($branches) > 1 ? 'all' : (string) optional($branches->first())->id,
+            ];
+            foreach ($columns as $i => [$name, $searchable, $orderable]) {
+                $params['columns'][$i] = ['data' => $names[$i], 'name' => $name, 'searchable' => $searchable ? 'true' : 'false', 'orderable' => $orderable ? 'true' : 'false', 'search' => ['value' => '', 'regex' => 'false']];
+            }
+            $response = $this->get_data(Request::create(route('wholesale-data'), 'GET', $params));
+
+            return $response->getData(true);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return null;
+        }
     }
 
     private function hydrateWholesaleDetailPricing($detail, $branchId = null)
