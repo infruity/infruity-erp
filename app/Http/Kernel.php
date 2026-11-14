@@ -36,6 +36,7 @@ class Kernel extends HttpKernel
             \Illuminate\Session\Middleware\StartSession::class,
             \App\Http\Middleware\UseGuestDatabase::class,
             \App\Http\Middleware\SyncRoleSession::class,
+            \App\Http\Middleware\DeleteOnlyForMaster::class,
             // \Illuminate\Session\Middleware\AuthenticateSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,

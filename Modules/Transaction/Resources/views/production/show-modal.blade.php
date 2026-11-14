@@ -39,7 +39,9 @@
     </div>
     <div class="production-detail-ref__actions">
             <a href="{{ route('production.edit', $data->id) }}" class="production-detail-ref__action is-edit"><i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>Edit</a>
+            @if (check_access('production.destroy'))
             <span class="production-detail-ref__divider" aria-hidden="true"></span>
             <a href="{{ route('production.detail', $data->id) }}" class="production-detail-ref__action is-delete production-detail-ref__delete"><i class="ph-bold ph-trash" aria-hidden="true"></i>Hapus</a>
+            @endif
     </div>
 </div>

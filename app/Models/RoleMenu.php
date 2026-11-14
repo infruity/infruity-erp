@@ -60,9 +60,29 @@ class RoleMenu extends Model
         return self::currentRole()?->id_role;
     }
 
+    /** The only account that may delete data; everybody else is view/add/edit only. */
+    public const MASTER_EMAIL = 'master@infruity.com';
+
+    public static function isMasterAccount(): bool
+    {
+        $email = Auth::user()?->email;
+
+        return is_string($email) && mb_strtolower(trim($email)) === self::MASTER_EMAIL;
+    }
+
+    /** "x.destroy", "x.delete", "x.delete_product", "x.delete-ajax", "x.destroy-variant" ... */
+    public static function isDeletePermission(string $permission): bool
+    {
+        return (bool) preg_match('/\.(destroy|delete)([-_][a-z0-9_-]+)?$/i', trim($permission));
+    }
+
     public static function checkAccess($permission): bool
     {
         $user = Auth::user();
+        // Deleting is reserved for the master account, whatever the role or a personal override says.
+        if ($user && self::isDeletePermission((string) $permission) && ! self::isMasterAccount()) {
+            return false;
+        }
         if ($user) {
             $request = request();
             $cacheKey = 'user_permission_overrides.' . $user->getAuthIdentifier();
