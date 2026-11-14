@@ -8,8 +8,8 @@
 ])
 
 <div x-show="{{ $open }}" x-cloak role="dialog" aria-modal="true" aria-labelledby="{{ $labelledby }}" class="fixed inset-0 z-[120] flex items-center justify-center px-4" @keydown.escape.window="{{ $close }}" {{ $attributes }}>
-    <div x-show="{{ $open }}" x-transition.opacity @click="{{ $close }}" class="absolute inset-0 bg-black/60"></div>
-    <section x-show="{{ $open }}" x-transition class="relative z-10 flex w-full max-w-sm max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
+    <div x-show="{{ $open }}" x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="{{ $close }}" class="absolute inset-0 bg-black/60"></div>
+    <section x-show="{{ $open }}" x-transition:enter="transition-all duration-300" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0" x-transition:leave="transition-all duration-200 ease-in" x-transition:leave-start="opacity-100 scale-100 translate-y-0" x-transition:leave-end="opacity-0 scale-95 translate-y-2" class="relative z-10 flex w-full max-w-sm max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
         <div class="flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
             <div class="mb-6 flex items-center justify-between">
                 <div>
