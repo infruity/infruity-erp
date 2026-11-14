@@ -43,7 +43,7 @@ final class InventoryListFixesTest extends TestCase
         $this->assertStringContainsString("'order_date_label' => \$mobileDate", $payload);
         $this->assertStringNotContainsString('created_at_label', $controller);
         $this->assertStringContainsString("item?.order_date_label", $view);
-        $this->assertStringNotContainsString('Dibuat pada', $view);
+        $this->assertStringContainsString("'Dibuat pada ' + item?.order_date_label", $view);
     }
 
     public function test_wholesale_filtered_empty_result_does_not_claim_there_are_no_orders(): void
