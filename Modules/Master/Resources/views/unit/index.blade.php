@@ -13,6 +13,10 @@
      @mobile-add-toggle.window="openCreate()"
      class="flex-1 flex flex-col min-h-0 -mx-4 md:mx-0">
 <x-erp.master-list-style />
+<style>
+    /* Form sheet fields follow the reference: emerald-500 border + 1px ring, dark caret. */
+    .erp-ui #unit-name:focus, .erp-ui #unit-abbreviation:focus, .erp-ui #unit-name:focus-visible, .erp-ui #unit-abbreviation:focus-visible { border-color:#10b981; box-shadow:0 0 0 1px #10b981; outline:0; caret-color:#1f2937; }
+</style>
     <x-erp.mobile-search class="md:hidden">
         <x-slot:input><input x-ref="mobileSearch" x-model.debounce.200ms="search" type="search" placeholder="Cari..." aria-label="Cari satuan" class="erp-mobile-search__input"></x-slot:input>
         <x-slot:clear><button type="button" x-show="search" x-cloak @click="search = ''; $refs.mobileSearch.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
