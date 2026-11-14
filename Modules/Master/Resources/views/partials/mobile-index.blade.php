@@ -20,7 +20,7 @@
      @mobile-add-toggle.window="openCreate()"
      @popstate.window="syncCustomerCreateUrl()"
      @customer-edit-closed.window="customerEditOpen = false; $nextTick(() => window.initCustomerForms?.(document))"
-     class="flex-1 flex flex-col min-h-0 -mx-4 md:mx-0">
+     class="flex-1 flex flex-col min-h-0 -mx-4 md:mx-0" data-delete-subject="{{ $emptyLabel ?? $pageTitle }}">
     <x-erp.mobile-search class="md:hidden">
         <x-slot:input><input x-ref="mobileSearch" x-model="search" @keydown.enter.prevent="if (mode === 'server') searchServer()" type="search" placeholder="Cari..." :aria-label="'Cari ' + title.toLowerCase()" class="erp-mobile-search__input"></x-slot:input>
         <x-slot:clear><button type="button" x-show="search" x-cloak @click="search = ''; if (mode === 'server') searchServer(); else $refs.mobileSearch.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
@@ -551,7 +551,7 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
                 this.saving = false;
             }
         },
-        async confirmDelete(record) { if (!await ErpDialog.confirmDelete({ what: title, name: this.label(record) })) return; try { const response = await fetch(`/${this.routeBase}/${record.id}`, { method: 'DELETE', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } }); const data = await response.json(); if (!response.ok || data.success === false) throw new Error(data.message || 'Gagal menghapus data.'); window.location.reload(); } catch (error) { Swal.fire({ icon: 'error', title: 'Gagal', text: error.message }); } },
+        async confirmDelete(record) { if (!await ErpDialog.confirmDelete({ what: title, subject: this.$root?.dataset?.deleteSubject || title, name: this.label(record) })) return; try { const response = await fetch(`/${this.routeBase}/${record.id}`, { method: 'DELETE', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } }); const data = await response.json(); if (!response.ok || data.success === false) throw new Error(data.message || 'Gagal menghapus data.'); window.location.reload(); } catch (error) { Swal.fire({ icon: 'error', title: 'Gagal', text: error.message }); } },
     };
 }
 </script>
