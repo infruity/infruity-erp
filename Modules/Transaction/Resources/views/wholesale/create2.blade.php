@@ -131,7 +131,6 @@
             .wholesale-procurement .modal-content { min-height:100dvh; border-radius:0; }
             body:has(.wholesale-procurement.is-edit-mode) main { overflow:hidden !important; padding:0 !important; }
             body:has(.wholesale-procurement.is-edit-mode) main > .animate-fade-in-up { min-height:0; animation:none; }
-            body:has(.wholesale-procurement.is-edit-mode) .erp-topbar-mobile { height:66px !important; }
             .wholesale-procurement.is-edit-mode { display:flex; width:calc(100% - 8px) !important; min-height:0; flex:1; flex-direction:column; margin:0 auto; padding:17px 0 0; }
             .wholesale-procurement.is-edit-mode .wholesale-form-heading { display:none; }
             .wholesale-procurement.is-edit-mode > .card { flex:none; margin:0 0 27px !important; padding:15px 17px 13px 13px !important; }
@@ -256,6 +255,19 @@
             .wholesale-procurement.is-create-mode .wholesale-cart-empty { gap:6px; }
             .wholesale-procurement.is-create-mode .wholesale-cart-empty strong { line-height:20px; }
             .wholesale-procurement.is-create-mode .wholesale-cart-empty > span:last-child { line-height:16px; }
+            .wholesale-procurement.is-edit-mode.is-create-mode { width:100% !important; margin:0; padding:16px 16px 0; }
+            .wholesale-procurement.is-create-mode .wholesale-cart-list { padding:16px; }
+            .wholesale-procurement.is-create-mode .wholesale-cart-item { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:6px 8px; width:calc(100% + 16px); margin:0 -8px; padding:12px 10px; border:0; border-top:1px solid #f3f4f6; border-radius:8px; }
+            .wholesale-procurement.is-create-mode .wholesale-cart-item:first-of-type { padding:4px 10px 12px; border-top:0; }
+            .wholesale-procurement.is-edit-mode.is-create-mode .wholesale-edit-content { padding-bottom:0; }
+            .wholesale-procurement.is-edit-mode.is-create-mode .wholesale-summary-card { position:static; margin:0 -16px !important; padding:0 !important; border-top:1px solid #f3f4f6; box-shadow:0 -4px 20px rgba(0,0,0,.03); }
+            .wholesale-procurement.is-edit-mode.is-create-mode .wholesale-products-card { margin:0 0 24px !important; }
+            .wholesale-procurement.is-create-mode .wholesale-cart-item:hover { background:rgba(249,250,251,.8); }
+            .wholesale-procurement.is-create-mode .wholesale-cart-item-copy, .wholesale-procurement.is-create-mode .wholesale-cart-item-total { display:contents; }
+            .wholesale-procurement.is-create-mode .wholesale-cart-item-name { grid-area:1 / 1; color:#111827; font-size:14px; line-height:20px; }
+            .wholesale-procurement.is-create-mode .wholesale-cart-item-total strong { grid-area:1 / 2; justify-self:end; color:#0b595b; font-size:12px; font-weight:800; line-height:16px; }
+            .wholesale-procurement.is-create-mode .wholesale-cart-item-meta { grid-area:2 / 1; color:#6b7280; font-size:12px; font-weight:500; line-height:16px; }
+            .wholesale-procurement.is-create-mode .wholesale-edit-item-quantity { grid-area:2 / 2; justify-self:end; color:#4b5563; font-size:12px; font-weight:600; line-height:16px; }
             .wholesale-procurement.is-create-mode .wholesale-summary { padding:14px 16px 16px !important; }
             .wholesale-procurement.is-create-mode .wholesale-summary-total { align-items:center; min-height:39px; padding-bottom:14px; font-weight:800; }
             .wholesale-procurement.is-create-mode .wholesale-summary-total span, .wholesale-procurement.is-create-mode .wholesale-summary-total strong { line-height:20px; font-weight:800; }
@@ -276,7 +288,7 @@
     </style>
 
     <!--begin::Aside column-->
-    <div @if ($isWholesaleReadOnly) id="printable-po" @endif class="wholesale-procurement w-100 flex-lg-row-auto {{ $isWholesaleEdit ? 'is-edit-mode' : ($isWholesaleCreate ? 'is-create-mode' : '') }}" x-data="posApp()" x-init="init()">
+    <div @if ($isWholesaleReadOnly) id="printable-po" @endif class="wholesale-procurement w-100 flex-lg-row-auto {{ $isWholesaleEdit ? 'is-edit-mode is-create-mode' : ($isWholesaleCreate ? 'is-create-mode' : '') }}" x-data="posApp()" x-init="init()">
         <div class="wholesale-form-heading">
             <div>
                 <h1>{{ request()->routeIs('wholesale.edit') ? 'Edit Pengadaan' : (request()->routeIs('wholesale.show', 'wholesale-show') ? 'Detail Pengadaan' : 'Tambah Pengadaan') }}</h1>
