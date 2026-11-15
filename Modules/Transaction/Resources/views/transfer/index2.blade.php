@@ -6,7 +6,7 @@
     $pageTitle = $receiving ? 'Pindah Stok - Menerima' : 'Pindah Stok - Mengirim';
     // Three states, as in the reference: being prepared, on its way, received (an unfinished receiving check still counts as on its way).
     $statuses = [['value' => 'all', 'label' => 'Semua Status']];
-    if (!$receiving) $statuses[] = ['value' => 'draft', 'label' => 'Sedang Disiapkan'];
+    if (!$receiving) $statuses[] = ['value' => 'draft', 'label' => 'Pending'];
     $statuses = array_merge($statuses, [['value' => 'pending', 'label' => 'Dalam Perjalanan'], ['value' => 'selesai', 'label' => 'Sudah Diterima']]);
 @endphp
 @section('title', $pageTitle . ' - Inventaris')

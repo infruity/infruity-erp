@@ -36,7 +36,7 @@
             get availableDestinations() { return this.destinations.filter(b => String(b.id) !== String(this.branchId)); },
             get total() { return this.round(this.cart.reduce((sum,item) => sum + this.round(item.qty * item.price - (item.discount || 0)), 0)); },
             get hasShortage() { return this.cart.some(item => item.qty < item.sent); },
-            get statusLabel() { return ({temp:'Sedang Disiapkan',draft:'Sedang Disiapkan',pending:'Dalam Perjalanan',proses:'Dalam Perjalanan',selesai:'Sudah Diterima'})[this.status] || this.status; },
+            get statusLabel() { return ({temp:'Pending',draft:'Pending',pending:'Dalam Perjalanan',proses:'Dalam Perjalanan',selesai:'Sudah Diterima'})[this.status] || this.status; },
             markDirty() { this.dirty = true; this.saveError = ''; },
             changeBranch(id) {
                 if (String(id) === String(this.branchId)) { this.branchOpen = false; return; }

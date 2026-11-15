@@ -28,7 +28,7 @@ final class TransferFilterUiContractTest extends TestCase
             ':timezone="config(\'app.timezone\')"',
             'desktop="modal"',
             'reset-applies',
-            "['value' => 'draft', 'label' => 'Sedang Disiapkan']",
+            "['value' => 'draft', 'label' => 'Pending']",
             "@erp-filter-apply.window=\"if (\$event.detail.id === 'transfer') applyFilters(\$event.detail.values)\"",
             "@erp-filter-close.window=\"if (\$event.detail.id === 'transfer') closeFilter()\"",
         ] as $contract) {
@@ -46,7 +46,7 @@ final class TransferFilterUiContractTest extends TestCase
     {
         $statuses = fn (bool $receiving) => collect(array_merge(
             [['value' => 'all', 'label' => 'Semua Status']],
-            $receiving ? [] : [['value' => 'draft', 'label' => 'Sedang Disiapkan']],
+            $receiving ? [] : [['value' => 'draft', 'label' => 'Pending']],
             [['value' => 'pending', 'label' => 'Dalam Perjalanan'], ['value' => 'selesai', 'label' => 'Sudah Diterima']]
         ))->pluck('label', 'value')->all();
 
@@ -65,10 +65,10 @@ final class TransferFilterUiContractTest extends TestCase
 
         $this->assertStringContainsString('Cabang Tujuan', $sender);
         $this->assertStringContainsString('Status Pengiriman', $sender);
-        $this->assertStringContainsString('>Sedang Disiapkan<', $sender);
+        $this->assertStringContainsString('>Pending<', $sender);
         $this->assertStringContainsString('Cabang Tujuan', $receiver);
         $this->assertStringContainsString('Status Penerimaan', $receiver);
-        $this->assertStringNotContainsString('>Sedang Disiapkan<', $receiver);
+        $this->assertStringNotContainsString('>Pending<', $receiver);
         $this->assertStringNotContainsString('Sedang Diperiksa', $receiver);
     }
 }
