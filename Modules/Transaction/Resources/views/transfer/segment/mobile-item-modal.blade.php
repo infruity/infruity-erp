@@ -22,6 +22,6 @@
             <div class="transfer-modal-note" x-show="receiving"><label class="transfer-modal-label" for="transfer-item-note">Catatan</label><input id="transfer-item-note" class="transfer-modal-input" type="text" x-model="modalItem.note" placeholder="Tuliskan catatan jika ada..." maxlength="1000"></div>
             <p class="transfer-error" x-show="modalError" x-text="modalError" role="alert"></p>
         </div>
-        <div class="modal-footer"><button type="button" class="transfer-action transfer-action-danger" x-show="editingId !== null && !receiving" @click="deleteItem()"><i class="ph-bold ph-trash" aria-hidden="true"></i> Hapus Item</button><button type="submit" class="transfer-action transfer-action-primary" x-text="receiving ? 'Diterima' : (editingId === null ? 'Tambah' : 'Simpan')"></button></div>
+        <div class="modal-footer"><button type="button" class="transfer-action transfer-action-danger" x-show="editingId !== null && !receiving" @click="deleteItem()"><i class="ph-bold ph-trash" aria-hidden="true"></i> Hapus Item</button><button type="submit" class="transfer-action transfer-action-primary" :disabled="receiving ? qtyInput === '' : (!modalItem.id || !(Number(modalItem.qty) > 0))" x-text="receiving ? 'Diterima' : (editingId === null ? 'Tambah' : 'Simpan')"></button></div>
     </form>
 </dialog>
