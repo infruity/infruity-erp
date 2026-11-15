@@ -214,3 +214,6 @@ dialog.transfer-modal[open]::backdrop { background:rgba(0,0,0,.6); backdrop-filt
 .transfer-form .transfer-branch-menu button:hover { background:#f9fafb; }
 .transfer-form .transfer-branch-menu button.is-selected { background:#ecfdf5; color:#0b595b; font-weight:700; }
 .transfer-form .transfer-branch-dot { display:none!important; }
+
+/* Quantity stays locked until a product is picked. */
+body.erp-ui #transfer-qty.transfer-modal-input:disabled { background: #f3f4f6 !important; border-color: #e5e7eb !important; color: #9ca3af !important; cursor: not-allowed; -webkit-text-fill-color: #9ca3af; opacity: 1; }

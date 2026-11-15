@@ -17,7 +17,7 @@
             <p class="transfer-product-summary" x-show="!receiving && editingId !== null" x-text="modalItem.name"></p>
             <div :class="receiving ? 'transfer-modal-fields' : 'transfer-quantity-full'">
                 <div x-show="receiving"><label class="transfer-modal-label" for="transfer-sent-qty">Dikirim</label><div class="transfer-unit-field"><input id="transfer-sent-qty" class="transfer-modal-input" type="text" :value="number(modalItem.sent)" readonly><span x-text="modalItem.unit"></span></div></div>
-                <div><label class="transfer-modal-label" for="transfer-qty" x-text="receiving ? 'Diterima *' : 'Kuantitas *'"></label><div class="transfer-unit-field"><input id="transfer-qty" class="transfer-modal-input" type="text" inputmode="decimal" :value="qtyInput" @input="updateQuantity($event)" placeholder="0" required autocomplete="off"><span x-text="modalItem.unit"></span></div></div>
+                <div><label class="transfer-modal-label" for="transfer-qty" x-text="receiving ? 'Diterima *' : 'Kuantitas *'"></label><div class="transfer-unit-field"><input id="transfer-qty" class="transfer-modal-input" type="text" inputmode="decimal" :value="qtyInput" @input="updateQuantity($event)" :disabled="!modalItem.id" placeholder="0" required autocomplete="off"><span x-text="modalItem.unit"></span></div></div>
             </div>
             <div class="transfer-modal-note" x-show="receiving"><label class="transfer-modal-label" for="transfer-item-note">Catatan</label><input id="transfer-item-note" class="transfer-modal-input" type="text" x-model="modalItem.note" placeholder="Tuliskan catatan jika ada..." maxlength="1000"></div>
             <p class="transfer-error" x-show="modalError" x-text="modalError" role="alert"></p>
