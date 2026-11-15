@@ -9,8 +9,8 @@
                     <div class="transfer-product-options" :aria-busy="loadingProducts">
                         <div class="transfer-products-state" x-show="loadingProducts" role="status">Memuat produk...</div>
                         <div class="transfer-products-state" x-show="productsError && !loadingProducts" role="alert"><span x-text="productsError"></span><button type="button" @click="loadProducts()">Coba lagi</button></div>
-                        <template x-for="product in products" :key="product.id"><label class="transfer-product-option" :class="String(modalItem.id) === String(product.id) ? 'is-selected' : ''" x-show="!loadingProducts && !productsError"><input type="radio" name="transfer-product" :value="product.id" :checked="String(modalItem.id) === String(product.id)" @change="selectProduct(product)"><span x-text="product.name + (product.unit ? ' (' + product.unit + ')' : '')"></span></label></template>
-                        <div class="transfer-products-state" x-show="!loadingProducts && !productsError && !products.length">Tidak ada produk dengan stok tersedia.</div>
+                        <template x-for="product in products" :key="product.id"><label class="transfer-product-option" :class="[String(modalItem.id) === String(product.id) ? 'is-selected' : '', (Number(product.stock) || 0) <= 0 ? 'is-disabled' : '']" :aria-disabled="(Number(product.stock) || 0) <= 0" @click="if ((Number(product.stock) || 0) <= 0) $event.preventDefault()" x-show="!loadingProducts && !productsError"><input type="radio" name="transfer-product" :value="product.id" :checked="String(modalItem.id) === String(product.id)" :disabled="(Number(product.stock) || 0) <= 0" @change="selectProduct(product)"><span x-text="product.name + (product.unit ? ' (' + product.unit + ')' : '')"></span><em class="transfer-product-stock" x-text="'Stok ' + number(product.stock || 0)"></em></label></template>
+                        <div class="transfer-products-state" x-show="!loadingProducts && !productsError && !products.length">Produk tidak ditemukan.</div>
                     </div>
                 </div>
             </div>
@@ -19,7 +19,6 @@
                 <div x-show="receiving"><label class="transfer-modal-label" for="transfer-sent-qty">Dikirim</label><div class="transfer-unit-field"><input id="transfer-sent-qty" class="transfer-modal-input" type="text" :value="number(modalItem.sent)" readonly><span x-text="modalItem.unit"></span></div></div>
                 <div><label class="transfer-modal-label" for="transfer-qty" x-text="receiving ? 'Diterima *' : 'Kuantitas *'"></label><div class="transfer-unit-field"><input id="transfer-qty" class="transfer-modal-input" type="text" inputmode="decimal" :value="qtyInput" @input="updateQuantity($event)" placeholder="0" required autocomplete="off"><span x-text="modalItem.unit"></span></div></div>
             </div>
-            <p class="transfer-stock" x-show="!receiving && modalItem.stock !== null && modalItem.id" x-text="'Stok tersedia: ' + number(modalItem.stock) + ' ' + (modalItem.unit || '')"></p>
             <div class="transfer-modal-note" x-show="receiving"><label class="transfer-modal-label" for="transfer-item-note">Catatan</label><input id="transfer-item-note" class="transfer-modal-input" type="text" x-model="modalItem.note" placeholder="Tuliskan catatan jika ada..." maxlength="1000"></div>
             <p class="transfer-error" x-show="modalError" x-text="modalError" role="alert"></p>
         </div>

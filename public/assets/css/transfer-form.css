@@ -199,3 +199,12 @@ dialog.transfer-modal[open]::backdrop { background:rgba(0,0,0,.6); backdrop-filt
 @media (prefers-reduced-motion:reduce) { dialog.transfer-modal, dialog.transfer-modal::backdrop { transition:none !important; } }
 /* The search field keeps exactly the same size resting, focused or pressed (the older focus rule used 13px / 12px padding). */
 .transfer-product-search, .transfer-product-search:focus, .transfer-product-search:active, .transfer-product-search:focus-visible { padding:10px 10px!important; font-size:16px!important; line-height:20px!important; }
+
+/* Product rows: stock at the right, products without stock greyed out; the stock line keeps its space so nothing jumps. */
+.transfer-product-option .transfer-product-stock { flex:none; margin-left:auto; color:#6b7280; font-size:11px; font-style:normal; font-weight:600; line-height:16px; white-space:nowrap; }
+.transfer-product-option span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.transfer-product-option.is-disabled { cursor:not-allowed; background:#fff; }
+.transfer-product-option.is-disabled:hover { background:#fff; }
+.transfer-product-option.is-disabled span, .transfer-product-option.is-disabled .transfer-product-stock { color:#9ca3af; }
+.transfer-product-option.is-disabled input[type=radio] { cursor:not-allowed; border-color:#d1d5db; background:#f3f4f6; }
+.transfer-stock.is-empty { visibility:hidden; }
