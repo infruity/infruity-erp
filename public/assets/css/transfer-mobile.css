@@ -184,7 +184,7 @@ body:has(.transfer-list-page) main > .animate-fade-in-up { animation:none; }
 body.erp-ui #transfer-filter-sheet#transfer-filter-sheet section > header { padding:16px 20px 16px !important; }
 [data-erp-filter-sheet][id="transfer-filter-sheet"] .erp-filter-sheet__subtitle { line-height:16.5px !important; }
 [data-erp-filter-sheet][id="transfer-filter-sheet"] [aria-label="Tutup"] i { font-size:14px !important; }
-[data-erp-filter-sheet][id="transfer-filter-sheet"] section > div:first-child > div { width:64px; }
+[data-erp-filter-sheet][id="transfer-filter-sheet"] > section > div:first-child > div { width:64px; }
 body.erp-ui #transfer-filter-sheet#transfer-filter-sheet [x-show="!calendarOpen"] :is(label,span).uppercase { font-weight:600 !important; line-height:15px !important; }
 [data-erp-filter-sheet][id="transfer-filter-sheet"] [id$="-date-trigger"] span { line-height:16px !important; }
 [data-erp-filter-sheet][id="transfer-filter-sheet"] .erp-filter-sheet__footer { display:flex !important; gap:12px; background:rgba(249,250,251,.7); }
