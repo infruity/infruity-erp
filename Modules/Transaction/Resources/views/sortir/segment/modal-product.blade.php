@@ -22,6 +22,6 @@
             <div class="sortir-modal-total"><span>Total HPP / Modal</span><strong x-text="rupiah(modalItem.qty * modalItem.price)"></strong></div>
             <p class="sortir-error" x-show="modalError" x-text="modalError" role="alert" x-cloak></p>
         </div>
-        <div class="modal-footer"><button type="button" class="sortir-action sortir-action-danger" x-show="editingId !== null" @click="deleteModalItem()" x-cloak><i class="ph ph-trash" aria-hidden="true"></i>&nbsp; Hapus Item</button><button type="submit" class="sortir-action sortir-action-primary"><span x-text="editingId === null ? 'Tambah Item' : 'Simpan Perubahan'"></span></button></div>
+        <div class="modal-footer"><button type="button" class="sortir-action sortir-action-danger" x-show="editingId !== null" @click="deleteModalItem()" x-cloak><i class="ph ph-trash" aria-hidden="true"></i>&nbsp; Hapus Item</button><button type="submit" class="sortir-action sortir-action-primary" :disabled="!modalItem.id || !(Number(modalItem.qty) > 0)"><span x-text="editingId === null ? 'Tambah Item' : 'Simpan Perubahan'"></span></button></div>
     </form></div>
 </dialog>
