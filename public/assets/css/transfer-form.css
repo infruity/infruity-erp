@@ -184,3 +184,16 @@ body:has(.transfer-form) main { overflow:hidden; }
 .transfer-form .transfer-icon-action:hover:not(:disabled) { background:#f9fafb; color:#111827; }
 .transfer-form .transfer-icon-action:active:not(:disabled) { transform:scale(.95); }
 .transfer-form .transfer-icon-action:disabled { opacity:.6; cursor:default; }
+
+/* Dialog motion as in the reference: the dim fades (200ms in, 150ms out) while the card rises from 12px below at 95% size. */
+dialog.transfer-modal { opacity:0; transform:translateY(12px) scale(.95);
+    transition:opacity .15s cubic-bezier(.4,0,1,1), transform .15s cubic-bezier(.4,0,1,1), overlay .15s cubic-bezier(.4,0,1,1) allow-discrete, display .15s cubic-bezier(.4,0,1,1) allow-discrete; }
+dialog.transfer-modal[open] { opacity:1; transform:none;
+    transition:opacity .2s cubic-bezier(0,0,.2,1), transform .2s cubic-bezier(0,0,.2,1), overlay .2s cubic-bezier(0,0,.2,1) allow-discrete, display .2s cubic-bezier(0,0,.2,1) allow-discrete; }
+@starting-style { dialog.transfer-modal[open] { opacity:0; transform:translateY(12px) scale(.95); } }
+dialog.transfer-modal::backdrop { background:rgba(0,0,0,0); backdrop-filter:blur(0);
+    transition:background-color .15s cubic-bezier(.4,0,1,1), backdrop-filter .15s cubic-bezier(.4,0,1,1), overlay .15s cubic-bezier(.4,0,1,1) allow-discrete, display .15s cubic-bezier(.4,0,1,1) allow-discrete; }
+dialog.transfer-modal[open]::backdrop { background:rgba(0,0,0,.6); backdrop-filter:blur(4px);
+    transition:background-color .2s cubic-bezier(0,0,.2,1), backdrop-filter .2s cubic-bezier(0,0,.2,1), overlay .2s cubic-bezier(0,0,.2,1) allow-discrete, display .2s cubic-bezier(0,0,.2,1) allow-discrete; }
+@starting-style { dialog.transfer-modal[open]::backdrop { background:rgba(0,0,0,0); backdrop-filter:blur(0); } }
+@media (prefers-reduced-motion:reduce) { dialog.transfer-modal, dialog.transfer-modal::backdrop { transition:none !important; } }
