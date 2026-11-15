@@ -171,3 +171,16 @@ body:has(.transfer-form) main { overflow:hidden; }
 .transfer-form .transfer-cart-line { align-items:center; }
 .transfer-form .transfer-cart-line strong { font-size:14px; line-height:20px; }
 .transfer-form .transfer-cart-line b { font-size:12px; font-weight:800; line-height:16px; }
+
+/* Same look as the Sortir Barang form: branch field, "+ Tambah" text button and icon actions. */
+.transfer-form .transfer-branch-trigger { min-height:44px; padding:0 14px; background:#fff; color:#1f2937; font-size:12px!important; font-weight:700!important; line-height:16px; }
+.transfer-form .transfer-branch-trigger i { color:#9ca3af; font-size:12px; }
+.transfer-form .transfer-add-button { min-height:0; border:0; border-radius:6px; background:transparent; color:#0b595b; padding:2px 0; font-size:12px!important; font-weight:700!important; line-height:16px; white-space:nowrap; box-shadow:none; }
+.transfer-form .transfer-add-button:hover:not(:disabled) { background:transparent; text-decoration:underline; }
+.transfer-form .transfer-add-button:disabled { color:#9ca3af; cursor:not-allowed; background:transparent; }
+.transfer-form .transfer-summary-actions { gap:12px; }
+.transfer-form .transfer-icon-action { display:flex; width:44px; height:44px; flex:none; align-items:center; justify-content:center; border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:#374151; text-decoration:none; cursor:pointer; transition:transform .1s, background-color .15s; }
+.transfer-form .transfer-icon-action i { font-size:18px!important; line-height:1; }
+.transfer-form .transfer-icon-action:hover:not(:disabled) { background:#f9fafb; color:#111827; }
+.transfer-form .transfer-icon-action:active:not(:disabled) { transform:scale(.95); }
+.transfer-form .transfer-icon-action:disabled { opacity:.6; cursor:default; }
