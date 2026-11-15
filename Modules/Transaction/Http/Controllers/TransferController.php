@@ -322,7 +322,7 @@ class TransferController extends Controller
             }
             if ($pos) {
                 // Update transaksi transfer yang sudah ada
-                if (! in_array($pos->status, ['temp', 'draft', 'pending'], true) || $pos->corrections()->exists()) {
+                if (! in_array($pos->status, ['temp', 'draft', 'pending'], true) || ($pos->status === 'pending' && $pos->corrections()->exists())) {
                     DB::rollBack();
                     return response()->json([
                         'success' => false,
@@ -628,7 +628,7 @@ class TransferController extends Controller
         $rows = $query->with(['detail.product.unit', 'detail.corrections.user'])->orderByDesc('date')->orderByDesc('id')
             ->skip((int) $request->input('start', 0))->take((int) $request->input('length', 20))->get()->map(function ($item) use ($side, $permissions) {
                 $owner = (int) $item->created_by === (int) Auth::id();
-                $editable = $side === 'transfer-pengirim' && $owner && in_array($item->status, ['temp', 'draft', 'pending']) && !$item->corrections_count;
+                $editable = $side === 'transfer-pengirim' && $owner && (in_array($item->status, ['temp', 'draft']) || ($item->status === 'pending' && !$item->corrections_count));
                 return [
                     'id' => $item->id, 'invoice_number' => $item->invoice_number, 'date' => $item->date, 'created_at' => $item->created_at?->format('Y-m-d H:i:s'),
                     'origin' => $item->branch?->name ?? 'Tanpa cabang', 'destination' => $item->branchDestination?->name ?? 'Tanpa tujuan',
