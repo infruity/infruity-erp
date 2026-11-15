@@ -36,6 +36,7 @@
                         <div class="transfer-metadata-fields"><div><label>{{ $receiving ? 'Cabang Penerima' : 'Cabang Pengirim' }}</label><strong x-text="receiving ? destinationName : branchName"></strong></div><div><label>Tanggal Pengiriman</label><strong x-text="date"></strong></div>
                         <div><label>Pengirim</label><strong>{{ $data->createdBy->nm_user ?? '—' }}</strong></div><div><label>Penerima</label><strong>{{ $data->picPenerima->nm_user ?? '—' }}</strong></div></div>
                     </details>
+                    @endunless
                 @else
                     <div class="transfer-branch-picker" @click.outside="destinationOpen = false">
                         <button type="button" class="transfer-branch-trigger" @click="destinationOpen = !destinationOpen" :disabled="saving" aria-label="Pilih tujuan pengiriman" aria-haspopup="true" :aria-expanded="destinationOpen"><span x-text="destinationName || 'Pilih Tujuan Pengiriman'"></span><i class="ph-bold ph-caret-down" :class="destinationOpen ? 'is-open' : ''" aria-hidden="true"></i></button>
