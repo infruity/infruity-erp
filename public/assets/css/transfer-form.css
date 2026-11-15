@@ -197,3 +197,5 @@ dialog.transfer-modal[open]::backdrop { background:rgba(0,0,0,.6); backdrop-filt
     transition:background-color .2s cubic-bezier(0,0,.2,1), backdrop-filter .2s cubic-bezier(0,0,.2,1), overlay .2s cubic-bezier(0,0,.2,1) allow-discrete, display .2s cubic-bezier(0,0,.2,1) allow-discrete; }
 @starting-style { dialog.transfer-modal[open]::backdrop { background:rgba(0,0,0,0); backdrop-filter:blur(0); } }
 @media (prefers-reduced-motion:reduce) { dialog.transfer-modal, dialog.transfer-modal::backdrop { transition:none !important; } }
+/* The search field keeps exactly the same size resting, focused or pressed (the older focus rule used 13px / 12px padding). */
+.transfer-product-search, .transfer-product-search:focus, .transfer-product-search:active, .transfer-product-search:focus-visible { padding:10px 10px!important; font-size:16px!important; line-height:20px!important; }
