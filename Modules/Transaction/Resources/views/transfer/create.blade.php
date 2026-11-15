@@ -25,7 +25,7 @@
     <script src="{{ asset('assets/js/transfer-form.js') }}?v={{ filemtime(public_path('assets/js/transfer-form.js')) }}"></script>
 @endpush
 @section('content')
-    <div class="transfer-form" x-data="transferForm(@js($transferConfig))" @keydown.escape.window="branchOpen = false; destinationOpen = false">
+    <div class="transfer-form {{ $receiving ? 'is-receiving' : '' }}" x-data="transferForm(@js($transferConfig))" @keydown.escape.window="branchOpen = false; destinationOpen = false">
         <div class="transfer-canvas">
             <section class="transfer-branch-card" aria-label="{{ $receiving ? 'Asal pengiriman' : 'Tujuan pengiriman' }}">
                 <div class="transfer-field-label transfer-card-label"><span>{{ $receiving ? 'Asal Pengiriman' : 'Tujuan Pengiriman' }} @if (!$readOnly && !$receiving)<span class="transfer-required">*</span>@endif</span><small x-show="readOnly || receiving" x-text="invoiceNumber"></small></div>

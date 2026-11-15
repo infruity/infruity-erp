@@ -220,3 +220,12 @@ body.erp-ui #transfer-qty.transfer-modal-input:disabled { background: #f3f4f6 !i
 
 /* Selected product radio as in the plan: 2px emerald ring around an 8px emerald dot (white gap between). */
 .transfer-form .transfer-product-option input[type=radio]:checked { border:2px solid #10b981; background:radial-gradient(circle, #10b981 0 4px, #fff 4.5px); }
+
+/* Menerima (receiving / view) pages follow the Pindah Stok - Menerima reference, which differs slightly from the sender form. */
+.transfer-form.is-receiving .transfer-canvas { gap:20px; }
+.transfer-form.is-receiving .transfer-branch-trigger { padding:0 16px; background:rgba(249,250,251,.7); font-size:14px!important; font-weight:600!important; line-height:20px; }
+.transfer-form.is-receiving .transfer-branch-trigger > span:first-child { display:flex; align-items:center; gap:8px; }
+.transfer-form.is-receiving .transfer-branch-trigger i { color:#0b595b; font-size:16px; }
+.transfer-form.is-receiving .transfer-cart-line small { color:#9ca3af; line-height:16px; }
+.transfer-form.is-receiving .transfer-cart-line small.transfer-shortage { color:#d97706; font-weight:600; }
+.transfer-form.is-receiving .transfer-items-header h1 { letter-spacing:-.025em; }
