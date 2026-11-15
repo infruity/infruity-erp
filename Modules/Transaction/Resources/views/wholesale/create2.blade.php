@@ -197,7 +197,7 @@
         .wholesale-procurement.is-create-mode .wholesale-cart-empty strong { color:#1f2937; font-size:14px; font-weight:700; }
         .wholesale-procurement.is-create-mode .wholesale-cart-empty > span:last-child { color:#6b7280; font-size:12px; }
         .wholesale-empty-add { border:0; padding:0; background:transparent; color:#0b595b; font:inherit; font-weight:600; cursor:pointer; }
-        .wholesale-empty-add:hover { text-decoration:underline; }
+        .wholesale-empty-add:hover { text-decoration:none; }
         .wholesale-procurement.is-create-mode .wholesale-summary .btn-primary:is(:hover,:focus,:active,.active,.show) { color:#fff !important; }
         .wholesale-procurement.is-create-mode .wholesale-summary .btn i { display:none; }
         .wholesale-procurement.is-create-mode :is(button, a):focus-visible { outline:2px solid #0b595b; outline-offset:3px; }
@@ -252,7 +252,7 @@
             .wholesale-procurement.is-create-mode #branch_id + .select2-container.has-branch-choices.select2-container--open .select2-selection--single::after { margin-top:-7px; transform:rotate(180deg); }
             .wholesale-procurement.is-create-mode .wholesale-products-heading h2 { font-weight:800; line-height:24px; letter-spacing:normal; }
             .wholesale-procurement.is-create-mode .wholesale-add-item { height:auto; min-height:0; padding:2px 0 !important; border:0 !important; border-radius:6px !important; background:transparent !important; box-shadow:none; color:#0b595b !important; font-size:12px !important; line-height:16px; font-weight:700 !important; }
-            .wholesale-procurement.is-create-mode .wholesale-add-item:hover { background:transparent !important; text-decoration:underline; }
+            .wholesale-procurement.is-create-mode .wholesale-add-item:hover { background:transparent !important; text-decoration:none; }
             .wholesale-procurement.is-create-mode .wholesale-cart-empty { gap:6px; }
             .wholesale-procurement.is-create-mode .wholesale-cart-empty strong { line-height:20px; }
             .wholesale-procurement.is-create-mode .wholesale-cart-empty > span:last-child { line-height:16px; }

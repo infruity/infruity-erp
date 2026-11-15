@@ -43,7 +43,7 @@
     .sortir-desktop-back:hover { background:#f0fdf8; color:#0b595b; border-color:#a7f3d0; text-decoration:none; }
     @media (max-width:767.98px) { .sortir-canvas-head, .sortir-desktop-back { display:none!important; } }
     .sortir-add-button { border:0; border-radius:6px; background:transparent; color:#0b595b; padding:2px 0; font-size:12px!important; font-weight:700!important; line-height:16px; min-height:0; white-space:nowrap; cursor:pointer; }
-    .sortir-add-button:hover:not(:disabled) { text-decoration:underline; }
+    .sortir-add-button:hover:not(:disabled) { text-decoration:none; }
     .sortir-add-button:disabled { color:#9ca3af; cursor:not-allowed; }
     .sortir-items-body { padding:16px; overflow-y:auto; min-height:0; flex:1; display:flex; flex-direction:column; }
     .sortir-empty { display:flex; flex:1; min-height:180px; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:24px 8px; }

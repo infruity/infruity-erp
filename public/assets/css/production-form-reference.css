@@ -242,7 +242,7 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
 .production-ref-composition__head { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f3f4f6; background:rgba(249,250,251,.8); padding:10px 14px; }
 .production-ref-composition__head > span { color:#1f2937; font-size:12px; font-weight:700; line-height:16px; }
 .production-ref-composition__head > button { border:0; background:transparent; padding:0; color:#0b595b; font-size:12px; font-weight:700; line-height:16px; cursor:pointer; }
-.production-ref-composition__head > button:hover { color:#08484a; text-decoration:underline; }
+.production-ref-composition__head > button:hover { color:#08484a; text-decoration:none; }
 .production-ref-composition__head > button:disabled { color:#9ca3af; cursor:not-allowed; text-decoration:none; }
 .production-ref-composition__body { min-height:140px; }
 .production-ref-composition__body:has(> .production-ref-empty) { display:flex; flex-direction:column; }
