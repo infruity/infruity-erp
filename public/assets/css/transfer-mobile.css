@@ -29,7 +29,9 @@ body:has(.transfer-list-page) main > .animate-fade-in-up { animation:none; }
 .transfer-row-status.is-pending { color:#d97706; }
 .transfer-row-total { display:block; overflow-wrap:anywhere; margin-top:3px; color:#111827; font-weight:700; font-variant-numeric:tabular-nums; }
 .transfer-list-state { display:flex; min-height:50vh; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:32px; text-align:center; }
-.transfer-list-state > i { display:grid; width:64px; height:64px; place-items:center; border:1px solid #d1fae5; border-radius:24px; background:#f0fdf8; color:#0b595b; font-size:30px; }
+.transfer-list-state > i { font-size:30px; }
+.transfer-state-icon { display:grid; width:64px; height:64px; place-items:center; border:1px solid #d1fae5; border-radius:24px; background:#f0fdf8; color:#0b595b; font-size:30px; line-height:1; }
+.transfer-state-icon > i { display:block; font-size:30px; line-height:1; }
 .transfer-list-state h2 { margin:4px 0 0; color:#1f2937; font-size:15px; font-weight:700; }
 .transfer-list-state p { max-width:280px; margin:0; color:#6b7280; font-size:12px; line-height:1.7; }
 .transfer-text-button { border:0; padding:4px; background:transparent; color:#0b595b; font:inherit; font-size:12px; font-weight:600; text-decoration:underline; cursor:pointer; }
@@ -148,3 +150,7 @@ body:has(.transfer-list-page) main > .animate-fade-in-up { animation:none; }
 .transfer-shipment-facts { padding:6px 14px 14px; }
 .transfer-shipment-dialog .transfer-detail-actions > * { font-size:14px; font-weight:600; }
 .transfer-shipment-dialog .transfer-detail-actions .transfer-danger { color:#ef4444; }
+
+/* The empty / loading / error message sits in the vertical middle of the list area. */
+.transfer-list-scroll { display:flex; flex-direction:column; }
+.transfer-list-state { flex:1 1 auto; }

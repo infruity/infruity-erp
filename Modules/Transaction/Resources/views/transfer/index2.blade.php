@@ -51,7 +51,7 @@
             <div class="transfer-list-state" x-show="loading && !rows.length" role="status"><i class="ph ph-circle-notch" aria-hidden="true"></i><p>Memuat transfer stok...</p></div>
             <div class="transfer-list-state" x-show="error" x-cloak role="alert"><h2>Daftar transfer belum dapat dimuat</h2><p x-text="error"></p><button type="button" class="transfer-text-button" @click="load(rows.length > 0)">Coba lagi</button></div>
             <div class="transfer-list-state" x-show="!loading && !error && !rows.length" x-cloak>
-                <i class="ph-duotone ph-receipt" aria-hidden="true"></i>
+                <span class="transfer-state-icon"><i class="ph-duotone ph-receipt" aria-hidden="true"></i></span>
                 <h2 x-text="search || activeFilters ? 'Transaksi tidak ditemukan' : @js($receiving ? 'Belum ada barang masuk' : 'Belum ada pengiriman')"></h2>
                 <p x-show="search || activeFilters">Coba kata pencarian lain atau sesuaikan filter.</p>
                 @if (!$receiving && check_access('transfer-pengirim.create'))
