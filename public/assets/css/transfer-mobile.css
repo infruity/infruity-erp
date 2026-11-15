@@ -170,7 +170,7 @@ body:has(.transfer-list-page) main > .animate-fade-in-up { animation:none; }
 
 /* Search bar and status weight, measured on the reference at 400px. */
 .transfer-row-status.is-final { font-weight:600; }
-.transfer-row-warning { line-height:20px; height:20px; }
+.transfer-row-status-line .transfer-row-warning { height:14px; width:14px; line-height:14px; display:flex; align-items:center; justify-content:center; }
 @media (max-width:767.98px) {
     .transfer-search { gap:0; border-color:rgba(229,231,235,.8); background:rgba(249,250,251,.5); }
     .transfer-search > i { margin-right:10px; color:rgba(11,89,91,.8); }
