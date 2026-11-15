@@ -165,3 +165,15 @@ body:has(.transfer-list-page) main > .animate-fade-in-up { animation:none; }
     .transfer-list-state .transfer-add-tile:hover { text-decoration:underline; }
 }
 @media (max-width:767.98px) { .transfer-list-state { margin-bottom:-20px; } }
+
+/* Search bar and status weight, measured on the reference at 400px. */
+.transfer-row-status.is-final { font-weight:600; }
+.transfer-row-warning { line-height:20px; height:20px; }
+@media (max-width:767.98px) {
+    .transfer-search { gap:0; border-color:rgba(229,231,235,.8); background:rgba(249,250,251,.5); }
+    .transfer-search > i { margin-right:10px; color:rgba(11,89,91,.8); }
+    .transfer-search input { font-size:16px!important; font-weight:500; }
+    .transfer-search input::placeholder { color:#9ca3af; }
+    .transfer-search-divider { margin:0 4px; }
+    .transfer-icon-button { color:#9ca3af; }
+}
