@@ -87,7 +87,8 @@
     $titleId = $id . '-filter-title';
     // variant "opname": the Stok Opname reference lays the sheet out as result tiles, status, branch, period, with tighter rows.
     $ref = $variant === 'opname';
-    $labelClass = 'block text-[10px] font-semibold uppercase tracking-wider text-gray-500' . ($ref ? ' leading-[15px]' : '');
+    $tight = in_array($variant, ['opname', 'transfer'], true); // tighter label and date rows, as in those references
+    $labelClass = 'block text-[10px] font-semibold uppercase tracking-wider text-gray-500' . ($tight ? ' leading-[15px]' : '');
     $resetLinkClass = 'cursor-pointer text-[10px] font-semibold text-red-500 transition-colors hover:text-red-600';
     $radio = 'peer h-[16px] w-[16px] cursor-pointer appearance-none rounded-full border-[2px] border-solid border-gray-300 transition-colors checked:border-emerald-500';
     $radioDot = 'absolute h-[8px] w-[8px] scale-0 rounded-full bg-emerald-500 transition-transform duration-200 peer-checked:scale-100';
@@ -214,12 +215,12 @@
                                 </div>
                                 <div class="flex w-full flex-col gap-[8px] sm:flex-row">
                                     <button id="{{ $id }}-mobile-start-date-trigger" type="button" aria-label="Tanggal mulai" @click="openCalendar($event.currentTarget, 'start')" :aria-expanded="calendarOpen" aria-controls="{{ $id }}-mobile-calendar" class="{{ $dateButton }}">
-                                        <span class="w-[32px] shrink-0 text-[10px] font-bold text-gray-400 {{ $ref ? 'leading-[16px]' : '' }}">DARI</span>
-                                        <span class="min-w-0 truncate text-[12px] font-medium {{ $ref ? 'leading-[16px]' : '' }}" :class="start ? 'text-gray-800' : 'text-gray-400'" x-text="formatDate(start)"></span>
+                                        <span class="w-[32px] shrink-0 text-[10px] font-bold text-gray-400 {{ $tight ? 'leading-[16px]' : '' }}">DARI</span>
+                                        <span class="min-w-0 truncate text-[12px] font-medium {{ $tight ? 'leading-[16px]' : '' }}" :class="start ? 'text-gray-800' : 'text-gray-400'" x-text="formatDate(start)"></span>
                                     </button>
                                     <button id="{{ $id }}-mobile-end-date-trigger" type="button" aria-label="Tanggal akhir" @click="openCalendar($event.currentTarget, 'end')" :aria-expanded="calendarOpen" aria-controls="{{ $id }}-mobile-calendar" class="{{ $dateButton }}">
-                                        <span class="w-[32px] shrink-0 text-[10px] font-bold text-gray-400 {{ $ref ? 'leading-[16px]' : '' }}">KE</span>
-                                        <span class="min-w-0 truncate text-[12px] font-medium {{ $ref ? 'leading-[16px]' : '' }}" :class="end ? 'text-gray-800' : 'text-gray-400'" x-text="formatDate(end)"></span>
+                                        <span class="w-[32px] shrink-0 text-[10px] font-bold text-gray-400 {{ $tight ? 'leading-[16px]' : '' }}">KE</span>
+                                        <span class="min-w-0 truncate text-[12px] font-medium {{ $tight ? 'leading-[16px]' : '' }}" :class="end ? 'text-gray-800' : 'text-gray-400'" x-text="formatDate(end)"></span>
                                     </button>
                                     <input id="{{ $id }}-mobile-start-date" type="hidden" x-model="start" aria-label="Tanggal mulai">
                                     <input id="{{ $id }}-mobile-end-date" type="hidden" x-model="end" aria-label="Tanggal akhir">

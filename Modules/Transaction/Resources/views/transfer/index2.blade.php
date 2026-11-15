@@ -78,6 +78,9 @@
             :statuses="collect($statuses)->pluck('label', 'value')->all()"
             :timezone="config('app.timezone')"
             desktop="modal"
+            variant="transfer"
+            reset-label="Reset Filter"
+            apply-label="Terapkan Filter"
             reset-applies
         />
         @include('transaction::transfer.segment.detail-dialog')

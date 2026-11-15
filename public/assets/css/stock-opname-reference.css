@@ -238,7 +238,7 @@
 [data-erp-filter-sheet][id="so-filter-sheet"] .text-gray-700 { color:#374151 !important; }
 [data-erp-filter-sheet][id="so-filter-sheet"] .text-gray-800 { color:#1f2937 !important; }
 [data-erp-filter-sheet][id="so-filter-sheet"] .text-gray-900 { color:#111827 !important; }
-[data-erp-filter-sheet][id="so-filter-sheet"] .uppercase.tracking-wider { line-height:15px !important; }
+body.erp-ui [data-erp-filter-sheet][id="so-filter-sheet"] :is(label,span).uppercase.tracking-wider { line-height:15px !important; }
 [data-erp-filter-sheet][id="so-filter-sheet"] .erp-filter-sheet__subtitle { line-height:16.5px !important; }
 [data-erp-filter-sheet][id="so-filter-sheet"] [id$="-date-trigger"] span { line-height:16px !important; }
 [data-erp-filter-sheet][id="so-filter-sheet"] .erp-filter-sheet__footer { display:flex !important; gap:12px; }
@@ -394,3 +394,4 @@ body:has(.stock-opname-page) > .modal-backdrop { display:none !important; }
 .stock-opname-page .erp-mobile-search__filter.is-active .icon-rounded { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
 .so-reference-history #so-history-filter-open .icon-rounded { font-size:18px; }
 .stock-opname-page .erp-mobile-search__filter { color:#9ca3af; }
+body.erp-ui [data-erp-filter-sheet][id="so-filter-sheet"][id="so-filter-sheet"][id="so-filter-sheet"] [x-show="!calendarOpen"] :is(label,span).uppercase { font-weight:600 !important; }
