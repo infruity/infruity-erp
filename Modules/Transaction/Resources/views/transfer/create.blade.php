@@ -28,9 +28,10 @@
     <div class="transfer-form" x-data="transferForm(@js($transferConfig))" @keydown.escape.window="branchOpen = false; destinationOpen = false">
         <div class="transfer-canvas">
             <section class="transfer-branch-card" aria-label="{{ $receiving ? 'Asal pengiriman' : 'Tujuan pengiriman' }}">
-                <div class="transfer-field-label transfer-card-label"><span>{{ $receiving ? 'Asal Pengiriman' : 'Tujuan Pengiriman' }} @if (!$readOnly)<span class="transfer-required">*</span>@endif</span><small x-show="readOnly" x-text="invoiceNumber"></small></div>
+                <div class="transfer-field-label transfer-card-label"><span>{{ $receiving ? 'Asal Pengiriman' : 'Tujuan Pengiriman' }} @if (!$readOnly && !$receiving)<span class="transfer-required">*</span>@endif</span><small x-show="readOnly || receiving" x-text="invoiceNumber"></small></div>
                 @if ($receiving || $readOnly)
-                    <div class="transfer-branch-trigger"><span><i class="ph-bold ph-storefront" aria-hidden="true"></i> <span x-text="receiving ? branchName : destinationName"></span></span><span class="transfer-status" x-text="statusLabel"></span></div>
+                    <div class="transfer-branch-trigger"><span><i class="ph-bold ph-storefront" aria-hidden="true"></i> <span x-text="receiving ? branchName : destinationName"></span></span><span class="transfer-status" x-show="!receiving" x-text="statusLabel"></span></div>
+                    @unless ($receiving)
                     <details class="transfer-metadata"><summary>Detail pengiriman <i class="ph ph-caret-down" aria-hidden="true"></i></summary>
                         <div class="transfer-metadata-fields"><div><label>{{ $receiving ? 'Cabang Penerima' : 'Cabang Pengirim' }}</label><strong x-text="receiving ? destinationName : branchName"></strong></div><div><label>Tanggal Pengiriman</label><strong x-text="date"></strong></div>
                         <div><label>Pengirim</label><strong>{{ $data->createdBy->nm_user ?? '—' }}</strong></div><div><label>Penerima</label><strong>{{ $data->picPenerima->nm_user ?? '—' }}</strong></div></div>
@@ -44,13 +45,13 @@
                 @endif
             </section>
             <section class="transfer-items-card" aria-label="Daftar produk transfer">
-                <div class="transfer-items-header"><h1>Daftar Produk</h1>@if (!$readOnly)<button type="button" class="transfer-add-button" @click="openAddModal()" :disabled="saving || !branchId">+ Tambah</button>@endif</div>
+                <div class="transfer-items-header"><h1>Daftar Produk</h1>@if (!$readOnly && !$receiving)<button type="button" class="transfer-add-button" @click="openAddModal()" :disabled="saving || !branchId">+ Tambah</button>@endif</div>
                 <div class="transfer-items-body">
                     <div class="transfer-empty" x-show="!cart.length"><h2>Belum ada produk di daftar pengiriman</h2>@if (!$readOnly)<p>Klik tombol <button type="button" @click="openAddModal()">+ Tambah</button> untuk melakukan input</p>@endif</div>
                     <template x-for="item in cart" :key="item.id">
                         <button type="button" class="transfer-cart-item" @click="openItem(item)" :disabled="saving || (readOnly && !canReceive)" :aria-label="(receiving ? 'Periksa ' : 'Ubah ') + item.name">
                             <span class="transfer-cart-line"><strong x-text="item.name"></strong><b x-text="number(item.qty) + ' ' + item.unit"></b></span>
-                            <span class="transfer-cart-line" x-show="receiving || item.sent !== item.qty && readOnly"><small x-text="'Dikirim: ' + number(item.sent) + ' ' + item.unit"></small><small class="transfer-shortage" x-show="item.qty < item.sent" x-text="'Kurang ' + number(item.sent - item.qty) + ' ' + item.unit"></small></span>
+                            <span class="transfer-cart-line" x-show="receiving || item.sent !== item.qty && readOnly"><small x-text="'Dikirim : ' + number(item.sent) + ' ' + item.unit"></small><small class="transfer-shortage" x-show="item.qty < item.sent" x-text="'Kurang ' + number(item.sent - item.qty) + ' ' + item.unit"></small></span>
                             <small class="transfer-stock" x-show="item.note" x-text="item.note"></small>
                         </button>
                     </template>

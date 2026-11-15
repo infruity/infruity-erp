@@ -208,3 +208,4 @@ dialog.transfer-modal[open]::backdrop { background:rgba(0,0,0,.6); backdrop-filt
 .transfer-product-option.is-disabled span, .transfer-product-option.is-disabled .transfer-product-stock { color:#9ca3af; }
 .transfer-product-option.is-disabled input[type=radio] { cursor:not-allowed; border-color:#d1d5db; background:#f3f4f6; }
 .transfer-stock.is-empty { visibility:hidden; }
+.transfer-form .transfer-card-label small { font-size:12px; font-weight:700; }
