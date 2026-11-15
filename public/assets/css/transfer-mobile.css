@@ -37,7 +37,9 @@ body:has(.transfer-list-page) main > .animate-fade-in-up { animation:none; }
 .transfer-text-button { border:0; padding:4px; background:transparent; color:#0b595b; font:inherit; font-size:12px; font-weight:600; text-decoration:underline; cursor:pointer; }
 .transfer-load-more { padding:16px 20px; }
 .transfer-list-count { margin:0; padding:16px; color:#6b7280; font-size:11px; text-align:center; }
-.transfer-overlay { position:fixed; inset:0; z-index:1100; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.55); }
+.transfer-overlay { position:fixed; inset:0; z-index:1100; display:flex; align-items:center; justify-content:center; padding:16px; background:transparent; }
+.transfer-overlay > .transfer-backdrop { position:absolute; inset:0; background:rgba(0,0,0,.6); }
+.transfer-overlay > .transfer-dialog { position:relative; z-index:1; }
 .transfer-dialog { outline:none; width:100%; max-width:384px; max-height:92dvh; overflow:auto; border:1px solid #f3f4f6; border-radius:16px; background:#fff; color:#1f2937; box-shadow:0 16px 40px rgba(0,0,0,.16); }
 .transfer-dialog-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:20px 24px 12px; }
 .transfer-dialog-head h2 { margin:0; color:#1f2937; font-size:18px; font-weight:700; }
@@ -189,3 +191,15 @@ body.erp-ui #transfer-filter-sheet#transfer-filter-sheet [x-show="!calendarOpen"
 [data-erp-filter-sheet][id="transfer-filter-sheet"] .erp-filter-sheet__footer > button { flex:1 1 0 !important; min-width:0; }
 [data-erp-filter-sheet][id="transfer-filter-sheet"] .erp-filter-sheet__primary { border-width:0; }
 .transfer-shipment-dialog .transfer-shipment-primary { padding:16px; }
+
+/* Detail dialog motion, copied from the reference (Tailwind default easing). */
+.transfer-fade-enter { transition:opacity .3s cubic-bezier(.4,0,.2,1); }
+.transfer-fade-leave { transition:opacity .2s cubic-bezier(.4,0,.2,1); }
+.transfer-fade-from { opacity:0; }
+.transfer-fade-to { opacity:1; }
+.transfer-pop-enter { transition:opacity .3s cubic-bezier(.4,0,.2,1), transform .3s cubic-bezier(.4,0,.2,1); }
+.transfer-pop-leave { transition:opacity .2s ease-in, transform .2s ease-in; }
+.transfer-pop-from-in { opacity:0; transform:translateY(16px) scale(.95); }
+.transfer-pop-from-out { opacity:0; transform:translateY(8px) scale(.95); }
+.transfer-pop-to { opacity:1; transform:translateY(0) scale(1); }
+body:has(.transfer-dialog.is-document) .transfer-backdrop { display:none; }

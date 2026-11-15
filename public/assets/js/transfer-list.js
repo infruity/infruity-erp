@@ -4,7 +4,7 @@
             rows: [], total: 0, filtered: 0, search: '', loading: false, error: '', requestId: 0,
             filters: {status: 'all', branch: 'all', start: '', end: ''},
             filterOpen: false,
-            selected: null, documentOpen: false, deleting: false, returnFocus: null,
+            selected: null, detailOpen: false, documentOpen: false, deleting: false, returnFocus: null,
             init() { this.load(); },
             money(value) { return 'Rp ' + Number(value || 0).toLocaleString('id-ID', {maximumFractionDigits: 2}); },
             statusLabel(status) { return ({temp:'Pending',draft:'Pending',pending:'Dalam Perjalanan',proses:'Sedang Diperiksa',selesai:'Sudah Diterima'})[status] || status; },
@@ -42,10 +42,15 @@
             },
             closeFilter() { this.filterOpen = false; },
             openDetail(row, event) {
-                this.returnFocus = event?.currentTarget || null; this.selected = row; this.documentOpen = false;
+                this.returnFocus = event?.currentTarget || null; this.selected = row; this.documentOpen = false; this.detailOpen = true;
                 this.$nextTick(() => document.getElementById('transfer-detail-dialog')?.focus());
             },
-            closeDetail() { if (this.deleting) return; this.selected = null; this.documentOpen = false; this.returnFocus?.focus(); },
+            // The row stays set while the dialog fades out, so its content does not vanish mid-transition.
+            closeDetail() { if (this.deleting) return; this.hideDetail(); this.returnFocus?.focus(); },
+            hideDetail() { this.detailOpen = false; this.documentOpen = false;
+                const clear = () => { if (!this.detailOpen) this.selected = null; };
+                typeof setTimeout === 'function' ? setTimeout(clear, 320) : clear();
+            },
             openDocument() {
                 if (!this.selected?.can_show) return;
                 this.documentOpen = true;
@@ -103,7 +108,7 @@
                     const response = await fetch(row.delete_url,{method:'DELETE',headers:{'X-CSRF-TOKEN':config.csrf,Accept:'application/json'}});
                     const json = await response.json();
                     if (!response.ok || !json.success) throw new Error(json.message || 'Transaksi gagal dihapus.');
-                    this.selected = null; await this.load();
+                    this.hideDetail(); await this.load();
                 } catch(error) { await Swal.fire({icon:'error',title:'Gagal menghapus',text:error.message || 'Coba lagi.'}); }
                 finally { this.deleting = false; }
             },
