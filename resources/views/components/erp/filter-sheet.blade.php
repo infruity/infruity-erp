@@ -87,6 +87,8 @@
     $titleId = $id . '-filter-title';
     // variant "opname": the Stok Opname reference lays the sheet out as result tiles, status, branch, period, with tighter rows.
     $ref = $variant === 'opname';
+    // The reference animates its sheets alike: backdrop fades 300/200ms, panel slides 300/200ms.
+    $motion = in_array($variant, ['opname', 'transfer'], true);
     $tight = in_array($variant, ['opname', 'transfer'], true); // tighter label and date rows, as in those references
     $labelClass = 'block text-[10px] font-semibold uppercase tracking-wider text-gray-500' . ($tight ? ' leading-[15px]' : '');
     $resetLinkClass = 'cursor-pointer text-[10px] font-semibold text-red-500 transition-colors hover:text-red-600';
@@ -100,8 +102,8 @@
 <div x-data="erpFilterSheet(@js($sheetConfig))" @erp-filter-open.window="onOpen($event)" @keydown.escape.window="close()">
     <template x-teleport="body">
         <div id="{{ $id }}-filter-sheet" data-erp-filter-sheet x-show="open" x-cloak class="{{ $dialogClass }}" role="dialog" aria-modal="true" aria-label="{{ $ariaLabel ?? $title }}" aria-labelledby="{{ $titleId }}" @keydown.tab="trapFocus($event)">
-            <button type="button" class="absolute inset-0 {{ $ref ? 'bg-black/60 backdrop-blur-xs' : 'bg-black/70' }}" @if ($ref) x-show="open" x-transition:enter="transition-opacity ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @endif @click="close()" aria-label="Tutup filter"></button>
-            <section x-ref="panel" tabindex="-1" x-show="open" x-transition:enter="transition ease-out {{ $ref ? 'duration-300' : 'duration-200' }}" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0" x-transition:leave="transition ease-in {{ $ref ? 'duration-200' : 'duration-150' }}" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full" class="{{ $sectionClass }}">
+            <button type="button" class="absolute inset-0 {{ $motion ? 'bg-black/60 backdrop-blur-xs' : 'bg-black/70' }}" @if ($motion) x-show="open" x-transition:enter="transition-opacity ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @endif @click="close()" aria-label="Tutup filter"></button>
+            <section x-ref="panel" tabindex="-1" x-show="open" x-transition:enter="transition ease-out {{ $motion ? 'duration-300' : 'duration-200' }}" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0" x-transition:leave="transition ease-in {{ $motion ? 'duration-200' : 'duration-150' }}" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full" class="{{ $sectionClass }}">
                 <div class="{{ $handleClass }}"><div class="h-[6px] w-[56px] rounded-full bg-gray-300"></div></div>
                 <x-erp.filter-sheet-frame :title="$title" :title-id="$titleId" :subtitle="$subtitle" :subtitle-id="$id . '-filter-subtitle'" body-class="min-h-0 flex-1 overflow-y-auto overscroll-none">
                     <x-slot:close><button type="button" x-ref="closeButton" @click="close()" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button></x-slot:close>
