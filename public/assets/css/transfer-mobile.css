@@ -188,3 +188,4 @@ body.erp-ui #transfer-filter-sheet#transfer-filter-sheet [x-show="!calendarOpen"
 [data-erp-filter-sheet][id="transfer-filter-sheet"] .erp-filter-sheet__footer { display:flex !important; gap:12px; background:rgba(249,250,251,.7); }
 [data-erp-filter-sheet][id="transfer-filter-sheet"] .erp-filter-sheet__footer > button { flex:1 1 0 !important; min-width:0; }
 [data-erp-filter-sheet][id="transfer-filter-sheet"] .erp-filter-sheet__primary { border-width:0; }
+.transfer-shipment-dialog .transfer-shipment-primary { padding:16px; }

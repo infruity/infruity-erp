@@ -2,7 +2,7 @@
     <div x-show="selected" x-cloak class="transfer-overlay" @click.self="closeDetail()" @keydown.escape.window="if (selected) { documentOpen ? closeDocument() : closeDetail() }" @keydown.tab="trapFocus($event)">
         <section class="transfer-dialog transfer-shipment-dialog" :class="documentOpen ? 'is-document' : ''" id="transfer-detail-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="transfer-detail-title">
             <div class="transfer-dialog-head">
-                <h2 id="transfer-detail-title" x-text="documentOpen ? 'Surat Jalan' : @js($receiving ? 'Detail Penerimaan' : 'Detail Pengiriman')"></h2>
+                <h2 id="transfer-detail-title" x-text="documentOpen ? 'Surat Jalan' : 'Detail Pengiriman'"></h2>
                 <button type="button" class="transfer-icon-button transfer-no-print" @click="documentOpen ? closeDocument() : closeDetail()" :disabled="deleting" :aria-label="documentOpen ? 'Kembali ke detail transfer' : 'Tutup detail transfer'"><i class="ph-bold" :class="documentOpen ? 'ph-arrow-left' : 'ph-x'" aria-hidden="true"></i></button>
             </div>
             <template x-if="selected">
