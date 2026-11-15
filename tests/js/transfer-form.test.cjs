@@ -24,3 +24,19 @@ test('permission and read-only guards prevent unauthorized mutations',async()=>{
 test('failed save retains changes, releases saving and reports server validation',async()=>{const t=setup();add(t.app);t.requests.length=0;t.context.fetch=async()=>({ok:false,json:async()=>({errors:{items:['Stok berubah']}})});await t.app.save('pending');assert.equal(t.app.saveError,'Stok berubah');assert.equal(t.app.dirty,true);assert.equal(t.app.saving,false);assert.equal(t.navigations.length,0);});
 test('concurrent save clicks issue one mutation',async()=>{const t=setup();add(t.app);t.requests.length=0;let done;t.context.fetch=async(url,options)=>{t.requests.push({url,...options});return new Promise(r=>done=r)};const first=t.app.save('draft');await t.app.save('pending');assert.equal(t.requests.length,1);done({ok:true,json:async()=>({success:true})});await first;});
 test('stale product responses cannot overwrite current search',async()=>{const t=setup();let first,second;t.context.fetch=()=>new Promise(r=>{if(!first)first=r;else second=r});const a=t.app.loadProducts();t.app.productSearch='Naga';const b=t.app.loadProducts();second({ok:true,json:async()=>[{id:2}]});await b;first({ok:true,json:async()=>[{id:1}]});await a;assert.equal(t.app.products[0].id,2);});
+
+test('quantity field groups thousands with dots, keeps a decimal comma and blocks more than the stock', () => {
+    const {app} = setup();
+    assert.equal(app.formatQtyInput('1000'), '1.000');
+    assert.equal(app.formatQtyInput('10000'), '10.000');
+    assert.equal(app.formatQtyInput('1234567,891'), '1.234.567,89');
+    assert.equal(app.formatQtyInput('007'), '7');
+    app.modalItem = {id: 11, name: 'Apel', unit: 'Kg', stock: 10, qty: 0};
+    app.updateQuantity({target: {value: '1000'}});
+    assert.equal(app.modalItem.qty, 1000);
+    assert.equal(app.qtyOverLimit, true);
+    assert.match(app.modalError, /melebihi stok tersedia \(10 Kg\)/);
+    app.updateQuantity({target: {value: '10'}});
+    assert.equal(app.qtyOverLimit, false);
+    assert.equal(app.modalError, '');
+});

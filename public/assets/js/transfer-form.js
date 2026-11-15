@@ -54,7 +54,7 @@
             },
             openItem(item) {
                 if (this.saving || (this.readOnly && !this.canReceive)) return;
-                this.editingId = item.id; this.modalItem = {...item}; this.qtyInput = String(item.qty).replace('.', ',');
+                this.editingId = item.id; this.modalItem = {...item}; this.qtyInput = this.formatQtyInput(String(item.qty).replace('.', ','));
                 this.productSearch = ''; this.modalError = ''; this.showItemModal();
                 if (!this.receiving) this.loadProducts();
             },
@@ -79,10 +79,25 @@
                 if (this.editingId !== null) return;
                 this.modalItem = {...product,qty:this.modalItem.qty,discount:0}; this.modalError = '';
             },
+            // "1000" -> "1.000", "12500,5" -> "12.500,5": dots group thousands, the comma is the decimal mark (two decimals at most).
+            formatQtyInput(text) {
+                const parts = String(text).replace(/[^\d.,]/g, '').replace(/\./g, (m, i, all) => (i === all.length - 1 && !all.includes(',') ? ',' : '')).split(',');
+                const digits = parts[0].replace(/^0+(?=\d)/, '');
+                const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                return grouped + (parts.length > 1 ? ',' + parts.slice(1).join('').slice(0, 2) : '');
+            },
+            // The most that can go in this line: the stock at the origin, or what was sent when receiving.
+            get qtyLimit() {
+                const limit = this.receiving ? this.modalItem.sent : this.modalItem.stock;
+                return limit === null || limit === undefined || limit === '' ? null : Number(limit);
+            },
+            get qtyOverLimit() { return this.qtyLimit !== null && Number.isFinite(this.qtyLimit) && Number(this.modalItem.qty) > this.qtyLimit + 1e-9; },
             updateQuantity(event) {
-                const parts = event.target.value.replace(/[^\d.,]/g,'').replace('.',',').split(',');
-                const raw = parts[0] + (parts.length > 1 ? ',' + parts.slice(1).join('').slice(0,2) : '');
-                this.qtyInput = raw; this.modalItem.qty = Number(raw.replace(',','.')) || 0; event.target.value = raw; this.modalError = '';
+                const raw = this.formatQtyInput(event.target.value);
+                this.qtyInput = raw; this.modalItem.qty = Number(raw.replace(/\./g, '').replace(',', '.')) || 0; event.target.value = raw;
+                this.modalError = this.qtyOverLimit
+                    ? (this.receiving ? 'Jumlah diterima tidak boleh melebihi jumlah dikirim (' : 'Kuantitas melebihi stok tersedia (') + this.number(this.qtyLimit) + ' ' + (this.modalItem.unit || '') + ').'
+                    : '';
             },
             saveItem() {
                 const item = {...this.modalItem};
