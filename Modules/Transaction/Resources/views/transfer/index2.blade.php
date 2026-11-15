@@ -52,12 +52,12 @@
             <div class="transfer-list-state" x-show="error" x-cloak role="alert"><h2>Daftar transfer belum dapat dimuat</h2><p x-text="error"></p><button type="button" class="transfer-text-button" @click="load(rows.length > 0)">Coba lagi</button></div>
             <div class="transfer-list-state" x-show="!loading && !error && !rows.length" x-cloak>
                 <span class="transfer-state-icon"><i class="ph-duotone ph-receipt" aria-hidden="true"></i></span>
-                <h2 x-text="search || activeFilters ? 'Transaksi tidak ditemukan' : @js($receiving ? 'Belum ada barang masuk' : 'Belum ada pengiriman')"></h2>
+                <h2 x-text="search || activeFilters ? 'Transaksi tidak ditemukan' : @js($receiving ? 'Belum ada penerimaan stok' : 'Belum ada pengiriman stok')"></h2>
                 <p x-show="search || activeFilters">Coba kata pencarian lain atau sesuaikan filter.</p>
                 @if (!$receiving && check_access('transfer-pengirim.create'))
                     <p x-show="!search && !activeFilters">Tekan tombol <a href="{{ route('transfer-pengirim.create') }}" class="transfer-add-tile" aria-label="Tambah pindah stok">+</a> di bawah untuk menambahkan transfer stok baru</p>
                 @endif
-                @if ($receiving)<p x-show="!search && !activeFilters">Pengiriman ke cabang Anda akan tampil di sini untuk diperiksa dan diterima.</p>@endif
+                @if ($receiving)<p x-show="!search && !activeFilters">Pengiriman dari cabang lain akan tampil di sini untuk diterima</p>@endif
                 <button type="button" class="transfer-text-button" x-show="search || activeFilters" @click="search = ''; resetFilters()">Reset pencarian &amp; filter</button>
             </div>
             <div class="transfer-load-more" x-show="hasMore && rows.length && !error" x-cloak>
