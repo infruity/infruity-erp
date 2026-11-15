@@ -154,3 +154,14 @@ body:has(.transfer-list-page) main > .animate-fade-in-up { animation:none; }
 /* The empty / loading / error message sits in the vertical middle of the list area. */
 .transfer-list-scroll { display:flex; flex-direction:column; }
 .transfer-list-state { flex:1 1 auto; }
+
+/* Empty state: same type, spacing and "+" tile as Sortir Barang. */
+@media (max-width:767.98px) {
+    .transfer-list-state { min-height:0; gap:0; padding:16px; }
+    .transfer-state-icon { border-color:rgba(167,243,208,.8); background:rgba(236,253,245,.8); }
+    .transfer-list-state h2 { margin:16px 0 0; font-size:14px; line-height:20px; }
+    .transfer-list-state p { max-width:218px; margin-top:8px; font-size:12px; line-height:19.5px; text-wrap:balance; }
+    .transfer-list-state .transfer-add-tile { color:#0b595b; font-weight:700; text-decoration:none; }
+    .transfer-list-state .transfer-add-tile:hover { text-decoration:underline; }
+}
+@media (max-width:767.98px) { .transfer-list-state { margin-bottom:-20px; } }

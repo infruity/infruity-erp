@@ -55,7 +55,7 @@
                 <h2 x-text="search || activeFilters ? 'Transaksi tidak ditemukan' : @js($receiving ? 'Belum ada barang masuk' : 'Belum ada pengiriman')"></h2>
                 <p x-show="search || activeFilters">Coba kata pencarian lain atau sesuaikan filter.</p>
                 @if (!$receiving && check_access('transfer-pengirim.create'))
-                    <p x-show="!search && !activeFilters">Klik tombol <a href="{{ route('transfer-pengirim.create') }}" class="transfer-text-button" aria-label="Tambah pindah stok">+</a> untuk menambahkan<br>transfer stok baru.</p>
+                    <p x-show="!search && !activeFilters">Tekan tombol <a href="{{ route('transfer-pengirim.create') }}" class="transfer-add-tile" aria-label="Tambah pindah stok">+</a> di bawah untuk menambahkan transfer stok baru</p>
                 @endif
                 @if ($receiving)<p x-show="!search && !activeFilters">Pengiriman ke cabang Anda akan tampil di sini untuk diperiksa dan diterima.</p>@endif
                 <button type="button" class="transfer-text-button" x-show="search || activeFilters" @click="search = ''; resetFilters()">Reset pencarian &amp; filter</button>
