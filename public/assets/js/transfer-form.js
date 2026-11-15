@@ -93,11 +93,14 @@
             },
             get qtyOverLimit() { return this.qtyLimit !== null && Number.isFinite(this.qtyLimit) && Number(this.modalItem.qty) > this.qtyLimit + 1e-9; },
             updateQuantity(event) {
-                const raw = this.formatQtyInput(event.target.value);
-                this.qtyInput = raw; this.modalItem.qty = Number(raw.replace(/\./g, '').replace(',', '.')) || 0; event.target.value = raw;
-                this.modalError = this.qtyOverLimit
-                    ? (this.receiving ? 'Jumlah diterima tidak boleh melebihi jumlah dikirim (' : 'Kuantitas melebihi stok tersedia (') + this.number(this.qtyLimit) + ' ' + (this.modalItem.unit || '') + ').'
-                    : '';
+                let raw = this.formatQtyInput(event.target.value);
+                let qty = Number(raw.replace(/\./g, '').replace(',', '.')) || 0;
+                // Typing more than the limit snaps to the maximum instead of showing an error.
+                if (this.qtyLimit !== null && Number.isFinite(this.qtyLimit) && qty > this.qtyLimit + 1e-9) {
+                    qty = this.qtyLimit;
+                    raw = this.formatQtyInput(String(qty).replace('.', ','));
+                }
+                this.qtyInput = raw; this.modalItem.qty = qty; event.target.value = raw; this.modalError = '';
             },
             saveItem() {
                 const item = {...this.modalItem};
