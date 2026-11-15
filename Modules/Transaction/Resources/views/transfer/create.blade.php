@@ -82,5 +82,19 @@
                 <div class="modal-footer"><button type="button" class="transfer-action" @click="$refs.confirmModal.close()" :disabled="saving" x-text="receiving ? 'Periksa Lagi' : 'Batal'"></button><button type="button" class="transfer-action transfer-action-primary" @click="receiving ? receive() : save('pending')" :disabled="saving"><span x-text="saving ? 'Menyimpan...' : (receiving ? (hasShortage ? 'Tetap Terima' : 'Diterima') : 'Kirim Stok')"></span></button></div>
             </div>
         </dialog>
+        @if ($receiving)
+        {{-- Shortage alert, as in the reference: a compact centred card; without a shortage the receipt is confirmed straight away. --}}
+        <dialog class="transfer-modal transfer-alert-modal" x-ref="shortageModal" aria-labelledby="transfer-shortage-title" @cancel="if (saving) $event.preventDefault()" @click="if ($event.target === $event.currentTarget && !saving) $refs.shortageModal.close()">
+            <div class="transfer-alert-card">
+                <span class="transfer-alert-icon"><i class="ph-bold ph-warning-circle" aria-hidden="true"></i></span>
+                <h2 id="transfer-shortage-title">Terdapat Selisih Kurang</h2>
+                <p>Kekurangan fisik akan otomatis dicatat<br>sebagai selisih dan dikembalikan ke cabang pengirim.</p>
+                <div class="transfer-alert-actions">
+                    <button type="button" class="transfer-action" @click="$refs.shortageModal.close()" :disabled="saving">Periksa Lagi</button>
+                    <button type="button" class="transfer-action transfer-action-primary" @click="receive()" :disabled="saving"><span x-text="saving ? 'Menyimpan...' : 'Tetap Terima'"></span></button>
+                </div>
+            </div>
+        </dialog>
+        @endif
     </div>
 @endsection

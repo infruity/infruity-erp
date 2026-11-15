@@ -8,7 +8,7 @@ function setup(extra = {}) {
         fetch:async(url,opts={})=>{requests.push({url,...opts});return {ok:true,json:async()=>opts.method==='POST'?{success:true}:[{id:11,name:'Apel',unit:'Kg',price:5000,stock:10}]};}};
     vm.createContext(context);vm.runInContext(fs.readFileSync('public/assets/js/transfer-form.js','utf8'),context);
     const app=context.window.transferForm({branches:[{id:1,name:'GKB'},{id:2,name:'GBA'}],destinations:[{id:1,name:'GKB'},{id:2,name:'GBA'}],today:'2026-10-24',saveUrl:'/save',productsUrl:'/products',receiveUrl:'/receive',indexUrl:'/transfer-pengirim',csrf:'token',...extra});
-    app.$nextTick=fn=>fn();app.$refs={itemModal:{showModal(){},close(){}},confirmModal:{showModal(){},close(){}}};app.init();return {app,context,requests,navigations};
+    app.$nextTick=fn=>fn();app.$refs={itemModal:{showModal(){},close(){}},confirmModal:{showModal(){},close(){}},shortageModal:{showModal(){},close(){}}};app.init();return {app,context,requests,navigations};
 }
 function add(app, qty=2.5){app.openAddModal();app.selectProduct({id:11,name:'Apel',unit:'Kg',price:5000,stock:10});app.modalItem.qty=qty;app.saveItem();app.destinationId=2;}
 function receiver(){return setup({receiving:true,readOnly:true,canReceive:true,transaction:{id:9,branch_id:1,branch_destination_id:2,date:'2026-10-23',status:'pending'},details:[{id:30,product_id:11,quantity:5,price:5000,product:{name:'Apel',unit:{abbreviation:'Kg'}},corrections:[{id:2,old_quantity:7,new_quantity:5},{id:1,old_quantity:10,new_quantity:7}]}]});}

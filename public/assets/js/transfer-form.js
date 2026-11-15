@@ -46,7 +46,8 @@
                 this.markDirty();
             },
             selectDestination(id) { this.destinationId = id; this.destinationOpen = false; this.markDirty(); },
-            showItemModal() { this.$nextTick(() => this.$refs.itemModal.showModal()); },
+            // Receiving puts the cursor straight in the received quantity, as the reference does.
+            showItemModal() { this.$nextTick(() => { this.$refs.itemModal.showModal(); if (this.receiving) this.$refs.itemModal.querySelector?.('#transfer-qty')?.focus(); }); },
             openAddModal() {
                 if (this.readOnly || this.receiving || this.saving || !this.branchId) return;
                 this.editingId = null; this.modalItem = {id:null,name:'',unit:'',qty:0,price:0,stock:null,discount:0};
@@ -130,6 +131,7 @@
             openConfirm() {
                 if (this.saving || (this.receiving ? !this.canReceive : this.readOnly)) return;
                 this.saveError = this.validate(); if (this.saveError) return;
+                if (this.receiving) { this.hasShortage ? this.$refs.shortageModal.showModal() : this.receive(); return; }
                 this.$refs.confirmModal.showModal();
             },
             async request(url, payload) {
@@ -168,7 +170,7 @@
                 try {
                     await this.request(config.receiveUrl, {items:this.cart.map(item => ({detail_id:item.detailId,quantity:item.qty,expected_quantity:item.expected,note:item.note || ''}))});
                     this.dirty = false; this.navigationAllowed = true; window.location.assign(config.indexUrl);
-                } catch(error) { this.saveError = error.message || 'Penerimaan gagal disimpan.'; this.$refs.confirmModal?.close(); }
+                } catch(error) { this.saveError = error.message || 'Penerimaan gagal disimpan.'; this.$refs.shortageModal?.close(); this.$refs.confirmModal?.close(); }
                 finally { this.saving = false; }
             },
         };
