@@ -9,10 +9,10 @@
                     <div class="sortir-products-state" x-show="loadingProducts" role="status">Memuat produk...</div>
                     <div class="sortir-products-state" x-show="!loadingProducts && productsError" x-cloak><span x-text="productsError"></span><button type="button" @click="loadProducts()">Coba lagi</button></div>
                     <div class="sortir-products-state" x-show="!loadingProducts && !productsError && !products.length" x-cloak>Produk tidak ditemukan di cabang ini.</div>
-                    <template x-for="product in products" :key="product.id"><label class="sortir-product-option" x-show="!loadingProducts && !productsError" :class="[String(modalItem.id) === String(product.id) ? 'is-selected' : '', (Number(product.stock_available) || 0) <= 0 ? 'is-disabled' : '']" :aria-disabled="(Number(product.stock_available) || 0) <= 0" @click="if ((Number(product.stock_available) || 0) <= 0) $event.preventDefault()">
-                        <input type="radio" name="sortir_product" :value="product.id" :checked="String(modalItem.id) === String(product.id)" :disabled="(Number(product.stock_available) || 0) <= 0" @change="selectProduct(product)">
+                    <template x-for="product in products" :key="product.id"><label class="sortir-product-option" x-show="!loadingProducts && !productsError" :class="[String(modalItem.id) === String(product.id) ? 'is-selected' : '', ((Number(product.stock_available) || 0) <= 0 || (editingId === null && inCart(product))) ? 'is-disabled' : '']" :aria-disabled="(Number(product.stock_available) || 0) <= 0 || (editingId === null && inCart(product))" @click="if ((Number(product.stock_available) || 0) <= 0 || (editingId === null && inCart(product))) $event.preventDefault()">
+                        <input type="radio" name="sortir_product" :value="product.id" :checked="String(modalItem.id) === String(product.id)" :disabled="(Number(product.stock_available) || 0) <= 0 || (editingId === null && inCart(product))" @change="selectProduct(product)">
                         <span x-text="product.name + (product.unit?.abbreviation ? ' (' + product.unit.abbreviation + ')' : '')"></span>
-                        <em class="sortir-product-stock" x-text="'Stok ' + number(product.stock_available || 0)"></em>
+                        <em class="sortir-product-stock" x-text="(editingId === null && inCart(product)) ? 'Ditambahkan' : 'Stok ' + number(product.stock_available || 0)"></em>
                     </label></template>
                 </div>
             </div>

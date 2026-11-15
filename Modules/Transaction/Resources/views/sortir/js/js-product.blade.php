@@ -173,10 +173,19 @@
                     const index = this.cart.findIndex(product => String(product.id) === String(this.editingId));
                     if (index === -1) { this.modalError = 'Item tidak ditemukan. Tutup dan buka kembali item.'; return; }
                     this.cart.splice(index, 1, item);
-                } else this.cart.push(item);
+                } else {
+                    this.cart.push(item);
+                    this.markDirty();
+                    // Adding keeps the dialog open for the next product; the added one shows "Ditambahkan" in the list.
+                    this.modalItem = {id: null, name: '', unit: '', qty: 0, price: 0, stock: null};
+                    this.qtyInput = '';
+                    this.modalError = '';
+                    return;
+                }
                 this.markDirty();
                 this.closeModal();
             },
+            inCart(product) { return this.cart.some(item => String(item.id) === String(product.id)); },
             deleteModalItem() {
                 this.cart = this.cart.filter(item => String(item.id) !== String(this.editingId));
                 this.markDirty();
