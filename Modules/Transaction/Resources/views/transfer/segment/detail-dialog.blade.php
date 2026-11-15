@@ -16,7 +16,7 @@
                             <div><dt><i class="ph-duotone ph-clock" aria-hidden="true"></i>Waktu Mengirim</dt><dd class="is-time" x-text="timeLabel(selected.created_at || selected.date)"></dd></div>
                             <div><dt><i class="ph-duotone ph-buildings" aria-hidden="true"></i>Cabang Penerima</dt><dd x-text="selected.destination"></dd></div>
                             <div><dt><i class="ph-duotone ph-user-check" aria-hidden="true"></i>Penerima</dt><dd :class="selected.status === 'selesai' ? '' : 'is-muted'" x-text="selected.status === 'selesai' ? (selected.receiver_name || '—') : '-'"></dd></div>
-                            <div><dt><i class="ph-duotone ph-calendar-check" aria-hidden="true"></i>Waktu Menerima</dt><dd :class="selected.status === 'selesai' ? 'is-time' : 'is-waiting'" x-text="selected.status === 'selesai' ? timeLabel(selected.received_at) : 'Menunggu Konfirmasi'"></dd></div>
+                            <div><dt><i class="ph-duotone ph-calendar-check" aria-hidden="true"></i>Waktu Menerima</dt><dd :class="selected.status === 'selesai' ? 'is-time' : (['temp', 'draft'].includes(selected.status) ? '' : 'is-waiting')" x-text="selected.status === 'selesai' ? timeLabel(selected.received_at) : (['temp', 'draft'].includes(selected.status) ? '-' : 'Menunggu Konfirmasi')"></dd></div>
                         </dl>
                     </div>
                     <div x-show="documentOpen" class="transfer-document">
