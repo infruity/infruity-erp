@@ -502,6 +502,7 @@ class TransferController extends Controller
     {
         $this->authorizeAccess('transfer-penerima.set_selesai');
         $input = $request->validate([
+            'draft' => 'sometimes|boolean',
             'items' => 'sometimes|required|array|min:1',
             'items.*.detail_id' => 'required|integer|distinct',
             'items.*.quantity' => ['required', 'numeric', 'min:0', 'max:99999999.99', 'regex:/^\d+(\.\d{1,2})?$/'],
@@ -542,6 +543,10 @@ class TransferController extends Controller
                         $detail->save();
                     }
                 }
+            }
+            // "Simpan": keep the received quantities and notes, but leave the transfer waiting for confirmation.
+            if (! empty($input['draft'])) {
+                return response()->json(['success' => true, 'message' => 'Penerimaan disimpan.']);
             }
             // Items with sent_quantity already left the origin stock when the transfer
             // was sent; a shortfall on receipt is shrinkage. Older items (no

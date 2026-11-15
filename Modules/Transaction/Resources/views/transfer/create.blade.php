@@ -64,7 +64,8 @@
             <div class="transfer-summary-actions">
                 @if ($canReceive)
                     <a class="transfer-icon-action" href="{{ route('transfer-penerima.index') }}" aria-label="Kembali ke daftar penerimaan" title="Kembali" :aria-disabled="saving" @click="if (saving) $event.preventDefault()"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a>
-                    <button type="button" class="transfer-action transfer-action-primary" @click="openConfirm()" :disabled="saving || !cart.length" aria-label="Simpan penerimaan" title="Simpan"><i class="ph-bold ph-floppy-disk" aria-hidden="true"></i></button>
+                    <button type="button" class="transfer-icon-action" @click="saveReceiving()" :disabled="saving || !cart.length" aria-label="Simpan penerimaan" title="Simpan"><i class="ph-bold ph-bookmark-simple" aria-hidden="true"></i></button>
+                    <button type="button" class="transfer-action transfer-action-primary" @click="openConfirm()" :disabled="saving || !cart.length"><span x-text="saving ? 'Menyimpan...' : 'Terima'"></span></button>
                 @elseif (!$readOnly)
                     <a class="transfer-icon-action" href="{{ route('transfer-pengirim.index') }}" aria-label="Kembali ke daftar pengiriman" title="Kembali" @click="if (saving) $event.preventDefault()"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a>
                     <button type="button" class="transfer-icon-action" @click="save('draft')" :disabled="saving || !cart.length" aria-label="Simpan sebagai draf" title="Simpan sebagai Draf"><i class="ph-bold ph-bookmark-simple" aria-hidden="true"></i></button>

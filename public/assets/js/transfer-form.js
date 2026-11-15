@@ -150,6 +150,17 @@
                 } catch(error) { this.saveError = error.message || 'Transfer gagal disimpan.'; this.$refs.confirmModal?.close(); }
                 finally { this.saving = false; this.savingStatus = ''; }
             },
+            // "Simpan" while receiving: keeps the quantities and notes entered so far; the transfer stays pending.
+            async saveReceiving() {
+                if (this.saving || !this.canReceive) return;
+                this.saveError = this.validate(); if (this.saveError) return;
+                this.saving = true; this.savingStatus = 'draft';
+                try {
+                    await this.request(config.receiveUrl, {draft:true,items:this.cart.map(item => ({detail_id:item.detailId,quantity:item.qty,expected_quantity:item.expected,note:item.note || ''}))});
+                    this.dirty = false; this.navigationAllowed = true; window.location.assign(config.indexUrl);
+                } catch(error) { this.saveError = error.message || 'Penerimaan gagal disimpan.'; }
+                finally { this.saving = false; this.savingStatus = ''; }
+            },
             async receive() {
                 if (this.saving || !this.canReceive) return;
                 this.saveError = this.validate(); if (this.saveError) return;
