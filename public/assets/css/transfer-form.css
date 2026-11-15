@@ -209,3 +209,8 @@ dialog.transfer-modal[open]::backdrop { background:rgba(0,0,0,.6); backdrop-filt
 .transfer-product-option.is-disabled input[type=radio] { cursor:not-allowed; border-color:#d1d5db; background:#f3f4f6; }
 .transfer-stock.is-empty { visibility:hidden; }
 .transfer-form .transfer-card-label small { font-size:12px; font-weight:700; }
+
+/* Destination menu: same as the Sortir Barang branch menu (green selected row, no dot). */
+.transfer-form .transfer-branch-menu button:hover { background:#f9fafb; }
+.transfer-form .transfer-branch-menu button.is-selected { background:#ecfdf5; color:#0b595b; font-weight:700; }
+.transfer-form .transfer-branch-dot { display:none!important; }
