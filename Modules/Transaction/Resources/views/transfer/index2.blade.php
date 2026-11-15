@@ -4,10 +4,10 @@
     $filterBranches = $branches->map(fn ($branch) => ['id' => (string) $branch->id, 'name' => ucwords($branch->name)])->values();
     $side = $receiving ? 'transfer-penerima' : 'transfer-pengirim';
     $pageTitle = $receiving ? 'Pindah Stok - Menerima' : 'Pindah Stok - Mengirim';
-    // Three states, as in the reference: being prepared, on its way, received (an unfinished receiving check still counts as on its way).
+    // Being prepared, on its way, being checked by the receiver (saved but not yet confirmed), received.
     $statuses = [['value' => 'all', 'label' => 'Semua Status']];
     if (!$receiving) $statuses[] = ['value' => 'draft', 'label' => 'Pending'];
-    $statuses = array_merge($statuses, [['value' => 'pending', 'label' => 'Dalam Perjalanan'], ['value' => 'selesai', 'label' => 'Sudah Diterima']]);
+    $statuses = array_merge($statuses, [['value' => 'pending', 'label' => 'Dalam Perjalanan'], ['value' => 'proses', 'label' => 'Sedang Diperiksa'], ['value' => 'selesai', 'label' => 'Sudah Diterima']]);
 @endphp
 @section('title', $pageTitle . ' - Inventaris')
 @section('page-title', $pageTitle)

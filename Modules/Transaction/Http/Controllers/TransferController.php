@@ -546,6 +546,7 @@ class TransferController extends Controller
             }
             // "Simpan": keep the received quantities and notes, but leave the transfer waiting for confirmation.
             if (! empty($input['draft'])) {
+                $transfer->update(['status' => 'proses']);
                 return response()->json(['success' => true, 'message' => 'Penerimaan disimpan.']);
             }
             // Items with sent_quantity already left the origin stock when the transfer
@@ -615,7 +616,7 @@ class TransferController extends Controller
         }
         $side = $request->input('url');
         $total = (clone $query)->count();
-        if ($request->filled('status_filter') && $request->status_filter !== 'all') $request->status_filter === 'pending' ? $query->whereIn('status', ['pending', 'proses']) : $query->where('status', $request->status_filter);
+        if ($request->filled('status_filter') && $request->status_filter !== 'all') $query->where('status', $request->status_filter);
         if ($request->filled('cabang_filter') && $request->cabang_filter !== 'all') $query->where($side === 'transfer-penerima' ? 'branch_destination_id' : 'branch_id', $request->cabang_filter);
         if ($request->filled('start_date')) $query->whereDate('date', '>=', $request->start_date);
         if ($request->filled('end_date')) $query->whereDate('date', '<=', $request->end_date);

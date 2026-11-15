@@ -47,7 +47,7 @@ final class TransferFilterUiContractTest extends TestCase
         $statuses = fn (bool $receiving) => collect(array_merge(
             [['value' => 'all', 'label' => 'Semua Status']],
             $receiving ? [] : [['value' => 'draft', 'label' => 'Pending']],
-            [['value' => 'pending', 'label' => 'Dalam Perjalanan'], ['value' => 'selesai', 'label' => 'Sudah Diterima']]
+            [['value' => 'pending', 'label' => 'Dalam Perjalanan'], ['value' => 'proses', 'label' => 'Sedang Diperiksa'], ['value' => 'selesai', 'label' => 'Sudah Diterima']]
         ))->pluck('label', 'value')->all();
 
         $render = fn (bool $receiving) => Blade::render(
@@ -69,6 +69,7 @@ final class TransferFilterUiContractTest extends TestCase
         $this->assertStringContainsString('Cabang Tujuan', $receiver);
         $this->assertStringContainsString('Status Penerimaan', $receiver);
         $this->assertStringNotContainsString('>Pending<', $receiver);
-        $this->assertStringNotContainsString('Sedang Diperiksa', $receiver);
+        $this->assertStringContainsString('Sedang Diperiksa', $sender);
+        $this->assertStringContainsString('Sedang Diperiksa', $receiver);
     }
 }
