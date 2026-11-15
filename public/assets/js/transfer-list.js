@@ -101,7 +101,7 @@
             async deleteSelected() {
                 const row = this.selected;
                 if (!row?.can_delete || this.deleting) return;
-                const decision = await Swal.fire({title:'Hapus draf pengiriman?',text:'Transaksi ' + row.invoice_number + ' akan dihapus.',icon:'warning',showCancelButton:true,confirmButtonText:'Hapus',cancelButtonText:'Batal',confirmButtonColor:'#dc2626'});
+                const decision = await Swal.fire({title:'Hapus pengiriman?',text:'Transaksi ' + row.invoice_number + ' akan dihapus.',icon:'warning',showCancelButton:true,confirmButtonText:'Hapus',cancelButtonText:'Batal',confirmButtonColor:'#dc2626'});
                 if (!decision.isConfirmed) return;
                 this.deleting = true;
                 try {

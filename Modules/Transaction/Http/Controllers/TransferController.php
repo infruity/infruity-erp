@@ -147,7 +147,7 @@ class TransferController extends Controller
         $data['data']           = Transfer::with('branch', 'branchDestination', 'createdBy')
             ->where('created_by', Auth::id())
             ->whereIn('branch_id', UserBranch::getUserBranch())
-            ->whereIn('status', ['temp', 'draft', 'pending'])->findOrFail($id);
+            ->whereIn('status', ['temp', 'draft', 'pending', 'proses'])->findOrFail($id);
         $data['detail']         = TransferDetail::with(['product', 'product.unit', 'corrections.user'])->where('transfer_id', $id)->get();
         $data['invoice_number'] = $data['data']->invoice_number;
         $data['type']           = request()->segment(1);
@@ -182,7 +182,7 @@ class TransferController extends Controller
             DB::beginTransaction();
             $pos = Transfer::where('created_by', Auth::id())
                 ->whereIn('branch_id', UserBranch::getUserBranch())
-                ->whereIn('status', ['temp', 'draft'])->findOrFail($id);
+                ->whereIn('status', ['temp', 'draft', 'pending', 'proses'])->findOrFail($id);
             $pos->delete();
             TransferDetail::where('transfer_id', $id)->delete();
             DB::commit();
@@ -322,7 +322,7 @@ class TransferController extends Controller
             }
             if ($pos) {
                 // Update transaksi transfer yang sudah ada
-                if (! in_array($pos->status, ['temp', 'draft', 'pending'], true) || ($pos->status === 'pending' && $pos->corrections()->exists())) {
+                if (! in_array($pos->status, ['temp', 'draft', 'pending', 'proses'], true)) {
                     DB::rollBack();
                     return response()->json([
                         'success' => false,
@@ -634,7 +634,7 @@ class TransferController extends Controller
         $rows = $query->with(['detail.product.unit', 'detail.corrections.user'])->orderByDesc('date')->orderByDesc('id')
             ->skip((int) $request->input('start', 0))->take((int) $request->input('length', 20))->get()->map(function ($item) use ($side, $permissions) {
                 $owner = (int) $item->created_by === (int) Auth::id();
-                $editable = $side === 'transfer-pengirim' && $owner && (in_array($item->status, ['temp', 'draft']) || ($item->status === 'pending' && !$item->corrections_count));
+                $editable = $side === 'transfer-pengirim' && $owner && $item->status !== 'selesai';
                 return [
                     'id' => $item->id, 'invoice_number' => $item->invoice_number, 'date' => $item->date, 'created_at' => $item->created_at?->format('Y-m-d H:i:s'),
                     'origin' => $item->branch?->name ?? 'Tanpa cabang', 'destination' => $item->branchDestination?->name ?? 'Tanpa tujuan',
@@ -648,7 +648,7 @@ class TransferController extends Controller
                     'can_show' => $permissions['show'],
                     'can_receive' => $side === 'transfer-penerima' && in_array($item->status, ['pending', 'proses']) && $permissions['receive'] && $permissions['show'],
                     'can_edit' => $editable && $permissions['edit'],
-                    'can_delete' => $side === 'transfer-pengirim' && $owner && in_array($item->status, ['temp', 'draft']) && $permissions['delete'],
+                    'can_delete' => $side === 'transfer-pengirim' && $owner && $item->status !== 'selesai' && $permissions['delete'],
                     'show_url' => route($side . '.show', $item->id), 'edit_url' => route('transfer-pengirim.edit', $item->id),
                     'delete_url' => route('transfer-pengirim.destroy', $item->id),
                 ];
