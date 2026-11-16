@@ -20,10 +20,39 @@ trait HasAccessControl
             return null;
         }
 
-        $redirect = $redirectTo ?? url()->previous() ?? 'dashboard';
+        $redirect = $redirectTo ?? $this->safeDeniedRedirect();
+
+        if ($redirect === null) {
+            abort(403, "Anda tidak memiliki izin untuk mengakses halaman {$permission}.");
+        }
 
         return redirect($redirect)
             ->with('error', "Anda tidak memiliki izin untuk mengakses halaman {$permission}. Hubungi Admin untuk Aktivasi Kembali");
+    }
+
+    /**
+     * Where a denied visitor goes. The page they came from, unless that page (or this one) sends signed-in users straight
+     * back here (login, "/", the dashboard): then every denial bounced forever, e.g. an account without the dashboard
+     * permission could never open the app. Those visitors go to the first page they may open instead; null = none at all.
+     */
+    protected function safeDeniedRedirect(): ?string
+    {
+        $previous = url()->previous();
+        $path = trim((string) parse_url($previous, PHP_URL_PATH), '/');
+        $loops = $previous === '' || $previous === url()->current() || in_array($path, ['', 'login', 'dashboard'], true);
+
+        return $loops ? $this->firstAccessibleUrl() : $previous;
+    }
+
+    protected function firstAccessibleUrl(): ?string
+    {
+        foreach (['production.index', 'pos.index', 'wholesale.index', 'products.index', 'transfer-pengirim.index', 'sortir.index', 'stock-opname.index', 'order-book.index', 'delivery-order.index', 'settings.index'] as $name) {
+            if (\Illuminate\Support\Facades\Route::has($name) && RoleMenu::checkAccess($name)) {
+                return route($name);
+            }
+        }
+
+        return null;
     }
 
     /**
