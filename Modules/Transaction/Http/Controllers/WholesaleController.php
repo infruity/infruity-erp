@@ -1303,7 +1303,17 @@ class WholesaleController extends Controller
             foreach ($columns as $i => [$name, $searchable, $orderable]) {
                 $params['columns'][$i] = ['data' => $names[$i], 'name' => $name, 'searchable' => $searchable ? 'true' : 'false', 'orderable' => $orderable ? 'true' : 'false', 'search' => ['value' => '', 'regex' => 'false']];
             }
-            $response = $this->get_data(Request::create(route('wholesale-data'), 'GET', $params));
+            // DataTables reads start/length/order from the request of the running page, not from a request handed to it, so a
+            // request built only for this call came back with every row instead of the first 20. Merge the parameters
+            // into the page request for this one call, then put it back as it was.
+            $request = request();
+            $original = $request->all();
+            $request->merge($params);
+            try {
+                $response = $this->get_data($request);
+            } finally {
+                $request->replace($original);
+            }
 
             return $response->getData(true);
         } catch (\Throwable $e) {
