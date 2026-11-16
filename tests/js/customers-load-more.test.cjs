@@ -79,7 +79,7 @@ test('a failed request keeps the list, re-enables the button and tells the user'
 });
 
 test('the customers page uses the same load-more control as the product list instead of a pager', () => {
-    assert.ok(partial.includes('x-erp.load-more @click="loadMore()" loading="loadingMore">Muat {{ $pageTitle }} Lagi'));
+    assert.ok(partial.includes('x-erp.load-more @click="loadMore()" loading="loadingMore">Muat {{ $loadMoreNoun ?? $pageTitle }} Lagi'));
     assert.ok(!partial.includes('Selanjutnya'), 'the previous/next pager is gone');
     assert.ok(!partial.includes('$records->links()'));
 });

@@ -16,6 +16,8 @@
                         qty: Number(detail.quantity), expected: Number(detail.quantity), sent: Number(detail.sent_quantity ?? history.at(-1)?.old_quantity ?? detail.quantity),
                         price: Number(detail.price) || 0, discount: Number(detail.discount) || 0, note: history[0]?.note || '', stock: null};
                 });
+                // A new shipment starts with the first possible destination chosen, as in the reference.
+                if (!this.readOnly && !this.receiving && !this.destinationId && !this.cart.length && this.status === 'temp') this.destinationId = this.availableDestinations[0]?.id ?? '';
                 this._beforeUnload = event => { if (this.dirty && !this.navigationAllowed) { event.preventDefault(); event.returnValue = ''; } };
                 this._linkClick = event => {
                     const link = event.target.closest('a[href]');
@@ -34,7 +36,7 @@
             get availableDestinations() { return this.destinations.filter(b => String(b.id) !== String(this.branchId)); },
             get total() { return this.round(this.cart.reduce((sum,item) => sum + this.round(item.qty * item.price - (item.discount || 0)), 0)); },
             get hasShortage() { return this.cart.some(item => item.qty < item.sent); },
-            get statusLabel() { return ({temp:'Draf',draft:'Draf',pending:'Dalam Perjalanan',proses:'Sedang Diperiksa',selesai:'Sudah Diterima'})[this.status] || this.status; },
+            get statusLabel() { return ({temp:'Pending',draft:'Pending',pending:'Dalam Perjalanan',proses:'Sedang Diperiksa',selesai:'Sudah Diterima'})[this.status] || this.status; },
             markDirty() { this.dirty = true; this.saveError = ''; },
             changeBranch(id) {
                 if (String(id) === String(this.branchId)) { this.branchOpen = false; return; }
@@ -44,7 +46,8 @@
                 this.markDirty();
             },
             selectDestination(id) { this.destinationId = id; this.destinationOpen = false; this.markDirty(); },
-            showItemModal() { this.$nextTick(() => this.$refs.itemModal.showModal()); },
+            // Receiving puts the cursor straight in the received quantity, as the reference does.
+            showItemModal() { this.$nextTick(() => { this.$refs.itemModal.showModal(); if (this.receiving) this.$refs.itemModal.querySelector?.('#transfer-qty')?.focus(); }); },
             openAddModal() {
                 if (this.readOnly || this.receiving || this.saving || !this.branchId) return;
                 this.editingId = null; this.modalItem = {id:null,name:'',unit:'',qty:0,price:0,stock:null,discount:0};
@@ -52,7 +55,7 @@
             },
             openItem(item) {
                 if (this.saving || (this.readOnly && !this.canReceive)) return;
-                this.editingId = item.id; this.modalItem = {...item}; this.qtyInput = String(item.qty).replace('.', ',');
+                this.editingId = item.id; this.modalItem = {...item}; this.qtyInput = this.formatQtyInput(String(item.qty).replace('.', ','));
                 this.productSearch = ''; this.modalError = ''; this.showItemModal();
                 if (!this.receiving) this.loadProducts();
             },
@@ -77,10 +80,28 @@
                 if (this.editingId !== null) return;
                 this.modalItem = {...product,qty:this.modalItem.qty,discount:0}; this.modalError = '';
             },
+            // "1000" -> "1.000", "12500,5" -> "12.500,5": dots group thousands, the comma is the decimal mark (two decimals at most).
+            formatQtyInput(text) {
+                const parts = String(text).replace(/[^\d.,]/g, '').replace(/\./g, (m, i, all) => (i === all.length - 1 && !all.includes(',') ? ',' : '')).split(',');
+                const digits = parts[0].replace(/^0+(?=\d)/, '');
+                const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                return grouped + (parts.length > 1 ? ',' + parts.slice(1).join('').slice(0, 2) : '');
+            },
+            // The most that can go in this line: the stock at the origin, or what was sent when receiving.
+            get qtyLimit() {
+                const limit = this.receiving ? this.modalItem.sent : this.modalItem.stock;
+                return limit === null || limit === undefined || limit === '' ? null : Number(limit);
+            },
+            get qtyOverLimit() { return this.qtyLimit !== null && Number.isFinite(this.qtyLimit) && Number(this.modalItem.qty) > this.qtyLimit + 1e-9; },
             updateQuantity(event) {
-                const parts = event.target.value.replace(/[^\d.,]/g,'').replace('.',',').split(',');
-                const raw = parts[0] + (parts.length > 1 ? ',' + parts.slice(1).join('').slice(0,2) : '');
-                this.qtyInput = raw; this.modalItem.qty = Number(raw.replace(',','.')) || 0; event.target.value = raw; this.modalError = '';
+                let raw = this.formatQtyInput(event.target.value);
+                let qty = Number(raw.replace(/\./g, '').replace(',', '.')) || 0;
+                // Typing more than the limit snaps to the maximum instead of showing an error.
+                if (this.qtyLimit !== null && Number.isFinite(this.qtyLimit) && qty > this.qtyLimit + 1e-9) {
+                    qty = this.qtyLimit;
+                    raw = this.formatQtyInput(String(qty).replace('.', ','));
+                }
+                this.qtyInput = raw; this.modalItem.qty = qty; event.target.value = raw; this.modalError = '';
             },
             saveItem() {
                 const item = {...this.modalItem};
@@ -110,6 +131,7 @@
             openConfirm() {
                 if (this.saving || (this.receiving ? !this.canReceive : this.readOnly)) return;
                 this.saveError = this.validate(); if (this.saveError) return;
+                if (this.receiving) { this.hasShortage ? this.$refs.shortageModal.showModal() : this.receive(); return; }
                 this.$refs.confirmModal.showModal();
             },
             async request(url, payload) {
@@ -130,6 +152,17 @@
                 } catch(error) { this.saveError = error.message || 'Transfer gagal disimpan.'; this.$refs.confirmModal?.close(); }
                 finally { this.saving = false; this.savingStatus = ''; }
             },
+            // "Simpan" while receiving: keeps the quantities and notes entered so far; the transfer stays pending.
+            async saveReceiving() {
+                if (this.saving || !this.canReceive) return;
+                this.saveError = this.validate(); if (this.saveError) return;
+                this.saving = true; this.savingStatus = 'draft';
+                try {
+                    await this.request(config.receiveUrl, {draft:true,items:this.cart.map(item => ({detail_id:item.detailId,quantity:item.qty,expected_quantity:item.expected,note:item.note || ''}))});
+                    this.dirty = false; this.navigationAllowed = true; window.location.assign(config.indexUrl);
+                } catch(error) { this.saveError = error.message || 'Penerimaan gagal disimpan.'; }
+                finally { this.saving = false; this.savingStatus = ''; }
+            },
             async receive() {
                 if (this.saving || !this.canReceive) return;
                 this.saveError = this.validate(); if (this.saveError) return;
@@ -137,7 +170,7 @@
                 try {
                     await this.request(config.receiveUrl, {items:this.cart.map(item => ({detail_id:item.detailId,quantity:item.qty,expected_quantity:item.expected,note:item.note || ''}))});
                     this.dirty = false; this.navigationAllowed = true; window.location.assign(config.indexUrl);
-                } catch(error) { this.saveError = error.message || 'Penerimaan gagal disimpan.'; this.$refs.confirmModal?.close(); }
+                } catch(error) { this.saveError = error.message || 'Penerimaan gagal disimpan.'; this.$refs.shortageModal?.close(); this.$refs.confirmModal?.close(); }
                 finally { this.saving = false; }
             },
         };

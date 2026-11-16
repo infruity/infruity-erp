@@ -19,6 +19,9 @@ use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
+    /** The password an administrator's reset puts on an account. */
+    public const DEFAULT_RESET_PASSWORD = 'infruity123';
+
     use \App\Traits\HasAccessControl;
 
     public function index(Request $request)
@@ -297,6 +300,20 @@ class UserController extends Controller
         UserPermission::where('id_user', $user->id_user)->delete();
 
         return response()->json(['success' => true, 'overrides' => new \stdClass()]);
+    }
+
+    public function resetPassword(Request $request, $id)
+    {
+        $this->authorizeAccess('user.update');
+
+        $user = User::findOrFail($id);
+        $user->password = Hash::make(self::DEFAULT_RESET_PASSWORD);
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Kata sandi berhasil direset.',
+        ]);
     }
 
     public function destroy($id)

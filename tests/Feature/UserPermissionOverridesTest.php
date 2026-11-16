@@ -53,7 +53,7 @@ class UserPermissionOverridesTest extends TestCase
         (require database_path('migrations/2026_10_27_000001_create_user_permissions_table.php'))->up();
 
         DB::table('users')->insert([
-            ['id_user' => 100, 'nm_user' => 'Permission Manager', 'email' => 'manager@example.test', 'password' => 'secret', 'is_aktif' => true],
+            ['id_user' => 100, 'nm_user' => 'Permission Manager', 'email' => 'master@infruity.com', 'password' => 'secret', 'is_aktif' => true],
             ['id_user' => 200, 'nm_user' => 'First Account', 'email' => 'first@example.test', 'password' => 'secret', 'is_aktif' => true],
             ['id_user' => 201, 'nm_user' => 'Second Account', 'email' => 'second@example.test', 'password' => 'secret', 'is_aktif' => true],
             ['id_user' => 202, 'nm_user' => 'Administrator Account', 'email' => 'admin@example.test', 'password' => 'secret', 'is_aktif' => true],
@@ -338,7 +338,7 @@ class UserPermissionOverridesTest extends TestCase
             ->assertSee('data-role-delete-action', false);
     }
 
-    public function test_mobile_topbar_component_uses_opaque_white_background(): void
+    public function test_mobile_topbar_component_uses_the_reference_glass_background(): void
     {
         DB::table('role_menu')->insert([
             ['id_role' => 3, 'permission' => 'role.index'],
@@ -347,7 +347,7 @@ class UserPermissionOverridesTest extends TestCase
         $this->get('/roles')
             ->assertOk()
             ->assertSee('.erp-topbar-mobile {', false)
-            ->assertSee('border-bottom:1px solid rgba(255,255,255,.6); background:#fff; box-shadow:', false);
+            ->assertSee('border-bottom:1px solid rgba(255,255,255,.6); background:rgba(255,255,255,.65); box-shadow:', false);
     }
 
     public function test_administrator_role_delete_action_is_visible_but_disabled(): void
@@ -402,5 +402,18 @@ class UserPermissionOverridesTest extends TestCase
         $this->assertStringContainsString("customAccessCount(selected) + ' izin disesuaikan'", $view);
         $this->assertStringContainsString('Kembalikan ke template', $view);
         $this->assertStringContainsString("method: 'DELETE'", $view);
+    }
+
+    public function test_only_the_master_account_may_delete(): void
+    {
+        $this->assertTrue(RoleMenu::isDeletePermission('products.destroy'));
+        $this->assertTrue(RoleMenu::isDeletePermission('production.delete-detail'));
+        $this->assertFalse(RoleMenu::isDeletePermission('products.update'));
+        $this->assertTrue(RoleMenu::isMasterAccount());
+
+        $this->actingAs(User::findOrFail(200));
+        session(['role' => ['id_role' => 1]]);
+        $this->assertFalse(RoleMenu::checkAccess('role.destroy'));
+        $this->deleteJson('/user/201/permissions')->assertStatus(403);
     }
 }

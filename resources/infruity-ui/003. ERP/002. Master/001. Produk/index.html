@@ -968,7 +968,7 @@
                                                     <div class="relative">
                                                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">Rp</span>
                                                         <input :id="'inlinePriceInput_' + product.id"
-                                                            x-ref="priceInput" type="number" x-model.number="editingPriceValue"
+                                                            x-ref="priceInput" type="text" inputmode="numeric" autocomplete="off" :value="fmtPrice(editingPriceValue)" @input="onPriceInput($event, n => editingPriceValue = n)"
                                                             x-init="$nextTick(() => { $el.focus(); $el.select(); })"
                                                             @keydown.enter="savePrice(product)"
                                                             @keydown.escape="cancelEditPrice()"
@@ -1014,7 +1014,7 @@
                                                                     <div class="relative">
                                                                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">Rp</span>
                                                                         <input :id="'inlineVariantPriceInput_' + variant.id"
-                                                                            type="number" x-model.number="editingVariantPrice.value"
+                                                                            type="text" inputmode="numeric" autocomplete="off" :value="fmtPrice(editingVariantPrice.value)" @input="onPriceInput($event, n => editingVariantPrice.value = n)"
                                                                             @keydown.enter="saveVariantPrice(product, variant)"
                                                                             @keydown.escape="cancelVariantPrice()"
                                                                             class="w-28 h-8 border border-emerald-500 ring-1 ring-emerald-500 rounded-lg pl-9 pr-2 text-sm text-right font-semibold outline-none bg-white"
@@ -1098,7 +1098,7 @@
                                                      @click.stop @click.outside="cancelEditPrice()">
                                                     <span class="text-xs font-semibold text-emerald-700 pl-2">Rp</span>
                                                     <input :id="'inlinePriceInputMobile_' + product.id"
-                                                           type="number" x-model.number="editingPriceValue"
+                                                           type="text" inputmode="numeric" autocomplete="off" :value="fmtPrice(editingPriceValue)" @input="onPriceInput($event, n => editingPriceValue = n)"
                                                            x-init="$nextTick(() => { $el.focus(); $el.select(); })"
                                                            @keydown.enter="savePrice(product)"
                                                            @keydown.escape="cancelEditPrice()"
@@ -1139,7 +1139,7 @@
                                                                      @click.stop @click.outside="cancelVariantPrice()">
                                                                     <span class="text-xs font-semibold text-emerald-700 pl-2">Rp</span>
                                                                     <input :id="'inlineVariantPriceInputMobile_' + variant.id"
-                                                                           type="number" x-model.number="editingVariantPrice.value"
+                                                                           type="text" inputmode="numeric" autocomplete="off" :value="fmtPrice(editingVariantPrice.value)" @input="onPriceInput($event, n => editingVariantPrice.value = n)"
                                                                            x-init="$nextTick(() => { $el.focus(); $el.select(); })"
                                                                            @keydown.enter="saveVariantPrice(product, variant)"
                                                                            @keydown.escape="cancelVariantPrice()"
@@ -2426,6 +2426,19 @@
 
                 // Inline Price Edit (single price only)
                 // Inline Price Edit (In-place replace)
+                // Harga ketik langsung: titik ribuan otomatis (1.000, 15.000), kursor tetap di digit yang sama.
+                fmtPrice(v) { return v ? Number(v).toLocaleString('id-ID') : ''; },
+                onPriceInput(e, set) {
+                    const el = e.target;
+                    const digitsBefore = el.value.slice(0, el.selectionStart).replace(/\D/g, '').length;
+                    const digits = el.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+                    const n = digits ? parseInt(digits, 10) : 0;
+                    set(n);
+                    el.value = this.fmtPrice(n);
+                    let pos = 0, count = 0;
+                    while (pos < el.value.length && count < digitsBefore) { if (/\d/.test(el.value[pos])) count++; pos++; }
+                    el.setSelectionRange(pos, pos);
+                },
                 startEditPrice(product) {
                     this.editingPriceId = product.id;
                     this.editingPriceValue = product.price;

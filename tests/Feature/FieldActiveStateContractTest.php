@@ -88,7 +88,7 @@ final class FieldActiveStateContractTest extends TestCase
 
         // Back arrow on a phone, the cross on desktop; the same button, so the existing close handling keeps working.
         $this->assertStringContainsString('id="kt_modal_add_customer_close"', $view);
-        $this->assertStringContainsString('ph-arrow-left so-close-back', $view);
+        $this->assertStringContainsString('ph-caret-left so-close-back', $view);
         $this->assertStringContainsString('ph-x so-close-x', $view);
         $this->assertStringContainsString('#kt_modal_add_customer .so-close-back { display: none; }', $css);
     }

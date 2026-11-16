@@ -9,8 +9,12 @@
 @section('content')
     <div x-data="{
         filtersOpen: false,
+        sheetOpen: false,
+        filterApplied: false,
+        syncApplied() { this.filterApplied = ['branch', 'status', 'start', 'end'].some((key) => { const value = getWholesaleFilter(key); return value && value !== 'all'; }); },
         openFilters() {
             if (window.matchMedia('(max-width: 767px)').matches) {
+                this.sheetOpen = true;
                 this.$dispatch('erp-filter-open', { id: 'wholesale', values: {
                     branch: getWholesaleFilter('branch') || 'all',
                     status: getWholesaleFilter('status') || 'all',
@@ -21,7 +25,7 @@
             }
             this.filtersOpen = !this.filtersOpen;
         }
-    }" @erp-filter-apply.window="if ($event.detail.id === 'wholesale') applyWholesaleMobileFilters($event.detail.values.status, $event.detail.values.branch, $event.detail.values.start, $event.detail.values.end)" class="flex min-h-0 flex-1 flex-col -mx-4 md:mx-0">
+    }" @erp-filter-apply.window="if ($event.detail.id === 'wholesale') { applyWholesaleMobileFilters($event.detail.values.status, $event.detail.values.branch, $event.detail.values.start, $event.detail.values.end); $nextTick(() => syncApplied()); }" @erp-filter-close.window="if ($event.detail.id === 'wholesale') { sheetOpen = false; $nextTick(() => syncApplied()); }" class="flex min-h-0 flex-1 flex-col -mx-4 md:mx-0">
         <section class="erp-surface relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-none bg-white shadow-none lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm">
             <header class="shrink-0 border-b border-gray-100 px-0 py-0 sm:px-4 sm:py-4 md:px-5">
                 <div class="mb-3 hidden items-center justify-between gap-3 md:mb-4 sm:flex">
@@ -33,10 +37,10 @@
 
                 <div class="relative flex items-center gap-3">
                     <div class="relative min-w-0 flex-1">
-                    <x-erp.mobile-search class="erp-mobile-search-shell--always-visible erp-mobile-search-shell--fill erp-mobile-search-shell--flush">
-                        <x-slot:input><input id="wholesale-search" type="search" placeholder="Cari cabang, nomor PO, atau bahan..." autocomplete="off" aria-label="Cari cabang, nomor PO, atau bahan" class="erp-mobile-search__input"></x-slot:input>
+                    <x-erp.mobile-search class="wholesale-search-shell erp-mobile-search-shell--always-visible erp-mobile-search-shell--fill erp-mobile-search-shell--flush">
+                        <x-slot:input><input id="wholesale-search" type="search" placeholder="Cari..." autocomplete="off" aria-label="Cari cabang, nomor PO, atau bahan" class="erp-mobile-search__input"></x-slot:input>
                         <x-slot:clear><button id="wholesale-search-clear" type="button" class="erp-mobile-search__clear hidden" aria-label="Hapus pencarian"><i class="ph-bold ph-x text-xs"></i></button></x-slot:clear>
-                        <x-slot:filter><button type="button" @click="openFilters()" :aria-expanded="filtersOpen" aria-label="Buka filter pengadaan" class="erp-mobile-search__filter" :class="filtersOpen ? 'is-active' : ''"><span class="icon-rounded text-xl leading-none" aria-hidden="true">tune</span><span id="wholesale-filter-dot" class="hidden absolute right-1 top-1 h-2 w-2 rounded-full bg-[#0b595b] ring-2 ring-white"></span></button></x-slot:filter>
+                        <x-slot:filter><button type="button" @click="openFilters()" :aria-expanded="filtersOpen" aria-label="Buka filter pengadaan" class="erp-mobile-search__filter" :class="(filtersOpen || sheetOpen || filterApplied) ? 'is-active' : ''"><span class="icon-rounded text-xl leading-none" :class="(filtersOpen || sheetOpen || filterApplied) ? 'is-bold' : ''" aria-hidden="true">tune</span><span id="wholesale-filter-dot" class="hidden absolute right-1 top-1 h-2 w-2 rounded-full bg-[#0b595b] ring-2 ring-white"></span></button></x-slot:filter>
                     </x-erp.mobile-search>
 
                     <div x-show="filtersOpen && window.matchMedia('(min-width: 768px)').matches" x-cloak @click.outside="filtersOpen = false" @keydown.escape.window="filtersOpen = false" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="translate-y-1 opacity-0 scale-95" x-transition:enter-end="translate-y-0 opacity-100 scale-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="translate-y-0 opacity-100 scale-100" x-transition:leave-end="translate-y-1 opacity-0 scale-95" class="absolute right-0 top-12 z-50 hidden w-72 rounded-2xl border border-gray-100 bg-white p-4 shadow-xl md:block">
@@ -45,8 +49,8 @@
                                 <button type="button" class="text-xs font-semibold text-[#0b595b] hover:underline" data-wholesale-filter-reset>Reset</button>
                             </div>
                             <label class="mb-3 block text-xs font-semibold text-gray-600">Status
-                                <select data-wholesale-filter="status" class="mt-1.5 h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none focus:border-emerald-500">
-                                    <option value="all">Semua status</option><option value="temp">Draft</option><option value="draft">Pending</option><option value="posting">Dalam Pengiriman</option><option value="complete">Selesai</option>
+                                <select data-wholesale-filter="status" autocomplete="off" class="mt-1.5 h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none focus:border-emerald-500">
+                                    <option value="all" selected>Semua</option><option value="draft">Pending</option><option value="complete">Selesai</option>
                                 </select>
                             </label>
                             <label class="mb-3 block text-xs font-semibold text-gray-600">Cabang
@@ -89,6 +93,7 @@
                     </thead>
                     <tbody></tbody>
                 </table>
+                <div id="wholesale-load-more" data-load-more class="hidden px-5 py-4 xl:hidden"><x-erp.load-more id="wholesale-load-more-button">Muat <span id="wholesale-load-more-count">20</span> Pengadaan Lagi</x-erp.load-more></div>
             </div>
         </section>
 
@@ -98,46 +103,62 @@
             aria-label="Filter pengadaan"
             subtitle="Saring cabang tujuan, status, dan periode tanggal."
             branch-label="Cabang Tujuan"
+            branch-all-label="Semua Cabang"
+            reset-label="Reset Filter"
+            apply-label="Terapkan Filter"
             status-label="Status Pengadaan"
             :branches="$branches"
             :show-branch-all="count($branches) > 1"
-            :statuses="['all' => 'Semua Status', 'temp' => 'Draft', 'draft' => 'Pending', 'posting' => 'Dalam Pengiriman', 'complete' => 'Selesai']"
+            :statuses="['all' => 'Semua', 'draft' => 'Pending', 'complete' => 'Selesai']"
         />
         <template x-teleport="body">
             <div x-data="{
                     open: false,
+                    visible: false,
                     item: null,
-                    show(detail) { this.item = detail; this.open = true; document.body.classList.add('overflow-hidden'); this.$nextTick(() => this.$refs.close?.focus()); },
-                    close() { this.open = false; document.body.classList.remove('overflow-hidden'); },
-                    remove() { const id = this.item?.id; this.close(); if (id) window.deleteProduct(id); }
+                    show(detail) { this.item = detail; this.visible = true; this.$nextTick(() => { this.open = true; }); document.body.classList.add('overflow-hidden'); this.$nextTick(() => this.$refs.close?.focus()); },
+                    close() { this.open = false; document.body.classList.remove('overflow-hidden'); setTimeout(() => { if (!this.open) this.visible = false; }, 220); },
+                    remove() { const id = this.item?.id; const label = this.item?.order_number; this.close(); if (id) window.deleteProduct(id, label); }
                 }"
                 @wholesale-detail-open.window="show($event.detail)"
                 @keydown.escape.window="close()"
-                x-show="open" x-cloak class="wholesale-detail-overlay" role="presentation">
-                <button type="button" class="wholesale-detail-backdrop" @click="close()" aria-label="Tutup detail pengadaan"></button>
-                <section class="wholesale-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="wholesale-detail-title" tabindex="-1">
-                    <header class="wholesale-detail-heading">
-                        <h2 id="wholesale-detail-title">Detail Pengadaan</h2>
-                        <button x-ref="close" type="button" class="wholesale-detail-close" @click="close()" aria-label="Tutup"><i class="ph ph-x" aria-hidden="true"></i></button>
-                    </header>
-                    <div class="wholesale-detail-body" x-show="item">
-                        <div class="wholesale-detail-line">
-                            <i class="ph ph-receipt" aria-hidden="true"></i>
-                            <div><strong x-text="item?.order_number"></strong><span x-text="item?.branch_name"></span></div>
+                x-show="visible" x-cloak class="fixed inset-0 z-[120] flex items-center justify-center px-4" role="presentation">
+                <button type="button" x-show="open" x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute inset-0 bg-black/60 cursor-default" @click="close()" aria-label="Tutup detail pengadaan"></button>
+                <section x-show="open" x-transition:enter="transition-all duration-300" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0" x-transition:leave="transition-all duration-200 ease-in" x-transition:leave-start="opacity-100 scale-100 translate-y-0" x-transition:leave-end="opacity-0 scale-95 translate-y-2" class="relative bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden flex flex-col z-10 outline-none" role="dialog" aria-modal="true" aria-labelledby="wholesale-detail-title" tabindex="-1">
+                    <div class="p-6 flex-1 flex flex-col">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 id="wholesale-detail-title" class="text-lg font-bold text-gray-800">Detail Pengadaan</h3>
+                            <button x-ref="close" type="button" @click="close()" aria-label="Tutup" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
                         </div>
-                        <div class="wholesale-detail-line">
-                            <i class="ph ph-coins" aria-hidden="true"></i>
-                            <div><strong x-text="item?.total_label"></strong><span x-text="'Grand Total (' + item?.item_count_label + ')' "></span></div>
-                        </div>
-                        <div class="wholesale-detail-line">
-                            <i class="ph ph-clock" aria-hidden="true"></i>
-                            <div><strong x-text="item?.creator_name"></strong><span x-text="'Tanggal pengadaan ' + item?.order_date_label"></span></div>
+                        <div class="flex flex-col gap-5 text-sm" x-show="item">
+                            <div class="flex gap-3 items-center">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-receipt text-lg" aria-hidden="true"></i></div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="font-bold text-gray-800 leading-snug truncate" x-text="item?.order_number"></div>
+                                    <div class="text-[11px] text-gray-400 font-medium mt-0.5 truncate" x-text="item?.branch_name"></div>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-center">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-coins text-lg" aria-hidden="true"></i></div>
+                                <div>
+                                    <div class="font-bold text-gray-800" x-text="item?.total_label"></div>
+                                    <div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Grand Total (' + item?.item_count_label + ')'"></div>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-center">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-clock text-lg" aria-hidden="true"></i></div>
+                                <div class="min-w-0">
+                                    <div class="text-xs font-bold text-gray-800 leading-snug truncate" x-text="item?.creator_name"></div>
+                                    <div class="text-[11px] text-gray-400 font-medium mt-0.5" x-text="'Dibuat pada ' + item?.order_date_label"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <footer class="wholesale-detail-actions" x-show="item?.can_edit || item?.can_delete" :class="item?.can_edit && item?.can_delete ? '' : 'is-single-action'">
-                        <a x-show="item?.can_edit" :href="item?.edit_url" class="wholesale-detail-action is-edit"><i class="ph ph-pencil-simple" aria-hidden="true"></i><span>Edit</span></a>
-                        <button x-show="item?.can_delete" type="button" class="wholesale-detail-action is-delete" @click="remove()"><i class="ph ph-trash" aria-hidden="true"></i><span>Hapus</span></button>
-                    </footer>
+                    <div class="flex w-full border-t border-gray-100" x-show="item?.can_edit || item?.can_delete">
+                        <a x-show="item?.can_edit" :href="item?.edit_url" class="flex items-center justify-center gap-2 flex-1 py-4 text-sm font-semibold text-[#0b595b] hover:bg-emerald-50 transition-colors"><i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>Edit</a>
+                        <div x-show="item?.can_edit && item?.can_delete" class="w-px bg-gray-100"></div>
+                        <button x-show="item?.can_delete" type="button" class="flex items-center justify-center gap-2 flex-1 py-4 text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors" @click="remove()"><i class="ph-bold ph-trash" aria-hidden="true"></i>Hapus</button>
+                    </div>
                 </section>
             </div>
         </template>
@@ -186,25 +207,6 @@
         .wholesale-empty-link:hover { background:#08484a; color:white; }
         .wholesale-order-copy:focus-visible, .wholesale-action-button:focus-visible { outline:2px solid #0b595b; outline-offset:2px; }
         #wholesale-table tbody tr.is-openable { cursor:pointer; }
-        .wholesale-detail-overlay { position:fixed; inset:0; z-index:110; display:flex; align-items:center; justify-content:center; padding:24px; }
-        .wholesale-detail-backdrop { position:absolute; inset:0; border:0; background:rgba(19,24,32,.56); cursor:default; }
-        .wholesale-detail-dialog { position:relative; width:min(100%, 384px); overflow:hidden; border-radius:17px; background:#fff; box-shadow:0 24px 72px rgba(11,22,31,.25); outline:none; }
-        .wholesale-detail-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:20px 23px 8px; }
-        .wholesale-detail-heading h2 { margin:0; color:#202b3b; font-size:18px; font-weight:700; letter-spacing:-.025em; }
-        .wholesale-detail-close { display:flex; width:34px; height:34px; flex:none; align-items:center; justify-content:center; border:0; border-radius:50%; background:#f2f3f5; color:#788292; font-size:17px; }
-        .wholesale-detail-body { display:grid; gap:20px; padding:14px 24px 24px; }
-        .wholesale-detail-line { display:grid; grid-template-columns:24px minmax(0,1fr); align-items:center; gap:12px; min-width:0; }
-        .wholesale-detail-line > i { color:#08a978; font-size:21px; }
-        .wholesale-detail-line > div { display:flex; min-width:0; flex-direction:column; gap:3px; }
-        .wholesale-detail-line strong { overflow:hidden; color:#253144; font-size:14px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
-        .wholesale-detail-line span { overflow:hidden; color:#929bad; font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
-        .wholesale-detail-actions { display:grid; grid-template-columns:1fr 1fr; border-top:1px solid #eef0f3; }
-        .wholesale-detail-actions.is-single-action { grid-template-columns:1fr; }
-        .wholesale-detail-action { display:flex; min-height:52px; align-items:center; justify-content:center; gap:8px; border:0; background:#fff; color:#0b595b; font-size:14px; font-weight:600; text-decoration:none; }
-        .wholesale-detail-action + .wholesale-detail-action { border-left:1px solid #eef0f3; }
-        .wholesale-detail-action.is-delete { color:#ff3b42; }
-        .wholesale-detail-action i { font-size:15px; }
-        .wholesale-detail-action:hover { background:#f8faf9; }
         @media (max-width:1279px) {
             #wholesale-table, #wholesale-table tbody { display:block; width:100% !important; }
             #wholesale-table thead { display:none; }
@@ -232,13 +234,26 @@
         }
         @media (max-width:767px) {
             #wholesale-summary { display:none; }
-            #wholesale-table tbody tr { grid-template-columns:minmax(0,1fr) minmax(112px,auto); gap:3px 10px; padding:12px 16px; }
-            .wholesale-order-avatar { width:36px; height:36px; border-radius:11px; }
-            .wholesale-order-cell { gap:10px; }
-            .wholesale-order-number { font-size:13px; }
-            .wholesale-order-subtitle { font-size:11px; }
-            .wholesale-status-badge { font-size:12px; }
-            .wholesale-status-total { font-size:13px; }
+            .wholesale-search-shell { padding:16px; }
+            #wholesale-table { margin:0 !important; }
+            #wholesale-table_wrapper .dataTables_processing { display:none !important; }
+            .wholesale-search-shell .erp-mobile-search__filter.is-active { background:#ecfdf5; }
+            body.erp-ui #wholesale-filter-sheet .erp-filter-sheet__footer { background:rgba(249,250,251,.7); }
+            body.erp-ui #wholesale-filter-sheet#wholesale-filter-sheet [x-show="!calendarOpen"] :is(label, span).uppercase { font-weight:600 !important; line-height:15px !important; }
+            .wholesale-search-shell .erp-mobile-search { height:44px; gap:0; padding:0 6px 0 16px; border-color:rgba(229,231,235,.8); box-shadow:none; }
+            .wholesale-search-shell .erp-mobile-search:focus-within { border-color:#10b981; background:#fff; box-shadow:0 0 0 1px #10b981; }
+            .wholesale-search-shell .erp-mobile-search__icon { margin-right:10px; }
+            .wholesale-search-shell .erp-mobile-search__divider { height:16px; margin:0 4px; }
+            #wholesale-table tbody tr { grid-template-columns:minmax(0,1fr) auto; gap:0 12px; padding:12px 16px; border-bottom:1px solid #f3f4f6; }
+            .wholesale-order-avatar { width:36px; height:36px; border-radius:12px; font-size:12px; }
+            .wholesale-order-cell { gap:12px; }
+            .wholesale-order-copy { gap:2px; }
+            .wholesale-order-number { font-size:12px; line-height:16px; color:#111827; }
+            .wholesale-order-subtitle { color:#9ca3af; font-size:11px; line-height:16.5px; }
+            .wholesale-status-cell { gap:2px; }
+            .wholesale-status-badge { font-size:12px; font-weight:600; line-height:16px; }
+            .wholesale-status-badge.is-complete { color:#059669; font-weight:700; }
+            .wholesale-status-total { font-size:12px; font-weight:700; line-height:16px; }
         }
         @media (max-width:359px) {
             #wholesale-table tbody tr { grid-template-columns:minmax(0,1fr) minmax(104px,auto); gap:3px 8px; padding-right:12px; padding-left:12px; }
@@ -262,6 +277,7 @@
         const wholesaleNoMatchState = '<div class="wholesale-empty-state"><span class="wholesale-empty-icon"><i class="ph ph-magnifying-glass"></i></span><span class="wholesale-empty-title">Pengadaan tidak ditemukan</span><span class="wholesale-empty-copy">Coba kata pencarian lain atau sesuaikan filter.</span></div>';
         let wholesaleDataTable;
         let wholesaleLoadMorePending = false;
+        let wholesaleInitialRows = @json($initialRows ?? null);
 
         function getWholesaleFilter(name) {
             const $visible = $('[data-wholesale-filter="' + name + '"]:visible');
@@ -321,15 +337,22 @@
                 lengthChange: false,
                 autoWidth: false,
                 order: [[7, 'desc']],
-                ajax: {
-                    url: @json(route('wholesale-data')),
-                    data: function (data) {
-                        data.url = 'wholesale';
-                        data.status = getWholesaleFilter('status') || 'all';
-                        data.cabang_filter = getWholesaleFilter('branch') || 'all';
-                        data.start_date = getWholesaleFilter('start') || null;
-                        data.end_date = getWholesaleFilter('end') || null;
+                ajax: function (data, callback) {
+                    // The first page comes with the HTML; every later draw asks the server.
+                    if (wholesaleInitialRows) {
+                        const first = wholesaleInitialRows;
+                        wholesaleInitialRows = null;
+                        callback(Object.assign({}, first, { draw: data.draw }));
+                        return;
                     }
+                    data.url = 'wholesale';
+                    data.status = getWholesaleFilter('status') || 'all';
+                    data.cabang_filter = getWholesaleFilter('branch') || 'all';
+                    data.start_date = getWholesaleFilter('start') || null;
+                    data.end_date = getWholesaleFilter('end') || null;
+                    $.ajax({ url: @json(route('wholesale-data')), data: data, dataType: 'json' })
+                        .done(callback)
+                        .fail(function () { callback({ draw: data.draw, recordsTotal: 0, recordsFiltered: 0, data: [], error: 'Pengadaan gagal dimuat.' }); });
                 },
                 columnDefs: [
                     { targets: 5, orderable: false, searchable: false },
@@ -376,6 +399,10 @@
                         $(this.node()).toggleClass('is-openable', Boolean(this.data()?.detail_payload));
                     });
                     wholesaleLoadMorePending = false;
+                    const remaining = info.recordsDisplay - info.end;
+                    $('#wholesale-load-more').toggleClass('hidden', remaining <= 0);
+                    $('#wholesale-load-more-count').text(Math.min(20, Math.max(remaining, 0)));
+                    $('#wholesale-load-more-button').prop('disabled', false).removeAttr('aria-busy').find('i').removeClass('animate-spin');
                 }
             });
 
@@ -394,19 +421,14 @@
                 openWholesaleDetail($(this).closest('tr'));
             });
 
-            const wholesaleListViewport = document.querySelector('.mobile-list-edge-fade');
-            wholesaleListViewport?.addEventListener('scroll', function () {
-                if (!window.matchMedia('(max-width: 1279px)').matches || wholesaleLoadMorePending) return;
-
+            $('#wholesale-load-more-button').on('click', function () {
+                if (wholesaleLoadMorePending) return;
                 const info = wholesaleDataTable.page.info();
                 if (info.end >= info.recordsDisplay) return;
-
-                const nearBottom = this.scrollTop + this.clientHeight >= this.scrollHeight - 180;
-                if (!nearBottom) return;
-
                 wholesaleLoadMorePending = true;
+                $(this).prop('disabled', true).attr('aria-busy', 'true').find('i').addClass('animate-spin');
                 wholesaleDataTable.page.len(info.end + 20).draw(false);
-            }, { passive: true });
+            });
 
             let searchTimer;
             $('#wholesale-search').on('input', function () {
@@ -441,15 +463,9 @@
             if (wholesaleDataTable) wholesaleDataTable.ajax.reload(null, false);
         }
 
-        function deleteProduct(id) {
-            Swal.fire({
-                title: 'Hapus pengadaan ini?',
-                text: 'Transaksi dan rincian pengadaan akan dihapus.',
-                icon: 'warning', showCancelButton: true,
-                confirmButtonText: 'Hapus', cancelButtonText: 'Batal',
-                confirmButtonColor: '#be123c', cancelButtonColor: '#6b7280'
-            }).then(result => {
-                if (!result.isConfirmed) return;
+        function deleteProduct(id, label) {
+            ErpDialog.confirmDelete({ what: 'Pengadaan', name: label || '', subject: 'Pengadaan', suffix: 'akan dihapus permanen beserta rinciannya.' }).then(confirmed => {
+                if (!confirmed) return;
                 $.ajax({
                     url: `/wholesale/${id}`, type: 'DELETE',
                     data: { _token: $('meta[name="csrf-token"]').attr('content') },

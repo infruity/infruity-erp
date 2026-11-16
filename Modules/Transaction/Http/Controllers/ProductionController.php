@@ -269,6 +269,11 @@ class ProductionController extends Controller
                 return view('transaction::production.show-modal', $data);
             }
 
+            // Like the reference, the detail lives in the list's popup: a direct visit (or a reload) opens the list with it.
+            if (! $request->boolean('full')) {
+                return redirect()->route('production.index', ['detail' => $id]);
+            }
+
             return view('transaction::production.show', $data);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('production.index')->with('error', 'Data produksi tidak ditemukan.');
@@ -290,6 +295,7 @@ class ProductionController extends Controller
 
         $data['alpinejs']          = true;
         $data['data']              = Production::with(['branch', 'products'])->find($id);
+        abort_if(in_array($data['data']?->status, ['posting', 'complete'], true), 403, 'Produksi yang sudah selesai tidak dapat diedit.');
         $data['production_detail'] = ProductionDetail::with('products')->where('production_id', $id)->get();
         $data['receipt']           = Receipt::with('products')->where('product_id', $data['data']->product_id)->first();
         $data['production_number'] = $data['data']->production_number;
@@ -337,6 +343,7 @@ class ProductionController extends Controller
             $productId = $receipt->product_id;
             DB::beginTransaction();
             $production                  = Production::findOrFail($id);
+            abort_if(in_array($production->status, ['posting', 'complete'], true), 403, 'Produksi yang sudah selesai tidak dapat diedit.');
             $production->product_id      = $productId;
             $production->production_date = $request->production_date;
             $production->status          = $request->submit_type;
@@ -749,7 +756,13 @@ class ProductionController extends Controller
                 ->whereNotNull('product_id');
 
             if ($request->has('status_filter') && $request->status_filter !== 'all' && ! empty($request->status_filter)) {
-                $query->where('status', $request->status_filter);
+                // "complete" (Selesai) covers the posting and complete states, like the list label.
+                // Two statuses: Pending (temp / draft, not finished) and Selesai (posting / complete).
+                match ($request->status_filter) {
+                    'complete' => $query->whereIn('status', ['posting', 'complete']),
+                    'draft' => $query->whereIn('status', ['temp', 'draft']),
+                    default => $query->where('status', $request->status_filter),
+                };
             } else {
                 $statusColumnSearch = trim((string) data_get($request->input('columns', []), '1.search.value', ''));
                 if ($statusColumnSearch !== '') {
@@ -847,8 +860,8 @@ class ProductionController extends Controller
                     $labels = [
                         'posting'  => ['Completed', 'is-posting'],
                         'complete' => ['Complete', 'is-complete'],
-                        'draft'    => ['Draft', 'is-draft'],
-                        'temp'     => ['Temp', 'is-temp'],
+                        'draft'    => ['Pending', 'is-draft'],
+                        'temp'     => ['Pending', 'is-temp'],
                     ];
                     [$label, $class] = $labels[$item->status] ?? [ucfirst($item->status ?? 'Unknown'), 'is-muted'];
                     $quantity        = number_format($item->quantity ?? 0, 0, ',', '.');
@@ -873,7 +886,7 @@ class ProductionController extends Controller
                     <ul class="dropdown-menu p-1" style="min-width: 40px; z-index: 1050;">';
                     
                     if (! $row->pos_id) {
-                        $html .= '
+                        if (! in_array($row->status, ['posting', 'complete'], true)) $html .= '
                             <li>
                                 <a class="dropdown-item text-primary d-flex justify-content-center" href="' . $editUrl . '" title="Edit">
                                     <i class="bi bi-pencil"></i>

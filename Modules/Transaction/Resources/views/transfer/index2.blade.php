@@ -4,8 +4,9 @@
     $filterBranches = $branches->map(fn ($branch) => ['id' => (string) $branch->id, 'name' => ucwords($branch->name)])->values();
     $side = $receiving ? 'transfer-penerima' : 'transfer-pengirim';
     $pageTitle = $receiving ? 'Pindah Stok - Menerima' : 'Pindah Stok - Mengirim';
+    // Being prepared, on its way, being checked by the receiver (saved but not yet confirmed), received.
     $statuses = [['value' => 'all', 'label' => 'Semua Status']];
-    if (!$receiving) $statuses[] = ['value' => 'draft', 'label' => 'Draf'];
+    if (!$receiving) $statuses[] = ['value' => 'draft', 'label' => 'Pending'];
     $statuses = array_merge($statuses, [['value' => 'pending', 'label' => 'Dalam Perjalanan'], ['value' => 'proses', 'label' => 'Sedang Diperiksa'], ['value' => 'selesai', 'label' => 'Sudah Diterima']]);
 @endphp
 @section('title', $pageTitle . ' - Inventaris')
@@ -25,7 +26,7 @@
         <div class="transfer-toolbar">
             <div class="transfer-search">
                 <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
-                <input id="transfer-search" type="search" x-model="search" @input.debounce.300ms="load()" placeholder="Cari cabang, nomor pengiriman, atau barang..." aria-label="Cari transfer stok" autocomplete="off">
+                <input id="transfer-search" type="search" x-model="search" @input.debounce.300ms="load()" placeholder="Cari..." aria-label="Cari transfer stok" autocomplete="off">
                 <button type="button" x-show="search" x-cloak @click="clearSearch()" class="transfer-icon-button" aria-label="Hapus pencarian"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
                 <span class="transfer-search-divider" aria-hidden="true"></span>
                 <button type="button" @click="openFilter($event)" class="transfer-icon-button" :class="activeFilters || filterOpen ? 'is-active' : ''" :aria-expanded="filterOpen" aria-label="Filter pindah stok"><span class="icon-rounded" aria-hidden="true">tune</span></button>
@@ -38,25 +39,25 @@
         <div class="transfer-list-scroll" :aria-busy="loading">
             <div class="transfer-list-head" x-show="rows.length"><span>Cabang &amp; Waktu</span><span>Pengirim / Produk</span><span style="text-align:right">Status / Nomor Pengiriman</span></div>
             <template x-for="row in rows" :key="row.id">
-                <button type="button" class="transfer-row" @click="openDetail(row, $event)" :aria-label="'Detail transfer ' + row.invoice_number">
+                <button type="button" class="transfer-row" :class="hasDeficit(row) ? 'has-deficit' : ''" @click="openDetail(row, $event)" :aria-label="'Detail transfer ' + row.invoice_number">
                     <span class="transfer-row-branch">
                         <span class="transfer-branch-avatar" :style="branchTheme(branchName(row))" x-text="initials(branchName(row))"></span>
-                        <span class="transfer-branch-copy"><strong class="transfer-branch-name" x-text="branchName(row)"></strong><span class="transfer-row-date" x-text="dateLabel(row.created_at || row.date)"></span></span>
+                        <span class="transfer-branch-copy"><strong class="transfer-branch-name" x-text="branchName(row)"></strong><span class="transfer-row-date" x-text="rowDate(row)"></span></span>
                     </span>
                     <span class="transfer-desktop-meta"><span x-text="row.staff_name || '—'"></span><br><small x-text="row.items.length + ' produk'"></small></span>
-                    <span class="transfer-row-amount"><span class="transfer-row-status" :class="row.status === 'selesai' ? 'is-final' : (row.status === 'pending' ? 'is-pending' : '')" x-text="statusLabel(row.status)"></span><strong class="transfer-row-total" x-text="row.invoice_number"></strong></span>
+                    <span class="transfer-row-amount"><span class="transfer-row-status-line"><i class="ph-fill ph-warning-circle transfer-row-warning" x-show="hasDeficit(row)" x-cloak title="Terdapat Selisih Kurang" aria-hidden="true"></i><span class="transfer-row-status" :class="row.status === 'selesai' ? 'is-final' : (['pending','proses'].includes(row.status) ? 'is-pending' : '')" x-text="statusLabel(row.status)"></span></span><strong class="transfer-row-total" x-text="row.invoice_number"></strong></span>
                 </button>
             </template>
             <div class="transfer-list-state" x-show="loading && !rows.length" role="status"><i class="ph ph-circle-notch" aria-hidden="true"></i><p>Memuat transfer stok...</p></div>
             <div class="transfer-list-state" x-show="error" x-cloak role="alert"><h2>Daftar transfer belum dapat dimuat</h2><p x-text="error"></p><button type="button" class="transfer-text-button" @click="load(rows.length > 0)">Coba lagi</button></div>
             <div class="transfer-list-state" x-show="!loading && !error && !rows.length" x-cloak>
-                <i class="ph-duotone ph-receipt" aria-hidden="true"></i>
-                <h2 x-text="search || activeFilters ? 'Transaksi tidak ditemukan' : @js($receiving ? 'Belum ada barang masuk' : 'Belum ada pengiriman')"></h2>
+                <span class="transfer-state-icon"><i class="ph-duotone ph-receipt" aria-hidden="true"></i></span>
+                <h2 x-text="search || activeFilters ? 'Transaksi tidak ditemukan' : @js($receiving ? 'Belum ada penerimaan stok' : 'Belum ada pengiriman stok')"></h2>
                 <p x-show="search || activeFilters">Coba kata pencarian lain atau sesuaikan filter.</p>
                 @if (!$receiving && check_access('transfer-pengirim.create'))
-                    <p x-show="!search && !activeFilters">Klik tombol <a href="{{ route('transfer-pengirim.create') }}" class="transfer-text-button" aria-label="Tambah pindah stok">+</a> untuk menambahkan<br>transfer stok baru.</p>
+                    <p x-show="!search && !activeFilters">Tekan tombol <a href="{{ route('transfer-pengirim.create') }}" class="transfer-add-tile" aria-label="Tambah pindah stok">+</a> di bawah untuk menambahkan transfer stok baru</p>
                 @endif
-                @if ($receiving)<p x-show="!search && !activeFilters">Pengiriman ke cabang Anda akan tampil di sini untuk diperiksa dan diterima.</p>@endif
+                @if ($receiving)<p x-show="!search && !activeFilters">Pengiriman dari cabang lain akan tampil di sini untuk diterima</p>@endif
                 <button type="button" class="transfer-text-button" x-show="search || activeFilters" @click="search = ''; resetFilters()">Reset pencarian &amp; filter</button>
             </div>
             <div class="transfer-load-more" x-show="hasMore && rows.length && !error" x-cloak>
@@ -67,16 +68,19 @@
         </div>
         <x-erp.filter-sheet
             id="transfer"
-            title="Filter Pindah Stok"
+            title="Filter Pindah Stok - {{ $receiving ? 'Menerima' : 'Mengirim' }}"
             aria-label="Filter pindah stok"
-            subtitle="Saring cabang dan status {{ $receiving ? 'penerimaan' : 'pengiriman' }}"
-            :branch-label="$receiving ? 'Cabang Penerima' : 'Cabang Pengirim'"
+            subtitle="{{ $receiving ? 'Saring cabang, status penerimaan, dan periode tanggal' : 'Saring cabang tujuan, status, dan periode tanggal' }}"
+            :branch-label="'Cabang Tujuan'"
             branch-all-label="Semua Cabang"
             :status-label="'Status ' . ($receiving ? 'Penerimaan' : 'Pengiriman')"
             :branches="$filterBranches"
             :statuses="collect($statuses)->pluck('label', 'value')->all()"
             :timezone="config('app.timezone')"
             desktop="modal"
+            variant="transfer"
+            reset-label="Reset Filter"
+            apply-label="Terapkan Filter"
             reset-applies
         />
         @include('transaction::transfer.segment.detail-dialog')

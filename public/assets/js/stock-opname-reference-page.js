@@ -114,7 +114,7 @@ function initStockOpnameReference() {
                 refreshing=false;
                 dataTable.off('xhr.soCorrection');
                 if (window.stockOpnameRows[id]) openStockDetail(id);
-                $('#so-correction-error').text('Koreksi tersimpan.');
+                $('#so-correction-error').text('');
                 finish();
             },false);
         },error(xhr) {

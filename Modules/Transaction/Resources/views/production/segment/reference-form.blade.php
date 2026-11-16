@@ -10,7 +10,7 @@
 
     <!-- Kartu 1: cabang / dapur produksi -->
     <section class="production-ref-card production-ref-card--branch">
-        <label class="production-ref-label" for="branch_id">Cabang / Dapur Produksi <span class="production-ref-required">*</span></label>
+        <label class="production-ref-label" for="branch_id">Cabang <span class="production-ref-required">*</span></label>
         <select class="form-select" id="branch_id" name="branch_id">
             <option value="">Pilih Branch</option>
         </select>
@@ -33,7 +33,7 @@
                 :aria-label="referenceSelectedProductName ? 'Ganti produk: ' + referenceSelectedProductName : 'Pilih produk olahan'">
                 <span class="production-ref-product__text">
                     <strong :class="referenceSelectedProductName ? '' : 'is-placeholder'" x-text="referenceSelectedProductName || 'Pilih produk olahan...'"></strong>
-                    <small x-show="referenceSelectedProductName" x-text="formatCurrency(sellPrice) + ' / porsi'"></small>
+                    <small x-show="referenceSelectedProductName" x-text="formatCurrency(sellPrice) + ' / Porsi'"></small>
                 </span>
                 <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
             </button>
@@ -43,13 +43,12 @@
         <div class="production-ref-composition">
             <div class="production-ref-composition__head">
                 <span>Komposisi Produk</span>
-                <button type="button" @click="openAddIngredientModal()" aria-label="Tambah bahan produksi">+ Tambah</button>
+                <button type="button" @click="openAddIngredientModal()" :disabled="!referenceProductId" aria-label="Tambah bahan produksi">+ Tambah</button>
             </div>
             <div class="production-ref-composition__body" id="ingredients-container">
                 <template x-if="isLoadingIngredients">
-                    <div class="production-ref-empty" role="status">
-                        <x-erp.spinner size="sm" />
-                        <span>Memuat bahan dari resep…</span>
+                    <div class="production-ref-empty is-loading" role="status" aria-label="Memuat bahan dari resep">
+                        <x-erp.spinner size="lg" />
                     </div>
                 </template>
                 <template x-if="!isLoadingIngredients && ingredients.length === 0">
@@ -58,7 +57,7 @@
                         <span>Daftar bahan dan takaran komposisi racikan akan ditampilkan secara otomatis</span>
                     </div>
                 </template>
-                <template x-for="(ingredient,index) in ingredients" :key="ingredient.id">
+                <template x-for="(ingredient,index) in (isLoadingIngredients ? [] : ingredients)" :key="ingredient.id">
                     <div class="production-ref-row" x-data="{ startX: 0, startY: 0, revealed: false,
                             down(e) { if (e.target.closest('input,button')) return; const t = e.touches ? e.touches[0] : e; this.startX = t.clientX; this.startY = t.clientY; },
                             move(e) { if (!this.startX) return; const t = e.touches ? e.touches[0] : e; const dx = this.startX - t.clientX; const dy = Math.abs(this.startY - t.clientY);
@@ -73,12 +72,12 @@
                             @mousedown="down($event)" @mousemove="startX && move($event)" @mouseup="up()" @mouseleave="up()">
                             <div class="production-ref-row__line">
                                 <strong x-text="ingredient.name"></strong>
-                                <span class="production-ref-row__price" x-text="formatCurrency(ingredient.hpp) + ' / ' + ingredient.unit"></span>
+                                <span class="production-ref-row__price"><span x-text="formatCurrency(ingredient.hpp) + ' /'"></span><span class="production-ref-row__price-unit" x-text="ingredient.unit"></span></span>
                             </div>
                             <div class="production-ref-row__line">
                                 <span class="production-ref-row__total"><small>Rp</small><b x-text="formatNumber(ingredient.total)"></b></span>
                                 <span class="production-ref-row__qty">
-                                    <input type="text" inputmode="decimal" maxlength="7" :value="inlineQuantityDrafts[ingredient.id] ?? ingredient.quantity"
+                                    <input type="text" inputmode="decimal" maxlength="7" :value="inlineQuantityDrafts[ingredient.id] ?? formatInlineQuantity(ingredient.quantity)"
                                         @input="updateIngredientInline(index, $event.target.value)"
                                         @blur="normalizeIngredientInline(index, $event.target)" @keydown.enter.prevent="$el.blur()"
                                         aria-label="Jumlah bahan">
@@ -95,20 +94,20 @@
         <div class="production-ref-totals">
             <div class="production-ref-field">
                 <span class="production-ref-label">Modal / Satuan</span>
-                <div class="production-ref-readout"><small>Rp</small><b x-text="formatNumber(hppPerUnit)"></b></div>
+                <div class="production-ref-readout is-locked"><small>Rp</small><b x-text="formatNumber(hppPerUnit)"></b></div>
             </div>
             <div class="production-ref-field">
                 <span class="production-ref-label">Total Modal</span>
-                <div class="production-ref-readout"><small>Rp</small><b x-text="formatNumber(totalHpp)"></b></div>
+                <div class="production-ref-readout is-locked"><small>Rp</small><b x-text="formatNumber(totalHpp)"></b></div>
             </div>
             <div class="production-ref-field">
-                <span class="production-ref-label">Harga Jual <em>/porsi</em></span>
-                <div class="production-ref-readout"><small>Rp</small><b x-text="formatNumber(sellPrice)"></b></div>
+                <label class="production-ref-label" for="sell_price_display">Harga Jual <em>/porsi</em></label>
+                <div class="production-ref-readout" :class="referenceProductId ? '' : 'is-locked'"><small>Rp</small><input id="sell_price_display" type="text" inputmode="numeric" autocomplete="off" class="production-ref-readout__input" :disabled="!referenceProductId" :value="formatNumber(sellPrice)" @input="sellPrice = $event.target.value.replace(/\D/g, '')" aria-label="Harga jual per porsi"></div>
             </div>
             <div class="production-ref-field">
                 <label class="production-ref-label" for="quantity">Kuantitas <em>(PORSI)</em> <span class="production-ref-required">*</span></label>
                 <input type="number" inputmode="decimal" name="quantity" id="quantity" class="form-control"
-                    placeholder="0" step="0.01" min="1" max="9999" x-model="productionQuantity"
+                    placeholder="0" step="0.01" min="1" max="9999" x-model="productionQuantity" :disabled="!referenceProductId"
                     value="{{ isset($data) ? $data->quantity : '' }}" />
             </div>
         </div>
@@ -136,10 +135,10 @@
                 <x-erp.spinner size="sm" x-show="savingDraft" />
                 <i class="ph-bold ph-bookmark-simple" aria-hidden="true" x-show="!savingDraft"></i>
             </button>
-            <button type="button" class="production-ref-save" :disabled="saving || savingDraft"
+            <button type="button" class="production-ref-save" :disabled="saving || savingDraft || !referenceProductId"
                 @click="saving = true; saveProduction('posting', () => saving = false)">
                 <x-erp.spinner size="sm" x-show="saving" class="!text-white" />
-                <span x-text="saving ? 'Menyimpan…' : '{{ request()->routeIs('production.edit') ? 'Simpan' : 'Tambah' }}'"></span>
+                <span x-text="saving ? 'Menyimpan…' : 'Submit'"></span>
             </button>
         </div>
     </div>

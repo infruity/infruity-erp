@@ -27,6 +27,7 @@
 .erp-picker__text { display:flex; min-width:0; flex-direction:column; }
 .erp-picker__text strong { color:#111827; font-size:13px; font-weight:700; overflow-wrap:anywhere; }
 .erp-picker__text span { margin-top:2px; color:#9ca3af; font-size:11px; }
+.erp-picker__aside { flex:none; margin-left:auto; color:#6b7280; font-size:11px; font-style:normal; font-weight:600; white-space:nowrap; }
 .erp-picker__item > i { flex:none; color:#059669; font-size:16px; }
 .erp-picker__empty { margin:0; padding:28px 16px; color:#9ca3af; text-align:center; font-size:13px; }
 .erp-picker__empty[hidden] { display:none; }

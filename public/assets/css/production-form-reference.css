@@ -37,7 +37,7 @@ body.erp-ui:has(.production-create-reference #branch_id + .select2-container--op
 body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option { position:relative; border-radius:8px; padding:10px 14px; color:#374151; font-size:13px; line-height:18px; }
 body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option--highlighted { background:#f9fafb; color:#374151; }
 body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option[aria-selected="true"] { display:flex; align-items:center; justify-content:space-between; background:#ecfdf5; color:#047857; font-weight:600; }
-body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option[aria-selected="true"]::after { width:8px; height:8px; margin-left:8px; border-radius:50%; background:#10b981; content:""; flex:none; }
+body.erp-ui:has(.production-create-reference #branch_id + .select2-container--open) .select2-container--open .select2-results__option[aria-selected="true"]::after { content:none; display:none; }
 body.erp-ui .production-create-reference #quantity:focus { outline:none !important; border-color:var(--erp-active-border) !important; box-shadow:var(--erp-active-ring) !important; }
 .production-create-reference [aria-labelledby="production-ingredients-title"] { display:flex; flex-direction:column; min-height:260px; }
 .production-create-reference [aria-labelledby="production-ingredients-title"] .production-card__head { padding:16px 20px; }
@@ -212,7 +212,7 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
 @media (max-width:767px) { .production-create-reference { padding-bottom:16px; } }
 .production-create-reference .production-product-picker-field > select#product_id { display:none; }
 /* The product card runs down to the bottom bar, as in the reference (top bar 60 + padding 16 + bar 70 + gap 16). */
-@media (max-width:767px) { .production-create-reference .production-ref { height:calc(100dvh - 162px - env(safe-area-inset-bottom)); } }
+@media (max-width:767px) { .production-create-reference .production-ref { height:calc(100dvh - 168px - env(safe-area-inset-bottom)); } }
 @media (min-width:768px) { .production-create-reference .production-ref { height:calc(100dvh - 120px); } }
 
 /* ---- Create form: sizes, colours and strokes taken from the HTML reference (infruity-frontend 003. ERP/005. Produksi) ----
@@ -235,18 +235,21 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
 .production-ref-product__text { display:flex; min-width:0; flex-direction:column; }
 .production-ref-product__text strong { overflow:hidden; color:#111827; font-size:12px; font-weight:700; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
 .production-ref-product__text strong.is-placeholder { color:#9ca3af; font-weight:500; }
-.production-ref-product__text small { margin-top:2px; color:#9ca3af; font:400 11px/16.5px Poppins, sans-serif; }
+.production-ref-product__text small { margin-top:2px; color:#9ca3af; font:400 11px/16.5px "Plus Jakarta Sans", sans-serif; }
 .production-ref-product > i { flex:none; color:#9ca3af; font-size:12px; }
 /* Composition box */
 .production-ref-composition { margin-top:12px; overflow:hidden; border:1px solid rgba(229,231,235,.9); border-radius:12px; background:#fff; }
 .production-ref-composition__head { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f3f4f6; background:rgba(249,250,251,.8); padding:10px 14px; }
 .production-ref-composition__head > span { color:#1f2937; font-size:12px; font-weight:700; line-height:16px; }
 .production-ref-composition__head > button { border:0; background:transparent; padding:0; color:#0b595b; font-size:12px; font-weight:700; line-height:16px; cursor:pointer; }
-.production-ref-composition__head > button:hover { color:#08484a; text-decoration:underline; }
+.production-ref-composition__head > button:hover { color:#08484a; text-decoration:none; }
+.production-ref-composition__head > button:disabled { color:#9ca3af; cursor:not-allowed; text-decoration:none; }
 .production-ref-composition__body { min-height:140px; }
+.production-ref-composition__body:has(> .production-ref-empty) { display:flex; flex-direction:column; }
+.production-ref-composition__body > .production-ref-empty { flex:1; }
 .production-ref-empty { display:flex; min-height:140px; flex-direction:column; align-items:center; justify-content:center; padding:16px; text-align:center; }
 .production-ref-empty strong { color:#374151; font-size:12px; font-weight:700; line-height:16px; }
-.production-ref-empty span { max-width:260px; margin-top:4px; color:#9ca3af; font-size:11px; line-height:16.5px; }
+.production-ref-empty span { max-width:260px; margin-top:4px; text-wrap:balance; color:#9ca3af; font-size:11px; line-height:16.5px; }
 .production-ref-row { position:relative; overflow:hidden; border-bottom:1px solid #f3f4f6; background:#ef4444; user-select:none; }
 .production-ref-row:last-child { border-bottom:0; }
 .production-ref-row__delete { position:absolute; top:0; right:0; bottom:0; display:flex; width:68px; flex-direction:column; align-items:center; justify-content:center; border:0; background:#ef4444; color:#fff; font-size:10px; font-weight:700; cursor:pointer; }
@@ -255,18 +258,24 @@ body.erp-ui .production-create-reference #branch_id + .select2-container .select
 .production-ref-row__content.is-revealed { transform:translateX(-68px); }
 .production-ref-row__line { display:flex; min-height:24px; align-items:center; justify-content:space-between; gap:12px; }
 .production-ref-row__line strong { overflow:hidden; color:#1f2937; font-size:12px; font-weight:700; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
-.production-ref-row__price { flex:none; color:#9ca3af; font:400 11px/16.5px Poppins, sans-serif; }
-.production-ref-row__total { display:flex; flex:none; align-items:center; font-family:Poppins, sans-serif; }
+.production-ref-row__price { display:flex; flex:none; align-items:center; color:#9ca3af; font:400 11px/16.5px "Plus Jakarta Sans", sans-serif; }
+/* The unit sits in the same 28px slot as the quantity's unit below it, so the two units line up (as in the reference). */
+.production-ref-row__price-unit { width:28px; flex:none; margin-left:4px; overflow:hidden; font-weight:500; text-align:left; text-overflow:ellipsis; white-space:nowrap; }
+.production-ref-row__total { display:flex; flex:none; align-items:center; font-family:"Plus Jakarta Sans", sans-serif; }
 .production-ref-row__total small { margin-right:4px; color:#9ca3af; font-size:12px; font-weight:700; line-height:16px; }
-.production-ref-row__total b { display:flex; width:56px; height:22px; align-items:center; border-bottom:2px dashed #d1d5db; color:#374151; font-size:12px; font-weight:700; line-height:16px; font-variant-numeric:tabular-nums; }
-.production-ref-row__qty { display:flex; flex:none; align-items:center; font-family:Poppins, sans-serif; }
-.production-ref-row__qty input { width:44px; height:22px; border:0; border-bottom:2px dashed #d1d5db; border-radius:0; background:transparent; padding:0; color:#374151; font:700 12px/16px Poppins, sans-serif; text-align:right; outline:none; box-shadow:none; }
+.production-ref-row__total b { display:flex; width:auto; height:22px; align-items:center; border-bottom:0; color:#374151; font-size:12px; font-weight:700; line-height:16px; font-variant-numeric:tabular-nums; }
+.production-ref-row__qty { display:flex; flex:none; align-items:center; font-family:"Plus Jakarta Sans", sans-serif; }
+.production-ref-row__qty input { width:44px; height:22px; border:0; border-bottom:2px dashed #d1d5db; border-radius:0; background:transparent; padding:0; color:#374151; font:700 12px/16px "Plus Jakarta Sans", sans-serif; text-align:right; outline:none; box-shadow:none; }
 .production-ref-row__qty input:hover { border-bottom-color:#059669; }
-.production-ref-row__qty input:focus { border-bottom:2px solid #10b981; color:#065f46; }
+.production-ref-row__qty input:focus { border-bottom:2px dashed #d1d5db; color:#374151; }
+/* Clicking the quantity keeps the resting dashed underline: no ring, box, outline or fill from the shared field styles. */
+body.erp-ui .production-create-reference .production-ref-row__qty input:is(:hover, :focus, :focus-visible, :active) { border-width:0 0 2px !important; border-radius:0 !important; background:transparent !important; box-shadow:none !important; outline:0 !important; }
+body.erp-ui .production-create-reference .production-ref-row__qty input:is(:focus, :focus-visible) { border-bottom-style:dashed !important; border-bottom-color:#d1d5db !important; color:#374151; }
 .production-ref-row__qty > span { width:28px; margin-left:4px; overflow:hidden; color:#9ca3af; font-size:11px; font-weight:500; line-height:16.5px; text-overflow:ellipsis; white-space:nowrap; }
 /* Modal / Total / Harga jual / Kuantitas */
 .production-ref-totals { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; border-top:1px solid #f3f4f6; padding-top:12px; }
 .production-ref-readout { display:flex; height:44px; align-items:center; overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; background:#fff; padding:0 14px; }
+.production-ref-readout.is-locked { background:rgba(243,244,246,.8); }
 .production-ref-readout small { flex:none; margin-right:6px; color:#9ca3af; font-size:12px; font-weight:700; }
 .production-ref-readout b { overflow:hidden; color:#1f2937; font-size:12px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
 .production-create-reference .production-ref-totals #quantity { height:44px; min-height:44px; padding:0 14px; border:1px solid #e5e7eb; border-radius:12px; background-color:#fff; color:#1f2937; font-size:12px; font-weight:700; box-shadow:none; }
@@ -306,9 +315,9 @@ body:has(.production-create-reference) .erp-picker__item:hover { background:#f9f
 body:has(.production-create-reference) .erp-picker__item.is-selected { background:#ecfdf5; }
 body:has(.production-create-reference) .erp-picker__item.is-selected .erp-picker__text strong { color:#0b595b; }
 body:has(.production-create-reference) .erp-picker__item > i { display:none; }
-body:has(.production-create-reference) .erp-picker__item.is-selected::after { content:''; width:8px; height:8px; flex:none; border-radius:50%; background:#10b981; }
+body:has(.production-create-reference) .erp-picker__item.is-selected::after { content:none; display:none; }
 body:has(.production-create-reference) .erp-picker__text strong { color:#1f2937; font-size:12px; font-weight:700; }
-body:has(.production-create-reference) .erp-picker__text span { margin-top:2px; color:#9ca3af; font:400 11px/16.5px Poppins, sans-serif; }
+body:has(.production-create-reference) .erp-picker__text span { margin-top:2px; color:#9ca3af; font:400 11px/16.5px "Plus Jakarta Sans", sans-serif; }
 @media (min-width:640px) { body:has(.production-create-reference) .erp-picker__text strong { font-size:13px; } }
 body:has(.production-reference-ingredient-modal.show) .modal-backdrop.show { background:#000; opacity:.4; -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
 .production-create-reference .production-reference-ingredient-modal .modal-content { border:1px solid #e5e7eb; border-radius:24px; box-shadow:0 25px 50px -12px rgba(0,0,0,.25); }
@@ -335,7 +344,7 @@ body:has(.production-reference-ingredient-modal.show) .modal-backdrop.show { bac
 .production-ref-ingredient-option.is-selected .production-ref-ingredient-option__radio::after { content:''; position:absolute; width:8px; height:8px; border-radius:50%; background:#10b981; }
 .production-ref-ingredient-option__name { min-width:0; flex:1; overflow:hidden; color:#1f2937; font-size:12px; font-weight:500; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
 .production-ref-ingredient-option.is-selected .production-ref-ingredient-option__name { color:#111827; font-weight:700; }
-.production-ref-ingredient-option__price { flex:none; color:#9ca3af; font:600 11px/16.5px Poppins, sans-serif; }
+.production-ref-ingredient-option__price { flex:none; color:#9ca3af; font:600 11px/16.5px "Plus Jakarta Sans", sans-serif; }
 .production-ref-qty-input { position:relative; display:flex; height:44px; align-items:center; border:1px solid #e5e7eb; border-radius:12px; background:#fff; padding:0 14px; }
 .production-ref-qty-input:focus-within { border-color:var(--erp-active-border); }
 .production-ref-qty-input input { min-width:0; flex:1; border:0; outline:none; background:transparent; padding:0; color:#1f2937; font-size:12px; font-weight:700; box-shadow:none; }
@@ -353,7 +362,20 @@ body:has(.production-reference-ingredient-modal.show) .modal-backdrop.show { bac
 .production-create-reference .production-ref, .production-create-reference .production-reference-ingredient-modal, body:has(.production-create-reference) .erp-picker { font-family:'Plus Jakarta Sans', sans-serif; }
 .production-create-reference .production-ref-card--branch .erp-picker__trigger, .production-ref-readout b, .production-ref-readout small, .production-ref-save, .production-ref-qty-input input, .production-create-reference .production-ref-totals #quantity { line-height:16px; }
 .production-ref-row__line:first-child { min-height:0; }
-.production-ref-row__qty > span { font-family:Poppins, sans-serif; }
+.production-ref-row__qty > span { font-family:"Plus Jakarta Sans", sans-serif; }
 @media (min-width:640px) {
     .production-create-reference .production-ref-card--branch .erp-picker__trigger, .production-ref-readout b, .production-ref-readout small, .production-ref-save, .production-ref-qty-input input, .production-create-reference .production-ref-totals #quantity { line-height:20px; }
 }
+
+/* Quantity stays locked (grey, like the read-only fields) until a product is chosen. */
+.production-create-reference .production-ref-totals #quantity:disabled { background:rgba(243,244,246,.8); color:#9ca3af; cursor:not-allowed; }
+.production-ref-readout__input { min-width:0; flex:1; height:100%; border:0 !important; outline:0 !important; box-shadow:none !important; background:transparent !important; padding:0; color:#1f2937; font-size:12px; font-weight:700; }
+.production-ref-readout__input:disabled { cursor:not-allowed; }
+.production-ref-readout:has(.production-ref-readout__input:focus) { border-color:var(--erp-active-border); box-shadow:var(--erp-active-ring); }
+
+/* Add-ingredient dialog: the dim layer fades in together with the card (300 ms in, 200 ms out) instead of after a separate backdrop. */
+.production-reference-ingredient-modal { background:rgba(0,0,0,.6); -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); }
+.production-reference-ingredient-modal.fade { transition:opacity .2s ease-in; }
+.production-reference-ingredient-modal.fade.show { transition:opacity .3s ease-out; }
+.production-reference-ingredient-modal.fade .modal-dialog { transform:translateY(16px) scale(.95); transition:transform .2s ease-in; }
+.production-reference-ingredient-modal.fade.show .modal-dialog { transform:none; transition:transform .3s ease-out; }

@@ -76,9 +76,9 @@ return [
         'array'   => ':attribute harus tidak lebih dari :value anggota.',
     ],
     'max' => [
-        'numeric' => ':attribute maskimal bernilai :max.',
+        'numeric' => ':attribute maksimal bernilai :max.',
         'file'    => ':attribute maksimal berukuran :max kilobita.',
-        'string'  => ':attribute maskimal berisi :max karakter.',
+        'string'  => ':attribute maksimal berisi :max karakter.',
         'array'   => ':attribute maksimal terdiri dari :max anggota.',
     ],
     'mimes'     => ':attribute harus berupa berkas berjenis: :values.',
@@ -146,5 +146,17 @@ return [
     */
 
     'attributes' => [
+        'name' => 'Nama',
+        'type' => 'Tipe Kurir',
+        'staff_id' => 'Karyawan',
+        'date_in' => 'Tanggal Masuk',
+        'position_id' => 'Jabatan',
+        'branch_id' => 'Cabang',
+        'province' => 'Provinsi',
+        'city' => 'Kabupaten / Kota',
+        'district' => 'Kecamatan',
+        'village' => 'Kelurahan',
+        'address' => 'Alamat',
+        'map_link' => 'Link Google Maps',
     ],
 ];

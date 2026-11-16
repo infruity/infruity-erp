@@ -225,6 +225,30 @@ html.erp-html { font-size:16px; }
    confirmation); the fixed colours that used to be here ignored them, so every dialog came out teal. They stay the defaults. */
 .erp-ui .swal2-styled.swal2-confirm { background-color: var(--swal2-confirm-button-background-color, var(--erp-primary)); }
 .erp-ui .swal2-styled.swal2-cancel { background-color: var(--swal2-cancel-button-background-color, #4b5563); }
+/* Delete confirmation like the HTML reference: 368px card, 56px red trash tile, 16px title, name in bold, two equal 44px buttons. */
+.erp-ui .swal2-popup.erp-delete-dialog { box-sizing: border-box; width: min(24rem, calc(100vw - 2rem)); padding: 0; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,.1), 0 8px 10px -6px rgba(0,0,0,.1); }
+.erp-ui .erp-delete-dialog .swal2-icon.erp-delete-dialog__icon { width: 56px; height: 56px; margin: 28px auto 16px; border: 0; border-radius: 16px; background: #fef2f2; color: #ef4444; }
+.erp-ui .erp-delete-dialog .erp-delete-dialog__icon .swal2-icon-content { font-size: 24px; }
+.erp-ui .erp-delete-dialog .swal2-title { margin: 0 0 6px; padding: 0 24px; color: #111827; font-size: 16px; font-weight: 700; line-height: 24px; }
+.erp-ui .erp-delete-dialog .swal2-html-container { margin: 0; padding: 0 24px 20px; color: #6b7280; font-size: 14px; line-height: 20px; }
+.erp-ui .erp-delete-dialog .swal2-html-container strong { color: #374151; font-weight: 700; }
+.erp-ui .erp-delete-dialog .swal2-actions { width: 100%; margin: 0; padding: 0 24px 24px; gap: 12px; flex-wrap: nowrap; }
+.erp-ui .erp-delete-dialog .swal2-styled { flex: 1; min-height: 44px; height: 44px; margin: 0; padding: 0; border-radius: 12px; font-size: 14px; font-weight: 600; }
+.erp-ui .erp-delete-dialog .swal2-styled.swal2-cancel { border: 1px solid #e5e7eb; background: #fff !important; color: #4b5563; }
+.erp-ui .erp-delete-dialog .swal2-styled.swal2-confirm { background: #ef4444 !important; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+/* Enter/exit like the reference modal (Alpine x-transition): backdrop fades 200ms, card fades + scales .9 + rises 16px in 200ms (ease-out), leaves in 150ms (ease-in). */
+/* A SweetAlert confirmation always sits above every ERP popup (detail dialogs 1100, picker/forms up to 1300); at the stock 1060 it hid behind them. */
+.swal2-container { z-index: 2000 !important; }
+.erp-ui .swal2-container.erp-delete-container { background: rgba(0,0,0,.6); }
+@keyframes erp-del-in { from { opacity: 0; transform: translateY(16px) scale(.9); } to { opacity: 1; transform: none; } }
+@keyframes erp-del-out { 0% { opacity: 1; transform: none; } 75%, 100% { opacity: 0; transform: translateY(16px) scale(.9); } }
+@keyframes erp-del-bd-in { from { background-color: rgba(0,0,0,0); } to { background-color: rgba(0,0,0,.6); } }
+@keyframes erp-del-bd-out { from { background-color: rgba(0,0,0,.6); } to { background-color: rgba(0,0,0,0); } }
+.erp-ui .swal2-popup.erp-delete-dialog.erp-del-show { animation: erp-del-in .2s cubic-bezier(0,0,.2,1) both; }
+.erp-ui .swal2-popup.erp-delete-dialog.erp-del-hide { animation: erp-del-out .2s cubic-bezier(.4,0,1,1) both; }
+.erp-ui .swal2-container.erp-delete-container.erp-del-bd-show { animation: erp-del-bd-in .2s cubic-bezier(0,0,.2,1) both; }
+.erp-ui .swal2-container.erp-delete-container.erp-del-bd-hide { animation: erp-del-bd-out .2s cubic-bezier(.4,0,1,1) both; }
+@media (prefers-reduced-motion: reduce) { .erp-ui .swal2-popup.erp-delete-dialog, .erp-ui .swal2-container.erp-delete-container { animation-duration: .01ms !important; } }
 .erp-ui .swal2-styled:focus-visible { box-shadow: 0 0 0 3px rgba(11,89,91,.16); }
 .erp-ui .swal2-input { border-radius: 12px; border-color: var(--erp-border); font: 16px var(--erp-font); }
 .erp-ui .tooltip { --bs-tooltip-bg: #111827; --bs-tooltip-color: white; --bs-tooltip-border-radius: 8px; font-family: var(--erp-font); }
@@ -416,3 +440,6 @@ select.erp-empty option { color: #1f2937 !important; }
 .erp-ui .erp-settings-page .erp-settings-option-value { color:#9ca3af; font-size:12px; line-height:16px; }
 .erp-ui .erp-settings-page .erp-settings-options > .erp-settings-option + .erp-settings-option, .erp-ui .erp-settings-page .erp-settings-options > a.erp-settings-option:first-child { border-color:#f3f4f6; }
 @media (min-width:641px) { .erp-ui .erp-settings-page .erp-settings-details { padding:20px; } .erp-ui .erp-settings-page .erp-settings-option { padding:14px 16px; } }
+
+/* Dialog titles and messages wrap into lines of similar length instead of one long line and a short tail. */
+.erp-ui .swal2-title, .erp-ui .swal2-html-container { text-wrap: balance; }

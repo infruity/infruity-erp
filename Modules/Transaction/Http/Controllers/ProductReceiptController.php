@@ -60,6 +60,8 @@ class ProductReceiptController extends Controller
             $category = 'all';
         }
         $receipts = Receipt::with([
+            'updater',
+            'creator',
             'products.category',
             'products.unit',
             'recipeIngredients.ingredients.unit',
@@ -399,6 +401,20 @@ class ProductReceiptController extends Controller
                 });
             })
             ->get();
+
+        // Stock available per product, for the branch chosen on the form (all branches when none is chosen yet).
+        $branchId = $request->input('branch');
+        $stock = \App\Support\LedgerSql::stockFor($data->pluck('product_id')->filter()->unique()->values()->all())
+            ->when($branchId, fn ($query) => $query->where('branch_id', $branchId))
+            ->get()
+            ->groupBy('id')
+            ->map(fn ($rows) => (float) $rows->sum('stock_available'));
+        foreach ($data as $receipt) {
+            if ($receipt->products) {
+                $receipt->products->setAttribute('stock_available', $stock->get($receipt->product_id, 0));
+            }
+        }
+
         return response()->json($data);
     }
 

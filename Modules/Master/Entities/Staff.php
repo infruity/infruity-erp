@@ -25,6 +25,12 @@ class Staff extends Model
         return $this->belongsTo(Position::class, 'position_id', 'id');
     }
 
+    /** Every position the employee holds (staff.position_id remains the first one). */
+    public function positions()
+    {
+        return $this->belongsToMany(Position::class, 'staff_position', 'staff_id', 'position_id')->orderBy('position.name');
+    }
+
     public function department()
     {
         return $this->belongsTo(Department::class, 'department_id', 'id');

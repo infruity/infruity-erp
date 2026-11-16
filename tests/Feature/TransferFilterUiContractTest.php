@@ -20,16 +20,15 @@ final class TransferFilterUiContractTest extends TestCase
         foreach ([
             '<x-erp.filter-sheet',
             'id="transfer"',
-            'title="Filter Pindah Stok"',
-            "'Cabang Penerima' : 'Cabang Pengirim'",
+            'title="Filter Pindah Stok - {{ $receiving ? \'Menerima\' : \'Mengirim\' }}"',
+            "'Cabang Tujuan'",
             "'Status ' . (\$receiving ? 'Penerimaan' : 'Pengiriman')",
             ':branches="$filterBranches"',
             "collect(\$statuses)->pluck('label', 'value')->all()",
             ':timezone="config(\'app.timezone\')"',
             'desktop="modal"',
             'reset-applies',
-            "['value' => 'draft', 'label' => 'Draf']",
-            "['value' => 'proses', 'label' => 'Sedang Diperiksa']",
+            "['value' => 'draft', 'label' => 'Pending']",
             "@erp-filter-apply.window=\"if (\$event.detail.id === 'transfer') applyFilters(\$event.detail.values)\"",
             "@erp-filter-close.window=\"if (\$event.detail.id === 'transfer') closeFilter()\"",
         ] as $contract) {
@@ -47,14 +46,14 @@ final class TransferFilterUiContractTest extends TestCase
     {
         $statuses = fn (bool $receiving) => collect(array_merge(
             [['value' => 'all', 'label' => 'Semua Status']],
-            $receiving ? [] : [['value' => 'draft', 'label' => 'Draf']],
+            $receiving ? [] : [['value' => 'draft', 'label' => 'Pending']],
             [['value' => 'pending', 'label' => 'Dalam Perjalanan'], ['value' => 'proses', 'label' => 'Sedang Diperiksa'], ['value' => 'selesai', 'label' => 'Sudah Diterima']]
         ))->pluck('label', 'value')->all();
 
         $render = fn (bool $receiving) => Blade::render(
             '<x-erp.filter-sheet id="transfer" title="Filter Pindah Stok" :branch-label="$label" :status-label="$statusLabel" :branches="$branches" :statuses="$statuses" />',
             [
-                'label' => $receiving ? 'Cabang Penerima' : 'Cabang Pengirim',
+                'label' => 'Cabang Tujuan',
                 'statusLabel' => 'Status ' . ($receiving ? 'Penerimaan' : 'Pengiriman'),
                 'branches' => [(object) ['id' => 1, 'name' => 'toko gkb']],
                 'statuses' => $statuses($receiving),
@@ -64,12 +63,13 @@ final class TransferFilterUiContractTest extends TestCase
         $sender = $render(false);
         $receiver = $render(true);
 
-        $this->assertStringContainsString('Cabang Pengirim', $sender);
+        $this->assertStringContainsString('Cabang Tujuan', $sender);
         $this->assertStringContainsString('Status Pengiriman', $sender);
-        $this->assertStringContainsString('>Draf<', $sender);
-        $this->assertStringContainsString('Cabang Penerima', $receiver);
+        $this->assertStringContainsString('>Pending<', $sender);
+        $this->assertStringContainsString('Cabang Tujuan', $receiver);
         $this->assertStringContainsString('Status Penerimaan', $receiver);
-        $this->assertStringNotContainsString('>Draf<', $receiver);
+        $this->assertStringNotContainsString('>Pending<', $receiver);
+        $this->assertStringContainsString('Sedang Diperiksa', $sender);
         $this->assertStringContainsString('Sedang Diperiksa', $receiver);
     }
 }

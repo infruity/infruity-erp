@@ -16,8 +16,10 @@ class ReceiptRecipeEditUiTest extends TestCase
         $editForm = substr($view, $start, $end - $start);
 
         self::assertStringContainsString('@click="openIngredientPicker()"', $editForm);
-        self::assertStringContainsString('Total Modal', $editForm);
-        self::assertStringContainsString('ingredientCost(ingredient)', $editForm);
+        // The recipe sheet shows no cost: neither the HPP field nor a "Total Modal" line per ingredient.
+        self::assertStringNotContainsString('Total Modal', $editForm);
+        self::assertStringNotContainsString('ingredientCost(ingredient)', $editForm);
+        self::assertStringNotContainsString('Harga Pokok Produksi (HPP)', $editForm);
         self::assertStringContainsString('@input="updateQuantity(ingredient, $event)"', $editForm);
         self::assertStringContainsString('name="product_receipt_id[]"', $editForm);
         self::assertStringContainsString('name="ingredients_quantity[]"', $editForm);

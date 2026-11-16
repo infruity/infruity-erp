@@ -64,10 +64,11 @@
     </style>
     <link rel="stylesheet" href="{{ asset('assets/css/production-list-reference.css') }}?v={{ filemtime(public_path('assets/css/production-list-reference.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets/css/production-detail-reference.css') }}?v={{ filemtime(public_path('assets/css/production-detail-reference.css')) }}">
+    <div x-data="productionFilterState()" @erp-filter-apply.window="if ($event.detail.id === 'production') applyProductionFilters($event.detail.values)" @erp-filter-close.window="if ($event.detail.id === 'production') productionFilterSheetOpen = false">
     <x-erp.workspace count-table="production-table" count-noun="produksi" title="Produksi" subtitle="Pantau produksi, bahan baku dan status pengerjaan." icon="cooking-pot">
         <x-slot:toolbar>
             <label class="erp-search production-desktop-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" data-production-search id="search-desktop" aria-label="Cari produksi" placeholder="Cari produksi..."></label>
-            <x-erp.mobile-search class="production-mobile-search"><x-slot:input><input type="search" data-production-search id="search" class="erp-mobile-search__input" aria-label="Cari produksi" placeholder="Cari..."></x-slot:input></x-erp.mobile-search>
+            <x-erp.mobile-search class="production-mobile-search"><x-slot:input><input type="search" data-production-search id="search" class="erp-mobile-search__input" aria-label="Cari produksi" placeholder="Cari..."></x-slot:input><x-slot:filter><button type="button" class="erp-mobile-search__filter" aria-label="Buka filter produksi" :class="(productionFilterSheetOpen || productionFilterApplied) ? 'is-active' : ''" @click="openProductionFilters()"><span class="icon-rounded" aria-hidden="true">tune</span></button></x-slot:filter></x-erp.mobile-search>
             <div class="erp-operations-toolbar-actions production-list-tools"><a href="{{ url('production/create') }}" class="erp-action erp-action--primary"><i class="ph ph-plus" aria-hidden="true"></i>Tambah Produksi</a></div>
         </x-slot:toolbar>
         <div class="erp-operations-collection production-list">
@@ -89,6 +90,8 @@
         </div>
     </x-erp.workspace>
     </div>
+    <x-erp.filter-sheet id="production" title="Filter Produksi" subtitle="Saring cabang tujuan, status, dan periode tanggal" branch-label="Cabang Tujuan" branch-all-label="Semua Cabang" status-label="Status Produksi" reset-label="Reset Filter" apply-label="Terapkan Filter" :branches="$branches" :show-branch-all="count($branches) > 1" :statuses="['all' => 'Semua', 'draft' => 'Pending', 'complete' => 'Selesai']" />
+    </div>
     <div data-production-detail-modal x-data="ProductionListUi.createDetailModal('{{ route('production.index') }}')">
         <template x-teleport="body">
             <x-erp.detail-dialog open="productionDetailOpen" close="closeProductionDetail()" title="Detail Produksi" title-binding="productionDetailTitle" labelledby="production-detail-modal-title" closeLabel="Tutup detail produksi" id="production-detail-modal" class="production-detail-dialog" tabindex="-1" x-on:keydown.tab="trapProductionDetailFocus($event)">
@@ -101,6 +104,24 @@
     <script src="{{ asset('assets/js/production-list-reference.js') }}?v={{ filemtime(public_path('assets/js/production-list-reference.js')) }}"></script>
     <script type="text/javascript">
         var dataTable;
+        window.productionFilters = { status: 'all', branch: 'all', start: '', end: '' };
+        function productionFilterState() {
+            return {
+                productionFilterSheetOpen: false,
+                productionFilterApplied: false,
+                openProductionFilters() {
+                    this.productionFilterSheetOpen = true;
+                    const f = window.productionFilters;
+                    this.$dispatch('erp-filter-open', { id: 'production', values: { branch: f.branch || 'all', status: f.status || 'all', start: f.start, end: f.end } });
+                },
+                applyProductionFilters(values) {
+                    window.productionFilters = { status: values.status || 'all', branch: values.branch || 'all', start: values.start || '', end: values.end || '' };
+                    const f = window.productionFilters;
+                    this.productionFilterApplied = f.status !== 'all' || f.branch !== 'all' || Boolean(f.start || f.end);
+                    if (dataTable) dataTable.draw();
+                }
+            };
+        }
         $(document).ready(function() {
             const productionEmptyState = '<div class="production-empty-state"><i class="ph ph-cooking-pot" aria-hidden="true"></i><strong>Belum ada produksi</strong><span>Data produksi yang tersimpan akan muncul di sini.</span></div>';
 
@@ -147,6 +168,10 @@
                     url: "{{ route('production-data') }}",
                     data: function(d) {
                         d.url = "{{ request()->segment(1) }}";
+                        const f = window.productionFilters || {};
+                        if (f.status && f.status !== 'all') d.status_filter = f.status;
+                        if (f.branch && f.branch !== 'all') d.cabang_filter = f.branch;
+                        if (f.start && f.end) { d.start_date = f.start; d.end_date = f.end; }
                     },
                     error: function(xhr, error, code) {
                         console.error('DataTable AJAX Error:', error, code);
@@ -187,6 +212,15 @@
             $('#production-load-more button').on('click', function() {
                 dataTable.page.len(Math.max(dataTable.page.len(), 50) + 50).draw();
             });
+
+            // /production/{id}/detail visited directly (or reloaded) lands here as ?detail={id}: open the popup over the list.
+            (function () {
+                const id = new URLSearchParams(window.location.search).get('detail');
+                if (!/^\d+$/.test(id || '')) return;
+                window.history.replaceState(window.history.state, '', window.location.pathname);
+                const open = () => typeof window.openProductionDetail === 'function' ? window.openProductionDetail(@json(url('production')) + '/' + id + '/detail') : setTimeout(open, 50);
+                open();
+            })();
 
             // A tap on the row opens the detail popup; the route remains the no-JS fallback.
             $('#production-table tbody').on('click', 'tr.is-openable', function(event) {

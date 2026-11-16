@@ -6,26 +6,27 @@
 @endphp
 <div class="production-detail production-detail--ref">
     <h1 id="production-detail-title" class="production-detail-ref__title">Detail Produksi</h1>
+    <div class="production-detail-ref__address">{{ $data->branch->name ?? '—' }}</div>
     <div class="production-detail-ref__rows">
         <div class="production-detail-ref__row">
-            <span class="production-detail-ref__icon production-detail-ref__icon--product {{ $icon_class }}" aria-hidden="true">{{ $emoji }}</span>
+            <span class="production-detail-ref__icon" aria-hidden="true"><i class="ph-duotone ph-orange"></i></span>
             <div class="production-detail-ref__text">
                 <div class="production-detail-ref__main is-strong">{{ $data->products->name ?? 'Produksi Barang' }}</div>
-                <div class="production-detail-ref__sub is-target">Target: {{ tonumber($data->quantity) }} {{ $unit }}</div>
+                <div class="production-detail-ref__sub">Nama Produk</div>
             </div>
         </div>
         <div class="production-detail-ref__row">
-            <span class="production-detail-ref__icon" aria-hidden="true"><i class="ph-duotone ph-receipt"></i></span>
+            <span class="production-detail-ref__icon" aria-hidden="true"><i class="ph-duotone ph-cooking-pot"></i></span>
             <div class="production-detail-ref__text">
-                <div class="production-detail-ref__main">{{ $data->production_number }}</div>
-                <div class="production-detail-ref__sub">{{ $data->branch->name ?? '—' }}</div>
+                <div class="production-detail-ref__main">{{ rtrim(rtrim(number_format((float) $data->quantity, 2, ',', '.'), '0'), ',') }} {{ $unit }}</div>
+                <div class="production-detail-ref__sub">Total Produksi</div>
             </div>
         </div>
         <div class="production-detail-ref__row">
             <span class="production-detail-ref__icon" aria-hidden="true"><i class="ph-duotone ph-coins"></i></span>
             <div class="production-detail-ref__text">
                 <div class="production-detail-ref__main">Rp {{ tonumberround($total_hpp) }}</div>
-                <div class="production-detail-ref__sub">Grand Total ({{ $production_detail->count() }} Bahan Baku)</div>
+                <div class="production-detail-ref__sub">Total Modal</div>
             </div>
         </div>
         <div class="production-detail-ref__row">
@@ -37,8 +38,13 @@
         </div>
     </div>
     <div class="production-detail-ref__actions">
+            @php $finished = in_array($data->status, ['posting', 'complete'], true); @endphp
+            @unless ($finished)
             <a href="{{ route('production.edit', $data->id) }}" class="production-detail-ref__action is-edit"><i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>Edit</a>
-            <span class="production-detail-ref__divider" aria-hidden="true"></span>
+            @endunless
+            @if (check_access('production.destroy'))
+            @unless ($finished)<span class="production-detail-ref__divider" aria-hidden="true"></span>@endunless
             <a href="{{ route('production.detail', $data->id) }}" class="production-detail-ref__action is-delete production-detail-ref__delete"><i class="ph-bold ph-trash" aria-hidden="true"></i>Hapus</a>
+            @endif
     </div>
 </div>

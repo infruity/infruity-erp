@@ -147,7 +147,7 @@ class TransferController extends Controller
         $data['data']           = Transfer::with('branch', 'branchDestination', 'createdBy')
             ->where('created_by', Auth::id())
             ->whereIn('branch_id', UserBranch::getUserBranch())
-            ->whereIn('status', ['temp', 'draft', 'pending'])->findOrFail($id);
+            ->whereIn('status', ['temp', 'draft', 'pending', 'proses'])->findOrFail($id);
         $data['detail']         = TransferDetail::with(['product', 'product.unit', 'corrections.user'])->where('transfer_id', $id)->get();
         $data['invoice_number'] = $data['data']->invoice_number;
         $data['type']           = request()->segment(1);
@@ -182,7 +182,7 @@ class TransferController extends Controller
             DB::beginTransaction();
             $pos = Transfer::where('created_by', Auth::id())
                 ->whereIn('branch_id', UserBranch::getUserBranch())
-                ->whereIn('status', ['temp', 'draft'])->findOrFail($id);
+                ->whereIn('status', ['temp', 'draft', 'pending', 'proses'])->findOrFail($id);
             $pos->delete();
             TransferDetail::where('transfer_id', $id)->delete();
             DB::commit();
@@ -322,7 +322,7 @@ class TransferController extends Controller
             }
             if ($pos) {
                 // Update transaksi transfer yang sudah ada
-                if (! in_array($pos->status, ['temp', 'draft', 'pending'], true) || $pos->corrections()->exists()) {
+                if (! in_array($pos->status, ['temp', 'draft', 'pending', 'proses'], true)) {
                     DB::rollBack();
                     return response()->json([
                         'success' => false,
@@ -502,6 +502,7 @@ class TransferController extends Controller
     {
         $this->authorizeAccess('transfer-penerima.set_selesai');
         $input = $request->validate([
+            'draft' => 'sometimes|boolean',
             'items' => 'sometimes|required|array|min:1',
             'items.*.detail_id' => 'required|integer|distinct',
             'items.*.quantity' => ['required', 'numeric', 'min:0', 'max:99999999.99', 'regex:/^\d+(\.\d{1,2})?$/'],
@@ -542,6 +543,11 @@ class TransferController extends Controller
                         $detail->save();
                     }
                 }
+            }
+            // "Simpan": keep the received quantities and notes, but leave the transfer waiting for confirmation.
+            if (! empty($input['draft'])) {
+                $transfer->update(['status' => 'proses']);
+                return response()->json(['success' => true, 'message' => 'Penerimaan disimpan.']);
             }
             // Items with sent_quantity already left the origin stock when the transfer
             // was sent; a shortfall on receipt is shrinkage. Older items (no
@@ -587,9 +593,11 @@ class TransferController extends Controller
         $products = \Modules\Master\Entities\Product::with('unit')->select('products.*', 'product_stock.stock_available', 'product_stock.avg_hpp')
             ->join('product_stock', 'products.id', '=', 'product_stock.id')
             ->where('product_stock.branch_id', $request->branch_id)
-            ->where(fn ($q) => $q->where('product_stock.stock_available', '>', 0)->orWhereIn('products.id', $ownQty->keys()->all()))
             ->where('products.tipe', '!=', 'parcel')->whereNull('products.is_variant')
-            ->where('products.name', 'like', Like::contains((string) $request->input('term', '')))->orderBy('products.name')->limit(200)->get();
+            ->where('products.name', 'like', Like::contains((string) $request->input('term', '')))
+            // Products with stock first (A-Z), then those without (A-Z, shown greyed out and not selectable).
+            ->orderByRaw('(product_stock.stock_available > 0' . ($ownQty->isEmpty() ? '' : ' OR products.id IN (' . implode(',', array_map('intval', $ownQty->keys()->all())) . ')') . ') DESC')
+            ->orderBy('products.name')->limit(200)->get();
         return response()->json($products->map(fn ($product) => [
             'id' => $product->id, 'name' => $product->name, 'unit' => $product->unit?->abbreviation ?? '',
             'price' => round((float) ($product->avg_hpp ?? $product->hpp ?? 0), 2),
@@ -626,7 +634,7 @@ class TransferController extends Controller
         $rows = $query->with(['detail.product.unit', 'detail.corrections.user'])->orderByDesc('date')->orderByDesc('id')
             ->skip((int) $request->input('start', 0))->take((int) $request->input('length', 20))->get()->map(function ($item) use ($side, $permissions) {
                 $owner = (int) $item->created_by === (int) Auth::id();
-                $editable = $side === 'transfer-pengirim' && $owner && in_array($item->status, ['temp', 'draft', 'pending']) && !$item->corrections_count;
+                $editable = $side === 'transfer-pengirim' && $owner && $item->status !== 'selesai';
                 return [
                     'id' => $item->id, 'invoice_number' => $item->invoice_number, 'date' => $item->date, 'created_at' => $item->created_at?->format('Y-m-d H:i:s'),
                     'origin' => $item->branch?->name ?? 'Tanpa cabang', 'destination' => $item->branchDestination?->name ?? 'Tanpa tujuan',
@@ -640,7 +648,7 @@ class TransferController extends Controller
                     'can_show' => $permissions['show'],
                     'can_receive' => $side === 'transfer-penerima' && in_array($item->status, ['pending', 'proses']) && $permissions['receive'] && $permissions['show'],
                     'can_edit' => $editable && $permissions['edit'],
-                    'can_delete' => $side === 'transfer-pengirim' && $owner && in_array($item->status, ['temp', 'draft']) && $permissions['delete'],
+                    'can_delete' => $side === 'transfer-pengirim' && $owner && $item->status !== 'selesai' && $permissions['delete'],
                     'show_url' => route($side . '.show', $item->id), 'edit_url' => route('transfer-pengirim.edit', $item->id),
                     'delete_url' => route('transfer-pengirim.destroy', $item->id),
                 ];

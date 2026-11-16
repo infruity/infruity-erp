@@ -110,8 +110,24 @@
     function confirmDelete(options) {
         options = options || {};
         var what = options.what || 'data';
-        var text = options.text || (options.name ? what + ' ' + options.name + ' akan dihapus permanen.' : 'Data akan dihapus permanen.');
-        return confirm({ icon: 'warning', tone: 'danger', title: 'Hapus ' + what + '?', text: text, confirmButtonText: options.confirmText || 'Hapus' });
+        var suffix = options.suffix || 'akan dihapus permanen.';
+        var subject = options.subject || what;
+        var text = options.text || (options.name ? subject + ' ' + options.name + ' ' + suffix : 'Data ' + suffix);
+        var dialog = {
+            icon: 'warning', tone: 'danger', title: 'Hapus ' + what + '?', text: text, confirmButtonText: options.confirmText || 'Hapus',
+            // The look of the HTML reference's delete modal (erp-theme.css, .erp-delete-dialog): trash tile, bold name, two equal buttons.
+            iconHtml: '<i class="ph-fill ph-trash"></i>',
+            customClass: { popup: 'erp-delete-dialog', icon: 'erp-delete-dialog__icon', container: 'erp-delete-container' },
+            // Same enter/exit motion as the reference modal (see erp-theme.css).
+            showClass: { popup: 'erp-del-show', backdrop: 'erp-del-bd-show' },
+            hideClass: { popup: 'erp-del-hide', backdrop: 'erp-del-bd-hide' }
+        };
+        if (!options.text && options.name) dialog.html = escapeHtml(subject) + ' <strong>' + escapeHtml(options.name) + '</strong> ' + escapeHtml(suffix);
+        return confirm(dialog);
+    }
+
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
     }
 
     function message(icon, defaultTitle) {

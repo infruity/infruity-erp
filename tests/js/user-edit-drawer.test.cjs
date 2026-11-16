@@ -161,7 +161,7 @@ test('failed access saves revert switch state and self accounts cannot issue upd
 
 test('closing the create sheet removes its transient URL flag without losing other query state', () => {
     assert.match(view, /@keydown\.escape\.window="closeDrawer\(\)"/);
-    assert.equal((view.match(/@click="closeDrawer\(\)"/g) || []).length, 3);
+    assert.equal((view.match(/@click="closeDrawer\(\)"/g) || []).length, 4);
 
     const start = view.indexOf('function userMaster(');
     const end = view.indexOf('\n}\n</script>', start) + 2;
@@ -227,7 +227,7 @@ test('create user email mode defaults to the next OPR address and can switch to 
 });
 
 test('mobile create sheet keeps employee-owned fields out and retains the password field', () => {
-    assert.match(view, /\.user-account-drawer-panel:not\(\.is-editing\)\s*\{\s*max-height:\s*71\.5dvh;/);
+    assert.match(view, /\.user-account-drawer-panel:not\(\.is-editing\)\s*\{\s*max-height:\s*90dvh;/);
     assert.doesNotMatch(view, /name="role_ids/);
     const fieldOrder = ['Alamat Email', 'Tautkan ke Karyawan', 'name="password"']
         .map(field => view.indexOf(field));
@@ -317,7 +317,7 @@ test('account role assignment is provided by the employee form, not the account 
 test('mobile edit account sheet matches the reference height without the role picker', () => {
     assert.match(view, /user-account-drawer-panel/);
     assert.ok(view.includes(':class="editing ? \'is-editing\' : \'\'"'));
-    assert.ok(view.includes('@media (max-width: 1023px)') && view.includes('.user-account-drawer-panel.is-editing') && view.includes('max-height: 71.5dvh;'));
+    assert.ok(view.includes('@media (max-width: 1023px)') && view.includes('.user-account-drawer-panel.is-editing') && view.includes('max-height: 90dvh;'));
     assert.ok(view.includes('@media (min-width: 1024px)') && view.includes('.user-account-email-type-toggle'));
     assert.match(view, /x-ref="scrollArea"/);
     assert.doesNotMatch(view, /id="user-roles"/);

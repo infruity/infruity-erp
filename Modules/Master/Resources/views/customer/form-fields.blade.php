@@ -13,13 +13,13 @@
         'village' => $regionValues['village'] ? (\Modules\Master\Entities\Region::getVillage($regionValues['village'])->name ?? '') : '',
     ];
 @endphp
-<div class="flex-1 min-h-0 overflow-y-auto bg-gray-50/60 px-5 py-5 pb-8 space-y-5">
+<div class="erp-master-form flex-1 min-h-0 overflow-y-auto bg-gray-50/60 px-5 py-5 pb-8 space-y-5">
     @if($errors->any())
         <div role="alert" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">Periksa kembali data yang ditandai di bawah.</div>
     @endif
     @if(session('error'))<div role="alert" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">{{ session('error') }}</div>@endif
     <x-erp.field label="Nama Pelanggan" for="customer_name" required><input id="customer_name" name="customer_name" value="{{ old('customer_name', $data->name ?? '') }}" required maxlength="255" type="text" placeholder="Masukkan nama pelanggan" class="w-full h-11 bg-white border {{ $errors->has('customer_name') ? 'border-red-400' : 'border-gray-200' }} rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
-    <x-erp.field label="No WhatsApp" for="phone"><input id="phone" name="phone" value="{{ old('phone', $data->whatsapp ?? '') }}" type="tel" inputmode="tel" placeholder="Contoh: 081234567890" class="w-full h-11 bg-white border {{ $errors->has('phone') ? 'border-red-400' : 'border-gray-200' }} rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
+    <x-erp.field label="No Whatsapp" for="phone" required><input id="phone" name="phone" value="{{ old('phone', $data->whatsapp ?? '') }}" required type="tel" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" onkeydown="if (event.key.length === 1 && !/\d/.test(event.key) && !event.ctrlKey && !event.metaKey) event.preventDefault()" placeholder="Contoh: 6281234567890" class="w-full h-11 bg-white border {{ $errors->has('phone') ? 'border-red-400' : 'border-gray-200' }} rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
     <x-erp.field label="E-mail" for="email"><input id="email" name="email" value="{{ old('email', $data->email ?? '') }}" type="email" placeholder="contoh@email.com" class="w-full h-11 bg-white border {{ $errors->has('email') ? 'border-red-400' : 'border-gray-200' }} rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
     <x-erp.field label="Jenis Kelamin" for="gender"><x-erp.picker-select id="gender" name="gender" :options="[['value' => 'male', 'label' => 'Laki-laki'], ['value' => 'female', 'label' => 'Perempuan']]" :value="old('gender', $data->gender ?? '')" placeholder="Pilih Jenis Kelamin" /></x-erp.field>
     <div class="grid grid-cols-2 gap-4">
@@ -36,7 +36,6 @@
         <x-erp.field label="Tanggal Lahir" for="birth_of_date"><x-erp.date-picker id="birth_of_date" name="birth_of_date" :value="old('birth_of_date', $data->birth_of_date ?? '')" /></x-erp.field>
     </div>
 
-    <div class="border-t border-gray-200 pt-5"><h3 class="text-sm font-bold text-gray-800">Alamat Pelanggan</h3><p class="text-xs text-gray-400 mt-0.5">Isi lokasi dan alamat bila tersedia</p></div>
     <x-erp.region-pickers :values="$regionValues" :names="$regionNames" />
-    <x-erp.field label="Tempat Tinggal / Alamat Lengkap" for="address"><textarea id="address" name="address" rows="3" placeholder="Jalan, RT/RW, dan detail alamat" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-none">{{ old('address', $data->address ?? '') }}</textarea></x-erp.field>
+    <x-erp.field label="Tempat Tinggal / Alamat Lengkap" for="address"><textarea id="address" name="address" rows="3" placeholder="Jalan, RT/RW, dsb" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-none">{{ old('address', $data->address ?? '') }}</textarea></x-erp.field>
 </div>

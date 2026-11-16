@@ -23,7 +23,7 @@ final class SortirFilterUiContractTest extends TestCase
             'branch-label="Cabang Tujuan"',
             'status-label="Status Sortir"',
             ':branches="$sortirFilterBranches"',
-            "'draft' => 'Draf'",
+            "'draft' => 'Pending'",
             "'paid' => 'Selesai'",
             ':timezone="config(\'app.timezone\')"',
             'desktop="modal"',

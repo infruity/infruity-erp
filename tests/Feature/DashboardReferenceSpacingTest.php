@@ -29,7 +29,7 @@ final class DashboardReferenceSpacingTest extends TestCase
     {
         $view = $this->source();
 
-        $this->assertStringContainsString('mt-[18px] mb-4 min-h-[248px] shrink-0 rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]', $view);
+        $this->assertStringContainsString('mt-[18px] min-h-[248px] shrink-0 rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]', $view);
         $this->assertStringContainsString('flex items-center justify-between gap-2 py-3 first:pt-1 last:pb-1', $view);
         $this->assertStringContainsString('w-9 h-9 rounded-xl border flex items-center justify-center text-[20px]', $view, 'row icon tile: 36px');
     }
@@ -42,7 +42,7 @@ final class DashboardReferenceSpacingTest extends TestCase
         $this->assertMatchesRegularExpression('/class="h-7 w-7 shrink-0 rounded-full border[^"]*" :class="contributorButtonClass"/', $view);
         $this->assertStringContainsString('<i class="ph-bold text-sm" :class="showBottom', $view);
         // filter button of the hero: w-7 h-7, icon 16px
-        $this->assertStringContainsString('class="h-7 w-7 rounded-full border border-white/15 bg-white/10 flex items-center justify-center hover:bg-white/20"><i class="ph ph-sliders-horizontal text-[16px]"></i>', $view);
+                $this->assertStringContainsString('class="h-7 w-7 rounded-full border border-white/15 bg-white/10 flex items-center justify-center hover:bg-white/20"><span class="icon-rounded" aria-hidden="true" style="font-size: 16px;">tune</span>', $view);
         $this->assertStringNotContainsString('h-10 w-10 shrink-0 rounded-full border', $view);
         $this->assertStringNotContainsString('h-9 w-9 rounded-full border border-white/15', $view);
     }

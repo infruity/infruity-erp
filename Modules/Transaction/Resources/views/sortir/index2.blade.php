@@ -21,7 +21,7 @@
         <div class="sortir-toolbar">
             <div class="sortir-search">
                 <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
-                <input id="sortir-search" type="search" x-model="search" @input.debounce.300ms="load()" placeholder="Cari cabang, nomor sortir, atau barang..." aria-label="Cari transaksi sortir" autocomplete="off">
+                <input id="sortir-search" type="search" x-model="search" @input.debounce.300ms="load()" placeholder="Cari..." aria-label="Cari transaksi sortir" autocomplete="off">
                 <button type="button" x-show="search" x-cloak @click="clearSearch()" class="sortir-icon-button" aria-label="Hapus pencarian"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
                 <span class="sortir-search-divider" aria-hidden="true"></span>
                 <button type="button" @click="openFilter($event)" class="sortir-icon-button" :class="activeFilters || filterOpen ? 'is-active' : ''" :aria-expanded="filterOpen" aria-label="Filter sortir barang"><span class="icon-rounded" aria-hidden="true">tune</span></button>
@@ -31,7 +31,7 @@
             @endif
         </div>
         <x-erp.list-count noun="transaksi sortir" shown="rows.length" total="filtered" list=".sortir-list-scroll" />
-        <div class="sortir-list-scroll" :aria-busy="loading">
+        <div class="sortir-list-scroll" :class="rows.length ? 'has-rows' : 'is-empty'" :aria-busy="loading">
             <div class="sortir-list-head" x-show="rows.length"><span>Cabang &amp; Waktu</span><span>Nomor Sortir / Petugas</span><span style="text-align:right">Status / Nominal</span></div>
             <template x-for="row in rows" :key="row.id">
                 <button type="button" class="sortir-row" @click="openDetail(row, $event)" :aria-label="'Detail sortir ' + row.invoice_number">
@@ -46,11 +46,11 @@
             <div class="sortir-list-state" x-show="loading && !rows.length" role="status"><i class="ph ph-circle-notch" aria-hidden="true"></i><p>Memuat transaksi sortir...</p></div>
             <div class="sortir-list-state" x-show="error" x-cloak role="alert"><h2>Daftar sortir belum dapat dimuat</h2><p x-text="error"></p><button type="button" class="sortir-text-button" @click="load(rows.length > 0)">Coba lagi</button></div>
             <div class="sortir-list-state" x-show="!loading && !error && !rows.length" x-cloak>
-                <i class="ph-duotone ph-receipt" aria-hidden="true"></i>
+                <span class="sortir-state-icon" aria-hidden="true"><i class="ph-duotone ph-receipt"></i></span>
                 <h2 x-text="search || activeFilters ? 'Transaksi tidak ditemukan' : 'Belum ada sortir barang'"></h2>
                 <p x-show="search || activeFilters">Coba kata pencarian lain atau sesuaikan filter.</p>
                 @if (check_access('sortir.create'))
-                    <p x-show="!search && !activeFilters">Klik tombol <a href="{{ route('sortir.create') }}" class="sortir-text-button" aria-label="Tambah sortir barang">+</a> untuk menambahkan<br>transaksi sortir baru.</p>
+                    <p x-show="!search && !activeFilters">Tekan tombol <a href="{{ route('sortir.create') }}" class="sortir-add-tile" aria-label="Tambah sortir barang">+</a> di bawah untuk menambahkan sortir barang baru</p>
                 @endif
                 <button type="button" class="sortir-text-button" x-show="search || activeFilters" @click="search = ''; resetFilters()">Reset pencarian &amp; filter</button>
             </div>
@@ -68,27 +68,70 @@
             branch-all-label="Semua Cabang"
             status-label="Status Sortir"
             :branches="$sortirFilterBranches"
-            :statuses="['all' => 'Semua Status', 'draft' => 'Draf', 'paid' => 'Selesai']"
+            :statuses="['all' => 'Semua', 'draft' => 'Pending', 'paid' => 'Selesai']"
             :timezone="config('app.timezone')"
             desktop="modal"
             reset-applies
+            reset-label="Reset Filter"
             apply-label="Terapkan Filter"
         />
         <template x-teleport="body">
-            <div x-show="selected" x-cloak class="sortir-overlay" @click.self="closeDetail()" @keydown.escape.window="if (selected) closeDetail()" @keydown.tab="trapFocus($event)">
+            <div x-show="selected && !confirmingDelete" x-cloak class="sortir-overlay" @click.self="closeDetail()" @keydown.escape.window="if (selected) closeDetail()" @keydown.tab="trapFocus($event)">
                 <section class="sortir-dialog" id="sortir-detail-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="sortir-detail-title">
-                    <div class="sortir-dialog-head"><h2 id="sortir-detail-title">Detail Sortir Barang</h2><button type="button" class="sortir-icon-button" @click="closeDetail()" :disabled="deleting" aria-label="Tutup detail sortir"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
+                    <div class="sortir-dialog-head">
+                        <h3 id="sortir-detail-title">Detail Sortir Barang</h3>
+                        <button type="button" class="sortir-dialog-close" @click="closeDetail()" :disabled="deleting" aria-label="Tutup detail sortir">
+                            <i class="ph-bold ph-x" aria-hidden="true"></i>
+                        </button>
+                    </div>
                     <template x-if="selected">
                         <div>
                             <div class="sortir-detail-body">
-                                <div class="sortir-detail-fact"><i class="ph-duotone ph-receipt" aria-hidden="true"></i><div><strong x-text="selected.invoice_number"></strong><small x-text="selected.branch_name"></small></div></div>
-                                <div class="sortir-detail-fact"><i class="ph-duotone ph-coins" aria-hidden="true"></i><div><strong x-text="money(selected.total)"></strong><small x-text="'Total Sortir (' + (selected.items?.length || 0) + ' Barang)'"></small></div></div>
-                                <div class="sortir-detail-fact"><i class="ph-duotone ph-clock" aria-hidden="true"></i><div><strong x-text="selected.staff_name || 'Petugas'"></strong><small x-text="dateLabel(selected.created_at || selected.date)"></small><small x-text="statusLabel(selected.status)"></small></div></div>
-                                <a x-show="selected.can_show" :href="selected.show_url" class="sortir-detail-link">Lihat rincian barang &amp; cetak</a>
+                                <!-- 1. Nomor Faktur & Cabang -->
+                                <div class="sortir-detail-fact">
+                                    <div class="sortir-detail-icon">
+                                        <i class="ph-duotone ph-receipt text-lg" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="sortir-detail-copy">
+                                        <div class="sortir-detail-main truncate" x-text="selected.invoice_number"></div>
+                                        <div class="sortir-detail-sub truncate" x-text="selected.branch_name"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 2. Total & Jumlah Barang -->
+                                <div class="sortir-detail-fact">
+                                    <div class="sortir-detail-icon">
+                                        <i class="ph-duotone ph-coins text-lg" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="sortir-detail-copy">
+                                        <div class="sortir-detail-main" x-text="money(selected.total)"></div>
+                                        <div class="sortir-detail-sub" x-text="'Total Sortir (' + (selected.items?.length || 0) + ' Barang)'"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 3. Petugas & Waktu Dibuat -->
+                                <div class="sortir-detail-fact">
+                                    <div class="sortir-detail-icon">
+                                        <i class="ph-duotone ph-clock text-lg" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="sortir-detail-copy">
+                                        <div class="sortir-detail-main sortir-detail-staff truncate" x-text="selected.staff_name || 'Petugas'"></div>
+                                        <div class="sortir-detail-sub" x-text="'Dibuat pada ' + dateLabel(selected.created_at || selected.date)"></div>
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- Footer Actions: Split 50:50 dengan Divider Vertikal -->
                             <div class="sortir-detail-actions" x-show="selected.can_edit || selected.can_delete">
-                                <a x-show="selected.can_edit" :href="selected.edit_url"><i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>Edit</a>
-                                <button type="button" x-show="selected.can_delete" class="sortir-danger" @click="deleteSelected()" :disabled="deleting"><i class="ph-bold ph-trash" aria-hidden="true"></i><span x-text="deleting ? 'Menghapus...' : 'Hapus'"></span></button>
+                                <a x-show="selected.can_edit" :href="selected.edit_url" class="sortir-detail-action sortir-detail-edit">
+                                    <i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
+                                    <span>Edit</span>
+                                </a>
+                                <div x-show="selected.can_edit && selected.can_delete" class="sortir-detail-divider" aria-hidden="true"></div>
+                                <button type="button" x-show="selected.can_delete" class="sortir-detail-action sortir-detail-delete" @click="deleteSelected()" :disabled="deleting">
+                                    <i class="ph-bold ph-trash" aria-hidden="true"></i>
+                                    <span x-text="deleting ? 'Menghapus...' : 'Hapus'"></span>
+                                </button>
                             </div>
                         </div>
                     </template>

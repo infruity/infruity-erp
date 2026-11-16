@@ -12,10 +12,15 @@
      x-effect="search; visibleCount = 50"
      @mobile-add-toggle.window="openCreate()"
      class="flex-1 flex flex-col min-h-0 -mx-4 md:mx-0">
+<x-erp.master-list-style />
+<style>
+    /* Form sheet fields follow the reference: emerald-500 border + 1px ring, dark caret. */
+    .erp-ui #unit-name:focus, .erp-ui #unit-abbreviation:focus, .erp-ui #unit-name:focus-visible, .erp-ui #unit-abbreviation:focus-visible { border-color:#10b981; box-shadow:0 0 0 1px #10b981; outline:0; caret-color:#1f2937; }
+</style>
     <x-erp.mobile-search class="md:hidden">
-        <x-slot:input><input x-ref="mobileSearch" x-model.debounce.200ms="search" type="search" placeholder="Cari satuan..." aria-label="Cari satuan" class="erp-mobile-search__input"></x-slot:input>
+        <x-slot:input><input x-ref="mobileSearch" x-model.debounce.200ms="search" type="search" placeholder="Cari..." aria-label="Cari satuan" class="erp-mobile-search__input"></x-slot:input>
         <x-slot:clear><button type="button" x-show="search" x-cloak @click="search = ''; $refs.mobileSearch.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
-        <x-slot:filter></x-slot:filter>
+        <x-slot:filter><div class="erp-mobile-search__filter erp-mobile-search__filter--idle" title="Filter tidak tersedia" aria-hidden="true"><span class="icon-rounded" style="font-size: 20px;">tune</span></div></x-slot:filter>
     </x-erp.mobile-search>
     <div class="erp-surface bg-white rounded-none lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden relative">
         <div class="hidden md:flex gap-3 items-center p-4 border-b border-gray-100">
@@ -31,28 +36,28 @@
             @endif
         </div>
 
-        <x-erp.list-count noun="satuan" shown="Math.min(visibleCount, filtered.length)" total="filtered.length" />
-        <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0">
+        <x-erp.list-count noun="satuan" shown="Math.min(visibleCount, filtered.length)" total="filtered.length" reference />
+        <div class="mobile-list-edge-fade flex-1 overflow-y-auto overscroll-none pb-20 md:pb-0">
             <template x-for="unit in visible" :key="unit.id">
                 <div class="border-b border-gray-100">
-                    <button type="button" @click="showDetail(unit)" class="w-full flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3.5 md:py-4 hover:bg-gray-50/50 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" :aria-label="'Detail ' + unit.name">
-                        <span class="w-9 h-9 md:w-12 md:h-12 rounded-xl border flex items-center justify-center shrink-0 font-bold text-xs md:text-base overflow-hidden" :class="theme(unit)">
-                            <span x-text="unit.abbreviation?.slice(0, 3).toUpperCase()"></span>
+                    <button type="button" @click="showDetail(unit)" class="w-full flex items-center gap-3 md:gap-4 px-5 py-3.5 md:py-4 hover:bg-gray-50/50 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" :aria-label="'Detail ' + unit.name">
+                        <span class="w-9 h-9 md:w-12 md:h-12 rounded-xl border flex items-center justify-center shrink-0 font-bold text-sm md:text-base overflow-hidden" :class="theme(unit)">
+                            <span x-text="unit.abbreviation?.slice(0, 2).toUpperCase()"></span>
                         </span>
-                        <span class="flex-1 min-w-0 text-left">
-                            <span class="block text-sm font-semibold text-gray-800 truncate" x-text="unit.name"></span>
-                            <span class="block text-[11px] text-gray-400 mt-0.5 truncate" x-text="unit.description || 'Simbol (' + unit.abbreviation + ')'"></span>
+                        <span class="flex-1 min-w-0 text-left max-md:mr-2">
+                            <span class="block text-sm font-semibold text-gray-900 truncate" x-text="unit.name"></span>
+                            <span class="block text-[11px] text-gray-500 mt-0.5 truncate" x-text="'simbol (' + unit.abbreviation + ')'"></span>
                         </span>
                         <span class="hidden md:block text-sm font-semibold text-gray-700" x-text="unit.abbreviation"></span>
                     </button>
                 </div>
             </template>
-            <div x-show="filtered.length === 0" class="py-12 text-center">
-                <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3"><i class="ph ph-magnifying-glass text-gray-400 text-xl"></i></div>
+            <div x-cloak x-show="filtered.length === 0" class="py-12 text-center border-t border-gray-100">
+                <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px] text-gray-400" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
                 <p class="text-sm text-gray-500 font-medium">Satuan tidak ditemukan</p>
-                <p class="text-xs text-gray-400 mt-1">Coba ubah pencarian</p>
+                <p class="text-xs text-gray-400 mt-1">Coba ubah pencarian atau filter</p>
             </div>
-            <div x-show="visibleCount < filtered.length" class="px-5 py-4">
+            <div x-cloak x-show="visibleCount < filtered.length" data-load-more class="px-5 py-4">
                 <x-erp.load-more @click="visibleCount += 50">Muat <span x-text="Math.min(50, filtered.length - visibleCount)"></span> Satuan Lagi</x-erp.load-more>
             </div>
         </div>
@@ -61,16 +66,16 @@
     <template x-teleport="body">
         <div x-show="drawerOpen" x-cloak data-erp-modal class="fixed inset-0 z-[100] flex flex-col justify-end lg:flex-row lg:justify-end" @keydown.escape.window="drawerOpen = false">
             <div class="absolute inset-0 bg-black/70" @click="drawerOpen = false"></div>
-            <div x-show="drawerOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full" x-transition:enter-end="translate-y-0 lg:translate-x-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 lg:translate-x-0" x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full" class="relative w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col max-h-[90dvh] lg:max-h-full lg:h-full rounded-t-3xl lg:rounded-none overflow-hidden">
+            <div x-show="drawerOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full" x-transition:enter-end="translate-y-0 lg:translate-x-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 lg:translate-x-0" x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full" class="relative w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl border-t border-gray-100 lg:border-t-0 flex flex-col max-h-[90dvh] lg:max-h-full lg:h-full rounded-t-3xl lg:rounded-none overflow-hidden">
                 <div class="flex justify-center pt-3 pb-1 lg:hidden"><div class="w-16 h-1.5 bg-gray-300 rounded-full"></div></div>
                 <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                     <div><h3 class="text-[15px] font-bold text-gray-900" x-text="editing ? 'Edit Satuan' : 'Tambah Satuan'"></h3><p class="text-[12px] text-gray-400 mt-0.5" x-text="editing ? 'Perbarui data satuan' : 'Isi data satuan baru'"></p></div>
                     <button type="button" @click="drawerOpen = false" class="w-9 h-9 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center" aria-label="Tutup"><i class="ph-bold ph-x"></i></button>
                 </div>
                 <form @submit.prevent="save()" class="flex-1 min-h-0 flex flex-col">
-                    <div class="flex-1 overflow-y-auto bg-gray-50/60 px-5 py-5 space-y-5">
-                        <x-erp.field label="Nama Satuan" for="unit-name" required><input id="unit-name" x-model.trim="form.name" required maxlength="255" type="text" placeholder="Masukkan nama satuan" class="w-full h-10 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
-                        <x-erp.field label="Simbol Satuan" for="unit-abbreviation" required><input id="unit-abbreviation" x-model.trim="form.abbreviation" required maxlength="255" type="text" placeholder="Masukkan simbol (contoh: kg, pcs)" class="w-full h-10 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
+                    <div class="flex-1 overflow-y-auto bg-gray-50/60 px-5 pt-5 pb-6 space-y-5">
+                        <x-erp.field label="Nama Satuan" for="unit-name" required><input id="unit-name" x-model.trim="form.name" required maxlength="255" type="text" placeholder="Masukkan nama satuan" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
+                        <x-erp.field label="Simbol Satuan" for="unit-abbreviation" required><input id="unit-abbreviation" x-model.trim="form.abbreviation" required maxlength="255" type="text" placeholder="Masukkan simbol (contoh: kg, pcs)" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></x-erp.field>
                         <p x-show="error" x-text="error" role="alert" class="text-xs text-red-600"></p>
                     </div>
                     <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3">
@@ -83,9 +88,9 @@
     </template>
 
     <template x-teleport="body">
-        <x-erp.detail-dialog open="detail" close="detail = null" title="Detail Satuan" labelledby="unit-detail-title" close-label="Tutup detail satuan" data-erp-modal>
+        <x-erp.detail-dialog open="detailOpen" close="detailOpen = false" title="Detail Satuan" labelledby="unit-detail-title" close-label="Tutup detail satuan" data-erp-modal>
             <template x-if="detail">
-                <div class="flex flex-col gap-5 text-sm break-words">
+                <div class="my-2 flex flex-col gap-5 text-sm break-words">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-tag text-lg"></i></div>
                         <div class="min-w-0"><div class="font-bold leading-snug text-gray-800" x-text="detail.name"></div><div class="text-[11px] font-medium text-gray-400">Nama Satuan</div></div>
@@ -112,7 +117,7 @@
                     <button type="button" @click="deleteDetail()" class="flex flex-1 items-center justify-center gap-2 py-4 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50"><i class="ph-bold ph-trash"></i> Hapus</button>
                 @endif
                 @unless (check_access('unit.edit') || check_access('unit.destroy'))
-                    <button type="button" @click="detail = null" class="flex flex-1 items-center justify-center py-4 text-sm font-semibold text-gray-600">Tutup</button>
+                    <button type="button" @click="detailOpen = false" class="flex flex-1 items-center justify-center py-4 text-sm font-semibold text-gray-600">Tutup</button>
                 @endunless
             </x-slot:actions>
         </x-erp.detail-dialog>
@@ -125,7 +130,7 @@
 function unitPage(units) {
     return {
         units, search: '', searchOpen: false, visibleCount: 50, scrolled: false, scrollTimer: null,
-        drawerOpen: false, editing: null, detail: null, saving: false, error: '',
+        drawerOpen: false, editing: null, detail: null, detailOpen: false, saving: false, error: '',
         form: { name: '', abbreviation: '', description: '' },
         get filtered() { const q = this.search.trim().toLocaleLowerCase('id'); return this.units.filter(unit => [unit.name, unit.abbreviation, unit.description].some(value => String(value || '').toLocaleLowerCase('id').includes(q))); },
         get visible() { return this.filtered.slice(0, this.visibleCount); },
@@ -152,9 +157,9 @@ function unitPage(units) {
         theme(unit) { return this.themes[Math.max(0, this.units.findIndex(item => item.id === unit.id)) % this.themes.length]; },
         openCreate() { if (!@js(check_access('unit.create'))) return; this.editing = null; this.form = { name: '', abbreviation: '', description: '' }; this.error = ''; this.drawerOpen = true; },
         openEdit(unit) { this.editing = unit.id; this.form = { name: unit.name, abbreviation: unit.abbreviation, description: unit.description || '' }; this.error = ''; this.drawerOpen = true; },
-        showDetail(unit) { this.detail = unit; },
-        editDetail() { const unit = this.detail; this.detail = null; if (unit) this.openEdit(unit); },
-        deleteDetail() { const unit = this.detail; this.detail = null; if (unit) this.confirmDelete(unit); },
+        showDetail(unit) { this.detail = unit; this.detailOpen = true; },
+        editDetail() { const unit = this.detail; this.detailOpen = false; if (unit) this.openEdit(unit); },
+        deleteDetail() { const unit = this.detail; this.detailOpen = false; if (unit) this.confirmDelete(unit); },
         async save() {
             if (this.saving) return;
             this.saving = true; this.error = '';

@@ -49,6 +49,16 @@ class Receipt extends Model
         return $this->belongsTo('Modules\Master\Entities\Product', 'product_id', 'id');
     }
 
+    public function creator()
+    {
+        return $this->belongsTo(\App\User::class, 'created_by', 'id_user');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(\App\User::class, 'updated_by', 'id_user');
+    }
+
     public function recipeIngredients()
     {
         return $this->hasMany(ProductReceipt::class, 'receipt_id', 'id');

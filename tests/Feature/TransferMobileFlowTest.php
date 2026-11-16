@@ -229,7 +229,8 @@ class TransferMobileFlowTest extends TestCase
             ->assertJsonFragment(['id' => 11, 'unit' => 'Kg', 'stock' => 10, 'price' => 5000]);
         $this->getJson('/_test/transfer-products?branch_id=2')->assertForbidden();
         DB::table('product_stock')->where('branch_id', 1)->update(['stock_available' => 0]);
-        $this->getJson('/_test/transfer-products?branch_id=1')->assertOk()->assertJsonCount(0);
+        // Without stock the product is still listed (greyed out in the picker), after the ones that have stock.
+        $this->getJson('/_test/transfer-products?branch_id=1')->assertOk()->assertJsonFragment(['id' => 11, 'stock' => 0]);
     }
 
     public function test_record_view_is_scoped_to_the_requested_side_and_dates_allow_open_ranges(): void

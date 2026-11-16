@@ -109,7 +109,7 @@ body:has(.transfer-form) main { overflow:hidden; }
 .transfer-form .transfer-cart-line strong { font-size:13px; }
 .transfer-form .transfer-cart-item { gap:6px; }
 .transfer-form .transfer-cart-item:disabled { opacity:1; cursor:default; }
-.transfer-form .transfer-product-option input[type=radio] { width:14px; min-width:14px; height:14px; }
+.transfer-form .transfer-product-option input[type=radio] { width:16px; min-width:16px; height:16px; }
 .transfer-form .transfer-modal-input[readonly] { background:#f3f4f6; color:#6b7280; }
 .transfer-form .transfer-product-summary { font-size:13px; font-weight:700; padding:12px 0 0; }
 .transfer-form .transfer-unit-field { position:relative; }
@@ -143,3 +143,121 @@ body:has(.transfer-form) main { overflow:hidden; }
 .transfer-form .transfer-action { padding:0 12px; line-height:16px; }
 .transfer-form .transfer-action-primary { border:0; }
 .transfer-form .transfer-action-primary:disabled { color:#9ca3af; }
+
+/* Add-product dialog, measured on the reference at 400px. */
+.transfer-modal .modal-content { border-color:#f3f4f6; }
+.transfer-modal .modal-header { padding:16px 20px 15px; background:rgba(249,250,251,.5); }
+.transfer-modal .modal-header h2 { font-size:16px; line-height:20px; }
+.transfer-modal .modal-header p { margin:2px 0 0; line-height:16px; }
+.transfer-close { width:32px; height:32px; color:#9ca3af; font-size:14px!important; }
+.transfer-modal-label { margin:0 0 6px; line-height:16.5px; }
+.transfer-product-picker .transfer-search-wrap i { font-size:12px; color:#9ca3af; }
+.transfer-product-search { padding:10px 10px!important; font-size:16px!important; }
+.transfer-product-options { height:118px; }
+.transfer-product-option { min-height:0; gap:12px; padding:10px 14px; }
+.transfer-product-option input[type=radio] { width:16px; height:16px; min-width:16px; border:2px solid #d1d5db; }
+.transfer-product-option span { font-size:12px; font-weight:500; line-height:16px; }
+.transfer-modal-input { height:40px; font-size:16px!important; font-weight:700!important; }
+.transfer-modal .modal-header { padding-bottom:14px; }
+.transfer-product-search { line-height:20px!important; }
+.transfer-modal .modal-body { padding-top:16px; }
+.transfer-form .transfer-modal-fields { margin-top:14px; }
+.transfer-modal .modal-body { padding-bottom:16px; }
+.transfer-form .transfer-quantity-full { margin-top:14px; }
+
+/* Cart rows, measured on the reference at 400px. */
+.transfer-form .transfer-cart-item { width:calc(100% + 16px); margin:0 -8px; gap:4px; padding:12px 10px; border-bottom:0; border-top:1px solid #f3f4f6; }
+.transfer-form .transfer-cart-item:first-of-type { border-top:0; padding:4px 10px 12px; }
+.transfer-form .transfer-cart-line { align-items:center; }
+.transfer-form .transfer-cart-line strong { font-size:14px; line-height:20px; }
+.transfer-form .transfer-cart-line b { font-size:12px; font-weight:800; line-height:16px; }
+
+/* Same look as the Sortir Barang form: branch field, "+ Tambah" text button and icon actions. */
+.transfer-form .transfer-branch-trigger { min-height:44px; padding:0 14px; background:#fff; color:#1f2937; font-size:12px!important; font-weight:700!important; line-height:16px; }
+.transfer-form .transfer-branch-trigger i { color:#9ca3af; font-size:12px; }
+.transfer-form .transfer-add-button { min-height:0; border:0; border-radius:6px; background:transparent; color:#0b595b; padding:2px 0; font-size:12px!important; font-weight:700!important; line-height:16px; white-space:nowrap; box-shadow:none; }
+.transfer-form .transfer-add-button, .transfer-form .transfer-add-button:hover:not(:disabled) { background:transparent; text-decoration:none; }
+.transfer-form .transfer-add-button:disabled { color:#9ca3af; cursor:not-allowed; background:transparent; }
+.transfer-form .transfer-summary-actions { gap:12px; }
+.transfer-form .transfer-icon-action { display:flex; width:44px; height:44px; flex:none; align-items:center; justify-content:center; border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:#374151; text-decoration:none; cursor:pointer; transition:transform .1s, background-color .15s; }
+.transfer-form .transfer-icon-action i { font-size:18px!important; line-height:1; }
+.transfer-form .transfer-icon-action:hover:not(:disabled) { background:#f9fafb; color:#111827; }
+.transfer-form .transfer-icon-action:active:not(:disabled) { transform:scale(.95); }
+.transfer-form .transfer-icon-action:disabled { opacity:.6; cursor:default; }
+
+/* Dialog motion as in the reference: the dim fades (200ms in, 150ms out) while the card rises from 12px below at 95% size. */
+dialog.transfer-modal { opacity:0; transform:translateY(12px) scale(.95);
+    transition:opacity .15s cubic-bezier(.4,0,1,1), transform .15s cubic-bezier(.4,0,1,1), overlay .15s cubic-bezier(.4,0,1,1) allow-discrete, display .15s cubic-bezier(.4,0,1,1) allow-discrete; }
+dialog.transfer-modal[open] { opacity:1; transform:none;
+    transition:opacity .2s cubic-bezier(0,0,.2,1), transform .2s cubic-bezier(0,0,.2,1), overlay .2s cubic-bezier(0,0,.2,1) allow-discrete, display .2s cubic-bezier(0,0,.2,1) allow-discrete; }
+@starting-style { dialog.transfer-modal[open] { opacity:0; transform:translateY(12px) scale(.95); } }
+dialog.transfer-modal::backdrop { background:rgba(0,0,0,0); backdrop-filter:blur(0);
+    transition:background-color .15s cubic-bezier(.4,0,1,1), backdrop-filter .15s cubic-bezier(.4,0,1,1), overlay .15s cubic-bezier(.4,0,1,1) allow-discrete, display .15s cubic-bezier(.4,0,1,1) allow-discrete; }
+dialog.transfer-modal[open]::backdrop { background:rgba(0,0,0,.6); backdrop-filter:blur(4px);
+    transition:background-color .2s cubic-bezier(0,0,.2,1), backdrop-filter .2s cubic-bezier(0,0,.2,1), overlay .2s cubic-bezier(0,0,.2,1) allow-discrete, display .2s cubic-bezier(0,0,.2,1) allow-discrete; }
+@starting-style { dialog.transfer-modal[open]::backdrop { background:rgba(0,0,0,0); backdrop-filter:blur(0); } }
+@media (prefers-reduced-motion:reduce) { dialog.transfer-modal, dialog.transfer-modal::backdrop { transition:none !important; } }
+/* The search field keeps exactly the same size resting, focused or pressed (the older focus rule used 13px / 12px padding). */
+.transfer-product-search, .transfer-product-search:focus, .transfer-product-search:active, .transfer-product-search:focus-visible { padding:10px 10px!important; font-size:16px!important; line-height:20px!important; }
+
+/* Product rows: stock at the right, products without stock greyed out; the stock line keeps its space so nothing jumps. */
+.transfer-product-option .transfer-product-stock { flex:none; margin-left:auto; color:#6b7280; font-size:11px; font-style:normal; font-weight:600; line-height:16px; white-space:nowrap; }
+.transfer-product-option span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.transfer-product-option.is-disabled { cursor:not-allowed; background:#fff; }
+.transfer-product-option.is-disabled:hover { background:#fff; }
+.transfer-product-option.is-disabled span, .transfer-product-option.is-disabled .transfer-product-stock { color:#9ca3af; }
+.transfer-product-option.is-disabled input[type=radio] { cursor:not-allowed; border-color:#d1d5db; background:#f3f4f6; }
+.transfer-stock.is-empty { visibility:hidden; }
+.transfer-form .transfer-card-label small { font-size:12px; font-weight:700; }
+
+/* Destination menu: same as the Sortir Barang branch menu (green selected row, no dot). */
+.transfer-form .transfer-branch-menu button:hover { background:#f9fafb; }
+.transfer-form .transfer-branch-menu button.is-selected { background:#ecfdf5; color:#0b595b; font-weight:700; }
+.transfer-form .transfer-branch-dot { display:none!important; }
+
+/* Quantity stays locked until a product is picked. */
+body.erp-ui #transfer-qty.transfer-modal-input:disabled { background: #f3f4f6 !important; border-color: #e5e7eb !important; color: #9ca3af !important; cursor: not-allowed; -webkit-text-fill-color: #9ca3af; opacity: 1; }
+
+/* Selected product radio as in the plan: 2px emerald ring around an 8px emerald dot (white gap between). */
+.transfer-form .transfer-product-option input[type=radio]:checked { border:2px solid #10b981; background:radial-gradient(circle, #10b981 0 4px, #fff 4.5px); }
+
+/* Menerima (receiving / view) pages follow the Pindah Stok - Menerima reference, which differs slightly from the sender form. */
+.transfer-form.is-receiving .transfer-canvas { gap:20px; }
+.transfer-form.is-receiving .transfer-branch-trigger { padding:0 16px; background:rgba(249,250,251,.7); font-size:14px!important; font-weight:600!important; line-height:20px; }
+.transfer-form.is-receiving .transfer-branch-trigger > span:first-child { display:flex; align-items:center; gap:8px; }
+.transfer-form.is-receiving .transfer-branch-trigger i { color:#0b595b; font-size:16px; }
+.transfer-form.is-receiving .transfer-cart-line small { color:#9ca3af; line-height:16px; }
+.transfer-form.is-receiving .transfer-cart-line small.transfer-shortage { color:#d97706; font-weight:600; }
+.transfer-form.is-receiving .transfer-items-header h1 { letter-spacing:-.025em; }
+
+/* "Terima Produk" dialog (receiving) follows the Pindah Stok - Menerima reference. */
+.transfer-form.is-receiving .transfer-modal .transfer-close { border:1px solid rgba(229,231,235,.6); }
+.transfer-form.is-receiving .transfer-modal .transfer-close { font-size:16px!important; }
+.transfer-form.is-receiving .transfer-modal .transfer-close i { font-size:16px!important; }
+.transfer-form.is-receiving .transfer-modal .modal-header p { font-weight:600; }
+.transfer-form.is-receiving .transfer-modal .modal-body { padding:20px; }
+.transfer-form.is-receiving .transfer-modal .transfer-modal-fields { margin-top:0; }
+.transfer-form.is-receiving .transfer-modal .transfer-modal-note { margin-top:20px; }
+.transfer-form.is-receiving .transfer-modal .transfer-modal-label { line-height:16px; }
+.transfer-form.is-receiving .transfer-modal .transfer-modal-fields > div:last-child .transfer-modal-label { color:#0b595b; }
+.transfer-form.is-receiving .transfer-modal .transfer-modal-input { padding:0 40px 0 14px; }
+.transfer-form.is-receiving .transfer-modal .transfer-modal-note .transfer-modal-input { padding:0 14px; font-weight:400!important; }
+.transfer-form.is-receiving .transfer-modal .transfer-modal-input[readonly] { color:#374151; }
+.transfer-form.is-receiving .transfer-modal #transfer-qty { font-weight:800!important; color:#111827; }
+.transfer-form.is-receiving .transfer-modal .transfer-unit-field span { right:12px; top:50%; transform:translateY(-50%); color:#9ca3af; font-size:12px; font-weight:700; line-height:16px; }
+.transfer-form.is-receiving .transfer-modal .modal-footer { padding:14px 20px; background:rgba(249,250,251,.5); }
+.transfer-form.is-receiving .transfer-modal .modal-footer .transfer-action { padding:0; }
+
+/* Shortage alert (receiving): compact centred card, 200ms in / 150ms out, card starts at 90% size. */
+dialog.transfer-alert-modal { max-width:384px; transform:translateY(12px) scale(.9); }
+dialog.transfer-alert-modal[open] { transform:none; }
+@starting-style { dialog.transfer-alert-modal[open] { transform:translateY(12px) scale(.9); } }
+dialog.transfer-alert-modal[open]::backdrop { background:rgba(0,0,0,.5); }
+.transfer-alert-card { background:#fff; border:1px solid #f3f4f6; border-radius:24px; padding:24px; text-align:center; box-shadow:0 25px 50px -12px rgba(0,0,0,.25); }
+.transfer-alert-icon { display:flex; width:48px; height:48px; margin:0 auto 12px; align-items:center; justify-content:center; border-radius:16px; background:#fffbeb; color:#d97706; font-size:24px; }
+.transfer-alert-card h2 { margin:0 0 8px; color:#111827; font-size:16px; line-height:24px; font-weight:700; }
+.transfer-alert-card p { margin:0 0 24px; padding:0 4px; color:#6b7280; font-size:12px; line-height:19.5px; }
+.transfer-alert-actions { display:flex; gap:10px; }
+.transfer-alert-actions .transfer-action { flex:1; height:44px; min-height:0; padding:0; border-radius:12px; font-size:12px; font-weight:700; }
+.transfer-alert-actions .transfer-action:not(.transfer-action-primary) { border:1px solid #e5e7eb; background:transparent; color:#374151; }
+.transfer-alert-actions .transfer-action-primary { background:#0b595b; color:#fff; box-shadow:0 4px 6px -1px rgba(11,89,91,.2), 0 2px 4px -2px rgba(11,89,91,.2); }

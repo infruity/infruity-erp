@@ -24,7 +24,13 @@ class PaymentMethodController extends Controller
             return $denied;
         }
 
-        return view('master::payment-method.index', ['records' => PaymentMethod::query()->select('id', 'name', 'code')->orderByDesc('id')->get()]);
+        $records = PaymentMethod::query()
+            ->leftJoin('users as editor', 'editor.id_user', '=', 'payment_method.updated_by')
+            ->select('payment_method.id', 'payment_method.name', 'payment_method.code', 'payment_method.created_at', 'payment_method.updated_at', 'editor.nm_user as updated_by_name')
+            ->orderByDesc('payment_method.id')
+            ->get();
+
+        return view('master::payment-method.index', ['records' => $records]);
     }
 
     /**
@@ -60,6 +66,8 @@ class PaymentMethodController extends Controller
             DB::beginTransaction();
             $paymentMethod       = new PaymentMethod();
             $paymentMethod->name = $validated['name'] ?? null;
+            $paymentMethod->created_by = \Illuminate\Support\Facades\Auth::user()?->id_user;
+            $paymentMethod->updated_by = \Illuminate\Support\Facades\Auth::user()?->id_user;
             $paymentMethod->save();
             DB::commit();
         } catch (Exception $e) {
@@ -123,6 +131,7 @@ class PaymentMethodController extends Controller
             DB::beginTransaction();
             $paymentMethod       = PaymentMethod::findOrFail($id);
             $paymentMethod->name = $validated['name'] ?? null;
+            $paymentMethod->updated_by = \Illuminate\Support\Facades\Auth::user()?->id_user;
             $paymentMethod->save();
             DB::commit();
         } catch (Exception $e) {

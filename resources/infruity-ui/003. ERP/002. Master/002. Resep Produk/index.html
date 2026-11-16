@@ -1379,21 +1379,9 @@
                                 class="w-full min-h-[48px] bg-white border border-gray-200 rounded-xl px-3.5 py-2 flex items-center justify-between text-left transition-all hover:border-gray-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                                 :class="!form.productId ? 'text-gray-400' : 'text-gray-900'">
                             <div class="flex items-center gap-3 min-w-0 flex-1">
-                                <template x-if="form.productId">
-                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0 border border-gray-100"
-                                         :style="'background-color:' + (form.color || '#fff3e0')">
-                                        <span x-text="form.emoji || '🧃'"></span>
-                                    </div>
-                                </template>
-                                <template x-if="!form.productId">
-                                    <div class="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 flex items-center justify-center shrink-0">
-                                        <i class="ph ph-bag text-base"></i>
-                                    </div>
-                                </template>
                                 <div class="flex flex-col min-w-0 flex-1">
                                     <span class="text-sm font-semibold truncate text-gray-900" 
                                           x-text="form.productName ? form.productName : 'Pilih produk yang perlu resep...'"></span>
-                                    <span x-show="form.unit" class="text-[11px] text-gray-400" x-text="'Satuan hasil: ' + form.unit"></span>
                                 </div>
                             </div>
                             <i class="ph-bold ph-caret-down text-gray-400 shrink-0 transition-transform ml-2" :class="pickerOpen ? 'rotate-180' : ''"></i>
@@ -1426,7 +1414,6 @@
                                                 <span x-text="'Satuan: ' + prod.unit"></span>
                                             </div>
                                         </div>
-                                        <i x-show="form.productId === prod.id" class="ph-bold ph-check text-emerald-600 text-sm"></i>
                                     </div>
                                 </template>
                                 <div x-show="productsNeedingRecipe.filter(p => p.name.toLowerCase().includes(pickerSearch.toLowerCase())).length === 0"

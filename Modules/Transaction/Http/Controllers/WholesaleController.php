@@ -46,6 +46,7 @@ class WholesaleController extends Controller
         $emptyStockProducts = NegativeStockWarning::forBranches($userBranches);
 
         $data['emptyStockData'] = $emptyStockProducts;
+        $data['initialRows'] = $this->initialRows($data['branches']);
 
         return view('transaction::wholesale.index', $data);
     }
@@ -317,7 +318,7 @@ class WholesaleController extends Controller
         $data['data']           = Wholesale::with('branch')
             ->whereIn('branch_id', UserBranch::getUserBranch())
             ->findOrFail($id);
-        abort_if($data['data']->status === 'complete', 403, 'Pengadaan yang sudah selesai tidak dapat diedit.');
+        abort_if(in_array($data['data']->status, ['complete', 'posting'], true), 403, 'Pengadaan yang sudah selesai tidak dapat diedit.');
         $data['detail']         = $this->hydrateWholesaleDetailPricing(
             WholesaleProduct::with('product', 'product.unit')->where('wholesale_id', $id)->get(),
             $data['data']->branch_id
@@ -383,7 +384,7 @@ class WholesaleController extends Controller
         try {
             DB::beginTransaction();
             $wholesale = Wholesale::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
-            if ($wholesale->status === 'complete') {
+            if (in_array($wholesale->status, ['complete', 'posting'], true)) {
                 DB::rollBack();
                 return redirect()->back()->with('error', 'Pengadaan yang sudah selesai tidak dapat diubah.');
             }
@@ -1214,10 +1215,8 @@ class WholesaleController extends Controller
             ->addColumn('status', function ($item) {
                 $status = (string) ($item->status ?? '');
                 [$label, $class] = match ($status) {
-                    'temp' => ['Draft', 'is-muted'],
-                    'draft' => ['Pending', 'is-draft'],
-                    'posting' => ['Dalam Pengiriman', 'is-posting'],
-                    'complete' => ['Selesai', 'is-complete'],
+                    'posting', 'complete' => ['Selesai', 'is-complete'],
+                    'temp', 'draft' => ['Pending', 'is-draft'],
                     default => [ucfirst($status ?: 'Tidak diketahui'), 'is-muted'],
                 };
 
@@ -1234,10 +1233,10 @@ class WholesaleController extends Controller
                 if ($canViewWholesale) {
                     $html .= '<button class="wholesale-action-button wholesale-open-detail" type="button" aria-label="Lihat pengadaan ' . e($item->order_number) . '"><i class="ph ph-eye" aria-hidden="true"></i></button>';
                 }
-                if ($item->status !== 'complete' && $canEditWholesale) {
+                if (! in_array($item->status, ['complete', 'posting'], true) && $canEditWholesale) {
                     $html .= '<a class="wholesale-action-button" href="' . route('wholesale.edit', $item->id) . '" aria-label="Edit pengadaan ' . e($item->order_number) . '"><i class="ph ph-pencil-simple" aria-hidden="true"></i></a>';
                 }
-                if ($item->status !== 'complete' && $canDeleteWholesale) {
+                if ($canDeleteWholesale) {
                     $html .= '<button class="wholesale-action-button is-danger" type="button" onclick="deleteProduct(' . (int) $item->id . ')" aria-label="Hapus pengadaan ' . e($item->order_number) . '"><i class="ph ph-trash" aria-hidden="true"></i></button>';
                 }
                 return $html . '</div>';
@@ -1253,7 +1252,7 @@ class WholesaleController extends Controller
                     return null;
                 }
 
-                $canEdit = $item->status !== 'complete' && $canEditWholesale;
+                $canEdit = ! in_array($item->status, ['complete', 'posting'], true) && $canEditWholesale;
                 // The list row shows the order date with the recorded time; the popup shows the same value.
                 $dateTime = \Carbon\Carbon::parse($item->order_date ?? $item->created_at);
                 if (! empty($item->created_at)) {
@@ -1271,11 +1270,47 @@ class WholesaleController extends Controller
                     'order_date_label' => $mobileDate,
                     'edit_url' => $canEdit ? route('wholesale.edit', $item->id) : null,
                     'can_edit' => (bool) $canEdit,
-                    'can_delete' => $item->status !== 'complete' && $canDeleteWholesale,
+                    'can_delete' => $canDeleteWholesale,
                 ];
             })
             ->rawColumns(['branch', 'po', 'staff', 'items', 'action', 'status', 'address'])
             ->make(true);
+    }
+
+    /**
+     * The first DataTables response (page 1, newest first, default filters), computed with the page so the list is
+     * drawn without waiting for a second request. Null when it cannot be built; the table then loads it by ajax.
+     */
+    private function initialRows($branches): ?array
+    {
+        try {
+            $columns = [
+                ['branch.name', true, true], ['wholesale.order_number', true, true], ['users.nm_user', true, true],
+                ['wholesale_totals.item_names', true, true], ['wholesale.status', true, true], ['action', true, false],
+                ['wholesale.status', false, true], ['wholesale.order_date', false, true], ['wholesale.id', false, true],
+                ['wholesale_totals.supplier_names', false, false],
+            ];
+            $names = ['branch', 'po', 'staff', 'items', 'status', 'action', 'status_raw', 'order_date', 'wholesale_id', 'supplier_search'];
+            $params = [
+                'draw' => 1, 'start' => 0, 'length' => 20,
+                'order' => [['column' => 7, 'dir' => 'desc']],
+                'search' => ['value' => '', 'regex' => 'false'],
+                'columns' => [],
+                'url' => 'wholesale', 'status' => 'all',
+                // Same default as the branch filter of the page: "all" when there is more than one branch.
+                'cabang_filter' => count($branches) > 1 ? 'all' : (string) optional($branches->first())->id,
+            ];
+            foreach ($columns as $i => [$name, $searchable, $orderable]) {
+                $params['columns'][$i] = ['data' => $names[$i], 'name' => $name, 'searchable' => $searchable ? 'true' : 'false', 'orderable' => $orderable ? 'true' : 'false', 'search' => ['value' => '', 'regex' => 'false']];
+            }
+            $response = $this->get_data(Request::create(route('wholesale-data'), 'GET', $params));
+
+            return $response->getData(true);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return null;
+        }
     }
 
     private function hydrateWholesaleDetailPricing($detail, $branchId = null)

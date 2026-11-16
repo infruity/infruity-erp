@@ -782,13 +782,12 @@
             .so-hist-side .so-hist-col.is-surplus { color:#047857; font-weight:700; }
             .so-hist-side .so-hist-col.is-loss { color:#be123c; font-weight:700; }
             .so-hist-reason { max-width:240px; color:#4b5563; font-size:12px; line-height:1.5; text-align:right; overflow-wrap:anywhere; }
-            .so-hist-details { display:grid; grid-template-columns:1fr auto; gap:2px 10px; margin-top:6px; border-radius:8px; background:#f9fafb; padding:6px 8px; color:#6b7280; font-size:11px; text-align:left; }
             .so-hist-empty { padding:32px 0; color:#9ca3af; text-align:center; font-size:13px; }
         </style>
         <link rel="stylesheet" href="{{ asset('assets/css/stock-opname-reference.css') }}?v={{ filemtime(public_path('assets/css/stock-opname-reference.css')) }}">
         <x-erp.workspace count-table="transaction-table" count-noun="stok opname" class="so-workspace" title="Stok Opname" subtitle="Cocokkan stok fisik dan stok sistem."><x-slot:toolbar>
             <div class="erp-search so-desktop-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-so-search placeholder="Cari produk…" aria-label="Cari produk"></div>
-            <x-erp.mobile-search class="so-mobile-search"><x-slot:input><input type="search" id="search" data-so-search class="erp-mobile-search__input" placeholder="Cari produk…" aria-label="Cari produk"></x-slot:input><x-slot:clear><button type="button" id="so-search-clear" class="erp-mobile-search__clear" aria-label="Hapus pencarian" hidden><i class="ph ph-x" aria-hidden="true"></i></button></x-slot:clear><x-slot:filter><button type="button" class="erp-mobile-search__filter" data-so-open-filter aria-label="Filter stok opname" aria-haspopup="dialog" aria-controls="so-filter-sheet"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></x-slot:filter></x-erp.mobile-search>
+            <x-erp.mobile-search class="so-mobile-search"><x-slot:input><input type="search" id="search" data-so-search class="erp-mobile-search__input" placeholder="Cari produk…" aria-label="Cari produk"></x-slot:input><x-slot:clear><button type="button" id="so-search-clear" class="erp-mobile-search__clear" aria-label="Hapus pencarian" hidden><i class="ph ph-x" aria-hidden="true"></i></button></x-slot:clear><x-slot:filter><button type="button" class="erp-mobile-search__filter" data-so-open-filter aria-label="Filter stok opname" aria-haspopup="dialog" aria-controls="so-filter-sheet"><span class="icon-rounded" aria-hidden="true">tune</span></button></x-slot:filter></x-erp.mobile-search>
             <button type="button" class="erp-action so-desktop-filter" data-so-open-filter aria-controls="so-filter-sheet"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button>
             <div hidden><select data-kt-ecommerce-product-filter="cabang"><option value="all">Semua Cabang</option>@foreach($branches as $branch)<option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>@endforeach</select><input type="hidden" id="kt_ecommerce_sales_flatpickr"></div>
             @if(check_access('stock-opname.create'))<button type="button" class="erp-action erp-action--primary so-desktop-create" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer"><i class="ph ph-plus" aria-hidden="true"></i>Tambah stok opname</button>@endif
@@ -811,84 +810,66 @@
                 <form class="form" action="{{ url(Request::segment(1)) }}" id="kt_modal_add_customer_form"
                     data-kt-redirect="#">
                     @csrf
-                    <!--begin::Modal header-->
-                    <div class="modal-header border-0 pb-0" id="kt_modal_add_customer_header"
-                        style="background-color: #ffffff;">
-                        <!--begin::Modal title-->
-                        <div>
-                            <h2 class="modal-title fw-bold text-dark fs-3">Catat Stock Opname</h2>
-                            <span class="text-muted" style="font-size: 0.85rem;">Data awal bersifat final dan tidak dapat
-                                diedit langsung.</span>
-                        </div>
-                        <!--end::Modal title-->
-                        <!--begin::Close-->
+                    <!--begin::Modal header (a top bar on phones: back, title)-->
+                    <div class="modal-header so-create-top" id="kt_modal_add_customer_header">
                         <button type="button" id="kt_modal_add_customer_close" class="btn-close-soft"
-                            style="background: transparent; width: 30px; height: 30px; margin-top: -10px;"
-                            data-bs-dismiss="modal" aria-label="Close">
+                            data-bs-dismiss="modal" aria-label="Kembali">
                             <i class="ph-bold ph-x so-close-x" aria-hidden="true"></i>
-                            <i class="ph-bold ph-arrow-left so-close-back" aria-hidden="true"></i>
+                            <i class="ph-bold ph-caret-left so-close-back" aria-hidden="true"></i>
                         </button>
-                        <!--end::Close-->
+                        <h2 class="modal-title">Tambah Stok Opname</h2>
+                        <span class="so-create-top__spacer" aria-hidden="true"></span>
                     </div>
                     <!--end::Modal header-->
-                    <!--begin::Modal body-->
-                    <div class="modal-body py-5" style="background-color: #ffffff;">
-                        <!--begin::Scroll-->
-                        <div class="scroll-y" id="kt_modal_add_customer_scroll" data-kt-scroll="true"
-                            data-kt-scroll-activate="{default: false, lg: true}" data-kt-scroll-max-height="auto"
-                            data-kt-scroll-dependencies="#kt_modal_add_customer_header"
-                            data-kt-scroll-wrappers="#kt_modal_add_customer_scroll" data-kt-scroll-offset="220px">
-
+                    <div class="modal-body so-create-body">
+                        <div class="so-create-card" id="kt_modal_add_customer_scroll">
                             <input type="hidden" id="date" name="date" value="{{ date('Y-m-d') }}" />
 
-                            <div class="row g-5 mb-5">
-                                <div class="col-md-6 fv-row">
-                                    <label class="required form-label so-form-label" for="branch_id">Cabang Pelaksanaan</label>
-                                    <select class="form-select form-select-solid" name="branch_id" id="branch_id"
-                                        data-placeholder="Pilih Cabang">
-                                        @foreach ($branches as $branch)
-                                            <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-6 fv-row">
-                                    <label class="required form-label so-form-label" for="product_id">Pilih Produk</label>
-                                    <select class="form-select" style="border-color: var(--erp-border);" name="product_id"
-                                        id="product_id" data-placeholder="Pilih Produk">
-                                        <option value="">Pilih Product</option>
-                                    </select>
-                                </div>
+                            <div class="so-create-field fv-row">
+                                <label class="so-create-label" for="branch_id">Cabang Pelaksanaan <span>*</span></label>
+                                <select class="form-select form-select-solid" name="branch_id" id="branch_id"
+                                    data-placeholder="Pilih Cabang">
+                                    @foreach ($branches as $branch)
+                                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="so-create-field fv-row">
+                                <label class="so-create-label" for="product_id">Pilih Produk <span>*</span></label>
+                                <select class="form-select" name="product_id" id="product_id" data-placeholder="Pilih Produk">
+                                    <option value="">Pilih Product</option>
+                                </select>
                             </div>
 
-                            <div class="so-form-panel mb-5">
+                            <div class="so-create-info">
                                 <div>
-                                    <span class="so-form-panel__label">Stok Sistem</span>
-                                    <div class="input-group so-form-panel__input">
-                                        <input type="number" step="0.01" class="form-control text-end fw-bolder border-0"
-                                            name="quantity" value="0" readonly aria-label="Stok sistem saat ini" />
-                                    </div>
-                                    <small>Catatan buku saat ini</small>
+                                    <p class="so-create-info__label">Stok Sistem</p>
+                                    <input type="text" class="d-none" name="quantity" value="" readonly aria-label="Stok sistem saat ini" />
+                                    <p class="so-create-info__value" id="stock-system-display">-</p>
+                                    <p class="so-create-info__hint">Catatan buku saat ini</p>
                                 </div>
                                 <div>
-                                    <span class="so-form-panel__label">HPP / Satuan</span>
-                                    <strong class="so-form-panel__value" id="stock-hpp-value">-</strong>
-                                    <small>Dipakai untuk menghitung dampak</small>
+                                    <p class="so-create-info__label">HPP / Satuan</p>
+                                    <p class="so-create-info__value is-brand" id="stock-hpp-value">-</p>
+                                    <p class="so-create-info__hint" id="stock-hpp-hint">-</p>
                                 </div>
                             </div>
 
-                            <div class="fv-row mb-4">
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <label class="required form-label so-form-label mb-0" for="real_stock">Stok Fisik Terhitung</label>
-                                    <span class="so-form-hint">Hasil timbang aktual</span>
+                            <div class="so-create-field fv-row">
+                                <div class="so-create-label-row">
+                                    <label class="so-create-label" for="real_stock">Stok Fisik Terhitung <span>*</span></label>
+                                    <span class="so-create-hint">Hasil timbang aktual</span>
                                 </div>
-                                <input type="number" step="0.01" inputmode="decimal" id="real_stock"
-                                    class="form-control text-end fw-bolder so-form-physical" name="real_stock" value="0" />
+                                <div class="so-create-physical">
+                                    <input type="text" inputmode="decimal" id="real_stock" name="real_stock" value="" placeholder="0,00" autocomplete="off" />
+                                    <span class="so-create-unit" id="so-physical-unit">Kg</span>
+                                </div>
                             </div>
 
-                            <div class="so-form-diff is-match mb-5" aria-live="polite">
+                            <div class="so-form-diff is-match" aria-live="polite">
                                 <div class="so-form-diff__row">
-                                    <span id="stock-difference-label">Stok sesuai</span>
-                                    <strong id="stock-difference-text">0 Kg</strong>
+                                    <span id="stock-difference-label">Status Selisih</span>
+                                    <strong id="stock-difference-text">0,00 Kg</strong>
                                 </div>
                                 <div class="so-form-diff__row is-sub">
                                     <span>Dampak Finansial</span>
@@ -896,40 +877,25 @@
                                 </div>
                             </div>
 
-                            <div class="fv-row mb-5">
-                                <label class="form-label so-form-label">Detail Quantity</label>
-                                <div id="detail-qty-container" class="d-flex flex-column gap-3">
-                                </div>
-                                <button type="button" class="btn btn-sm btn-light-primary mt-3"
-                                    onclick="addDetailRow()">
-                                    <i class="bi bi-plus"></i> Tambah Detail
-                                </button>
+                            <div class="so-create-field so-create-details fv-row">
+                                <label class="so-create-label">Detail Quantity</label>
+                                <div id="detail-qty-container" class="d-flex flex-column gap-3"></div>
+                                <button type="button" class="btn btn-sm btn-light-primary mt-3" onclick="addDetailRow()"><i class="bi bi-plus"></i> Tambah Detail</button>
                             </div>
 
-                            <div class="fv-row mb-2">
-                                <label class="form-label so-form-label" for="so_note">Catatan Koreksi</label>
-                                <textarea class="form-control" id="so_note" style="border: 1px solid #e5e7eb; border-radius: 12px;" name="note"
-                                    rows="3" placeholder="Tulis kondisi barang, temuan, atau keterangan lainnya..."></textarea>
+                            <div class="so-create-field so-create-note fv-row">
+                                <label class="so-create-label" for="so_note">Catatan Koreksi <span>*</span></label>
+                                <textarea class="form-control" id="so_note" name="note" placeholder="Tuliskan catatan koreksi..."></textarea>
                             </div>
-                            <!--end::Input group-->
                         </div>
-                        <!--end::Scroll-->
                     </div>
-                    <!--end::Modal body-->
-                    <!--begin::Modal footer-->
-                    <div class="modal-footer border-0 pt-0 justify-content-end gap-2" style="background-color: #ffffff;">
-                        <!--begin::Button-->
-                        <button type="button" class="btn btn-light btn-sm fw-bold px-6"
-                            style="color: #4b5563; background-color: transparent;" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" id="kt_modal_add_customer_submit"
-                            class="btn btn-primary btn-sm text-white fw-bold px-6" style="border-radius: 8px;">
-                            <span class="indicator-label">Simpan Final</span>
-                            <span class="indicator-progress">Mohon tunggu...
-                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                    <div class="modal-footer so-create-footer">
+                        <button type="button" id="kt_modal_add_customer_back" class="so-create-btn" data-bs-dismiss="modal">Kembali</button>
+                        <button type="submit" id="kt_modal_add_customer_submit" class="so-create-btn is-primary">
+                            <span class="indicator-label">Tambah</span>
+                            <span class="indicator-progress">Mohon tunggu...</span>
                         </button>
-                        <!--end::Button-->
                     </div>
-                    <!--end::Modal footer-->
                 </form>
                 <!--end::Form-->
             </div>
@@ -942,18 +908,18 @@
     <div class="modal fade stock-opname-modal so-detail so-reference-sheet" id="kt_modal_stock_detail" tabindex="-1" aria-labelledby="so-detail-title" aria-hidden="true">
         <div class="modal-dialog"><div class="modal-content">
             <div class="so-sheet-handle" aria-hidden="true"><span></span></div>
-            <header class="so-sheet-header"><div><h2 id="so-detail-title" data-so-field="name"></h2><p data-so-field="branch"></p></div><button type="button" class="so-close" data-bs-dismiss="modal" aria-label="Tutup detail"><i class="ph ph-x" aria-hidden="true"></i></button></header>
+            <header class="so-sheet-header"><div><div class="so-title-row"><h2 id="so-detail-title" data-so-field="name"></h2><i class="ph-fill ph-check-circle so-title-check" title="Selesai" aria-hidden="true" hidden></i></div><p data-so-field="branch"></p></div><button type="button" class="so-close" data-bs-dismiss="modal" aria-label="Tutup detail"><i class="ph ph-x" aria-hidden="true"></i></button></header>
             <div class="so-sheet-body">
                 <div class="so-detail-meta"><div><span><i class="ph ph-clock" aria-hidden="true"></i>Waktu Dibuat</span><strong data-so-field="created"></strong></div><div><span><i class="ph ph-user" aria-hidden="true"></i>Dibuat oleh</span><strong data-so-field="creator"></strong></div></div>
                 <div class="so-detail-summary"><div><span>Sistem → Fisik</span><strong><span data-so-field="system"></span><span class="so-summary-arrow"> → </span><b data-so-field="physical"></b></strong></div><div><span>HPP / Satuan</span><strong data-so-field="hpp"></strong></div><div class="so-detail-difference"><strong data-so-field="diff"></strong><strong data-so-field="value"></strong></div></div>
                 <form id="so-detail-correction" novalidate>
-                    <div class="so-credit-inputs"><label><span class="is-plus">+</span><input type="text" inputmode="decimal" id="so-credit-plus" placeholder="0" aria-label="Kredit lebih" autocomplete="off"><span data-so-field="unit"></span></label><label><span class="is-minus">−</span><input type="text" inputmode="decimal" id="so-credit-minus" placeholder="0" aria-label="Kredit kurang" autocomplete="off"><span data-so-field="unit"></span></label></div>
+                    <div class="so-credit-inputs"><label><span class="is-plus"><i class="ph-bold ph-plus" aria-hidden="true"></i></span><input type="text" inputmode="decimal" id="so-credit-plus" placeholder="0" aria-label="Kredit lebih" autocomplete="off"><span data-so-field="unit"></span></label><label><span class="is-minus"><i class="ph-bold ph-minus" aria-hidden="true"></i></span><input type="text" inputmode="decimal" id="so-credit-minus" placeholder="0" aria-label="Kredit kurang" autocomplete="off"><span data-so-field="unit"></span></label></div>
                     <label class="so-correction-label" for="so-credit-reason">Catatan Koreksi <span>*</span></label><textarea id="so-credit-reason" rows="5" maxlength="1000" placeholder="Tuliskan catatan koreksi…"></textarea>
                     <p id="so-correction-error" class="so-correction-error" role="status" aria-live="polite"></p>
                 </form>
 
             </div>
-            <footer class="so-sheet-footer so-detail-footer"><button type="button" class="so-history-button" data-so-action="history" aria-label="Riwayat stok opname"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i><span data-so-count="history"></span></button><button type="submit" form="so-detail-correction" id="so-correction-save" disabled>Simpan Koreksi</button>@if(check_access('stock-opname.update'))<button type="button" class="is-primary" data-so-action="finalize">Selesaikan Opname</button>@endif<button type="button" class="is-primary d-none" id="so-detail-done" data-bs-dismiss="modal">Selesaikan opname</button></footer>
+            <footer class="so-sheet-footer so-detail-footer"><button type="button" class="so-history-button" data-so-action="history" aria-label="Riwayat stok opname"><i class="ph-bold ph-clock-counter-clockwise" aria-hidden="true"></i><span data-so-count="history"></span><em class="so-history-label" data-so-history-label>Riwayat</em></button><button type="submit" form="so-detail-correction" id="so-correction-save" disabled>Tambah Koreksi</button>@if(check_access('stock-opname.update'))<button type="button" class="is-primary" data-so-action="finalize">Submit</button>@endif<button type="button" class="is-primary d-none" id="so-detail-done" data-bs-dismiss="modal">Submit</button></footer>
         </div></div>
     </div>
 
@@ -1029,10 +995,10 @@
 
     <!--begin::Stock Opname History Drawer-->
     <div id="kt_stock_opname_history" class="so-reference-history bg-body" data-kt-drawer="true" data-kt-drawer-name="stock-opname-history"
-        data-kt-drawer-activate="true" data-kt-drawer-overlay="true" data-kt-drawer-width="{default:'100%', 'md': '760px'}" data-kt-drawer-direction="end" data-kt-drawer-close="#kt_stock_opname_history_close" role="dialog" aria-modal="true" aria-hidden="true" inert aria-labelledby="so-history-title" tabindex="-1">
+        data-kt-drawer-activate="true" data-kt-drawer-overlay="false" data-kt-drawer-width="{default:'100%', 'md': '760px'}" data-kt-drawer-direction="end" data-kt-drawer-close="#kt_stock_opname_history_close" role="dialog" aria-modal="true" aria-hidden="true" inert aria-labelledby="so-history-title" tabindex="-1">
         <div class="so-history-page">
-            <header class="so-history-topbar"><button type="button" id="kt_stock_opname_history_close" aria-label="Kembali ke detail"><i class="ph ph-caret-left" aria-hidden="true"></i></button><h2 id="so-history-title">Riwayat Stok Opname</h2><span></span></header>
-            <div class="so-history-subheader"><div class="so-history-context"><div><p>Riwayat Stok Opname</p><h3 id="history-transaction-code">—</h3></div><div class="so-history-tools"><button type="button" data-so-history-toggle aria-label="Ubah tampilan menjadi Alasan" aria-pressed="false">Kredit</button><button type="button" id="so-history-filter-open" aria-label="Filter riwayat stok opname" aria-haspopup="dialog" aria-controls="so-history-filter"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></div></div><div id="so-history-columns" class="so-hist-head"></div></div>
+            <header class="so-history-topbar"><button type="button" id="kt_stock_opname_history_close" aria-label="Kembali ke detail"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button><h2 id="so-history-title">Riwayat Stok Opname</h2><span></span></header>
+            <div class="so-history-subheader"><div class="so-history-context"><div><p>Riwayat Stok Opname</p><div class="so-history-title"><h3 id="history-transaction-code">—</h3><i class="ph-fill ph-check-circle so-history-check" title="Selesai" aria-hidden="true" hidden></i></div></div><div class="so-history-tools"><button type="button" data-so-history-toggle aria-label="Ubah tampilan menjadi Alasan" aria-pressed="false">Kredit</button><button type="button" id="so-history-filter-open" aria-label="Filter riwayat stok opname" aria-haspopup="dialog" aria-controls="so-history-filter"><span class="icon-rounded" aria-hidden="true">tune</span></button></div></div><div id="so-history-columns" class="so-hist-head"></div></div>
             <div id="kt_stock_opname_history_scroll" class="so-history-scroll"><div id="history-timeline-items" class="so-hist"></div></div>
         </div>
     </div>
@@ -1157,24 +1123,61 @@
             return new Intl.NumberFormat('id-ID').format(Number(value || 0));
         }
 
+        // "1.234,5" -> 1234.5 (dots are thousands, the comma is the decimal mark, like the reference's field).
+        function parsePhysical(text) {
+            const clean = String(text ?? '').trim();
+            if (clean === '') return 0;
+            const number = Number(clean.replace(/\./g, '').replace(',', '.'));
+            return Number.isFinite(number) ? number : 0;
+        }
+
+        function formatPhysical(value) {
+            const number = Number(value);
+            return Number.isFinite(number) ? number.toLocaleString('id-ID', {maximumFractionDigits: 3}) : '';
+        }
+
+        // Typing keeps the field readable: thousands dots, one decimal comma (a typed "." becomes ",").
+        function maskPhysical(input) {
+            let text = String(input.value || '').trim();
+            if (text === '') { input.value = ''; return; }
+            const endsWithDot = text.endsWith('.') && !text.includes(',');
+            if (endsWithDot) text = text.slice(0, -1) + ',';
+            if (text.includes(',')) {
+                const parts = text.split(',');
+                const intDigits = parts[0].replace(/\D/g, '');
+                const decimals = parts.slice(1).join('').replace(/\D/g, '').slice(0, 3);
+                input.value = (intDigits ? parseInt(intDigits, 10).toLocaleString('id-ID') : '0') + ',' + decimals;
+                return;
+            }
+            const digits = text.replace(/\D/g, '');
+            input.value = digits ? parseInt(digits, 10).toLocaleString('id-ID') : '';
+        }
+
         function updateStockSummary(unitPrice = null) {
+            const hasProduct = !!$('#product_id').val();
             const systemStock = Number($('input[name="quantity"]').val() || 0);
-            const realStock = Number($('input[name="real_stock"]').val() || 0);
-            const difference = realStock - systemStock;
+            const realRaw = String($('input[name="real_stock"]').val() ?? '');
+            const typed = hasProduct && realRaw !== '';
+            const realStock = parsePhysical(realRaw);
+            const difference = typed ? Math.round((realStock - systemStock) * 1000) / 1000 : 0;
             const price = Number(unitPrice ?? $('#product_id').data('unit-price') ?? 0);
             const unit = $('#product_id').data('unit') || 'Kg';
-            const value = difference * price;
-            const diffRounded = Math.round(difference * 100) / 100;
+            const value = Math.round(difference * price);
+            const qty = number => number.toLocaleString('id-ID', {maximumFractionDigits: 3});
+            const signedQty = number => number === 0 ? '0' : (number > 0 ? '+' : '-') + qty(Math.abs(number));
+            const signedRupiah = number => number === 0 ? 'Rp 0' : (number > 0 ? '+Rp ' : '-Rp ') + formatRupiah(Math.abs(number));
+            const state = !typed ? 'is-empty' : (difference > 0 ? 'is-surplus' : (difference < 0 ? 'is-loss' : 'is-match'));
+            const label = !typed ? 'Status Selisih' : (systemStock === 0 ? 'Stok Awal' : (difference > 0 ? 'Selisih Lebih' : (difference < 0 ? 'Selisih Kurang' : 'Sesuai')));
 
-            $('#stock-hpp-value').text(price > 0 ? `Rp ${formatRupiah(Math.round(price))}/${unit}` : '-');
-            $('#stock-difference-label').text(diffRounded < 0 ? 'Potensi rugi' : (diffRounded > 0 ? 'Surplus stok' : 'Stok sesuai'));
-            $('#stock-difference-text').text(`${diffRounded > 0 ? '+' : ''}${diffRounded} ${unit}`);
-            $('#stock-difference-value').text(`${value < 0 ? '-' : (value > 0 ? '+' : '')}Rp ${formatRupiah(Math.abs(Math.round(value)))}`);
+            $('#stock-hpp-value').text(hasProduct && price > 0 ? `Rp ${formatRupiah(Math.round(price))}` : '-');
+            $('#stock-hpp-hint').text(hasProduct && price > 0 ? `per ${unit}` : '-');
+            $('#so-physical-unit').text(unit);
+            $('#stock-system-display').text(hasProduct ? `${qty(systemStock)} ${unit}` : '-');
+            $('#stock-difference-label').text(label);
+            $('#stock-difference-text').text(typed ? `${signedQty(difference)} ${unit}` : '0,00 Kg');
+            $('#stock-difference-value').text(typed ? signedRupiah(value) : 'Rp 0');
 
-            $('.so-form-diff')
-                .toggleClass('is-surplus', diffRounded > 0)
-                .toggleClass('is-loss', diffRounded < 0)
-                .toggleClass('is-match', diffRounded === 0);
+            $('.so-form-diff').removeClass('is-empty is-surplus is-loss is-match').addClass(state);
         }
 
         function formatLongDateTime(dateValue) {
@@ -1234,7 +1237,7 @@
             const info = describeStockOpname(row);
             window.stockOpnameRows[info.id] = info;
             const tone = info.diff > 0 ? 'is-surplus' : (info.diff < 0 ? 'is-loss' : 'is-match');
-            const pending = info.isPending ? '<span class="so-row__status">Draf</span>' : '';
+            const pending = info.isPending ? '' : '<i class="ph-fill ph-check-circle so-row__check" title="Selesai" aria-hidden="true"></i>';
             const value = info.diff !== 0
                 ? `<span class="so-row__value ${tone}">${escapeHtml(formatSignedRupiah(info.value))}</span>`
                 : '';
@@ -1272,6 +1275,10 @@
             $sheet.find('.so-detail-difference').removeClass('is-surplus is-loss is-match').addClass(tone);
             $sheet.find('[data-so-field="hpp"]').text(`Rp ${formatRupiah(Math.round(Math.abs(info.hpp)))} / ${info.unit}`);
             $sheet.find('[data-so-field="unit"]').text(info.unit);
+            // A finished entry is read-only in the reference: summary plus one full-width "Riwayat (n)" button.
+            $sheet.toggleClass('is-final', !info.isPending);
+            $sheet.find('.so-title-check').prop('hidden', info.isPending);
+            $sheet.find('[data-so-history-label]').text('Riwayat (' + (info.historyCount || 0) + ')');
             $sheet.find('[data-so-action="finalize"]').toggleClass('d-none', !info.isPending);
             const canCorrect = info.isPending && @json(check_access('stock-opname.update'));
             $sheet.find('#so-credit-plus, #so-credit-minus, #so-credit-reason').val('').prop('disabled', !canCorrect);
@@ -1295,9 +1302,9 @@
                 finalize: () => finalizeStockOpname(id),
             }[action];
             if (!run) return;
-            // Close the sheet first so the next modal/drawer does not stack on its backdrop.
-            $sheet.one('hidden.bs.modal', run);
+            // The sheet slides away while the next view comes up (the reference does both at once).
             bootstrap.Modal.getOrCreateInstance($sheet[0]).hide();
+            run();
         });
 
         $(document).ready(function() {
@@ -1555,16 +1562,15 @@
                 $('select[name="branch_id"]').val(defaultBranch).trigger('change');
 
                 form.attr('action', '{{ url(Request::segment(1)) }}');
-                $('#kt_modal_add_customer_header h2').text('Catat Stock Opname');
-                $('#kt_modal_add_customer_submit .indicator-label').html(
-                    'Buat Transaksi <i class="ki-outline ki-arrow-right text-white fs-4 ms-1"></i>');
+                $('#kt_modal_add_customer_header h2').text('Tambah Stok Opname');
+                $('#kt_modal_add_customer_submit .indicator-label').text('Tambah');
                 $('#detail-qty-container').empty();
                 if (typeof detailRowCount !== 'undefined') {
                     detailRowCount = 0;
                 }
                 form.find('input, select, textarea, button[type="submit"], button').prop('disabled', false);
-                $('input[name="quantity"]').val(0);
-                $('input[name="real_stock"]').val(0);
+                $('input[name="quantity"]').val('');
+                $('input[name="real_stock"]').val('');
                 $('textarea[name="note"]').val('');
                 if (typeof updateStockSummary === 'function') {
                     updateStockSummary(0);
@@ -1585,7 +1591,17 @@
 
                 var form = $(this);
                 var url = form.attr('action');
+                var isUpdate = form.find('input[name="_method"]').length > 0;
                 var submitBtn = $('#kt_modal_add_customer_submit');
+
+                if (!isUpdate && ($('#real_stock').val() === '' || !String($('#so_note').val() || '').trim())) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Lengkapi data',
+                        text: $('#real_stock').val() === '' ? 'Isi stok fisik terhitung.' : 'Isi catatan koreksi.'
+                    });
+                    return;
+                }
 
                 // Show loading
                 submitBtn.prop('disabled', true);
@@ -1595,9 +1611,11 @@
                 $.ajax({
                     type: 'POST',
                     url: url,
-                    data: form.serialize(), // gunakan FormData(form)[... jika pakai file]
+                    data: form.serializeArray().map(function (field) {
+                        return field.name === 'real_stock' ? {name: field.name, value: parsePhysical(field.value)} : field;
+                    }),
                     success: function(response) {
-                        Swal.fire({
+                        const done = () => Swal.fire({
                             icon: 'success',
                             title: 'Berhasil',
                             text: response.message || 'Data berhasil disimpan.',
@@ -1619,10 +1637,9 @@
 
                             // 4. Kembalikan judul modal (opsional)
                             $('#kt_modal_add_customer_header h2').text(
-                                'Catat Stock Opname');
+                                'Tambah Stok Opname');
 
-                            $('#kt_modal_add_customer_submit .indicator-label').html(
-                                'Simpan Final');
+                            $('#kt_modal_add_customer_submit .indicator-label').text('Tambah');
                             updateStockSummary();
 
                             // 5. Tutup modal
@@ -1635,6 +1652,8 @@
                                 dataTable.ajax.reload(null, false);
                             }
                         });
+
+                        done();
                     },
                     error: function(xhr) {
                         var msg = 'Terjadi kesalahan saat menyimpan data.';
@@ -1740,7 +1759,7 @@
 
                     // Set form fields from database values (not live stock)
                     $('input[name="quantity"]').val(response.stock);
-                    $('input[name="real_stock"]').val(response.real_stock);
+                    $('input[name="real_stock"]').val(formatPhysical(response.real_stock));
                     $('textarea[name="note"]').val(response.note || '');
                     $('#product_id').data('unit', response.product?.unit?.abbreviation || response.unit || 'Kg');
                     updateStockSummary(response.avg_price || 0);
@@ -1818,7 +1837,7 @@
 
                     // Set form fields from database values (not live stock)
                     $('input[name="quantity"]').val(response.stock);
-                    $('input[name="real_stock"]').val(response.real_stock);
+                    $('input[name="real_stock"]').val(formatPhysical(response.real_stock));
                     $('textarea[name="note"]').val(response.note || '');
                     $('#product_id').data('unit', response.product?.unit?.abbreviation || response.unit || 'Kg');
                     updateStockSummary(response.avg_price || 0);
@@ -1876,7 +1895,7 @@
                 .attr('aria-pressed', String(reasonMode)).attr('aria-label', reasonMode ? 'Ubah tampilan menjadi Kredit' : 'Ubah tampilan menjadi Alasan');
             $('#so-history-filter-open').toggleClass('is-active', state.direction !== 'all');
             const head = reasonMode ? '<span class="so-hist-reason-head">Alasan Pergerakan</span>'
-                : '<div class="so-hist-head__side"><span class="so-hist-col">Awal</span><span class="so-hist-col">Kredit</span><span class="so-hist-col">Saldo</span></div>';
+                : '<div class="so-hist-head__side"><span class="so-hist-col">Awal</span><span class="so-hist-col">Kredit</span><span class="so-hist-col">Total</span></div>';
             $('#so-history-columns').html(`<span>Aktivitas</span>${head}`);
             const $list = $('#history-timeline-items').empty();
             if (!entries.length) {
@@ -1886,15 +1905,13 @@
             entries.forEach(item => {
                 const tone = item.delta > 0 ? 'is-surplus' : item.delta < 0 ? 'is-loss' : '';
                 const kind = {initial:'Stok Awal',plus:'Kredit Lebih',minus:'Kredit Kurang',note:'Catatan',unknown:'Perubahan',snapshot:'Snapshot Tersedia'}[item.kind];
-                const badge = tone ? `<span class="so-hist-direction ${tone}" aria-label="${item.delta > 0 ? 'Lebih' : 'Kurang'}">${item.delta > 0 ? '↙' : '↗'}</span>` : '';
+                const badge = tone ? `<span class="so-hist-direction ${tone}" aria-label="${item.delta > 0 ? 'Lebih' : 'Kurang'}"><i class="ph-bold ${item.delta > 0 ? 'ph-arrow-down-left' : 'ph-arrow-up-right'}" aria-hidden="true"></i></span>` : '';
                 let side;
                 if (!reasonMode) {
                     const cell = (value,cls='',isSigned=false) => `<span class="so-hist-col ${cls}">${isSigned ? signed(value) : num(value)}${value !== null ? `<small>${unit}</small>` : ''}</span>`;
                     side = cell(item.before) + cell(item.delta,tone,true) + cell(item.after,'is-strong');
                 } else {
-                    const details = Array.isArray(item.details) && item.details.length
-                        ? '<div class="so-hist-details">' + item.details.map(det => `<span>${escapeHtml(det.name)}</span><b>${num(det.qty)} ${unit}</b>`).join('') + '</div>' : '';
-                    side = `<div class="so-hist-reason">${escapeHtml(item.note || '—')}${details}</div>`;
+                    side = `<div class="so-hist-reason">${escapeHtml(item.note || '—')}</div>`;
                 }
                 $list.append(`<div class="so-hist-row"><div class="so-hist-main"><span class="so-hist-kind">${kind}${badge}</span><span class="so-hist-by">${escapeHtml(item.creator_name || '—')}</span><span class="so-hist-time">${escapeHtml(formatLongDateTime(item.created_at))}</span></div><div class="so-hist-side ${reasonMode ? 'is-reason' : ''}">${side}</div></div>`);
             });
@@ -1909,6 +1926,7 @@
         function showHistory(id) {
             $.ajax({url:`/stock-opname/${id}/history`,type:'GET',success:function(response) {
                 $('#history-transaction-code').text(response.product_name || window.stockOpnameRows[id]?.name || response.code || '—');
+                $('.so-history-check').prop('hidden', !!window.stockOpnameRows[id]?.isPending);
                 window.stockOpnameHistory = {id,entries:response.history || [],unit:response.unit || 'Kg',tab:'credit',direction:'all'};
                 renderStockOpnameHistory();
                 const drawerEl = document.getElementById('kt_stock_opname_history');
@@ -2099,16 +2117,11 @@
             const $form = $('#kt_modal_add_customer_form');
 
             if (!$form.find('input[name="_method"]').length) {
-                $('#kt_modal_add_customer_header h2').text('Input Stock Fisik & Akumulasi');
-                $('#kt_modal_add_customer_submit .indicator-label').html(
-                    'Buat Transaksi <i class="ki-outline ki-arrow-right text-white fs-4 ms-1"></i>');
+                $('#kt_modal_add_customer_header h2').text('Tambah Stok Opname');
+                $('#kt_modal_add_customer_submit .indicator-label').text('Tambah');
                 $('textarea[name="note"]').val('');
                 $('#detail-qty-container').empty();
                 detailRowCount = 0;
-            }
-
-            if (!$realStock.val()) {
-                $realStock.val(0);
             }
 
             if ($product.hasClass('select2-hidden-accessible')) {
@@ -2140,6 +2153,7 @@
                 const data = e.params.data;
                 $quantity.val(data.stock_available || 0);
                 $product.data('unit-price', data.unit_price || 0);
+                $product.data('unit', data.unit || 'Kg');
                 updateStockSummary(data.unit_price || 0);
             });
 
@@ -2156,14 +2170,14 @@
             ErpPicker.attach('#branch_id', {
                 title: 'Pilih Cabang',
                 placeholder: 'Cari cabang...',
-                placeholderTrigger: 'Pilih cabang',
+                placeholderTrigger: 'Pilih Cabang',
                 emptyText: 'Cabang tidak ditemukan'
             });
             ErpPicker.attach('#product_id', {
                 title: 'Pilih Produk',
                 subtitle: 'Produk yang stoknya dicocokkan',
                 placeholder: 'Cari nama produk...',
-                placeholderTrigger: 'Pilih produk',
+                placeholderTrigger: 'Pilih Produk',
                 emptyText: 'Produk tidak ditemukan',
                 url: '{{ route('ajax.stock-available') }}',
                 params: () => ({ branch_id: $('#branch_id').val() }),
@@ -2173,6 +2187,7 @@
                     meta: item.stock_available !== undefined ? 'Stok: ' + item.stock_available : '',
                     data: {
                         stock_available: item.stock_available,
+                        unit: item.unit || 'Kg',
                         unit_price: item.hpp || item.price || item.cost_price || item.purchase_price || 0
                     }
                 })
@@ -2208,6 +2223,7 @@
 
                         if (selected) {
                             $quantity.val(selected.stock_available || 0);
+                            $product.data('unit', selected.unit || 'Kg');
                             $product.data('unit-price', selected.hpp || selected.price ||
                                 selected.cost_price ||
                                 selected.purchase_price || 0);
@@ -2225,6 +2241,7 @@
 
             $realStock.off('input.stockSummary change.stockSummary').on('input.stockSummary change.stockSummary',
                 function() {
+                    maskPhysical(this);
                     updateStockSummary();
                 });
 
@@ -2265,7 +2282,7 @@
                     total += val;
                 }
             });
-            $('input[name="real_stock"]').val(total);
+            $('input[name="real_stock"]').val(formatPhysical(total));
             updateStockSummary();
         }
 

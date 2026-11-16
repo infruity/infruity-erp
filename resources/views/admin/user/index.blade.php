@@ -89,11 +89,11 @@
 <style>
     @media (max-width: 1023px) {
         .user-account-drawer-panel:not(.is-editing) {
-            max-height: 71.5dvh;
+            max-height: 90dvh;
         }
 
         .user-account-drawer-panel.is-editing {
-            max-height: 71.5dvh;
+            max-height: 90dvh;
         }
     }
 
@@ -106,6 +106,7 @@
 @endpush
 
 @section('content')
+<x-erp.master-list-style />
 <div x-data="userMaster(@js($editableUsers), @js(route('user.store')), @js(url('user')), @js(old('_user_id')), @js(old('full_name')), @js(old('email')), @js(old('role_ids', [])), @js(old('id_branch', [])), @js($accessGroups), @js($nextAutoEmail), @js(old('email_type')), @js(old('staff_id')), @js($staffOptions))"
      x-init="if (@js($errors->any())) restoreOld(); else if (new URLSearchParams(location.search).has('create')) openCreate()"
      @user-filter-open.window="filterOpen = true"
@@ -114,20 +115,57 @@
     <form x-data="{ mobileSearch: @js(request('q', '')) }" method="GET" action="{{ route('user.index') }}" class="md:hidden">
         <input type="hidden" name="role_id" value="{{ $selectedRoleId }}">
         <x-erp.mobile-search>
-            <x-slot:input><input x-ref="mobileSearch" x-model="mobileSearch" name="q" type="search" placeholder="Cari akun..." aria-label="Cari akun pengguna" class="erp-mobile-search__input"></x-slot:input>
+            <x-slot:input><input x-ref="mobileSearch" x-model="mobileSearch" name="q" type="search" placeholder="Cari..." aria-label="Cari akun pengguna" class="erp-mobile-search__input"></x-slot:input>
             <x-slot:clear><button type="button" x-show="mobileSearch" x-cloak @click="mobileSearch = ''; $refs.mobileSearch.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
-            <x-slot:filter><button type="button" @click="$dispatch('user-filter-open')" aria-label="Filter akun" class="erp-mobile-search__filter {{ $selectedRoleId ? 'is-active' : '' }}"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i>@if($selectedRoleId)<span class="erp-mobile-search__filter-dot"></span>@endif</button></x-slot:filter>
+            <x-slot:filter><button type="button" @click="$dispatch('user-filter-open')" aria-label="Filter akun" class="erp-mobile-search__filter {{ $selectedRoleId ? 'is-active' : '' }}"><span class="icon-rounded" aria-hidden="true" style="font-size: 20px;">tune</span>@if($selectedRoleId)<span class="erp-mobile-search__filter-dot"></span>@endif</button></x-slot:filter>
         </x-erp.mobile-search>
     </form>
     <div class="relative erp-surface bg-white rounded-none lg:rounded-2xl lg:shadow-sm lg:border lg:border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div class="hidden md:flex items-center gap-3 p-4 border-b border-gray-100">
-            <form method="GET" action="{{ route('user.index') }}" class="relative flex-1">
-                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                <input name="q" value="{{ request('q') }}" type="search" placeholder="Cari nama atau email pengguna..." class="w-full h-11 rounded-full border border-gray-100 bg-gray-50/50 pl-11 pr-20 text-[13px] outline-none focus:border-emerald-500">
-                <button type="submit" class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#0b595b]">Cari</button>
+        <div class="hidden md:flex items-center gap-3 p-4 border-b border-gray-100 bg-white relative z-10 transition-all duration-300">
+            <!-- Integrated Single Unified Pill Container -->
+            <form method="GET" action="{{ route('user.index') }}" x-data="{ isSearchFocused: false, searchVal: @js(request('q', '')) }" class="flex-1">
+                <input type="hidden" name="role_id" value="{{ $selectedRoleId }}">
+                <div class="relative flex items-center rounded-full h-11 pl-4 pr-1.5 transition-all"
+                     :class="isSearchFocused ? 'bg-white border border-emerald-500 ring-1 ring-emerald-500' : 'bg-gray-50/50 border border-gray-200/80'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px] text-[#0b595b]/80 shrink-0 mr-2.5">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input name="q" 
+                           x-model="searchVal"
+                           @focus="isSearchFocused = true" 
+                           @blur="isSearchFocused = false"
+                           @keydown.enter="$el.form.submit()"
+                           id="masterSearchInput"
+                           type="text" 
+                           placeholder="Cari..."
+                           class="flex-1 bg-transparent text-[13.5px] font-medium text-gray-800 placeholder-gray-400 outline-none h-full">
+                    
+                    <!-- Clear button -->
+                    <button type="button" x-show="searchVal" @click="searchVal = ''; $el.form.submit()" x-cloak
+                        class="w-6 h-6 rounded-full hover:bg-black/5 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors shrink-0 mr-1"
+                        title="Hapus pencarian">
+                        <i class="ph-bold ph-x text-xs"></i>
+                    </button>
+
+                    <!-- Divider -->
+                    <div class="h-4 w-px bg-gray-200 shrink-0 mx-1"></div>
+
+                    <!-- Filter Icon (Disabled / View Only) -->
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-gray-300 select-none cursor-default pointer-events-none"
+                         title="Filter tidak tersedia">
+                        <span class="icon-rounded" style="font-size: 20px;">tune</span>
+                    </div>
+                </div>
             </form>
+
+            <!-- Add Button (Desktop Only) -->
             @if (check_access('user.create'))
-            <button type="button" @click="openCreate()" class="flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold shadow-sm"><i class="ph-bold ph-plus"></i> Tambah Akun</button>
+            <button type="button" @click="openCreate()"
+                class="hidden sm:flex items-center gap-2 bg-[#0b595b] hover:bg-[#0a4e50] text-white rounded-full h-11 px-5 text-[13px] font-semibold transition-colors shadow-sm shrink-0">
+                <i class="ph-bold ph-plus text-sm"></i>
+                <span>Tambah Akun</span>
+            </button>
             @endif
         </div>
 
@@ -138,16 +176,16 @@
             <div class="mx-5 mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{{ session('error') ?: $errors->first() }}</div>
         @endif
 
-        <x-erp.list-count noun="akun pengguna" :shown="$users->count()" :total="$users->total()" server />
+        <x-erp.list-count noun="akun pengguna" :shown="$users->count()" :total="$users->total()" server reference />
         <div class="flex-1 overflow-y-auto overscroll-none pb-28 md:pb-0" data-erp-list>
             @forelse ($users as $user)
-                <button type="button" @click="openDetail({{ $user->id_user }})" class="w-full flex items-center gap-3 md:gap-4 px-5 py-3.5 md:py-4 border-b border-gray-100 hover:bg-gray-50/50 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" aria-label="Detail {{ $user->email }}">
-                    <div @class(['w-9 h-9 md:w-10 md:h-10 rounded-xl border flex items-center justify-center shrink-0 font-bold text-sm', 'bg-emerald-50 border-emerald-100 text-emerald-700' => $loop->index % 5 === 0, 'bg-blue-50 border-blue-100 text-blue-700' => $loop->index % 5 === 1, 'bg-amber-50 border-amber-100 text-amber-700' => $loop->index % 5 === 2, 'bg-rose-50 border-rose-100 text-rose-700' => $loop->index % 5 === 3, 'bg-violet-50 border-violet-100 text-violet-700' => $loop->index % 5 === 4])>{{ mb_strtoupper(mb_substr($user->email ?: $user->nm_user, 0, 2)) }}</div>
+                <button type="button" @click="openDetail({{ $user->id_user }})" class="w-full flex items-center px-5 py-3.5 md:py-4 border-b border-gray-100 hover:bg-gray-50/50 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" aria-label="Detail {{ $user->email }}">
+                    <div @class(['w-9 h-9 md:w-10 md:h-10 rounded-xl border flex items-center justify-center shrink-0 font-bold text-sm mr-3 md:mr-4', 'bg-emerald-50 border-emerald-100 text-emerald-600' => $loop->index % 5 === 0, 'bg-blue-50 border-blue-100 text-blue-600' => $loop->index % 5 === 1, 'bg-amber-50 border-amber-100 text-amber-600' => $loop->index % 5 === 2, 'bg-rose-50 border-rose-100 text-rose-600' => $loop->index % 5 === 3, 'bg-violet-50 border-violet-100 text-violet-600' => $loop->index % 5 === 4])>{{ mb_strtoupper(mb_substr($user->email ?: $user->nm_user, 0, 2)) }}</div>
                     <div class="flex-1 min-w-0">
                         <div class="text-sm font-semibold text-gray-900 truncate">{{ $user->email }}</div>
-                        <div class="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5" title="{{ ($user->role_names ? implode(' · ', $user->role_names) : 'Tanpa role') . ' · ' . ($user->is_aktif ? 'Aktif' : 'Nonaktif') . ' · ' . $user->granted_modules_count . '/' . $modulesTotal . ' modul' }}"><span class="text-[11px] font-medium truncate">{{ $user->nm_user ?: 'Belum tertaut' }}</span></div>
+                        <div class="text-xs text-gray-400 mt-0.5" title="{{ ($user->role_names ? implode(' · ', $user->role_names) : 'Tanpa role') . ' · ' . ($user->is_aktif ? 'Aktif' : 'Nonaktif') . ' · ' . $user->granted_modules_count . '/' . $modulesTotal . ' modul' }}"><span class="block truncate leading-[17px] text-[11px] font-medium">{{ $user->nm_user ?: 'Belum tertaut' }}</span></div>
                     </div>
-                    <div class="flex shrink-0 flex-col items-end gap-1.5 self-stretch justify-start lg:justify-center lg:max-w-[35%]">
+                    <div class="ml-2 flex shrink-0 flex-col items-end gap-1.5 self-stretch justify-start lg:justify-center lg:max-w-[35%]">
                         @unless ($user->is_aktif)<span class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600">Nonaktif</span>@endunless
                         <div class="hidden lg:flex gap-1.5 flex-wrap justify-end">
                             @forelse ($user->branches as $assignedBranch)
@@ -181,21 +219,21 @@
     </template>
 
     <template x-teleport="body">
-        <div x-show="selected" x-cloak data-erp-modal role="dialog" aria-modal="true" aria-label="Detail Akun"
+        <div x-show="selectedOpen" x-cloak data-erp-modal role="dialog" aria-modal="true" aria-label="Detail Akun"
              x-transition:enter="transition-opacity ease-out duration-300"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
              x-transition:leave="transition-opacity ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-[120] flex items-end justify-center sm:items-center sm:px-4" @keydown.escape.window="selected = null">
-            <div class="absolute inset-0 bg-black/60" @click="selected = null"></div>
-            <div x-show="selected" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full sm:translate-y-4 sm:scale-95" x-transition:enter-end="translate-y-0 sm:scale-100" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 sm:scale-100" x-transition:leave-end="translate-y-full sm:translate-y-4 sm:scale-95" class="relative z-10 flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-xl sm:max-w-sm sm:rounded-2xl">
+             class="fixed inset-0 z-[120] flex items-end justify-center sm:items-center sm:px-4" @keydown.escape.window="selectedOpen = false">
+            <div x-show="selectedOpen" x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute inset-0 bg-black/60" @click="selectedOpen = false"></div>
+            <div x-show="selectedOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full sm:translate-y-4 sm:scale-95" x-transition:enter-end="translate-y-0 sm:scale-100" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 sm:scale-100" x-transition:leave-end="translate-y-full sm:translate-y-4 sm:scale-95" class="relative z-10 flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-xl sm:max-w-sm sm:rounded-2xl">
                 <div class="flex shrink-0 justify-center pt-3 pb-1 sm:hidden"><div class="h-1.5 w-16 rounded-full bg-gray-300"></div></div>
                 <div class="flex shrink-0 items-center gap-3 border-b border-gray-100 px-5 pt-2 pb-4 sm:pt-5">
                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-sm font-bold text-emerald-700"><span x-text="selected?.email ? selected.email[0].toUpperCase() : '?'" aria-hidden="true"></span></div>
                     <div class="min-w-0 flex-1"><h3 class="truncate text-[14px] font-bold text-gray-900" x-text="selected?.email || ''"></h3><p class="truncate text-[11px] text-gray-400" x-text="selected?.name || 'Belum tertaut'"></p></div>
-                    <button type="button" @click="selected = null" aria-label="Tutup detail akun" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"><i class="ph-bold ph-x text-sm"></i></button>
+                    <button type="button" @click="selectedOpen = false" aria-label="Tutup detail akun" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"><i class="ph-bold ph-x text-sm"></i></button>
                 </div>
                 <div class="shrink-0 px-4 pt-3 pb-1">
                     <label for="user-access-search" class="sr-only">Cari modul atau sub modul</label>
@@ -248,8 +286,8 @@
              x-transition:leave-end="opacity-0"
              class="fixed inset-0 z-[100] flex flex-col justify-end lg:flex-row lg:justify-end" @keydown.escape.window="closeDrawer()">
             <div class="absolute inset-0 bg-black/70" @click="closeDrawer()"></div>
-            <div x-show="drawerOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full" x-transition:enter-end="translate-y-0 lg:translate-x-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 lg:translate-x-0" x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full" :class="editing ? 'is-editing' : ''" class="user-account-drawer-panel relative w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col max-h-[90dvh] lg:max-h-full lg:h-full rounded-t-3xl lg:rounded-none overflow-hidden">
-                <div class="flex justify-center pt-3 pb-1 lg:hidden"><div class="w-16 h-1.5 bg-gray-300 rounded-full"></div></div>
+            <div x-show="drawerOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full" x-transition:enter-end="translate-y-0 lg:translate-x-0" x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0 lg:translate-x-0" x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full" :class="editing ? 'is-editing' : ''" class="user-account-drawer-panel relative w-full md:max-w-lg lg:max-w-sm mx-auto lg:mx-0 bg-white shadow-2xl flex flex-col max-h-[90dvh] lg:max-h-full lg:h-full rounded-t-3xl lg:rounded-none overflow-hidden border-t border-gray-100">
+                <div class="w-full flex justify-center pt-3 pb-1 lg:hidden shrink-0" @click="closeDrawer()" style="cursor: pointer;"><div class="w-16 h-1.5 bg-gray-300 rounded-full"></div></div>
                 <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between"><div><h3 class="text-[15px] font-bold text-gray-900" x-text="editing ? 'Edit Akun' : 'Tambah Akun'"></h3><p class="text-[12px] text-gray-400 mt-0.5" x-text="editing ? 'Perbarui data akun' : 'Isi data akun baru'"></p></div><button type="button" @click="closeDrawer()" class="w-9 h-9 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center" aria-label="Tutup"><i class="ph-bold ph-x"></i></button></div>
                 <form method="POST" :action="editing ? baseUrl + '/' + editing : storeUrl" class="flex-1 min-h-0 flex flex-col">
                     @csrf
@@ -298,7 +336,7 @@
                             @error('staff_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <fieldset x-show="!editing" x-cloak :disabled="Boolean(editing)" class="contents">
-                        <div><label for="user-password" class="text-xs font-semibold text-gray-600 mb-1.5 block">Kata Sandi <span class="text-red-400" x-show="!editing">*</span></label><input id="user-password" @if($errors->has('password')) aria-invalid="true" aria-describedby="user-password-error" @endif name="password" x-model="form.password" :required="!editing" type="password" autocomplete="new-password" :placeholder="editing ? 'Kosongkan jika tidak diubah' : 'Masukkan kata sandi'" class="w-full h-11 bg-white border border-gray-200 rounded-xl px-4 text-sm outline-none focus:border-emerald-500">@error('password')<p id="user-password-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+                        <div><label for="user-password" class="text-xs font-semibold text-gray-600 mb-1.5 block">Kata Sandi <span class="text-red-400" x-show="!editing">*</span></label><div class="relative" x-data="{ showPassword: false }"><input id="user-password" @if($errors->has('password')) aria-invalid="true" aria-describedby="user-password-error" @endif name="password" x-model="form.password" :required="!editing" :type="showPassword ? 'text' : 'password'" autocomplete="new-password" :placeholder="editing ? 'Kosongkan jika tidak diubah' : 'Masukkan kata sandi'" class="w-full h-11 bg-white border border-gray-200 rounded-xl pl-4 pr-11 text-sm outline-none focus:border-emerald-500"><button type="button" @click="showPassword = !showPassword" :aria-pressed="showPassword" :aria-label="showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'" aria-controls="user-password" class="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:text-[#0b595b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0b595b]"><i class="ph text-xl" :class="showPassword ? 'ph-eye-slash' : 'ph-eye'" aria-hidden="true"></i></button></div>@error('password')<p id="user-password-error" class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
                         </fieldset>
                             </div>
                         </div>
@@ -306,7 +344,14 @@
                             <div class="h-full w-full rounded-full bg-gray-400/50 transition-opacity duration-300 ease-in-out" :style="`height: ${thumbHeight}px; transform: translateY(${scrollPos}px);`" :class="isScrolling ? 'opacity-100' : 'opacity-0'"></div>
                         </div>
                     </div>
-                    <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 flex items-center gap-3"><button type="button" @click="closeDrawer()" class="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600">Batal</button><button type="submit" class="flex-1 h-11 rounded-xl bg-[#0b595b] text-white text-sm font-semibold" x-text="editing ? 'Simpan Perubahan' : 'Tambah Akun'"></button></div>
+                    <div class="px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-gray-100 bg-white flex items-center gap-2.5 shrink-0">
+                        <button type="button" x-show="!editing" @click="closeDrawer()" class="h-11 flex-1 whitespace-nowrap rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50">Batal</button>
+                        <button type="button" x-show="editing" x-cloak @click="backToDetail()" title="Kembali ke pengaturan akses" aria-label="Kembali" class="w-11 h-11 shrink-0 rounded-xl border border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 flex items-center justify-center transition-colors">
+                            <i class="ph-bold ph-arrow-left text-lg"></i>
+                        </button>
+                        <button type="button" x-show="editing" x-cloak @click="promptResetPassword(editing)" class="h-11 flex-1 whitespace-nowrap rounded-xl border border-rose-200 bg-rose-50 text-[13px] font-semibold text-rose-700 transition-colors hover:bg-rose-100">Reset Password</button>
+                        <button type="submit" class="h-11 flex-1 whitespace-nowrap rounded-xl bg-[#0b595b] text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#0a4e50] sm:text-sm" x-text="editing ? 'Simpan Perubahan' : 'Tambah Akun'"></button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -318,7 +363,7 @@
 <script>
 function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldRoles, oldBranches, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions = []) {
     return {
-        users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, modalSearchQuery: '',
+        users, storeUrl, baseUrl, accessGroups, nextAutoEmail, oldEmailType, oldStaffId, staffOptions, staffSearch: '', drawerOpen: false, filterOpen: false, editing: null, selected: null, selectedOpen: false, modalSearchQuery: '',
         form: { email: '', emailType: 'auto', password: '', staffId: '' },
         get filteredAccessGroups() {
             const query = this.modalSearchQuery.toLowerCase().trim();
@@ -427,9 +472,9 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
             group.modules.forEach(module => (module.permissions || []).forEach(permission => { changes[permission] = allow; }));
             return this.savePermissionOverrides(user, changes);
         },
-        openDetail(id) { this.modalSearchQuery = ''; this.selected = this.users.find(user => user.id === id) || null; },
-        editSelected() { const user = this.selected; this.selected = null; if (user) this.openEdit(user.id); },
-        removeSelected() { const user = this.selected; this.selected = null; if (user) this.remove(user.id, user.name); },
+        openDetail(id) { this.modalSearchQuery = ''; this.selected = this.users.find(user => user.id === id) || null; this.selectedOpen = !!this.selected; },
+        editSelected() { const user = this.selected; this.selectedOpen = false; if (user) this.openEdit(user.id); },
+        removeSelected() { const user = this.selected; this.selectedOpen = false; if (user) this.remove(user.id, user.name); },
         setEmailType(type) {
             this.form.emailType = type === 'auto' ? 'auto' : 'custom';
             this.form.email = this.form.emailType === 'auto' ? this.nextAutoEmail : '';
@@ -440,6 +485,12 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
             if (!url.searchParams.has('create')) return;
             url.searchParams.delete('create');
             window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+        },
+        // Editing starts from the account's access sheet, so the back arrow returns there instead of just closing.
+        backToDetail() {
+            const id = this.editing;
+            this.closeDrawer();
+            if (id) this.openDetail(id);
         },
         openCreate() {
             this.editing = null;
@@ -461,11 +512,29 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
             this.form = { email: user.email || '', emailType: 'custom', password: '', staffId: String(user.staff_id || '') };
             this.drawerOpen = true;
         },
+        async promptResetPassword(id) {
+            const user = this.users.find(item => item.id === id);
+            if (!user) return;
+            const label = user.email;
+            if (!await ErpDialog.confirm({ title: 'Reset password?', text: 'Kata sandi akun ' + label + ' akan direset ke kata sandi bawaan.', icon: 'warning', confirmButtonText: 'Reset', cancelButtonText: 'Batal' })) return;
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                const response = await fetch(this.baseUrl + '/' + id + '/reset-password', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || !result.success) throw new Error(result.message || 'Gagal mereset kata sandi.');
+                ErpDialog.success('Kata sandi akun ' + label + ' berhasil direset.', 'Berhasil');
+            } catch (error) {
+                ErpDialog.error(error.message || 'Terjadi kesalahan saat mereset kata sandi.');
+            }
+        },
         async remove(id, name) {
             const user = this.users.find(item => item.id === id);
             if (!user || user.is_aktif === false) return;
-            const confirmed = await Swal.fire({ title: 'Hapus akun ' + name + '?', text: 'Akun pengguna akan dinonaktifkan.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Hapus', cancelButtonText: 'Batal', confirmButtonColor: '#dc2626' });
-            if (!confirmed.isConfirmed) return;
+            if (!await ErpDialog.confirmDelete({ what: 'Akun', name, suffix: 'akan dinonaktifkan.' })) return;
             try {
                 const response = await fetch(this.baseUrl + '/' + id, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' } });
                 const result = await response.json();

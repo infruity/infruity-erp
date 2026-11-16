@@ -7,15 +7,15 @@
   const [day,month,year,hour,minute]=m.slice(1).map(Number);
   const d=new Date(Date.UTC(year,month-1,day,hour,minute));
   if(d.getUTCFullYear()!==year||d.getUTCMonth()!==month-1||d.getUTCDate()!==day||d.getUTCHours()!==hour||d.getUTCMinutes()!==minute)return '—';
-  return `${day} ${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][month-1]} ${year} · ${m[4]}:${m[5]}`;
+  return `${String(day).padStart(2,'0')} ${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][month-1]} ${year}, ${m[4]}:${m[5]}`;
  }
- function statusLabel(kind){return {'is-temp':'Draf','is-draft':'Siap Produksi','is-posting':'Selesai','is-complete':'Selesai'}[kind]||null;}
+ function statusLabel(kind){return {'is-temp':'Pending','is-draft':'Pending','is-posting':'Selesai','is-complete':'Selesai'}[kind]||null;}
  function quantity(value){
   if(value==null||value===''||!Number.isFinite(Number(value)))return null;
   return Number(value).toLocaleString('id-ID',{maximumFractionDigits:20});
  }
  const detailTags=new Set(['div','section','span','i','h1','h2','p','dl','dt','dd','a','strong','small','br','em','ul','ol','li','time']);
- const detailClasses=new Set(['production-detail--ref','production-detail-ref__title','production-detail-ref__rows','production-detail-ref__row','production-detail-ref__icon','production-detail-ref__icon--product','production-detail-ref__text','production-detail-ref__main','production-detail-ref__sub','production-detail-ref__actions','production-detail-ref__action','production-detail-ref__divider','production-detail-ref__locked','production-detail-ref__delete','is-strong','is-small','is-target','is-edit','is-delete','ph-duotone','ph-receipt','ph-coins','ph-clock','ph-trash','bg-amber-50','bg-emerald-50','bg-gray-100','bg-green-50','bg-lime-50','bg-orange-50','bg-pink-100','bg-purple-50','bg-red-50','bg-rose-50','bg-stone-50','bg-yellow-50','btn','btn-light','btn-light-info','btn-light-primary','btn-success','is-done','is-note','is-pos','is-ready','is-temp','me-1','ph','ph-arrow-left','ph-check','ph-orange','ph-pencil-simple','ph-printer','production-detail','production-detail__actions','production-detail__avatar','production-detail__badge','production-detail__body','production-detail__card','production-detail__empty','production-detail__head','production-detail__ingredient','production-detail__ingredient-cost','production-detail__ingredient-name','production-detail__meta','production-detail__note','production-detail__section-title','production-detail__status','production-detail__title','production-detail__total','pt-0']);
+ const detailClasses=new Set(['production-detail--ref','production-detail-ref__title','production-detail-ref__rows','production-detail-ref__row','production-detail-ref__icon','production-detail-ref__icon--product','production-detail-ref__text','production-detail-ref__main','production-detail-ref__sub','production-detail-ref__actions','production-detail-ref__action','production-detail-ref__divider','production-detail-ref__locked','production-detail-ref__delete','is-strong','is-small','is-target','is-edit','is-delete','production-detail-ref__address','ph-cooking-pot','ph-duotone','ph-receipt','ph-coins','ph-clock','ph-trash','bg-amber-50','bg-emerald-50','bg-gray-100','bg-green-50','bg-lime-50','bg-orange-50','bg-pink-100','bg-purple-50','bg-red-50','bg-rose-50','bg-stone-50','bg-yellow-50','btn','btn-light','btn-light-info','btn-light-primary','btn-success','is-done','is-note','is-pos','is-ready','is-temp','me-1','ph','ph-arrow-left','ph-check','ph-orange','ph-bold','ph-pencil-simple','ph-printer','production-detail','production-detail__actions','production-detail__avatar','production-detail__badge','production-detail__body','production-detail__card','production-detail__empty','production-detail__head','production-detail__ingredient','production-detail__ingredient-cost','production-detail__ingredient-name','production-detail__meta','production-detail__note','production-detail__section-title','production-detail__status','production-detail__title','production-detail__total','pt-0']);
  const detailIds=new Set(['production-detail-title','production-ingredients-title','production-extra-title']);
  const detailAttributes=new Set(['class','id','aria-label','aria-hidden','aria-labelledby','href']);
  const detailVoidTags=new Set(['br']);
@@ -82,7 +82,7 @@
   const copy=row.querySelector('.production-copy');
   if(copy&&!copy.querySelector('.production-reference-time')){
    const stamp=row.querySelector('td:nth-child(3) span');
-   const time=document.createElement('span');time.className='production-reference-time';time.setAttribute('aria-label','Waktu dibuat');time.textContent=recordedTime(stamp?.textContent.trim());copy.append(time);
+   const time=document.createElement('span');time.className='production-reference-time';time.setAttribute('aria-label','Waktu dibuat');const branch=row.querySelector('td:nth-child(3) .badge')?.textContent.trim();time.textContent=recordedTime(stamp?.textContent.trim())+(branch?' · '+branch:'');copy.append(time);
   }
   const status=row.querySelector('.production-status');
   if(status){const label=[...status.classList].map(statusLabel).find(Boolean);if(label)status.textContent=label;}
@@ -98,7 +98,7 @@
   const setTimer=environment.setTimeout||setTimeout,clearTimer=environment.clearTimeout||clearTimeout;
   const listUrl=new URL(indexUrl,win.location.href);
   const modalStateKey='infruityProductionDetailModal',modalUrlKey='infruityProductionDetailUrl',modalEntryKey='infruityProductionDetailEntry';
-  let generation=0,previousFocus=null,previousContentInert=null,clickHandler=null,popstateHandler=null,closeTimer=null,modalEntrySequence=0,fallbackListEntry=null;
+  let generation=0,previousFocus=null,previousContentInert=null,clickHandler=null,prefetchHandler=null,popstateHandler=null,closeTimer=null,modalEntrySequence=0,fallbackListEntry=null;
   const modalHistoryEntries=new Map();
   const isPlainClick=(event,link)=>event.button===0&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey&&(!link.target||link.target==='_self')&&!link.hasAttribute('download');
   function activeModalHistoryUrl(state=win.history.state){
@@ -113,14 +113,43 @@
    cancelCloseTimer();
    generation+=1;
    controller.productionDetailOpen=false;
+   // Keep the content while the popup fades out, like the reference (it never empties mid-transition).
    controller.productionDetailLoading=false;
-   controller.productionDetailHtml='';
+   if(controller.productionDetailHtml)setTimer(()=>{if(!controller.productionDetailOpen)controller.productionDetailHtml='';},320);
    const content=doc.getElementById('kt_content');
    content?.classList.remove('production-detail-open');
    if(content&&previousContentInert!==null)content.inert=previousContentInert;
    previousContentInert=null;
    const focusTarget=previousFocus;previousFocus=null;
    if(focusTarget?.isConnected)focusTarget.focus();
+  }
+  // Details are fetched ahead (touch start / hover) and kept for a short while, so the popup opens with its content already there.
+  const detailCache=new Map();
+  const detailTtl=30000;
+  async function loadDetail(targetUrl){
+   const cached=detailCache.get(targetUrl.href);
+   if(cached&&cached.expires>Date.now())return cached.value?cached.value:await cached.promise;
+   const promise=(async()=>{
+    const response=await fetcher(targetUrl.href,{credentials:'same-origin',headers:{Accept:'text/html','X-Requested-With':'XMLHttpRequest'}});
+    if(!response.ok)throw new Error(`Detail request failed: ${response.status}`);
+    const html=await response.text();
+    const parsed=new Parser().parseFromString(html,'text/html');
+    const detail=parsed.querySelector('.production-detail');
+    if(!detail||detail.tagName.toLowerCase()!=='div')throw new Error('Rendered production detail is missing');
+    const title=detail.querySelector('#production-detail-title')?.textContent.trim()||'Detail Produksi';
+    sanitizeDetailElement(detail,targetUrl.href);
+    namespaceDetailIds(detail,doc);
+    detail.querySelectorAll('.production-detail__actions a[href]').forEach(link=>{
+     if(new URL(link.getAttribute('href'),targetUrl.href).pathname===listUrl.pathname)link.dataset.productionDetailBack='true';
+    });
+    return {title,html:serializeDetailNode(detail)};
+   })();
+   const entry={promise,value:null,expires:Date.now()+detailTtl};
+   detailCache.set(targetUrl.href,entry);
+   try{entry.value=await promise;return entry.value;}catch(error){detailCache.delete(targetUrl.href);throw error;}
+  }
+  function prefetchDetail(href){
+   try{const target=new URL(href,win.location.href);if(target.origin===win.location.origin)loadDetail(target).catch(()=>{});}catch(_error){}
   }
   return {
    productionDetailOpen:false,
@@ -138,12 +167,15 @@
      if(!link||!isPlainClick(event,link))return;
      event.preventDefault();this.openProductionDetail(link.href);
     };
+    prefetchHandler=event=>{const row=event.target?.closest?.('tr.is-openable, a.production-copy');const href=row&&(row.dataset?.href||row.getAttribute?.('href'));if(href)prefetchDetail(href);};
+    ['pointerdown','touchstart','mouseover'].forEach(name=>doc.addEventListener(name,prefetchHandler,{passive:true}));
     popstateHandler=event=>this.handleProductionDetailPopState(event);
     doc.addEventListener('click',clickHandler);
     win.addEventListener('popstate',popstateHandler);
    },
    destroy(){
     if(clickHandler)doc.removeEventListener('click',clickHandler);
+    if(prefetchHandler)['pointerdown','touchstart','mouseover'].forEach(name=>doc.removeEventListener(name,prefetchHandler));
     if(popstateHandler)win.removeEventListener('popstate',popstateHandler);
     if(win.openProductionDetail)delete win.openProductionDetail;
     finishClose(this);
@@ -179,22 +211,11 @@
      const focusCloseButton=()=>raf(()=>doc.querySelector('.production-detail-dialog [aria-label="Tutup detail produksi"]')?.focus());
      if(typeof this.$nextTick==='function')this.$nextTick(focusCloseButton);else focusCloseButton();
 
-     const response=await fetcher(targetUrl.href,{credentials:'same-origin',headers:{Accept:'text/html','X-Requested-With':'XMLHttpRequest'}});
+     const loaded=await loadDetail(targetUrl);
      if(requestId!==generation)return;
-     if(!response.ok)throw new Error(`Detail request failed: ${response.status}`);
-     const html=await response.text();
-     if(requestId!==generation)return;
-     const parsed=new Parser().parseFromString(html,'text/html');
-     const detail=parsed.querySelector('.production-detail');
-     if(!detail||detail.tagName.toLowerCase()!=='div')throw new Error('Rendered production detail is missing');
-     const title=detail.querySelector('#production-detail-title')?.textContent.trim()||'Detail Produksi';
-     sanitizeDetailElement(detail,targetUrl.href);
-     namespaceDetailIds(detail,doc);
-     detail.querySelectorAll('.production-detail__actions a[href]').forEach(link=>{
-      if(new URL(link.getAttribute('href'),targetUrl.href).pathname===listUrl.pathname)link.dataset.productionDetailBack='true';
-     });
+     const title=loaded.title;
      this.productionDetailTitle=title;
-     this.productionDetailHtml=serializeDetailNode(detail);
+     this.productionDetailHtml=loaded.html;
      this.productionDetailLoading=false;
     }catch(error){
      if(requestId!==generation)return;
@@ -209,6 +230,8 @@
     const id=/\/production\/(\d+)\/detail/.exec(String(href||''))?.[1];
     if(!id||!fetcher)return;
     const dialog=win.ErpDialog;
+    // The detail popup closes first, so only the confirmation shows and Batal leaves the plain list.
+    this.closeProductionDetail();
     const ok=dialog?await dialog.confirmDelete({what:'Produksi'}):win.confirm('Hapus produksi ini?');
     if(!ok)return;
     try{
@@ -216,7 +239,6 @@
      const response=await fetcher(`${listUrl.origin}/production/${id}`,{method:'DELETE',credentials:'same-origin',headers:{Accept:'application/json','X-CSRF-TOKEN':token,'X-Requested-With':'XMLHttpRequest'}});
      const result=await response.json().catch(()=>({}));
      if(!response.ok||result.success===false)throw new Error(result.message||'Gagal menghapus data.');
-     this.closeProductionDetail();
      if(dialog?.toast)dialog.toast('success',result.message||'Data berhasil dihapus.');
      win.location.reload();
     }catch(error){

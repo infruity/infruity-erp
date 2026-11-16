@@ -26,6 +26,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 	Route::post('role/switch', [RoleContextController::class, 'switch'])->name('role.switch');
 	Route::put('user/{id}/permissions', [UserController::class, 'updatePermissions'])->name('user.permissions.update');
 	Route::delete('user/{id}/permissions', [UserController::class, 'resetPermissions'])->name('user.permissions.reset');
+	Route::post('user/{id}/reset-password', [UserController::class, 'resetPassword'])->name('user.reset-password');
 	Route::resource('user', UserController::class)->names('user')->except('show');
 	// The role editor is hidden (FEATURE_ROLE_PAGES): permissions are managed per account in Akun Pengguna.
 	Route::middleware(\App\Http\Middleware\EnsureFeatureEnabled::class . ':role_pages')->group(function () {

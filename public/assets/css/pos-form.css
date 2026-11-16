@@ -86,7 +86,7 @@
 .pos-card--list .pos-card__head { padding:18px 20px 14px; }
 .pos-card--list .pos-card__head h2 { font-size:14px; font-weight:700; }
 .pos-form--reference .pos-add { min-height:0; border-radius:6px; padding:2px 0; background:transparent; color:#0b595b; font-size:12px; font-weight:700; }
-.pos-form--reference .pos-add:hover { background:transparent; text-decoration:underline; }
+.pos-form--reference .pos-add:hover { background:transparent; text-decoration:none; }
 .pos-card--list .pos-card__body--list { min-height:300px; padding:4px 20px 12px; }
 .pos-cart-empty { display:flex; min-height:280px; flex-direction:column; align-items:center; justify-content:center; gap:4px; text-align:center; }
 .pos-cart-empty p { margin:0; color:#111827; font-size:14px; font-weight:700; }

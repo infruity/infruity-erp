@@ -26,7 +26,7 @@ class SortirMobileFlowTest extends TestCase
         Schema::create('role_user', function (Blueprint $t) { $t->increments('id_ru'); $t->integer('id_user'); $t->integer('id_role'); $t->timestamps(); });
         Schema::create('role_menu', function (Blueprint $t) { $t->increments('id_rm'); $t->integer('id_role'); $t->string('permission'); });
         Schema::create('user_permissions', function (Blueprint $t) { $t->increments('id'); $t->integer('id_user'); $t->string('permission', 160); $t->boolean('is_allowed'); $t->timestamps(); $t->unique(['id_user', 'permission']); });
-        Schema::create('users', function (Blueprint $t) { $t->integer('id_user')->primary(); $t->string('nm_user'); });
+        Schema::create('users', function (Blueprint $t) { $t->integer('id_user')->primary(); $t->string('nm_user'); $t->string('email')->nullable(); });
         Schema::create('branch', function (Blueprint $t) { $t->increments('id'); $t->string('name'); });
         Schema::create('user_branch', function (Blueprint $t) { $t->integer('user_id'); $t->integer('branch_id'); });
         Schema::create('product_units', function (Blueprint $t) { $t->increments('id'); $t->string('abbreviation'); });
@@ -51,7 +51,7 @@ class SortirMobileFlowTest extends TestCase
         foreach (['index', 'create', 'save-transaction', 'show', 'edit', 'destroy'] as $action) {
             DB::table('role_menu')->insert(['id_role' => 2, 'permission' => 'sortir.' . $action]);
         }
-        DB::table('users')->insert(['id_user' => 7, 'nm_user' => 'Dimas']);
+        DB::table('users')->insert(['id_user' => 7, 'nm_user' => 'Dimas', 'email' => 'master@infruity.com']);
         DB::table('branch')->insert([['id' => 1, 'name' => 'GKB'], ['id' => 2, 'name' => 'GBA']]);
         DB::table('user_branch')->insert(['user_id' => 7, 'branch_id' => 1]);
         DB::table('product_units')->insert(['id' => 1, 'abbreviation' => 'Kg']);
@@ -60,7 +60,7 @@ class SortirMobileFlowTest extends TestCase
             ['id' => 11, 'branch_id' => 1, 'stock_available' => 10, 'avg_hpp' => 5000],
             ['id' => 11, 'branch_id' => 2, 'stock_available' => 100, 'avg_hpp' => 7000],
         ]);
-        $user = new User(); $user->id_user = 7; $user->nm_user = 'Dimas';
+        $user = new User(); $user->id_user = 7; $user->nm_user = 'Dimas'; $user->email = 'master@infruity.com';
         $this->actingAs($user);
         Route::post('/_test/sortir-save', [SortirController::class, 'saveTransaction']);
         Route::get('/_test/sortir-data', [SortirController::class, 'get_data']);
@@ -197,5 +197,20 @@ class SortirMobileFlowTest extends TestCase
         $this->deleteJson('/_test/sortir/' . $id)->assertOk()->assertJson(['success' => true]);
         $this->assertDatabaseCount('sortir_transaction', 0);
         $this->assertDatabaseCount('sortir_transaction_detail', 0);
+    }
+
+    public function test_products_with_stock_are_ordered_before_products_without_stock(): void
+    {
+        DB::table('products')->insert([
+            ['id' => 12, 'name' => 'Apel Green Smith', 'product_unit' => 1, 'hpp' => 5000, 'tipe' => 'buah'],
+            ['id' => 13, 'name' => 'Mangga Harum Manis', 'product_unit' => 1, 'hpp' => 5000, 'tipe' => 'buah'],
+        ]);
+        DB::table('product_stock')->insert([
+            ['id' => 12, 'branch_id' => 1, 'stock_available' => 0, 'avg_hpp' => 5000],
+            ['id' => 13, 'branch_id' => 1, 'stock_available' => 15, 'avg_hpp' => 5000],
+        ]);
+        $response = $this->getJson('/_test/sortir-products?branch_id=1')->assertOk();
+        $names = array_column($response->json(), 'name');
+        $this->assertSame(['Anggur', 'Mangga Harum Manis', 'Apel Green Smith'], $names);
     }
 }

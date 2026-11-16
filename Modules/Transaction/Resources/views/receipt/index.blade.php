@@ -16,10 +16,11 @@
     <form x-data="{ mobileSearch: @js($search) }" action="{{ route('receipt.index') }}" method="GET" class="md:hidden">
         @if($type !== 'all')<input type="hidden" name="type" value="{{ $type }}">@endif
         @if($category !== 'all')<input type="hidden" name="category" value="{{ $category }}">@endif
+<x-erp.master-list-style />
         <x-erp.mobile-search>
-            <x-slot:input><input x-ref="search" x-model="mobileSearch" name="q" type="search" placeholder="Cari resep produk..." aria-label="Cari resep produk" class="erp-mobile-search__input"></x-slot:input>
+            <x-slot:input><input x-ref="search" x-model="mobileSearch" name="q" type="search" placeholder="Cari..." aria-label="Cari resep produk" class="erp-mobile-search__input"></x-slot:input>
             <x-slot:clear><button type="button" x-show="mobileSearch" x-cloak @click="mobileSearch = ''; $refs.search.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
-            <x-slot:filter><button type="button" @click="filterOpen = true" aria-label="Filter resep" class="erp-mobile-search__filter {{ $category !== 'all' || $type !== 'all' ? 'is-active' : '' }}"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button></x-slot:filter>
+            <x-slot:filter><button type="button" @click="filterOpen = true" aria-label="Filter resep" class="erp-mobile-search__filter {{ $category !== 'all' || $type !== 'all' ? 'is-active' : '' }}"><span class="icon-rounded" aria-hidden="true" style="font-size: 20px;">tune</span></button></x-slot:filter>
         </x-erp.mobile-search>
     </form>
     <div class="relative erp-surface bg-white rounded-none lg:rounded-2xl lg:border lg:border-gray-100 lg:shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
@@ -39,15 +40,15 @@
                 <a href="{{ route('receipt.create') }}" @click.prevent="openRecipeCreate()" class="h-11 px-5 rounded-full bg-[#0b595b] text-white text-[13px] font-semibold flex items-center gap-2"><i class="ph-bold ph-plus"></i> Tambah Resep</a>
             @endif
         </div>
-        <x-erp.list-count noun="resep" shown="loadedCount" total="totalCount" />
-        <div class="mobile-list-edge-fade flex-1 overflow-y-auto pb-28 md:pb-0">
+        <x-erp.list-count noun="resep" shown="loadedCount" total="totalCount" reference />
+        <div class="mobile-list-edge-fade flex-1 overflow-y-auto pb-20 md:pb-0">
             <div id="recipe-list-items">
                 @include('transaction::receipt.partials.items', ['receipts' => $receipts])
             </div>
             @if($receipts->isEmpty())
                 <div class="py-16 text-center text-gray-400"><i class="ph ph-receipt text-3xl"></i><p class="mt-2 text-sm">Resep produk tidak ditemukan</p></div>
             @endif
-            <div x-show="hasMore" class="px-5 py-4">
+            <div x-show="hasMore" data-load-more class="px-5 py-4">
                 <x-erp.load-more @click="loadMoreRecipes()" loading="loadingMore"><span x-text="loadingMore ? 'Memuat resep...' : 'Muat Resep Lagi'"></span></x-erp.load-more>
             </div>
         </div>
@@ -82,23 +83,16 @@
     <x-erp.detail-dialog open="detailModalOpen" close="closeRecipeDetail()" title="Detail Resep" labelledby="recipe-detail-title" close-label="Tutup detail resep">
         <div class="flex flex-col gap-5 text-sm" x-show="selectedRecipe">
             <div class="flex items-center gap-3">
-                <i class="ph-duotone ph-tag shrink-0 text-2xl text-emerald-600"></i>
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-tag text-lg"></i></div>
                 <div class="min-w-0">
                     <div class="font-bold leading-snug text-gray-800" x-text="selectedRecipe?.product?.name || 'Produk tidak ditemukan'"></div>
                     <div class="mt-0.5 text-[11px] font-medium text-gray-400">Nama Produk</div>
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <i class="ph-duotone ph-coins shrink-0 text-2xl text-emerald-600"></i>
-                <div>
-                    <div class="font-bold text-gray-800" x-text="'Rp ' + Math.round(Number(selectedRecipe?.product?.hpp || 0)).toLocaleString('id-ID') + (selectedRecipe?.product?.unit ? ' / ' + selectedRecipe.product.unit : '')"></div>
-                    <div class="text-[11px] font-medium text-gray-400">Harga Pokok Produksi</div>
-                </div>
-            </div>
-            <div class="flex items-start gap-3">
-                <i class="ph-duotone ph-clock mt-0.5 shrink-0 text-2xl text-emerald-600"></i>
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-clock text-lg"></i></div>
                 <div class="min-w-0">
-                    <div class="text-xs font-bold leading-snug text-gray-800">Terakhir diperbarui</div>
+                    <div class="text-xs font-bold leading-snug text-gray-800" x-text="selectedRecipe?.updatedBy || 'Administrator'"></div>
                     <div class="mt-0.5 text-[11px] font-medium text-gray-400" x-text="formatRecipeDate(selectedRecipe?.updatedAt)"></div>
                 </div>
             </div>
@@ -134,10 +128,10 @@
                 <div class="flex shrink-0 justify-center pt-3 pb-1 lg:hidden" @click="closeRecipeEditor()"><div class="h-1.5 w-16 rounded-full bg-gray-300"></div></div>
                 <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-5 py-4">
                     <div>
-                        <h2 id="recipe-editor-title" class="text-lg font-bold text-gray-900">Edit Resep</h2>
-                        <p class="mt-0.5 text-sm text-gray-400">Perbarui data resep</p>
+                        <h2 id="recipe-editor-title" class="text-[15px] font-bold text-gray-900">Edit Resep</h2>
+                        <p class="mt-0.5 text-[12px] text-gray-400">Perbarui data resep</p>
                     </div>
-                    <button type="button" @click="closeRecipeEditor()" aria-label="Tutup editor resep" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"><i class="ph-bold ph-x text-xl"></i></button>
+                    <button type="button" @click="closeRecipeEditor()" aria-label="Tutup editor resep" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"><i class="ph-bold ph-x"></i></button>
                 </header>
                 <form x-data="recipeForm(editingRecipe.product, editingRecipe.ingredients, editingRecipe.description)"
                       :action="`{{ url('receipt') }}/${editingRecipe.id}`" method="POST"
@@ -145,11 +139,11 @@
                       class="flex min-h-0 flex-1 flex-col">
                     @csrf @method('PUT')
                     <input type="hidden" name="description" :value="description">
-                    <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain bg-gray-50/40 px-5 pt-5 pb-3.5">
+                    <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain bg-gray-50/60 px-5 pt-5 pb-3.5">
                         <div class="relative shrink-0">
                             <label class="mb-1.5 block text-xs font-semibold text-gray-600">Pilih Produk <span class="text-red-400">*</span></label>
                             <button type="button" @click="toggleProductPicker()" @keydown.escape.stop="closeProductPicker()" :aria-expanded="productOpen" :class="productOpen ? 'border-blue-600 ring-2 ring-blue-600' : ''" class="flex min-h-[48px] w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-left transition hover:border-gray-300 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600">
-                                <span class="flex min-w-0 items-center gap-3"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-base" :class="productId ? selectedProductIconClass : 'bg-gray-100'"><span x-show="productId" x-text="selectedProductEmoji"></span><i x-show="!productId" class="ph ph-bag text-base text-gray-400"></i></span><span class="min-w-0"><span class="block truncate text-sm" :class="productId ? 'font-semibold text-gray-900' : 'font-normal text-gray-400'" x-text="productSearch || 'Pilih produk...'">Pilih produk...</span><span x-show="productId && selectedProductUnit" x-cloak class="mt-0.5 block text-[11px] text-gray-400" x-text="'Satuan hasil: ' + selectedProductUnit"></span></span></span>
+                                <span class="flex min-w-0 items-center gap-3"><span class="min-w-0"><span class="block truncate text-sm" :class="productId ? 'font-semibold text-gray-900' : 'font-normal text-gray-400'" x-text="productSearch || 'Pilih produk...'">Pilih produk...</span></span></span>
                                 <i class="ph-bold ph-caret-down ml-3 shrink-0 text-base text-gray-400 transition-transform" :class="productOpen ? 'rotate-180' : ''"></i>
                             </button>
                             <input type="hidden" name="product_id" :value="productId" required>
@@ -157,23 +151,21 @@
                                 <div class="relative shrink-0 border-b border-gray-100 bg-gray-50/50"><i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i><input x-model="productQuery" @input.debounce.250ms="lookupProduct()" @keydown.escape.stop="closeProductPicker()" autocomplete="off" placeholder="Cari produk..." class="w-full bg-transparent py-2.5 pl-9 pr-4 text-xs outline-none transition-colors focus:bg-white"></div>
                                 <div class="max-h-52 divide-y divide-gray-50 overflow-y-auto overscroll-contain">
                                     <div x-show="productLoading" class="px-4 py-4 text-center text-xs text-gray-400">Memuat produk...</div>
-                                    <template x-for="item in productResults" :key="item.id"><button type="button" @click="selectProduct(item)" :class="String(productId) === String(item.id) ? 'bg-emerald-50' : ''" class="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-emerald-50/50"><span class="flex min-w-0 flex-1 items-center gap-2.5"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-sm shadow-sm" :class="item.material_icon_class || 'bg-gray-100'" x-text="item.material_emoji || '📦'"></span><span class="truncate text-xs font-bold text-gray-900" x-text="item.name"></span></span><span class="flex shrink-0 items-center gap-2"><span class="text-xs font-medium text-gray-400" x-text="item.unit || 'unit'"></span><i x-show="String(productId) === String(item.id)" class="ph-bold ph-check text-sm text-emerald-600"></i></span></button></template>
+                                    <template x-for="item in productResults" :key="item.id"><button type="button" @click="selectProduct(item)" :class="String(productId) === String(item.id) ? 'bg-emerald-50' : ''" class="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-emerald-50/50"><span class="flex min-w-0 flex-1 items-center gap-2.5"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-sm shadow-2xs" :class="item.material_icon_class || 'bg-gray-100'" x-text="item.material_emoji || '📦'"></span><span class="truncate text-xs font-bold text-gray-900" x-text="item.name"></span></span><span class="flex shrink-0 items-center gap-2"><span class="text-xs font-medium text-gray-400" x-text="item.unit || 'unit'"></span></span></button></template>
                                     <p x-show="!productLoading && !productLookupError && productResults.length === 0" class="px-4 py-6 text-center text-xs text-gray-400">Produk tidak ditemukan</p>
                                     <p x-show="productLookupError" x-text="productLookupError" role="alert" class="px-4 py-4 text-center text-xs text-red-500"></p>
                                 </div>
                             </div>
                         </div>
-                        <div class="shrink-0">
-                            <label class="mb-1.5 block text-xs font-semibold text-gray-600">Harga Pokok Produksi (HPP)</label>
-                            <div class="flex h-11 w-full items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 px-3.5"><span class="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-50 text-sm text-emerald-600"><i class="ph-duotone ph-coins"></i></span><span class="text-sm font-extrabold text-gray-900" x-text="'Rp ' + formatMoney(calculatedTotalHpp)">Rp 0</span><span class="text-[11px] text-gray-400" x-text="selectedProductUnit ? '/' + selectedProductUnit : '/porsi'"></span></div>
-                        </div>
-                        <section class="flex min-h-[220px] flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm">
-                            <div class="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 pb-2"><div><h3 class="block text-xs font-bold text-gray-800">Daftar Bahan Baku <span class="text-red-400">*</span></h3><p class="text-[10px] text-gray-400" x-text="ingredients.length + ' bahan terdaftar'"></p></div><button type="button" @click="openIngredientPicker()" class="flex items-center gap-1 rounded-lg bg-[#0b595b] px-2.5 py-1 text-[11px] font-semibold text-white shadow-2xs transition-all hover:bg-[#084547] active:scale-95"><i class="ph-bold ph-plus text-[10px]"></i><span>Tambah</span></button></div>
-                            <div x-show="ingredients.length === 0" class="flex flex-1 flex-col items-center justify-center py-8 text-center text-xs text-gray-400"><i class="ph ph-basket text-2xl"></i><p class="mt-2">Belum ada bahan baku.</p><button type="button" @click="openIngredientPicker()" class="mt-1 font-semibold text-emerald-700">+ Tambah bahan</button></div>
-                            <div x-show="ingredients.length > 0" class="min-h-0 flex-1 divide-y divide-gray-100 overflow-y-auto">
+
+
+                        <section class="flex min-h-[220px] flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                            <div class="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 px-5 py-4"><div><h3 class="block text-sm font-extrabold tracking-tight text-gray-900">Daftar Bahan Baku <span class="font-semibold text-gray-400" x-text="'(' + ingredients.length + ')'"></span></h3></div><button type="button" @click="openIngredientPicker()" class="flex cursor-pointer select-none items-center gap-0.5 text-xs font-bold text-[#0b595b] outline-none transition hover:text-[#08484a]"><span>+ Tambah</span></button></div>
+                            <div x-show="ingredients.length === 0" class="flex flex-1 flex-col items-center justify-center gap-0.5 px-5 py-6 text-center text-xs leading-relaxed text-gray-400"><span class="block">Belum ada bahan baku Klik <button type="button" @click="openIngredientPicker()" class="font-bold text-emerald-700 hover:underline">+ Tambah</button><br>untuk menambahkan bahan baku.</span></div>
+                            <div x-show="ingredients.length > 0" class="min-h-0 flex-1 divide-y divide-gray-100 overflow-y-auto px-5">
                                 <template x-for="(ingredient, index) in ingredients" :key="ingredient.key"><div class="flex items-center justify-between gap-3 py-2.5">
-                                    <div class="flex min-w-0 flex-1 items-center gap-2.5"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-100 text-base shadow-sm" :class="ingredient.materialIconClass || 'bg-gray-100'"><span x-text="ingredient.materialEmoji || '📦'"></span></span><span class="min-w-0 flex-1"><span class="block truncate text-sm font-semibold text-gray-900" x-text="ingredient.search"></span><span class="mt-0.5 block text-xs text-gray-400">Total Modal <strong class="ml-1 font-bold text-emerald-700" x-text="'Rp ' + formatMoney(ingredientCost(ingredient))"></strong></span></span></div>
-                                    <div class="flex shrink-0 items-center gap-1.5"><label class="flex h-9 items-center rounded-xl border border-gray-200 bg-gray-100 px-2.5 focus-within:border-emerald-500 focus-within:bg-white"><input type="text" inputmode="decimal" maxlength="9" :value="ingredient.displayQuantity" @input="updateQuantity(ingredient, $event)" aria-label="Kuantitas bahan" class="w-12 bg-transparent text-right text-sm font-bold text-gray-900 outline-none"><span class="pl-1 text-xs font-semibold text-gray-500" x-text="ingredient.unit || 'unit'"></span></label><button x-show="ingredients.length > 1" type="button" @click="removeIngredient(index)" :aria-label="'Hapus ' + ingredient.search" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-300 transition hover:bg-red-50 hover:text-red-500"><i class="ph-bold ph-x"></i></button></div>
+                                    <div class="flex min-w-0 flex-1 items-center gap-2.5"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-sm" :class="ingredient.materialIconClass || 'bg-gray-100'"><span x-text="ingredient.materialEmoji || '📦'"></span></span><span class="min-w-0 flex-1"><span class="block truncate text-xs font-bold text-gray-900" x-text="ingredient.search"></span></span></div>
+                                    <div class="flex shrink-0 items-center gap-2"><label class="flex h-8 items-center rounded-xl border border-gray-200/80 bg-gray-100/90 px-2.5 focus-within:border-emerald-500 focus-within:bg-white"><input type="text" inputmode="decimal" maxlength="9" :value="ingredient.displayQuantity" @input="updateQuantity(ingredient, $event)" aria-label="Kuantitas bahan" class="w-10 bg-transparent text-right text-xs font-bold text-gray-900 outline-none"><span class="shrink-0 pl-1 text-[11px] font-semibold text-gray-500" x-text="ingredient.unit || 'unit'"></span></label><button x-show="ingredients.length > 1" type="button" @click="removeIngredient(index)" :aria-label="'Hapus ' + ingredient.search" class="flex h-6 w-6 items-center justify-center rounded text-gray-300 transition hover:bg-red-50 hover:text-red-500"><i class="ph-bold ph-x text-xs"></i></button></div>
                                     <input type="hidden" name="product_receipt_id[]" :value="ingredient.id" required><input type="hidden" name="ingredients_quantity[]" :value="ingredient.quantity" required>
                                 </div></template>
                             </div>
@@ -189,14 +181,14 @@
                             <div class="fixed inset-0 bg-black/50 backdrop-blur-[1px]" @click="ingredientPickerOpen = false"></div>
                             <section role="dialog" aria-modal="true" aria-labelledby="edit-ingredient-picker-title" class="relative z-10 mx-auto flex h-[85vh] max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border-t border-gray-100 bg-white shadow-2xl lg:mx-0 lg:h-full lg:max-w-sm lg:rounded-none lg:border-l lg:border-t-0">
                                 <div class="flex w-full shrink-0 justify-center pt-3 pb-1 lg:hidden" @click="ingredientPickerOpen = false"><div class="h-1.5 w-16 rounded-full bg-gray-300"></div></div>
-                                <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-5 py-4"><div><h3 id="edit-ingredient-picker-title" class="text-[15px] font-bold text-gray-900">Pilih Bahan Baku</h3><p class="mt-0.5 text-xs text-gray-400">Pilih bahan untuk racikan resep</p></div><button type="button" @click="ingredientPickerOpen = false" aria-label="Tutup pilihan bahan" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500"><i class="ph-bold ph-x"></i></button></header>
+                                <header class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-5 py-4"><div><h3 id="edit-ingredient-picker-title" class="text-[15px] font-bold text-gray-900">Pilih Bahan Baku</h3><p class="mt-0.5 text-[12px] text-gray-400">Pilih bahan untuk racikan resep</p></div><button type="button" @click="ingredientPickerOpen = false" aria-label="Tutup pilihan bahan" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500"><i class="ph-bold ph-x"></i></button></header><div class="shrink-0 border-b border-gray-100 bg-white px-4 py-3"><div class="relative flex items-center"><i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i><input x-model="ingredientQuery" @input.debounce.250ms="lookupIngredient()" @keydown.escape.stop="ingredientPickerOpen = false" autocomplete="off" placeholder="Cari bahan baku..." class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50/80 pl-9 pr-9 text-xs outline-none focus:border-emerald-500 focus:bg-white"><button type="button" x-show="ingredientQuery.length > 0" @click="ingredientQuery = ''; lookupIngredient()" aria-label="Hapus pencarian bahan" class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-gray-400"><i class="ph-bold ph-x text-xs"></i></button></div></div>
                                 <div class="min-h-0 flex-1 divide-y divide-gray-100/80 overflow-y-auto overscroll-contain bg-gray-50/30 px-4 py-2">
                                     <template x-for="item in ingredientResults" :key="item.id"><button type="button" @click="selectIngredient(item)" class="group flex w-full items-center justify-between rounded-xl p-2.5 text-left transition-colors hover:bg-emerald-50/60"><span class="flex min-w-0 flex-1 items-center gap-3"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-100 text-base shadow-sm" :class="item.material_icon_class || 'bg-gray-100'" x-text="item.material_emoji || '📦'"></span><span class="flex min-w-0 flex-1 flex-col"><span class="truncate text-xs font-bold text-gray-900" x-text="item.name"></span><span class="mt-0.5 truncate text-[11px] text-gray-400" x-text="'Rp ' + formatMoney(item.hpp || 0) + ' / ' + (unitOf(item) || 'unit')"></span></span></span><span class="ml-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-700"><i class="ph-bold ph-plus text-xs"></i></span></button></template>
                                     <div x-show="ingredientLoading" class="py-12 text-center text-xs text-gray-400">Memuat bahan baku...</div>
                                     <div x-show="!ingredientLoading && ingredientQuery.trim().length > 0 && ingredientResults.length === 0" class="py-16 text-center text-xs text-gray-400">Bahan tidak ditemukan</div>
                                     <div x-show="!ingredientLoading && ingredientQuery.trim().length === 0 && ingredientResults.length === 0" class="py-12 text-center text-xs text-gray-400">Belum ada bahan baku.</div>
                                 </div>
-                                <div class="shrink-0 border-t border-gray-100 bg-white px-4 pt-3 pb-[calc(0.875rem+env(safe-area-inset-bottom))]"><div class="relative flex items-center"><i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i><input x-model="ingredientQuery" @input.debounce.250ms="lookupIngredient()" @keydown.escape.stop="ingredientPickerOpen = false" autocomplete="off" placeholder="Cari bahan baku..." class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50/80 pl-9 pr-9 text-xs outline-none focus:border-emerald-500 focus:bg-white"><button type="button" x-show="ingredientQuery.length > 0" @click="ingredientQuery = ''; lookupIngredient()" aria-label="Hapus pencarian bahan" class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-gray-400"><i class="ph-bold ph-x text-xs"></i></button></div></div>
+                                <div class="shrink-0 border-t border-gray-100 bg-white px-4 pt-3 pb-[calc(0.875rem+env(safe-area-inset-bottom))]"><button type="button" @click="ingredientPickerOpen = false" class="h-11 w-full rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 active:scale-[.98]">Kembali</button></div>
                             </section>
                         </div>
                     </template>
@@ -265,8 +257,9 @@ function recipeIndex(initialCount, total, hasMore, nextPageUrl, createFormInitia
         deleteSelectedRecipe() {
             if (!this.selectedRecipe) return;
             const id = this.selectedRecipe.id;
+            const name = this.selectedRecipe.product?.name || '';
             this.detailModalOpen = false;
-            deleteReceipt(id);
+            deleteReceipt(id, name);
         },
         async loadMoreRecipes() {
             if (this.loadingMore || !this.hasMore || !this.nextPageUrl) return;
@@ -307,16 +300,15 @@ function recipeIndex(initialCount, total, hasMore, nextPageUrl, createFormInitia
             if (!value) return 'Waktu pembaruan tidak tersedia';
             const date = new Date(value);
             if (Number.isNaN(date.getTime())) return 'Waktu pembaruan tidak tersedia';
-            return 'Diperbarui pada ' + new Intl.DateTimeFormat('id-ID', {
-                dateStyle: 'medium',
-                timeStyle: 'short',
-            }).format(date);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+            const pad = (number) => String(number).padStart(2, '0');
+            return 'Memperbarui pada ' + pad(date.getDate()) + ' ' + months[date.getMonth()] + ' ' + date.getFullYear() + ', ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
         },
     };
 }
 
-async function deleteReceipt(id) {
-    if (!await ErpDialog.confirmDelete({what: 'resep', text: 'Data resep akan dihapus permanen.'})) return;
+async function deleteReceipt(id, name = '') {
+    if (!await ErpDialog.confirmDelete(name ? {what: 'Resep', name} : {what: 'Resep', text: 'Data resep akan dihapus permanen.'})) return;
     try {
         const response = await fetch(`{{ url('receipt') }}/${id}`, {method: 'DELETE', headers: {'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content}});
         const result = await response.json();

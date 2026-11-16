@@ -66,5 +66,5 @@ test('successful delete refreshes list; failed delete retains detail and permits
     await a.deleteSelected();assert.equal(a.selected.id,1);assert.equal(a.deleting,false);assert.equal(reloaded,1);
 });
 test('status and currency match inventory write-off values',()=>{
-    const a=app();assert.equal(a.statusLabel('debt'),'Selesai');assert.equal(a.statusLabel('draft'),'Draf');assert.equal(a.money(25000),'Rp 25.000');assert.equal(a.money(25000.65),'Rp 25.000,65');assert.equal(a.statusLabel('canceled'),'Dibatalkan');assert.equal(a.initials('Gresik / Driyorejo'),'GR');
+    const a=app();assert.equal(a.statusLabel('debt'),'Selesai');assert.equal(a.statusLabel('draft'),'Pending');assert.equal(a.money(25000),'Rp 25.000');assert.equal(a.money(25000.65),'Rp 25.000,65');assert.equal(a.statusLabel('canceled'),'Dibatalkan');assert.equal(a.initials('Gresik / Driyorejo'),'GR');
 });

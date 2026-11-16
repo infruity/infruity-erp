@@ -21,9 +21,10 @@
 @endsection
 
 @section('content')
+    <x-erp.master-list-style />
     <style>
         .icon-rounded.is-bold { font-variation-settings: 'wght' 600; }
-        #products-table.dataTable { border-collapse: collapse !important; border: none !important; table-layout: fixed !important; width: 100% !important; }
+        #products-table.dataTable { border-collapse: collapse !important; border: none !important; table-layout: fixed !important; width: 100% !important; margin-top: 0 !important; margin-bottom: 0 !important; }
         @media (max-width: 767px) {
             .product-list-fullbleed { width: 100vw !important; max-width: 100vw !important; margin-left: calc(50% - 50vw) !important; margin-right: calc(50% - 50vw) !important; }
             #products-table.dataTable,
@@ -44,6 +45,16 @@
             #products-table.dataTable tbody td:nth-child(3),
             #products-table.dataTable tbody td:nth-child(4) { display: none !important; }
         }
+        /* Referensi halaman Produk (mobile): header 80%, dock 45%. Pencarian ada di x-erp.master-list-style. */
+        @media (max-width: 767px) {
+            .erp-topbar-mobile { background: rgba(255, 255, 255, .8); }
+            .erp-mobile-nav .erp-mobile-nav__dock { background: rgba(255, 255, 255, .45); border-color: rgba(255, 255, 255, .6); }
+        }
+        #products-table.dataTable tbody tr:has(td.dataTables_empty) { border-bottom: 0 !important; }
+        /* Editor harga: kursor emerald-900 seperti referensi */
+        .erp-ui #products-table .price-editor input { caret-color: #064e3b; -webkit-touch-callout: none; }
+        #products-table_processing { display: none !important; }
+        #products-table.is-first-load .dataTables_empty { visibility: hidden; }
         #products-table.dataTable thead { display: none !important; }
         #products-table.dataTable thead th { border: none !important; }
         #products-table.dataTable tbody td { border: none !important; padding: 0 !important; }
@@ -84,7 +95,7 @@
             },
             isScrolling: false,
             scrollTimer: null,
-            branchSearchQuery: '',
+            branchFilterQuery: '',
             allBranches: @js($branch->map(fn($item) => ['id' => $item->id, 'name' => ucwords($item->name)])->values()),
             allTypes: @js($productTypes->values()),
             defaultBranchId: {{ $branch->first()->id ?? 0 }},
@@ -101,7 +112,7 @@
                 return this.selectedType.length + ' Tipe';
             },
             get filteredBranches() {
-                const q = this.branchSearchQuery.toLowerCase();
+                const q = this.branchFilterQuery.toLowerCase();
                 return this.allBranches.filter(b => b.name.toLowerCase().includes(q));
             },
             syncHiddenInputs() {
@@ -136,7 +147,7 @@
             openMobileFilter() {
                 this.tempSelectedType = [...this.selectedType];
                 this.tempSelectedBranchId = this.selectedBranchId;
-                this.branchSearchQuery = '';
+                this.branchFilterQuery = '';
                 this.filterOpen = true;
             },
             applyMobileFilters() {
@@ -159,14 +170,14 @@
         <div class="erp-surface bg-white rounded-none lg:rounded-2xl shadow-none lg:shadow-sm border-0 lg:border lg:border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0 relative">
             <x-erp.mobile-search class="md:hidden">
                 <x-slot:input>
-                    <input x-ref="mobileSearch" x-model="mobileSearchQuery" type="search" placeholder="Cari produk atau varian..." oninput="$('#search').val(this.value).trigger('keyup')" aria-label="Cari produk atau varian" class="erp-mobile-search__input">
+                    <input x-ref="mobileSearch" x-model="mobileSearchQuery" type="search" placeholder="Cari..." oninput="$('#search').val(this.value).trigger('keyup')" aria-label="Cari produk atau varian" class="erp-mobile-search__input">
                 </x-slot:input>
                 <x-slot:clear>
                     <button type="button" x-show="mobileSearchQuery" x-cloak @click="mobileSearchQuery = ''; $('#search').val('').trigger('keyup'); $refs.mobileSearch.focus()" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button>
                 </x-slot:clear>
                 <x-slot:filter>
                     <button type="button" @click="openMobileFilter()" aria-label="Filter produk" class="erp-mobile-search__filter">
-                        <i class="ph ph-sliders-horizontal" aria-hidden="true"></i>
+                        <span class="icon-rounded" aria-hidden="true" style="font-size: 20px;">tune</span>
                         <span x-show="hasActiveFilters" x-cloak class="erp-mobile-search__filter-dot"></span>
                     </button>
                 </x-slot:filter>
@@ -221,7 +232,7 @@
                                 <!-- Search Box -->
                                 <div class="relative border-b border-gray-100 shrink-0">
                                     <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                                    <input type="text" x-model="branchSearchQuery" placeholder="Cari cabang..."
+                                    <input type="text" x-model="branchFilterQuery" placeholder="Cari cabang..."
                                            class="w-full bg-transparent pl-8 pr-3 py-3 text-xs outline-none focus:bg-gray-50 transition-colors">
                                 </div>
 
@@ -247,7 +258,7 @@
                                              this.scrollTimeout = setTimeout(() => { this.isScrolling = false; }, 800);
                                          }
                                      }"
-                                     x-init="$watch('branchSearchQuery', () => { $nextTick(() => updateScroll()) })">
+                                     x-init="$watch('branchFilterQuery', () => { $nextTick(() => updateScroll()) })">
                                     <div x-ref="scrollArea" @scroll="updateScroll()" class="h-full overflow-y-auto overscroll-none bg-gray-50/30 scrollbar-hide">
                                         <template x-for="b in filteredBranches" :key="b.id">
                                             <label class="flex items-center gap-3 px-3 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors last:border-b-0">
@@ -391,10 +402,10 @@
             <input type="hidden" id="branch-filter-value" data-kt-ecommerce-product-filter="branch">
             <input type="hidden" id="type-filter-value" data-kt-ecommerce-product-filter="type">
             <input type="hidden" id="category-filter-value" data-kt-ecommerce-product-filter="category" value="all">
-            <x-erp.list-count noun="produk" shown-id="products-count-display" total-id="products-count-total" />
+            <x-erp.list-count noun="produk" shown-id="products-count-display" total-id="products-count-total" reference />
 
             <!-- Table -->
-            <div class="mobile-list-edge-fade relative z-0 -mt-[72px] flex-1 overflow-auto pt-[72px] pb-24 md:mt-0 md:pt-0 md:pb-0" style="--mobile-list-fade-top:72px; --mobile-list-fade-bottom:72px" @scroll.passive="isScrolling = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => isScrolling = false, 600)">
+            <div class="mobile-list-edge-fade relative z-0 -mt-[72px] flex-1 overflow-auto pt-[72px] pb-20 md:mt-0 md:pt-0 md:pb-0" style="--mobile-list-fade-top:72px; --mobile-list-fade-bottom:72px" @scroll.passive="isScrolling = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => isScrolling = false, 600)">
                 <table class="w-full text-sm" id="products-table" width="100%">
                     <thead class="hidden md:table-header-group">
                         <tr class="text-left text-gray-400 font-semibold text-[11px] uppercase tracking-wide">
@@ -406,7 +417,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-50 text-gray-700"></tbody>
                 </table>
-                <div id="products-load-more" class="hidden px-5 py-4">
+                <div id="products-load-more" data-load-more class="hidden px-5 py-4">
                     <x-erp.load-more>Muat Produk Lagi</x-erp.load-more>
                 </div>
             </div>
@@ -499,21 +510,21 @@
                     </button>
                 </div>
                 <div class="flex items-center gap-3">
-                    <i class="ph-duotone ph-tag shrink-0 text-2xl text-emerald-500"></i>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-tag text-lg"></i></div>
                     <div class="min-w-0">
                         <div class="font-bold leading-snug text-gray-800" x-text="productDetail?.name"></div>
                         <div class="mt-0.5 text-[11px] font-medium text-gray-400" x-text="productDetail?.type"></div>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <i class="ph-duotone ph-coins shrink-0 text-2xl text-emerald-500"></i>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-coins text-lg"></i></div>
                     <div>
                         <div class="font-bold text-gray-800" x-text="productDetail?.price"></div>
-                        <div class="mt-0.5 text-[11px] font-medium text-gray-400">Harga Jual</div>
+                        <div class="text-[11px] font-medium text-gray-400">Harga Jual</div>
                     </div>
                 </div>
-                <div class="flex items-start gap-3">
-                    <i class="ph-duotone ph-clock mt-0.5 shrink-0 text-2xl text-emerald-500"></i>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-clock text-lg"></i></div>
                     <div class="min-w-0">
                         <div class="text-xs font-bold leading-snug text-gray-800" x-text="productDetail?.updatedBy || 'Administrator'"></div>
                         <div class="mt-0.5 text-[11px] font-medium text-gray-400" x-text="'Memperbarui pada ' + (productDetail?.updatedAt || '-')"></div>
@@ -544,6 +555,12 @@
 
     <script type="text/javascript">
         var dataTable;
+
+        // Price field: thousands dots while typing (1.000, 15.000); empty when there is no value.
+        function formatPriceInput(value) {
+            var digits = String(value === null || value === undefined ? '' : value).replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+            return digits === '' ? '' : formatNumber(digits);
+        }
 
         function formatNumber(num) {
             if (num === null || num === undefined) return '0';
@@ -678,14 +695,16 @@
 
         $(document).ready(function() {
             $.fn.dataTable.ext.errMode = 'none';
+            // Until the first answer arrives DataTables shows its empty-table row; keep that message invisible so the list never flashes "tidak ditemukan" first.
+            $('#products-table').addClass('is-first-load').one('xhr.dt error.dt', function () { $(this).removeClass('is-first-load'); });
             dataTable = $('#products-table').DataTable({
                 pageLength: 50,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                 processing: true,
                 serverSide: true,
                 language: {
-                    emptyTable: '<div class="py-12 text-center text-sm text-gray-500">Produk tidak ditemukan</div>',
-                    zeroRecords: '<div class="py-12 text-center"><div class="text-sm font-medium text-gray-500">Produk tidak ditemukan</div><div class="mt-1 text-xs text-gray-400">Coba ubah kata kunci pencarian atau filter</div></div>'
+                    emptyTable: '<div class="py-12 text-center"><div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100"><i class="ph ph-magnifying-glass text-xl text-gray-400"></i></div><p class="text-sm font-medium text-gray-500">Produk tidak ditemukan</p><p class="mt-1 text-xs text-gray-400">Coba ubah pencarian atau filter</p></div>',
+                    zeroRecords: '<div class="py-12 text-center"><div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100"><i class="ph ph-magnifying-glass text-xl text-gray-400"></i></div><p class="text-sm font-medium text-gray-500">Produk tidak ditemukan</p><p class="mt-1 text-xs text-gray-400">Coba ubah pencarian atau filter</p></div>'
                 },
                 order: [],
                 columnDefs: [{
@@ -697,6 +716,7 @@
                     $('#products-count-display, #products-count-display-mobile').text(formatNumber(info.end - info.start));
                     $('#products-count-total, #products-count-total-mobile').text(formatNumber(info.recordsDisplay));
                     $('#products-load-more').toggleClass('hidden', info.end >= info.recordsDisplay);
+                    $('#products-load-more button span').text('Muat ' + formatNumber(Math.min(50, info.recordsDisplay - info.end)) + ' Produk Lagi');
                 },
                 ajax: {
                     url: "{{ route('products-data') }}",
@@ -757,7 +777,13 @@
                 dataTable.search(this.value).draw();
             });
 
+            // Like the reference, "Muat N Produk Lagi" just reveals the next rows: no "Processing" box, and a second tap
+            // while the rows are being fetched is ignored.
+            var loadingMoreProducts = false;
             $('#products-load-more button').on('click', function() {
+                if (loadingMoreProducts) return;
+                loadingMoreProducts = true;
+                dataTable.one('draw', function() { loadingMoreProducts = false; });
                 dataTable.page.len(dataTable.page.len() + 50).draw();
             });
 
@@ -838,28 +864,44 @@
             var $span = $(this);
             var currentValue = $span.data('value');
             var id = $span.data('id');
-            var $editor = $('<span class="price-editor inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 p-1 ring-1 ring-emerald-500"></span>');
-            var $input = $('<input type="number" min="0" step="1" aria-label="Harga baru" class="w-20 md:w-28 bg-transparent px-1 text-right text-sm font-semibold text-emerald-900 outline-none">').val(currentValue);
-            var $save = $('<button type="button" aria-label="Simpan harga" class="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500 text-white"><i class="ph-bold ph-check text-xs"></i></button>');
-            var $cancel = $('<button type="button" aria-label="Batal ubah harga" class="hidden md:flex h-7 w-7 items-center justify-center rounded-md bg-gray-100 text-gray-500"><i class="ph-bold ph-x text-xs"></i></button>');
+            var $editor = $('<span class="price-editor inline-flex items-center overflow-hidden rounded-lg bg-emerald-50 ring-1 ring-emerald-500"></span>');
+            var $input = $('<input type="text" inputmode="numeric" autocomplete="off" aria-label="Harga baru" class="w-20 md:w-28 bg-transparent px-1.5 py-1 text-right text-sm font-bold text-emerald-900 outline-none">').val(formatPriceInput(currentValue));
+            var $save = $('<button type="button" aria-label="Simpan harga" class="flex items-center justify-center bg-emerald-500 px-2 py-1.5 text-white transition-colors hover:bg-emerald-600"><i class="ph-bold ph-check text-xs"></i></button>');
+            var $cancel = $('<button type="button" aria-label="Batal ubah harga" class="hidden md:m-1 md:flex h-7 w-7 items-center justify-center rounded-md bg-gray-100 text-gray-500"><i class="ph-bold ph-x text-xs"></i></button>');
             function closeEditor() { $editor.remove(); $span.show(); }
             $editor.data('close', closeEditor);
             function saveEditor() {
-                var value = $input.val();
-                if (value === '' || Number(value) < 0) { $input.focus(); return; }
+                var value = $input.val().replace(/\D/g, '');
+                if (value === '') { $input.focus(); return; }
                 if (Number(value) !== Number(currentValue)) updatePrice(id, value);
                 closeEditor();
             }
-            $editor.append($('<span class="pl-1 text-xs font-semibold text-emerald-700">Rp</span>'), $input, $save, $cancel);
+            $editor.append($('<span class="pl-2 text-xs font-semibold text-emerald-700">Rp</span>'), $input, $save, $cancel);
             $editor.on('click', function(e) { e.stopPropagation(); });
+            // No native text menu (Look Up / Cut / Copy ...) on the price field: the reference has none.
+            $input.on('contextmenu', function(e) { e.preventDefault(); });
             $save.on('click', saveEditor);
             $cancel.on('click', closeEditor);
+            $input.on('input', function() {
+                var el = this;
+                var digitsBefore = el.value.slice(0, el.selectionStart).replace(/\D/g, '').length;
+                el.value = formatPriceInput(el.value.replace(/\D/g, ''));
+                var pos = 0, count = 0;
+                while (pos < el.value.length && count < digitsBefore) { if (/\d/.test(el.value.charAt(pos))) count++; pos++; }
+                el.setSelectionRange(pos, pos);
+            });
             $input.on('keydown', function(e) {
                 if (e.key === 'Enter') saveEditor();
                 if (e.key === 'Escape') closeEditor();
             });
             $span.hide().after($editor);
-            $input.trigger('focus').trigger('select');
+            // Like the reference: after the click has finished the field is focused with the caret at the end of the
+            // number (nothing selected), so the text cursor is visible straight away.
+            window.setTimeout(function() {
+                $input.trigger('focus');
+                var end = $input.val().length;
+                $input[0].setSelectionRange(end, end);
+            }, 0);
         });
 
         function updatePrice(id, price) {

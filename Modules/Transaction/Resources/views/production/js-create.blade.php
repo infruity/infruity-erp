@@ -5,6 +5,7 @@
             // Data properties
             ingredients: [],
             availableIngredients: [],
+            ingredientsRequest: null,
             availableRecipes: [],
             selectedIngredient: null,
             selectedRecipe: null,
@@ -348,11 +349,17 @@
             },
 
             // Load available ingredients
-            async loadAvailableIngredients() {
+            async loadAvailableIngredients(force = false) {
+                // One request per page: the list is fetched when the form opens and reused by the dialog.
+                if (!force && this.ingredientsRequest) return this.ingredientsRequest;
+                this.ingredientsRequest = this.fetchAvailableIngredients();
+                return this.ingredientsRequest;
+            },
+
+            async fetchAvailableIngredients() {
                 try {
                     const response = await fetch('{{ route('ajax.getProduct') }}');
                     const data = await response.json();
-                    console.log('API Response:', data); // Temporary debug
                     this.availableIngredients = data.map(item => ({
                         id: item.id,
                         name: item.name,
@@ -362,8 +369,8 @@
                         unit: item.unit?.abbreviation || 'pcs',
                         category: item.category?.name || 'Umum'
                     }));
-                    console.log('Mapped ingredients:', this.availableIngredients); // Temporary debug
                 } catch (error) {
+                    this.ingredientsRequest = null; // allow a retry
                     console.error('Error loading ingredients:', error);
                     this.showNotification('Error loading ingredients', 'error');
                 }
@@ -397,7 +404,8 @@
                 // For now, just use console.log
                 console.log(`${type.toUpperCase()}: ${message}`);
 
-                // If you have a notification system like toastr, use it here
+                // No success popups on this form; warnings and errors still show.
+                if (type === 'success') return;
                 if (typeof toastr !== 'undefined') {
                     toastr[type](message);
                 }
@@ -406,12 +414,19 @@
             // Open modals
             openAddIngredientModal() {
                 this.showAddIngredientModal = true;
+                // The list is already there (loaded with the form); no new request on every tap.
                 this.loadAvailableIngredients();
                 this.ingredientSearchTerm = '';
                 this.selectedIngredient = null;
                 this.ingredientQuantity = '';
-                const modal = new bootstrap.Modal(document.getElementById('modal-add-ingredient'));
-                modal.show();
+                // The dim layer is the modal's own background and fades in with the card, like the reference. Bootstrap's separate
+                // backdrop made the card wait for its ~190 ms fade before it appeared (that was the "loading" feel).
+                const addModal = document.getElementById('modal-add-ingredient');
+                if (!addModal.dataset.sharedFade) {
+                    addModal.dataset.sharedFade = 'true';
+                    addModal.addEventListener('mousedown', event => { if (event.target === addModal) bootstrap.Modal.getInstance(addModal)?.hide(); });
+                }
+                bootstrap.Modal.getOrCreateInstance(addModal, { backdrop: false }).show();
             },
 
             // Open edit ingredient modal
@@ -507,7 +522,8 @@
                 // For now, just use console.log
                 console.log(`${type.toUpperCase()}: ${message}`);
 
-                // If you have a notification system like toastr, use it here
+                // No success popups on this form; warnings and errors still show.
+                if (type === 'success') return;
                 if (typeof toastr !== 'undefined') {
                     toastr[type](message);
                 }
@@ -655,6 +671,12 @@
                 return Number.isFinite(quantity) && quantity > 0 ? quantity : null;
             },
 
+            // Quantities read with a decimal comma (2,5), without trailing zeros, as in the reference.
+            formatInlineQuantity(quantity) {
+                const number = Number(quantity);
+                return Number.isFinite(number) ? String(number).replace('.', ',') : String(quantity ?? '');
+            },
+
             // Update an inline ingredient quantity without changing its request shape.
             updateIngredientInline(index, rawQuantity) {
                 const ingredient = this.ingredients[index];
@@ -692,13 +714,13 @@
                 const quantity = this.parseInlineQuantity(input.value);
                 if (quantity === null) {
                     if (this.inlineQuantityDrafts) delete this.inlineQuantityDrafts[ingredient.id];
-                    input.value = String(ingredient.quantity ?? '');
+                    input.value = this.formatInlineQuantity(ingredient.quantity);
                     return;
                 }
 
                 this.updateIngredientInline(index, quantity);
                 if (this.inlineQuantityDrafts) delete this.inlineQuantityDrafts[ingredient.id];
-                input.value = String(quantity);
+                input.value = this.formatInlineQuantity(quantity);
             },
 
             // Update ingredient quantity
@@ -803,9 +825,10 @@
             // Get status text
             getStatusText(status) {
                 const statusMap = {
-                    'temp': 'Draft Sementara',
-                    'draft': 'Siap Produksi',
-                    'posting': 'Selesai Produksi'
+                    'temp': 'Pending',
+                    'draft': 'Pending',
+                    'posting': 'Selesai',
+                    'complete': 'Selesai'
                 };
                 return statusMap[status] || 'Unknown';
             },
@@ -927,12 +950,8 @@
                     console.log('Response data:', result);
 
                     if (response.ok && result.success) {
-                        this.showNotification(result.message || 'Produksi berhasil disimpan', 'success');
-
-                        // Always redirect to production index after success (regardless of submit type)
-                        setTimeout(() => {
-                            window.location.href = '{{ route('production.index') }}';
-                        }, 1500);
+                        // No success popup: go straight back to the list (regardless of submit type).
+                        window.location.href = '{{ route('production.index') }}';
                     } else {
                         // Handle error responses - tampilkan Swal.fire seperti di PosController
                         Swal.fire({
@@ -1100,7 +1119,8 @@
             emptyText: 'Produk olahan tidak ditemukan',
             clearable: false,
             url: '{{ route('products.get-receipt') }}',
-            map: item => ({ id: item.product_id, text: item.products?.name || 'Unknown Product', meta: 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(item.products?.price) || 0) + ' / porsi' })
+            params: () => ({ branch: document.getElementById('branch_id')?.value || '' }),
+            map: item => ({ id: item.product_id, text: item.products?.name || 'Unknown Product', meta: 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(item.products?.price) || 0) + ' / Porsi', aside: 'Stok ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(Number(item.products?.stock_available) || 0) })
         });
         window.jQuery('#product_id').on('change', () => {
             const root = document.querySelector('[x-data*="productionApp"]');
@@ -1119,7 +1139,7 @@
         });
         @endif
         ErpPicker.attach('#branch_id', {
-            title: 'Pilih Cabang / Dapur',
+            title: 'Pilih Cabang',
             placeholder: 'Cari cabang...',
             placeholderTrigger: 'Pilih cabang...',
             emptyText: 'Cabang tidak ditemukan',
@@ -1128,6 +1148,14 @@
             url: '{{ route('ajax.getBranch') }}',
             map: item => ({ id: item.id, text: item.name })
         });
+
+        // New production: preselect the user's own branch (the first one A to Z when the user has several).
+        @unless(isset($data) && $data->branch_id)
+            $.getJSON('{{ route('ajax.getBranch') }}', function (rows) {
+                if (!Array.isArray(rows) || !rows.length || $('#branch_id').val()) return;
+                $('#branch_id').append(new Option(rows[0].name, rows[0].id, true, true)).trigger('change');
+            });
+        @endunless
 
         // Set branch_id for editing
         @if(isset($data) && $data->branch_id && isset($data->branch))
@@ -1450,38 +1478,15 @@
 
     // Notification functions
     function showLoadingNotification(message) {
-        // You can integrate with your notification system here
+        // No loading popup: the composition panel shows its own "loading" state (isLoadingIngredients).
         console.log('LOADING: ' + message);
-
-        // Simple implementation - replace with your notification system
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'Memuat...',
-                text: message,
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-        }
     }
 
     function showSuccessNotification(message) {
         console.log('SUCCESS: ' + message);
 
-        if (typeof Swal !== 'undefined') {
-            Swal.close(); // Close loading
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: message,
-                timer: 2000,
-                showConfirmButton: false
-            });
-        } else {
-            alert('Success: ' + message);
-        }
+        // No success popup on the production form: only close a loading dialog if one is open.
+        if (typeof Swal !== 'undefined') Swal.close();
     }
 
     function showInfoNotification(message) {

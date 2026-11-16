@@ -18,8 +18,14 @@
         ];
     @endphp
     @include('transaction::sortir.segment.styles')
-    <div class="sortir-form" x-data="sortirForm(@js($sortirConfig))" @keydown.escape.window="branchOpen = false">
+    <div class="sortir-form" x-data="sortirForm(@js($sortirConfig))" @keydown.escape.window="branchOpen = false; confirmModalOpen = false">
         <div class="sortir-canvas">
+            <div class="sortir-canvas-head">
+                <a href="{{ route('sortir.index') }}" class="sortir-desktop-back" aria-label="Kembali ke daftar sortir">
+                    <i class="ph-bold ph-arrow-left" aria-hidden="true"></i>
+                    <span>Kembali</span>
+                </a>
+            </div>
             <section class="sortir-branch-card" aria-label="Cabang sortir">
                 <label class="sortir-field-label" id="sortir-branch-label">Cabang <span class="sortir-required">*</span></label>
                 <div class="sortir-branch-picker" @click.outside="branchOpen = false" @keydown.escape.stop="branchOpen = false">
@@ -37,6 +43,7 @@
                     </div>
                 </div>
                 <p class="sortir-error" x-show="!branches.length" x-cloak>Tidak ada cabang yang dapat diakses. Hubungi administrator.</p>
+                @isset($data)
                 <details class="sortir-metadata">
                     <summary>Detail transaksi <span x-text="invoiceNumber"></span><i class="ph ph-caret-down" aria-hidden="true"></i></summary>
                     <div class="sortir-metadata-fields">
@@ -44,14 +51,16 @@
                         <div><label for="sortir-invoice">Nomor Faktur</label><input id="sortir-invoice" name="invoice_number" type="text" :value="invoiceNumber" readonly></div>
                     </div>
                 </details>
+                @endisset
             </section>
             <section class="sortir-items-card" aria-label="Daftar item sortir">
-                <div class="sortir-items-header"><h1>Daftar Item Sortir</h1><button type="button" class="sortir-add-button" @click="openAddModal()" :disabled="saving || !branchId">+ Tambah Item</button></div>
+                <div class="sortir-items-header"><h1>Daftar Item Sortir</h1><button type="button" class="sortir-add-button" @click="openAddModal()" :disabled="saving || !branchId">+ Tambah</button></div>
                 @include('transaction::sortir.segment.cart')
             </section>
         </div>
         @include('transaction::sortir.segment.ringkasan')
         @include('transaction::sortir.segment.modal-product')
+        @include('transaction::sortir.segment.modal-confirm')
     </div>
     @include('transaction::sortir.js-create')
 @endsection

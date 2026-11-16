@@ -123,7 +123,7 @@ class CustomerController extends Controller
             'village' => 'nullable|exists:reg_villages,id',
             'address' => 'nullable',
             'phone' => [
-                'nullable',
+                'required',
                 'string',
                 function ($attribute, $value, $fail) {
                     if ($value !== null && $value !== '' && !Customer::isValidWhatsapp($value)) {
@@ -137,7 +137,7 @@ class CustomerController extends Controller
                 },
             ],
             'email' => 'nullable',
-        ]);
+        ], ['customer_name.required' => 'Nama Pelanggan wajib diisi.', 'phone.required' => 'No Whatsapp wajib diisi.']);
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -257,7 +257,7 @@ class CustomerController extends Controller
             'village' => 'nullable|exists:reg_villages,id',
             'address' => 'nullable',
             'phone' => [
-                'nullable',
+                'required',
                 'string',
                 function ($attribute, $value, $fail) {
                     if ($value !== null && $value !== '' && !Customer::isValidWhatsapp($value)) {
@@ -271,7 +271,7 @@ class CustomerController extends Controller
                 },
             ],
             'email' => 'nullable',
-        ]);
+        ], ['customer_name.required' => 'Nama Pelanggan wajib diisi.', 'phone.required' => 'No Whatsapp wajib diisi.']);
 
         if ($validator->fails()) {
             return redirect()->back()

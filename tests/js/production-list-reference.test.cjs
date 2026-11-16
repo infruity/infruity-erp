@@ -2,13 +2,13 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const ui=require('../../public/assets/js/production-list-reference.js');
 test('recorded server clock is formatted without browser timezone conversion',()=>{
- assert.equal(ui.recordedTime('19/08/2026 02:03'),'19 Agu 2026 · 02:03');
- assert.equal(ui.recordedTime('01/11/2026 10:15'),'1 Nov 2026 · 10:15');
+ assert.equal(ui.recordedTime('19/08/2026 02:03'),'19 Agu 2026, 02:03');
+ assert.equal(ui.recordedTime('01/11/2026 10:15'),'01 Nov 2026, 10:15');
  for(const text of ['',null,'31/02/2026 10:00','19/08/2026 25:03','<img onerror=x>']) assert.equal(ui.recordedTime(text),'—');
 });
 test('status captions preserve the ready-to-produce distinction',()=>{
- assert.equal(ui.statusLabel('is-temp'),'Draf');
- assert.equal(ui.statusLabel('is-draft'),'Siap Produksi');
+ assert.equal(ui.statusLabel('is-temp'),'Pending');
+ assert.equal(ui.statusLabel('is-draft'),'Pending');
  assert.equal(ui.statusLabel('is-posting'),'Selesai');
  assert.equal(ui.statusLabel('is-complete'),'Selesai');
  assert.equal(ui.statusLabel('is-muted'),null);
@@ -36,8 +36,8 @@ test('row enhancement reuses server clock and is idempotent without inventing mi
   const row = { querySelector: selector => nodes[selector] };
   ui.enhanceRow(row, { quantity: '12.25' });
   assert.equal(nodes['.production-sub'].textContent, 'PRO202608391 · 1 bahan');
-  assert.equal(time.textContent, '19 Agu 2026 · 02:03');
-  assert.equal(status.textContent, 'Draf');
+  assert.equal(time.textContent, '19 Agu 2026, 02:03');
+  assert.equal(status.textContent, 'Pending');
   assert.equal(qty.textContent, '12,25');
   assert.equal(attributes['aria-label'], 'Hasil produksi: 12,25');
   ui.enhanceRow(row, { quantity: null });

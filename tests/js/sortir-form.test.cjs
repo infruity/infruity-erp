@@ -73,3 +73,32 @@ test('completion cancellation does not save; confirmed completion does',async()=
     const t=setup();add(t.app);t.requests.length=0;t.context.window.Swal={};t.context.Swal={fire:async()=>({isConfirmed:false})};await t.app.confirmComplete();assert.equal(t.requests.length,0);
     t.context.Swal.fire=async()=>({isConfirmed:true});await t.app.confirmComplete();assert.equal(JSON.parse(t.requests[0].body).status,'paid');
 });
+test('in-page confirmation modal opens and executeComplete saves as paid',async()=>{
+    const t=setup();add(t.app);t.requests.length=0;
+    t.context.document.getElementById=id=>id==='sortirConfirmModal'?{}:null;
+    await t.app.confirmComplete();
+    assert.equal(t.app.confirmModalOpen,true);
+    assert.equal(t.requests.length,0);
+    await t.app.executeComplete();
+    assert.equal(t.app.confirmModalOpen,false);
+    assert.equal(JSON.parse(t.requests[0].body).status,'paid');
+});
+test('products with stock are ordered before products without stock',async()=>{
+    const t=setup();
+    t.context.fetch=async()=>({
+        ok:true,
+        json:async()=>[
+            {id:1,name:'Apel Green Smith',stock_available:0},
+            {id:2,name:'Mangga Harum Manis',stock_available:10},
+            {id:3,name:'Apel Red USA',stock_available:0},
+            {id:4,name:'Jeruk Medan',stock_available:5},
+        ]
+    });
+    await t.app.loadProducts();
+    assert.deepEqual(t.app.products.map(p=>p.name),[
+        'Jeruk Medan',
+        'Mangga Harum Manis',
+        'Apel Green Smith',
+        'Apel Red USA',
+    ]);
+});

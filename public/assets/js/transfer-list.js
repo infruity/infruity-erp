@@ -4,16 +4,26 @@
             rows: [], total: 0, filtered: 0, search: '', loading: false, error: '', requestId: 0,
             filters: {status: 'all', branch: 'all', start: '', end: ''},
             filterOpen: false,
-            selected: null, documentOpen: false, deleting: false, returnFocus: null,
+            selected: null, detailOpen: false, documentOpen: false, deleting: false, returnFocus: null,
             init() { this.load(); },
             money(value) { return 'Rp ' + Number(value || 0).toLocaleString('id-ID', {maximumFractionDigits: 2}); },
-            statusLabel(status) { return ({temp:'Draf',draft:'Draf',pending:'Dalam Perjalanan',proses:'Sedang Diperiksa',selesai:'Sudah Diterima'})[status] || status; },
+            statusLabel(status) { return ({temp:'Pending',draft:'Pending',pending:'Dalam Perjalanan',proses:'Sedang Diperiksa',selesai:'Sudah Diterima'})[status] || status; },
             branchName(row) { return config.receiving ? row.origin : row.destination; },
             dateLabel(value) {
                 if (!value) return '—';
                 const date = new Date(String(value).replace(' ', 'T'));
                 return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString('id-ID', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
             },
+            // "Dikirim : 09 Okt 2026, 08:00" while on its way, "Diterima : ..." once received (the reference's wording).
+            rowDate(row) {
+                const received = row.status === 'selesai';
+                const value = received ? (row.received_at || row.created_at || row.date) : (row.created_at || row.date);
+                return (received ? 'Diterima : ' : 'Dikirim : ') + this.dateLabel(value).replace(/(\d{2})\.(\d{2})$/, '$1:$2');
+            },
+            // "09 Okt 2026, 08:00" (24-hour clock with a colon, like the reference).
+            timeLabel(value) { return this.dateLabel(value).replace(/(\d{2})\.(\d{2})$/, '$1:$2'); },
+            // A received transfer where less arrived than was sent.
+            hasDeficit(row) { return row.status === 'selesai' && (row.items || []).some(item => Number(item.sent) > Number(item.quantity)); },
             initials(name) {
                 const branch = String(name || '').toUpperCase();
                 if (branch.includes('GRESIK')) return 'GR';
@@ -32,10 +42,15 @@
             },
             closeFilter() { this.filterOpen = false; },
             openDetail(row, event) {
-                this.returnFocus = event?.currentTarget || null; this.selected = row; this.documentOpen = false;
+                this.returnFocus = event?.currentTarget || null; this.selected = row; this.documentOpen = false; this.detailOpen = true;
                 this.$nextTick(() => document.getElementById('transfer-detail-dialog')?.focus());
             },
-            closeDetail() { if (this.deleting) return; this.selected = null; this.documentOpen = false; this.returnFocus?.focus(); },
+            // The row stays set while the dialog fades out, so its content does not vanish mid-transition.
+            closeDetail() { if (this.deleting) return; this.hideDetail(); this.returnFocus?.focus(); },
+            hideDetail() { this.detailOpen = false; this.documentOpen = false;
+                const clear = () => { if (!this.detailOpen) this.selected = null; };
+                typeof setTimeout === 'function' ? setTimeout(clear, 320) : clear();
+            },
             openDocument() {
                 if (!this.selected?.can_show) return;
                 this.documentOpen = true;
@@ -86,14 +101,14 @@
             async deleteSelected() {
                 const row = this.selected;
                 if (!row?.can_delete || this.deleting) return;
-                const decision = await Swal.fire({title:'Hapus draf pengiriman?',text:'Transaksi ' + row.invoice_number + ' akan dihapus.',icon:'warning',showCancelButton:true,confirmButtonText:'Hapus',cancelButtonText:'Batal',confirmButtonColor:'#dc2626'});
+                const decision = await Swal.fire({title:'Hapus pengiriman?',text:'Transaksi ' + row.invoice_number + ' akan dihapus.',icon:'warning',showCancelButton:true,confirmButtonText:'Hapus',cancelButtonText:'Batal',confirmButtonColor:'#dc2626'});
                 if (!decision.isConfirmed) return;
                 this.deleting = true;
                 try {
                     const response = await fetch(row.delete_url,{method:'DELETE',headers:{'X-CSRF-TOKEN':config.csrf,Accept:'application/json'}});
                     const json = await response.json();
                     if (!response.ok || !json.success) throw new Error(json.message || 'Transaksi gagal dihapus.');
-                    this.selected = null; await this.load();
+                    this.hideDetail(); await this.load();
                 } catch(error) { await Swal.fire({icon:'error',title:'Gagal menghapus',text:error.message || 'Coba lagi.'}); }
                 finally { this.deleting = false; }
             },

@@ -82,7 +82,7 @@ final class ProductionCreateReferenceTest extends TestCase
     public function test_create_footer_is_the_reference_back_draft_save_bar_and_keeps_save_actions(): void
     {
         $create = $this->renderForm('production.create');
-        foreach (['production-ref-footer', 'Kembali ke Daftar Produksi', 'Simpan sebagai Draf', "saveProduction('temp', () => savingDraft = false)", "saveProduction('posting', () => saving = false)", "'Menyimpan…' : 'Tambah'"] as $part) {
+        foreach (['production-ref-footer', 'Kembali ke Daftar Produksi', 'Simpan sebagai Draf', "saveProduction('temp', () => savingDraft = false)", "saveProduction('posting', () => saving = false)", "'Menyimpan…' : 'Submit'"] as $part) {
             $this->assertStringContainsString($part, $create);
         }
         $this->assertStringNotContainsString('Selesaikan Produksi', $create);
@@ -101,7 +101,7 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString('production-product-picker-field', $create);
         $this->assertStringContainsString('data-placeholder="Pilih produk olahan..."', $create);
         $this->assertStringContainsString('production-ref-product', $create);
-        $this->assertStringContainsString("formatCurrency(sellPrice) + ' / porsi'", $create);
+        $this->assertStringContainsString("formatCurrency(sellPrice) + ' / Porsi'", $create);
         $this->assertStringNotContainsString('production-product-picker-field', $edit);
         $this->assertStringNotContainsString('reference-product-picker', $create);
         $this->assertStringContainsString('trigger: document.querySelector(\'.production-ref-product\')', file_get_contents(base_path('Modules/Transaction/Resources/views/production/js-create.blade.php')));
@@ -176,7 +176,7 @@ final class ProductionCreateReferenceTest extends TestCase
         $edit = $this->renderForm('production.legacy');
 
         foreach (['Komposisi Produk', '+ Tambah', 'Pilih Produk di Atas', 'production-ref-row__delete', 'revealed', 'formatCurrency(ingredient.hpp)',
-            'formatNumber(ingredient.total)', ':value="inlineQuantityDrafts[ingredient.id] ?? ingredient.quantity"',
+            'formatNumber(ingredient.total)', ':value="inlineQuantityDrafts[ingredient.id] ?? formatInlineQuantity(ingredient.quantity)"',
             'updateIngredientInline(index, $event.target.value)', 'removeIngredient(index)', 'openAddIngredientModal()'] as $part) {
             $this->assertStringContainsString($part, $create);
         }
@@ -211,10 +211,10 @@ final class ProductionCreateReferenceTest extends TestCase
         $this->assertStringContainsString('production-create-reference', $html);
         preg_match('/<section class="production-ref-card production-ref-card--branch">(.*?)<\/section>/s', $html, $branch);
         $this->assertStringContainsString('id="branch_id"', $branch[1]);
-        $this->assertStringContainsString('Cabang / Dapur Produksi', $branch[1]);
+        $this->assertStringContainsString('>Cabang <span', $branch[1]);
         preg_match('/<section class="production-ref-card production-ref-card--main">(.*?)<\/section>/s', $html, $main);
         preg_match_all('/(?:input|select)[^>]+\bid="([^"]+)"/', $main[1], $controls);
-        $this->assertSame(['product_id', 'quantity'], $controls[1]);
+        $this->assertSame(['product_id', 'sell_price_display', 'quantity'], $controls[1]);
         foreach (['production_date', 'sell_price', 'service_cost', 'production_number', 'production_id', 'production_notes', 'quantity'] as $id) {
             $this->assertSame(1, substr_count($html, 'id="'.$id.'"'));
         }
@@ -283,7 +283,7 @@ final class ProductionCreateReferenceTest extends TestCase
     {
         $edit = $this->renderForm('production.edit');
 
-        foreach (['production-create-reference', 'production-ref-footer', 'Komposisi Produk', 'Simpan Perubahan', "'Simpan'"] as $part) {
+        foreach (['production-create-reference', 'production-ref-footer', 'Komposisi Produk', 'Simpan Perubahan', "'Menyimpan…' : 'Submit'"] as $part) {
             $this->assertStringContainsString($part, $edit);
         }
         $this->assertStringNotContainsString("'Tambah'", $edit);

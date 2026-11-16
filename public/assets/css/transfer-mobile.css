@@ -29,13 +29,17 @@ body:has(.transfer-list-page) main > .animate-fade-in-up { animation:none; }
 .transfer-row-status.is-pending { color:#d97706; }
 .transfer-row-total { display:block; overflow-wrap:anywhere; margin-top:3px; color:#111827; font-weight:700; font-variant-numeric:tabular-nums; }
 .transfer-list-state { display:flex; min-height:50vh; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:32px; text-align:center; }
-.transfer-list-state > i { display:grid; width:64px; height:64px; place-items:center; border:1px solid #d1fae5; border-radius:24px; background:#f0fdf8; color:#0b595b; font-size:30px; }
+.transfer-list-state > i { font-size:30px; }
+.transfer-state-icon { display:grid; width:64px; height:64px; place-items:center; border:1px solid #d1fae5; border-radius:24px; background:#f0fdf8; color:#0b595b; font-size:30px; line-height:1; }
+.transfer-state-icon > i { display:block; font-size:30px; line-height:1; }
 .transfer-list-state h2 { margin:4px 0 0; color:#1f2937; font-size:15px; font-weight:700; }
 .transfer-list-state p { max-width:280px; margin:0; color:#6b7280; font-size:12px; line-height:1.7; }
 .transfer-text-button { border:0; padding:4px; background:transparent; color:#0b595b; font:inherit; font-size:12px; font-weight:600; text-decoration:underline; cursor:pointer; }
 .transfer-load-more { padding:16px 20px; }
 .transfer-list-count { margin:0; padding:16px; color:#6b7280; font-size:11px; text-align:center; }
-.transfer-overlay { position:fixed; inset:0; z-index:1100; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.55); }
+.transfer-overlay { position:fixed; inset:0; z-index:1100; display:flex; align-items:center; justify-content:center; padding:16px; background:transparent; }
+.transfer-overlay > .transfer-backdrop { position:absolute; inset:0; background:rgba(0,0,0,.6); }
+.transfer-overlay > .transfer-dialog { position:relative; z-index:1; }
 .transfer-dialog { outline:none; width:100%; max-width:384px; max-height:92dvh; overflow:auto; border:1px solid #f3f4f6; border-radius:16px; background:#fff; color:#1f2937; box-shadow:0 16px 40px rgba(0,0,0,.16); }
 .transfer-dialog-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:20px 24px 12px; }
 .transfer-dialog-head h2 { margin:0; color:#1f2937; font-size:18px; font-weight:700; }
@@ -113,3 +117,89 @@ body:has(.transfer-list-page) main > .animate-fade-in-up { animation:none; }
     .transfer-dialog.is-document .transfer-document-table tr { break-inside:avoid; }
     .transfer-document-table thead { display:table-header-group; }
 }
+
+/* Row type, measured on the reference at 400px. */
+.transfer-branch-name { line-height:16px; }
+.transfer-row-date { margin-top:2px; color:#9ca3af; line-height:16.5px; }
+.transfer-row-status-line { display:flex; align-items:center; justify-content:flex-end; gap:4px; }
+.transfer-row-warning { flex:none; color:#f59e0b; font-size:14px; line-height:1; }
+.transfer-row-status { line-height:16px; }
+.transfer-row-status.is-pending { color:#f97316; }
+.transfer-row-status.is-final { color:#059669; font-weight:700; }
+.transfer-row-total { margin-top:2px; font-size:12px; line-height:16px; }
+.transfer-row.has-deficit { background:rgba(255,251,235,.2); }
+@media (max-width:767.98px) { .transfer-row { border-bottom:0; border-top:1px solid #f3f4f6; } }
+
+/* Detail dialog, measured on the reference at 400px. */
+.transfer-shipment-details { padding:0 20px 20px; }
+.transfer-shipment-facts { padding:10px 14px; background:rgba(249,250,251,.7); }
+.transfer-shipment-facts > div { min-height:0; gap:12px; padding:8px 0; border-bottom:0; border-top:1px solid #f3f4f6; }
+.transfer-shipment-facts > div:first-child { border-top:0; }
+.transfer-shipment-facts > div:last-child { padding-bottom:0; }
+.transfer-shipment-facts dt { gap:8px; font-size:12px; font-weight:500; line-height:24px; }
+.transfer-shipment-facts dt i { font-size:16px; line-height:24px; }
+.transfer-shipment-facts dd { font-size:12px; font-weight:600; line-height:15px; color:#1f2937; }
+.transfer-shipment-facts dd.is-time { color:#374151; }
+.transfer-shipment-facts dd.is-muted { color:#9ca3af; }
+.transfer-shipment-facts dd.is-waiting { color:#9ca3af; font-style:italic; }
+.transfer-shipment-status.is-final { color:#059669; }
+.transfer-shipment-status.is-pending { color:#d97706; }
+.transfer-shipment-primary { padding:16px 20px; background:#fff; }
+.transfer-shipment-primary a { min-height:48px; font-size:14px; box-shadow:0 4px 6px -1px rgba(11,89,91,.2), 0 2px 4px -2px rgba(11,89,91,.2); }
+.transfer-shipment-dialog { border:0; }
+.transfer-shipment-dialog .transfer-dialog-head { padding:20px 20px 16px; }
+.transfer-shipment-dialog .transfer-dialog-head h2 { line-height:28px; }
+.transfer-shipment-facts { padding:6px 14px 14px; }
+.transfer-shipment-dialog .transfer-detail-actions > * { font-size:14px; font-weight:600; }
+.transfer-shipment-dialog .transfer-detail-actions .transfer-danger { color:#ef4444; }
+
+/* The empty / loading / error message sits in the vertical middle of the list area. */
+.transfer-list-scroll { display:flex; flex-direction:column; }
+.transfer-list-state { flex:1 1 auto; }
+
+/* Empty state: same type, spacing and "+" tile as Sortir Barang. */
+@media (max-width:767.98px) {
+    .transfer-list-state { min-height:0; gap:0; padding:16px; }
+    .transfer-state-icon { border-color:rgba(167,243,208,.8); background:rgba(236,253,245,.8); }
+    .transfer-list-state h2 { margin:16px 0 0; font-size:14px; line-height:20px; }
+    .transfer-list-state p { max-width:218px; margin-top:8px; font-size:12px; line-height:19.5px; text-wrap:balance; }
+    .transfer-list-state .transfer-add-tile { color:#0b595b; font-weight:700; text-decoration:none; }
+    .transfer-list-state .transfer-add-tile:hover { text-decoration:underline; }
+}
+@media (max-width:767.98px) { .transfer-list-state { margin-bottom:-20px; } }
+
+/* Search bar and status weight, measured on the reference at 400px. */
+.transfer-row-status.is-final { font-weight:600; }
+.transfer-row-status-line .transfer-row-warning { height:14px; width:14px; line-height:14px; display:flex; align-items:center; justify-content:center; }
+@media (max-width:767.98px) {
+    .transfer-search { gap:0; border-color:rgba(229,231,235,.8); background:rgba(249,250,251,.5); }
+    .transfer-search > i { margin-right:10px; color:rgba(11,89,91,.8); }
+    .transfer-search input { font-size:16px!important; font-weight:500; }
+    .transfer-search input::placeholder { color:#9ca3af; }
+    .transfer-search-divider { margin:0 4px; }
+    .transfer-icon-button { color:#9ca3af; }
+}
+
+/* Filter sheet, measured on the reference at 400px (same treatment as Stok Opname's). */
+body.erp-ui #transfer-filter-sheet#transfer-filter-sheet section > header { padding:16px 20px 16px !important; }
+[data-erp-filter-sheet][id="transfer-filter-sheet"] .erp-filter-sheet__subtitle { line-height:16.5px !important; }
+[data-erp-filter-sheet][id="transfer-filter-sheet"] [aria-label="Tutup"] i { font-size:14px !important; }
+[data-erp-filter-sheet][id="transfer-filter-sheet"] > section > div:first-child > div { width:64px; }
+body.erp-ui #transfer-filter-sheet#transfer-filter-sheet [x-show="!calendarOpen"] :is(label,span).uppercase { font-weight:600 !important; line-height:15px !important; }
+[data-erp-filter-sheet][id="transfer-filter-sheet"] [id$="-date-trigger"] span { line-height:16px !important; }
+[data-erp-filter-sheet][id="transfer-filter-sheet"] .erp-filter-sheet__footer { display:flex !important; gap:12px; background:rgba(249,250,251,.7); }
+[data-erp-filter-sheet][id="transfer-filter-sheet"] .erp-filter-sheet__footer > button { flex:1 1 0 !important; min-width:0; }
+[data-erp-filter-sheet][id="transfer-filter-sheet"] .erp-filter-sheet__primary { border-width:0; }
+.transfer-shipment-dialog .transfer-shipment-primary { padding:16px; }
+
+/* Detail dialog motion, copied from the reference (Tailwind default easing). */
+.transfer-fade-enter { transition:opacity .3s cubic-bezier(.4,0,.2,1); }
+.transfer-fade-leave { transition:opacity .2s cubic-bezier(.4,0,.2,1); }
+.transfer-fade-from { opacity:0; }
+.transfer-fade-to { opacity:1; }
+.transfer-pop-enter { transition:opacity .3s cubic-bezier(.4,0,.2,1), transform .3s cubic-bezier(.4,0,.2,1); }
+.transfer-pop-leave { transition:opacity .2s ease-in, transform .2s ease-in; }
+.transfer-pop-from-in { opacity:0; transform:translateY(16px) scale(.95); }
+.transfer-pop-from-out { opacity:0; transform:translateY(8px) scale(.95); }
+.transfer-pop-to { opacity:1; transform:translateY(0) scale(1); }
+body:has(.transfer-dialog.is-document) .transfer-backdrop { display:none; }

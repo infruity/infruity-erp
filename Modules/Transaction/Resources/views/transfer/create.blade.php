@@ -25,35 +25,34 @@
     <script src="{{ asset('assets/js/transfer-form.js') }}?v={{ filemtime(public_path('assets/js/transfer-form.js')) }}"></script>
 @endpush
 @section('content')
-    <div class="transfer-form" x-data="transferForm(@js($transferConfig))" @keydown.escape.window="branchOpen = false; destinationOpen = false">
+    <div class="transfer-form {{ $receiving ? 'is-receiving' : '' }}" x-data="transferForm(@js($transferConfig))" @keydown.escape.window="branchOpen = false; destinationOpen = false">
         <div class="transfer-canvas">
             <section class="transfer-branch-card" aria-label="{{ $receiving ? 'Asal pengiriman' : 'Tujuan pengiriman' }}">
-                <div class="transfer-field-label transfer-card-label"><span>{{ $receiving ? 'Asal Pengiriman' : 'Tujuan Pengiriman' }} @if (!$readOnly)<span class="transfer-required">*</span>@endif</span><small x-show="readOnly" x-text="invoiceNumber"></small></div>
+                <div class="transfer-field-label transfer-card-label"><span>{{ $receiving ? 'Asal Pengiriman' : 'Tujuan Pengiriman' }} @if (!$readOnly && !$receiving)<span class="transfer-required">*</span>@endif</span><small x-show="readOnly || receiving" x-text="invoiceNumber"></small></div>
                 @if ($receiving || $readOnly)
-                    <div class="transfer-branch-trigger"><span><i class="ph-bold ph-storefront" aria-hidden="true"></i> <span x-text="receiving ? branchName : destinationName"></span></span><span class="transfer-status" x-text="statusLabel"></span></div>
+                    <div class="transfer-branch-trigger"><span><i class="ph-bold ph-storefront" aria-hidden="true"></i> <span x-text="receiving ? branchName : destinationName"></span></span><span class="transfer-status" x-show="!receiving" x-text="statusLabel"></span></div>
+                    @unless ($receiving)
                     <details class="transfer-metadata"><summary>Detail pengiriman <i class="ph ph-caret-down" aria-hidden="true"></i></summary>
                         <div class="transfer-metadata-fields"><div><label>{{ $receiving ? 'Cabang Penerima' : 'Cabang Pengirim' }}</label><strong x-text="receiving ? destinationName : branchName"></strong></div><div><label>Tanggal Pengiriman</label><strong x-text="date"></strong></div>
                         <div><label>Pengirim</label><strong>{{ $data->createdBy->nm_user ?? '—' }}</strong></div><div><label>Penerima</label><strong>{{ $data->picPenerima->nm_user ?? '—' }}</strong></div></div>
                     </details>
+                    @endunless
                 @else
                     <div class="transfer-branch-picker" @click.outside="destinationOpen = false">
                         <button type="button" class="transfer-branch-trigger" @click="destinationOpen = !destinationOpen" :disabled="saving" aria-label="Pilih tujuan pengiriman" aria-haspopup="true" :aria-expanded="destinationOpen"><span x-text="destinationName || 'Pilih Tujuan Pengiriman'"></span><i class="ph-bold ph-caret-down" :class="destinationOpen ? 'is-open' : ''" aria-hidden="true"></i></button>
                         <div x-show="destinationOpen" x-cloak class="transfer-branch-menu" aria-label="Pilihan cabang tujuan"><template x-for="branch in availableDestinations" :key="branch.id"><button type="button" @click="selectDestination(branch.id)" :class="String(branch.id) === String(destinationId) ? 'is-selected' : ''"><span x-text="branch.name"></span><span class="transfer-branch-dot" x-show="String(branch.id) === String(destinationId)" aria-hidden="true"></span></button></template><p class="transfer-stock" x-show="!availableDestinations.length">Belum ada cabang tujuan yang tersedia.</p></div>
                     </div>
-                    <details class="transfer-metadata" x-show="branches.length > 1"><summary>Detail pengiriman <span x-text="invoiceNumber"></span><i class="ph ph-caret-down" aria-hidden="true"></i></summary>
-                        <div class="transfer-metadata-fields"><div><label for="transfer-origin">Cabang Pengirim</label><select id="transfer-origin" class="transfer-modal-input" :value="branchId" @change="changeBranch($event.target.value); $event.target.value = branchId" :disabled="saving || branches.length < 2"><template x-for="branch in branches" :key="branch.id"><option :value="branch.id" x-text="branch.name"></option></template></select></div><div><label for="transfer-date">Tanggal Pengiriman</label><input id="transfer-date" type="date" x-model="date" @change="markDirty()" :disabled="saving" required></div></div>
-                    </details>
                     <p class="transfer-error" x-show="!branches.length" x-cloak>Tidak ada cabang asal yang dapat diakses. Hubungi administrator.</p>
                 @endif
             </section>
             <section class="transfer-items-card" aria-label="Daftar produk transfer">
-                <div class="transfer-items-header"><h1>Daftar Produk</h1>@if (!$readOnly)<button type="button" class="transfer-add-button" @click="openAddModal()" :disabled="saving || !branchId">+ Tambah</button>@endif</div>
+                <div class="transfer-items-header"><h1>Daftar Produk</h1>@if (!$readOnly && !$receiving)<button type="button" class="transfer-add-button" @click="openAddModal()" :disabled="saving || !branchId">+ Tambah</button>@endif</div>
                 <div class="transfer-items-body">
                     <div class="transfer-empty" x-show="!cart.length"><h2>Belum ada produk di daftar pengiriman</h2>@if (!$readOnly)<p>Klik tombol <button type="button" @click="openAddModal()">+ Tambah</button> untuk melakukan input</p>@endif</div>
                     <template x-for="item in cart" :key="item.id">
                         <button type="button" class="transfer-cart-item" @click="openItem(item)" :disabled="saving || (readOnly && !canReceive)" :aria-label="(receiving ? 'Periksa ' : 'Ubah ') + item.name">
                             <span class="transfer-cart-line"><strong x-text="item.name"></strong><b x-text="number(item.qty) + ' ' + item.unit"></b></span>
-                            <span class="transfer-cart-line" x-show="receiving || item.sent !== item.qty && readOnly"><small x-text="'Dikirim: ' + number(item.sent) + ' ' + item.unit"></small><small class="transfer-shortage" x-show="item.qty < item.sent" x-text="'Kurang ' + number(item.sent - item.qty) + ' ' + item.unit"></small></span>
+                            <span class="transfer-cart-line" x-show="receiving || item.sent !== item.qty && readOnly"><small x-text="'Dikirim : ' + number(item.sent) + ' ' + item.unit"></small><small class="transfer-shortage" x-show="item.qty < item.sent" x-text="'Kurang ' + number(item.sent - item.qty) + ' ' + item.unit"></small></span>
                             <small class="transfer-stock" x-show="item.note" x-text="item.note"></small>
                         </button>
                     </template>
@@ -64,10 +63,12 @@
             <p class="transfer-error" x-show="saveError" x-cloak x-text="saveError" role="alert"></p>
             <div class="transfer-summary-actions">
                 @if ($canReceive)
-                    <a href="{{ route('transfer-penerima.index') }}" class="transfer-action" :aria-disabled="saving" @click="if (saving) $event.preventDefault()">Batal</a>
-                    <button type="button" class="transfer-action transfer-action-primary" @click="openConfirm()" :disabled="saving || !cart.length"><span x-text="saving ? 'Menyimpan...' : 'Diterima (' + cart.length + ')' "></span></button>
+                    <a class="transfer-icon-action" href="{{ route('transfer-penerima.index') }}" aria-label="Kembali ke daftar penerimaan" title="Kembali" :aria-disabled="saving" @click="if (saving) $event.preventDefault()"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a>
+                    <button type="button" class="transfer-icon-action" @click="saveReceiving()" :disabled="saving || !cart.length" aria-label="Simpan penerimaan" title="Simpan"><i class="ph-bold ph-bookmark-simple" aria-hidden="true"></i></button>
+                    <button type="button" class="transfer-action transfer-action-primary" @click="openConfirm()" :disabled="saving || !cart.length"><span x-text="saving ? 'Menyimpan...' : 'Terima'"></span></button>
                 @elseif (!$readOnly)
-                    <button type="button" class="transfer-action" @click="save('draft')" :disabled="saving || !cart.length"><span x-text="saving && savingStatus === 'draft' ? 'Menyimpan...' : 'Simpan sebagai Draf'"></span></button>
+                    <a class="transfer-icon-action" href="{{ route('transfer-pengirim.index') }}" aria-label="Kembali ke daftar pengiriman" title="Kembali" @click="if (saving) $event.preventDefault()"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a>
+                    <button type="button" class="transfer-icon-action" @click="save('draft')" :disabled="saving || !cart.length" aria-label="Simpan sebagai draf" title="Simpan sebagai Draf"><i class="ph-bold ph-bookmark-simple" aria-hidden="true"></i></button>
                     <button type="button" class="transfer-action transfer-action-primary" @click="openConfirm()" :disabled="saving || !cart.length"><span x-text="cart.length ? 'Kirim Stok (' + cart.length + ')' : 'Kirim Stok'"></span></button>
                 @else
                     <a href="{{ route($receiving ? 'transfer-penerima.index' : 'transfer-pengirim.index') }}" class="transfer-action transfer-action-primary">Kembali</a>
@@ -81,5 +82,19 @@
                 <div class="modal-footer"><button type="button" class="transfer-action" @click="$refs.confirmModal.close()" :disabled="saving" x-text="receiving ? 'Periksa Lagi' : 'Batal'"></button><button type="button" class="transfer-action transfer-action-primary" @click="receiving ? receive() : save('pending')" :disabled="saving"><span x-text="saving ? 'Menyimpan...' : (receiving ? (hasShortage ? 'Tetap Terima' : 'Diterima') : 'Kirim Stok')"></span></button></div>
             </div>
         </dialog>
+        @if ($receiving)
+        {{-- Shortage alert, as in the reference: a compact centred card; without a shortage the receipt is confirmed straight away. --}}
+        <dialog class="transfer-modal transfer-alert-modal" x-ref="shortageModal" aria-labelledby="transfer-shortage-title" @cancel="if (saving) $event.preventDefault()" @click="if ($event.target === $event.currentTarget && !saving) $refs.shortageModal.close()">
+            <div class="transfer-alert-card">
+                <span class="transfer-alert-icon"><i class="ph-bold ph-warning-circle" aria-hidden="true"></i></span>
+                <h2 id="transfer-shortage-title">Terdapat Selisih Kurang</h2>
+                <p>Kekurangan fisik akan otomatis dicatat<br>sebagai selisih dan dikembalikan ke cabang pengirim.</p>
+                <div class="transfer-alert-actions">
+                    <button type="button" class="transfer-action" @click="$refs.shortageModal.close()" :disabled="saving">Periksa Lagi</button>
+                    <button type="button" class="transfer-action transfer-action-primary" @click="receive()" :disabled="saving"><span x-text="saving ? 'Menyimpan...' : 'Tetap Terima'"></span></button>
+                </div>
+            </div>
+        </dialog>
+        @endif
     </div>
 @endsection

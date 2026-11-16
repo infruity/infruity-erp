@@ -23,6 +23,7 @@
             savingStatus: '',
             dirty: false,
             navigationAllowed: false,
+            confirmModalOpen: false,
 
             init() {
                 this.cart = (config.details || []).map(item => ({
@@ -115,7 +116,12 @@
                     const result = await response.json().catch(() => ({message: response.status === 401 ? 'Sesi berakhir. Masuk kembali untuk memuat produk.' : 'Produk gagal dimuat. Periksa koneksi lalu coba lagi.'}));
                     if (!response.ok || !Array.isArray(result)) throw new Error(result.message || 'Produk gagal dimuat.');
                     if (request !== this.productRequest || String(branchId) !== String(this.branchId)) return;
-                    this.products = result;
+                    this.products = (result || []).slice().sort((a, b) => {
+                        const stockA = (Number(a.stock_available) || 0) > 0 ? 1 : 0;
+                        const stockB = (Number(b.stock_available) || 0) > 0 ? 1 : 0;
+                        if (stockA !== stockB) return stockB - stockA;
+                        return String(a.name || '').localeCompare(String(b.name || ''));
+                    });
                     const selected = result.find(product => String(product.id) === String(this.modalItem.id));
                     if (selected) this.modalItem.stock = Number(selected.stock_available) || 0;
                 } catch (error) {
@@ -167,10 +173,19 @@
                     const index = this.cart.findIndex(product => String(product.id) === String(this.editingId));
                     if (index === -1) { this.modalError = 'Item tidak ditemukan. Tutup dan buka kembali item.'; return; }
                     this.cart.splice(index, 1, item);
-                } else this.cart.push(item);
+                } else {
+                    this.cart.push(item);
+                    this.markDirty();
+                    // Adding keeps the dialog open for the next product; the added one shows "Ditambahkan" in the list.
+                    this.modalItem = {id: null, name: '', unit: '', qty: 0, price: 0, stock: null};
+                    this.qtyInput = '';
+                    this.modalError = '';
+                    return;
+                }
                 this.markDirty();
                 this.closeModal();
             },
+            inCart(product) { return this.cart.some(item => String(item.id) === String(product.id)); },
             deleteModalItem() {
                 this.cart = this.cart.filter(item => String(item.id) !== String(this.editingId));
                 this.markDirty();
@@ -187,10 +202,18 @@
                 if (this.saving) return;
                 this.saveError = this.validateTransaction();
                 if (this.saveError) return;
+                if (typeof document !== 'undefined' && document.getElementById?.('sortirConfirmModal')) {
+                    this.confirmModalOpen = true;
+                    return;
+                }
                 if (window.Swal) {
                     const result = await Swal.fire({icon: 'question', title: this.isFinal ? 'Simpan perubahan sortir?' : 'Selesaikan transaksi sortir?', text: 'Stok barang pada cabang akan berkurang sesuai kuantitas sortir.', showCancelButton: true, confirmButtonText: 'Ya, simpan', cancelButtonText: 'Batal', confirmButtonColor: '#0b595b'});
                     if (!result.isConfirmed) return;
                 } else if (!window.confirm('Selesaikan transaksi sortir? Stok cabang akan berkurang sesuai kuantitas sortir.')) return;
+                await this.saveTransaction('paid');
+            },
+            async executeComplete() {
+                this.confirmModalOpen = false;
                 await this.saveTransaction('paid');
             },
             async saveTransaction(status) {
