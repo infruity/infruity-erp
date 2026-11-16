@@ -6,6 +6,7 @@ use App\Support\Like;
 use Exception;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -41,14 +42,10 @@ class CustomerController extends Controller
         }
 
         $search = mb_substr(trim((string) $request->query('q', '')), 0, 100);
-        $records = Customer::query()
-            ->leftJoin('users as editor', 'editor.id_user', '=', 'customer.updated_by')
-            ->leftJoin('reg_regencies as regency', 'regency.id', '=', 'customer.city')
-            ->select(
-                'customer.id', 'customer.name', 'customer.code', 'customer.whatsapp', 'customer.email', 'customer.address',
-                'customer.gender', 'customer.birth_of_date', 'customer.created_at', 'customer.updated_at',
-                'editor.nm_user as updated_by_name', 'regency.name as city_name'
-            )
+        // No joins in the count or the page query: with them the unfiltered list took ~1.2 s on the live MariaDB (a search
+        // took 77 ms), because every row was joined to users and regencies just to be counted and sorted. The editor and
+        // the city name are looked up afterwards for the 50 rows that are shown.
+        $filtered = Customer::query()
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('customer.name', 'like', Like::contains($search))
@@ -56,10 +53,30 @@ class CustomerController extends Controller
                         ->orWhere('customer.whatsapp', 'like', Like::contains($search))
                         ->orWhere('customer.email', 'like', Like::contains($search));
                 });
-            })
+            });
+        $perPage = 50;
+        $page = max(1, (int) LengthAwarePaginator::resolveCurrentPage());
+        $total = (clone $filtered)->count();
+        $items = (clone $filtered)
+            ->select(
+                'customer.id', 'customer.name', 'customer.code', 'customer.whatsapp', 'customer.email', 'customer.address',
+                'customer.gender', 'customer.birth_of_date', 'customer.created_at', 'customer.updated_at',
+                'customer.updated_by', 'customer.city'
+            )
             ->orderByDesc('customer.id')
-            ->paginate(50)
-            ->withQueryString();
+            ->forPage($page, $perPage)
+            ->get();
+        $editors = DB::table('users')->whereIn('id_user', $items->pluck('updated_by')->filter()->unique()->all())->pluck('nm_user', 'id_user');
+        $cities = DB::table('reg_regencies')->whereIn('id', $items->pluck('city')->filter()->unique()->all())->pluck('name', 'id');
+        $items->each(function ($customer) use ($editors, $cities) {
+            $customer->setAttribute('updated_by_name', $editors[$customer->updated_by] ?? null);
+            $customer->setAttribute('city_name', $cities[$customer->city] ?? null);
+            $customer->makeHidden(['updated_by', 'city']);
+        });
+        $records = (new LengthAwarePaginator($items, $total, $perPage, $page, [
+            'path' => LengthAwarePaginator::resolveCurrentPath(),
+            'pageName' => 'page',
+        ]))->withQueryString();
 
         // "Muat Pelanggan Lagi" asks for the next page as JSON and appends it to the list.
         if ($request->expectsJson()) {

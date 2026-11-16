@@ -23,7 +23,12 @@ class CustomerDetailReferenceTest extends TestCase
     {
         $controller = file_get_contents(base_path('Modules/Master/Http/Controllers/CustomerController.php'));
 
-        $this->assertStringContainsString("'editor.nm_user as updated_by_name', 'regency.name as city_name'", $controller);
+        // The editor and the city name are still sent to the detail, looked up for the shown rows instead of joined:
+        // the joined count made the unfiltered list take ~1.2 s on the live MariaDB.
+        $this->assertStringContainsString("setAttribute('updated_by_name'", $controller);
+        $this->assertStringContainsString("setAttribute('city_name'", $controller);
+        preg_match('/public function index\(.*?\n    }\n/s', $controller, $index);
+        $this->assertStringNotContainsString('leftJoin(', $index[0] ?? '');
         $this->assertStringContainsString("'customer.birth_of_date'", $controller);
         $this->assertStringContainsString("'customer.updated_at'", $controller);
     }
