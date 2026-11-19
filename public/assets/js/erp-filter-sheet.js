@@ -101,6 +101,7 @@
             resetApplies: Boolean(config.resetApplies),
             defaultBranch: String(config.defaultBranch || 'all'),
             desktop: config.desktop === 'modal' ? 'modal' : 'hidden',
+            longDate: Boolean(config.longDate),
             open: false,
             branch: String(config.defaultBranch || 'all'),
             status: 'all',
@@ -158,8 +159,21 @@
                 this.open = true;
                 this.$nextTick(() => this.$refs.closeButton?.focus());
             },
+            // Report weeks run Saturday to Friday; picks the one that contains today (year list + week value).
+            pickCurrentWeek() {
+                const [y, m, d] = today(this.timezone).split('-').map(Number);
+                const day = new Date(Date.UTC(y, m - 1, d));
+                const begin = new Date(day);
+                begin.setUTCDate(day.getUTCDate() - ((day.getUTCDay() + 1) % 7));
+                const finish = new Date(begin);
+                finish.setUTCDate(begin.getUTCDate() + 6);
+                const iso = (value) => value.toISOString().slice(0, 10);
+                this.setExtra('year', String(y));
+                this.setExtra('week', `${iso(begin)}|${iso(finish)}`);
+            },
             setExtra(key, value) {
                 this.extra[key] = String(value);
+                if (this.longDate && key === 'timeGroup' && String(value) === 'weekly' && !this.extra.week) this.pickCurrentWeek();
                 const group = this.groups.find((candidate) => candidate.key === key);
                 (group?.resets || []).forEach((dependent) => {
                     this.extra[dependent] = this.groups.find((candidate) => candidate.key === dependent)?.default ?? 'all';
@@ -258,6 +272,7 @@
             },
 
             setDateRange(period) {
+                if (this.longDate && this.extra.timeGroup === 'weekly') { this.pickCurrentWeek(); return; }
                 const range = period === 'week'
                     ? week(this.timezone)
                     : (period === 'month' ? monthRange(this.timezone) : { start: today(this.timezone), end: today(this.timezone) });
@@ -271,6 +286,7 @@
             formatDate(value) {
                 if (!value) return 'Pilih Tanggal';
                 const [year, month, day] = value.split('-').map(Number);
+                if (this.longDate) return new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(year, month - 1, day)));
                 return `${day} ${SHORT_MONTHS[month - 1]} ${year}`;
             },
 

@@ -189,7 +189,8 @@ class ReportController extends Controller
         }
 
         $data['branches']    = Branch::all();
-        $data['couriers']    = Kurir::query()->orderBy('name')->get();
+        // The courier filter lists internal couriers only (external services such as GoSend are not offered).
+        $data['couriers']    = Kurir::query()->where('type', 'internal')->orderBy('name')->get();
         $data['defaultDate'] = date('Y-m-d');
         return view('report::shipping-cost', $data);
     }
@@ -1027,6 +1028,7 @@ class ReportController extends Controller
 
             return [
                 'invoice' => $detail->invoice,
+                'pos_url' => $detail->pos_id ? url('pos/show/' . $detail->pos_id) : null,
                 'date_formatted' => $txDate->locale('id')->isoFormat('dddd, D MMMM Y'),
                 'time_formatted' => 'Jam ' . $txDate->format('H:i') . ' WIB',
                 'branch_name' => $detail->branch_name,

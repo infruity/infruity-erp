@@ -1,6 +1,6 @@
 <div {{ $attributes->class(['erp-mobile-search-shell']) }}>
     <div class="erp-mobile-search">
-        <i class="ph ph-magnifying-glass erp-mobile-search__icon" aria-hidden="true"></i>
+        @isset($icon){{ $icon }}@else<i class="ph ph-magnifying-glass erp-mobile-search__icon" aria-hidden="true"></i>@endisset
         {{ $input }}
         {{ $clear ?? '' }}
         @if (isset($filter) && trim((string) $filter) !== '')

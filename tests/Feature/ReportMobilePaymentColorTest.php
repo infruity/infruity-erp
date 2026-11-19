@@ -12,7 +12,7 @@ class ReportMobilePaymentColorTest extends TestCase
         $styles = file_get_contents(public_path('assets/css/report-mobile.css'));
 
         $this->assertStringContainsString(
-            '<strong :class="config.type === \'sales\' && line.label === \'Pembayaran\' ? \'is-payment\' : \'\'" x-text="line.value"></strong>',
+            '<strong :class="[\'sales\', \'shipping\'].includes(config.type) && line.label === \'Pembayaran\' ? \'is-payment\' : \'\'" x-text="line.value"></strong>',
             $template
         );
         $this->assertStringContainsString(

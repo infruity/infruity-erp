@@ -26,13 +26,17 @@
         .report-hub__link i { flex:none; color:#6b7280; font-size:12px; }
         @media (max-width:767.98px) {
             body:has(.report-hub) main { padding:0!important; }
-            .report-hub { border:0; border-radius:0; padding:24px 16px calc(112px + env(safe-area-inset-bottom)); }
+            .report-hub { border:0; border-radius:0; padding:16px 16px calc(96px + env(safe-area-inset-bottom)); }
         }
         @media (max-width:639.98px) {
-            .report-hub__card { max-width:384px; }
-            .report-hub__intro { padding:16px; }
-            .report-hub__intro h2 { font-size:16px; }
-            .report-hub__link { min-height:48px; padding:14px 16px; }
+            .report-hub__card { max-width:384px; flex:1 1 auto; }
+            .report-hub__link:last-child { border-bottom:0; }
+            .report-hub__intro { padding:20px 20px 19px; }
+            .report-hub__intro h2 { font-size:16px; line-height:20px; }
+            .report-hub__intro p { margin-top:4px; color:#9ca3af; line-height:16px; }
+            .report-hub__card { box-shadow:none; }
+            .report-hub__link i { color:#9ca3af; }
+            .report-hub__link { min-height:48px; padding:14px 20px; }
         }
         @media (prefers-reduced-motion:reduce) { .report-hub__link { transition:none; } }
     </style>
