@@ -443,3 +443,7 @@ select.erp-empty option { color: #1f2937 !important; }
 
 /* Dialog titles and messages wrap into lines of similar length instead of one long line and a short tail. */
 .erp-ui .swal2-title, .erp-ui .swal2-html-container { text-wrap: balance; }
+
+/* Locked menu entries (a report that is closed for now): muted and not clickable. */
+.erp-sidebar .submenu-link.is-locked { opacity:.55; cursor:not-allowed; }
+.erp-sidebar .submenu-link.is-locked:hover { background:transparent; }

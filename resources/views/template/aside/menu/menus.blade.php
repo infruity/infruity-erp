@@ -891,7 +891,7 @@
         <!--end:Menu link-->
     </div>
 @endif
-@if (check_access('report.profit.adjusted'))
+@if (check_access('report.profit.adjusted') && ! \Modules\Report\Http\Controllers\ReportController::isLocked('report-profit-adjusted.index'))
     <div class="menu-item">
         <!--begin:Menu link-->
         <a class="menu-link {{ Request::segment(1) == 'report-profit-adjusted' ? 'active' : '' }}"
