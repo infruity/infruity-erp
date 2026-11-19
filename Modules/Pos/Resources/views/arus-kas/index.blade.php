@@ -5,6 +5,7 @@
 @section('content')
 @php($branchOptions = $branches->map(fn ($branch) => ['id' => (string) $branch->id, 'name' => $branch->name])->values()->all())
 
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
 <style>
     [x-cloak] { display:none !important; }
     .arus-kas-page { min-height:100%; color:#1f2937; font-family:'Plus Jakarta Sans',sans-serif; }
@@ -12,12 +13,58 @@
     .arus-kas-mobile-search.erp-mobile-search-shell { padding:16px 16px 15px; background:#fff; }
     .arus-kas-mobile-search .erp-mobile-search { height:44px; }
     .arus-kas-row { display:flex; min-height:61px; align-items:center; gap:12px; border-bottom:1px solid #f3f4f6; padding:9px 16px; background:#fff; }
+    .arus-kas-toolbar { display:flex; align-items:center; padding:16px; border-bottom:1px solid #f3f4f6; background:#fff; }
+    @media (min-width:768px) { .arus-kas-toolbar { display:none; } }
+    .arus-kas-search { position:relative; display:flex; flex:1; min-width:0; align-items:center; height:44px; padding:0 6px 0 16px; border:1px solid rgba(229,231,235,.8); border-radius:999px; background:rgba(249,250,251,.5); transition:all .15s; }
+    .arus-kas-search__icon { flex:none; width:18px; height:18px; margin-right:10px; color:rgba(11,89,91,.8); }
+    .arus-kas-search__input { flex:1; min-width:0; height:100%; margin:0; border:0!important; outline:0!important; padding:0!important; background:transparent!important; box-shadow:none!important; color:#1f2937; font-family:inherit; font-size:16px!important; font-weight:500; }
+    .arus-kas-search__input::placeholder { color:#9ca3af; opacity:1; }
+    .arus-kas-search__input::-webkit-search-cancel-button { display:none; }
+    .arus-kas-search__clear { display:flex; flex:none; align-items:center; justify-content:center; width:24px; height:24px; margin-right:4px; border:0; border-radius:999px; padding:0; background:transparent; color:#9ca3af; cursor:pointer; }
+    .arus-kas-search__clear i { font-size:12px; }
+    .arus-kas-search__clear:hover { background:rgba(0,0,0,.05); color:#4b5563; }
+    .arus-kas-search__divider { flex:none; width:1px; height:16px; margin:0 4px; background:#e5e7eb; }
+    .arus-kas-search__filter { position:relative; display:flex; flex:none; align-items:center; justify-content:center; width:32px; height:32px; border:0; border-radius:999px; padding:0; background:transparent; color:#9ca3af; cursor:pointer; transition:color .15s, transform .1s; -webkit-tap-highlight-color:transparent; }
+    .arus-kas-search__filter:hover, .arus-kas-search__filter.is-active { color:#0b595b; }
+    .arus-kas-search__filter:active { transform:scale(.95); }
+    .arus-kas-tune { font-family:'Material Symbols Rounded'; font-size:20px; font-weight:300; font-style:normal; line-height:1; letter-spacing:normal; text-transform:none; white-space:nowrap; font-feature-settings:'liga'; font-variation-settings:'wght' 300; }
+    .arus-kas-search__filter.is-active .arus-kas-tune { font-variation-settings:'wght' 600; }
+    .arus-kas-search__filter-dot { position:absolute; top:4px; right:4px; width:8px; height:8px; border-radius:50%; background:#0b595b; box-shadow:0 0 0 2px #fff; }
+    .arus-kas-row { border-top:1px solid #f3f4f6; border-bottom:0; }
+    /* Detail dialog, measured on the Arus Kas reference at 400px (root font here is 12px, so spacing is explicit). */
+    #arus-kas-detail-dialog .flex.items-center.gap-3 { gap:12px !important; }
+    #arus-kas-detail-dialog .space-y-4 > * + * { margin-top:0 !important; }
+    #arus-kas-detail-dialog span.h-10.w-10 { box-shadow:none !important; }
+    #arus-kas-detail-dialog span.h-10.w-10.border-emerald-200\/80 { border-color:rgba(167,243,208,.8) !important; background:#ecfdf5 !important; }
+    #arus-kas-detail-dialog [aria-label="Tutup detail arus kas"], #arus-kas-detail-dialog [aria-label="Tutup detail arus kas"] i { color:#6b7280 !important; }
+    #arus-kas-detail-dialog .text-rose-500 { color:#ef4444 !important; }
+    @media (max-width:767.98px) {
+        .arus-kas-branch-select { padding:0 16px !important; }
+        .arus-kas-branch-chevron { line-height:20px !important; }
+        #arus-kas-branch-label { display:flex !important; align-items:center; gap:6px; line-height:16px !important; }
+        #arus-kas-branch-label .text-rose-500 { line-height:16px !important; }
+        .arus-kas-form-footer { border-top-color:#f3f4f6 !important; box-shadow:0 -4px 20px rgba(0,0,0,.03) !important; }
+        .arus-kas-action-pair { display:flex; flex:none; gap:8px; }
+    .arus-kas-action-pair > .arus-kas-action-btn { flex:none; width:44px; padding:0; font-size:18px; text-decoration:none; color:#1f2937; }
+    .arus-kas-action-pair > .arus-kas-action-btn { border-color:#d1d5db; box-shadow:none; }
+    .arus-kas-action-pair > .arus-kas-action-btn:hover:not(:disabled) { border-color:#34a684; color:#0b595b; }
+    .arus-kas-action-pair > .arus-kas-action-btn:disabled { opacity:.6; cursor:not-allowed; }
+    .arus-kas-form-footer > .arus-kas-action-btn--primary { flex:1 1 0; }
+    .arus-kas-form-footer > .arus-kas-action-btn--primary:disabled { border-color:#e5e7eb !important; background:#e5e7eb !important; color:#9ca3af !important; box-shadow:none !important; opacity:1; cursor:not-allowed; }
+    .arus-kas-action-btn--primary { box-shadow:0 4px 6px -1px rgba(11,89,91,.15), 0 2px 4px -2px rgba(11,89,91,.15) !important; }
+    }
+    /* "+ Tambah" is the plain text action used in Kasir / POS. */
+    .arus-kas-form-page .arus-kas-items-head > button { height:auto !important; min-height:0; border:0 !important; border-radius:6px !important; padding:2px 0 !important; background:transparent !important; color:#0b595b !important; font-size:12px !important; font-weight:700; line-height:16px; }
+    .arus-kas-form-page .arus-kas-items-head > button:hover { background:transparent !important; }
+    .arus-kas-field[type=number] { -moz-appearance:textfield; appearance:textfield; }
+    .arus-kas-field[type=number]::-webkit-outer-spin-button, .arus-kas-field[type=number]::-webkit-inner-spin-button { margin:0; -webkit-appearance:none; appearance:none; }
+    .arus-kas-item-save:disabled { background:#e5e7eb !important; color:#9ca3af !important; box-shadow:none !important; cursor:not-allowed; }
     .arus-kas-row:active { background:#f9fafb; }
     .arus-kas-row__icon { display:flex; width:36px; height:36px; flex:none; align-items:center; justify-content:center; border:1px solid; border-radius:50%; }
     .arus-kas-row__copy { min-width:0; flex:1; }
     .arus-kas-row__title { overflow:hidden; color:#111827; font-size:12px; font-weight:700; line-height:17px; text-overflow:ellipsis; white-space:nowrap; }
     .arus-kas-row__date { margin-top:2px; color:#9ca3af; font-size:10px; line-height:14px; }
-    .arus-kas-row__meta { min-width:86px; flex:none; text-align:right; }
+    .arus-kas-row__meta { min-width:0; flex:none; text-align:right; }
     .arus-kas-row__status { display:block; font-size:11px; font-weight:700; line-height:16px; }
     .arus-kas-row__total { display:block; margin-top:1px; color:#111827; font-size:11px; font-weight:800; line-height:15px; }
     .arus-kas-empty { display:flex; min-height:calc(100dvh - 218px); flex-direction:column; align-items:center; justify-content:center; padding:24px 20px 108px; text-align:center; }
@@ -42,8 +89,16 @@
     .arus-kas-branch-option__mark { width:8px; height:8px; flex:none; border-radius:50%; background:#10b981; }
     .arus-kas-items-card { display:flex; min-height:calc(100dvh - 299px); flex-direction:column; margin-top:25px; overflow:hidden; border:1px solid rgba(229,231,235,.55); border-radius:17px; background:#fff; box-shadow:0 8px 20px -12px rgba(31,41,55,.16); }
     .arus-kas-items-head { display:flex; min-height:62px; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f3f4f6; padding:14px 20px; }
-    .arus-kas-items-body { min-height:0; flex:1; overflow-y:auto; }
-    .arus-kas-form-item { display:flex; min-height:67px; align-items:flex-start; justify-content:space-between; gap:10px; border-bottom:1px solid #f3f4f6; padding:13px 18px 11px; }
+    .arus-kas-items-body { min-height:0; flex:1; overflow-y:auto; padding:16px; }
+    .arus-kas-form-item { display:flex; flex-direction:column; justify-content:center; gap:4px; width:calc(100% + 16px); margin:0 -8px; border:0; border-top:1px solid #f3f4f6; border-radius:8px; padding:12px; background:transparent; text-align:left; cursor:pointer; transition:background-color .15s; }
+    .arus-kas-form-item.is-first { border-top:0; padding:4px 12px 12px; }
+    .arus-kas-form-item:hover { background:rgba(249,250,251,.8); }
+    .arus-kas-form-item__top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .arus-kas-form-item__name { min-width:0; overflow:hidden; color:#111827; font-size:14px; font-weight:700; line-height:20px; text-overflow:ellipsis; white-space:nowrap; transition:color .15s; }
+    .arus-kas-form-item:hover .arus-kas-form-item__name { color:#0b595b; }
+    .arus-kas-form-item__total { flex:none; font-size:12px; font-weight:800; line-height:16px; }
+    .arus-kas-form-item__bottom { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:2px; }
+    .arus-kas-form-item__meta { display:block; margin-top:0; color:#6b7280; font-size:12px; font-weight:500; line-height:16px; }
     .arus-kas-form-footer { display:flex; min-height:72px; flex:none; align-items:center; gap:12px; border-top:1px solid rgba(229,231,235,.65); background:#fff; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); }
     .arus-kas-action-btn { display:flex; min-height:44px; flex:1; align-items:center; justify-content:center; border:1px solid #e5e7eb; border-radius:13px; background:#fff; color:#1f2937; font-size:12px; font-weight:700; }
     .arus-kas-action-btn--primary { border-color:#0b595b; background:#0b595b; color:#fff; box-shadow:0 4px 12px rgba(11,89,91,.2); }
@@ -54,8 +109,8 @@
     .arus-kas-item-modal__body { overflow-y:auto; padding:24px; font-size:16px; line-height:24px; }
     @media (min-width:640px) { .arus-kas-item-modal__body { padding:28px; } }
     .arus-kas-item-modal__footer { border-top:1px solid #f3f4f6; padding:20px 24px; }
-    .arus-kas-field { width:100%; height:44px; border:1px solid #e5e7eb !important; border-radius:12px !important; background:#f9fafb !important; padding:0 14px !important; color:#1f2937; font-size:14px !important; box-shadow:none !important; }
-    .arus-kas-field:focus { border-color:#34a684 !important; outline:0 !important; }
+    .arus-kas-field { width:100%; height:44px; border:1px solid #e5e7eb !important; border-radius:12px !important; background:#fff !important; padding:0 14px !important; color:#1f2937; font-size:14px !important; box-shadow:none !important; }
+    .arus-kas-field:focus, .arus-kas-field:focus-visible { border-color:#e5e7eb !important; background:#fff !important; outline:0 !important; box-shadow:none !important; }
     .arus-kas-category { display:flex; height:48px; align-items:center; gap:11px; border:1px solid #e5e7eb; border-radius:16px; padding:8px 12px; color:#374151; font-size:11px; font-weight:700; }
     .arus-kas-category.is-active-in { border-color:#34d399; background:rgba(236,253,245,.7); box-shadow:0 0 0 2px rgba(16,185,129,.08); }
     .arus-kas-category.is-active-out { border-color:#fb7185; background:rgba(255,241,242,.7); box-shadow:0 0 0 2px rgba(244,63,94,.07); }
@@ -79,9 +134,73 @@
     .arus-kas-item-modal__footer button.h-12 { height:48px; border-radius:12px; font-size:12px; line-height:16px; }
     .arus-kas-item-modal__footer button.px-5 { padding:0 20px; }
     .arus-kas-item-modal__footer button.px-4 { padding:0 16px; }
+    .arus-kas-item-modal__footer .flex.gap-3 { gap:12px !important; }
+    .arus-kas-item-modal__footer button.px-4.text-rose-600 { border-color:#fecaca !important; background:#fef2f2; color:#dc2626 !important; }
+    .arus-kas-item-modal__footer button.px-4 i { margin-right:6px; font-size:12px; }
     .arus-kas-item-modal__footer button i { margin-right:4px; font-size:14px; }
+    .arus-kas-item-modal__footer button.h-12 { padding:0 20px !important; }
+    .arus-kas-item-modal__footer button.h-12 > span:last-child:not(:first-child) { font-weight:800; letter-spacing:.3px; }
+    .arus-kas-category.is-active-in { color:#022c22; font-weight:800; }
+    .arus-kas-category.is-active-out { font-weight:800; }
+    .arus-kas-item-modal > header > button i { line-height:20px; }
     @media (max-width:767px) {
         body:has(#arus-kas-index-page) #kt_content { padding:0 !important; }
+        /* Reference: 77px search block (16px around the field + 1px divider), rows start right under it; tile borders as in the reference. */
+        .arus-kas-mobile-search.erp-mobile-search-shell { padding:16px; border-bottom:1px solid #f3f4f6; }
+        .arus-kas-page > div.flex.items-center.justify-between.gap-3.px-4.pb-3 { display:none; }
+        .arus-kas-row__icon.border-gray-200 { border-color:#e5e7eb; color:#9ca3af; }
+        .arus-kas-row__icon.border-emerald-200\/80 { border-color:rgba(167,243,208,.8); }
+        .arus-kas-row__icon.border-rose-200\/80 { border-color:rgba(254,205,211,.8); }
+        .arus-kas-row__icon svg { width:16px; height:16px; }
+        /* Form (reference, px): branch card with border, items card 24px below, 14px heading, 12px text. */
+        .arus-kas-form-scroll { padding-top:16px; }
+        .arus-kas-form-branch { min-height:100px; border:1px solid rgba(229,231,235,.9); }
+        .arus-kas-form-branch > span.block, .arus-kas-form-branch label, .arus-kas-form-branch .mb-1\.5 { margin-bottom:6px; color:#374151 !important; font-size:12px !important; font-weight:700 !important; line-height:16px !important; }
+        .arus-kas-form-branch .text-rose-500 { color:#ef4444 !important; font-size:12px !important; font-weight:700 !important; line-height:16px !important; }
+        /* Item modal (reference, px). */
+        .arus-kas-item-modal > header { min-height:81px; background:rgba(249,250,251,.5); }
+        .arus-kas-item-modal > header h2 { color:#111827 !important; }
+        .arus-kas-item-modal > header p { color:#6b7280 !important; }
+        .arus-kas-item-modal > header > button { background:#fff; color:#9ca3af !important; }
+        .arus-kas-item-modal__body { padding:24px !important; }
+        .arus-kas-item-modal__body legend, .arus-kas-item-modal__body label.block { margin-bottom:0; color:#374151 !important; font-size:12px !important; font-weight:700 !important; line-height:16px !important; }
+        .arus-kas-item-modal__body legend { float:none; width:100%; margin-bottom:8px !important; padding:0; }
+        .arus-kas-item-modal__body legend .text-rose-500, .arus-kas-item-modal__body label.block .text-rose-500 { color:#ef4444 !important; font-weight:700 !important; }
+        .arus-kas-item-modal__body .arus-kas-field { margin-top:8px !important; font-size:16px !important; font-weight:600; }
+        .arus-kas-item-modal__body .grid.grid-cols-2.gap-3 { gap:12px !important; }
+        .arus-kas-item-modal__body .grid.grid-cols-2.gap-4 { gap:16px !important; }
+        .arus-kas-item-modal > header.px-6 { padding:20px 24px !important; }
+        .arus-kas-item-modal__footer { background:rgba(249,250,251,.5); padding:20px 24px !important; }
+        .arus-kas-item-modal__footer button { height:48px; border-radius:12px; }
+        .arus-kas-form-scroll { padding-bottom:24px; }
+        .arus-kas-form-footer { min-height:73px; }
+        .arus-kas-form-footer { gap:12px; }
+        .arus-kas-action-btn { flex:179 1 0; border-radius:12px; }
+        .arus-kas-action-btn--primary { flex:177 1 0; }
+        .arus-kas-items-card { margin-top:24px; min-height:calc(100dvh - 298px); }
+        .arus-kas-items-body { display:flex; flex-direction:column; }
+        .arus-kas-items-body > div.min-h-\[280px\] { flex:1 1 auto; }
+        .arus-kas-items-head > button { padding:0 13px !important; }
+        .arus-kas-items-head { min-height:63px; }
+        .arus-kas-items-head h2 { color:#111827 !important; font-size:14px !important; font-weight:800; line-height:17.5px !important; }
+        .arus-kas-items-head > button { height:30px; border-radius:8px !important; border-color:rgba(167,243,208,.8) !important; padding:0 14px !important; font-size:12px !important; font-weight:700; line-height:16px; }
+        .arus-kas-items-body p.text-sm { color:#1f2937 !important; font-size:14px !important; font-weight:700; line-height:20px; }
+        .arus-kas-items-body p.mt-1.text-xs { margin-top:6px !important; color:#6b7280 !important; font-size:12px !important; line-height:16px; }
+        .arus-kas-items-body p.mt-1.text-xs strong { font-size:12px; font-weight:600; }
+        /* Detail dialog in px (the legacy root font shrinks the rem utilities): 24px padding, 20px between rows, 20px text lines. */
+        #arus-kas-detail-dialog > section > div:first-child { padding:24px !important; }
+        #arus-kas-detail-dialog > section > div:first-child > div:first-child { margin-bottom:24px !important; }
+        #arus-kas-detail-dialog h2 { color:#1f2937 !important; }
+        #arus-kas-detail-dialog .space-y-4 h3, #arus-kas-detail-dialog .space-y-4 p.text-sm { color:#1f2937 !important; font-size:14px; font-weight:700; line-height:20px; }
+        #arus-kas-detail-dialog .space-y-4 h3 { line-height:19.25px !important; }
+        #arus-kas-detail-dialog .space-y-4 p.text-sm { line-height:20px !important; }
+        #arus-kas-detail-dialog .space-y-4 [class~="text-[11px]"] { margin-top:2px !important; color:#9ca3af !important; font-size:11px; font-weight:500; line-height:20px !important; }
+        #arus-kas-detail-dialog .space-y-4 svg { width:16px; height:16px; }
+        #arus-kas-detail-dialog .space-y-4 button[class~="text-[11px]"] { display:block; }
+        .arus-kas-row > div.flex { gap:12px !important; }
+        .arus-kas-row .text-gray-400 { color:#9ca3af !important; }
+        .arus-kas-row__status.text-emerald-700 { color:#059669 !important; }
+        .arus-kas-row__icon.text-gray-400 { color:#9ca3af !important; }
         body:has(#arus-kas-form-page) #kt_content { display:flex; overflow:hidden; padding:0 !important; }
         body:has(#arus-kas-form-page) #kt_post,
         body:has(#arus-kas-form-page) #kt_content_container { display:flex; min-height:0; flex:1; flex-direction:column; }
@@ -92,7 +211,7 @@
         .arus-kas-row:hover .arus-kas-row__title { color:#0b595b; }
         .arus-kas-row__icon { box-shadow:0 1px 2px 0 rgba(0,0,0,.05); }
         .arus-kas-row__title { line-height:16px; transition:color .15s ease; }
-        .arus-kas-row__date { font-size:11px; line-height:16px; }
+        .arus-kas-row__date { font-size:11px; line-height:16.5px; }
         .arus-kas-row__status { width:100%; text-align:right; font-size:12px; font-weight:600; line-height:16px; }
         .arus-kas-row__total { margin-top:2px; font-size:12px; font-weight:700; line-height:16px; }
         #arus-kas-detail-dialog { padding-right:16px; padding-left:16px; }
@@ -136,20 +255,18 @@
     x-data="arusKasApp({ orders: @js($orders), branches: @js($branchOptions), formOrder: @js($formOrder), selectedBranchId: @js((string) ($selectedBranchId ?? '')), pageMode: @js($pageMode), baseUrl: @js(url('/arus-kas')) })"
     @erp-filter-apply.window="if ($event.detail.id === 'arus-kas') applyMobileFilters($event.detail.values)"
     @erp-filter-close.window="if ($event.detail.id === 'arus-kas') filterOpen = false">
-    <x-erp.mobile-search class="arus-kas-mobile-search">
-        <x-slot:input>
-            <input type="search" x-model.debounce.200ms="searchQuery" @input="visibleCount = pageSize" aria-label="Cari transaksi arus kas" placeholder="Cari..." class="erp-mobile-search__input">
-        </x-slot:input>
-        <x-slot:clear>
-            <button type="button" x-show="searchQuery" x-cloak @click="searchQuery = ''; visibleCount = pageSize" aria-label="Hapus pencarian" class="erp-mobile-search__clear"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button>
-        </x-slot:clear>
-        <x-slot:filter>
-            <button type="button" @click="openFilterModal()" :class="(filterOpen || hasActiveFilter) ? 'is-active' : ''" :aria-pressed="hasActiveFilter" aria-label="Filter Arus Kas" aria-haspopup="dialog" class="erp-mobile-search__filter">
-                <i class="ph ph-sliders-horizontal text-xl" :class="(filterOpen || hasActiveFilter) ? 'ph-bold' : ''" aria-hidden="true"></i>
-                <span x-show="hasActiveFilter" x-cloak class="erp-mobile-search__filter-dot"></span>
+    <div class="arus-kas-toolbar">
+        <div class="arus-kas-search">
+            <svg class="arus-kas-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="search" x-model.debounce.200ms="searchQuery" @input="visibleCount = pageSize" aria-label="Cari transaksi arus kas" placeholder="Cari..." autocomplete="off" class="arus-kas-search__input">
+            <button type="button" x-show="searchQuery" x-cloak @click="searchQuery = ''; visibleCount = pageSize" aria-label="Hapus pencarian" class="arus-kas-search__clear"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
+            <span class="arus-kas-search__divider" aria-hidden="true"></span>
+            <button type="button" @click="openFilterModal()" :class="(filterOpen || hasActiveFilter) ? 'is-active' : ''" :aria-pressed="hasActiveFilter" aria-label="Filter Arus Kas" aria-haspopup="dialog" class="arus-kas-search__filter">
+                <span class="arus-kas-tune" aria-hidden="true">tune</span>
+                <span x-show="hasActiveFilter" x-cloak class="arus-kas-search__filter-dot"></span>
             </button>
-        </x-slot:filter>
-    </x-erp.mobile-search>
+        </div>
+    </div>
 
     <div class="flex items-center justify-between gap-3 px-4 pb-3 sm:px-6 sm:pt-2">
         <div class="hidden min-w-0 flex-1 sm:block">
@@ -186,7 +303,7 @@
                 <span class="hidden truncate text-xs text-gray-600 lg:block" x-text="order.staffName"></span>
                 <span class="hidden truncate text-xs text-gray-600 lg:block" x-text="itemSummary(order.items)"></span>
                 <div class="arus-kas-row__meta">
-                    <button type="button" class="arus-kas-row__status" :class="statusClass(order.status)" @click.stop="openInvoiceModal(order)" x-text="order.status" :aria-label="'Lihat alur status ' + order.status"></button>
+                    <div class="arus-kas-row__status" :class="statusClass(order.status)" x-text="statusLabel(order.status)"></div>
                     <span class="arus-kas-row__total" x-text="formatRupiah(order.grandTotal)"></span>
                 </div>
             </article>
@@ -212,13 +329,13 @@
         id="arus-kas"
         title="Filter Arus Kas"
         aria-label="Filter arus kas"
-        subtitle="Saring cabang dan status arus kas"
-        branch-label="Cabang Tujuan"
+        subtitle="Saring cabang, status, dan periode tanggal arus kas"
+        branch-label="Cabang"
         branch-all-label="Semua Cabang"
-        status-label="Status Arus Kas"
+        status-label="Status"
         :branches="$branchOptions"
-        :statuses="['all' => 'Semua', 'Draft' => 'Draft', 'Selesai' => 'Selesai']"
-        :with-dates="false"
+        :statuses="['all' => 'Semua', 'Draft' => 'Pending', 'Selesai' => 'Selesai']"
+        timezone="Asia/Jakarta"
     />
 
     <x-erp.detail-dialog open="detailModalOpen" close="closeDetailModal()" title="Detail Arus Kas" labelledby="arus-kas-detail-title" closeLabel="Tutup detail arus kas" id="arus-kas-detail-dialog">
@@ -229,14 +346,13 @@
                     <svg x-show="selectedOrder.status !== 'Draft' && selectedOrder.flowType === 'in'" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="7" x2="7" y2="17"></line><polyline points="17 17 7 17 7 7"></polyline></svg>
                     <svg x-show="selectedOrder.status !== 'Draft' && selectedOrder.flowType !== 'in'" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
                 </span>
-                <div class="min-w-0"><h3 class="truncate text-sm font-bold text-gray-900" x-text="selectedOrder.activity"></h3><button type="button" @click="openInvoiceModal(selectedOrder)" class="mt-1 text-left text-[11px] font-medium text-gray-400" x-text="selectedOrder.poNumber" aria-label="Lihat alur status transaksi"></button></div>
+                <div class="min-w-0"><h3 class="truncate text-sm font-bold text-gray-900" x-text="selectedOrder.activity"></h3><p class="mt-[2px] text-left text-[11px] font-medium leading-[20px] text-gray-400" x-text="selectedOrder.poNumber"></p></div>
             </div>
             <div class="flex items-center gap-3"><span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-emerald-200/80 bg-emerald-50/80 text-[#0b595b]"><i class="ph-duotone ph-coins text-lg" aria-hidden="true"></i></span><div><p class="text-sm font-bold text-gray-900" x-text="formatRupiah(selectedOrder.grandTotal)"></p><p class="mt-0.5 text-[11px] text-gray-400">Total Nominal</p></div></div>
             <div class="flex items-center gap-3"><span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-emerald-200/80 bg-emerald-50/80 text-[#0b595b]"><i class="ph-duotone ph-storefront text-lg" aria-hidden="true"></i></span><div><p class="text-sm font-bold text-gray-900" x-text="selectedOrder.targetBranch"></p><p class="mt-0.5 text-[11px] text-gray-400">Cabang Toko</p></div></div>
             <div class="flex items-center gap-3"><span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-emerald-200/80 bg-emerald-50/80 text-[#0b595b]"><i class="ph-duotone ph-clock text-lg" aria-hidden="true"></i></span><div><p class="text-sm font-bold text-gray-900" x-text="selectedOrder.staffName"></p><p class="mt-0.5 text-[11px] text-gray-400" x-text="'Dibuat pada ' + formatDateTime(selectedOrder.date, selectedOrder.time)"></p></div></div>
         </div></template>
         <x-slot:actions>
-            <button type="button" @click="editSelectedOrder()" :disabled="!selectedOrder?.canEdit" class="flex h-[52px] flex-1 items-center justify-center gap-2 border-r border-gray-100 text-sm font-bold text-[#0b595b] disabled:cursor-not-allowed disabled:text-gray-300"><i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>Edit</button>
             <button type="button" @click="deleteSelectedOrder()" :disabled="!selectedOrder?.canDelete" class="flex h-[52px] flex-1 items-center justify-center gap-2 text-sm font-bold text-rose-500 disabled:cursor-not-allowed disabled:text-gray-300"><i class="ph-bold ph-trash" aria-hidden="true"></i>Hapus</button>
         </x-slot:actions>
     </x-erp.detail-dialog>
@@ -247,7 +363,7 @@
             <header class="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
                 <span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-emerald-50 text-[#0b595b]"><i class="ph-bold ph-receipt text-lg" aria-hidden="true"></i></span>
                 <div class="min-w-0 flex-1"><h2 id="arus-kas-invoice-title" class="break-words text-sm font-extrabold text-gray-900" x-text="selectedOrder?.poNumber"></h2><p class="mt-0.5 text-[11px] text-gray-500" x-text="'Oleh: ' + (selectedOrder?.staffName || '—')"></p><p class="text-[10px] text-gray-400" x-text="formatDateTime(selectedOrder?.date, selectedOrder?.time)"></p></div>
-                <span class="rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700" :class="selectedOrder?.status === 'Draft' ? 'border-gray-200 bg-gray-50 text-gray-500' : ''" x-text="selectedOrder?.status"></span>
+                <span class="rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700" :class="selectedOrder?.status === 'Draft' ? 'border-gray-200 bg-gray-50 text-gray-500' : ''" x-text="statusLabel(selectedOrder?.status)"></span>
                 <button type="button" @click="printOrder()" class="rounded-xl border border-gray-200 px-2.5 py-2 text-[11px] font-bold text-gray-700"><i class="ph-bold ph-printer mr-1" aria-hidden="true"></i>Cetak PO</button>
                 <button type="button" @click="invoiceModalOpen = false" aria-label="Tutup" class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-gray-100 text-gray-500"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
             </header>
@@ -285,10 +401,10 @@
 <section id="arus-kas-form-page" class="arus-kas-page arus-kas-form-page" aria-label="{{ $pageMode === 'edit' ? 'Edit Arus Kas' : 'Tambah Arus Kas' }}"
     x-data="arusKasApp({ orders: [], branches: @js($branchOptions), formOrder: @js($formOrder), selectedBranchId: @js((string) ($selectedBranchId ?? '')), pageMode: @js($pageMode), baseUrl: @js(url('/arus-kas')) })">
     @if ($pageMode === 'edit')
-        <form method="POST" action="{{ route('arus-kas.update', $formOrder['id']) }}" class="flex min-h-0 flex-1 flex-col" @submit="submitting = true">
+        <form method="POST" action="{{ route('arus-kas.update', $formOrder['id']) }}" class="flex min-h-0 flex-1 flex-col" @submit.prevent="showBackendInfo()">
             @method('PUT')
     @else
-        <form method="POST" action="{{ route('arus-kas.store') }}" class="flex min-h-0 flex-1 flex-col" @submit="submitting = true">
+        <form method="POST" action="{{ route('arus-kas.store') }}" class="flex min-h-0 flex-1 flex-col" @submit.prevent="showBackendInfo()">
     @endif
             @csrf
             <input type="hidden" name="items_json" :value="JSON.stringify(form.items)">
@@ -329,17 +445,20 @@
                             <p class="mt-1 text-xs text-gray-500">Klik tombol <strong class="text-[#0b595b]">+ Tambah</strong> untuk melakukan input</p>
                         </div>
                         <template x-for="(item, index) in form.items" :key="index">
-                            <button type="button" @click="openEditItemModal(index)" class="arus-kas-form-item w-full text-left">
-                                <span class="min-w-0 flex-1"><span class="block truncate text-sm font-bold text-gray-900" x-text="item.name"></span><span class="mt-1 block text-xs text-gray-500" x-text="'@' + formatQuantity(item.quantity) + ' x ' + formatNumber(item.price)"></span></span>
-                                <span class="flex-none text-right text-xs font-extrabold" :class="item.type === 'in' ? 'text-emerald-600' : 'text-rose-600'" x-text="formatNumber(itemSubtotal(item))"></span>
+                            <button type="button" @click="openEditItemModal(index)" class="arus-kas-form-item" :class="index === 0 ? 'is-first' : ''">
+                                <span class="arus-kas-form-item__top"><span class="arus-kas-form-item__name" x-text="item.name"></span></span>
+                                <span class="arus-kas-form-item__bottom"><span class="arus-kas-form-item__meta" x-text="'@' + formatQuantity(item.quantity) + (item.unit ? ' ' + item.unit : '') + ' x ' + formatNumber(item.price)"></span><span class="arus-kas-form-item__total" :class="item.type === 'in' ? 'text-emerald-600' : 'text-rose-600'" x-text="'Rp ' + formatNumber(itemSubtotal(item))"></span></span>
                             </button>
                         </template>
                     </div>
                 </section>
             </div>
             <footer class="arus-kas-form-footer">
-                <button type="submit" name="status" value="draft" :disabled="submitting || !form.branchId" class="arus-kas-action-btn" x-text="pageMode === 'edit' ? 'Simpan Draft' : 'Draft'"></button>
-                <button type="submit" name="status" value="completed" :disabled="submitting || !form.branchId || form.items.length === 0" class="arus-kas-action-btn arus-kas-action-btn--primary" x-text="pageMode === 'edit' ? 'Simpan Transaksi' : 'Tambah Transaksi'"></button>
+                <div class="arus-kas-action-pair">
+                    <a href="{{ route('arus-kas.index') }}" class="arus-kas-action-btn" aria-label="Kembali" title="Kembali"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a>
+                    <button type="submit" name="status" value="draft" :disabled="submitting || !form.branchId" class="arus-kas-action-btn" aria-label="Simpan sebagai draf" title="Simpan draf"><i class="ph-bold ph-bookmark-simple" aria-hidden="true"></i></button>
+                </div>
+                <button type="submit" name="status" value="completed" :disabled="submitting || !form.branchId || form.items.length === 0" class="arus-kas-action-btn arus-kas-action-btn--primary" x-text="pageMode === 'edit' ? 'Simpan Transaksi' : 'Tambah'"></button>
             </footer>
         </form>
 
@@ -360,13 +479,14 @@
                 </fieldset>
                 <label class="block text-xs font-semibold text-gray-700">Keterangan <span class="text-rose-500">*</span><input type="text" x-model="modalItem.name" maxlength="255" placeholder="Contoh: Bensin" class="arus-kas-field mt-2" autocomplete="off"></label>
                 <div class="grid grid-cols-2 gap-4">
-                    <label class="block text-xs font-semibold text-gray-700">Kuantitas <span class="text-rose-500">*</span><input type="number" min="0.01" step="0.01" inputmode="decimal" x-model.number="modalItem.quantity" placeholder="0" class="arus-kas-field mt-2"></label>
-                    <label class="block text-xs font-semibold text-gray-700">Biaya / Harga Satuan <span class="text-rose-500">*</span><input type="number" min="0" step="1" inputmode="numeric" x-model.number="modalItem.price" placeholder="0" class="arus-kas-field mt-2"></label>
+                    <label class="block text-xs font-semibold text-gray-700">Kuantitas <span class="text-rose-500">*</span><input type="text" inputmode="decimal" :value="qtyText" @input="onQuantityInput($event)" placeholder="0" class="arus-kas-field mt-2" autocomplete="off"></label>
+                    <label class="block text-xs font-semibold text-gray-700">Satuan<input type="text" x-model="modalItem.unit" maxlength="60" placeholder="Contoh: Liter" class="arus-kas-field mt-2" autocomplete="off"></label>
                 </div>
+                <label class="block text-xs font-semibold text-gray-700">Biaya / Harga Satuan <span class="text-rose-500">*</span><input type="text" inputmode="numeric" :value="priceText" @input="onPriceInput($event)" placeholder="0" class="arus-kas-field mt-2" autocomplete="off"></label>
             </div>
             <footer class="arus-kas-item-modal__footer">
-                <div x-show="modalMode === 'add'"><button type="button" @click="saveModalItem()" class="flex h-12 w-full items-center justify-between rounded-xl bg-[#0b595b] px-5 text-xs font-bold text-white shadow-md"><span>Tambah</span><span x-text="formatRupiah(itemSubtotal(modalItem))"></span></button></div>
-                <div x-show="modalMode === 'edit'" class="flex gap-3"><button type="button" @click="deleteEditingItem()" class="h-12 rounded-xl border border-rose-100 px-4 text-xs font-bold text-rose-600"><i class="ph-bold ph-trash mr-1" aria-hidden="true"></i>Hapus</button><button type="button" @click="saveModalItem()" class="flex h-12 flex-1 items-center justify-between rounded-xl bg-[#0b595b] px-5 text-xs font-bold text-white shadow-md"><span>Simpan</span><span x-text="formatRupiah(itemSubtotal(modalItem))"></span></button></div>
+                <div x-show="modalMode === 'add'"><button type="button" @click="saveModalItem()" :disabled="!modalItemValid" class="arus-kas-item-save flex h-12 w-full items-center justify-between rounded-xl bg-[#0b595b] px-5 text-xs font-bold text-white shadow-md"><span>Tambah</span><span x-text="formatRupiah(itemSubtotal(modalItem))"></span></button></div>
+                <div x-show="modalMode === 'edit'" class="flex gap-3"><button type="button" @click="deleteEditingItem()" class="h-12 rounded-xl border border-rose-100 px-4 text-xs font-bold text-rose-600"><i class="ph-bold ph-trash mr-1" aria-hidden="true"></i>Hapus</button><button type="button" @click="saveModalItem()" :disabled="!modalItemValid" class="arus-kas-item-save flex h-12 flex-1 items-center justify-between rounded-xl bg-[#0b595b] px-5 text-xs font-bold text-white shadow-md"><span>Simpan</span><span x-text="formatRupiah(itemSubtotal(modalItem))"></span></button></div>
             </footer>
         </section>
     </div>
@@ -394,6 +514,8 @@ function arusKasApp(config) {
         searchQuery: '',
         filterOpen: false,
         filterStatus: 'Semua',
+        filterStart: '',
+        filterEnd: '',
         selectedBranch: 'all',
         detailModalOpen: false,
         invoiceModalOpen: false,
@@ -407,15 +529,19 @@ function arusKasApp(config) {
             items: initialItems
         },
         modalItem: { type: 'in', name: '', unit: '', quantity: '', price: '' },
+        qtyText: '',
+        priceText: '',
+        statusLabel(status) { return status === 'Draft' ? 'Pending' : status; },
         get statusOptions() { return ['Semua', 'Draft', 'Selesai']; },
-        get hasActiveFilter() { return this.filterStatus !== 'Semua' || this.selectedBranch !== 'all'; },
+        get hasActiveFilter() { return this.filterStatus !== 'Semua' || this.selectedBranch !== 'all' || this.filterStart !== '' || this.filterEnd !== ''; },
         get filteredOrders() {
             const query = this.searchQuery.trim().toLocaleLowerCase('id-ID');
             return this.orders.filter(order => {
                 const matchesStatus = this.filterStatus === 'Semua' || order.status === this.filterStatus;
                 const matchesBranch = this.selectedBranch === 'all' || String(order.branchId) === this.selectedBranch;
                 const searchable = [order.activity, order.staffName, order.poNumber, order.supplierName, order.targetBranch, ...(order.items || []).map(item => item.name)].join(' ').toLocaleLowerCase('id-ID');
-                return matchesStatus && matchesBranch && (!query || searchable.includes(query));
+                const matchesDate = (!this.filterStart || (order.date && order.date >= this.filterStart)) && (!this.filterEnd || (order.date && order.date <= this.filterEnd));
+                return matchesStatus && matchesBranch && matchesDate && (!query || searchable.includes(query));
             });
         },
         get visibleOrders() { return this.filteredOrders.slice(0, this.visibleCount); },
@@ -425,18 +551,24 @@ function arusKasApp(config) {
             this.filterOpen = true;
             this.$dispatch('erp-filter-open', { id: 'arus-kas', values: {
                 branch: this.selectedBranch,
-                status: this.filterStatus === 'Semua' ? 'all' : this.filterStatus
+                status: this.filterStatus === 'Semua' ? 'all' : this.filterStatus,
+                start: this.filterStart,
+                end: this.filterEnd
             } });
         },
         applyMobileFilters(values) {
             this.filterStatus = values.status === 'all' ? 'Semua' : values.status;
             this.selectedBranch = values.branch;
+            this.filterStart = values.start || '';
+            this.filterEnd = values.end || '';
             this.visibleCount = this.pageSize;
         },
         resetFilters() {
             this.searchQuery = '';
             this.filterStatus = 'Semua';
             this.selectedBranch = 'all';
+            this.filterStart = '';
+            this.filterEnd = '';
             this.visibleCount = this.pageSize;
         },
         loadMore() { this.visibleCount += this.pageSize; },
@@ -465,10 +597,28 @@ function arusKasApp(config) {
             return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
         },
         formatDateTime(date, time) { return this.formatDate(date) + (time ? ', ' + time : ''); },
+        groupThousands(digits) { return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); },
+        onQuantityInput(event) {
+            const raw = event.target.value.replace(/[^\d,]/g, '');
+            const [integer, ...rest] = raw.split(',');
+            const whole = integer.replace(/^0+(?=\d)/, '');
+            const decimals = rest.length ? rest.join('').slice(0, 2) : null;
+            this.qtyText = this.groupThousands(whole) + (decimals !== null ? ',' + decimals : '');
+            event.target.value = this.qtyText;
+            this.modalItem.quantity = whole === '' && decimals === null ? '' : Number(whole.replace(/\./g, '') + (decimals ? '.' + decimals : ''));
+        },
+        onPriceInput(event) {
+            const digits = event.target.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+            this.priceText = this.groupThousands(digits);
+            event.target.value = this.priceText;
+            this.modalItem.price = digits === '' ? '' : Number(digits);
+        },
         openAddItemModal() {
             this.modalMode = 'add';
             this.editingIndex = null;
             this.modalItem = { type: 'in', name: '', unit: '', quantity: '', price: '' };
+            this.qtyText = '';
+            this.priceText = '';
             this.itemModalOpen = true;
         },
         openEditItemModal(index) {
@@ -477,9 +627,25 @@ function arusKasApp(config) {
             this.modalMode = 'edit';
             this.editingIndex = index;
             this.modalItem = { ...item };
+            this.qtyText = this.formatQuantity(item.quantity);
+            this.priceText = this.formatNumber(item.price);
             this.itemModalOpen = true;
         },
         closeItemModal() { this.itemModalOpen = false; this.editingIndex = null; },
+        // Penyimpanan belum disiapkan di sisi backend: tampilkan info, jangan kirim data.
+        showBackendInfo() {
+            const message = 'Penyimpanan Arus Kas belum tersedia. Fitur ini akan disiapkan oleh tim backend.';
+            if (window.Swal) { window.Swal.fire({ icon: 'info', title: 'Belum tersedia', text: message, confirmButtonText: 'Mengerti', confirmButtonColor: '#0b595b' }); return; }
+            window.alert(message);
+        },
+        get modalItemValid() {
+            const item = this.modalItem || {};
+            const quantity = Number(item.quantity);
+            const price = Number(item.price);
+            return String(item.name || '').trim() !== ''
+                && item.quantity !== '' && item.quantity !== null && Number.isFinite(quantity) && quantity > 0
+                && item.price !== '' && item.price !== null && item.price !== undefined && Number.isFinite(price) && price >= 0;
+        },
         saveModalItem() {
             const item = {
                 type: this.modalItem.type,
