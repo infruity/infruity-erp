@@ -442,8 +442,32 @@ class ProductController extends Controller
             $query->where('type', '-');
         }
 
+        // Who made the movement: the creator of the source transaction (pengadaan, sortir, POS, produksi, opname).
+        $creatorTables = [
+            'pengadaan' => 'wholesale',
+            'barang_buang' => 'sortir_transaction',
+            'penjualan' => 'pos_transaction',
+            'bahan_produksi' => 'production',
+            'produksi' => 'production',
+            'opname' => 'stock_opname',
+        ];
+        $creatorNames = [];
+
         return DataTables::of($query)
             ->addIndexColumn()
+            ->addColumn('created_by', function ($item) use ($creatorTables, &$creatorNames) {
+                $table = $creatorTables[$item->trx_type] ?? null;
+                if (! $table || ! $item->trx_id) {
+                    return null;
+                }
+                $key = $table . ':' . $item->trx_id;
+                if (! array_key_exists($key, $creatorNames)) {
+                    $creatorId = \DB::table($table)->where('id', $item->trx_id)->value('created_by');
+                    $creatorNames[$key] = $creatorId ? \DB::table('users')->where('id_user', $creatorId)->value('nm_user') : null;
+                }
+
+                return $creatorNames[$key];
+            })
             ->addColumn('type', function ($item) {
                 $html = '';
                 switch ($item->type) {
@@ -1644,7 +1668,8 @@ class ProductController extends Controller
         }
 
         if ($request->filled('stock_kategori') && $request->stock_kategori !== 'all') {
-            $query->where('p.category_id', $request->stock_kategori);
+            // One id or a comma separated list of ids (the filter sheet lets several categories be ticked).
+            $query->whereIn('p.category_id', array_filter(explode(',', (string) $request->stock_kategori), fn ($id) => $id !== ''));
         }
 
         $sortColumns = [0 => 'p.name', 1 => 'p.hpp', 2 => 'stock_available'];
@@ -1662,7 +1687,7 @@ class ProductController extends Controller
                     $count->whereRaw('1 = 0');
                 }
                 if ($request->filled('stock_kategori') && $request->stock_kategori !== 'all') {
-                    $count->where('p.category_id', $request->stock_kategori);
+                    $count->whereIn('p.category_id', array_filter(explode(',', (string) $request->stock_kategori), fn ($id) => $id !== ''));
                 }
                 if ($search !== null && $search !== '') {
                     $count->where(fn ($q) => $q->where('p.name', 'like', Like::contains($search))

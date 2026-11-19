@@ -12,6 +12,7 @@
 
 @section('content')
     {{-- @livewire('product-table') --}}
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <style>
         #kt_content_container { display:flex; flex:1; flex-direction:column; min-height:0; }
         .product-stock-detail-page { display:flex; min-height:0; flex:1; flex-direction:column; }
@@ -24,7 +25,9 @@
         .stock-detail-view-tab:not(.is-active) { background:#fff; color:#6b7280; }
         .stock-detail-view-filter { position:relative; display:grid; width:32px; height:32px; place-items:center; border:1px solid #e5e7eb; border-radius:12px; background:#f3f4f6; color:#6b7280; }
         .stock-detail-view-filter.is-active { border-color:rgba(11,89,91,.3); background:rgba(11,89,91,.1); color:#0b595b; }
-        .stock-detail-view-filter .erp-mobile-search__filter-dot { position:absolute; top:2px; right:2px; }
+        .stock-detail-view-filter .erp-mobile-search__filter-dot { position:absolute; top:2px; right:2px; width:8px; height:8px; border:0; border-radius:50%; background:#0b595b; box-shadow:0 0 0 2px #fff; box-sizing:border-box; }
+        .stock-detail-tune { font-family:'Material Symbols Rounded'; font-size:18px; font-weight:300; font-style:normal; line-height:1; letter-spacing:normal; text-transform:none; white-space:nowrap; font-feature-settings:'liga'; font-variation-settings:'wght' 300; }
+        .stock-detail-view-filter.is-active .stock-detail-tune { font-variation-settings:'wght' 600; }
         .stock-detail-search-filter { min-width:220px; }
         .stock-detail-search-filter .form-control { height:40px; border:1px solid #e5e7eb; border-radius:9px; background:#fff; font-size:13px; }
         .stock-detail-table-heading { display:flex; flex:none; align-items:center; justify-content:space-between; gap:10px; margin:0 20px 8px; padding:9px 10px; border:1px solid #f1f3f5; border-radius:9px; background:rgba(249,250,251,.8); color:#9ca3af; font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
@@ -35,7 +38,8 @@
         .stock-detail-history-row { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:11px 10px; border-bottom:1px solid #f3f4f6; border-radius:9px; font-family:'DM Sans','Plus Jakarta Sans',sans-serif; }
         .stock-detail-history-main { display:flex; min-width:0; flex:1; flex-direction:column; gap:5px; }
         .stock-detail-history-activity { display:flex; min-width:0; align-items:center; gap:6px; color:#111827; font-size:13px; font-weight:700; line-height:1.2; text-decoration:none; }
-        .stock-detail-history-activity:hover { color:#0b595b; text-decoration:underline; }
+        .stock-detail-history-row.is-link { cursor:pointer; -webkit-tap-highlight-color:transparent; }
+        .stock-detail-history-row.is-link:focus-visible { outline:2px solid #0b595b; outline-offset:-2px; }
         .stock-detail-history-activity > span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .stock-detail-history-direction { display:grid; width:16px; height:16px; flex:none; place-items:center; border-radius:4px; font-size:10px; }
         .stock-detail-history-direction.is-in { background:#dcfce7; color:#16a34a; }
@@ -89,9 +93,11 @@
             .stock-detail-view-header { padding:14px 16px 10px; }
             .stock-detail-view-title p { font-size:11px; }
             .stock-detail-view-title h2 { font-size:13px; }
-            .stock-detail-view-actions { gap:5px; }
-            .stock-detail-view-tab { min-width:48px; min-height:30px; padding:0 9px; font-size:11px; }
-            .stock-detail-view-filter { width:30px; height:30px; }
+            .stock-detail-view-actions { gap:6px; }
+            .stock-detail-view-tab { min-width:58px; min-height:26px; padding:0 12px; font-size:12px; }
+            .stock-detail-view-filter { width:28px; height:28px; }
+            .stock-detail-view-tab, .stock-detail-view-filter { border-color:rgba(229,231,235,.8); }
+            .stock-detail-view-tab.is-active, .stock-detail-view-filter:not(.is-active) { background:rgba(243,244,246,.9); }
             .stock-detail-table-heading { margin:0 16px 6px; padding:8px 10px; font-size:9px; }
             .stock-detail-table-heading__numbers { gap:4px; }
             .stock-detail-table-heading__numbers span { width:68px; }
@@ -161,7 +167,7 @@
                     </div>
                     <div class="stock-detail-view-actions">
                         <button id="stock-detail-view-toggle" type="button" class="stock-detail-view-tab is-active" data-history-toggle aria-label="Tampilkan riwayat HPP" aria-pressed="false" title="Ganti tampilan riwayat">Stok</button>
-                        <button id="stock-detail-filter-toggle" type="button" aria-label="Filter riwayat stok" aria-expanded="false" class="stock-detail-view-filter"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="stock-detail-filter-dot" hidden class="erp-mobile-search__filter-dot"></span></button>
+                        <button id="stock-detail-filter-toggle" type="button" aria-label="Filter riwayat stok" aria-expanded="false" class="stock-detail-view-filter"><span class="stock-detail-tune" aria-hidden="true">tune</span><span id="stock-detail-filter-dot" hidden class="erp-mobile-search__filter-dot"></span></button>
                     </div>
                 </div>
             </div>
@@ -248,7 +254,10 @@
         function stockDetailDate(value) {
             if (!value) return 'Tanggal tidak tersedia';
             const date = stockDetailDateObject(value);
-            return !date ? String(value) : new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+            if (!date) return String(value);
+            const day = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+            const time = new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).format(date).replace('.', ':');
+            return `${day}, ${time}`;
         }
 
         // The sheet itself is the shared filter-sheet component (id "stock-detail"). It edits a draft; this page
@@ -290,6 +299,17 @@
             if (typeof dataTable !== 'undefined') dataTable.search(stockFilters.search).draw();
         }
 
+        function makeStockDetailRowLink(item, href) {
+            if (!href) return;
+            item.classList.add('is-link');
+            item.tabIndex = 0;
+            item.setAttribute('role', 'link');
+            item.addEventListener('click', () => { window.location.href = href; });
+            item.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') window.location.href = href;
+            });
+        }
+
         function renderStockDetailRows(api) {
             const list = document.getElementById('stock-mobile-list');
             if (!list) return;
@@ -321,8 +341,8 @@
                     };
                     const activity = references[row.url] || row.reff || 'Pergerakan Stok';
                     const main = stockDetailElement('div', 'stock-detail-history-main');
-                    const title = stockDetailElement(sourceLink ? 'a' : 'span', 'stock-detail-history-activity', '');
-                    if (sourceLink) title.href = sourceLink.href;
+                    const title = stockDetailElement('span', 'stock-detail-history-activity', '');
+                    makeStockDetailRowLink(item, sourceLink ? sourceLink.href : '');
                     title.append(stockDetailElement('span', '', activity));
                     const quantity = stockDetailNumericValue(row.quantity);
                     const direction = stockDetailElement('span', 'stock-detail-history-direction ' + (quantity >= 0 ? 'is-in' : 'is-out'));
@@ -371,8 +391,8 @@
                     const item = stockDetailElement('article', 'stock-detail-history-row');
                     const main = stockDetailElement('div', 'stock-detail-history-main');
                     const activity = String(row.remarks || 'Pergerakan HPP').toLocaleLowerCase('id').replace(/\b\w/g, (letter) => letter.toLocaleUpperCase('id'));
-                    const anchor = stockDetailElement(row.url ? 'a' : 'span', 'stock-detail-history-activity', '');
-                    if (row.url) anchor.href = row.url;
+                    const anchor = stockDetailElement('span', 'stock-detail-history-activity', '');
+                    makeStockDetailRowLink(item, row.url || '');
                     anchor.append(stockDetailElement('span', '', activity));
                     const typeHolder = document.createElement('div');
                     typeHolder.innerHTML = row.type || '';
@@ -382,8 +402,7 @@
                     direction.append(stockDetailElement('i', 'ph-bold ' + (isIncoming ? 'ph-arrow-down-left' : 'ph-arrow-up-right')));
                     anchor.append(direction);
                     main.append(anchor);
-                    const sourceLabels = { pengadaan:'Pengadaan', barang_buang:'Sortir', penjualan:'POS', bahan_produksi:'Produksi', produksi:'Produksi', opname:'Stock Opname' };
-                    main.append(stockDetailElement('span', 'stock-detail-history-user', sourceLabels[row.trx_type] || 'Pergerakan HPP'));
+                    main.append(stockDetailElement('span', 'stock-detail-history-user', row.created_by || 'Staff Gudang'));
                     main.append(stockDetailElement('span', 'stock-detail-history-date', stockDetailDate(row.created_at)));
                     item.append(main);
 
