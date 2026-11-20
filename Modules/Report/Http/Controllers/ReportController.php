@@ -99,21 +99,36 @@ class ReportController extends Controller
         ))";
     }
 
-    public function hub()
+    /**
+     * The report pages, in menu order. There is no report hub page: the menu goes straight to each report.
+     */
+    private static function reportPages(): array
     {
-        $reports = collect([
-            ['route' => 'product-stock', 'label' => 'Stok Barang', 'permission' => 'product-stock.index'],
-            ['route' => 'report-product-sales.index', 'label' => 'Pendapatan Penjualan', 'permission' => 'report.product.sales'],
-            ['route' => 'report-profit-revenue.index', 'label' => 'Keuntungan Penjualan', 'permission' => 'report.profit.revenue'],
-            ['route' => 'report-profit-adjusted.index', 'label' => 'Keuntungan Setelah Penyesuaian', 'permission' => 'report.profit.adjusted', 'locked' => self::isLocked('report-profit-adjusted.index')],
-            ['route' => 'report-total-aset', 'label' => 'Total Aset', 'permission' => 'report.total.aset'],
-            ['route' => 'report-shipping-cost', 'label' => 'Ongkos Kirim', 'permission' => 'report.shipping.cost'],
-            ['route' => 'report-product-buang', 'label' => 'Kerugian Barang Buang', 'permission' => 'report.product.buang'],
-        ])->filter(fn ($report) => $this->hasAccess($report['permission']))->values();
+        return [
+            ['route' => 'product-stock', 'permission' => 'product-stock.index'],
+            ['route' => 'report-product-sales.index', 'permission' => 'report.product.sales'],
+            ['route' => 'report-profit-revenue.index', 'permission' => 'report.profit.revenue'],
+            ['route' => 'report-profit-adjusted.index', 'permission' => 'report.profit.adjusted'],
+            ['route' => 'report-total-aset', 'permission' => 'report.total.aset'],
+            ['route' => 'report-shipping-cost', 'permission' => 'report.shipping.cost'],
+            ['route' => 'report-product-buang', 'permission' => 'report.product.buang'],
+        ];
+    }
 
-        abort_if($reports->isEmpty(), 403);
+    /**
+     * URL of the first report (not locked) the signed-in user may open, for the single Laporan shortcut on mobile.
+     * Falls back to the dashboard when the user has no report permission.
+     */
+    public static function entryUrl(): string
+    {
+        $controller = new self();
+        foreach (self::reportPages() as $page) {
+            if (! self::isLocked($page['route']) && $controller->hasAccess($page['permission'])) {
+                return route($page['route']);
+            }
+        }
 
-        return view('report::hub', compact('reports'));
+        return url('/dashboard');
     }
 
     /**
@@ -187,7 +202,7 @@ class ReportController extends Controller
     public function profit_adjusted(Request $request)
     {
         if (self::isLocked('report-profit-adjusted.index')) {
-            return redirect()->route('reports.hub');
+            return redirect('/dashboard');
         }
 
         if ($denied = $this->requireAccess('report.profit.adjusted')) {

@@ -31,7 +31,7 @@
         <a href="{{ url('/dashboard') }}" @if(request()->is('dashboard')) aria-current="page" @endif aria-label="Dashboard" title="Dashboard" class="erp-mobile-nav__item {{ request()->is('dashboard') ? 'is-active' : '' }}">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="10" x="13" y="11" rx="1" fill="currentColor"/><rect width="8" height="6" x="3" y="15" rx="1" fill="currentColor"/><rect width="8" height="6" x="13" y="3" rx="1" fill="currentColor"/><rect width="8" height="10" x="3" y="3" rx="1" fill="currentColor"/></svg>
         </a>
-        <a href="{{ route('reports.hub') }}" @if(request()->routeIs('reports.hub', 'report-*')) aria-current="page" @endif aria-label="Laporan" title="Laporan" class="erp-mobile-nav__item {{ request()->routeIs('reports.hub', 'report-*') ? 'is-active' : '' }}">
+        <a href="{{ \Modules\Report\Http\Controllers\ReportController::entryUrl() }}" @if(request()->routeIs('report-*', 'product-stock', 'product-stock.*')) aria-current="page" @endif aria-label="Laporan" title="Laporan" class="erp-mobile-nav__item {{ request()->routeIs('report-*', 'product-stock', 'product-stock.*') ? 'is-active' : '' }}">
             <span class="icon-rounded" aria-hidden="true">bar_chart</span>
         </a>
 
