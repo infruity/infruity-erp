@@ -119,6 +119,11 @@ class ArusKasController extends Controller
         $data = $request->validate(['status' => 'required|in:draft,completed']);
         $transaction = $this->scopedTransaction($id);
 
+        // A completed transaction is final: it can neither be edited nor sent back to draft.
+        if ($transaction->status !== 'draft') {
+            throw ValidationException::withMessages(['status' => 'Transaksi yang sudah selesai tidak dapat diubah statusnya.']);
+        }
+
         if ($data['status'] === 'completed' && $transaction->items()->doesntExist()) {
             throw ValidationException::withMessages(['status' => 'Tambahkan minimal satu item kas sebelum menyelesaikan transaksi.']);
         }
