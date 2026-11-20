@@ -1,0 +1,15 @@
+@props(['id', 'branchAllLabel', 'showBranchAll' => true])
+                                        <div x-data="{ open: false }" class="relative w-full" @click.outside="open = false">
+                                            <button id="{{ $id }}-mobile-branch-select" type="button" @click="open = !open" :aria-expanded="open" aria-haspopup="listbox" :class="open ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-gray-200 hover:border-emerald-400'" class="flex w-full cursor-pointer items-center justify-between rounded-[12px] border-[1px] border-solid bg-white p-[10px] text-left text-[12px] leading-[16px] text-gray-700 outline-none transition-colors">
+                                                <span class="truncate pr-[8px] text-left font-medium" x-text="(branches.find(row => row.id === branch) || {}).name || @js($branchAllLabel)"></span>
+                                                <i class="ph-bold ph-caret-down shrink-0 text-gray-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
+                                            </button>
+                                            <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" id="{{ $id }}-mobile-branches" role="listbox" class="absolute left-0 top-full z-[70] mt-[6px] max-h-[192px] w-full overflow-y-auto overscroll-none rounded-[12px] border-[1px] border-solid border-gray-100 bg-white py-[4px] shadow-lg">
+                                                @if ($showBranchAll)
+                                                    <div data-{{ $id }}-mobile-branch="all" role="option" @click="branch = 'all'; open = false" :class="branch === 'all' ? 'bg-gray-50 font-semibold text-emerald-600' : 'text-gray-600 hover:bg-gray-50'" class="flex cursor-pointer items-center justify-between px-[12px] py-[8px] text-[12px] leading-[16px] transition-colors"><span>{{ $branchAllLabel }}</span><i x-show="branch === 'all'" class="ph-fill ph-circle text-[8px] text-emerald-500" aria-hidden="true"></i></div>
+                                                @endif
+                                                <template x-for="row in branches" :key="row.id">
+                                                    <div :data-{{ $id }}-mobile-branch="row.id" role="option" @click="branch = row.id; open = false" :class="branch === row.id ? 'bg-gray-50 font-semibold text-emerald-600' : 'text-gray-600 hover:bg-gray-50'" class="flex cursor-pointer items-center justify-between px-[12px] py-[8px] text-[12px] leading-[16px] transition-colors"><span x-text="row.name"></span><i x-show="branch === row.id" class="ph-fill ph-circle text-[8px] text-emerald-500" aria-hidden="true"></i></div>
+                                                </template>
+                                            </div>
+                                        </div>

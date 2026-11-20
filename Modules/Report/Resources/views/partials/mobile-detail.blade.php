@@ -1,11 +1,11 @@
 @php
     $reportMobileTypes = [
-        'asset' => ['title' => 'Total Aset', 'endpoint' => route('report-total-aset.data'), 'history' => null, 'placeholder' => 'Cari transaksi...'],
-        'sales' => ['title' => 'Pendapatan Penjualan', 'endpoint' => route('report-product-sales.data'), 'history' => route('report-product-sales.history'), 'placeholder' => 'Cari transaksi...'],
-        'profit' => ['title' => 'Keuntungan Penjualan', 'endpoint' => route('report-profit-revenue.data'), 'history' => route('report-profit-revenue.history'), 'placeholder' => 'Cari transaksi...'],
-        'adjusted' => ['title' => 'Keuntungan Setelah Penyesuaian', 'endpoint' => route('report-profit-adjusted.data'), 'history' => route('report-profit-adjusted.history'), 'placeholder' => 'Cari transaksi...'],
-        'shipping' => ['title' => 'Ongkos Kirim', 'endpoint' => route('report-shipping-cost.data'), 'history' => route('report-shipping-cost.history'), 'placeholder' => 'Cari transaksi...'],
-        'loss' => ['title' => 'Kerugian Barang Buang', 'endpoint' => route('report-product-buang.data'), 'history' => route('report-product-buang.history'), 'placeholder' => 'Cari transaksi...'],
+        'asset' => ['title' => 'Total Aset', 'endpoint' => route('report-total-aset.data'), 'history' => null, 'placeholder' => 'Cari...'],
+        'sales' => ['title' => 'Pendapatan Penjualan', 'endpoint' => route('report-product-sales.data'), 'history' => route('report-product-sales.history'), 'placeholder' => 'Cari...'],
+        'profit' => ['title' => 'Keuntungan Penjualan', 'endpoint' => route('report-profit-revenue.data'), 'history' => route('report-profit-revenue.history'), 'placeholder' => 'Cari...'],
+        'adjusted' => ['title' => 'Keuntungan Setelah Penyesuaian', 'endpoint' => route('report-profit-adjusted.data'), 'history' => route('report-profit-adjusted.history'), 'placeholder' => 'Cari...'],
+        'shipping' => ['title' => 'Ongkos Kirim', 'endpoint' => route('report-shipping-cost.data'), 'history' => route('report-shipping-cost.history'), 'placeholder' => 'Cari...'],
+        'loss' => ['title' => 'Kerugian Barang Buang', 'endpoint' => route('report-product-buang.data'), 'history' => route('report-product-buang.history'), 'placeholder' => 'Cari...'],
     ];
     $reportMobileConfig = $reportMobileTypes[$reportType];
     $reportMobileConfig['type'] = $reportType;
@@ -13,6 +13,7 @@
     $reportMobileConfig['couriers'] = collect($couriers ?? [])->map(static fn ($courier) => ['id' => (string) $courier->id, 'name' => $courier->name])->values();
     $reportMobileConfig['today'] = now()->toDateString();
     $reportMobileConfig['stockUrl'] = url('product-stock');
+    $reportMobileConfig['posUrl'] = url('pos/show');
     $reportMobileConfig['dateEndpoint'] = route('reports.mobile.dates', ['type' => $reportType]);
     $reportMobileConfig['dateHistory'] = route('reports.mobile.history', ['type' => $reportType]);
 
@@ -36,19 +37,21 @@
     }
     $reportGroups = [];
     if ($reportType !== 'asset') {
-        $reportGroups[] = ['key' => 'groupBy', 'label' => 'Grup Berdasarkan', 'default' => 'product', 'options' => ['product' => $reportType === 'shipping' ? 'Kurir' : 'Produk', 'date' => 'Tanggal']];
-        $reportGroups[] = ['key' => 'timeGroup', 'label' => 'Kelompok Tanggal', 'default' => 'daily', 'options' => ['daily' => 'Harian', 'weekly' => 'Mingguan']];
+        $reportGroups[] = ['key' => 'groupBy', 'label' => 'Grup Berdasarkan', 'strong' => true, 'tiles' => 'row', 'icons' => ['product' => $reportType === 'shipping' ? 'ph-fill ph-users' : 'ph-fill ph-package', 'date' => 'ph ph-calendar-blank'], 'default' => 'product', 'options' => ['product' => $reportType === 'shipping' ? 'Kurir' : 'Produk', 'date' => 'Tanggal']];
+        $reportGroups[] = ['key' => 'timeGroup', 'label' => null, 'type' => 'select', 'default' => 'daily', 'options' => ['daily' => 'Harian', 'weekly' => 'Mingguan']];
+        $reportGroups[] = ['key' => '_branch', 'type' => 'branch'];
         if ($reportType === 'shipping') {
             $reportGroups[] = [
-                'key' => 'courier', 'label' => 'Kurir', 'type' => 'radio', 'scroll' => true, 'showWhen' => ['groupBy' => 'product'],
-                'options' => ['all' => 'Semua Kurir'] + collect($couriers ?? [])->mapWithKeys(fn ($courier) => [(string) $courier->id => $courier->name])->all() + ['null' => 'Tanpa Kurir / Lainnya'],
+                'key' => 'courier', 'label' => 'Kurir', 'type' => 'select', 'showWhen' => ['groupBy' => 'product'],
+                'options' => ['all' => 'Semua Kurir'] + collect($couriers ?? [])->mapWithKeys(fn ($courier) => [(string) $courier->id => $courier->name])->all(),
             ];
         }
-        $reportGroups[] = ['key' => 'year', 'label' => 'Tahun', 'showWhen' => ['timeGroup' => 'weekly'], 'resets' => ['week'], 'options' => ['all' => 'Semua Tahun'] + collect($reportYears)->mapWithKeys(fn ($year) => [(string) $year => (string) $year])->all()];
-        $reportGroups[] = ['key' => 'week', 'label' => 'Periode Mingguan', 'type' => 'radio', 'scroll' => true, 'default' => '', 'showWhen' => ['timeGroup' => 'weekly'], 'optionsBy' => 'year', 'disabled' => $reportDisabledWeeks, 'options' => $reportWeekLists];
+        $reportGroups[] = ['key' => 'year', 'label' => 'Tahun', 'type' => 'select', 'showWhen' => ['timeGroup' => 'weekly'], 'resets' => ['week'], 'options' => ['all' => 'Semua Tahun'] + collect($reportYears)->mapWithKeys(fn ($year) => [(string) $year => (string) $year])->all()];
+        $reportGroups[] = ['key' => 'week', 'label' => 'Periode Mingguan', 'type' => 'select', 'default' => '', 'showWhen' => ['timeGroup' => 'weekly'], 'optionsBy' => 'year', 'disabled' => $reportDisabledWeeks, 'options' => $reportWeekLists];
     }
 @endphp
 
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="{{ asset('assets/css/report-mobile.css') }}?v={{ filemtime(public_path('assets/css/report-mobile.css')) }}">
 <script type="application/json" id="report-mobile-config">@json($reportMobileConfig)</script>
@@ -56,6 +59,9 @@
 
 <div class="report-mobile-page" :class="'report-mobile-page--' + config.type" x-data="erpReportMobile(JSON.parse(document.getElementById('report-mobile-config').textContent))" x-effect="document.body.style.overflow = (filterOpen || historyOpen) ? 'hidden' : ''" @mobile-search-toggle.window="$refs.reportSearch.focus()" @erp-filter-apply.window="if ($event.detail.id === 'report') applyFilters($event.detail.values)" @erp-filter-close.window="if ($event.detail.id === 'report') closeFilter()">
     <x-erp.mobile-search>
+        <x-slot:icon>
+            <svg class="erp-mobile-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </x-slot:icon>
         <x-slot:input>
             <input x-ref="reportSearch" x-model="search" @input.debounce.350ms="reload()" type="search" :placeholder="config.placeholder" :aria-label="config.placeholder" class="erp-mobile-search__input">
         </x-slot:input>
@@ -64,27 +70,30 @@
         </x-slot:clear>
         <x-slot:filter>
             <button type="button" @click="openFilter()" class="erp-mobile-search__filter" :class="filterOpen || hasFilter ? 'is-active' : ''" aria-label="Filter laporan" title="Filter">
-                <i class="ph ph-sliders-horizontal" aria-hidden="true"></i>
+                <span class="report-mobile-tune" aria-hidden="true">tune</span>
             </button>
         </x-slot:filter>
     </x-erp.mobile-search>
 
     <div class="report-mobile-hpp-notice" x-show="config.type === 'asset' || config.type === 'loss'"><i class="ph-fill ph-info" aria-hidden="true"></i><span x-show="config.type === 'asset'">Nilai rupiah pada laporan aset dihitung berdasarkan <strong>Nilai HPP</strong>, bukan harga jual.</span><span x-show="config.type === 'loss'">Nilai rupiah pada barang buang dihitung berdasarkan <strong>Nilai HPP</strong>, bukan harga jual.</span></div>
 
+    <div class="report-mobile-colhead" x-show="config.type === 'profit' && groupBy !== 'date'" x-cloak aria-hidden="true"><span>Produk</span><div><span>Pendapatan</span><span>Modal</span><span class="is-accent">Untung</span></div></div>
+
     <div class="report-mobile-list" x-ref="reportList" @scroll.passive="maybeLoadMore()">
         <template x-for="(row, index) in rows" :key="groupBy === 'date' ? `${row.period_start}-${row.branch_id}` : (config.type === 'shipping' ? `${row.courier_id}-${row.branch_id}` : `${row.product_id ?? row.courier_id ?? index}-${row.price ?? row.hpp ?? ''}`)">
             <div style="display:contents">
                 <template x-if="config.type === 'asset'">
                     <div class="report-mobile-row report-mobile-row--static">
-                        <span class="report-mobile-row__stacked"><span class="report-mobile-row__title" x-text="rowTitle(row)"></span><span class="report-mobile-row__meta"><span x-text="rowMeta(row)"></span><strong class="report-mobile-row__amount" x-text="rupiah(rowAmount(row))"></strong></span></span>
+                        <span class="report-mobile-row__stacked"><span class="report-mobile-row__title" x-text="rowTitle(row)"></span><span class="report-mobile-row__meta"><span><span x-text="assetQty(row)"></span> <span x-text="assetUnit(row)"></span> &nbsp;<span class="report-mobile-row__at">@</span>&nbsp; <span x-text="assetPrice(row)"></span></span><strong class="report-mobile-row__amount" x-text="rupiah(rowAmount(row))"></strong></span></span>
                     </div>
                 </template>
                 <template x-if="config.type !== 'asset'">
-                    <button type="button" class="report-mobile-row" @click="openRow(row)">
+                    <button type="button" class="report-mobile-row" :class="config.type === 'profit' && groupBy !== 'date' ? 'report-mobile-row--cols' : ''" @click="openRow(row)">
                         <template x-if="config.type === 'profit' || config.type === 'adjusted'">
                             <span class="report-mobile-row__top">
-                                <span class="report-mobile-row__heading"><span class="report-mobile-row__title" x-text="rowTitle(row)"></span><span x-show="groupBy === 'date'" class="report-mobile-row__branch" x-text="rowMeta(row)"></span></span>
-                                <span class="report-mobile-row__amount report-mobile-row__amount--mobile" :class="rowAmount(row) < 0 ? 'is-negative' : 'is-positive'" x-text="rowDisplayAmount(row)"></span>
+                                <span class="report-mobile-row__heading"><span class="report-mobile-row__title" x-text="rowTitleBroken(row)"></span><span x-show="groupBy === 'date'" class="report-mobile-row__branch" x-text="rowMeta(row)"></span></span>
+                                <span x-show="!(config.type === 'profit' && groupBy !== 'date')" class="report-mobile-row__amount report-mobile-row__amount--mobile" :class="rowAmount(row) < 0 ? 'is-negative' : 'is-positive'" x-text="rowDisplayAmount(row)"></span>
+                                <span x-show="config.type === 'profit' && groupBy !== 'date'" class="report-mobile-row__cols"><span x-text="profitCol(row, 'revenue')"></span><span x-text="profitCol(row, 'hpp')"></span><span class="report-mobile-row__profit" :class="rowAmount(row) < 0 ? 'is-negative' : 'is-positive'" x-text="profitCol(row, 'profit')"></span></span>
                                 <span x-show="config.type === 'profit'" class="report-mobile-row__desktop-metrics"><span><small>Pendapatan</small><strong x-text="rupiah(groupBy === 'date' ? row.revenue : row.total_pendapatan)"></strong></span><span><small>HPP</small><strong class="is-negative" x-text="'- ' + rupiah(groupBy === 'date' ? row.hpp : row.total_hpp)"></strong></span><span><small>Laba Kotor</small><strong :class="rowAmount(row) < 0 ? 'is-negative' : 'is-positive'" x-text="rowDisplayAmount(row)"></strong></span></span>
                                 <span x-show="config.type === 'adjusted'" class="report-mobile-row__desktop-metrics"><span><small>Laba Kotor</small><strong x-text="rupiah(groupBy === 'date' ? row.revenue - row.hpp : row.laba_kotor)"></strong></span><span><small>Koreksi Stok</small><strong :class="Number(groupBy === 'date' ? row.correction : row.koreksi_stock) <= 0 ? 'is-positive' : 'is-negative'" x-text="adjustedCorrection(row)"></strong></span><span><small>Laba Disesuaikan</small><strong :class="rowAmount(row) < 0 ? 'is-negative' : 'is-positive'" x-text="rowDisplayAmount(row)"></strong></span></span>
                             </span>
@@ -92,7 +101,7 @@
                         <template x-if="config.type !== 'profit' && config.type !== 'adjusted'">
                             <span class="report-mobile-row__stacked">
                                 <span class="report-mobile-row__title" x-text="rowTitle(row)"></span>
-                                <span class="report-mobile-row__meta"><span x-text="rowMeta(row)"></span><strong class="report-mobile-row__amount" :class="rowAmount(row) < 0 ? 'is-negative' : ''" x-text="rupiah(rowAmount(row))"></strong></span>
+                                <span class="report-mobile-row__meta"><span x-show="!((config.type === 'sales' || config.type === 'loss') && groupBy !== 'date')" x-text="rowMeta(row)"></span><span x-show="config.type === 'loss' && groupBy !== 'date'"><span x-text="lossQty(row)"></span> <span x-text="lossUnit(row)"></span> &nbsp;<span class="report-mobile-row__at">@</span>&nbsp; <span x-text="lossPrice(row)"></span></span><span x-show="config.type === 'sales' && groupBy !== 'date'"><span x-text="saleQty(row)"></span> <span x-text="saleUnit(row)"></span> &nbsp;<span class="report-mobile-row__at">@</span>&nbsp; <span x-text="salePrice(row)"></span></span><strong class="report-mobile-row__amount" :class="rowAmount(row) < 0 ? 'is-negative' : ''" x-text="rupiah(rowAmount(row))"></strong></span>
                             </span>
                         </template>
                     </button>
@@ -100,7 +109,6 @@
             </div>
         </template>
         <div x-show="!loading && !error && rows.length === 0" x-cloak class="report-mobile-empty">
-            <div class="report-mobile-empty__icon"><i class="ph ph-receipt" aria-hidden="true"></i></div>
             <h2>Tidak Ada Data</h2>
             <p>Belum ada transaksi pada kriteria ini.</p>
         </div>
@@ -111,11 +119,11 @@
     <div class="report-mobile-summary" style="position:relative">
         <template x-for="line in summaryLines" :key="line.label">
             <div class="report-mobile-summary__line" :class="line.style || ''">
-                <span class="report-mobile-summary__label"><span x-text="line.label"></span><button x-show="line.info" type="button" class="report-mobile-summary__info" @click="infoOpen = !infoOpen" aria-label="Informasi nilai HPP"><i class="ph-bold ph-warning-circle" aria-hidden="true"></i></button><span x-show="line.badge" x-cloak class="report-mobile-summary__badge" :class="line.tone === 'negative' ? 'is-negative' : 'is-positive'" x-text="line.badge"></span></span>
+                <span class="report-mobile-summary__label"><span x-text="line.label"></span><button x-show="line.info" type="button" class="report-mobile-summary__info" @click="infoOpen = !infoOpen" aria-label="Informasi nilai HPP"><i class="ph-bold ph-warning-circle" aria-hidden="true"></i></button><span x-show="line.badge" x-cloak class="report-mobile-summary__badge" :class="line.tone === 'negative' ? 'is-negative' : 'is-positive'" x-text="'(' + line.badge + ')'"></span></span>
                 <strong :class="line.tone === 'negative' ? 'is-negative' : (line.tone === 'positive' ? 'is-positive' : '')" x-text="line.value"></strong>
             </div>
         </template>
-        <div x-show="infoOpen" x-cloak @click.outside="infoOpen = false" class="report-mobile-info"><span x-show="config.type === 'asset'">Nilai rupiah pada laporan aset dihitung berdasarkan <strong>Nilai HPP</strong>, bukan harga jual.</span><span x-show="config.type === 'loss'">Nilai rupiah pada barang buang dihitung berdasarkan <strong>Nilai HPP</strong>, bukan harga jual.</span></div>
+        <div x-show="infoOpen" x-cloak @click.outside="infoOpen = false" x-transition:enter="report-mobile-info--enter" x-transition:enter-start="report-mobile-info--from" x-transition:enter-end="report-mobile-info--to" x-transition:leave="report-mobile-info--leave" x-transition:leave-start="report-mobile-info--to" x-transition:leave-end="report-mobile-info--from" class="report-mobile-info"><span class="report-mobile-info__icon"><i class="ph-bold ph-warning-circle" aria-hidden="true"></i></span><div class="report-mobile-info__text"><span x-show="config.type === 'asset'">Nilai rupiah pada laporan aset dihitung berdasarkan <strong>Nilai HPP</strong>, bukan harga jual.</span><span x-show="config.type === 'loss'">Nilai rupiah pada barang buang dihitung berdasarkan <strong>Nilai HPP</strong>, bukan harga jual.</span></div><button type="button" class="report-mobile-info__close" @click="infoOpen = false" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
     </div>
 
     <x-erp.filter-sheet
@@ -125,6 +133,8 @@
         subtitle="Sesuaikan parameter data laporan"
         branch-label="Cabang"
         branch-all-label="Semua Cabang"
+        :branch-select="true"
+        :long-date="true"
         :branches="$branches ?? []"
         :groups="$reportGroups"
         :with-dates="$reportType !== 'asset'"
@@ -141,16 +151,14 @@
             <div class="report-mobile-backdrop" @click="historyOpen = false"></div>
             <div class="report-mobile-sheet report-mobile-sheet--history" :class="config.type === 'adjusted' ? 'report-mobile-sheet--history-adjusted' : ''" role="dialog" aria-modal="true" :aria-label="config.type === 'adjusted' ? 'Detail Rekonsiliasi' : (config.type === 'shipping' ? 'Riwayat Pengiriman' : 'Riwayat Transaksi')" @keydown.escape.window="historyOpen = false">
                 <div class="report-mobile-sheet__handle"></div>
-                <div class="report-mobile-sheet__head"><div><h2 x-text="config.type === 'adjusted' ? 'Detail Rekonsiliasi' : (config.type === 'shipping' ? 'Riwayat Pengiriman' : 'Riwayat Transaksi')"></h2><p x-text="historyTitle"></p></div><button type="button" class="report-mobile-sheet__close" @click="historyOpen = false" aria-label="Tutup riwayat"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
+                <div class="report-mobile-sheet__head"><div><h2 x-text="config.type === 'adjusted' ? 'Detail Rekonsiliasi' : (config.type === 'shipping' ? 'Riwayat Pengiriman' : 'Riwayat Transaksi')"></h2><p x-text="historyTitle" :class="historySub ? 'report-mobile-sheet__name' : ''"></p><p x-show="historySub" class="report-mobile-sheet__sub" x-text="historySub"></p></div><button type="button" class="report-mobile-sheet__close" @click="historyOpen = false" aria-label="Tutup riwayat"><i class="ph-bold ph-x" aria-hidden="true"></i></button></div>
                 <div x-show="config.type !== 'adjusted'" class="report-mobile-history-tools">
                     <div class="report-mobile-history-search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" x-model="historySearch" placeholder="Cari transaksi..." aria-label="Cari transaksi"></div>
-                    <div class="report-mobile-history-filter-wrap" @mouseenter="historyFilterExpanded = true" @mouseleave="if (!historyFilterOpen) historyFilterExpanded = false" @click.outside="historyFilterOpen = false; historyCalendarOpen = false; historyFilterExpanded = false">
+                    <div class="report-mobile-history-filter-wrap" @click.outside="historyFilterOpen = false; historyCalendarOpen = false; historyFilterExpanded = false">
                         <button type="button" class="report-mobile-history-filter-button" :class="historyDate || historyPayment !== 'all' || historyCourier !== 'all' || historyFilterOpen ? 'is-active' : ''" @click="historyFilterOpen = !historyFilterOpen; historyFilterExpanded = true" :aria-expanded="historyFilterOpen" aria-label="Filter riwayat">
                             <span class="report-mobile-history-filter-icon"><i class="ph-bold ph-funnel" aria-hidden="true"></i><span x-show="historyDate || historyPayment !== 'all' || historyCourier !== 'all'" class="report-mobile-history-filter-dot"></span></span>
-                            <span class="report-mobile-history-filter-period" :class="historyFilterExpanded || historyFilterOpen ? 'is-expanded' : ''" x-text="historyDate ? fullDateLabel(historyDate) : 'Semua Periode'"></span>
-                            <i class="ph-bold ph-caret-down report-mobile-history-filter-caret" :class="historyFilterOpen ? 'is-open' : ''" aria-hidden="true"></i>
                         </button>
-                        <div x-show="historyFilterOpen" x-cloak class="report-mobile-history-filter-popover">
+                        <div x-show="historyFilterOpen" x-cloak class="report-mobile-history-filter-popover" :class="historyCalendarOpen ? 'is-calendar' : ''">
                             <div class="report-mobile-history-filter-field">
                                 <span class="report-mobile-field__label">Tanggal</span>
                                 <button type="button" class="report-mobile-history-date-trigger" @click="openHistoryCalendar()" :aria-expanded="historyCalendarOpen"><i class="ph ph-calendar-blank" aria-hidden="true"></i><span x-text="historyDate ? fullDateLabel(historyDate) : 'Pilih Tanggal'"></span><i class="ph-bold ph-caret-down" aria-hidden="true"></i></button>
@@ -161,12 +169,12 @@
                                 </div>
                             </div>
                             <div x-show="historyPaymentOptions.length" class="report-mobile-history-filter-field" x-data="{open:false}" @click.outside="open = false">
-                                <span class="report-mobile-field__label" x-text="config.type === 'loss' ? 'Alasan' : 'Tipe Pembayaran'"></span>
+                                <span class="report-mobile-field__label" x-text="config.type === 'loss' ? 'Alasan' : 'Metode Pembayaran'"></span>
                                 <button type="button" class="report-mobile-history-date-trigger" @click="open = !open" :aria-expanded="open"><span x-text="historyPayment === 'all' ? 'Semua Metode' : (historyPayment === 'split' ? 'Multi/Split' : historyPayment)"></span><i class="ph-bold ph-caret-down" :class="open ? 'is-open' : ''" aria-hidden="true"></i></button>
                                 <div x-show="open" x-cloak class="report-mobile-history-option-menu">
                                     <button type="button" :class="historyPayment === 'all' ? 'is-selected' : ''" @click="historyPayment = 'all'; open = false">Semua Metode<i x-show="historyPayment === 'all'" class="ph-fill ph-circle" aria-hidden="true"></i></button>
                                     <template x-for="method in historyPaymentOptions" :key="method"><button type="button" :class="historyPayment === method ? 'is-selected' : ''" @click="historyPayment = method; open = false"><span x-text="method"></span><i x-show="historyPayment === method" class="ph-fill ph-circle" aria-hidden="true"></i></button></template>
-                                    <button x-show="!['asset', 'loss'].includes(config.type)" type="button" :class="historyPayment === 'split' ? 'is-selected' : ''" @click="historyPayment = 'split'; open = false">Multi/Split<i x-show="historyPayment === 'split'" class="ph-fill ph-circle" aria-hidden="true"></i></button>
+                                    <button x-show="!['asset', 'loss'].includes(config.type) && historyHasSplit" type="button" :class="historyPayment === 'split' ? 'is-selected' : ''" @click="historyPayment = 'split'; open = false">Multi/Split<i x-show="historyPayment === 'split'" class="ph-fill ph-circle" aria-hidden="true"></i></button>
                                 </div>
                             </div>
                             <div x-show="config.type === 'shipping' && groupBy === 'date' && historyCourierOptions.length" class="report-mobile-history-filter-field" x-data="{open:false}" @click.outside="open = false">
@@ -206,12 +214,12 @@
                     </div>
                     <div x-show="config.type !== 'adjusted'" class="report-mobile-history-list">
                         <template x-for="(entry, index) in filteredHistory" :key="index">
-                            <article class="report-mobile-receipt">
+                            <article class="report-mobile-receipt" :data-type="config.type" :class="entryUrl(entry) ? 'is-link' : ''" :role="entryUrl(entry) ? 'link' : null" :tabindex="entryUrl(entry) ? 0 : null" @click="if (entryUrl(entry)) window.location.href = entryUrl(entry)" @keydown.enter="if (entryUrl(entry)) window.location.href = entryUrl(entry)">
                                 <div class="report-mobile-receipt__head"><div><span class="report-mobile-receipt__eyebrow" x-text="config.type === 'shipping' ? 'No. Resi' : 'No. Nota'"></span><strong x-text="entry.invoice || entry.type || 'Transaksi'"></strong></div><div class="report-mobile-receipt__date"><strong x-text="entry.date_formatted"></strong><span x-text="entry.time_formatted"></span></div></div>
                                 <div class="report-mobile-receipt__content">
                                     <p x-show="['sales', 'profit'].includes(config.type) && groupBy !== 'date' && branch === 'all' && entry.branch_name" class="report-mobile-receipt__branch" x-text="entry.branch_name"></p>
-                                    <template x-for="line in historyDetails(entry)" :key="line.label"><div class="report-mobile-receipt__line"><span x-text="line.label"></span><strong :class="config.type === 'sales' && line.label === 'Pembayaran' ? 'is-payment' : ''" x-text="line.value"></strong></div></template>
-                                    <div class="report-mobile-receipt__total"><span x-text="historyTotalLabel(entry)"></span><strong x-text="historyAmount(entry)"></strong></div>
+                                    <template x-for="line in historyDetails(entry)" :key="line.label"><div class="report-mobile-receipt__line" :data-line="line.label"><span x-text="line.label"></span><strong :class="['sales', 'shipping'].includes(config.type) && line.label === 'Pembayaran' ? 'is-payment' : ''" x-text="line.value"></strong></div></template>
+                                    <div class="report-mobile-receipt__total"><span x-text="historyTotalLabel(entry)"></span><strong :class="historyAmountNegative(entry) ? 'is-negative' : ''" x-text="historyAmountText(entry)"></strong></div>
                                 </div>
                             </article>
                         </template>

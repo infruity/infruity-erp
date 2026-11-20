@@ -29,8 +29,8 @@
             search: '',
             branch: 'all',
             courier: 'all',
-            startDate: '',
-            endDate: '',
+            startDate: config.type === 'asset' ? '' : today,
+            endDate: config.type === 'asset' ? '' : today,
             groupBy: 'product',
             timeGroup: 'daily',
             selectedYear: String(todayDate.getFullYear()),
@@ -58,6 +58,7 @@
             historyCalendarMonth: todayDate.getMonth(),
             historyCalendarYear: todayDate.getFullYear(),
             historyTitle: '',
+            historySub: '',
             historySequence: 0,
 
             init() {
@@ -126,11 +127,22 @@
                 });
                 return [...options].map(([id, name]) => ({ id, name }));
             },
-            get historyPaymentOptions() {
-                return ['asset', 'loss'].includes(config.type)
-                    ? ['Tunai', 'QRIS', 'Transfer']
-                    : ['Bank Jatim', 'Bank Mandiri', 'BCA', 'BNI', 'BRI', 'GoPay', 'Qris', 'ShopeePay', 'Tunai'];
+            historyEntryMethods(entry) {
+                return Array.isArray(entry.payment_methods)
+                    ? entry.payment_methods.map(value => String(value).trim()).filter(Boolean)
+                    : String(entry.payment || '').split(',').map(value => value.trim()).filter(Boolean);
             },
+            // Only the payment methods that actually occur in this history.
+            get historyPaymentOptions() {
+                if (['asset', 'loss'].includes(config.type)) return ['Tunai', 'QRIS', 'Transfer'];
+                const seen = new Map();
+                this.historyRows.forEach(entry => this.historyEntryMethods(entry).forEach(method => {
+                    const key = method.toLocaleLowerCase('id-ID');
+                    if (!seen.has(key)) seen.set(key, method);
+                }));
+                return [...seen.values()].sort((a, b) => a.localeCompare(b, 'id'));
+            },
+            get historyHasSplit() { return this.historyRows.some(entry => this.historyEntryMethods(entry).length > 1); },
             get calendarWeekdays() { return ['M', 'S', 'S', 'R', 'K', 'J', 'S']; },
             get calendarMonths() { return ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; },
             historyCalendarMonthLabel() { return `${this.calendarMonths[this.historyCalendarMonth]} ${this.historyCalendarYear}`; },
@@ -164,7 +176,7 @@
             fullDateLabel(value) { return fullDateLabel(value); },
             get summaryLines() {
                 const total = key => parseMoney(this.totals[key]);
-                if (config.type === 'asset') return [{ label: 'TOTAL', value: this.rupiah(total('grand_total')) }];
+                if (config.type === 'asset') return [{ label: 'TOTAL', value: this.rupiah(total('grand_total')), info: true }];
                 if (config.type === 'profit') {
                     const revenue = total('grand_total_pendapatan');
                     const profit = total('grand_total_laba');
@@ -186,11 +198,16 @@
                         { label: 'LABA DISESUAIKAN', value: this.rupiah(adjusted), style: 'report-mobile-summary__line--profit-total', tone: adjusted >= 0 ? 'positive' : 'negative', badge: margin + '%' },
                     ];
                 }
-                return [{ label: 'TOTAL', value: this.rupiah(total('grand_total')) }];
+                return [{ label: 'TOTAL', value: this.rupiah(total('grand_total')), info: config.type === 'loss' }];
             },
             rowTitle(row) {
                 if (this.groupBy === 'date') return this.timeGroup === 'weekly' ? `${fullDateLabel(row.period_start)} - ${fullDateLabel(nextDay(row.period_start))}` : fullDateLabel(row.period_start);
                 return plainText(config.type === 'shipping' ? row.courier_name : row.name) || 'Tanpa Nama';
+            },
+            // In the profit table a product name breaks before its bracket: "Strawberry Mencir" / "(Grade Super)".
+            rowTitleBroken(row) {
+                const title = this.rowTitle(row);
+                return config.type === 'profit' && this.groupBy !== 'date' ? title.replace(/\s+\(/, '\n(') : title;
             },
             rowAmount(row) {
                 if (this.groupBy === 'date') return numericMoney(row.amount);
@@ -217,6 +234,27 @@
                 if (config.type === 'shipping') return plainText(row.branch_name) || 'Pusat';
                 return `${row.quantity ?? 0} ${plainText(row.satuan)}  @  ${this.rupiah(parseMoney(row.hpp))}`;
             },
+            assetQty(row) {
+                const text = String(row.total_stock ?? 0).trim();
+                return text.includes(',') ? text.replace(/0+$/, '').replace(/,$/, '') : text;
+            },
+            lossQty(row) {
+                const text = String(row.quantity ?? 0).trim();
+                return text.includes(',') ? text.replace(/0+$/, '').replace(/,$/, '') : text;
+            },
+            lossUnit(row) { return plainText(row.satuan); },
+            lossPrice(row) { return this.rupiah(parseMoney(row.hpp)); },
+            assetUnit(row) { return plainText(row.abbreviation); },
+            assetPrice(row) { return this.rupiah(parseMoney(row.hpp)); },
+            // Plain numbers (no "Rp"), like the stock history columns; the heading names the columns.
+            profitCol(row, kind) {
+                const value = kind === 'revenue' ? parseMoney(row.total_pendapatan) : (kind === 'hpp' ? parseMoney(row.total_hpp) : this.rowAmount(row));
+                return (value < 0 ? '- ' : '') + formatMoney(Math.abs(value)).replace(/^Rp\.?\s*/, '');
+            },
+            profitSub(row) { return `Pendapatan ${this.rupiah(parseMoney(row.total_pendapatan))}  \u00b7  Modal ${this.rupiah(parseMoney(row.total_hpp))}`; },
+            saleQty(row) { return String(row.qty_formatted ?? row.quantity ?? 0).trim(); },
+            saleUnit(row) { return plainText(row.unit); },
+            salePrice(row) { return row.price || this.rupiah(parseMoney(row.total) / Math.max(1, numericMoney(row.quantity))); },
             rowSecondary(row) {
                 if (config.type === 'sales') return plainText(row.persentase_penjualan);
                 return '';
@@ -332,6 +370,7 @@
                 this.historyFilterExpanded = false;
                 this.historyCalendarOpen = false;
                 this.historyTitle = this.rowTitle(row);
+                this.historySub = config.type === 'shipping' && this.groupBy !== 'date' ? plainText(row.branch_name) : '';
                 this.historyLoading = true;
                 this.historyOpen = true;
                 const params = new URLSearchParams({ branch: this.branch });
@@ -368,6 +407,7 @@
                 this.historyFilterExpanded = false;
                 this.historyCalendarOpen = false;
                 this.historyTitle = this.rowTitle(row);
+                this.historySub = config.type === 'shipping' && this.groupBy !== 'date' ? plainText(row.branch_name) : '';
                 this.historyLoading = true;
                 this.historyOpen = true;
                 const periodStart = String(row.period_start).slice(0, 10);
@@ -391,15 +431,26 @@
                     if (sequence === this.historySequence) this.historyLoading = false;
                 }
             },
+            historyAmountNegative(entry) { return /-\s*\d/.test(String(this.historyAmount(entry))); },
+            // "Rp -10.000" is shown as "- Rp 10.000", like the other negative amounts.
+            historyAmountText(entry) {
+                const text = String(this.historyAmount(entry));
+                return /^Rp\s*-\s*/.test(text) ? '- Rp ' + text.replace(/^Rp\s*-\s*/, '') : text;
+            },
             historyAmount(entry) {
                 if (config.type === 'shipping') return entry.total_bersih || entry.ongkir || 'Rp 0';
                 if (this.groupBy === 'date') return entry.total || 'Rp 0';
                 return entry.laba_disesuaikan || entry.laba_kotor || entry.total || entry.total_hpp || 'Rp 0';
             },
+            // A receipt card opens its sale in Kasir / POS when the history row knows the sale id.
+            entryUrl(entry) {
+                if (entry.pos_url) return entry.pos_url;
+                return entry.pos_id && config.posUrl ? `${config.posUrl}/${encodeURIComponent(entry.pos_id)}` : '';
+            },
             historyTotalLabel(entry) {
                 if (config.type === 'loss') return 'Total';
                 if (this.groupBy === 'date' && entry?.total_label) return entry.total_label;
-                if (config.type === 'profit') return 'Laba Kotor';
+                if (config.type === 'profit') return 'Total Laba Kotor';
                 if (config.type === 'adjusted') return entry.type === 'Penjualan' ? 'Laba Kotor' : 'Koreksi Stok';
                 if (config.type === 'shipping') return 'Total Bersih';
                 return 'Total';
@@ -458,7 +509,6 @@
                     { label: 'Diskon Prorata', value: entry.prorata_discount },
                 ].filter(line => line.value);
                 if (config.type === 'profit') return [
-                    { label: 'Pembayaran', value: entry.payment },
                     { label: 'Jumlah Terjual', value: entry.qty },
                     { label: 'Harga Jual Satuan', value: entry.harga_satuan },
                     { label: 'Penjualan Kotor', value: entry.penjualan_kotor },

@@ -53,6 +53,8 @@
     'resetLabel' => 'Reset',
     'applyLabel' => 'Terapkan',
     'variant' => null,
+    'branchSelect' => false,
+    'longDate' => false,
 ])
 
 @once
@@ -70,9 +72,11 @@
         'weekStart' => $weekStart,
         'resetApplies' => (bool) $resetApplies,
         'desktop' => $desktop,
+        'longDate' => (bool) $longDate,
         'search' => $searchLabel !== null,
         'groups' => collect($groups)->map(fn ($group) => ['key' => (string) $group['key'], 'default' => (string) ($group['default'] ?? 'all'), 'resets' => array_map('strval', $group['resets'] ?? [])])->values()->all(),
     ];
+    $branchInGroups = collect($groups)->contains(fn ($group) => ($group['type'] ?? '') === 'branch');
     $quickLabels = ['week' => 'Minggu Ini', 'today' => 'Hari Ini', 'month' => 'Bulan Ini'];
     $quickOutline = 'flex flex-1 cursor-pointer items-center justify-center gap-[6px] rounded-[12px] border-[1px] border-solid border-gray-200 bg-white px-[8px] py-[10px] text-[12px] font-semibold text-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors hover:border-gray-300 hover:bg-gray-50 active:scale-95';
     $quickPrimary = 'flex flex-1 cursor-pointer items-center justify-center gap-[6px] rounded-[12px] bg-[#c5f037] px-[8px] py-[10px] text-[12px] font-semibold text-gray-800 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors active:scale-95';
@@ -115,12 +119,15 @@
                                     <input id="{{ $id }}-mobile-query" type="search" x-model="query" placeholder="{{ $searchPlaceholder }}" autocomplete="off" class="h-[40px] w-full rounded-[12px] border-[1px] border-solid border-gray-200 bg-white px-[12px] text-[12px] outline-none focus:border-emerald-500">
                                 </div>
                             @endif
-                            @if ($branchRows !== [])
+                            @if ($branchRows !== [] && ! $branchInGroups)
                                 <div class="{{ $ref ? 'order-3' : '' }}">
                                     <div class="mb-[6px] flex items-center justify-between">
                                         <label for="{{ $id }}-mobile-branch-search" class="{{ $labelClass }}">{{ $branchLabel }}</label>
                                         <button type="button" x-show="branch !== defaultBranch" @click="branch = defaultBranch" class="{{ $resetLinkClass }}">Reset</button>
                                     </div>
+                                    @if ($branchSelect)
+                                        <x-erp.filter-sheet-branch-select :id="$id" :branch-all-label="$branchAllLabel" :show-branch-all="$showBranchAll" />
+                                    @else
                                     <div class="flex flex-col overflow-hidden rounded-[12px] border-[1px] border-solid border-gray-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
                                         <div class="relative shrink-0 border-b border-gray-100">
                                             <i class="ph-bold ph-magnifying-glass absolute left-[12px] top-1/2 -translate-y-1/2 text-[12px] text-gray-400" aria-hidden="true"></i>
@@ -142,6 +149,7 @@
                                             <p x-show="visibleBranchCount === 0" x-cloak class="py-[12px] text-center text-[12px] text-gray-400">Cabang tidak ditemukan</p>
                                         </div>
                                     </div>
+                                    @endif
                                 </div>
                             @endif
 
@@ -160,7 +168,20 @@
                             @endif
 
                             @foreach ($groups as $group)
+                                @if (($group['type'] ?? '') === 'branch')
+                                    @if ($branchRows !== [])
+                                        <div class="{{ $ref ? 'order-3' : '' }}">
+                                            <div class="mb-[6px] flex items-center justify-between">
+                                                <label for="{{ $id }}-mobile-branch-select" class="{{ $labelClass }}">{{ $branchLabel }}</label>
+                                                <button type="button" x-show="branch !== defaultBranch" @click="branch = defaultBranch" class="{{ $resetLinkClass }}">Reset</button>
+                                            </div>
+                                            <x-erp.filter-sheet-branch-select :id="$id" :branch-all-label="$branchAllLabel" :show-branch-all="$showBranchAll" />
+                                        </div>
+                                    @endif
+                                    @continue
+                                @endif
                                 @php
+                                    $groupSelect = ($group['type'] ?? 'chips') === 'select';
                                     $groupKey = (string) $group['key'];
                                     $groupDefault = (string) ($group['default'] ?? 'all');
                                     $groupRadio = ($group['type'] ?? 'chips') === 'radio';
@@ -169,11 +190,13 @@
                                     $radioBox = 'flex flex-col overflow-hidden rounded-[12px] border-[1px] border-solid border-gray-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]';
                                     $radioList = 'divide-y divide-gray-100/60 bg-gray-50/30' . (! empty($group['scroll']) ? ' max-h-[176px] overflow-y-auto overscroll-none' : '');
                                 @endphp
-                                <div @class(['order-1' => $ref]) @if (! empty($group['showWhen'])) x-show="matches(@js($group['showWhen']))" x-cloak @endif>
+                                <div @class(['order-1' => $ref, '!mt-[8px]' => empty($group['label'])]) @if (! empty($group['showWhen'])) x-show="matches(@js($group['showWhen']))" x-cloak @endif>
+                                    @if (! empty($group['label']))
                                     <div class="mb-[6px] flex items-center justify-between">
-                                        <span class="{{ $labelClass }}">{{ $group['label'] }}</span>
+                                        <span class="{{ $labelClass }}" @if (! empty($group['strong'])) data-label-strong @endif>{{ $group['label'] }}</span>
                                         <button type="button" x-show="extra[@js($groupKey)] !== @js($groupDefault)" @click="setExtra(@js($groupKey), @js($groupDefault))" class="{{ $resetLinkClass }}">Reset</button>
                                     </div>
+                                    @endif
                                     @foreach ($groupLists as $listKey => $options)
                                         <div @if (isset($group['optionsBy'])) x-show="extra[@js((string) $group['optionsBy'])] === @js((string) $listKey)" x-cloak @endif>
                                             @if ($groupRadio)
@@ -187,6 +210,28 @@
                                                             </label>
                                                         @endforeach
                                                     </div>
+                                                </div>
+                                            @elseif ($groupSelect)
+                                                @php($optionLabels = array_map('strval', $options))
+                                                <div x-data="{ open: false }" class="relative w-full" @click.outside="open = false">
+                                                    <button type="button" @click="open = !open" :aria-expanded="open" aria-haspopup="listbox" :class="open ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-gray-200 hover:border-emerald-400'" class="flex w-full cursor-pointer items-center justify-between rounded-[12px] border-[1px] border-solid bg-white p-[10px] text-left text-[12px] leading-[16px] text-gray-700 outline-none transition-colors">
+                                                        <span class="truncate pr-[8px] text-left font-medium" x-text="@js($optionLabels)[extra[@js($groupKey)]] ?? @js((string) reset($optionLabels))"></span>
+                                                        <i class="ph-bold ph-caret-down shrink-0 text-gray-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
+                                                    </button>
+                                                    <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" role="listbox" class="absolute left-0 top-full z-[70] mt-[6px] max-h-[192px] w-full overflow-y-auto overscroll-none rounded-[12px] border-[1px] border-solid border-gray-100 bg-white py-[4px] shadow-lg">
+                                                        @foreach ($options as $value => $label)
+                                                            @php($optionDisabled = in_array((string) $value, $groupDisabled, true))
+                                                            <div role="option" @unless ($optionDisabled) @click="setExtra(@js($groupKey), @js((string) $value)); open = false" @endunless :class="extra[@js($groupKey)] === @js((string) $value) ? 'bg-gray-50 font-semibold text-emerald-600' : 'text-gray-600 hover:bg-gray-50'" class="flex items-center justify-between px-[12px] py-[8px] text-[12px] leading-[16px] transition-colors {{ $optionDisabled ? 'cursor-not-allowed opacity-60 bg-gray-50 text-gray-400' : 'cursor-pointer' }}"><span class="truncate">{{ $label }}</span><i x-show="extra[@js($groupKey)] === @js((string) $value)" class="ph-fill ph-circle shrink-0 text-[8px] text-emerald-500" aria-hidden="true"></i></div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @elseif (($group['tiles'] ?? null) === 'row')
+                                                <div class="flex flex-row gap-[8px]">
+                                                    @foreach ($options as $value => $label)
+                                                        <button type="button" @click="setExtra(@js($groupKey), @js((string) $value))" :aria-pressed="extra[@js($groupKey)] === @js((string) $value)" :class="extra[@js($groupKey)] === @js((string) $value) ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'" class="flex flex-1 cursor-pointer items-center justify-center gap-[8px] rounded-[12px] border-[1px] border-solid px-[12px] py-[10px] text-[12px] font-semibold leading-[16px] transition-colors">
+                                                            @if (! empty($group['icons'][$value]))<i class="{{ $group['icons'][$value] }} text-[16px] leading-[24px]" :class="extra[@js($groupKey)] === @js((string) $value) ? 'text-emerald-600' : 'text-gray-400'" aria-hidden="true"></i>@endif{{ $label }}
+                                                        </button>
+                                                    @endforeach
                                                 </div>
                                             @elseif (! empty($group['tiles']))
                                                 <div class="grid grid-cols-4 gap-[8px]">
@@ -210,12 +255,13 @@
                             @endforeach
 
                             @if ($withDates)
-                            <div @class(['order-4' => $ref]) @if ($datesWhen) x-show="matches(@js($datesWhen))" x-cloak @endif>
-                                <div class="mb-[6px] flex items-center justify-between">
+                            @php($datesVisible = $datesWhen ? 'x-show="matches(' . e(json_encode($datesWhen)) . ')" x-cloak' : '')
+                            <div @class(['order-4' => $ref]) @if ($datesWhen && ! $longDate) {!! $datesVisible !!} @endif>
+                                <div class="mb-[6px] flex items-center justify-between" @if ($longDate) {!! $datesVisible !!} @endif>
                                     <span class="{{ $labelClass }}">{{ $dateLabel }}</span>
                                     <button type="button" x-show="start || end" @click="start = ''; end = ''" class="{{ $resetLinkClass }}">Reset</button>
                                 </div>
-                                <div class="flex w-full flex-col gap-[8px] sm:flex-row">
+                                <div class="flex w-full flex-col gap-[8px] sm:flex-row" @if ($longDate) {!! $datesVisible !!} @endif>
                                     <button id="{{ $id }}-mobile-start-date-trigger" type="button" aria-label="Tanggal mulai" @click="openCalendar($event.currentTarget, 'start')" :aria-expanded="calendarOpen" aria-controls="{{ $id }}-mobile-calendar" class="{{ $dateButton }}">
                                         <span class="w-[32px] shrink-0 text-[10px] font-bold text-gray-400 {{ $tight ? 'leading-[16px]' : '' }}">DARI</span>
                                         <span class="min-w-0 truncate text-[12px] font-medium {{ $tight ? 'leading-[16px]' : '' }}" :class="start ? 'text-gray-800' : 'text-gray-400'" x-text="formatDate(start)"></span>
@@ -227,11 +273,11 @@
                                     <input id="{{ $id }}-mobile-start-date" type="hidden" x-model="start" aria-label="Tanggal mulai">
                                     <input id="{{ $id }}-mobile-end-date" type="hidden" x-model="end" aria-label="Tanggal akhir">
                                 </div>
-                                <div class="flex flex-col gap-[8px] pt-[8px]">
+                                <div class="flex flex-col gap-[8px] {{ $longDate ? '' : 'pt-[8px]' }}" @if ($longDate) :style="({!! $datesWhen ? 'matches(' . e(json_encode($datesWhen)) . ')' : 'true' !!}) ? 'padding-top:24px' : 'padding-top:8px'" @endif>
                                     @unless ($ref)<span class="{{ $labelClass }}">Pilihan Cepat</span>@endunless
                                     <div class="flex flex-row gap-[8px]">
                                         @foreach ($quickRanges as $range)
-                                            <button type="button" @click="setDateRange(@js($range))" class="{{ $loop->first ? $quickPrimary : $quickOutline }}" title="Tampilkan {{ $quickLabels[$range] }}">{{ $quickLabels[$range] }}</button>
+                                            <button type="button" @click="setDateRange(@js($range))" @if ($longDate && ! $loop->first && $datesWhen) {!! $datesVisible !!} @endif @if ($longDate && $loop->first && $datesWhen) :style="matches(@js($datesWhen)) ? '' : 'padding-block:10px'" @endif class="{{ $loop->first ? $quickPrimary : $quickOutline }}" title="Tampilkan {{ $quickLabels[$range] }}">{{ $quickLabels[$range] }}</button>
                                         @endforeach
                                     </div>
                                 </div>

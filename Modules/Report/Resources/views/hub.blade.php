@@ -21,18 +21,24 @@
         .report-hub__intro p { margin:5px 0 0; color:#6b7280; font-size:12px; line-height:1.5; }
         .report-hub__link { display:flex; min-height:52px; align-items:center; justify-content:space-between; gap:16px; padding:16px 20px; border-bottom:1px solid #f3f4f6; color:#1f2937; font-size:14px; font-weight:600; line-height:1.5; text-decoration:none; transition:background .15s,color .15s; -webkit-tap-highlight-color:transparent; }
         .report-hub__link:last-child { border-bottom:0; }
+        .report-hub__link.is-locked { cursor:not-allowed; color:#9ca3af; }
+        .report-hub__link.is-locked:hover { background:transparent; color:#9ca3af; }
         .report-hub__link:hover { background:#f9fafb; color:#0b595b; }
         .report-hub__link:focus-visible { position:relative; outline:2px solid #0b595b; outline-offset:-3px; background:#f0fdf8; color:#0b595b; }
         .report-hub__link i { flex:none; color:#6b7280; font-size:12px; }
         @media (max-width:767.98px) {
             body:has(.report-hub) main { padding:0!important; }
-            .report-hub { border:0; border-radius:0; padding:24px 16px calc(112px + env(safe-area-inset-bottom)); }
+            .report-hub { border:0; border-radius:0; padding:16px 16px calc(96px + env(safe-area-inset-bottom)); }
         }
         @media (max-width:639.98px) {
-            .report-hub__card { max-width:384px; }
-            .report-hub__intro { padding:16px; }
-            .report-hub__intro h2 { font-size:16px; }
-            .report-hub__link { min-height:48px; padding:14px 16px; }
+            .report-hub__card { max-width:384px; flex:1 1 auto; }
+            .report-hub__link:last-child { border-bottom:0; }
+            .report-hub__intro { padding:20px 20px 19px; }
+            .report-hub__intro h2 { font-size:16px; line-height:20px; }
+            .report-hub__intro p { margin-top:4px; color:#9ca3af; line-height:16px; }
+            .report-hub__card { box-shadow:none; }
+            .report-hub__link i { color:#9ca3af; }
+            .report-hub__link { min-height:48px; padding:14px 20px; }
         }
         @media (prefers-reduced-motion:reduce) { .report-hub__link { transition:none; } }
     </style>
@@ -44,7 +50,11 @@
             <div class="report-hub__intro"><h2 id="report-hub-title">Pusat Laporan</h2><p>Pilih modul analitik &amp; ringkasan bisnis</p></div>
             <nav aria-label="Daftar laporan">
                 @foreach ($reports as $report)
-                    <a class="report-hub__link" href="{{ route($report['route']) }}"><span>{{ $report['label'] }}</span><i class="ph-bold ph-caret-right" aria-hidden="true"></i></a>
+                    @if (! empty($report['locked']))
+                        <span class="report-hub__link is-locked" aria-disabled="true"><span>{{ $report['label'] }}</span></span>
+                    @else
+                        <a class="report-hub__link" href="{{ route($report['route']) }}"><span>{{ $report['label'] }}</span><i class="ph-bold ph-caret-right" aria-hidden="true"></i></a>
+                    @endif
                 @endforeach
             </nav>
         </div>

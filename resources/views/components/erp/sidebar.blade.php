@@ -199,7 +199,11 @@
                 <a href="{{ route('report-total-aset') }}" class="submenu-link {{ request()->routeIs('report-total-aset') ? 'active' : '' }}"><span>Total Aset</span></a>
                 <a href="{{ route('report-product-sales.index') }}" class="submenu-link {{ request()->routeIs('report-product-sales.*') ? 'active' : '' }}"><span>Pendapatan Penjualan</span></a>
                 <a href="{{ route('report-profit-revenue.index') }}" class="submenu-link {{ request()->routeIs('report-profit-revenue.*') ? 'active' : '' }}"><span>Keuntungan Penjualan</span></a>
-                <a href="{{ route('report-profit-adjusted.index') }}" class="submenu-link {{ request()->routeIs('report-profit-adjusted.*') ? 'active' : '' }}"><span>Keuntungan Setelah Penyesuaian</span></a>
+                @if (\Modules\Report\Http\Controllers\ReportController::isLocked('report-profit-adjusted.index'))
+                    <span class="submenu-link is-locked" aria-disabled="true"><span>Keuntungan Setelah Penyesuaian</span></span>
+                @else
+                    <a href="{{ route('report-profit-adjusted.index') }}" class="submenu-link {{ request()->routeIs('report-profit-adjusted.*') ? 'active' : '' }}"><span>Keuntungan Setelah Penyesuaian</span></a>
+                @endif
                 <a href="{{ route('report-shipping-cost') }}" class="submenu-link {{ request()->routeIs('report-shipping-cost') ? 'active' : '' }}"><span>Ongkos Kirim</span></a>
                 <a href="{{ route('report-product-buang') }}" class="submenu-link {{ request()->routeIs('report-product-buang') ? 'active' : '' }}"><span>Kerugian Barang Buang</span></a>
             </div></div>

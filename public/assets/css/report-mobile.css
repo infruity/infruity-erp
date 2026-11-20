@@ -53,15 +53,15 @@
     #kt_content { padding:0 !important; overflow:hidden; }
     #kt_content_container { width:100%; max-width:none; padding:0; }
     #kt_post { margin:0; }
-    .report-mobile-page { display:flex; flex-direction:column; width:100%; height:calc(100dvh - 60px); min-height:0; padding-bottom:env(safe-area-inset-bottom); background:white; overflow:hidden; box-sizing:border-box; }
+    .report-mobile-page { display:flex; flex-direction:column; width:100%; height:calc(100dvh - 61px); min-height:0; padding-bottom:env(safe-area-inset-bottom); background:white; overflow:hidden; box-sizing:border-box; }
     .report-mobile-page * { box-sizing:border-box; }
     .report-mobile-list { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; background:white; scrollbar-width:none; }
     .report-mobile-list::-webkit-scrollbar,
 .report-mobile-sheet__body::-webkit-scrollbar { display:none; }
-    .report-mobile-row { display:flex; width:100%; min-height:76px; flex-direction:column; justify-content:center; gap:5px; padding:15px 24px; border:0; border-bottom:1px solid #f1f3f5; background:white; color:#1f2937; text-align:left; text-decoration:none; cursor:pointer; }
-    .report-mobile-page--asset .report-mobile-row { min-height:68px; padding-top:12px; padding-bottom:12px; }
-    .report-mobile-page--profit .report-mobile-row { min-height:60px; padding-top:10px; padding-bottom:10px; }
-    .report-mobile-page--adjusted .report-mobile-row { min-height:60px; padding-top:10px; padding-bottom:10px; }
+    .report-mobile-row { display:flex; width:100%; min-height:71px; flex-direction:column; justify-content:center; gap:2px; padding:16px 24px; border:0; border-bottom:1px solid #f3f4f6; background:white; color:#1f2937; text-align:left; text-decoration:none; cursor:pointer; }
+    .report-mobile-page--asset .report-mobile-row { min-height:71px; padding-top:17px; padding-bottom:15px; }
+    .report-mobile-page--profit .report-mobile-row { min-height:53px; padding-top:16px; padding-bottom:16px; }
+    .report-mobile-page--adjusted .report-mobile-row { min-height:53px; padding-top:16px; padding-bottom:16px; }
     .report-mobile-row:hover,
 .report-mobile-row:focus-visible { background:#f4fbf7; }
     .report-mobile-row--static { cursor:default; }
@@ -78,6 +78,20 @@
     .report-mobile-row__meta span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .report-mobile-row__meta strong { flex:none; color:#111827; font-size:12px; white-space:nowrap; }
     .report-mobile-row__meta strong.is-negative { color:#dc2626; }
+    /* Reference: 20px title line, 16px meta line, 12px bold amount; 77px search block with a divider. */
+    .report-mobile-row { padding-top:17px; padding-bottom:15px; }
+    .report-mobile-page--profit .report-mobile-row, .report-mobile-page--adjusted .report-mobile-row { padding-top:16px; padding-bottom:16px; }
+    .report-mobile-row__stacked { gap:2px; }
+    .report-mobile-summary { padding:16px 24px !important; }
+    .report-mobile-summary__label, .report-mobile-summary__line > span { color:#111827 !important; }
+    :is(.report-mobile-page--sales, .report-mobile-page--shipping, .report-mobile-page--asset, .report-mobile-page--loss) .report-mobile-summary__line { margin:0; padding:0; border:0; color:#111827; font-size:15px; font-weight:700; line-height:22.5px; }
+    :is(.report-mobile-page--sales, .report-mobile-page--shipping, .report-mobile-page--asset, .report-mobile-page--loss) .report-mobile-summary__line strong { color:#111827; font-size:15px; font-weight:700; }
+    .report-mobile-row__title { line-height:20px; }
+    .report-mobile-row__amount { line-height:20px; }
+    .report-mobile-row__meta { line-height:16px; }
+    .report-mobile-row__meta strong { font-weight:700; line-height:15px; }
+    .report-mobile-page .erp-mobile-search-shell { padding:16px; border-bottom:1px solid #f3f4f6; }
+    .report-mobile-page .erp-mobile-search { height:44px; }
     .report-mobile-empty { display:flex; min-height:250px; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; text-align:center; }
     .report-mobile-empty__icon { display:grid; width:64px; height:64px; margin-bottom:12px; place-items:center; border-radius:50%; background:#f9fafb; color:#9ca3af; font-size:24px; }
     .report-mobile-empty h2 { margin:0 0 4px; color:#111827; font-size:16px; font-weight:500; }
@@ -497,3 +511,276 @@
 
 .report-mobile-summary__info { min-width:24px; min-height:24px; }
 .report-mobile-receipt__line strong.is-payment { color:#2563eb; }
+
+/* Search pill, filter icon and Total Aset rows/summary as in the Plan. */
+.report-mobile-page .erp-mobile-search { gap:0; padding:0 6px 0 16px; border-color:rgba(229,231,235,.8); box-shadow:none; }
+.report-mobile-page .erp-mobile-search__icon { width:18px; height:18px; margin-right:10px; }
+.report-mobile-page .erp-mobile-search__input { font-weight:500; }
+.report-mobile-page .erp-mobile-search__clear { width:24px; height:24px; margin-right:4px; }
+.report-mobile-page .erp-mobile-search__divider { height:16px; margin:0 4px; }
+.report-mobile-page .erp-mobile-search__filter { color:#9ca3af; }
+.report-mobile-page .erp-mobile-search__filter:hover,
+.report-mobile-page .erp-mobile-search__filter.is-active { background:transparent; color:#0b595b; }
+.report-mobile-tune { font-family:'Material Symbols Rounded'; font-size:20px; font-weight:400; font-style:normal; line-height:1; letter-spacing:normal; text-transform:none; white-space:nowrap; font-feature-settings:'liga'; -webkit-font-feature-settings:'liga'; font-variation-settings:'wght' 400; }
+.erp-mobile-search__filter.is-active .report-mobile-tune { font-variation-settings:'wght' 600; }
+.report-mobile-page--asset .report-mobile-row--static { min-height:0; padding:16px 24px; border-top:1px solid #f3f4f6; border-bottom:0; }
+.report-mobile-row__at { color:#9ca3af; }
+.report-mobile-page--asset .report-mobile-summary__label { gap:6px; }
+.report-mobile-page--asset .report-mobile-summary__info { display:inline-flex; width:24px; height:24px; align-items:center; justify-content:center; margin:0; color:#9ca3af; font-size:17px; line-height:1; }
+@media (max-width:767.98px) {
+    .report-mobile-info { display:flex; right:16px; bottom:calc(100% + 12px); left:16px; align-items:flex-start; gap:10px; padding:14px; border:1px solid rgba(229,231,235,.9); border-radius:16px; background:rgba(255,255,255,.95); -webkit-backdrop-filter:blur(24px); backdrop-filter:blur(24px); box-shadow:0 12px 36px rgba(0,0,0,.12); color:#374151; font-size:12px; line-height:16px; z-index:30; }
+    .report-mobile-info__icon { display:flex; width:24px; height:24px; flex:none; align-items:center; justify-content:center; margin-top:2px; border-radius:999px; background:#f3f4f6; color:#6b7280; font-size:14px; }
+    .report-mobile-info__text { flex:1; min-width:0; color:#4b5563; font-size:12px; line-height:19.5px; }
+    .report-mobile-info__text strong { color:#111827; font-weight:600; }
+    .report-mobile-info__close { display:flex; flex:none; align-items:center; justify-content:center; margin:-4px -4px 0 0; padding:4px; border:0; border-radius:8px; background:transparent; color:#9ca3af; font-size:12px; line-height:16px; }
+    .report-mobile-info--enter { transition:opacity .25s cubic-bezier(.16,1,.3,1), transform .25s cubic-bezier(.16,1,.3,1); }
+    .report-mobile-info--leave { transition:opacity .15s cubic-bezier(.4,0,1,1), transform .15s cubic-bezier(.4,0,1,1); }
+    .report-mobile-info--from { opacity:0; transform:translateY(8px) scale(.95); }
+    .report-mobile-info--to { opacity:1; transform:none; }
+}
+@media (min-width:768px) {
+    .report-mobile-info__icon, .report-mobile-info__close { display:none; }
+}
+@media (max-width:767.98px) { .report-mobile-info__close i { line-height:16px; } }
+
+/* Filter Laporan sheet chrome as in the Plan (handle 48px, 12px header, 77px footer with unequal button borders). */
+[data-erp-filter-sheet][id="report-filter-sheet"] > section > div:first-child > div { width:48px; }
+body.erp-ui #report-filter-sheet#report-filter-sheet .erp-filter-sheet__header { padding:12px 20px !important; }
+body.erp-ui #report-filter-sheet#report-filter-sheet .erp-filter-sheet__subtitle { font-size:12px; line-height:16px !important; }
+html body.erp-ui #report-filter-sheet#report-filter-sheet :is(label, span).uppercase { font-weight:600 !important; line-height:15px !important; }
+body.erp-ui #report-filter-sheet#report-filter-sheet .erp-filter-sheet__footer { display:flex !important; gap:12px !important; padding:16px !important; background:rgba(249,250,251,.7) !important; }
+body.erp-ui #report-filter-sheet#report-filter-sheet .erp-filter-sheet__footer > button { flex:1 1 0; }
+body.erp-ui #report-filter-sheet#report-filter-sheet .erp-filter-sheet__primary { border-width:0; }
+@media (max-width:767.98px) {
+    .report-mobile-empty { min-height:0; padding:64px 24px; }
+    .report-mobile-empty h2 { line-height:24px; }
+    .report-mobile-empty p { line-height:20px; }
+}
+.report-mobile-page--asset .report-mobile-empty { border-top:1px solid #f3f4f6; }
+html body.erp-ui #report-filter-sheet#report-filter-sheet label.uppercase[data-label-strong], html body.erp-ui #report-filter-sheet#report-filter-sheet span.uppercase[data-label-strong] { font-weight:700 !important; }
+.report-mobile-page--sales .report-mobile-row { min-height:0; padding:16px 24px; border-top:1px solid #f3f4f6; border-bottom:0; }
+
+/* Riwayat Transaksi sheet as in the Plan (phone). */
+@media (max-width:767.98px) {
+    .report-mobile-sheet--history .report-mobile-sheet__handle { width:100% !important; height:30px !important; margin:0 !important; }
+    .report-mobile-sheet--history .report-mobile-sheet__handle::after { width:64px; top:16px; }
+    .report-mobile-sheet--history .report-mobile-sheet__head { position:relative; z-index:15; padding:8px 24px 16px; background:#fff; }
+    .report-mobile-sheet--history .report-mobile-sheet__head h2 { font-size:18px; line-height:28px; color:#111827; }
+    .report-mobile-sheet--history .report-mobile-sheet__head p { margin:2px 0 0; color:#6b7280; font-size:14px; line-height:20px; }
+    .report-mobile-sheet--history .report-mobile-sheet__close { width:40px; height:40px; background:#f9fafb; font-size:18px; }
+    .report-mobile-sheet--history .report-mobile-history-tools { position:relative; z-index:15; gap:8px; padding:0 24px 16px; border-bottom:1px solid #e5e7eb; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+    .report-mobile-sheet--history .report-mobile-history-search { gap:8px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+    .report-mobile-sheet--history .report-mobile-history-search > i { font-size:16px; }
+    .report-mobile-sheet--history .report-mobile-history-filter-button { gap:0; padding:0 0 0 2px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+    .report-mobile-sheet--history .report-mobile-history-filter-icon { width:36px; height:36px; }
+    .report-mobile-sheet--history .report-mobile-history-filter-period:not(.is-expanded) + .report-mobile-history-filter-caret { display:none; }
+    .report-mobile-sheet--history .report-mobile-history-body { background:rgba(249,250,251,.6); }
+    .report-mobile-sheet--history .report-mobile-history-list { gap:16px; }
+    .report-mobile-sheet--history .report-mobile-receipt__head > div { gap:2px; }
+    .report-mobile-sheet--history .report-mobile-receipt__eyebrow { color:#9ca3af; font-size:12px; font-weight:500; letter-spacing:.6px; line-height:16px; }
+    .report-mobile-sheet--history .report-mobile-receipt__head strong { font-size:14px; line-height:20px; }
+    .report-mobile-sheet--history .report-mobile-receipt__date strong { font-size:12px; line-height:16px; }
+    .report-mobile-sheet--history .report-mobile-receipt__date span { color:#6b7280; font-size:10px; font-weight:500; line-height:15px; }
+    .report-mobile-sheet--history .report-mobile-receipt__line { margin-bottom:6px; color:#4b5563; line-height:16px; }
+    .report-mobile-sheet--history .report-mobile-receipt__line strong { color:#111827; line-height:16px; }
+    .report-mobile-sheet--history .report-mobile-receipt__line[data-line="Jumlah Terjual"] strong { font-weight:500; }
+    .report-mobile-sheet--history .report-mobile-receipt__total { margin-top:6px; padding-top:12px; line-height:1; }
+    .report-mobile-sheet--history .report-mobile-receipt__total span { line-height:16px; letter-spacing:.6px; }
+    .report-mobile-sheet--history .report-mobile-receipt__total strong { font-weight:900; line-height:1; }
+}
+@media (max-width:767.98px) {
+    .report-mobile-sheet--history { border-top:1px solid #f3f4f6; }
+    .report-mobile-sheet--history .report-mobile-receipt__line strong.is-payment { color:#2563eb; }
+    .report-mobile-page--sales .report-mobile-row:hover .report-mobile-row__title { color:#047857; }
+}
+@media (max-width:767.98px) {
+    .report-mobile-sheet--history .report-mobile-receipt__line:is([data-line="Diskon Produk"], [data-line="Diskon Prorata"]) { color:#6b7280; }
+    .report-mobile-sheet--history .report-mobile-receipt__line:is([data-line="Diskon Produk"], [data-line="Diskon Prorata"]) strong { color:#ef4444; font-weight:500; }
+}
+/* Empty / loading / error states sit in the middle of the list area. */
+.report-mobile-list > .report-mobile-empty { min-height:100%; }
+/* Picking a date shows the whole calendar in the popup instead of a small floating one. */
+.report-mobile-history-filter-popover.is-calendar > .report-mobile-history-filter-field:not(:first-child),
+.report-mobile-history-filter-popover.is-calendar > .report-mobile-history-filter-actions { display:none !important; }
+.report-mobile-history-filter-popover.is-calendar .report-mobile-history-calendar { position:static; width:100%; margin-top:8px; padding:12px 0 0; border:0; border-top:1px solid #f1f3f5; border-radius:0; box-shadow:none; }
+/* History filter dropdowns (Metode Pembayaran, Tanggal): compact trigger and an even option list. */
+.report-mobile-history-filter-popover .report-mobile-history-date-trigger { min-height:36px; padding:0 10px; border-radius:10px; font-size:12px; font-weight:500; line-height:16px; transition:border-color .15s, box-shadow .15s; }
+.report-mobile-history-filter-popover .report-mobile-history-date-trigger:hover { border-color:#34d399; }
+.report-mobile-history-filter-popover .report-mobile-history-date-trigger[aria-expanded="true"] { border-color:#10b981; box-shadow:0 0 0 1px #10b981; }
+.report-mobile-history-filter-popover .report-mobile-history-date-trigger > i:last-child { font-size:12px; transition:transform .2s; }
+.report-mobile-history-filter-popover .report-mobile-history-option-menu { top:calc(100% + 6px); max-height:192px; padding:4px 0; border:1px solid #f3f4f6; border-radius:10px; box-shadow:0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1); }
+.report-mobile-history-filter-popover .report-mobile-history-option-menu button { min-height:32px; padding:8px 12px; font-size:12px; line-height:16px; transition:background-color .15s; }
+.report-mobile-history-filter-popover .report-mobile-history-option-menu button:hover { background:#f9fafb; }
+.report-mobile-history-filter-popover .report-mobile-history-option-menu button > i { font-size:8px; }
+/* The popup scrolls, so the option list opens inline (it was cut off as a floating layer). */
+.report-mobile-history-filter-popover .report-mobile-history-option-menu { position:static; margin-top:6px; max-height:160px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+.report-mobile-history-filter-popover .report-mobile-history-option-menu button > i { display:none !important; }
+.report-mobile-receipt.is-link { cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.report-mobile-receipt.is-link:focus-visible { outline:2px solid #0b595b; outline-offset:2px; }
+
+/* Keuntungan Penjualan rows and summary as in the Plan. */
+.report-mobile-page--profit .report-mobile-row { min-height:0; padding:16px 24px; border-top:1px solid #f3f4f6; border-bottom:0; }
+.report-mobile-page--profit .report-mobile-summary__line--profit-subtotal,
+.report-mobile-page--profit .report-mobile-summary__line--profit-hpp { margin:0 0 8px; line-height:20px; }
+.report-mobile-page--profit .report-mobile-summary__line--profit-subtotal .report-mobile-summary__label,
+.report-mobile-page--profit .report-mobile-summary__line--profit-hpp .report-mobile-summary__label,
+.report-mobile-page--profit .report-mobile-summary__line--profit-subtotal .report-mobile-summary__label > span,
+.report-mobile-page--profit .report-mobile-summary__line--profit-hpp .report-mobile-summary__label > span { color:#6b7280 !important; font-size:12px; font-weight:500; line-height:16px; }
+.report-mobile-page--profit .report-mobile-summary__line--profit-subtotal strong,
+.report-mobile-page--profit .report-mobile-summary__line--profit-hpp strong { font-size:14px; font-weight:600; line-height:20px; }
+.report-mobile-page--profit .report-mobile-summary__line--profit-hpp strong { color:#ef4444; }
+.report-mobile-page--profit .report-mobile-summary__badge { border-radius:9999px; line-height:15px; }
+.report-mobile-page--profit .report-mobile-summary__line--profit-total { margin:0; padding-top:8px; border-top:1px solid #e5e7eb; }
+@media (max-width:767.98px) {
+    .report-mobile-receipt[data-type="profit"] .report-mobile-receipt__line[data-line="Jumlah Terjual"] strong { font-weight:600; }
+    .report-mobile-receipt[data-type="profit"] .report-mobile-receipt__line[data-line="Pendapatan Bersih"] { margin-top:13px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #f3f4f6; }
+    .report-mobile-receipt[data-type="profit"] .report-mobile-receipt__line[data-line="Pendapatan Bersih"] span { color:#1f2937; font-weight:600; }
+    .report-mobile-receipt[data-type="profit"] .report-mobile-receipt__line[data-line="Pendapatan Bersih"] strong { font-weight:700; }
+    .report-mobile-receipt[data-type="profit"] .report-mobile-receipt__line[data-line="HPP Satuan"] strong { font-weight:500; }
+    .report-mobile-receipt[data-type="profit"] .report-mobile-receipt__line[data-line="Total HPP"] strong { color:#ef4444; }
+    .report-mobile-receipt[data-type="profit"] .report-mobile-receipt__total { margin-top:4px; }
+    .report-mobile-receipt[data-type="profit"] .report-mobile-receipt__total strong { color:#059669; font-size:16px; }
+}
+@media (max-width:767.98px) {
+    .report-mobile-sheet--history .report-mobile-receipt__head { align-items:center; }
+    .report-mobile-receipt[data-type="profit"] .report-mobile-receipt__total { margin-top:8px; }
+}
+@media (max-width:767.98px) { .report-mobile-receipt[data-type="profit"] .report-mobile-receipt__total { margin-top:10px; } }
+/* The percentage next to the profit total is plain coloured text, without the pill. */
+.report-mobile-summary__badge, .report-mobile-summary__badge.is-positive, .report-mobile-summary__badge.is-negative { padding:0; border-radius:0; background:transparent; }
+.report-mobile-summary__badge.is-positive { color:#047857; }
+.report-mobile-summary__badge.is-negative { color:#b91c1c; }
+.report-mobile-summary__badge { font-size:14px; font-weight:700; line-height:20px; }
+.report-mobile-sheet--history .report-mobile-receipt__total strong.is-negative { color:#dc2626 !important; }
+.report-mobile-row__sub { display:block; color:#6b7280; font-size:12px; line-height:16px; white-space:pre-wrap; }
+.report-mobile-page--profit .report-mobile-row__heading { gap:2px; }
+
+/* Keuntungan Penjualan (per produk): Pendapatan, Modal and Keuntungan as columns, like the stock history. */
+.report-mobile-colhead { display:none; }
+@media (max-width:767.98px) {
+    .report-mobile-colhead { display:flex; flex:none; align-items:center; justify-content:space-between; gap:8px; margin:12px 16px 8px; padding:9px 8px; border:1px solid #f1f3f5; border-radius:9px; background:rgba(249,250,251,.8); color:#9ca3af; font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+    .report-mobile-colhead[style*="display: none"] { display:none; }
+    .report-mobile-colhead > div { display:flex; flex:none; gap:6px; }
+    .report-mobile-colhead > div span { width:64px; text-align:right; }
+    .report-mobile-colhead > div span:last-child { width:72px; }
+    .report-mobile-colhead .is-accent { color:#0b595b; }
+    .report-mobile-row__cols { display:flex; flex:none; align-items:center; gap:6px; font-variant-numeric:tabular-nums; }
+    .report-mobile-row__cols > span { width:64px; color:#4b5563; font-size:11px; text-align:right; white-space:nowrap; }
+    .report-mobile-row__cols > .report-mobile-row__profit { width:72px; font-weight:700; }
+    .report-mobile-row__profit.is-positive { color:#059669 !important; }
+    .report-mobile-row__profit.is-negative { color:#dc2626 !important; }
+    .report-mobile-page--profit .report-mobile-row__top { align-items:flex-start; gap:6px; }
+    .report-mobile-page--profit .report-mobile-row__heading { min-width:0; flex:1; }
+    .report-mobile-page--profit .report-mobile-row__title { white-space:normal; overflow-wrap:anywhere; }
+    .report-mobile-page--profit .report-mobile-row__cols { padding-top:2px; }
+}
+@media (max-width:767.98px) {
+    .report-mobile-colhead > div span { text-align:center; }
+    .report-mobile-page--profit .report-mobile-row__title { font-size:12px; font-weight:700; line-height:16px; }
+}
+/* The stock history heading uses the page default typeface, not the card font; the same here. */
+.report-mobile-colhead { font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; }
+@media (max-width:767.98px) { .report-mobile-row__cols > span, .report-mobile-row__cols > .report-mobile-row__profit { text-align:center; } }
+
+/* Keuntungan Penjualan table = the stock history table (same box, rows, widths and type). */
+@media (max-width:767.98px) {
+    .report-mobile-colhead { gap:10px; margin:12px 16px 6px; padding:8px 10px; font-size:9px; }
+    .report-mobile-colhead > div { gap:4px; text-align:right; }
+    .report-mobile-colhead > div span { width:68px; text-align:right; }
+    .report-mobile-colhead > div span:nth-child(2) { width:72px; }
+    .report-mobile-colhead > div span:last-child { width:64px; }
+    .report-mobile-page--profit .report-mobile-row--cols { width:calc(100% - 32px); min-height:0; margin:0 16px; padding:10px; border-top:0; border-bottom:1px solid #f3f4f6; border-radius:9px; }
+    .report-mobile-page--profit .report-mobile-row--cols .report-mobile-row__top { gap:7px; }
+    .report-mobile-page--profit .report-mobile-row--cols .report-mobile-row__title { font-size:12px; font-weight:700; line-height:1.2; }
+    .report-mobile-row__cols { gap:4px; padding-top:2px; }
+    .report-mobile-row__cols > span { width:68px; text-align:right; }
+    .report-mobile-row__cols > span:nth-child(2) { width:72px; }
+    .report-mobile-row__cols > .report-mobile-row__profit { width:64px; }
+}
+@media (max-width:767.98px) {
+    .report-mobile-colhead > div span, .report-mobile-row__cols > span { width:66px; }
+    .report-mobile-colhead > div span:nth-child(2), .report-mobile-row__cols > span:nth-child(2) { width:70px; }
+    .report-mobile-colhead > div span:last-child, .report-mobile-row__cols > .report-mobile-row__profit { width:74px; }
+}
+@media (max-width:767.98px) {
+    .report-mobile-row__cols > span, .report-mobile-row__cols > .report-mobile-row__profit { text-align:right; }
+    .report-mobile-colhead > div, .report-mobile-row__cols { gap:6px; }
+    .report-mobile-colhead > div span, .report-mobile-row__cols > span { width:68px; }
+    .report-mobile-colhead > div span:nth-child(2), .report-mobile-row__cols > span:nth-child(2) { width:58px; }
+    .report-mobile-colhead > div span:last-child, .report-mobile-row__cols > .report-mobile-row__profit { width:76px; }
+}
+@media (max-width:767.98px) { .report-mobile-page--profit .report-mobile-row--cols { padding-right:11px; } }
+@media (max-width:767.98px) {
+    .report-mobile-colhead > div, .report-mobile-row__cols { gap:12px; }
+    .report-mobile-colhead > div span, .report-mobile-row__cols > span { width:66px; }
+    .report-mobile-colhead > div span:nth-child(2), .report-mobile-row__cols > span:nth-child(2) { width:62px; }
+    .report-mobile-colhead > div span:last-child, .report-mobile-row__cols > .report-mobile-row__profit { width:74px; }
+}
+@media (max-width:767.98px) {
+    .report-mobile-colhead > div, .report-mobile-row__cols { gap:12px; }
+    .report-mobile-colhead > div span:last-child, .report-mobile-row__cols > .report-mobile-row__profit { width:62px; }
+}
+@media (max-width:767.98px) {
+    .report-mobile-colhead > div span:last-child, .report-mobile-row__cols > .report-mobile-row__profit { width:66px; }
+}
+/* No focus ring on the history search while typing. */
+body.erp-ui .report-mobile-history-search input,
+body.erp-ui .report-mobile-history-search input:focus,
+body.erp-ui .report-mobile-history-search input:focus-visible { outline:0 !important; box-shadow:none !important; border:0 !important; background:transparent !important; }
+.report-mobile-page--profit .report-mobile-row--cols .report-mobile-row__title { white-space:pre-line; }
+
+/* Keuntungan Setelah Penyesuaian rows and summary as in the Plan. */
+.report-mobile-page--adjusted .report-mobile-row { min-height:0; padding:16px 24px; border-top:1px solid #f3f4f6; border-bottom:0; }
+.report-mobile-page--adjusted .report-mobile-row__amount.is-positive { color:#047857; }
+.report-mobile-page--adjusted .report-mobile-summary__line:not(.report-mobile-summary__line--profit-total) { margin:0 0 8px; line-height:20px; }
+.report-mobile-page--adjusted .report-mobile-summary__line:not(.report-mobile-summary__line--profit-total) .report-mobile-summary__label,
+.report-mobile-page--adjusted .report-mobile-summary__line:not(.report-mobile-summary__line--profit-total) .report-mobile-summary__label > span { color:#4b5563 !important; font-size:14px; font-weight:400; line-height:20px; }
+.report-mobile-page--adjusted .report-mobile-summary__line:not(.report-mobile-summary__line--profit-total) strong { color:#111827; font-size:14px; font-weight:600; line-height:20px; }
+.report-mobile-page--adjusted .report-mobile-summary__line:not(.report-mobile-summary__line--profit-total) strong.is-negative { color:#ef4444; }
+.report-mobile-page--adjusted .report-mobile-summary__line--profit-total { margin:12px 0 0; padding-top:8px; border-top:1px solid #d1d5db; }
+.report-mobile-page--adjusted .report-mobile-summary__line--profit-total .report-mobile-summary__label > span:first-child { font-size:14px; line-height:21px; }
+.report-mobile-page--adjusted .report-mobile-summary__line--profit-total strong.is-positive { color:#047857; }
+
+/* Detail Rekonsiliasi sheet as in the Plan (phone). */
+@media (max-width:767.98px) {
+    .report-mobile-sheet--history-adjusted .report-mobile-sheet__handle { height:22px !important; }
+    .report-mobile-sheet--history-adjusted .report-mobile-sheet__handle::after { top:12px; }
+    .report-mobile-sheet--history-adjusted .report-mobile-sheet__head { padding:16px 20px; }
+    .report-mobile-sheet--history-adjusted .report-mobile-sheet__head h2 { font-size:15px; line-height:22.5px; }
+    .report-mobile-sheet--history-adjusted .report-mobile-sheet__head p { margin:2px 0 0; color:#9ca3af; font-size:12px; line-height:18px; }
+    .report-mobile-sheet--history-adjusted .report-mobile-sheet__close { width:36px; height:36px; background:#f3f4f6; font-size:16px; }
+    .report-mobile-sheet--history-adjusted .report-mobile-history-body { padding:16px 20px 32px; }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__summary > span { letter-spacing:.3px; line-height:16px; }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__summary > strong { line-height:32px; }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__summary > div > span { gap:2px; }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__summary b { line-height:20px; }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__day > h3 > span { line-height:20px; }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__entry--profit > header { background:rgba(236,253,245,.3); }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__entry--loss > header { background:rgba(254,242,242,.3); }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__entry > header > span { line-height:19.5px; }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__entry > div { padding:12px 16px; }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__entry > div > span { gap:2px; }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__entry > div small { margin-bottom:0; line-height:15px; }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__entry > div b { line-height:16px; }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__entry > p { line-height:16px; }
+}
+@media (max-width:767.98px) {
+    .report-mobile-sheet--history-adjusted .report-mobile-sheet__head { border-bottom:1px solid #f3f4f6; }
+    .report-mobile-sheet--history-adjusted .report-adjusted-history__summary > span { display:block; }
+}
+.report-mobile-page--shipping .report-mobile-row { min-height:0; padding:16px 24px; border-top:1px solid #f3f4f6; border-bottom:0; }
+
+/* Riwayat Pengiriman as in the Plan: courier name in green, its branch below; receipt lines 8px apart. */
+@media (max-width:767.98px) {
+    .report-mobile-sheet--history .report-mobile-sheet__head p.report-mobile-sheet__name { margin-top:4px; color:#047857; font-size:14px; font-weight:600; line-height:20px; }
+    .report-mobile-sheet--history .report-mobile-sheet__head p.report-mobile-sheet__sub { margin:2px 0 0; color:#6b7280; font-size:12px; line-height:16px; }
+    .report-mobile-receipt[data-type="shipping"] .report-mobile-receipt__content { padding-top:14px; }
+    .report-mobile-receipt[data-type="shipping"] .report-mobile-receipt__line { margin-bottom:8px; }
+    .report-mobile-receipt[data-type="shipping"] .report-mobile-receipt__line[data-line="Alamat"] strong { max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .report-mobile-receipt[data-type="shipping"] .report-mobile-receipt__line[data-line="Pembayaran"] strong { max-width:210px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+}
+
+/* Kerugian Barang Buang rows and total as in the Plan (same as Total Aset). */
+.report-mobile-page--loss .report-mobile-row { min-height:0; padding:16px 24px; border-top:1px solid #f3f4f6; border-bottom:0; }
+.report-mobile-page--loss .report-mobile-summary__label { gap:6px; }
+.report-mobile-page--loss .report-mobile-summary__info { display:inline-flex; width:24px; height:24px; align-items:center; justify-content:center; margin:0; color:#9ca3af; font-size:17px; line-height:1; }

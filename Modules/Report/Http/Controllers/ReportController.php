@@ -19,6 +19,18 @@ use Yajra\DataTables\Facades\DataTables;
 
 class ReportController extends Controller
 {
+
+    /**
+     * Reports that are locked for now: hidden behind a lock icon in the menus, their page redirects to the hub and
+     * their data endpoints answer 403. Remove a route name here to open the report again.
+     */
+    public const LOCKED_REPORTS = ['report-profit-adjusted.index'];
+
+    public static function isLocked(string $route): bool
+    {
+        return in_array($route, self::LOCKED_REPORTS, true);
+    }
+
     use \App\Traits\HasAccessControl;
 
     private function scopeReportBranch($query, Request $request, string $column, string $parameter = 'branch_id'): void
@@ -93,7 +105,7 @@ class ReportController extends Controller
             ['route' => 'product-stock', 'label' => 'Stok Barang', 'permission' => 'product-stock.index'],
             ['route' => 'report-product-sales.index', 'label' => 'Pendapatan Penjualan', 'permission' => 'report.product.sales'],
             ['route' => 'report-profit-revenue.index', 'label' => 'Keuntungan Penjualan', 'permission' => 'report.profit.revenue'],
-            ['route' => 'report-profit-adjusted.index', 'label' => 'Keuntungan Setelah Penyesuaian', 'permission' => 'report.profit.adjusted'],
+            ['route' => 'report-profit-adjusted.index', 'label' => 'Keuntungan Setelah Penyesuaian', 'permission' => 'report.profit.adjusted', 'locked' => self::isLocked('report-profit-adjusted.index')],
             ['route' => 'report-total-aset', 'label' => 'Total Aset', 'permission' => 'report.total.aset'],
             ['route' => 'report-shipping-cost', 'label' => 'Ongkos Kirim', 'permission' => 'report.shipping.cost'],
             ['route' => 'report-product-buang', 'label' => 'Kerugian Barang Buang', 'permission' => 'report.product.buang'],
@@ -174,6 +186,10 @@ class ReportController extends Controller
     }
     public function profit_adjusted(Request $request)
     {
+        if (self::isLocked('report-profit-adjusted.index')) {
+            return redirect()->route('reports.hub');
+        }
+
         if ($denied = $this->requireAccess('report.profit.adjusted')) {
             return $denied;
         }
@@ -189,7 +205,8 @@ class ReportController extends Controller
         }
 
         $data['branches']    = Branch::all();
-        $data['couriers']    = Kurir::query()->orderBy('name')->get();
+        // The courier filter lists internal couriers only (external services such as GoSend are not offered).
+        $data['couriers']    = Kurir::query()->where('type', 'internal')->orderBy('name')->get();
         $data['defaultDate'] = date('Y-m-d');
         return view('report::shipping-cost', $data);
     }
@@ -1027,6 +1044,7 @@ class ReportController extends Controller
 
             return [
                 'invoice' => $detail->invoice,
+                'pos_url' => $detail->pos_id ? url('pos/show/' . $detail->pos_id) : null,
                 'date_formatted' => $txDate->locale('id')->isoFormat('dddd, D MMMM Y'),
                 'time_formatted' => 'Jam ' . $txDate->format('H:i') . ' WIB',
                 'branch_name' => $detail->branch_name,
@@ -1052,6 +1070,7 @@ class ReportController extends Controller
 
     public function get_data_profit_adjusted(Request $request)
     {
+        abort_if(self::isLocked('report-profit-adjusted.index'), 403);
         $this->authorizeAccess('report.profit.adjusted');
 
         $startDate = $request->filled('start_date') ? $request->start_date : date('Y-m-d');
@@ -1182,6 +1201,7 @@ class ReportController extends Controller
 
     public function get_profit_adjusted_history(Request $request)
     {
+        abort_if(self::isLocked('report-profit-adjusted.index'), 403);
         $this->authorizeAccess('report.profit.adjusted');
 
         $startDate = $request->start_date;
