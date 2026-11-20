@@ -48,3 +48,9 @@
 .ob-footer__pair > .ob-footer__icon.pos-ref-icon:hover:not(:disabled) { border-color:#34a684; background:#fff; color:#0b595b; }
 .ob-footer__pair > .ob-footer__icon.pos-ref-icon, .ob-footer__pair > .ob-footer__icon.pos-ref-icon:hover, .ob-footer__pair > .ob-footer__icon.pos-ref-icon:focus, .ob-footer__pair > .ob-footer__icon.pos-ref-icon:focus-visible, .ob-footer__pair > .ob-footer__icon.pos-ref-icon:active { border-color:#d1d5db !important; background:#fff !important; color:#1f2937 !important; box-shadow:none !important; outline:0 !important; }
 .ob-label--spaced { margin-top:14px; }
+.ob-card--branch .pos-customer { gap:0; border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
+.ob-card--branch .pos-customer .erp-picker__trigger { flex:1 1 auto; width:auto; min-width:0; border:0; border-radius:12px 0 0 12px; background:transparent; box-shadow:none; }
+.ob-card--branch .pos-customer .pos-customer__add { position:relative; width:48px; flex:none; border:0; border-radius:0 12px 12px 0; background:transparent; color:#0b595b; font-size:16px; padding:0; }
+.ob-card--branch .pos-customer .pos-customer__add:hover { background:#ecfdf5; }
+.ob-card--branch .pos-customer:focus-within, .ob-card--branch .pos-customer:has(.select2-container--open) { border-color:#10b981; }
+.ob-card--branch .pos-customer .pos-customer__add::before { content:''; position:absolute; left:0; top:10px; bottom:10px; width:1px; background:#d1d5db; }
