@@ -401,12 +401,13 @@
 <section id="arus-kas-form-page" class="arus-kas-page arus-kas-form-page" aria-label="{{ $pageMode === 'edit' ? 'Edit Arus Kas' : 'Tambah Arus Kas' }}"
     x-data="arusKasApp({ orders: [], branches: @js($branchOptions), formOrder: @js($formOrder), selectedBranchId: @js((string) ($selectedBranchId ?? '')), pageMode: @js($pageMode), baseUrl: @js(url('/arus-kas')) })">
     @if ($pageMode === 'edit')
-        <form method="POST" action="{{ route('arus-kas.update', $formOrder['id']) }}" class="flex min-h-0 flex-1 flex-col" @submit.prevent="showBackendInfo()">
+        <form method="POST" action="{{ route('arus-kas.update', $formOrder['id']) }}" class="flex min-h-0 flex-1 flex-col" @submit="submitting = true">
             @method('PUT')
     @else
-        <form method="POST" action="{{ route('arus-kas.store') }}" class="flex min-h-0 flex-1 flex-col" @submit.prevent="showBackendInfo()">
+        <form method="POST" action="{{ route('arus-kas.store') }}" class="flex min-h-0 flex-1 flex-col" @submit="submitting = true">
     @endif
             @csrf
+            <input type="hidden" name="status" :value="form.status">
             <input type="hidden" name="items_json" :value="JSON.stringify(form.items)">
             <div class="arus-kas-form-scroll">
                 @if ($errors->any())
@@ -456,9 +457,9 @@
             <footer class="arus-kas-form-footer">
                 <div class="arus-kas-action-pair">
                     <a href="{{ route('arus-kas.index') }}" class="arus-kas-action-btn" aria-label="Kembali" title="Kembali"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a>
-                    <button type="submit" name="status" value="draft" :disabled="submitting || !form.branchId" class="arus-kas-action-btn" aria-label="Simpan sebagai draf" title="Simpan draf"><i class="ph-bold ph-bookmark-simple" aria-hidden="true"></i></button>
+                    <button type="submit" @click="form.status = 'draft'; $el.form.elements.status.value = 'draft'" :disabled="submitting || !form.branchId" class="arus-kas-action-btn" aria-label="Simpan sebagai draf" title="Simpan draf"><i class="ph-bold ph-bookmark-simple" aria-hidden="true"></i></button>
                 </div>
-                <button type="submit" name="status" value="completed" :disabled="submitting || !form.branchId || form.items.length === 0" class="arus-kas-action-btn arus-kas-action-btn--primary" x-text="pageMode === 'edit' ? 'Simpan Transaksi' : 'Tambah'"></button>
+                <button type="submit" @click="form.status = 'completed'; $el.form.elements.status.value = 'completed'" :disabled="submitting || !form.branchId || form.items.length === 0" class="arus-kas-action-btn arus-kas-action-btn--primary" x-text="pageMode === 'edit' ? 'Simpan Transaksi' : 'Tambah'"></button>
             </footer>
         </form>
 
@@ -526,7 +527,8 @@ function arusKasApp(config) {
         submitting: false,
         form: {
             branchId: String(initialOrder.branchId || config.selectedBranchId || ''),
-            items: initialItems
+            items: initialItems,
+            status: 'draft'
         },
         modalItem: { type: 'in', name: '', unit: '', quantity: '', price: '' },
         qtyText: '',
@@ -632,12 +634,6 @@ function arusKasApp(config) {
             this.itemModalOpen = true;
         },
         closeItemModal() { this.itemModalOpen = false; this.editingIndex = null; },
-        // Penyimpanan belum disiapkan di sisi backend: tampilkan info, jangan kirim data.
-        showBackendInfo() {
-            const message = 'Penyimpanan Arus Kas belum tersedia. Fitur ini akan disiapkan oleh tim backend.';
-            if (window.Swal) { window.Swal.fire({ icon: 'info', title: 'Belum tersedia', text: message, confirmButtonText: 'Mengerti', confirmButtonColor: '#0b595b' }); return; }
-            window.alert(message);
-        },
         get modalItemValid() {
             const item = this.modalItem || {};
             const quantity = Number(item.quantity);
