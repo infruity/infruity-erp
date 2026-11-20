@@ -44,7 +44,6 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::delete('wholesale/delete-product/{id}', [WholesaleController::class, 'delete_product'])->name('wholesale.delete_product');
     Route::post('wholesale/update-receive-product/{id}', [WholesaleController::class, 'update_receive_product'])->name('wholesale.update_receive_product');
     Route::post('wholesale/set-selesai/{id}', [WholesaleController::class, 'set_selesai'])->name('wholesale.set_selesai');
-    Route::post('wholesale/reset', [WholesaleController::class, 'reset_transactions'])->name('wholesale.reset');
     Route::get('wholesale/table-product-data', [WholesaleController::class, 'getProductTableData'])->name('wholsale.product-table-data');
 
     Route::get('sortir/products', [SortirController::class, 'products'])->name('sortir.products');

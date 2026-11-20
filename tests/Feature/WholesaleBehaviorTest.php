@@ -218,19 +218,20 @@ class WholesaleBehaviorTest extends TestCase
 
     // ---- destructive reset endpoint (finding W4) ----------------------------------------------
 
-    public function test_transaction_reset_is_refused_outside_local_and_testing_even_for_super_admin(): void
+    public function test_transaction_reset_endpoint_no_longer_exists_in_any_environment(): void
     {
         $this->save()->assertOk();
         $before = DB::table('wholesale')->count();
         $this->assertGreaterThan(0, $before);
 
-        // CSRF is only skipped while the app thinks it is under test; skip it explicitly so the guard is what answers.
+        // CSRF is only skipped while the app thinks it is under test; skip it explicitly so routing is what answers.
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
 
-        foreach (['production', 'staging'] as $environment) {
+        foreach (['local', 'testing', 'production', 'staging'] as $environment) {
             $this->app['env'] = $environment;
 
-            $this->postJson('/wholesale/reset')->assertForbidden()->assertJson(['success' => false]);
+            $status = $this->postJson('/wholesale/reset')->getStatusCode();
+            $this->assertContains($status, [404, 405], "wholesale/reset must not be routable in {$environment}");
         }
 
         $this->assertSame($before, DB::table('wholesale')->count(), 'no transaction table may be truncated');
