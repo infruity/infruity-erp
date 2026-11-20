@@ -246,7 +246,7 @@ test('permission search matches the reference focus ring and group/submodule fil
     const classes = input.match(/class="([^"]+)"/)?.[1].split(/\s+/) || [];
     assert.ok(classes.includes('h-9') && classes.includes('rounded-xl') && classes.includes('bg-gray-50'));
     assert.ok(classes.includes('outline-none'), 'the shared ERP focus-visible outline is suppressed on this reference-style input');
-    assert.ok(classes.includes('focus:ring-1') && classes.includes('focus:ring-emerald-500'));
+    assert.ok(classes.includes('focus-visible:ring-1') && classes.includes('focus-visible:ring-emerald-500'));
     assert.match(view, /x-show="modalSearchQuery\.length > 0"[^>]*@click="modalSearchQuery = ''"/);
 
     const start = view.indexOf('function userMaster(');

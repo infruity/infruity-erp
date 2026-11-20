@@ -826,7 +826,7 @@
                             <input type="hidden" id="date" name="date" value="{{ date('Y-m-d') }}" />
 
                             <div class="so-create-field fv-row">
-                                <label class="so-create-label" for="branch_id">Cabang Pelaksanaan <span>*</span></label>
+                                <label class="so-create-label" for="branch_id">Cabang <span>*</span></label>
                                 <select class="form-select form-select-solid" name="branch_id" id="branch_id"
                                     data-placeholder="Pilih Cabang">
                                     @foreach ($branches as $branch)
@@ -919,7 +919,7 @@
                 </form>
 
             </div>
-            <footer class="so-sheet-footer so-detail-footer"><button type="button" class="so-history-button" data-so-action="history" aria-label="Riwayat stok opname"><i class="ph-bold ph-clock-counter-clockwise" aria-hidden="true"></i><span data-so-count="history"></span><em class="so-history-label" data-so-history-label>Riwayat</em></button><button type="submit" form="so-detail-correction" id="so-correction-save" disabled>Tambah Koreksi</button>@if(check_access('stock-opname.update'))<button type="button" class="is-primary" data-so-action="finalize">Submit</button>@endif<button type="button" class="is-primary d-none" id="so-detail-done" data-bs-dismiss="modal">Submit</button></footer>
+            <footer class="so-sheet-footer so-detail-footer"><button type="button" class="so-history-button" data-so-action="history" aria-label="Riwayat stok opname"><i class="ph-bold ph-clock-counter-clockwise" aria-hidden="true"></i><span data-so-count="history"></span><em class="so-history-label" data-so-history-label>Riwayat</em></button>@if(check_access('stock-opname.destroy'))<button type="button" class="so-delete-button" data-so-action="delete" aria-label="Hapus stok opname" title="Hapus"><i class="ph-bold ph-trash" aria-hidden="true"></i></button>@endif<button type="submit" form="so-detail-correction" id="so-correction-save" disabled>Tambah Koreksi</button>@if(check_access('stock-opname.update'))<button type="button" class="is-primary" data-so-action="finalize">Submit</button>@endif<button type="button" class="is-primary d-none" id="so-detail-done" data-bs-dismiss="modal">Submit</button></footer>
         </div></div>
     </div>
 
@@ -1304,6 +1304,7 @@
             const run = {
                 history: () => showHistory(id),
                 finalize: () => finalizeStockOpname(id),
+                delete: () => deleteProduct(id),
             }[action];
             if (!run) return;
             // The sheet slides away while the next view comes up (the reference does both at once).
@@ -1691,11 +1692,11 @@
 
         function deleteProduct(id) {
             Swal.fire({
-                title: 'Apakah Anda yakin?',
-                text: 'Data yang dihapus tidak bisa dikembalikan!',
+                title: 'Hapus stok opname?',
+                text: 'Stok opname ini akan dihapus dan tidak bisa dikembalikan.',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Ya, hapus!',
+                confirmButtonText: 'Hapus',
                 cancelButtonText: 'Batal',
                 customClass: {
                     confirmButton: 'btn btn-danger',

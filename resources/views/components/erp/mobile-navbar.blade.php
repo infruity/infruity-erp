@@ -1,8 +1,8 @@
 @php($action = \App\Support\ErpMobileAction::resolve(request()))
 
 <style>
-    .erp-mobile-nav { position:fixed; z-index:40; bottom:calc(1rem + env(safe-area-inset-bottom)); left:50%; width:calc(100% - 2.5rem); padding:0; transform:translateX(-50%); transition:width .45s cubic-bezier(.22,1,.36,1); will-change:width; }
-    .erp-mobile-nav.is-scrolled { width:min(340px, calc(100% - 2.5rem)); transition-duration:.3s; }
+    .erp-mobile-nav { position:fixed; z-index:40; bottom:calc(16px + env(safe-area-inset-bottom)); left:50%; width:calc(100% - 40px); padding:0; transform:translateX(-50%); transition:width .45s cubic-bezier(.22,1,.36,1); will-change:width; }
+    .erp-mobile-nav.is-scrolled { width:min(340px, calc(100% - 40px)); transition-duration:.3s; }
     @media (prefers-reduced-motion:reduce) { .erp-mobile-nav, .erp-mobile-nav.is-scrolled { transition:none; } }
     .erp-mobile-nav__dock { display:flex; height:64px; align-items:center; justify-content:space-around; border:1px solid rgba(255,255,255,.75); border-radius:999px; padding:8px; background:rgba(255,255,255,.72); box-shadow:0 16px 40px -8px rgba(15,92,69,.12), 0 4px 16px rgba(0,0,0,.06), inset 0 1px 1.5px rgba(255,255,255,.95); -webkit-backdrop-filter:blur(24px) saturate(190%); backdrop-filter:blur(24px) saturate(190%); }
     .erp-mobile-nav__item { display:flex; width:48px; height:48px; flex:none; align-items:center; justify-content:center; border:0; border-radius:999px; background:transparent; color:#6b7280; text-decoration:none; transition:color .16s ease, transform .16s ease, background .16s ease; -webkit-tap-highlight-color:transparent; }
@@ -135,6 +135,8 @@
             window.addEventListener(name, markGesture, { passive: true, capture: true }));
         window.addEventListener('scroll', event => {
             if (nav.contains(event.target)) return;
+            // Scrolling the sidebar menu must not shrink the dock.
+            if (event.target instanceof Element && event.target.closest('.erp-sidebar')) return;
             if (Date.now() - lastGesture > 1200 && !nav.classList.contains('is-scrolled')) return;
             if (!reallyScrolls(event.target)) return;
             handleScrollActivity();

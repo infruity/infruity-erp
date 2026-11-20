@@ -241,7 +241,6 @@
             body.erp-ui #wholesale-filter-sheet .erp-filter-sheet__footer { background:rgba(249,250,251,.7); }
             body.erp-ui #wholesale-filter-sheet#wholesale-filter-sheet [x-show="!calendarOpen"] :is(label, span).uppercase { font-weight:600 !important; line-height:15px !important; }
             .wholesale-search-shell .erp-mobile-search { height:44px; gap:0; padding:0 6px 0 16px; border-color:rgba(229,231,235,.8); box-shadow:none; }
-            .wholesale-search-shell .erp-mobile-search:focus-within { border-color:#10b981; background:#fff; box-shadow:0 0 0 1px #10b981; }
             .wholesale-search-shell .erp-mobile-search__icon { margin-right:10px; }
             .wholesale-search-shell .erp-mobile-search__divider { height:16px; margin:0 4px; }
             #wholesale-table tbody tr { grid-template-columns:minmax(0,1fr) auto; gap:0 12px; padding:12px 16px; border-bottom:1px solid #f3f4f6; }

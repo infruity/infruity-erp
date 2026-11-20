@@ -105,7 +105,7 @@
 
 
 
-        <div class="flex-1 overflow-y-auto dashboard-scroll pt-[19px] pb-[96px] px-4 flex flex-col relative z-10">
+        <div class="flex-1 overflow-y-auto dashboard-scroll pt-[19px] pb-[calc(99px+env(safe-area-inset-bottom))] px-4 flex flex-col relative z-10">
             <article class="dashboard-hero relative shrink-0 md:min-h-[422px] overflow-hidden touch-pan-y select-none" @touchstart.passive="startSwipe($event)" @touchend.passive="endSwipe($event)" @mousedown="startSwipe($event)" @mouseup="endSwipe($event)" @mouseleave="swipeStartX = null" @click.outside="resetSelectedDay()">
                 <div class="dashboard-hero-shine pointer-events-none absolute -right-[60px] -top-[60px] h-40 w-40 rounded-full"></div>
                 <div class="relative z-10">
@@ -160,7 +160,7 @@
                 </div>
             </article>
 
-            <div class="mt-[18px] min-h-[248px] shrink-0 rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] text-gray-900">
+            <div class="mt-[18px] min-h-[248px] grow shrink-0 rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] text-gray-900">
                 <div class="mb-2 flex items-center justify-between gap-3">
                     <div class="min-w-0"><h2 class="text-[13.5px] font-bold tracking-tight text-gray-900"><span x-text="contributorTitle"></span> <span :class="contributorAccentClass" x-text="contributorSuffix"></span></h2><p class="text-[10.5px] text-gray-400" x-text="contributorSubtitle"></p></div>
                     <button type="button" @click="showBottom = !showBottom" class="h-7 w-7 shrink-0 rounded-full border flex items-center justify-center active:scale-90 transition" :class="contributorButtonClass" :title="contributorToggleTitle" :aria-label="contributorToggleTitle">

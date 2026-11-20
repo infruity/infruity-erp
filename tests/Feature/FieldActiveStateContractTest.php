@@ -21,7 +21,8 @@ final class FieldActiveStateContractTest extends TestCase
         $search = $this->css('erp-mobile-search');
         $fields = $this->css('erp-fields');
 
-        $this->assertMatchesRegularExpression('/\.erp-mobile-search:focus-within \{[^}]*border-color:#34a684[^}]*0 0 0 2px rgba\(16,185,129,\.13\)/', $search);
+        // The list search pill keeps the same surface while typing: no highlight on focus.
+        $this->assertStringNotContainsString('.erp-mobile-search:focus-within', $search);
         $this->assertStringContainsString('--erp-active-border: #34a684;', $fields);
         $this->assertStringContainsString('--erp-active-ring: 0 0 0 2px rgba(16, 185, 129, .13);', $fields);
         $this->assertStringContainsString('--erp-active-bg: #fff;', $fields);
