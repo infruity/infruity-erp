@@ -36,6 +36,15 @@ class MobileReportController extends Controller
         'loss' => 'report.product.buang',
     ];
 
+    /** The page route of each report type, the key ReportController::LOCKED_REPORTS uses. */
+    private const INDEX_ROUTES = [
+        'sales' => 'report-product-sales.index',
+        'profit' => 'report-profit-revenue.index',
+        'adjusted' => 'report-profit-adjusted.index',
+        'shipping' => 'report-shipping-cost',
+        'loss' => 'report-product-buang',
+    ];
+
     public function dates(Request $request, string $type)
     {
         $this->authorizeType($type);
@@ -124,6 +133,8 @@ class MobileReportController extends Controller
 
             return [
                 'invoice' => $event->invoice ?: $event->name,
+                // The sale behind the event, so the receipt card can open it in Kasir / POS like the per-product history.
+                'pos_id' => $transaction?->id,
                 'date_formatted' => $date->isoFormat('dddd, D MMMM Y'),
                 'date_raw' => $event->date,
                 'time_formatted' => 'Jam '.$time->format('H:i').' WIB',
@@ -209,6 +220,8 @@ class MobileReportController extends Controller
     private function authorizeType(string $type): void
     {
         abort_unless(isset(self::PERMISSIONS[$type]), 404);
+        // A report locked in ReportController stays locked in its per-date view too.
+        abort_if(ReportController::isLocked(self::INDEX_ROUTES[$type]), 403);
         $this->authorizeAccess(self::PERMISSIONS[$type]);
     }
 
