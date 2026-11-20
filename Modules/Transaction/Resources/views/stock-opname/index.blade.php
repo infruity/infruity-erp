@@ -1142,6 +1142,10 @@
             if (text === '') { input.value = ''; return; }
             const endsWithDot = text.endsWith('.') && !text.includes(',');
             if (endsWithDot) text = text.slice(0, -1) + ',';
+            // Pasted or autofilled "78.33" / "0.5": a lone dot that is not a thousands grouping (1.234, 12.345.678) is a decimal mark.
+            if (!text.includes(',') && /^\d+\.\d+$/.test(text) && !/^\d{1,3}(\.\d{3})+$/.test(text)) {
+                text = text.replace('.', ',');
+            }
             if (text.includes(',')) {
                 const parts = text.split(',');
                 const intDigits = parts[0].replace(/\D/g, '');
