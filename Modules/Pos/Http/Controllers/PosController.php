@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Modules\Crm\Entities\CustomerDeposito;
 use Modules\Crm\Entities\CustomerTier;
@@ -36,6 +37,21 @@ use Yajra\DataTables\Facades\DataTables;
 class PosController extends Controller
 {
     use \App\Traits\HasAccessControl;
+
+    /**
+     * Walk-in sales ("Pelanggan Umum") post customer_id 0, which has no customer row;
+     * only a positive id must exist.
+     */
+    private function customerRule(): array
+    {
+        return [
+            "nullable",
+            "integer",
+            "min:0",
+            Rule::when(fn ($input) => (int) ($input->customer_id ?? 0) > 0, "exists:customer,id"),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      * @return Renderable
@@ -133,7 +149,7 @@ class PosController extends Controller
 
         // dd($request->all());
         $request->validate([
-            'customer_id'         => 'nullable|exists:customer,id',
+            'customer_id'         => $this->customerRule(),
             'items'               => 'required|array',
             'items.*.product_id'  => 'required|exists:products,id',
             'items.*.qty'         => 'required|numeric|min:1',
@@ -340,7 +356,7 @@ class PosController extends Controller
             'payments.*.payment_id' => 'required|integer|exists:payment_method,id',
             'payments.*.amount' => ['required', 'regex:/^\d+(?:\.\d{3})*$/'],
             'total_payment'  => 'required|numeric|min:0',
-            'customer_id'    => 'nullable|integer|exists:customer,id',
+            'customer_id'    => $this->customerRule(),
         ]);
 
         $paymentAmounts = collect($data['payments'])->map(fn ($item) => (float) str_replace('.', '', (string) $item['amount']));
@@ -578,7 +594,7 @@ class PosController extends Controller
         // dd($request->all());
         $data = $request->validate([
             // 'customer_id' => 'nullable|exists:customer,id',
-            'customer_id'       => 'nullable|integer|exists:customer,id',
+            'customer_id'       => $this->customerRule(),
             'date'              => 'required|date',
             'invoice_number'    => 'nullable',
             'items'             => 'required|array',
