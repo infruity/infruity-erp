@@ -152,4 +152,25 @@ class ArusKasUiContractTest extends TestCase
         $this->assertStringContainsString('arus-kas.index', $mobileAction);
         $this->assertStringContainsString('arus-kas.create', $mobileAction);
     }
+
+    public function test_form_submits_to_the_backend_instead_of_showing_a_placeholder(): void
+    {
+        $view = file_get_contents(base_path('Modules/Pos/Resources/views/arus-kas/index.blade.php'));
+
+        $this->assertStringNotContainsString('showBackendInfo', $view);
+        $this->assertStringNotContainsString('belum tersedia', $view);
+        $this->assertStringContainsString("action=\"{{ route('arus-kas.store') }}\"", $view);
+        $this->assertStringContainsString("action=\"{{ route('arus-kas.update', \$formOrder['id']) }}\"", $view);
+        $this->assertSame(2, substr_count($view, '@submit="submitting = true"'));
+        $this->assertStringContainsString('name="items_json"', $view);
+        // The status must not ride on the submit buttons: they are disabled while the form is sent, which drops it.
+        $this->assertStringContainsString('<input type="hidden" name="status" :value="form.status">', $view);
+        $this->assertStringNotContainsString('type="submit" name="status"', $view);
+        $this->assertStringContainsString("form.status = 'draft'", $view);
+        $this->assertStringContainsString("form.status = 'completed'", $view);
+        // The detail dialog offers Edit only while the transaction is still Pending (draft).
+        $this->assertStringContainsString('x-show="selectedOrder?.canEdit" @click="editSelectedOrder()"', $view);
+        $controller = file_get_contents(base_path('Modules/Pos/Http/Controllers/ArusKasController.php'));
+        $this->assertStringContainsString("'canEdit' => \$transaction->status === 'draft'", $controller);
+    }
 }

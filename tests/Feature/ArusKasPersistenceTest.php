@@ -267,6 +267,48 @@ class ArusKasPersistenceTest extends TestCase
         $this->assertDatabaseCount('expenditure', 1);
     }
 
+    public function test_a_completed_transaction_cannot_be_edited_or_updated(): void
+    {
+        $now = now();
+        $transactionId = DB::table('arus_kas_transactions')->insertGetId([
+            'uuid' => '00000000-0000-4000-8000-000000000009',
+            'invoice_number' => 'AK-QA-DONE-009',
+            'branch_id' => 1,
+            'date' => '2026-10-09',
+            'status' => 'completed',
+            'created_by' => 7,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        DB::table('arus_kas_items')->insert([
+            'arus_kas_transaction_id' => $transactionId,
+            'direction' => 'out',
+            'description' => 'Sudah selesai',
+            'unit' => 'Paket',
+            'quantity' => 1,
+            'unit_price' => 10000,
+            'subtotal' => 10000,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        $this->get('/arus-kas/' . $transactionId . '/edit')
+            ->assertRedirect('/arus-kas')
+            ->assertSessionHas('error', 'Transaksi yang sudah selesai tidak dapat diedit.');
+
+        $this->put('/arus-kas/' . $transactionId, [
+            'branch_id' => 1,
+            'status' => 'draft',
+            'items_json' => json_encode([
+                ['type' => 'out', 'name' => 'Diubah', 'unit' => 'Pcs', 'quantity' => 1, 'price' => 1],
+            ], JSON_THROW_ON_ERROR),
+        ])->assertRedirect('/arus-kas')->assertSessionHas('error');
+
+        $this->assertDatabaseHas('arus_kas_transactions', ['id' => $transactionId, 'status' => 'completed']);
+        $this->assertDatabaseHas('arus_kas_items', ['arus_kas_transaction_id' => $transactionId, 'description' => 'Sudah selesai']);
+        $this->assertDatabaseMissing('arus_kas_items', ['description' => 'Diubah']);
+    }
+
     public function test_status_flow_completes_a_new_draft_without_changing_legacy_rows(): void
     {
         $now = now();
