@@ -11,11 +11,12 @@
                 <select class="form-control" name="branch_id" id="branch_id">
                     <option value="">Pilih Cabang</option>
                 </select>
-                {{-- The order is saved for the walk-in customer, today and the next invoice number, as the reference form has none of these fields. --}}
+                <label class="ob-label ob-label--spaced" for="customer_id"><span>Pelanggan</span></label>
+                <select class="form-select" id="customer_id" name="customer_id">
+                    <option value="">Pelanggan Umum</option>
+                </select>
+                {{-- Date and invoice number stay fixed (today and the next number), as the reference form has no fields for them. --}}
                 <div class="ob-hidden-fields" hidden>
-                    <select class="form-select" id="customer_id" name="customer_id">
-                        <option value="">Pilih Pelanggan</option>
-                    </select>
                     <input type="hidden" name="tier_id" id="tier_id">
                     <input type="date" id="ob_date" name="date" value="{{ date('Y-m-d') }}">
                     <input type="text" id="ob_invoice" name="invoice_number" value="{{ $invoice_number }}" readonly>

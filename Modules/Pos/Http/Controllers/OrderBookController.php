@@ -189,7 +189,7 @@ class OrderBookController extends Controller
             $orderBook = OrderBook::create([
                 'branch_id' => $data['branch_id'],
                 'invoice_number' => $data['invoice_number'],
-                'customer_id' => $data['customer_id'],
+                'customer_id' => ($data['customer_id'] ?? '') === '' || (string) $data['customer_id'] === '0' ? null : $data['customer_id'],
                 'date' => $data['date'],
                 'status' => $data['status'],
                 'note' => $data['note'],
