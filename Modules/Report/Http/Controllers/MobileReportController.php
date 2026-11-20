@@ -65,10 +65,11 @@ class MobileReportController extends Controller
             ->selectRaw('SUM(events.amount) as amount, SUM(events.revenue) as revenue, SUM(events.hpp) as hpp, SUM(events.correction) as correction, SUM(events.quantity) as quantity, SUM(events.item_count) as item_count')
             ->groupByRaw("{$period}, events.branch_id, branch.name");
 
-        $count = DB::query()->fromSub(clone $groups, 'report_groups')->count();
+        // Row count and grand totals in one pass over the grouped query (was two passes).
         $totals = DB::query()->fromSub(clone $groups, 'report_groups')
-            ->selectRaw('COALESCE(SUM(amount), 0) as amount, COALESCE(SUM(revenue), 0) as revenue, COALESCE(SUM(hpp), 0) as hpp, COALESCE(SUM(correction), 0) as correction')
+            ->selectRaw('COUNT(*) as row_count, COALESCE(SUM(amount), 0) as amount, COALESCE(SUM(revenue), 0) as revenue, COALESCE(SUM(hpp), 0) as hpp, COALESCE(SUM(correction), 0) as correction')
             ->first();
+        $count = (int) $totals->row_count;
         $start = max(0, (int) $request->input('start', 0));
         $length = min(100, max(1, (int) $request->input('length', 50)));
         $data = $groups->orderByDesc('period_start')->orderBy('branch_name')

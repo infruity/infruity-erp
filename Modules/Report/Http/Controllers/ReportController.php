@@ -591,10 +591,14 @@ class ReportController extends Controller
             });
 
         if ($request->input('start') == 0) {
-            $grandTotalQuery = clone $data;
-            $grandTotal = DB::table(DB::raw("({$grandTotalQuery->toSql()}) as sub"))
-                ->mergeBindings($grandTotalQuery->getQuery())
-                ->sum('total');
+            // One aggregate pass gives the row count and the grand total; the count is handed to DataTables so it
+            // does not run the same grouped query again.
+            $summary = DB::table(DB::raw("({$data->toSql()}) as sub"))
+                ->mergeBindings($data->getQuery())
+                ->selectRaw('COUNT(*) as row_count, COALESCE(SUM(total), 0) as grand_total')
+                ->first();
+            $grandTotal = $summary->grand_total;
+            $this->useKnownCount($response, $request, (int) $summary->row_count);
 
             $response->with([
                 'grand_total' => 'Rp. ' . number_format($grandTotal, 0, ',', '.'),
@@ -658,14 +662,16 @@ class ReportController extends Controller
         $response = DataTables::of($data);
 
         if ($request->input('start') == 0) {
-            $grandTotalQuery = clone $data;
-            
-            $subQuery = DB::table(DB::raw("({$grandTotalQuery->toSql()}) as sub"))
-                ->mergeBindings($grandTotalQuery->getQuery());
-                
-            $grandTotalPendapatan = $subQuery->sum('total_pendapatan');
-            $grandTotalHpp = $subQuery->sum('total_hpp');
-            $grandTotalLaba = $subQuery->sum('laba_kotor');
+            // One aggregate pass gives the row count and the three grand totals (was three sums plus DataTables'
+            // own count, each running the grouped query again).
+            $summary = DB::table(DB::raw("({$data->toSql()}) as sub"))
+                ->mergeBindings($data->getQuery())
+                ->selectRaw('COUNT(*) as row_count, COALESCE(SUM(total_pendapatan), 0) as pendapatan, COALESCE(SUM(total_hpp), 0) as hpp, COALESCE(SUM(laba_kotor), 0) as laba')
+                ->first();
+            $grandTotalPendapatan = $summary->pendapatan;
+            $grandTotalHpp = $summary->hpp;
+            $grandTotalLaba = $summary->laba;
+            $this->useKnownCount($response, $request, (int) $summary->row_count);
             
             $labaPercentage = $grandTotalPendapatan > 0 ? ($grandTotalLaba / $grandTotalPendapatan) * 100 : 0;
 
@@ -876,6 +882,17 @@ class ReportController extends Controller
             'courier_name' => $history->first() ? ($history->first()->courier_name ?? 'Tanpa Kurir / Lainnya') : '',
             'data' => $formattedData
         ]);
+    }
+
+    /**
+     * Give DataTables a row count that was already computed, so it skips its own COUNT of the grouped query.
+     * Only when no global search is sent: with a search DataTables may add its own filter and the count would differ.
+     */
+    private function useKnownCount($response, Request $request, int $count): void
+    {
+        if (trim((string) data_get($request->input('search'), 'value', '')) !== '') return;
+
+        $response->setTotalRecords($count)->setFilteredRecords($count);
     }
 
     private function applyProductSalesSearch($query, Request $request): void
