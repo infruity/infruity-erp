@@ -52,6 +52,5 @@
         /* Form fields of the Master sheets: 16px labels and the reference's lighter red star */
         .erp-field__label { line-height: 16px; }
         .erp-field__req { color: #f87171; }
-        .erp-mobile-search:focus-within { border-color: #10b981; background: #fff; box-shadow: 0 0 0 1px #10b981; }
     }
 </style>

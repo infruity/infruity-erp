@@ -29,7 +29,7 @@ final class DashboardReferenceSpacingTest extends TestCase
     {
         $view = $this->source();
 
-        $this->assertStringContainsString('mt-[18px] min-h-[248px] shrink-0 rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]', $view);
+        $this->assertStringContainsString('mt-[18px] min-h-[248px] grow shrink-0 rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]', $view);
         $this->assertStringContainsString('flex items-center justify-between gap-2 py-3 first:pt-1 last:pb-1', $view);
         $this->assertStringContainsString('w-9 h-9 rounded-xl border flex items-center justify-center text-[20px]', $view, 'row icon tile: 36px');
     }

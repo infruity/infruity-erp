@@ -154,6 +154,10 @@
         }
         .erp-settings-logout:hover, .erp-settings-logout:focus-visible { background: #d91241; color: #fff; }
         .erp-settings-logout i { font-size: 19px; }
+        @media (max-width: 767.98px) {
+            .erp-settings-page { padding: 23px 16px 22px !important; }
+            .erp-settings-label { margin: 7px 0 7px !important; line-height: 14px !important; }
+        }
         body:has(.erp-settings-page) .erp-mobile-nav { display: none; }
         body:has(.erp-settings-page) #kt_content { scrollbar-width: none; }
         body:has(.erp-settings-page) #kt_content::-webkit-scrollbar { display: none; }

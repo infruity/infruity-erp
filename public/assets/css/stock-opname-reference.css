@@ -112,7 +112,9 @@
     .stock-opname-page { padding-bottom:0; width:100%; }
     .stock-opname-page .so-workspace { border:0; border-radius:0; box-shadow:none; }
     .stock-opname-page .erp-workspace-heading { display:none; }
-    .stock-opname-page .erp-workspace-toolbar { padding:16px; border-bottom:1px solid #f3f4f6; gap:0; }
+    .stock-opname-page .erp-workspace-toolbar { padding:16px 16px 12px; border-bottom:1px solid #f3f4f6; gap:0; }
+    .stock-opname-page .erp-workspace-content { padding-top:6px!important; }
+    .stock-opname-page .erp-mobile-search__input { font-weight:500; }
     .stock-opname-page .so-mobile-search { display:block; width:100%; padding:0; }
     .stock-opname-page .erp-mobile-search { height:44px; box-shadow:none; gap:0; padding:0 6px 0 16px; }
     .stock-opname-page .erp-mobile-search__icon { margin-right:10px; }
@@ -395,3 +397,13 @@ body:has(.stock-opname-page) > .modal-backdrop { display:none !important; }
 .so-reference-history #so-history-filter-open .icon-rounded { font-size:18px; }
 .stock-opname-page .erp-mobile-search__filter { color:#9ca3af; }
 body.erp-ui [data-erp-filter-sheet][id="so-filter-sheet"][id="so-filter-sheet"][id="so-filter-sheet"] [x-show="!calendarOpen"] :is(label,span).uppercase { font-weight:600 !important; }
+
+/* Add form: field text insets and weight as in the reference (12px inset, regular-weight note). */
+#kt_modal_add_customer .so-create-physical input#real_stock { padding-left:12px; }
+#kt_modal_add_customer .so-create-note textarea#so_note { padding:12px; font-weight:400; line-height:26px; }
+
+/* Delete (master account only): a 44px icon button next to the history button in the detail sheet. */
+#kt_modal_stock_detail .so-sheet-footer .so-delete-button { flex:none; width:44px; border-color:#fecaca; color:#dc2626; font-size:19px!important; }
+#kt_modal_stock_detail .so-sheet-footer .so-delete-button:hover { background:#fef2f2; }
+/* In a finished entry the delete button sits to the left of the full-width Riwayat button. */
+#kt_modal_stock_detail.is-final .so-sheet-footer .so-delete-button { order:-1; }

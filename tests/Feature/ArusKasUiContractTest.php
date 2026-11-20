@@ -168,8 +168,9 @@ class ArusKasUiContractTest extends TestCase
         $this->assertStringNotContainsString('type="submit" name="status"', $view);
         $this->assertStringContainsString("form.status = 'draft'", $view);
         $this->assertStringContainsString("form.status = 'completed'", $view);
-        // The detail dialog offers Edit only while the transaction is still Pending (draft).
-        $this->assertStringContainsString('x-show="selectedOrder?.canEdit" @click="editSelectedOrder()"', $view);
+        // Pending legacy entries display the same action, disabled when they cannot be edited.
+        $this->assertStringContainsString("x-show=\"selectedOrder?.status === 'Draft'\"", $view);
+        $this->assertStringContainsString('@click="editSelectedOrder()" :disabled="!selectedOrder?.canEdit"', $view);
         $controller = file_get_contents(base_path('Modules/Pos/Http/Controllers/ArusKasController.php'));
         $this->assertStringContainsString("'canEdit' => \$transaction->status === 'draft'", $controller);
     }

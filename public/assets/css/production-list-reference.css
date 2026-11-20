@@ -43,8 +43,7 @@
  .production-list-page #production-table_wrapper .dataTables_length,.production-list-page #production-table_wrapper .dataTables_info { display:none!important; }
  .production-list-page #production-table_wrapper .pagination { flex-wrap:wrap; justify-content:center; }
 }
-/* Search boundary needs 3:1 (WCAG 1.4.11); focus keeps its own green border. */
-.production-list-page .erp-workspace-toolbar .erp-search:not(:focus-within),
-.production-list-page .erp-mobile-search:not(:focus-within) { border-color:#868e98; }
-@media(max-width:767px) { .production-list-page .erp-mobile-search:not(:focus-within) { border-color:rgba(229,231,235,.8); }
- .production-list-page .erp-mobile-search:focus-within { border-color:#10b981; background:#fff; box-shadow:0 0 0 1px #10b981; } }
+/* Search boundary needs 3:1 (WCAG 1.4.11); focus does not change the search surface. */
+.production-list-page .erp-workspace-toolbar .erp-search,
+.production-list-page .erp-mobile-search { border-color:#868e98; }
+@media(max-width:767px) { .production-list-page .erp-mobile-search { border-color:rgba(229,231,235,.8); } }

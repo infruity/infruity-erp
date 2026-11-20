@@ -314,7 +314,6 @@ class StockOpnameController extends Controller
         try {
             DB::beginTransaction();
             $stock = StockOpname::whereIn('branch_id', UserBranch::getUserBranch())->lockForUpdate()->findOrFail($id);
-            abort_if($stock->status === 'selesai', 422, 'Stock opname yang sudah selesai tidak dapat dihapus.');
             $stock->delete();
             DB::commit();
             return response()->json([
