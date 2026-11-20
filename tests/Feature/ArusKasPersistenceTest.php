@@ -343,6 +343,38 @@ class ArusKasPersistenceTest extends TestCase
         $this->assertDatabaseCount('expenditure', 1);
     }
 
+    public function test_a_completed_transaction_cannot_be_sent_back_to_draft_through_the_status_endpoint(): void
+    {
+        $now = now();
+        $transactionId = DB::table('arus_kas_transactions')->insertGetId([
+            'uuid' => '00000000-0000-4000-8000-000000000010',
+            'invoice_number' => 'AK-QA-FINAL-010',
+            'branch_id' => 1,
+            'date' => '2026-10-09',
+            'status' => 'completed',
+            'created_by' => 7,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        DB::table('arus_kas_items')->insert([
+            'arus_kas_transaction_id' => $transactionId,
+            'direction' => 'out',
+            'description' => 'Final',
+            'unit' => 'Paket',
+            'quantity' => 1,
+            'unit_price' => 10000,
+            'subtotal' => 10000,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        $this->patchJson('/arus-kas/' . $transactionId . '/status', ['status' => 'draft'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('status');
+
+        $this->assertDatabaseHas('arus_kas_transactions', ['id' => $transactionId, 'status' => 'completed']);
+    }
+
     public function test_transactions_cannot_be_created_for_a_branch_outside_the_users_scope(): void
     {
         $this->post('/arus-kas', [
