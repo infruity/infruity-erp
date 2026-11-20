@@ -12,12 +12,17 @@
         return /^[1-9]\d{7,14}$/.test(digits) ? 'https://wa.me/' + digits : null;
     }
 
+    // The reference shows numbers in local form (0812…); the stored value starts with the 62 country code.
+    function localPhone(value) {
+        const digits = String(value || '').replace(/\D/g, '');
+        return digits.startsWith('62') ? '0' + digits.slice(2) : String(value || '');
+    }
+
     function normalize(data = {}) {
         const phone = text(data.customer_phone);
-        const suffix = phone.replace(/\D/g, '').slice(-4);
         const name = text(data.customer_name) || 'Pelanggan Umum';
         return {
-            customerDisplay: suffix.length === 4 && !name.endsWith('(' + suffix + ')') ? `${name} (${suffix})` : name,
+            customerDisplay: name.replace(/\s*\(\d{3,4}\)$/, ''),
             phone: phone || 'Tidak ada nomor telepon',
             whatsappUrl: whatsappUrl(phone),
             branch: text(data.branch_name) || '-',
@@ -37,7 +42,10 @@
         let edited = '';
         if (typeof data.updated_at === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(data.updated_at)) {
             const date = new Date(data.updated_at);
-            if (!Number.isNaN(date.getTime())) {
+            const made = new Date(data.created_at);
+            // Like the reference, an order that was never changed after it was made shows "-".
+            const changed = Number.isNaN(made.getTime()) || Math.abs(date.getTime() - made.getTime()) > 60000;
+            if (!Number.isNaN(date.getTime()) && changed) {
                 const parts = new Intl.DateTimeFormat('id-ID', {
                     timeZone: timezone, day: 'numeric', month: 'short', year: 'numeric',
                     hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
@@ -82,6 +90,7 @@
         let clickHandler;
         return {
             detailOpen: false,
+            localPhone,
             selected: normalize(),
             trigger: null,
             sourceRow: null,
@@ -167,18 +176,30 @@
             renderActions(row) {
                 const host = this.$refs.detailActions;
                 host.replaceChildren();
+                const isPendingRow = /^(draft|temp|pending)$/i.test(text(row.cells[1]?.querySelector('.badge')?.textContent));
                 const originals = [...row.cells[row.cells.length - 1].querySelectorAll('.dropdown-menu a')];
                 const posLink = row.cells[0].querySelector('a[title="Lihat POS"]');
                 if (posLink) originals.push(posLink);
                 originals.map(original => ({ original, action: actionFor(original, posLink, window.location.origin, this.posIndexUrl) }))
                     .filter(item => item.action)
+                    // Pending orders offer Edit as the main action (in place of Mulai Proses).
+                    .filter(item => !(isPendingRow && !item.action.isDelete && !item.action.isEdit && !item.action.isPos))
                     .sort((a, b) => Number(b.action.isDelete) - Number(a.action.isDelete))
                     .forEach(({ original, action }) => {
                         const copy = document.createElement(action.isDelete ? 'button' : 'a');
-                        const primary = !action.isDelete && !action.isEdit;
-                        const pending = primary && /^(draft|temp|pending)$/i.test(text(row.cells[1].querySelector('.badge')?.textContent));
+                        const primary = !action.isDelete && (!action.isEdit || isPendingRow);
+                        const pending = primary && isPendingRow;
                         copy.className = 'order-book-detail__action' + (action.isDelete ? ' order-book-detail__action--delete' : primary ? ' order-book-detail__action--primary' : '') + (pending ? ' order-book-detail__action--pending' : '');
-                        copy.textContent = action.label;
+                        const statusText = text(row.cells[1]?.querySelector('.badge')?.textContent);
+                        const label = primary && !action.isPos && !action.isEdit ? (/^(draft|temp|pending)$/i.test(statusText) ? 'Mulai Proses' : 'Buka Kasir / POS') : action.label;
+                        if (action.isDelete) {
+                            const icon = document.createElement('i');
+                            icon.className = 'ph-bold ph-trash';
+                            icon.setAttribute('aria-hidden', 'true');
+                            const span = document.createElement('span');
+                            span.textContent = label;
+                            copy.append(icon, span);
+                        } else copy.textContent = label;
                         if (action.isDelete) copy.type = 'button';
                         else copy.href = action.href;
                         copy.addEventListener('click', event => {

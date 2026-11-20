@@ -6,48 +6,51 @@
         <div class="modal-content" x-data>
             <div class="erp-sheet-header pos-sheet-header pos-sheet-header--tabs">
                 <span id="jusModalLabel" class="visually-hidden">Tambah Jus</span>
-                @include('pos::pos.segment.add-tabs', ['active' => 'jus'])
+                <div x-show="!addEditRef">@include('pos::pos.segment.add-tabs', ['active' => 'jus'])</div>
+                <div x-show="addEditRef" x-cloak>@include('pos::pos.segment.add-tabs', ['active' => 'jus', 'locked' => true])</div>
             </div>
             <div class="erp-sheet-body pos-ref-body">
               <section class="pos-ref-panel">
-                <header class="pos-ref-panel__head"><h3>Tambah Jus</h3><p>Pilih produk dan tentukan kuantitas belanja</p></header>
-                <div>
+                <header class="pos-ref-panel__head"><h3 x-text="addEditRef ? 'Edit Jus' : 'Tambah Jus'">Tambah Jus</h3><p>Pilih produk dan tentukan kuantitas belanja</p></header>
+                <div class="pos-ref-jus-pick">
                     <label class="pos-ref-cell__label pos-ref-required" for="select_jus">PILIH PRODUK</label>
                     <select id="select_jus" class="form-select"></select>
                 </div>
 
                 <section class="pos-ref-card pos-ref-card--jus" aria-labelledby="pos-jus-composition">
-                    <h3 id="pos-jus-composition">Komposisi Produk</h3>
-                    <p class="pos-ref-card__empty" x-show="!addProduct.id">
-                        Pilih Produk Jus di Atas
-                        <span class="pos-ref-card__hint">Takaran bahan akan tampil setelah produk dipilih.</span>
-                    </p>
-                    <div id="receiptContainer"></div>
+                    <div class="pos-ref-jus-head"><h3 id="pos-jus-composition">Komposisi Produk</h3><small id="pos-jus-count"></small></div>
+                    <div class="pos-ref-jus-body">
+                        <div class="pos-ref-jus-empty" x-show="!addProduct.id">
+                            <strong>Pilih Produk Jus di Atas</strong>
+                            <span>Daftar bahan dan takaran komposisi racikan akan<br>ditampilkan secara otomatis</span>
+                        </div>
+                        <div id="receiptContainer"></div>
+                    </div>
                 </section>
 
                 <div class="pos-ref-grid">
                     <label class="pos-ref-cell">
-                        <span class="pos-ref-cell__label">HARGA JUAL <small x-text="PosAddItem.priceUnit(addProduct.unit || 'Cup')"></small></span>
+                        <span class="pos-ref-cell__label">HARGA JUAL <small x-text="PosAddItem.priceUnit(addProduct.unit || '-')"></small></span>
                         <span class="pos-ref-cell__field is-readonly"><span>Rp</span><input type="text" x-model="formattedAddPrice" @input="updateAddPriceFromFormatted" readonly></span>
                     </label>
                     <label class="pos-ref-cell">
-                        <span class="pos-ref-cell__label pos-ref-required">KUANTITAS <small x-text="PosAddItem.quantityUnit(addProduct.unit || 'Cup')"></small></span>
-                        <span class="pos-ref-cell__field"><input type="number" step="0.01" min="0" placeholder="0" x-model="addProduct.qty" @input="updateAddTotalFromQty"></span>
+                        <span class="pos-ref-cell__label pos-ref-required">KUANTITAS <small x-text="PosAddItem.quantityUnit(addProduct.unit || '-')"></small></span>
+                        <span class="pos-ref-cell__field"><input type="number" step="0.01" min="0" placeholder="0" :disabled="!addProduct.id" x-model="addProduct.qty" @input="updateAddTotalFromQty"></span>
                     </label>
                     <label class="pos-ref-cell">
                         <span class="pos-ref-cell__label">DISKON</span>
-                        <span class="pos-ref-cell__field"><span x-text="PosAddItem.discountPrefix(addProduct.discountNominal)">%</span><input type="text" inputmode="numeric" placeholder="0" :value="addProduct.discountNominal ? formatRupiah(addProduct.discountNominal) : ''" @input="updateDiscountValue"></span>
+                        <span class="pos-ref-cell__field"><span x-text="PosAddItem.discountPrefix(addProduct.discountNominal)">%</span><input type="text" inputmode="numeric" placeholder="0" :disabled="!addProduct.id" :value="addProduct.discountNominal ? formatRupiah(addProduct.discountNominal) : ''" @input="updateDiscountValue"></span>
                     </label>
                     <label class="pos-ref-cell">
                         <span class="pos-ref-cell__label">TOTAL HARGA</span>
-                        <span class="pos-ref-cell__field"><span>Rp</span><input type="text" inputmode="numeric" x-model="addProduct.formattedAddTotalInput" @input="updateQtyFromAddTotal" placeholder="0"></span>
+                        <span class="pos-ref-cell__field is-readonly"><span>Rp</span><input type="text" inputmode="numeric" readonly x-model="addProduct.formattedAddTotalInput" placeholder="0"></span>
                     </label>
                 </div>
               </section>
             </div>
             <div class="erp-sheet-footer pos-ref-actions-bar">
                 <button type="button" class="pos-ref-back" @click="closeJusModal()">Kembali</button>
-                <button type="button" class="pos-ref-add" :disabled="!addProduct.id" @click="saveJusToCart()">Tambah</button>
+                <button type="button" class="pos-ref-add" :disabled="!addProduct.id || !(parseFloat(addProduct.qty) > 0)" @click="saveJusToCart()" x-text="addEditRef ? 'Simpan' : 'Tambah'">Tambah</button>
             </div>
         </div>
     </div>

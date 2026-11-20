@@ -35,7 +35,8 @@ final class PosSheetsUiContractTest extends TestCase
         $modal = $this->segment('modal-customer');
 
         $this->assertStringContainsString('Tambah Pelanggan', $modal);
-        $this->assertStringContainsString('Simpan &amp; Pilih', str_replace('Simpan & Pilih', 'Simpan &amp; Pilih', $modal));
+        $this->assertStringContainsString('>Pilih</button>', $modal);
+        $this->assertStringNotContainsString('Batal', $modal);
         foreach (['x-model="customerName"', 'x-model="customerPhone"', 'x-model="customerAddress"', 'saveCustomer()', 'id="customerModal"'] as $contract) {
             $this->assertStringContainsString($contract, $modal, "Hilang: {$contract}");
         }
@@ -110,7 +111,7 @@ final class PosSheetsUiContractTest extends TestCase
             $this->assertStringContainsString("assets/css/pos-form.css", file_get_contents(base_path($view)), "{$view} tidak memuat pos-form.css");
         }
     }
-    public function test_reference_add_item_views_are_opt_in_so_the_pesanan_page_keeps_its_modals(): void
+    public function test_reference_add_item_views_are_opt_in_and_the_pesanan_proses_page_follows_the_kasir_form(): void
     {
         foreach (['modal-product', 'modal-jus', 'modal-parcel'] as $name) {
             $source = $this->segment($name);
@@ -125,7 +126,11 @@ final class PosSheetsUiContractTest extends TestCase
             $this->assertStringContainsString("@include('pos::pos.segment.{$name}', ['reference' => true])", $form);
         }
         $order = file_get_contents(base_path('Modules/Pos/Resources/views/order-book/order.blade.php'));
-        $this->assertStringNotContainsString("'reference' => true", $order, 'Halaman Pesanan tidak boleh ikut berubah');
+        // Buka Kasir / POS from Pesanan shows the same reference form and add item pages as Kasir.
+        foreach (['modal-product', 'modal-jus', 'modal-parcel'] as $name) {
+            $this->assertStringContainsString("@include('pos::pos.segment.{$name}', ['reference' => true])", $order);
+        }
+        $this->assertStringContainsString('pos-form pos-form--reference', $order);
     }
 
     public function test_reference_buah_view_has_a_searchable_product_list_and_the_reference_fields(): void
@@ -206,7 +211,7 @@ final class PosSheetsUiContractTest extends TestCase
         $css = file_get_contents(base_path('public/assets/css/pos-form.css'));
 
         $this->assertStringContainsString('pos-ref-card--jus', $jus);
-        $this->assertStringContainsString('pos-ref-card__hint', $jus);
+        $this->assertStringContainsString('pos-ref-jus-empty', $jus);
         $this->assertStringContainsString('placeholder="0"', $jus);
         $this->assertStringContainsString('x-model="addProduct.formattedAddTotalInput" @input="updateQtyFromAddTotal" placeholder="0"', $fruit);
         $this->assertStringContainsString('class="erp-sheet-body {{ ! empty($reference) ? \'pos-ref-body\' : \'\' }}"', $parcel);

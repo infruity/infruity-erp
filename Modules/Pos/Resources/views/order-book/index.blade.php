@@ -28,6 +28,7 @@
         .order-book-workspace .order-book-mobile-search .erp-mobile-search__divider { display:none; }
         .order-book-workspace .order-book-mobile-search .erp-mobile-search__filter.order-book-filter-trigger { display:inline-flex; width:auto; min-width:44px; height:44px; min-height:44px; align-items:center; justify-content:center; flex:none; gap:8px; border:1px solid var(--erp-border); border-radius:999px; padding:10px 18px; background:white; color:#4b5563; font:600 13px/1.4 var(--erp-font); text-decoration:none; cursor:pointer; }
     }
+    .order-book-workspace .order-book-filter-trigger .icon-rounded { font-family:'Material Symbols Rounded'; font-size:20px; font-weight:300; line-height:1; }
     .order-book-workspace .order-book-record__summary { display:flex; min-width:102px; max-width:124px; flex:none; flex-direction:column; align-items:flex-end; gap:2px; margin-left:8px; text-align:right; }
     .order-book-workspace .order-book-record__status { color:#6b7280; font-size:13px; font-weight:700; line-height:18px; }
     .order-book-workspace .order-book-record__status--process { color:#f97316; }
@@ -49,12 +50,34 @@
         .order-book-workspace .erp-record__meta { margin-top:4px; font-size:12px; line-height:18px; }
         .order-book-workspace .erp-record__chevron { display:none; }
         .order-book-workspace .erp-record__details { padding:0 16px 16px; }
+        /* Rows follow the Pesanan reference (measured at 400px): 61px rows, 12px name, creator under the status. */
+        .order-book-workspace .erp-workspace-toolbar { padding:16px; }
+        .order-book-workspace .erp-workspace-toolbar .order-book-mobile-search .erp-mobile-search { gap:0; padding:0 6px 0 16px; box-shadow:none; border-color:rgba(229,231,235,.8); }
+        .order-book-workspace .order-book-mobile-search .erp-mobile-search__icon { margin-right:10px; }
+        .order-book-workspace .order-book-mobile-search .erp-mobile-search__divider { height:16px; margin:0 4px; }
+        .order-book-workspace .order-book-mobile-search .erp-mobile-search__input { font-weight:500; }
+        .order-book-workspace .order-book-mobile-search .erp-mobile-search__filter .icon-rounded { font-family:'Material Symbols Rounded'; font-size:20px; font-weight:300; line-height:1; }
+        .order-book-workspace .erp-record__head { min-height:60px; padding:12px 16px; }
+        .order-book-workspace .erp-record__title { font-size:12px; font-weight:600; line-height:18px; }
+        .order-book-workspace .order-book-record__phone { margin-left:2px; color:#9ca3af; font-size:11px; font-weight:400; }
+        .order-book-workspace .erp-record__meta { margin-top:2px; color:#9ca3af; font-size:11px; line-height:16.5px; }
+        .order-book-workspace .order-book-record__summary { width:120px; min-width:120px; max-width:120px; align-self:flex-start; margin:1.8px 0 0 12px; gap:2px; }
+        .order-book-workspace .order-book-record__status { font-size:12px; font-weight:600; line-height:16px; }
+        .order-book-workspace .order-book-record__invoice { max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; line-height:16.5px; }
+        /* Pesanan reference: 61px rows (60 + 1 border), 12px initials, bold status, grey filter icon. */
+        .order-book-workspace .erp-record__head { height:60px; min-height:60px; box-sizing:border-box; }
+        .order-book-workspace .erp-record__avatar { font-size:12px; font-weight:700; }
+        .order-book-workspace .order-book-record__status { font-weight:700; }
+        .order-book-workspace .order-book-mobile-search .erp-mobile-search__filter { color:#9ca3af; }
+        .order-book-workspace .erp-record__avatar { position:relative; overflow:visible; }
+        .order-book-workspace .order-book-record__parcel { position:absolute; right:-4px; bottom:-4px; display:flex; width:18px; height:18px; align-items:center; justify-content:center; border-radius:999px; background:#fff; box-shadow:0 0 0 1px #fff, 0 1px 2px rgba(0,0,0,.12); }
+        .order-book-workspace .order-book-record__parcel i { display:flex; width:14px; height:14px; align-items:center; justify-content:center; border-radius:999px; background:#f59e0b; color:#fff; font-size:9px; }
     }
 </style>
 <x-erp.workspace count-table="pos-table" count-noun="pesanan" class="order-book-workspace" title="Pesanan" subtitle="Kelola pesanan dan lihat rincian transaksi."
     x-data="orderBookFilterSheet()"
     @erp-filter-apply.window="if ($event.detail.id === 'order-book') applyFilters($event.detail.values)"
-    @erp-filter-close.window="if ($event.detail.id === 'order-book') closeFilter()"><x-slot:toolbar><div class="order-book-toolbar-controls"><div class="erp-search d-none d-md-flex"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-kt-ecommerce-product-filter="search" aria-label="Cari pesanan" placeholder="Cari..."></div><x-erp.mobile-search class="order-book-mobile-search erp-mobile-search-shell--fill"><x-slot:input><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari pesanan" placeholder="Cari..." class="erp-mobile-search__input"></x-slot:input><x-slot:filter><button type="button" class="erp-mobile-search__filter order-book-filter-trigger" aria-label="Filter pesanan" aria-haspopup="dialog" aria-controls="order-book-filter-sheet" :aria-expanded="filterOpen" :class="hasActiveFilters ? 'is-active' : ''" x-ref="filterTrigger" @click="openFilter()"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label" class="order-book-filter-label">Filter</span></button></x-slot:filter></x-erp.mobile-search></div><div hidden aria-hidden="true">
+    @erp-filter-close.window="if ($event.detail.id === 'order-book') closeFilter()"><x-slot:toolbar><div class="order-book-toolbar-controls"><div class="erp-search d-none d-md-flex"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-kt-ecommerce-product-filter="search" aria-label="Cari pesanan" placeholder="Cari..."></div><x-erp.mobile-search class="order-book-mobile-search erp-mobile-search-shell--fill"><x-slot:input><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari pesanan" placeholder="Cari..." class="erp-mobile-search__input"></x-slot:input><x-slot:filter><button type="button" class="erp-mobile-search__filter order-book-filter-trigger" aria-label="Filter pesanan" aria-haspopup="dialog" aria-controls="order-book-filter-sheet" :aria-expanded="filterOpen" :class="hasActiveFilters ? 'is-active' : ''" x-ref="filterTrigger" @click="openFilter()"><span class="icon-rounded" aria-hidden="true">tune</span><span id="active-branch-button-label" class="order-book-filter-label">Filter</span></button></x-slot:filter></x-erp.mobile-search></div><div hidden aria-hidden="true">
                             <select id="order-book-status-filter" data-kt-ecommerce-product-filter="status">
                                 <option value="all">Semua Status</option>
                                 <option value="draft">Pending</option>
@@ -69,7 +92,7 @@
                             </select>
                             <input type="hidden" id="kt_ecommerce_sales_flatpickr" value="">
                         </div>@if(check_access('order-book.create'))<a href="{{ url('order-book/create') }}" class="erp-action erp-action--primary order-book-create"><i class="ph-bold ph-plus" aria-hidden="true"></i>Tambah Pesanan</a>@endif</x-slot:toolbar>
-<x-erp.collection table="pos-table"><table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
+<x-erp.collection table="pos-table" empty-title="Belum ada data pesanan" empty-noun="pesanan baru" :create-url="url('order-book/create')" create-label="Tambah Pesanan"><table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
                     <thead>
                         <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
                             <th class="text-start min-w-150px">Nama Pelanggan</th>
@@ -125,7 +148,7 @@
                 return ({
                     pending: 'Pending', process: 'Proses', posting: 'Proses',
                     proses: 'Proses', done: 'Selesai', selesai: 'Selesai',
-                    draft: 'Draft', temp: 'Pending'
+                    draft: 'Pending', temp: 'Pending'
                 })[normalized] || label || 'Pending';
             }
 
@@ -305,11 +328,27 @@
                     if (record.dataset.orderBookSignature === signature) return;
                     record.dataset.orderBookSignature = signature;
                     record.classList.add('order-book-record');
-                    Array.from(record.classList).filter(name => name.indexOf('erp-tone-') === 0).forEach(name => record.classList.remove(name));
-                    avatar.classList.add(ErpTone.className(customerName));
+                    Array.from(avatar.classList).filter(name => name.startsWith('erp-tone-')).forEach(name => avatar.classList.remove(name));
+                    avatar.classList.add(ErpTone.customerClassName(customerName));
                     avatar.textContent = orderBookReferenceUi.initials(customerName);
                     avatar.setAttribute('aria-hidden', 'true');
+                    avatar.querySelector(':scope > .order-book-record__parcel')?.remove();
+                    if (rowData.has_parcel) {
+                        const badge = document.createElement('span');
+                        badge.className = 'order-book-record__parcel';
+                        badge.title = 'Ada Parcel';
+                        badge.innerHTML = '<i class="ph-fill ph-gift" role="img" aria-label="Ada Parcel"></i>';
+                        avatar.append(badge);
+                    }
                     meta.textContent = formattedDate;
+                    const phoneMatch = customerName.match(/^(.*?)\s*(\(\d{3,4}\))$/);
+                    if (phoneMatch && !title.querySelector('.order-book-record__phone')) {
+                        const phone = document.createElement('span');
+                        phone.className = 'order-book-record__phone';
+                        phone.textContent = phoneMatch[2];
+                        title.textContent = phoneMatch[1];
+                        title.append(phone);
+                    }
 
                     let summary = head.querySelector(':scope > .order-book-record__summary');
                     if (!summary) {
@@ -326,8 +365,9 @@
                     const invoiceNode = summary.querySelector('.order-book-record__invoice');
                     statusNode.className = `order-book-record__status order-book-record__status--${status === 'Selesai' ? 'done' : status === 'Proses' ? 'process' : 'pending'}`;
                     statusNode.textContent = status;
-                    invoiceNode.textContent = invoice;
-                    head.setAttribute('aria-label', `Pesanan ${customerName}. ${formattedDate}. Status ${status}. Nomor nota ${invoice}. Buka detail dan aksi.`);
+                    const staff = String(rowData.created_by_name || rowData.user?.nm_user || '').toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase()) || '-';
+                    invoiceNode.textContent = staff;
+                    head.setAttribute('aria-label', `Pesanan ${customerName}. ${formattedDate}. Status ${status}. Dibuat oleh ${staff}. Buka detail dan aksi.`);
                 });
             }
 

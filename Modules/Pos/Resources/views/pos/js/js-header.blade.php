@@ -451,16 +451,21 @@
         };
         ErpPicker.attach('#customer_id', {
             anchor: '.pos-customer',
+            inlineSearch: true,
             title: 'Pilih Pelanggan',
-            placeholder: 'Cari nama atau nomor WhatsApp...',
+            placeholder: 'Cari pelanggan / nomor HP...',
             placeholderTrigger: 'Pilih pelanggan',
+            variant: 'compact',
+            maxHeight: 256,
             emptyText: 'Pelanggan tidak ditemukan',
             url: '{{ route('customer.get-customer') }}',
             paginate: true,
-            prepend: [{ id: '0', text: 'Pelanggan Umum', data: { id: '0', name: 'Pelanggan Umum', address: '-', whatsapp: '-' } }],
+            prepend: [{ id: '0', text: 'Pelanggan Umum', title: 'Pelanggan Umum', aside: '-', data: { id: '0', name: 'Pelanggan Umum', address: '-', whatsapp: '-' } }],
             map: item => ({
                 id: item.id,
                 text: withSuffix(item),
+                title: item.name,
+                aside: item.whatsapp,
                 meta: [item.whatsapp, item.address, item.tier_name].filter(v => v && v !== '-').join(' · '),
                 data: {
                     id: item.id, name: item.name, address: item.address, whatsapp: item.whatsapp,
@@ -470,6 +475,7 @@
             })
         });
         ErpPicker.attach('#branch_id', {
+            anchor: '.pos-branch',
             title: 'Pilih Cabang',
             placeholder: 'Cari cabang...',
             placeholderTrigger: 'Pilih cabang',

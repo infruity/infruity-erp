@@ -17,3 +17,11 @@ test('neighbouring names do not share a tone and all ten tones are used', () => 
     assert.equal(used.size, ErpTone.TONES.length);
     assert.deepEqual(Object.keys(ErpTone.style('Toko GKB')), ['background', 'color', 'borderColor']);
 });
+
+test('walk-in buyers get the neutral tone, named customers keep the shared per-name colour', () => {
+    const tone = require('../../public/assets/js/erp-tone.js');
+    assert.equal(tone.customerClassName('Pelanggan Umum'), 'erp-tone-umum');
+    assert.equal(tone.customerClassName('  pelanggan umum (1234)'), 'erp-tone-umum');
+    assert.equal(tone.customerClassName('Mas Norman'), tone.className('Mas Norman'));
+    assert.notEqual(tone.customerClassName('Mas Norman'), tone.customerClassName('Pelanggan Umum'));
+});

@@ -35,7 +35,7 @@ final class PosFormUiContractTest extends TestCase
         $this->assertStringNotContainsString('erp-editor-summary', $form);
         // The first card only asks for branch and customer, like the reference.
         $this->assertStringNotContainsString('Informasi Transaksi', $form);
-        foreach (['ph-storefront', 'Cabang Transaksi', 'ph-user', 'Pelanggan', '+ Tambah'] as $contract) {
+        foreach (['Cabang', 'Pelanggan', '+ Tambah'] as $contract) {
             $this->assertStringContainsString($contract, $form, "Hilang: {$contract}");
         }
         $this->assertStringNotContainsString('<span>Baru</span>', $form, 'Tombol tambah pelanggan hanya ikon +');
@@ -114,7 +114,6 @@ final class PosFormUiContractTest extends TestCase
     public function test_existing_fields_and_item_entry_points_are_kept(): void
     {
         $form = $this->form();
-        $both = $form . $this->summary();
 
         foreach ([
             'id="branch_id" name="branch_id"',
@@ -132,10 +131,9 @@ final class PosFormUiContractTest extends TestCase
         ] as $contract) {
             $this->assertStringContainsString($contract, $form, "Hilang: {$contract}");
         }
-        // Process branch, date and invoice number are still submitted; they live in the summary sheet.
-        foreach (['id="branch_process_id" name="branch_process_id"', 'name="date"', 'name="invoice_number"', 'readonly'] as $contract) {
-            $this->assertStringContainsString($contract, $both, "Hilang: {$contract}");
-            $this->assertStringNotContainsString($contract, $form, "Harus pindah ke ringkasan: {$contract}");
+        // Transaction metadata remains available under Pengaturan tambahan.
+        foreach (['Pengaturan tambahan', 'name="note"', 'id="address_id"', 'id="courier_id"', 'name="ongkir_date"', 'updateDiskonOngkir', 'id="branch_process_id" name="branch_process_id"', 'name="date"', 'name="invoice_number"', 'readonly'] as $contract) {
+            $this->assertStringContainsString($contract, $form, "Hilang: {$contract}");
         }
     }
 
@@ -149,7 +147,7 @@ final class PosFormUiContractTest extends TestCase
             'openEditJusModal(item)',
             'openEditModal(item)',
             'item.discount > 0',
-            'item.total_input',
+            'item.price * item.qty',
             'id="cart-items-container"',
             'Belum ada produk didaftar belanja',
             'Klik tombol',
@@ -161,23 +159,18 @@ final class PosFormUiContractTest extends TestCase
         }
         $this->assertStringNotContainsString('ph-shopping-cart', $cart, 'Empty state reference has no icon');
         $this->assertStringNotContainsString('<button type="button" class="pos-cart-row', $cart, 'Row holds a delete button, so it cannot be a button itself');
-        // Row total keeps the same rule as before (total_input wins, else price*qty-discount).
-        $this->assertStringContainsString('(item.total_input || ((item.price * item.qty) - item.discount))', $cart);
+        // The row shows the gross line total (price x qty), like the nota; the discount sits on its own line below it.
+        $this->assertStringContainsString("(item.price * item.qty).toLocaleString('id-ID')", $cart);
     }
 
-    public function test_summary_keeps_all_fields_and_a_docked_footer_owns_total_and_actions(): void
+    public function test_summary_keeps_discount_and_shipping_and_a_docked_footer_owns_total_and_actions(): void
     {
         $summary = $this->summary();
 
         foreach ([
             'id="collapseTotal"',
             'updateDiskonGlobal',
-            'name="note"',
-            'id="address_id"',
-            'id="courier_id"',
-            'name="ongkir_date"',
             'updateOngkirGlobal',
-            'updateDiskonOngkir',
             'saveTransaction(',
             'goToPayment(',
             'x-text="totalProduk"',
@@ -192,7 +185,7 @@ final class PosFormUiContractTest extends TestCase
             'Ongkos Kirim',
             'Subtotal Item',
             'Diskon Transaksi',
-            ':disabled="loading || cart.length === 0"',
+            ':disabled="loading || cart.length === 0 || hasIncompleteParcel()"',
         ] as $contract) {
             $this->assertStringContainsString($contract, $summary, "Hilang: {$contract}");
         }
@@ -232,7 +225,7 @@ BLADE, $topbar);
         $this->assertStringContainsString(<<<'BLADE'
 $transactionBackLabel = $posCreateHeader ? 'Kembali ke Kasir / POS' :
 BLADE, $topbar);
-        $this->assertStringContainsString('href="{{ route($mobileBackRoute) }}" aria-label="{{ $mobileBackLabel }}"', $topbar);
+        $this->assertStringContainsString('href="{{ $posPaymentHeader ? $posPaymentBack : route($mobileBackRoute) }}" aria-label="{{ $posPaymentHeader ? \'Kembali\' : $mobileBackLabel }}"', $topbar);
         $this->assertStringContainsString('<i class="ph-bold ph-caret-left" aria-hidden="true"></i>', $topbar);
         $this->assertStringContainsString('<button type="button" data-erp-sidebar-toggle aria-label="Buka navigasi"', $topbar);
     }

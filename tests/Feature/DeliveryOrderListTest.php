@@ -181,7 +181,7 @@ class DeliveryOrderListTest extends TestCase
         $this->assertStringContainsString('delivery-order-detail-modal__link--phone', $html);
         $this->assertStringContainsString('.delivery-order-detail-modal__title { margin:0; color:#24364f; font:700 18px/1.4 var(--erp-font); }', $html);
         $this->assertStringContainsString('.delivery-order-detail-modal__body { display:flex; min-height:0; flex:1 1 auto; flex-direction:column; gap:14px; overflow-y:auto; padding:4px 20px 16px; overscroll-behavior:contain; }', $html);
-        $this->assertStringContainsString('.delivery-order-detail-modal__link--phone { color:#24364f; border-bottom-color:#d1d5db; font:600 12px/1.35 var(--erp-font); }', $html);
+        $this->assertStringContainsString('.delivery-order-detail-modal__link--phone { display:inline-block; margin-top:4.5px; color:#1f2937; border-bottom-color:#d1d5db; padding-bottom:2px; font:600 12px/16px var(--erp-font); }', $html);
         $this->assertStringContainsString('body:has(#delivery-order-page) #kt_content { padding:0!important; scroll-padding-bottom:0; }', $html);
         $this->assertStringContainsString('body:has(#delivery-order-page) #kt_content_container { display:flex; min-height:0; flex:1; flex-direction:column; padding:0!important; }', $html);
         $this->assertStringContainsString('#delivery-order-page { min-height:0; flex:1; border-radius:0; }', $html);

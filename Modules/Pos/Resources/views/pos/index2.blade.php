@@ -10,14 +10,14 @@
         'timezone' => config('app.timezone', 'Asia/Jakarta'),
         'step' => 50,
     ];
-    $posStatuses = ['all' => 'Semua Status', 'draft' => 'Pending', 'unpaid' => 'Belum Bayar', 'partial' => 'Kurang Bayar', 'paid' => 'Lunas'];
+    $posStatuses = ['all' => 'Semua', 'draft' => 'Pending', 'unpaid' => 'Belum Bayar', 'partial' => 'Kurang Bayar', 'paid' => 'Lunas'];
 @endphp
 <style>
     .pos-list-row { display:flex; min-width:0; align-items:center; gap:12px; }
     .pos-list-avatar-wrap { position:relative; flex:none; }
     .pos-list-avatar { display:flex; width:36px; height:36px; align-items:center; justify-content:center; border:1px solid #a7f3d0; border-radius:12px; background:#ecfdf5; color:#047857; font-size:12px; font-weight:700; line-height:1; }
     .pos-list-parcel-badge { position:absolute; right:-4px; bottom:-4px; display:flex; width:18px; height:18px; align-items:center; justify-content:center; border-radius:999px; background:#fff; box-shadow:0 0 0 1px #fff, 0 1px 2px rgba(0,0,0,.12); }
-    .pos-list-parcel-badge i { display:flex; width:14px; height:14px; align-items:center; justify-content:center; border-radius:999px; background:#d97706; color:#fff; font-size:9px; }
+    .pos-list-parcel-badge i { display:flex; width:14px; height:14px; align-items:center; justify-content:center; border-radius:999px; background:#f59e0b; color:#fff; font-size:9px; }
     .pos-list-copy { display:flex; min-width:0; flex-direction:column; gap:2px; text-decoration:none; }
     .pos-list-customer { display:flex; min-width:0; align-items:baseline; gap:4px; color:#111827; font-size:14px; font-weight:600; }
     .pos-list-customer span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -49,10 +49,13 @@
     .pos-list-empty span { max-width:280px; color:#6b7280; font-size:12px; line-height:1.55; }
     .pos-list-empty button { margin-top:6px; border:1px solid #d1d5db; border-radius:999px; background:#fff; padding:8px 16px; color:#374151; font-size:12px; font-weight:600; }
     .pos-list-empty button:hover { border-color:#34a684; color:#0b595b; }
+    .pos-list-empty__reset { display:inline-flex; align-items:center; gap:6px; margin-top:16px; border:1px solid #e5e7eb; border-radius:999px; background:#fff; padding:8px 16px; color:#4b5563; font-size:12px; font-weight:600; }
+    .pos-list-empty__reset:hover { border-color:#a7f3d0; background:#f9fafb; color:#047857; }
     .pos-toolbar-search { min-width:0; flex:1; padding:0; }
     .pos-toolbar-search .erp-mobile-search { height:44px; box-shadow:none; }
-    .pos-toolbar-search .erp-mobile-search:not(:focus-within) { border-color:#868e98; }
+    .pos-toolbar-search .erp-mobile-search { border-color:#868e98; }
     /* The shell root is 12px and Metronic utilities are !important, so the shared dialog's rem sizes are pinned to the reference pixels. */
+    [data-pos-detail] { padding-inline:16px; } /* px-4 is 12px under the 12px shell root; the reference uses 16px */
     [data-pos-detail] > section { max-width:384px; border-radius:16px; }
     [data-pos-detail] > section > div:first-child { padding:24px !important; }
     [data-pos-detail] > section > div:first-child > div:first-child { margin-bottom:24px !important; }
@@ -74,9 +77,33 @@
         .pos-list-total { font-size:11px; }
         #pos-table tbody tr { padding:14.5px 16px; }
         #kt_content:has(.pos-list-page) { padding-inline:0 !important; }
-        .pos-list-page .erp-workspace { border:0; border-radius:0; }
+        #kt_content:has(.pos-list-page) { overflow-y:hidden !important; }
+        #kt_content:has(.pos-list-page) #kt_post { flex:1 1 0%; min-height:0; }
+        #kt_content:has(.pos-list-page) #kt_content_container { height:100%; min-height:0; }
+        .pos-list-page .erp-workspace { height:100%; min-height:0; border:0; border-radius:0; }
+        .pos-list-page .erp-workspace-sticky { position:relative; flex:none; }
+        .pos-list-page .erp-workspace-content { min-height:0; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+        .pos-list-page .table-responsive { overflow:visible; }
         .pos-list-page .erp-workspace-heading { display:none; }
-        .pos-list-page .erp-workspace-toolbar { position:sticky; top:0; z-index:25; padding:16px; background:#fff; }
+        .pos-list-page .erp-workspace-toolbar { position:relative; z-index:25; padding:16px; background:#fff; }
+        /* Search field and list rows follow the Kasir / POS reference (measured at 400px). */
+        .pos-toolbar-search .erp-mobile-search { gap:0; padding:0 6px 0 16px; }
+        .pos-toolbar-search .erp-mobile-search { border-color:rgba(229,231,235,.8); }
+        .pos-toolbar-search .erp-mobile-search__icon { margin-right:10px; }
+        .pos-toolbar-search .erp-mobile-search__divider { height:16px; margin:0 4px; }
+        .pos-toolbar-search .erp-mobile-search__input { font-weight:500; }
+        .pos-toolbar-search .erp-mobile-search__filter .icon-rounded { font-family:'Material Symbols Rounded'; font-size:20px; font-weight:300; line-height:1; }
+        .pos-toolbar-search .erp-mobile-search__filter.is-active .icon-rounded { font-variation-settings:'FILL' 1, 'wght' 400; }
+        #pos-table tbody tr { box-sizing:border-box; height:67.5px; padding:12px 16px; align-items:start; }
+        .pos-list-row { align-items:flex-start; }
+        .pos-list-avatar-wrap { margin-top:4.3px; }
+        .pos-list-copy { gap:3px; margin-top:5.3px; }
+        .pos-list-customer { line-height:15px; }
+        .pos-list-customer .pos-list-phone { color:#9ca3af; line-height:14px; }
+        .pos-list-sub { color:#9ca3af; line-height:16.5px; }
+        .pos-list-status-cell { gap:5.5px; margin-top:7px; }
+        .pos-list-status { line-height:15px; }
+        .pos-list-total { line-height:15.5px; }
     }
     @media (max-width:639px) {
         .erp-workspace-toolbar > .pos-add { display:none; }
@@ -89,7 +116,7 @@
         <x-erp.mobile-search class="pos-toolbar-search erp-mobile-search-shell--always-visible erp-mobile-search-shell--flush">
             <x-slot:input><input id="search" type="search" class="erp-mobile-search__input" placeholder="Cari..." autocomplete="off" aria-label="Cari transaksi kasir"></x-slot:input>
             <x-slot:clear><button id="search-clear" type="button" class="erp-mobile-search__clear hidden" aria-label="Hapus pencarian"><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear>
-            <x-slot:filter><button type="button" @click="open()" :aria-expanded="filtersOpen" aria-haspopup="dialog" aria-label="Buka filter transaksi" class="erp-mobile-search__filter" :class="(filtersOpen || hasActive) ? 'is-active' : ''"><i class="ph ph-sliders-horizontal text-xl leading-none" aria-hidden="true"></i><span x-show="hasActive" x-cloak class="erp-mobile-search__filter-dot"></span></button></x-slot:filter>
+            <x-slot:filter><button type="button" @click="open()" :aria-expanded="filtersOpen" aria-haspopup="dialog" aria-label="Buka filter transaksi" class="erp-mobile-search__filter" :class="(filtersOpen || hasActive) ? 'is-active' : ''"><span class="icon-rounded" aria-hidden="true">tune</span><span x-show="hasActive" x-cloak class="erp-mobile-search__filter-dot"></span></button></x-slot:filter>
         </x-erp.mobile-search>
         @if(check_access('pos.create'))<a href="{{ url('pos/create') }}" class="erp-action erp-action--primary pos-add" aria-label="Tambah Transaksi"><i class="ph-bold ph-plus" aria-hidden="true"></i><span>Tambah Transaksi</span></a>@endif
     </x-slot:toolbar>
@@ -113,8 +140,8 @@
     id="pos"
     title="Filter Transaksi"
     aria-label="Filter transaksi"
-    subtitle="Saring cabang, status, dan periode tanggal transaksi."
-    branch-label="Cabang"
+    subtitle="Saring cabang, status, dan periode tanggal transaksi"
+    branch-label="Cabang Tujuan"
     branch-all-label="Semua Cabang"
     status-label="Status Transaksi"
     :branches="$posBranches"
@@ -137,7 +164,7 @@
                 <div class="min-w-0 flex-1">
                     <div class="text-[14px] font-bold leading-snug text-[#1f2937]"><span x-text="detail?.customer"></span><span class="text-[12px] font-normal text-[#6b7280]" x-show="detail?.phone_last4" x-text="' (' + detail?.phone_last4 + ')'"></span></div>
                     <div class="mt-[2px]">
-                        <a x-show="detail?.phone" :href="whatsappUrl(detail?.phone)" target="_blank" rel="noopener" class="inline-block cursor-pointer border-b border-dashed border-gray-300 pb-[2px] text-[12px] font-semibold text-[#1f2937]"><span x-text="detail?.phone"></span></a>
+                        <a x-show="detail?.phone" :href="whatsappUrl(detail?.phone)" target="_blank" rel="noopener" class="inline-block cursor-pointer border-b border-dashed border-gray-300 pb-[2px] text-[12px] font-semibold text-[#1f2937]"><span x-text="localPhone(detail?.phone)"></span></a>
                         <span x-show="!detail?.phone" class="text-[12px] font-semibold text-[#6b7280]">Tidak ada nomor telepon</span>
                     </div>
                 </div>
@@ -252,7 +279,7 @@
             const full = label.textContent.trim();
             const match = full.match(/^(.*?)\s*\((\d{4})\)$/);
             const name = match ? match[1] : full;
-            avatar.className = 'pos-list-avatar ' + ErpTone.className(name);
+            avatar.className = 'pos-list-avatar ' + ErpTone.customerClassName(name);
             avatar.textContent = PosListUi.customerInitial(name);
             avatar.setAttribute('aria-hidden', 'true');
             const wrap = document.createElement('span');
@@ -265,7 +292,7 @@
                 const badge = document.createElement('span');
                 badge.className = 'pos-list-parcel-badge';
                 badge.title = 'Ada Parcel';
-                badge.innerHTML = '<i class="ph-bold ph-gift" role="img" aria-label="Ada Parcel"></i>';
+                badge.innerHTML = '<i class="ph-fill ph-gift" role="img" aria-label="Ada Parcel"></i>';
                 wrap.appendChild(badge);
             }
             if (match) {
@@ -278,8 +305,10 @@
         }
 
         $(document).ready(function() {
-            const posEmptyState = '<div class="pos-list-empty"><i class="ph ph-receipt" aria-hidden="true"></i><strong>Belum ada data transaksi</strong><span>Transaksi kasir yang tersimpan akan muncul di sini.</span></div>';
-            const posEmptyFiltered = '<div class="pos-list-empty"><i class="ph ph-receipt" aria-hidden="true"></i><strong>Tidak ada transaksi yang cocok</strong><span>Coba ubah kata kunci atau filter yang sedang aktif.</span><button type="button" data-pos-clear>Hapus Filter</button></div>';
+            // Reference empty state: receipt tile, title and a "+" tile that opens the cashier; filtering adds a reset button.
+            const posEmptyBase = '<div class="erp-record-empty erp-record-empty--reference"><span class="erp-record-empty__tile"><i class="ph-duotone ph-receipt" aria-hidden="true"></i></span><h3>Belum ada data transaksi</h3><p>Klik tombol <a class="erp-record-empty__add" href="{{ route('pos.create') }}" aria-label="Tambah Transaksi" title="Tambah Transaksi"><i class="ph-bold ph-plus" aria-hidden="true"></i></a> untuk menambahkan<br>transaksi baru</p>';
+            const posEmptyState = posEmptyBase + '</div>';
+            const posEmptyFiltered = posEmptyBase + '<button type="button" class="pos-list-empty__reset" data-pos-clear><i class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i><span>Reset Pencarian &amp; Filter</span></button></div>';
             let lastBranch = '{{ $posFilterConfig['defaultBranch'] }}';
 
             dataTable = $('#pos-table').DataTable({

@@ -4,20 +4,14 @@
     <template x-teleport="body">
         <x-erp.detail-dialog open="detailOpen" close="closeDetail()" title="Detail Pesanan" labelledby="order-book-detail-title"
             id="order-book-detail-dialog" x-ref="detailDialog" @keydown.tab.window="trapDetailFocus($event)">
+            <x-slot:subtitle><p class="order-book-detail__branch" x-show="selected.branch && selected.branch !== '-'" x-text="selected.branch"></p></x-slot:subtitle>
             <div class="order-book-detail__fields">
                 <div class="order-book-detail__field">
                     <span class="order-book-detail__icon" aria-hidden="true"><i class="ph-duotone ph-user"></i></span>
                     <div class="order-book-detail__value">
                         <div class="order-book-detail__primary" x-text="selected.customerDisplay"></div>
-                        <a class="order-book-detail__phone" x-show="selected.whatsappUrl" :href="selected.whatsappUrl" target="_blank" rel="noopener noreferrer" x-text="selected.phone"></a>
-                        <span class="order-book-detail__secondary" x-show="!selected.whatsappUrl" x-text="selected.phone"></span>
-                    </div>
-                </div>
-                <div class="order-book-detail__field">
-                    <span class="order-book-detail__icon" aria-hidden="true"><i class="ph-duotone ph-storefront"></i></span>
-                    <div class="order-book-detail__value">
-                        <div class="order-book-detail__primary" x-text="selected.branch"></div>
-                        <div class="order-book-detail__secondary">Cabang Penerima</div>
+                        <a class="order-book-detail__phone" x-show="selected.whatsappUrl" :href="selected.whatsappUrl" target="_blank" rel="noopener noreferrer" x-text="localPhone(selected.phone)"></a>
+                        <span class="order-book-detail__secondary" x-show="!selected.whatsappUrl" x-text="localPhone(selected.phone)"></span>
                     </div>
                 </div>
                 <div class="order-book-detail__field">

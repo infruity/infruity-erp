@@ -1,0 +1,110 @@
+/* Nota & Cetak settings, measured on the Nota dan Cetak reference at 400px. Sizes are px: the legacy root font shrinks rem utilities. */
+body:has(.nota-form) #kt_content { padding:0 !important; }
+body:has(.nota-form) .erp-mobile-nav { display:none; }
+.nota-form { display:flex; min-height:calc(100dvh - 61px); flex-direction:column; background:#e5e9f3; font-family:'Plus Jakarta Sans',sans-serif; color:#1f2937; }
+.nota-form *, .nota-form *::before, .nota-form *::after { box-sizing:border-box; }
+.nota-form__tabs { display:flex; height:40px; flex:none; gap:0; margin:12px 16px 0; padding:4px; border-radius:12px; background:#f3f4f6; }
+.nota-form__tabs button { flex:1; height:32px; border:0; border-radius:8px; background:transparent; color:#6b7280; font-size:12px; font-weight:500; line-height:16px; }
+.nota-form__tabs button.is-active { background:#fff; color:#0b595b; font-weight:700; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+.nota-form__error, .nota-form__success { margin:12px 16px 0; padding:10px 14px; border-radius:12px; font-size:12px; font-weight:600; }
+.nota-form__error { border:1px solid #fecdd3; background:#fff1f2; color:#9f1239; }
+.nota-form__success { border:1px solid #a7f3d0; background:#ecfdf5; color:#065f46; }
+.nota-form__body { display:flex; min-height:0; flex:1; flex-direction:column; padding:12px 16px 16px; }
+.nota-card { display:flex; min-height:0; flex:1; flex-direction:column; overflow:hidden; padding:16px; border:1px solid rgba(229,231,235,.9); border-radius:16px; background:#fff; }
+.nota-card__branch { flex:none; padding-bottom:14px; border-bottom:1px solid #f3f4f6; }
+.nota-label { display:flex; height:20px; align-items:center; gap:6px; margin:0 0 6px; color:#374151; font-size:12px; font-weight:700; line-height:16px; }
+.nota-label i { color:#047857; font-size:14px; }
+.nota-label em { color:#ef4444; font-style:normal; }
+.nota-select { position:relative; }
+.nota-select select { display:block; width:100%; height:44px; appearance:none; -webkit-appearance:none; border:1px solid #e5e7eb; border-radius:12px; background:rgba(249,250,251,.7); padding:0 40px 0 16px; color:#1f2937 !important; font:600 12px/16px 'Plus Jakarta Sans',sans-serif !important; outline:0; }
+.nota-select select:focus { border-color:#34a684; background:#fff; }
+.nota-select > i { position:absolute; top:50%; right:16px; color:#9ca3af; font-size:12px; pointer-events:none; transform:translateY(-50%); }
+.nota-card__scroll { display:flex; min-height:0; flex:1; flex-direction:column; gap:14px; overflow-y:auto; padding:12px 4px 0 0; scrollbar-width:none; }
+.nota-card__scroll::-webkit-scrollbar { display:none; }
+.nota-box { flex:none; padding:14px; border:1px solid #e5e7eb; border-radius:16px; background:rgba(249,250,251,.9); }
+.nota-box__head { display:flex; height:28px; align-items:center; justify-content:space-between; gap:10px; }
+.nota-box__title { display:flex; align-items:center; gap:10px; color:#111827; font-size:12px; font-weight:700; line-height:16px; }
+.nota-box__title i { color:#0b595b; font-size:18px; }
+.nota-box__field { margin-top:12px; padding:10px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
+.nota-box__field textarea { display:block; width:100%; height:57.5px; resize:none; border:0; outline:0; background:transparent; padding:0; color:#1f2937; font:400 13px/20px 'Plus Jakarta Sans',sans-serif; }
+.nota-box__field textarea::placeholder, .nota-affix input::placeholder { color:#9ca3af; font-weight:400; }
+.nota-box--list { padding:8px; }
+.nota-row { display:flex; min-height:40px; align-items:center; justify-content:space-between; gap:10px; padding:8px; }
+.nota-row + .nota-row { border-top:1px solid #f3f4f6; padding-top:8px; }
+.nota-row--stack { display:block; }
+.nota-row__top { display:flex; height:24px; align-items:center; justify-content:space-between; gap:10px; }
+.nota-row__label { display:flex; align-items:center; gap:10px; color:#1f2937; font-size:12px; font-weight:600; line-height:16px; }
+.nota-row__label i { height:24px; color:#0b595b; font-size:16px; line-height:24px; }
+.nota-switch { position:relative; flex:none; width:44px; height:24px; border:0; border-radius:9999px; background:#d1d5db; padding:0; transition:background-color .2s ease; }
+.nota-switch > span { position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:9999px; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.2); transition:transform .2s ease; }
+.nota-switch.is-on { background:#0b595b; }
+.nota-switch.is-on > span { transform:translateX(20px); }
+.nota-affix { display:flex; height:40px; margin-top:8px; overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
+.nota-affix > span { display:flex; width:44px; flex:none; align-items:center; justify-content:center; border-right:1px solid #e5e7eb; background:#f9fafb; color:#6b7280; font-size:12px; font-weight:700; }
+.nota-affix input { min-width:0; flex:1; border:0; outline:0; background:transparent; padding:0 12px; color:#1f2937; font:700 16px/20px 'Plus Jakarta Sans',sans-serif; }
+.nota-preview__head { display:flex; padding-bottom:12px; border-bottom:1px solid #f3f4f6; min-height:39.5px; flex:none; align-items:flex-start; justify-content:space-between; gap:10px; }
+.nota-preview__title { display:flex; align-items:center; gap:8px; color:#1f2937; }
+.nota-preview__title i { color:#0b595b; font-size:16px; line-height:24px; }
+.nota-preview__title h3 { margin:0; color:#1f2937; font-size:12px; font-weight:700; letter-spacing:.05em; line-height:16px; text-transform:uppercase; }
+.nota-preview__dot { width:8px; height:8px; border-radius:50%; background:#10b981; }
+.nota-preview__tools { display:flex; align-items:center; gap:8px; }
+.nota-paper { display:flex; height:23px; padding:2px; border-radius:8px; background:#f3f4f6; }
+.nota-paper button { height:19px; border:0; border-radius:6px; background:transparent; padding:0 8px; color:#6b7280; font-size:10px; font-weight:500; line-height:19px; }
+.nota-paper button.is-active { background:#fff; color:#0b595b; font-weight:700; box-shadow:0 1px 1px rgba(0,0,0,.05); }
+.nota-test { display:flex; height:26.5px; align-items:center; gap:4px; border:1px solid #a7f3d0; border-radius:8px; background:#ecfdf5; padding:0 10px; color:#0b595b; font-size:11px; font-weight:600; line-height:16.5px; }
+.nota-test i { font-size:11px; }
+.nota-preview__stage { display:flex; min-height:0; flex:1; justify-content:center; margin:8px 0 0; padding:12px 3px 3px; overflow:auto; border-radius:12px; background:rgba(249,250,251,.6); }
+.nota-receipt { display:flex; flex-direction:column; align-self:stretch; min-height:min-content; width:100%; padding:20px 16px 0; border:1px solid rgba(229,231,235,.9); border-radius:16px; background:#fff; box-shadow:none; font-variant-numeric:tabular-nums; letter-spacing:-.01em; font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; line-height:1.5; }
+.nota-receipt p, .nota-receipt h1, .nota-receipt h3, .nota-receipt h4 { margin:0; }
+.nota-receipt .nota-divider { border-bottom:1px solid #f1f5f9; }
+.nota-receipt .nota-brand { padding:8px 0 24px; text-align:center; }
+.nota-receipt .nota-brand h1 { color:#111827; font-size:30px; font-weight:900; letter-spacing:-.03em; line-height:1; }
+.nota-receipt .nota-brand p { margin-top:6px; color:#4b5563; font-size:12px; font-weight:500; line-height:1.5; }
+.nota-receipt .nota-meta { display:flex; flex-direction:column; gap:2px; padding:12px 0; font-size:12px; }
+.nota-receipt .nota-row { display:flex; align-items:baseline; justify-content:space-between; gap:16px; font-size:12px; }
+.nota-receipt .nota-row > span:first-child { color:#9ca3af; font-weight:400; }
+.nota-receipt .nota-row > span:last-child { min-width:0; color:#9ca3af; font-weight:400; text-align:right; overflow-wrap:anywhere; }
+.nota-receipt .nota-status { padding:12px 0; color:#111827; font-family:'Plus Jakarta Sans',sans-serif; font-size:12px; font-weight:700; letter-spacing:.14em; text-align:center; text-transform:uppercase; }
+.nota-receipt > * { flex-shrink:0; }
+.nota-receipt .nota-items { flex:1 1 auto; display:flex; flex-direction:column; gap:14px; padding:14px 0; }
+.nota-receipt .nota-item h4 { color:#9ca3af; font-size:12px; font-weight:400; line-height:1.3; }
+.nota-receipt .nota-item .nota-row { margin-top:2px; }
+.nota-receipt .nota-sums { display:flex; flex-direction:column; gap:2px; padding:12px 0; }
+.nota-receipt .nota-total { display:flex; flex-direction:column; gap:2px; padding:12px 0; }
+.nota-receipt .nota-total .is-grand, .nota-receipt .nota-total .is-grand > span { color:#111827 !important; font-size:14px; font-weight:700 !important; }
+.nota-receipt .nota-foot { justify-content:center; display:flex; flex-direction:column; align-items:center; gap:2px; padding:18px 0; text-align:center; }
+.nota-receipt .nota-foot h3 { color:#111827; font-size:10px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; }
+.nota-receipt .nota-foot p { color:#6b7280; font-size:10px; }
+.nota-form__footer { display:flex; flex:none; align-items:center; gap:10px; padding:15px 16px; border-top:1px solid #f3f4f6; background:#fff; position:sticky; bottom:0; z-index:15; }
+.nota-icon { display:flex; width:44px; height:44px; flex:none; align-items:center; justify-content:center; border:1px solid #d1d5db; border-radius:12px; background:#fff; color:#1f2937; font-size:18px; text-decoration:none; }
+.nota-primary { display:flex; height:44px; flex:1; align-items:center; justify-content:center; border:0; border-radius:12px; background:#0b595b; color:#fff; font-size:12px; font-weight:700; box-shadow:0 4px 12px rgba(11,89,91,.2); }
+.nota-primary:disabled, .nota-icon:disabled { opacity:.6; }
+@media (min-width:768px) {
+    .nota-form__tabs { display:none; }
+    .nota-form__body { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; max-width:960px; width:100%; margin:0 auto; padding-top:24px; }
+    .nota-card[x-show] { display:flex !important; }
+}
+.nota-receipt.is-80 { width:340px; max-width:100%; margin-inline:auto; }
+.nota-receipt.is-58 { width:280px; max-width:100%; margin-inline:auto; }
+.nota-receipt.is-58 .nota-row > span { white-space:nowrap; }
+.nota-receipt.is-58 .nota-row { gap:8px; }
+.nota-receipt .nota-row { min-height:0 !important; padding:0 !important; border:0 !important; }
+.nota-receipt .nota-foot h3 { line-height:15px; }
+.nota-receipt .nota-item .nota-row { font-size:11px; }
+.nota-receipt .nota-meta, .nota-receipt .nota-sums { color:#4b5563; }
+.nota-receipt .nota-item .nota-row > span { font-size:12px; line-height:18px; }
+.nota-preview__tools { margin-left:auto; }
+.nota-receipt .nota-disc { display:flex; justify-content:space-between; gap:12px; margin-top:2px; color:#9ca3af; font-size:12px; line-height:18px; }
+.nota-paper { height:26.5px; }
+.nota-paper button { height:22.5px; line-height:22.5px; }
+.nota-form textarea, .nota-form textarea:focus, .nota-form input:focus { outline:0 !important; box-shadow:none !important; }
+.nota-box__field:focus-within, .nota-affix:focus-within { border-color:#e5e7eb !important; box-shadow:none !important; }
+.nota-preview__tools { flex:1; margin-left:0; min-width:0; }
+.nota-paper { flex:1; min-width:0; }
+.nota-paper button { flex:1; padding:0 8px; text-align:center; }
+.nota-test { flex:none; }
+.nota-box { border-color:transparent; background:transparent; }
+.nota-card__scroll { gap:0; }
+.nota-box--list { position:relative; }
+.nota-box--list::before { content:''; position:absolute; top:0; left:8px; right:8px; height:1px; background:#f3f4f6; }
+.nota-paper--row { flex:none; width:128px; }

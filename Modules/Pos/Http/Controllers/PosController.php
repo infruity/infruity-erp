@@ -86,6 +86,12 @@ class PosController extends Controller
 
         $data['alpinejs'] = true;
 
+        // Autosaved drafts that already hold items become "Pending" (status draft) so a new transaction starts blank.
+        PosModel::where('created_by', Auth::id())
+            ->where('status', 'temp')
+            ->whereHas('details')
+            ->update(['status' => 'draft']);
+
         // Cek apakah ada temp transaksi untuk user ini
         $draft = PosModel::with([
             'customer',
@@ -95,6 +101,8 @@ class PosController extends Controller
         ])
             ->where('created_by', Auth::id())
             ->where('status', 'temp')
+            // Only an empty draft is reused; those with items were just promoted to Pending above.
+            ->whereDoesntHave('details')
             ->orderBy('id', 'desc')
             ->first();
 
@@ -137,12 +145,24 @@ class PosController extends Controller
     }
 
     /**
+     * The walk-in customer ("Pelanggan Umum") is sent by the form as id 0 or an empty value; it means "no customer",
+     * which the nullable|exists rule only accepts as null.
+     */
+    private function normalizeWalkInCustomer(Request $request): void
+    {
+        if (in_array($request->input('customer_id'), [0, '0', '', null], true)) {
+            $request->merge(['customer_id' => null]);
+        }
+    }
+
+    /**
      * Store a newly created resource in storage.
      * @param Request $request
      * @return Renderable
      */
     public function store(Request $request)
     {
+        $this->normalizeWalkInCustomer($request);
         if ($denied = $this->requireAccess('pos.store')) {
             return $denied;
         }
@@ -337,6 +357,7 @@ class PosController extends Controller
 
     public function savePayment(Request $request)
     {
+        $this->normalizeWalkInCustomer($request);
         if ($denied = $this->requireAccess('pos.savePayment')) {
             return $denied;
         }
@@ -587,6 +608,7 @@ class PosController extends Controller
 
     public function saveTransaction(Request $request)
     {
+        $this->normalizeWalkInCustomer($request);
         if ($denied = $this->requireAccess('pos.receipt')) {
             return $denied;
         }
@@ -605,7 +627,18 @@ class PosController extends Controller
             'items.*.total_input' => 'nullable|numeric|min:0',
             'parcel'            => 'nullable|array',
             'parcel.*.qty'      => 'required|numeric|gt:0',
+            // validate() drops keys without a rule, and the parcel block below reads these.
+            'parcel.*.id'           => 'nullable',
+            'parcel.*.budget'       => 'required',
+            'parcel.*.fee'          => 'nullable',
+            'parcel.*.kemasan'      => 'nullable|string',
+            'parcel.*.kemasanId'    => 'nullable',
+            'parcel.*.kemasanName'  => 'nullable|string',
+            'parcel.*.kemasanPrice' => 'nullable',
+            'parcel.*.hpp'          => 'nullable|numeric',
             'parcel.*.data'     => 'required|array|min:1',
+            'parcel.*.data.*.price'     => 'nullable|numeric|min:0',
+            'parcel.*.data.*.priceAwal' => 'nullable|numeric|min:0',
             'parcel.*.data.*.product' => 'required|integer|exists:products,id',
             'parcel.*.data.*.qty' => 'required|numeric|gt:0',
             'jus'               => 'nullable|array',
@@ -644,7 +677,12 @@ class PosController extends Controller
 
         // Harga khusus tetap mengikuti input kasir; angka header selalu berasal dari rincian.
         $calculatedSubtotal = collect($data['items'])->sum(function ($item) {
-            return (float) ($item['total_input'] ?? (((float) ($item['price'] ?? 0) * (float) ($item['qty'] ?? 0)) - (float) ($item['discount'] ?? 0)));
+            // The form computes the same way: a missing or zero total_input (a parcel is added with 0) falls back to price x qty - discount.
+            $totalInput = (float) ($item['total_input'] ?? 0);
+
+            return $totalInput > 0
+                ? $totalInput
+                : ((float) ($item['price'] ?? 0) * (float) ($item['qty'] ?? 0)) - (float) ($item['discount'] ?? 0);
         });
         $globalDiscount = (float) ($data['discount'] ?? 0);
         $discountAmount = $globalDiscount > 0 && $globalDiscount <= 100
@@ -907,6 +945,9 @@ class PosController extends Controller
                 'branch_id'         => $data['branch_id'] ?? null,
                 'branch_process_id' => $data['branch_process_id'] ?? null,
             ]);
+            if ($pos->delivery_address_snapshot && $pos->isDirty(['customer_id', 'ongkir_address'])) {
+                $pos->delivery_address_snapshot = null;
+            }
             $pos->created_at = now();
             $pos->save();
             $this->deleteDuplicatePosDrafts($userId, $invoiceNumber, $pos->id);
@@ -1234,6 +1275,91 @@ class PosController extends Controller
         }
     }
 
+    /**
+     * Pembayaran: the courier can still be changed while the transaction is unpaid (same fields saveTransaction writes).
+     */
+    public function updateCourier(Request $request, $id)
+    {
+        if ($denied = $this->requireAccess('pos.payment')) {
+            return $denied;
+        }
+
+        $data = $request->validate([
+            'courier_id'   => 'nullable|integer|exists:kurir,id',
+            'courier_type' => 'nullable|in:internal,external',
+        ]);
+
+        $pos = PosModel::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
+        if ($pos->status === 'paid') {
+            return response()->json(['success' => false, 'message' => 'Transaksi yang sudah dibayar tidak dapat diubah.'], 422);
+        }
+
+        $pos->update([
+            'courier_id'   => $data['courier_id'] ?? null,
+            'courier_type' => empty($data['courier_id']) ? null : ($data['courier_type'] ?? null),
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Diskon Nota and Ongkos Kirim edited on the payment page. Same rules as saveTransaction: a discount of 100 or
+     * less is a percentage, above that it is rupiah; the header total and each line's share of the discount follow.
+     */
+    public function updateTotals(Request $request, $id)
+    {
+        if ($denied = $this->requireAccess('pos.payment')) {
+            return $denied;
+        }
+
+        $data = $request->validate([
+            'discount' => 'nullable|numeric|min:0',
+            'ongkir'   => 'nullable|numeric|min:0',
+        ]);
+
+        $pos = PosModel::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
+        if (! in_array($pos->status, ['temp', 'draft', 'pending'], true)) {
+            return response()->json(['success' => false, 'message' => 'Transaksi ini tidak dapat diubah lagi.'], 422);
+        }
+
+        return DB::transaction(function () use ($data, $pos) {
+            $details       = PosDetailModel::where('pos_id', $pos->id)->lockForUpdate()->get();
+            $itemsSubtotal = (float) $details->sum('subtotal');
+
+            $discountInput  = (float) ($data['discount'] ?? 0);
+            $discountAmount = $discountInput > 0 && $discountInput <= 100 ? $itemsSubtotal * $discountInput / 100 : $discountInput;
+            $ongkir         = (float) ($data['ongkir'] ?? 0);
+            $shipDiscInput  = (float) ($pos->ongkir_discount ?? 0);
+            $shipDiscAmount = $shipDiscInput > 0 && $shipDiscInput <= 100 ? $ongkir * $shipDiscInput / 100 : $shipDiscInput;
+
+            if ($discountAmount > $itemsSubtotal) {
+                return response()->json(['success' => false, 'message' => 'Diskon nota tidak boleh melebihi subtotal item.'], 422);
+            }
+            if ($shipDiscAmount > $ongkir) {
+                return response()->json(['success' => false, 'message' => 'Ongkos kirim tidak boleh lebih kecil dari diskon ongkirnya.'], 422);
+            }
+
+            $total = max(0, $itemsSubtotal - $discountAmount + $ongkir - $shipDiscAmount);
+
+            foreach ($details as $detail) {
+                $share = $itemsSubtotal > 0 ? ((float) $detail->subtotal / $itemsSubtotal) * $discountAmount : 0;
+                $update = ['diskon_global' => $share];
+                if ($detail->type === 'product') {
+                    $update['price_after_discount'] = (float) $detail->price - $share;
+                }
+                $detail->update($update);
+            }
+
+            $pos->update([
+                'discount' => $discountInput,
+                'ongkir'   => $ongkir,
+                'total'    => $total,
+            ]);
+
+            return response()->json(['success' => true, 'total' => $total]);
+        });
+    }
+
     public function payment($id)
     {
         if ($denied = $this->requireAccess('pos.payment')) {
@@ -1280,6 +1406,13 @@ class PosController extends Controller
         $data['detail']      = PosDetailModel::with('product')->where('pos_id', $id)->get();
         $data['tier']        = CustomerTier::where('customer_id', $data['data']->customer_id)->first();
         $data['deposito']    = CustomerDeposito::where('customer_id', $data['data']->customer_id)->where('quantity', '>', 0)->first();
+        if (request()->query('preview') === 'mobile') {
+            $data['data']->load(['paymentDetails', 'courier']);
+            $data['detail']->load('product.unit');
+            $data['parcelDetail'] = ProductionParcelDetail::with('product.unit')->where('pos_id', $id)->get();
+            $data['receiptPreview'] = true;
+            return view('pos::pos.receipt', $data);
+        }
         // dd($data);
         return view('pos::pos.print2', $data);
     }
@@ -1323,6 +1456,44 @@ class PosController extends Controller
         ]);
     }
 
+    /**
+     * Keeps the PNG of a nota so the public cek-nota page can show it as its link preview (og:image) when the link is shared on WhatsApp.
+     * One file per payment (or per draft transaction), replaced on every share.
+     */
+    public function storeNotaShareImage(Request $request)
+    {
+        if ($denied = $this->requireAccess('pos.printNota')) {
+            return $denied;
+        }
+
+        $data = $request->validate([
+            'image'        => ['required', 'file', 'mimes:png', 'max:4096'],
+            'payment_uuid' => ['nullable', 'string', 'max:64', 'required_without:pos_uuid'],
+            'pos_uuid'     => ['nullable', 'string', 'max:64', 'required_without:payment_uuid'],
+        ]);
+
+        $branches = array_map('intval', UserBranch::getUserBranch());
+        if (! empty($data['payment_uuid'])) {
+            $payment = Payment::where('uuid', $data['payment_uuid'])->first();
+            $pos     = $payment ? PosModel::find($payment->pos_id) : null;
+            $key     = $payment?->uuid;
+            $url     = $payment ? url('/cek-nota/' . $payment->uuid) : null;
+        } else {
+            $pos = PosModel::where('uuid', $data['pos_uuid'])->first();
+            $key = $pos ? 'draft-' . $pos->uuid : null;
+            $url = $pos ? url('/cek-nota/draft/' . $pos->uuid) : null;
+        }
+        abort_unless($pos && $key && in_array((int) $pos->branch_id, $branches, true), 404);
+
+        $directory = public_path('nota-share');
+        if (! is_dir($directory)) {
+            mkdir($directory, 0775, true);
+        }
+        $request->file('image')->move($directory, $key . '.png');
+
+        return response()->json(['url' => $url]);
+    }
+
     public function paymentNotification($id)
     {
         if ($denied = $this->requireAccess('pos.paymentNotification')) {
@@ -1359,6 +1530,16 @@ class PosController extends Controller
         $data['setting'] = SettingNota::where('branch_id', $data['data']->branch_id)->first() ?? SettingNota::first();
         $data['detail']  = PosDetailModel::with('product')->where('pos_id', $data['payment']->pos_id)->get();
         $data['tier']    = CustomerTier::where('customer_id', $data['data']->customer_id)->first();
+        if (request()->query('preview') === 'mobile') {
+            abort_unless(in_array((int) $data['data']->branch_id, array_map('intval', UserBranch::getUserBranch()), true), 403);
+            $data['data']->load(['paymentDetails', 'courier']);
+            $data['detail']->load('product.unit');
+            $data['parcelDetail'] = ProductionParcelDetail::with('product.unit')->where('pos_id', $data['data']->id)->get();
+            $data['receiptPreview'] = true;
+            $data['receiptBackUrl'] = route('pos.paymentNotification', $data['payment']->id);
+            $data['receiptShareUrl'] = url('/cek-nota/' . $data['payment']->uuid);
+            return view('pos::pos.receipt', $data);
+        }
         // dd($data);
         return view('pos::pos.print2', $data);
     }

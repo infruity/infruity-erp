@@ -21,7 +21,8 @@ class DeliveryOrderMobilePaymentTest extends TestCase
         $this->assertStringContainsString('data-delivery-order-payment-field="subtotal"', $html);
         $this->assertStringContainsString('data-delivery-order-payment-field="shipping-fee"', $html);
         $this->assertStringContainsString('data-delivery-order-payment-field="grand-total"', $html);
-        $this->assertStringContainsString('Total Tagihan (Setelah Voucher)', $html);
+        $this->assertStringContainsString('data-label-voucher="Total Tagihan (Setelah Voucher)"', $html);
+        $this->assertStringContainsString('Total Belanja + Ongkir', $html);
         $this->assertStringContainsString('aria-label="Nominal pembayaran yang diterima"', $html);
         $this->assertStringContainsString('data-delivery-order-payment-balance', $html);
         $this->assertStringContainsString('data-delivery-order-payment-back', $html);

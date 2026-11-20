@@ -42,6 +42,7 @@ class PosModel extends Model
         'created_by'
     ];
     protected $table = 'pos_transaction';
+    protected $casts = ['delivery_address_snapshot' => 'array'];
 
     public function details(): HasMany
     {

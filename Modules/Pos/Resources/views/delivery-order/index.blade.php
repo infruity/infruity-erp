@@ -20,12 +20,13 @@
 .delivery-order-detail-modal__row { display:flex; min-width:0; align-items:center; gap:12px; }
 .delivery-order-detail-modal__icon { display:flex; width:40px; height:40px; flex:0 0 40px; align-items:center; justify-content:center; border:1px solid rgba(167,243,208,.8); border-radius:12px; background:#ecfdf5; color:#0b595b; font-size:18px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
 .delivery-order-detail-modal__copy { min-width:0; flex:1; }
-.delivery-order-detail-modal__value { display:block; color:#24364f; font:700 14px/1.35 var(--erp-font); }
-.delivery-order-detail-modal__label { display:block; margin-top:3px; color:#8da0ba; font:500 11px/1.35 var(--erp-font); }
-.delivery-order-detail-modal__link { max-width:100%; overflow:hidden; color:#0b9a80; text-decoration:none; text-overflow:ellipsis; white-space:nowrap; }
-.delivery-order-detail-modal__link--dashed { border-bottom:1px dashed currentColor; padding-bottom:2px; }
+.delivery-order-detail-modal__value { display:block; color:#24364f; font:700 14px/20px var(--erp-font); }
+.delivery-order-detail-modal__label { display:block; margin-top:2px; color:#9ca3af; font:500 11px/20px var(--erp-font); }
+.delivery-order-detail-modal__link + .delivery-order-detail-modal__label { margin-top:4.5px; }
+.delivery-order-detail-modal__link { max-width:100%; overflow:hidden; color:#059669; text-decoration:none; line-height:17.5px; text-overflow:ellipsis; white-space:nowrap; }
+.delivery-order-detail-modal__link--dashed { display:block; border-bottom:1px dashed currentColor; padding-bottom:4.5px; }
 .delivery-order-detail-modal__link--wrap { overflow:visible; overflow-wrap:anywhere; text-overflow:clip; white-space:normal; }
-.delivery-order-detail-modal__link--phone { color:#24364f; border-bottom-color:#d1d5db; font:600 12px/1.35 var(--erp-font); }
+.delivery-order-detail-modal__link--phone { display:inline-block; margin-top:4.5px; color:#1f2937; border-bottom-color:#d1d5db; padding-bottom:2px; font:600 12px/16px var(--erp-font); }
 .delivery-order-detail-modal__link[aria-disabled="true"] { color:#8da0ba; border:0; pointer-events:none; }
 .delivery-order-detail-modal__footer { flex:none; border-top:1px solid rgba(148,163,184,.2); padding:12px 16px 16px; }
 .delivery-order-detail-modal__action { width:100%; min-height:44px; border:0; border-radius:15px; background:#0b595b; color:#fff; font:700 15px/1.2 var(--erp-font); cursor:pointer; box-shadow:0 5px 12px rgba(11,89,91,.18); transition:background .15s,transform .15s; }
@@ -73,26 +74,27 @@
     #delivery-order-page .delivery-order-filter-trigger > span { display:none; }
     #delivery-order-page .delivery-order-filter-menu { display:none!important; }
     #delivery-order-page .erp-record-controls { display:none; }
-    .erp-collection[data-erp-collection="pos-table"] .delivery-order-card__head { width:100%; min-height:61px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border:0; border-radius:0; background:#fff; color:#1f2937; text-align:left; font:inherit; }
+    .erp-collection[data-erp-collection="pos-table"] .delivery-order-card__head { width:100%; min-height:60px; height:60px; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border:0; border-radius:0; background:#fff; color:#1f2937; text-align:left; font:inherit; }
     .erp-collection[data-erp-collection="pos-table"] .delivery-order-card__head:hover { background:#f9fafb; }
     .delivery-order-card__customer { display:flex; min-width:0; flex:1; align-items:center; gap:12px; }
     .delivery-order-card__avatar { position:relative; display:flex; width:36px; height:36px; flex:0 0 36px; align-items:center; justify-content:center; border:1px solid; border-radius:12px; font:700 12px/1 var(--erp-font); }
-    .delivery-order-card__payment { position:absolute; right:-5px; bottom:-4px; display:flex; width:16px; height:16px; align-items:center; justify-content:center; border:2px solid #fff; border-radius:50%; color:#fff; font-size:9px; box-shadow:0 1px 2px rgb(15 23 42 / 16%); }
+    .delivery-order-card__payment { position:absolute; right:-4px; bottom:-5px; display:flex; width:16px; height:16px; align-items:center; justify-content:center; border:0; border-radius:50%; color:#fff; font-size:9px; box-shadow:0 1px 2px rgb(15 23 42 / 16%); }
     .delivery-order-card__payment[data-payment-state="paid"] { background:#059669; }
     .delivery-order-card__payment[data-payment-state="unpaid"] { background:#f43f5e; }
-    .delivery-order-card__payment i { font-size:8px; line-height:1; }
+    .delivery-order-card__payment i { font-size:9px; line-height:1; }
     .delivery-order-card__copy { display:flex; min-width:0; flex:1; flex-direction:column; }
-    .delivery-order-card__title { display:block; overflow:hidden; color:#1f2937; font-size:12px; font-weight:600; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
+    .delivery-order-card__title { display:block; overflow:hidden; color:#111827; font-size:12px; font-weight:600; line-height:15px; text-overflow:ellipsis; white-space:nowrap; }
     .delivery-order-card__phone { color:#9ca3af; font-size:11px; font-weight:400; }
-    .delivery-order-card__amount { margin-top:2px; color:#6b7280; font-size:11px; font-weight:400; line-height:16px; }
+    .delivery-order-card__copy, .delivery-order-card__status { padding-top:2.4px; }
+    .delivery-order-card__amount { margin-top:3px; color:#6b7280; font-size:11px; font-weight:400; line-height:16.5px; }
     .delivery-order-card__status { display:flex; min-width:0; max-width:42%; flex:none; flex-direction:column; align-items:flex-end; text-align:right; }
     .delivery-order-card__delivery { overflow:hidden; font-size:12px; font-weight:600; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
     .delivery-order-card__delivery[data-delivery-state="received"] { color:#059669; }
     .delivery-order-card__delivery[data-delivery-state="unreceived"] { color:#e11d48; }
-    .delivery-order-card__courier { max-width:120px; margin-top:2px; overflow:hidden; color:#6b7280; font-size:11px; font-weight:400; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
+    .delivery-order-card__courier { max-width:120px; margin-top:2px; overflow:hidden; color:#6b7280; font-size:11px; font-weight:400; line-height:16.5px; text-overflow:ellipsis; white-space:nowrap; }
 }
 </style>
-<x-erp.workspace count-table="pos-table" count-noun="pengiriman" id="delivery-order-page" title="Pengiriman" subtitle="Kelola pengiriman dan lihat rincian transaksi."><x-slot:toolbar><div class="erp-search d-none d-md-flex"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-kt-ecommerce-product-filter="search" aria-label="Cari nama pelanggan, kurir, atau 4 digit HP" placeholder="Cari..."></div><x-erp.mobile-search class="d-md-none erp-mobile-search-shell--fill"><x-slot:input><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari nama pelanggan, kurir, atau 4 digit HP" placeholder="Cari..." class="erp-mobile-search__input"></x-slot:input><x-slot:clear><button type="button" data-delivery-order-mobile-search-clear aria-label="Hapus pencarian" class="erp-mobile-search__clear" hidden><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear><x-slot:filter><button type="button" data-delivery-order-mobile-filter-trigger aria-label="Filter pengiriman" aria-haspopup="dialog" aria-controls="delivery-order-filter-sheet" aria-expanded="false" aria-pressed="false" class="erp-mobile-search__filter"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span class="erp-mobile-search__filter-dot" data-delivery-order-mobile-filter-dot hidden></span></button></x-slot:filter></x-erp.mobile-search><a href="{{ route('pos.index') }}" class="erp-action erp-action--primary d-none d-sm-inline-flex" aria-label="Tambah pengiriman lewat POS"><i class="ph ph-plus" aria-hidden="true"></i><span>Tambah Pengiriman</span></a><button type="button" class="erp-action delivery-order-filter-trigger d-none d-md-inline-flex" data-delivery-order-filter-trigger aria-haspopup="dialog" aria-controls="delivery-order-filter-sheet" aria-expanded="false" aria-label="Filter pengiriman" aria-pressed="false"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px delivery-order-filter-menu"
+<x-erp.workspace count-table="pos-table" count-noun="pengiriman" id="delivery-order-page" title="Pengiriman" subtitle="Kelola pengiriman dan lihat rincian transaksi."><x-slot:toolbar><div class="erp-search d-none d-md-flex"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input type="search" id="search-desktop" data-kt-ecommerce-product-filter="search" aria-label="Cari nama pelanggan, kurir, atau 4 digit HP" placeholder="Cari..."></div><x-erp.mobile-search class="d-md-none erp-mobile-search-shell--fill"><x-slot:input><input type="search" id="search" data-kt-ecommerce-product-filter="search" aria-label="Cari nama pelanggan, kurir, atau 4 digit HP" placeholder="Cari..." class="erp-mobile-search__input"></x-slot:input><x-slot:clear><button type="button" data-delivery-order-mobile-search-clear aria-label="Hapus pencarian" class="erp-mobile-search__clear" hidden><i class="ph-bold ph-x text-xs" aria-hidden="true"></i></button></x-slot:clear><x-slot:filter><button type="button" data-delivery-order-mobile-filter-trigger aria-label="Filter pengiriman" aria-haspopup="dialog" aria-controls="delivery-order-filter-sheet" aria-expanded="false" aria-pressed="false" class="erp-mobile-search__filter"><span class="icon-rounded" aria-hidden="true">tune</span><span class="erp-mobile-search__filter-dot" data-delivery-order-mobile-filter-dot hidden></span></button></x-slot:filter></x-erp.mobile-search><a href="{{ route('pos.index') }}" class="erp-action erp-action--primary d-none d-sm-inline-flex" aria-label="Tambah pengiriman lewat POS"><i class="ph ph-plus" aria-hidden="true"></i><span>Tambah Pengiriman</span></a><button type="button" class="erp-action delivery-order-filter-trigger d-none d-md-inline-flex" data-delivery-order-filter-trigger aria-haspopup="dialog" aria-controls="delivery-order-filter-sheet" aria-expanded="false" aria-label="Filter pengiriman" aria-pressed="false"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span id="active-branch-button-label">Filter</span></button><div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px delivery-order-filter-menu"
                             data-kt-menu="true">
                             <!--begin::Header-->
                             <div class="px-7 py-5">
@@ -157,7 +159,7 @@
                                 <!--end::Input group-->
                             </div>
                             <!--end::Content-->
-                        </div></x-slot:toolbar><x-erp.collection table="pos-table"><table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
+                        </div></x-slot:toolbar><x-erp.collection table="pos-table" empty-title="Belum ada data pengiriman" empty-noun="pengiriman baru" :create-url="route('pos.create')" create-label="Tambah pengiriman lewat POS"><table class="table align-middle table-row-dashed fs-6 gy-5" id="pos-table" width="100%">
                     <thead>
                         <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
                             <th class="text-start min-w-150px">Nama Pelanggan</th>
@@ -184,6 +186,8 @@
     :groups="[['key' => 'payment', 'label' => 'Status Pembayaran', 'options' => ['all' => 'Semua Status', 'unpaid' => 'Belum Lunas', 'paid' => 'Sudah Lunas']]]"
     :timezone="config('app.timezone')"
     reset-applies
+    reset-label="Reset Filter"
+    apply-label="Terapkan Filter"
 />
 <div id="delivery-order-detail-modal" class="delivery-order-detail-modal" hidden aria-hidden="true">
     <button type="button" class="delivery-order-detail-modal__backdrop" data-delivery-order-detail-close tabindex="-1" aria-label="Tutup detail pengiriman"></button>
@@ -254,7 +258,7 @@
                     <span class="delivery-order-payment-step__icon" aria-hidden="true"><i class="ph-duotone ph-receipt"></i></span>
                     <div class="delivery-order-payment-step__copy">
                         <span class="delivery-order-payment-step__value delivery-order-payment-step__value--total" data-delivery-order-payment-field="grand-total"></span>
-                        <span class="delivery-order-payment-step__label">Total Tagihan (Setelah Voucher)</span>
+                        <span class="delivery-order-payment-step__label" data-delivery-order-payment-total-label data-label-voucher="Total Tagihan (Setelah Voucher)">Total Belanja + Ongkir</span>
                     </div>
                 </div>
                 <dl class="delivery-order-billing-summary">
@@ -275,7 +279,7 @@
                 <div class="delivery-order-payment-step__balance" data-delivery-order-payment-balance hidden data-state="paid" aria-live="polite">
                     <span class="delivery-order-payment-step__balance-label">
                         <i class="ph-bold ph-check-circle" data-delivery-order-payment-balance-icon aria-hidden="true"></i>
-                        <span data-delivery-order-payment-balance-label>Lunas :</span>
+                        <span data-delivery-order-payment-balance-label>Lunas</span>
                     </span>
                     <strong class="delivery-order-payment-step__balance-value" data-delivery-order-payment-balance-value>Rp 0</strong>
                 </div>

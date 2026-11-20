@@ -13,9 +13,17 @@
     <meta property="og:title" content="@yield('title', 'UMKM Jual Buah Segar dan Sehat Secara Online')">
     <meta property="og:site_name" content="UMKM Jual Buah Segar dan Sehat Secara Online">
     <meta property="og:description" content="@yield('meta_description', 'UMKM Jual Buah Segar dan Sehat Secara Online')">
-    <meta property="og:image" content="@yield('og_image', asset('images/logo-infruity.png'))">
+    @php
+        // When the nota was shared as a link on WhatsApp its PNG was stored (nota-share); that picture is the link preview.
+        $notaShareKey  = ! empty($payment->uuid) ? $payment->uuid : (! empty($data->uuid) ? 'draft-' . $data->uuid : null);
+        $notaShareFile = $notaShareKey ? public_path('nota-share/' . $notaShareKey . '.png') : null;
+        $notaShareUrl  = ($notaShareFile && is_file($notaShareFile)) ? asset('nota-share/' . $notaShareKey . '.png') . '?v=' . filemtime($notaShareFile) : null;
+    @endphp
+    <meta property="og:image" content="{{ $notaShareUrl ?? asset('images/logo-infruity.png') }}">
+    @unless ($notaShareUrl)
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
+    @endunless
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 

@@ -6,11 +6,12 @@
         <div class="modal-content" x-data>
             <div class="erp-sheet-header pos-sheet-header pos-sheet-header--tabs">
                 <span id="addModalLabel" class="visually-hidden">Tambah Produk</span>
-                @include('pos::pos.segment.add-tabs', ['active' => 'buah'])
+                <div x-show="!addEditRef">@include('pos::pos.segment.add-tabs', ['active' => 'buah'])</div>
+                <div x-show="addEditRef" x-cloak>@include('pos::pos.segment.add-tabs', ['active' => 'buah', 'locked' => true])</div>
             </div>
             <div class="erp-sheet-body pos-ref-body">
               <section class="pos-ref-panel">
-                <header class="pos-ref-panel__head"><h3>Tambah Buah & Olahan</h3><p>Pilih produk dan tentukan kuantitas belanja</p></header>
+                <header class="pos-ref-panel__head"><h3 x-text="addEditRef ? 'Edit Buah & Olahan' : 'Tambah Buah & Olahan'">Tambah Buah & Olahan</h3><p>Pilih produk dan tentukan kuantitas belanja</p></header>
                 <span class="pos-ref-cell__label pos-ref-required">PILIH PRODUK</span>
                 <div class="pos-ref-listbox">
                 <div class="pos-ref-search">
@@ -23,7 +24,7 @@
                     <li class="pos-ref-products__state" x-show="productListState === 'ready' && productList.length === 0">Produk tidak ditemukan</li>
                     <template x-for="row in productList" :key="row.id">
                         <li>
-                            <button type="button" role="option" class="pos-ref-product" :aria-selected="addProduct.id === row.id"
+                            <button type="button" role="option" class="pos-ref-product" :aria-selected="addProduct.id === row.id" :disabled="rowStock(row) <= 0" :aria-disabled="rowStock(row) <= 0"
                                 :class="{ 'is-selected': addProduct.id === row.id, 'is-empty': rowStock(row) <= 0 }" @click="pickProduct(row)">
                                 <span class="pos-ref-product__main">
                                     <strong x-text="row.text"></strong>
@@ -38,27 +39,27 @@
 
                 <div class="pos-ref-grid">
                     <label class="pos-ref-cell">
-                        <span class="pos-ref-cell__label">HARGA JUAL <small x-text="PosAddItem.priceUnit(addProduct.unit)"></small></span>
+                        <span class="pos-ref-cell__label">HARGA JUAL <small x-text="PosAddItem.priceUnit(addProduct.unit || '-')"></small></span>
                         <span class="pos-ref-cell__field is-readonly"><span>Rp</span><input type="text" x-model="formattedAddPrice" readonly></span>
                     </label>
                     <label class="pos-ref-cell">
-                        <span class="pos-ref-cell__label pos-ref-required">KUANTITAS <small x-text="PosAddItem.quantityUnit(addProduct.unit)"></small></span>
-                        <span class="pos-ref-cell__field"><input type="number" step="0.01" min="0" placeholder="0" x-model="addProduct.qty" @input="updateAddTotalFromQty"></span>
+                        <span class="pos-ref-cell__label pos-ref-required">KUANTITAS <small x-text="PosAddItem.quantityUnit(addProduct.unit || '-')"></small></span>
+                        <span class="pos-ref-cell__field"><input type="number" step="0.01" min="0" placeholder="0" :disabled="!addProduct.id" x-model="addProduct.qty" @input="updateAddTotalFromQty"></span>
                     </label>
                     <label class="pos-ref-cell">
                         <span class="pos-ref-cell__label">DISKON</span>
-                        <span class="pos-ref-cell__field"><span x-text="PosAddItem.discountPrefix(addProduct.discountNominal)">%</span><input type="text" inputmode="numeric" placeholder="0" :value="addProduct.discountNominal ? formatRupiah(addProduct.discountNominal) : ''" @input="updateDiscountValue"></span>
+                        <span class="pos-ref-cell__field"><span x-text="PosAddItem.discountPrefix(addProduct.discountNominal)">%</span><input type="text" inputmode="numeric" placeholder="0" :disabled="!addProduct.id" :value="addProduct.discountNominal ? formatRupiah(addProduct.discountNominal) : ''" @input="updateDiscountValue"></span>
                     </label>
                     <label class="pos-ref-cell">
                         <span class="pos-ref-cell__label">TOTAL HARGA</span>
-                        <span class="pos-ref-cell__field"><span>Rp</span><input type="text" inputmode="numeric" x-model="addProduct.formattedAddTotalInput" @input="updateQtyFromAddTotal" placeholder="0"></span>
+                        <span class="pos-ref-cell__field"><span>Rp</span><input type="text" inputmode="numeric" :disabled="!addProduct.id" x-model="addProduct.formattedAddTotalInput" @input="updateQtyFromAddTotal" placeholder="0"></span>
                     </label>
                 </div>
               </section>
             </div>
             <div class="erp-sheet-footer pos-ref-actions-bar">
                 <button type="button" class="pos-ref-back" @click="closeAddModal()">Kembali</button>
-                <button type="button" class="pos-ref-add" :disabled="!addProduct.id" @click="saveAddToCart()">Tambah</button>
+                <button type="button" class="pos-ref-add" :disabled="!addProduct.id" @click="saveAddToCart()" x-text="addEditRef ? 'Simpan' : 'Tambah'">Tambah</button>
             </div>
         </div>
     </div>

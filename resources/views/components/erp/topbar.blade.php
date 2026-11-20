@@ -5,26 +5,46 @@
     $arusKasFormHeader = request()->routeIs('arus-kas.create', 'arus-kas.edit');
     $productionCreateHeader = request()->routeIs('production.create', 'production.edit');
     $posCreateHeader = request()->routeIs('pos.create');
-    $transactionFormHeader = $productionCreateHeader || $posCreateHeader || $transferFormHeader || $sortirFormHeader || $arusKasFormHeader || request()->routeIs('wholesale.create', 'wholesale.edit');
+    $orderBookFormHeader = request()->routeIs('order-book.create', 'order-book.edit');
+    $notaFormHeader = request()->routeIs('setting-nota.index') && request()->filled('cabang_filter');
+    $reportDetailHeader = request()->routeIs('report-product-sales.index', 'report-profit-revenue.index', 'report-profit-adjusted.index', 'report-total-aset', 'report-shipping-cost', 'report-product-buang', 'product-stock');
+    $transactionFormHeader = $productionCreateHeader || $posCreateHeader || $orderBookFormHeader || $transferFormHeader || $sortirFormHeader || $arusKasFormHeader || request()->routeIs('wholesale.create', 'wholesale.edit');
     $transactionBackRoute = $posCreateHeader ? 'pos.index' : ($arusKasFormHeader ? 'arus-kas.index' : ($transferFormHeader ? request()->segment(1) . '.index' : ($sortirFormHeader ? 'sortir.index' : 'wholesale.index')));
     $transactionBackLabel = $posCreateHeader ? 'Kembali ke Kasir / POS' : ($arusKasFormHeader ? 'Kembali ke Arus Kas' : ($transferFormHeader ? 'Kembali ke Pindah Stok' : ($sortirFormHeader ? 'Kembali ke Sortir Barang' : 'Kembali ke Pengadaan')));
+    if ($notaFormHeader) {
+        $transactionBackRoute = 'setting-nota.index';
+        $transactionBackLabel = 'Kembali ke daftar cabang';
+    }
+    if ($reportDetailHeader) {
+        $transactionBackRoute = 'reports.hub';
+        $transactionBackLabel = 'Kembali ke Laporan';
+    }
+    if ($orderBookFormHeader) {
+        $transactionBackRoute = 'order-book.index';
+        $transactionBackLabel = 'Kembali ke Pesanan';
+    }
     if ($productionCreateHeader) {
         $transactionBackRoute = 'production.index';
         $transactionBackLabel = 'Kembali ke Riwayat Produksi';
     }
     $productStockDetailHeader = request()->routeIs('product-stock.show');
     $passwordUpdateHeader = request()->routeIs('change-password');
-    $mobileBackHeader = $transactionFormHeader || $productStockDetailHeader || $passwordUpdateHeader;
+    // Pembayaran: the arrow goes back to the transaction (draft) or the list (already partly paid), like the footer's arrow.
+    $posPaymentHeader = request()->routeIs('pos.payment');
+    $posPaymentBack = $posPaymentHeader && isset($data->id, $data->status) && in_array($data->status, ['temp', 'draft', 'pending'], true) ? route('pos.edit', $data->id) : route('pos.index');
+    $mobileBackHeader = $transactionFormHeader || $reportDetailHeader || $notaFormHeader || $productStockDetailHeader || $passwordUpdateHeader || $posPaymentHeader;
     $mobileBackRoute = $productStockDetailHeader ? 'product-stock' : ($passwordUpdateHeader ? 'settings.index' : $transactionBackRoute);
     $mobileBackLabel = $productStockDetailHeader ? 'Kembali ke Stok Barang' : ($passwordUpdateHeader ? 'Kembali ke Pengaturan' : $transactionBackLabel);
 @endphp
 
 <style>
-    .erp-topbar-mobile { position:sticky; top:0; z-index:30; display:flex; min-height:61px; flex:none; align-items:center; justify-content:space-between; padding:0 16px; padding-top:env(safe-area-inset-top); border-bottom:1px solid rgba(255,255,255,.6); background:rgba(255,255,255,.65); box-shadow:0 6px 20px -2px rgba(0,0,0,.04), inset 0 1px 1px rgba(255,255,255,.9); -webkit-backdrop-filter:blur(24px) saturate(190%) contrast(105%); backdrop-filter:blur(24px) saturate(190%) contrast(105%); }
+    .erp-topbar-mobile { position:sticky; top:0; z-index:30; display:flex; min-height:61px; flex:none; align-items:center; justify-content:space-between; padding:0 16px; padding-top:env(safe-area-inset-top); border-bottom:1px solid rgba(229,231,235,.6); background:rgba(255,255,255,.8); box-shadow:none; -webkit-backdrop-filter:blur(12px) saturate(1.8); backdrop-filter:blur(12px) saturate(1.8); }
     .erp-topbar-mobile__button { position:relative; display:flex; width:36px; height:36px; flex:none; align-items:center; justify-content:center; border:0; border-radius:12px; background:transparent; color:#1f2937; cursor:pointer; transition:color .18s ease,background .18s ease,transform .18s ease; -webkit-tap-highlight-color:transparent; }
     .erp-topbar-mobile__button:hover, .erp-topbar-mobile__button:focus-visible { background:rgba(236,253,245,.7); color:#0b595b; }
     .erp-topbar-mobile__button:active { transform:scale(.95); }
     .erp-topbar-mobile__button i { font-size:21px; line-height:1; }
+    .erp-topbar-mobile__button--report-back { margin-left:-4px; color:#374151; }
+    .erp-topbar-mobile__button--report-back i { font-size:22px; }
     .erp-topbar-mobile--transaction-form > .erp-topbar-mobile__button { color:#0b595b; }
     .erp-topbar-mobile--transaction-form > .erp-topbar-mobile__button i { font-size:24px; }
     .erp-topbar-mobile--transaction-form .erp-topbar-mobile__notify > .erp-topbar-mobile__button { color:#374151; }
@@ -45,7 +65,7 @@
 
 <header class="erp-topbar-mobile {{ $transactionFormHeader ? 'erp-topbar-mobile--transaction-form' : '' }}">
     @if ($mobileBackHeader)
-        <a href="{{ route($mobileBackRoute) }}" aria-label="{{ $mobileBackLabel }}" class="erp-topbar-mobile__button" @if ($posCreateHeader) data-pos-create-back @endif>
+        <a href="{{ $posPaymentHeader ? $posPaymentBack : route($mobileBackRoute) }}" aria-label="{{ $posPaymentHeader ? 'Kembali' : $mobileBackLabel }}" class="erp-topbar-mobile__button{{ $reportDetailHeader ? ' erp-topbar-mobile__button--report-back' : '' }}" @if ($posCreateHeader) data-pos-create-back @endif>
             <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
         </a>
     @else

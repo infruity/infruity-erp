@@ -101,6 +101,7 @@ test('reference entry opens the category page without activating Bootstrap modal
         showAddModal: false,
         productSearch: 'old query',
         isReferenceAddPage: () => true,
+        resetAddForm() { calls.push('reset'); },
         loadProductList() { calls.push('load'); },
         setTimeout() { throw new Error('Reference flow must not open a Bootstrap modal'); },
     }, fruit);
@@ -111,7 +112,7 @@ test('reference entry opens the category page without activating Bootstrap modal
     assert.equal(app.activeAddCategory, 'buah');
     assert.equal(app.productSearch, '');
     assert.equal(app.showAddModal, false);
-    assert.deepEqual(calls, ['load']);
+    assert.deepEqual(calls, ['reset', 'load']);
 });
 
 test('Parcel and Jus category entry leave Bootstrap modal flags off in reference mode', () => {

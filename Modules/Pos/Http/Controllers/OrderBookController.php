@@ -260,7 +260,7 @@ class OrderBookController extends Controller
             return $denied;
         }
 
-        $orderBook = OrderBook::with('customer', 'details', 'details.product', 'details.product.unit', 'branch', 'pos')->findOrFail($id);
+        $orderBook = OrderBook::with('customer', 'details', 'details.product', 'details.product.unit', 'branch', 'pos', 'user:id_user,nm_user')->findOrFail($id);
         
         if ($orderBook->status == 'done' && $orderBook->pos) {
             return redirect()->back()->with('error', 'Transaksi yang sudah selesai dan memiliki POS tidak dapat diproses lagi.');
@@ -457,6 +457,7 @@ class OrderBookController extends Controller
             }, true)
             ->addIndexColumn()
             ->addColumn('created_by_name', fn ($item) => $item->user?->nm_user)
+            ->addColumn('has_parcel', fn ($item) => $this->containsParcelKeyword($item->note ?? ''))
             ->addColumn('name', function ($item) {
                 $warningIcon = $item->updated_at ? '<span class="text-warning mx-1" title="Terakhir diedit" style="font-size: 0.75rem;">⚠️</span>' : '';
                 $parcelBadge = $this->containsParcelKeyword($item->note ?? '')
@@ -500,7 +501,7 @@ class OrderBookController extends Controller
             ->addColumn('date', function ($item) {
                 $html = '<span class="text-muted d-block fs-8">' . date('d M Y H:i', strtotime($item->created_at)) . '</span>';
                 if ($item->status == 'draft') {
-                    $html .= '<span class="badge badge-light-danger">Draft</span>';
+                    $html .= '<span class="badge badge-light-danger">Pending</span>';
                 } else if ($item->status == 'done') {
                     $html .= '<span class="badge badge-light-success">Selesai</span>';
                 } else if ($item->status == 'process') {

@@ -19,7 +19,8 @@ test('Order Book mounts the shared detail dialog independently of its filter and
     assert.match(partial, /<x-erp\.detail-dialog/);
     assert.match(partial, /x-teleport="body"/);
     for (const field of ['customerDisplay', 'phone', 'branch', 'createdAt', 'createdBy', 'editedAt', 'editedBy']) {
-        assert.ok(partial.includes(`x-text="selected.${field}"`), `Missing safe detail field ${field}`);
+        const bound = field === 'phone' ? 'localPhone(selected.phone)' : `selected.${field}`;
+        assert.ok(partial.includes(`x-text="${bound}"`), `Missing safe detail field ${field}`);
     }
     assert.ok(!partial.includes('x-html'));
     assert.match(partial, /assets\/js\/order-book-detail\.js/);
@@ -28,13 +29,13 @@ test('Order Book mounts the shared detail dialog independently of its filter and
 test('detail uses persisted labels with honest missing-value fallbacks', () => {
     const { normalize } = helpers();
     const detail = normalize({ customer_name: 'Pelanggan Uji', customer_phone: '081234564311', branch_name: 'Toko Uji', created_by_name: 'Pembuat Uji', updated_by_name: null, updated_at: null });
-    assert.equal(detail.customerDisplay, 'Pelanggan Uji (4311)');
+    assert.equal(detail.customerDisplay, 'Pelanggan Uji');
     assert.equal(detail.branch, 'Toko Uji');
     assert.equal(detail.createdBy, 'Dibuat oleh Pembuat Uji');
     assert.equal(detail.editedAt, '-');
     assert.equal(detail.editedBy, 'Diedit');
     assert.equal(normalize({}).createdBy, 'Dibuat oleh -');
-    assert.equal(normalize({ customer_name: 'Uji (4311)', customer_phone: '081234564311' }).customerDisplay, 'Uji (4311)');
+    assert.equal(normalize({ customer_name: 'Uji (4311)', customer_phone: '081234564311' }).customerDisplay, 'Uji');
 });
 
 test('WhatsApp links accept phone formats but never a script or arbitrary URL', () => {
@@ -60,7 +61,7 @@ test('detail reads existing customer data and rendered branch without inventing 
         customer: { name: 'Pelanggan &amp; Uji', whatsapp: '081234564311' },
         updated_at: '2026-07-31T11:45:00.000000Z', created_by: 42, updated_by: 43
     }, 'Asia/Jakarta');
-    assert.equal(detail.customerDisplay, 'Pelanggan & Uji (4311)');
+    assert.equal(detail.customerDisplay, 'Pelanggan & Uji');
     assert.equal(detail.whatsappUrl, 'https://wa.me/6281234564311');
     assert.equal(detail.branch, 'Cabang & Uji');
     assert.equal(detail.createdAt, '31 Jul 2026, 17:27');
@@ -162,4 +163,11 @@ test('detail shows the real creator name when the list response provides it', ()
     assert.equal(detail.createdBy, 'Dibuat oleh Pembuat Uji');
     // An id alone must never be turned into an invented name.
     assert.equal(fromRow({ cells: [first, date, { textContent: '' }] }, { created_by: 42 }, 'Asia/Jakarta').createdBy, 'Dibuat oleh -');
+});
+
+test('detail dialog shows phones in local form and keeps the edited row empty when never edited', () => {
+    const source = fs.readFileSync(asset, 'utf8');
+    assert.match(source, /function localPhone\(/);
+    assert.match(source, /startsWith\('62'\) \? '0' \+ digits\.slice\(2\)/);
+    assert.match(source, /Math\.abs\(date\.getTime\(\) - made\.getTime\(\)\) > 60000/);
 });

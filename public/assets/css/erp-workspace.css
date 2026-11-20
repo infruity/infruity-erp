@@ -6,7 +6,6 @@
 .erp-workspace-toolbar .erp-search { position:relative; display:flex; align-items:center; gap:10px; margin:0; border:1px solid var(--erp-border); border-radius:999px; background:var(--erp-surface-muted); min-height:44px; padding:0 16px; }
 .erp-workspace-toolbar .erp-search > i { font-size:18px; color:var(--erp-primary); flex:none; }
 .erp-workspace-toolbar .erp-search > input { width:100%; min-width:0; min-height:42px; border:0; outline:0; box-shadow:none; background:transparent; color:var(--erp-text); font:13px var(--erp-font); }
-.erp-workspace-toolbar .erp-search:focus-within { border-color:var(--erp-primary); }
 .erp-action { display:inline-flex; min-height:44px; align-items:center; justify-content:center; flex:none; gap:8px; border:1px solid var(--erp-border); border-radius:999px; padding:10px 18px; background:white; color:#4b5563; font:600 13px/1.4 var(--erp-font); text-decoration:none; cursor:pointer; }
 .erp-action:hover { background:var(--erp-surface-muted); color:var(--erp-primary); }
 .erp-action--primary { background:var(--erp-primary); border-color:var(--erp-primary); color:white; }
@@ -167,3 +166,13 @@
 
 /* Mobile: the search (toolbar) and the "Menampilkan x dari y" line under it stay in place while the list scrolls. */
 @media(max-width:767px) { .erp-workspace-sticky { position:sticky; top:0; z-index:25; background:#fff; } }
+
+/* Reference empty state for the Penjualan lists (receipt tile, title, "+" tile). */
+.erp-record-empty--reference { display:flex; min-height:50vh; flex-direction:column; align-items:center; justify-content:center; padding:64px 16px; font-size:12px; }
+.erp-record-empty__tile { display:grid; width:64px; height:64px; margin-bottom:16px; place-items:center; border:1px solid rgba(209,250,229,.8); border-radius:24px; background:rgba(236,253,245,.8); color:#0b595b; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+.erp-record-empty--reference .erp-record-empty__tile i { display:block; margin:0; color:#0b595b; font-size:30px; line-height:1; }
+.erp-record-empty--reference h3 { margin:0; color:#1f2937; font-size:14px; font-weight:700; line-height:20px; }
+.erp-record-empty--reference p { max-width:320px; margin:8px auto 0; color:#6b7280; font-size:12px; line-height:19.5px; }
+.erp-record-empty__add { display:inline-flex; width:24px; height:24px; margin:0 4px; align-items:center; justify-content:center; border:1px solid rgba(167,243,208,.8); border-radius:8px; background:#ecfdf5; color:#0b595b; vertical-align:middle; text-decoration:none; }
+.erp-record-empty__add:hover { background:#0b595b; color:#fff; }
+.erp-record-empty__add i { margin:0; font-size:12px; color:inherit; }

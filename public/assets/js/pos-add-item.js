@@ -26,8 +26,7 @@
     }
 
     function stockLabel(stock, unit) {
-        if (!(stock > 0)) return 'Habis';
-        const value = String(Math.round(stock * 100) / 100).replace('.', ',');
+        const value = stock > 0 ? String(Math.round(stock * 100) / 100).replace('.', ',') : '0';
         return unit ? `${value} ${unit}` : value;
     }
 
@@ -37,7 +36,7 @@
     }
 
     function priceLabel(unit) {
-        return unit ? `HARGA JUAL /${String(unit).toUpperCase()}` : 'HARGA JUAL';
+        return unit ? `HARGA JUAL / ${String(unit).toUpperCase()}` : 'HARGA JUAL';
     }
 
     function quantityLabel(unit) {

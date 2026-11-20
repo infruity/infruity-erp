@@ -3,72 +3,41 @@
 
 @section('content')
     <link rel="stylesheet" href="{{ asset('assets/css/pos-form.css') }}?v={{ filemtime(public_path('assets/css/pos-form.css')) }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/order-book-form.css') }}?v={{ filemtime(public_path('assets/css/order-book-form.css')) }}">
     <div class="w-100 flex-lg-row-auto" x-data="posApp()" x-init="init()">
-        <div class="pos-form">
-            <section class="pos-card" aria-labelledby="ob-info-title">
-                <div class="pos-card__head">
-                    <h2 id="ob-info-title">Informasi Pesanan</h2>
-                    <span class="pos-card__hint">* Wajib diisi</span>
-                </div>
-                <div class="pos-card__body">
-                    <div class="pos-fields">
-                        <div class="fv-row is-wide">
-                            <label class="required form-label" for="branch_id">Cabang</label>
-                            <select class="form-control" name="branch_id" id="branch_id">
-                                <option value="">Pilih Cabang</option>
-                            </select>
-                        </div>
-                        <div class="fv-row is-wide">
-                            <label class="required form-label" for="customer_id">Pelanggan</label>
-                            <div class="pos-customer">
-                                <select class="form-select" id="customer_id" name="customer_id">
-                                    <option value="">Pilih Pelanggan</option>
-                                </select>
-                                <button type="button" @click="addCustomer()" aria-label="Tambah pelanggan" class="pos-customer__add">
-                                    <i class="ph-bold ph-plus" aria-hidden="true"></i><span>Baru</span>
-                                </button>
-                            </div>
-                            <input type="hidden" name="tier_id" id="tier_id">
-                        </div>
-                        <div class="fv-row">
-                            <label class="required form-label" for="ob_date">Tanggal Transaksi</label>
-                            <input type="date" class="form-control" id="ob_date" name="date" value="{{ date('Y-m-d') }}">
-                        </div>
-                        <div class="fv-row">
-                            <label class="required form-label" for="ob_invoice">Nomor Faktur</label>
-                            <input type="text" class="form-control" id="ob_invoice" name="invoice_number" value="{{ $invoice_number }}"
-                                readonly>
-                        </div>
-                    </div>
+        <div class="pos-form pos-form--reference ob-form" x-data="{ noteLength: {{ strlen($data->note ?? '') }}, noteBlank: {{ trim((string) ($data->note ?? '')) === '' ? 'true' : 'false' }} }">
+            <section class="ob-card ob-card--branch" aria-labelledby="ob-branch-label">
+                <label class="ob-label" id="ob-branch-label" for="branch_id"><span>Cabang</span><span class="ob-required" aria-hidden="true">*</span></label>
+                <select class="form-control" name="branch_id" id="branch_id">
+                    <option value="">Pilih Cabang</option>
+                </select>
+                {{-- The order is saved for the walk-in customer, today and the next invoice number, as the reference form has none of these fields. --}}
+                <div class="ob-hidden-fields" hidden>
+                    <select class="form-select" id="customer_id" name="customer_id">
+                        <option value="">Pilih Pelanggan</option>
+                    </select>
+                    <input type="hidden" name="tier_id" id="tier_id">
+                    <input type="date" id="ob_date" name="date" value="{{ date('Y-m-d') }}">
+                    <input type="text" id="ob_invoice" name="invoice_number" value="{{ $invoice_number }}" readonly>
                 </div>
             </section>
 
-            <section class="pos-card" aria-labelledby="ob-note-title" x-data="{ noteLength: {{ strlen($data->note ?? '') }} }">
-                <div class="pos-card__head">
-                    <h2 id="ob-note-title">Catatan Pesanan <span class="text-danger">*</span></h2>
-                </div>
-                <div class="pos-card__body">
-                    <label for="note" class="visually-hidden">Produk dan catatan pesanan</label>
-                    <textarea name="note" id="note" rows="8" class="form-control" placeholder="Tuliskan produk dan catatan pesanan..."
-                        @input="noteLength = $event.target.value.length">{{ $data->note ?? '' }}</textarea>
-                    <div class="pos-note-count"><span x-text="noteLength + ' karakter'"></span></div>
+            <section class="ob-card ob-card--note" aria-labelledby="ob-note-title">
+                <div class="ob-card__head"><h2 id="ob-note-title">Catatan Pesanan</h2><span class="ob-required" aria-hidden="true">*</span></div>
+                <div class="ob-card__body">
+                    <label for="note" class="visually-hidden">Catatan pesanan</label>
+                    <textarea name="note" id="note" class="form-control" placeholder="Tuliskan catatan pesanan..."
+                        @input="noteLength = $event.target.value.length; noteBlank = $event.target.value.trim() === ''">{{ $data->note ?? '' }}</textarea>
+                    <div class="ob-note-count"><span x-text="noteLength + ' karakter'"></span></div>
                 </div>
             </section>
 
-            <div class="pos-form-footer">
-                <div class="pos-form-footer__inner">
-                    <div class="pos-form-actions" x-data="{ loading: false }">
-                        <a href="{{ url('/order-book') }}" class="btn btn-light"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Kembali</a>
-                        <button type="button" class="btn btn-light border" @click="loading = true; saveDraft(() => loading = false)" :disabled="loading">
-                            <template x-if="!loading"><span>Draft</span></template>
-                            <template x-if="loading"><span><span class="spinner-border spinner-border-sm align-middle me-2"></span>Memproses...</span></template>
-                        </button>
-                        <button type="button" class="btn btn-primary" @click="loading = true; saveTransaction(() => loading = false)" :disabled="loading">
-                            <template x-if="!loading"><span>Simpan &amp; Proses</span></template>
-                            <template x-if="loading"><span><span class="spinner-border spinner-border-sm align-middle me-2"></span>Memproses...</span></template>
-                        </button>
-                    </div>
+            <div class="ob-footer" x-data="{ loading: false }">
+                <div class="ob-footer__pair">
+                    <a href="{{ url('/order-book') }}" class="ob-footer__draft ob-footer__icon pos-ref-icon" aria-label="Kembali" title="Kembali"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a>
+                    <button type="button" class="ob-footer__draft ob-footer__icon pos-ref-icon" @click="loading = true; saveDraft(() => loading = false)" :disabled="loading || noteBlank" aria-label="Simpan sebagai draf" title="Simpan draf"><i class="ph-bold ph-bookmark-simple" aria-hidden="true"></i></button>
                 </div>
+                <button type="button" class="ob-footer__submit" @click="loading = true; saveTransaction(() => loading = false)" :disabled="loading || noteBlank">Buat Pesanan</button>
             </div>
         </div>
             @include('pos::pos.segment.modal-customer')

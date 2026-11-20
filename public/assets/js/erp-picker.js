@@ -17,6 +17,7 @@
             if (!mapped || mapped.id === undefined || mapped.id === null || mapped.id === '') return;
             var item = { id: String(mapped.id), text: String(mapped.text == null ? '' : mapped.text), meta: mapped.meta == null ? '' : String(mapped.meta) };
             if (mapped.aside != null && mapped.aside !== '') item.aside = String(mapped.aside);
+            if (mapped.title != null && mapped.title !== '') item.title = String(mapped.title);
             // Extra fields (tier, address, stock...) that page handlers read from the select2 data object.
             if (mapped.data !== undefined) item.data = mapped.data;
             items.push(item);
@@ -129,7 +130,7 @@
         box.style.left = '0px';
         // position:fixed is measured from a transformed ancestor (sheets, drawers) instead of the viewport: find that origin.
         var origin = box.getBoundingClientRect();
-        var spot = computePlacement(field, document.documentElement.clientWidth, vh, Math.min(box.scrollHeight, MAX_HEIGHT));
+        var spot = computePlacement(field, document.documentElement.clientWidth, vh, Math.min(box.scrollHeight, (active.options && active.options.maxHeight) || MAX_HEIGHT));
         box.style.width = spot.width + 'px';
         box.style.maxHeight = spot.maxHeight + 'px';
         box.style.left = (spot.left - origin.left) + 'px';
@@ -164,6 +165,7 @@
         window.removeEventListener('resize', place);
         window.removeEventListener('scroll', onScroll, true);
         var trigger = active && active.trigger;
+        if (active && active.inline) { active.inline.remove(); trigger.classList.remove('is-searching'); }
         active = null;
         if (trigger) {
             trigger.setAttribute('aria-expanded', 'false');
@@ -210,11 +212,10 @@
             row.setAttribute('aria-selected', String(item.id === current));
             row.tabIndex = 0;
             var text = el('div', 'erp-picker__text');
-            text.append(el('strong', '', item.text));
+            text.append(el('strong', '', (active.options.variant === 'compact' && item.title) || item.text));
             if (item.meta) text.append(el('span', '', item.meta));
             row.append(text);
             if (item.aside) row.append(el('em', 'erp-picker__aside', item.aside));
-            if (item.id === current) row.append(el('i', 'ph-bold ph-check'));
             row.addEventListener('click', function () { choose(item); });
             row.addEventListener('keydown', function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose(item); } });
             dialog.list.append(row);
@@ -276,6 +277,9 @@
         var anchor = (options.anchor && trigger.closest(options.anchor)) || trigger;
         active = { select: select, trigger: trigger, anchor: anchor, options: options, request: 0, items: [], timer: null, page: 1, more: false, loading: false };
         dialog.overlay.setAttribute('aria-label', options.title || 'Pilih');
+        // variant 'compact': single-line rows (name left, detail right) and a slim search box, as in the Kasir / POS reference.
+        dialog.overlay.classList.toggle('erp-picker--compact', options.variant === 'compact');
+        dialog.overlay.classList.toggle('erp-picker--product', options.variant === 'product');
         dialog.search.placeholder = options.placeholder || 'Cari...';
         dialog.search.value = '';
         dialog.searchWrap.hidden = options.search === false; // search:false = a short list that needs no search box
@@ -299,6 +303,27 @@
             var term = dialog.search.value;
             active.timer = setTimeout(function () { load(term, 1); }, 250);
         };
+        // options.inlineSearch: the search box is the field itself - typing happens in the trigger, no second box in the dropdown.
+        if (options.inlineSearch) {
+            dialog.searchWrap.hidden = true;
+            var inline = el('input', 'erp-picker__inline');
+            inline.type = 'text';
+            inline.autocomplete = 'off';
+            inline.placeholder = options.placeholder || 'Cari...';
+            inline.setAttribute('aria-label', options.placeholder || 'Cari');
+            ['click', 'keydown', 'keyup'].forEach(function (name) {
+                inline.addEventListener(name, function (event) { if (event.key !== 'Escape') event.stopPropagation(); });
+            });
+            inline.addEventListener('input', function () {
+                clearTimeout(active.timer);
+                var term = inline.value;
+                active.timer = setTimeout(function () { load(term, 1); }, 250);
+            });
+            trigger.classList.add('is-searching');
+            trigger.insertBefore(inline, trigger.firstChild);
+            active.inline = inline;
+            inline.focus();
+        }
         dialog.clear.onclick = function () {
             var jq = window.jQuery;
             if (jq) jq(select).val(null); else select.value = '';
@@ -335,8 +360,28 @@
         var sync = function () {
             if (options.trigger) { trigger.disabled = select.disabled; return; }
             var value = selectedLabel(select);
-            label.textContent = value || options.placeholderTrigger || 'Pilih';
+            var item = null;
+            if (options.variant === 'product' && value && window.jQuery) {
+                try { item = (window.jQuery(select).select2('data') || [])[0] || null; } catch (error) { item = null; }
+            }
             label.classList.toggle('is-placeholder', !value);
+            label.classList.toggle('erp-picker__label--product', !!(item && item.price !== undefined));
+            if (item && item.price !== undefined) {
+                // A chosen product shows its price and stock like the list rows do (name over "Rp 18.000 / Cup", stock on the right).
+                var unit = (item.unit && (item.unit.abbreviation || item.unit.name)) || (typeof item.unit === 'string' ? item.unit : '');
+                var stock = Number(item.stock_available);
+                var main = el('span', 'erp-picker__main');
+                var name = document.createElement('strong');
+                name.textContent = value;
+                var price = document.createElement('small');
+                price.textContent = 'Rp ' + Number(item.price || 0).toLocaleString('id-ID') + (unit ? ' / ' + unit : '');
+                main.append(name, price);
+                var stockEl = el('span', 'erp-picker__stock');
+                stockEl.textContent = isNaN(stock) ? '' : String(Math.round(stock * 100) / 100).replace('.', ',') + (unit ? ' ' + unit : '');
+                label.replaceChildren(main, stockEl);
+            } else {
+                label.textContent = value || options.placeholderTrigger || 'Pilih';
+            }
             trigger.disabled = select.disabled;
         };
         select.addEventListener('change', sync);

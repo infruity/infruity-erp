@@ -31,9 +31,16 @@
         return hash % TONES.length;
     }
 
+    // Walk-in buyers ("Pelanggan Umum") get a neutral grey avatar, so they read apart from every named customer.
+    function customerClassName(name) {
+        var value = String(name == null ? '' : name).replace(/\s*\(\d{3,4}\)$/, '').trim().toLowerCase();
+        return value === 'pelanggan umum' ? 'erp-tone-umum' : 'erp-tone-' + index(name);
+    }
+
     return {
         TONES: TONES,
         index: index,
+        customerClassName: customerClassName,
         className: function (name) { return 'erp-tone-' + index(name); },
         style: function (name) { return Object.assign({}, TONES[index(name)]); }
     };

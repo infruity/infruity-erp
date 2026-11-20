@@ -117,12 +117,12 @@ test('detail primary action follows the reference per status', () => {
     assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'pending', edit_url: '/pos/9/edit'})), {label: 'Lanjutkan Transaksi', url: '/pos/9/edit'});
     assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'unpaid'})), {label: 'Bayar', url: '/pos/payment/9'});
     assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'partial'})), {label: 'Bayar', url: '/pos/payment/9'});
-    assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'paid', pay_url: null})), {label: 'Lihat Nota Transaksi', url: '/pos/show/9'});
-    assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'canceled'})), {label: 'Lihat Nota Transaksi', url: '/pos/show/9'});
+    assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'paid', pay_url: null})), {label: 'Lihat Transaksi', url: '/pos/show/9'});
+    assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'canceled'})), {label: 'Lihat Transaksi', url: '/pos/show/9'});
 });
 
 test('a pending row without an edit link falls back to the receipt instead of a dead button', () => {
-    assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'pending', edit_url: null})), {label: 'Lihat Nota Transaksi', url: '/pos/show/9'});
+    assert.deepEqual(PosListUi.detailPrimary(row({status_key: 'pending', edit_url: null})), {label: 'Lihat Transaksi', url: '/pos/show/9'});
 });
 
 test('delete is offered only where the server allows it and never for settled receipts', () => {
@@ -154,7 +154,7 @@ test('a linked POS opens the same detail popup without changing list filters', a
     assert.equal(f.detailLinkError, '');
     assert.equal(f.applied.status, 'unpaid');
     assert.equal(f.applied.start, '2026-11-01');
-    assert.equal(f.detailPrimary(f.detail).label, 'Lihat Nota Transaksi');
+    assert.equal(f.detailPrimary(f.detail).label, 'Lihat Transaksi');
     f.closeDetail();
     assert.equal(f.detailOpen, false);
 });
@@ -219,4 +219,10 @@ test('parseDetail returns null for bad JSON, and the dialog opens and closes wit
     assert.equal(f.detailOpen, false);
     f.openDetail(null);
     assert.equal(f.detailOpen, false);
+});
+
+test('detail shows phone numbers in local form', () => {
+    assert.equal(PosListUi.localPhone('6281230607050'), '081230607050');
+    assert.equal(PosListUi.localPhone('081230607050'), '081230607050');
+    assert.equal(PosListUi.localPhone(''), '');
 });
