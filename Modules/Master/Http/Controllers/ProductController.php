@@ -1086,9 +1086,15 @@ class ProductController extends Controller
                 ->limit(60);
         }
 
-        $query = $products->get()->map(function ($item) use ($request) {
+        $items = $products->get();
+
+        // The production form prices its ingredients like the posting does: with the ledger's moving HPP,
+        // not the products.hpp cache, which can lag behind.
+        $ledgerHpp = $request->boolean('ledger_hpp') ? \App\Support\ProductHpp::current($items->pluck('id')) : [];
+
+        $query = $items->map(function ($item) use ($request, $ledgerHpp) {
             // Use hpp if available, otherwise use price
-            $item->hpp = $item->hpp ?: 0;
+            $item->hpp = $ledgerHpp[(int) $item->id] ?? ($item->hpp ?: 0);
             if ($request->boolean('raw_materials')) {
                 [$item->material_emoji, $item->material_icon_class] = \Modules\Master\Support\ProductIcon::resolve($item);
             }

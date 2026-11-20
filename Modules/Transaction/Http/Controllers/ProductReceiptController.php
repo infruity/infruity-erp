@@ -507,16 +507,21 @@ class ProductReceiptController extends Controller
             }
 
             // Get recipe ingredients with proper relationships
-            $ingredients = ProductReceipt::with(['ingredients' => function($query) {
+            $recipeRows = ProductReceipt::with(['ingredients' => function($query) {
                 $query->with('unit');
             }])
             ->where('receipt_id', $id)
-            ->get()
-            ->map(function($item) {
+            ->get();
+
+            // Same HPP the posting uses (ledger moving HPP), not the products.hpp cache.
+            $ledgerHpp = \App\Support\ProductHpp::current($recipeRows->pluck('product_receipt_id'));
+
+            $ingredients = $recipeRows
+            ->map(function($item) use ($ledgerHpp) {
                 // Ambil data dari product receipt dan product
                 $product = $item->ingredients; // ingredients adalah relasi ke product
                 $quantity = (float) $item->quantity; // qty dari detail receipt
-                $hpp = (float) ($product->hpp ?? 0); // hpp dari product
+                $hpp = (float) ($ledgerHpp[(int) $item->product_receipt_id] ?? $product->hpp ?? 0); // hpp ledger
                 $total = $quantity * $hpp; // total = qty * hpp
                 
                 return [
