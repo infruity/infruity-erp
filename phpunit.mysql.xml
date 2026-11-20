@@ -25,6 +25,7 @@
     <testsuites>
         <testsuite name="MySQL">
             <file>./tests/Feature/TransferConcurrencyTest.php</file>
+            <file>./tests/Feature/ProductionLedgerHppTest.php</file>
             <file>./tests/Feature/LoginAccessBehaviorTest.php</file>
             <file>./tests/Feature/PosPaymentBehaviorTest.php</file>
             <file>./tests/Feature/TransferStockBehaviorTest.php</file>

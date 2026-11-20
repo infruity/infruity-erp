@@ -265,14 +265,17 @@
                 @if (isset($data) && isset($production_detail))
                     // Load existing ingredients data
                     @php
-                        $ingredientsData = $production_detail->map(function ($item) {
+                        // Ledger moving HPP, the value posting freezes (products.hpp is only a cache).
+                        $ledgerHpp = \App\Support\ProductHpp::current($production_detail->pluck('product_id'));
+                        $ingredientsData = $production_detail->map(function ($item) use ($ledgerHpp) {
+                            $hpp = $ledgerHpp[(int) $item->product_id] ?? $item->products->hpp;
                             return [
                                 'id' => $item->product_id,
                                 'name' => $item->products->name,
                                 'quantity' => $item->quantity,
-                                'hpp' => $item->products->hpp,
+                                'hpp' => $hpp,
                                 'unit' => $item->products->unit->abbreviation ?? 'pcs',
-                                'total' => $item->products->hpp * $item->quantity,
+                                'total' => $hpp * $item->quantity,
                             ];
                         });
                     @endphp
@@ -358,7 +361,7 @@
 
             async fetchAvailableIngredients() {
                 try {
-                    const response = await fetch('{{ route('ajax.getProduct') }}');
+                    const response = await fetch('{{ route('ajax.getProduct', ['ledger_hpp' => 1]) }}');
                     const data = await response.json();
                     this.availableIngredients = data.map(item => ({
                         id: item.id,
