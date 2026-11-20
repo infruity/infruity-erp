@@ -353,6 +353,7 @@
             <div class="flex items-center gap-3"><span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-emerald-200/80 bg-emerald-50/80 text-[#0b595b]"><i class="ph-duotone ph-clock text-lg" aria-hidden="true"></i></span><div><p class="text-sm font-bold text-gray-900" x-text="selectedOrder.staffName"></p><p class="mt-0.5 text-[11px] text-gray-400" x-text="'Dibuat pada ' + formatDateTime(selectedOrder.date, selectedOrder.time)"></p></div></div>
         </div></template>
         <x-slot:actions>
+            <button type="button" x-show="selectedOrder?.canEdit" @click="editSelectedOrder()" class="flex h-[52px] flex-1 items-center justify-center gap-2 border-r border-gray-100 text-sm font-bold text-[#0b595b]"><i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>Edit</button>
             <button type="button" @click="deleteSelectedOrder()" :disabled="!selectedOrder?.canDelete" class="flex h-[52px] flex-1 items-center justify-center gap-2 text-sm font-bold text-rose-500 disabled:cursor-not-allowed disabled:text-gray-300"><i class="ph-bold ph-trash" aria-hidden="true"></i>Hapus</button>
         </x-slot:actions>
     </x-erp.detail-dialog>

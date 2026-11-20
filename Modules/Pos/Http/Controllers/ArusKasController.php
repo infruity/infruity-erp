@@ -45,6 +45,9 @@ class ArusKasController extends Controller
         }
 
         $transaction = $this->scopedTransaction($id);
+        if ($transaction->status !== 'draft') {
+            return $this->completedCannotBeEdited();
+        }
         $formOrder = $this->mapNewTransaction($transaction, $this->userNames([$transaction->created_by])[(string) $transaction->created_by] ?? '—');
 
         return $this->page('edit', $formOrder);
@@ -72,6 +75,9 @@ class ArusKasController extends Controller
         }
 
         $transaction = $this->scopedTransaction($id);
+        if ($transaction->status !== 'draft') {
+            return $this->completedCannotBeEdited();
+        }
         $data = $this->validatedPayload($request);
 
         DB::transaction(function () use ($transaction, $data) {
@@ -85,6 +91,11 @@ class ArusKasController extends Controller
         });
 
         return redirect()->route('arus-kas.index')->with('success', 'Transaksi arus kas berhasil diperbarui.');
+    }
+
+    private function completedCannotBeEdited()
+    {
+        return redirect()->route('arus-kas.index')->with('error', 'Transaksi yang sudah selesai tidak dapat diedit.');
     }
 
     public function destroy(int $id)
@@ -259,7 +270,8 @@ class ArusKasController extends Controller
         return [
             'id' => (string) $transaction->id,
             'source' => 'arus-kas',
-            'canEdit' => true,
+            // Only a draft (shown as Pending) can still be edited; a completed transaction is final.
+            'canEdit' => $transaction->status === 'draft',
             'canDelete' => true,
             'poNumber' => $transaction->invoice_number,
             'activity' => $activity,
