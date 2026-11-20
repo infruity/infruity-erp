@@ -36,10 +36,10 @@ class SupplierController extends Controller
         return view('master::supllier.index', [
             'records' => Supplier::query()
                 ->leftJoin('users as updater', 'supplier.updated_by', '=', 'updater.id_user')
-                ->leftJoin('reg_provinces as provinces', 'supplier.province', '=', 'provinces.id')
-                ->leftJoin('reg_regencies as cities', 'supplier.city', '=', 'cities.id')
-                ->leftJoin('reg_districts as districts', 'supplier.district', '=', 'districts.id')
-                ->leftJoin('reg_villages as villages', 'supplier.village', '=', 'villages.id')
+                ->leftJoin('reg_provinces as provinces', \App\Support\RegionJoin::column('supplier.province'), '=', 'provinces.id')
+                ->leftJoin('reg_regencies as cities', \App\Support\RegionJoin::column('supplier.city'), '=', 'cities.id')
+                ->leftJoin('reg_districts as districts', \App\Support\RegionJoin::column('supplier.district'), '=', 'districts.id')
+                ->leftJoin('reg_villages as villages', \App\Support\RegionJoin::column('supplier.village'), '=', 'villages.id')
                 ->select('supplier.id', 'supplier.name', 'supplier.pic_name', 'supplier.pic_whatsapp', 'supplier.address', 'supplier.email', 'supplier.province', 'supplier.city', 'supplier.district', 'supplier.village', 'provinces.name as province_name', 'cities.name as city_name', 'districts.name as district_name', 'villages.name as village_name', 'supplier.updated_at', 'updater.nm_user as updated_by_name')
                 ->orderByDesc('supplier.id')
                 ->get(),

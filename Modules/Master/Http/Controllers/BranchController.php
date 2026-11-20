@@ -29,10 +29,10 @@ class BranchController extends Controller
         }
 
         $records = Branch::query()
-            ->leftJoin('reg_provinces as provinces', 'branch.province', '=', 'provinces.id')
-            ->leftJoin('reg_regencies as cities', 'branch.city', '=', 'cities.id')
-            ->leftJoin('reg_districts as districts', 'branch.district', '=', 'districts.id')
-            ->leftJoin('reg_villages as villages', 'branch.village', '=', 'villages.id')
+            ->leftJoin('reg_provinces as provinces', \App\Support\RegionJoin::column('branch.province'), '=', 'provinces.id')
+            ->leftJoin('reg_regencies as cities', \App\Support\RegionJoin::column('branch.city'), '=', 'cities.id')
+            ->leftJoin('reg_districts as districts', \App\Support\RegionJoin::column('branch.district'), '=', 'districts.id')
+            ->leftJoin('reg_villages as villages', \App\Support\RegionJoin::column('branch.village'), '=', 'villages.id')
             ->leftJoin('users as editor', 'editor.id_user', '=', 'branch.updated_by')
             ->select('branch.id', 'branch.name', 'branch.code', 'branch.address', 'branch.province', 'branch.city', 'branch.district', 'branch.village', 'branch.map_link', 'provinces.name as province_name', 'cities.name as city_name', 'districts.name as district_name', 'villages.name as village_name', 'branch.created_at', 'branch.updated_at', 'editor.nm_user as updated_by_name')
             ->orderByDesc('branch.id')
