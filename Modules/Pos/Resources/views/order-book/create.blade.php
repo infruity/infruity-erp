@@ -11,13 +11,15 @@
                 <select class="form-control" name="branch_id" id="branch_id">
                     <option value="">Pilih Cabang</option>
                 </select>
-                <div class="ob-label-row">
-                    <label class="ob-label ob-label--spaced" for="customer_id"><span>Pelanggan</span></label>
-                    <button type="button" class="ob-add-customer" @click="addCustomer()" aria-label="Tambah pelanggan"><i class="ph-bold ph-plus" aria-hidden="true"></i><span>Tambah</span></button>
+                <label class="ob-label ob-label--spaced" for="customer_id"><span>Pelanggan</span></label>
+                <div class="pos-customer">
+                    <select class="form-select" id="customer_id" name="customer_id">
+                        <option value="">Pelanggan Umum</option>
+                    </select>
+                    <button type="button" @click="addCustomer()" aria-label="Tambah pelanggan" class="pos-customer__add">
+                        <i class="ph-bold ph-plus" aria-hidden="true"></i>
+                    </button>
                 </div>
-                <select class="form-select" id="customer_id" name="customer_id">
-                    <option value="">Pelanggan Umum</option>
-                </select>
                 {{-- Date and invoice number stay fixed (today and the next number), as the reference form has no fields for them. --}}
                 <div class="ob-hidden-fields" hidden>
                     <input type="hidden" name="tier_id" id="tier_id">
