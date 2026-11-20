@@ -70,6 +70,11 @@ class TransferController extends Controller
             ->first();
 
         if ($draft) {
+            // Same as wholesale: a draft resumed on a later day must not keep its creation date.
+            if ($draft->date === null || substr((string) $draft->date, 0, 10) < date('Y-m-d')) {
+                $draft->date = date('Y-m-d');
+                $draft->save();
+            }
             $data['data']           = $draft;
             $data['detail']         = $draft->detail;
             $data['invoice_number'] = $draft->invoice_number;

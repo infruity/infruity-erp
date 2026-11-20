@@ -255,6 +255,18 @@ class TransferConcurrencyTest extends TestCase
         $this->assertEquals($prefix . '1000', $nextCode);
     }
 
+    public function test_reopening_a_temp_draft_from_an_earlier_day_moves_its_date_to_today()
+    {
+        $this->actingAs($this->user);
+        $this->get('/transfer-pengirim/create')->assertStatus(200);
+        $draft = Transfer::where('created_by', $this->user->id_user ?? $this->user->id)->where('status', 'temp')->first();
+        $draft->update(['date' => date('Y-m-d', strtotime('-9 days'))]);
+
+        $this->get('/transfer-pengirim/create')->assertStatus(200);
+
+        $this->assertSame(date('Y-m-d'), substr((string) $draft->fresh()->date, 0, 10));
+    }
+
     public function test_create_generates_and_reuses_temp_draft_per_user()
     {
         // User A accesses create
