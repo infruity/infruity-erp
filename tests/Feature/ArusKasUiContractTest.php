@@ -25,8 +25,8 @@ class ArusKasUiContractTest extends TestCase
         foreach ([
             'Belum ada transaksi arus kas',
             'Filter Arus Kas',
-            'Cabang Tujuan',
-            'Status Arus Kas',
+            'branch-label="Cabang"',
+            'status-label="Status"',
             'Detail Arus Kas',
             'Cabang Toko',
             'Daftar Kebutuhan Kas',
@@ -44,18 +44,19 @@ class ArusKasUiContractTest extends TestCase
             'Contoh: Bensin',
             'Kuantitas',
             'Biaya / Harga Satuan',
-            'Tambah Transaksi',
+            "'Simpan Transaksi' : 'Tambah'",
         ] as $referenceText) {
             $this->assertStringContainsString($referenceText, $view, "Missing reference UI text: {$referenceText}");
         }
 
-        $this->assertStringContainsString('ph-sliders-horizontal', $view);
+        $this->assertStringContainsString('arus-kas-tune', $view);
         $this->assertStringContainsString('x-model.debounce.200ms="searchQuery"', $view);
         $this->assertStringContainsString('openFilterModal()', $view);
         // The sheet itself is the shared component; the page only opens it and applies the result.
         $this->assertStringContainsString('<x-erp.filter-sheet', $view);
         $this->assertStringContainsString('id="arus-kas"', $view);
-        $this->assertStringContainsString(':with-dates="false"', $view);
+        $this->assertStringContainsString('timezone="Asia/Jakarta"', $view);
+        $this->assertStringContainsString('filterStart', $view);
         $this->assertStringContainsString("@erp-filter-apply.window=\"if (\$event.detail.id === 'arus-kas') applyMobileFilters(\$event.detail.values)\"", $view);
         $this->assertStringContainsString('open="detailModalOpen"', $view);
         $this->assertStringContainsString('x-show="invoiceModalOpen"', $view);
@@ -68,7 +69,7 @@ class ArusKasUiContractTest extends TestCase
 
         $this->assertStringContainsString('.arus-kas-row { padding:12px 16px; transition:background-color .15s ease; }', $view);
         $this->assertStringContainsString('.arus-kas-row__icon { box-shadow:0 1px 2px 0 rgba(0,0,0,.05); }', $view);
-        $this->assertStringContainsString('.arus-kas-row__date { font-size:11px; line-height:16px; }', $view);
+        $this->assertStringContainsString('.arus-kas-row__date { font-size:11px; line-height:16.5px; }', $view);
         $this->assertStringContainsString('.arus-kas-row__status { width:100%; text-align:right; font-size:12px; font-weight:600; line-height:16px; }', $view);
         $this->assertStringContainsString('.arus-kas-row__total { margin-top:2px; font-size:12px; font-weight:700; line-height:16px; }', $view);
     }

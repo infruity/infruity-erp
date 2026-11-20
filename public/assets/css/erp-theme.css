@@ -425,6 +425,40 @@ select.erp-empty option { color: #1f2937 !important; }
 .erp-ui .erp-tone-8 { background:#fff1f2; color:#be123c; border-color:#fecdd3; }
 .erp-ui .erp-tone-9 { background:#fff7ed; color:#c2410c; border-color:#fed7aa; }
 
+/* Shared filter sheet: Metronic redefines .text-gray-* (bluish); the sheet uses the references' Tailwind greys (Pesanan, Stok Opname, ...). */
+[data-erp-filter-sheet] .text-gray-400 { color:#9ca3af !important; }
+[data-erp-filter-sheet] .text-gray-500 { color:#6b7280 !important; }
+[data-erp-filter-sheet] .text-gray-600 { color:#4b5563 !important; }
+[data-erp-filter-sheet] .text-gray-700 { color:#374151 !important; }
+[data-erp-filter-sheet] .text-gray-800 { color:#1f2937 !important; }
+[data-erp-filter-sheet] .text-gray-900 { color:#111827 !important; }
+[data-erp-filter-sheet] .erp-filter-sheet__footer { background:rgba(249,250,251,.7); }
+body.erp-ui [data-erp-filter-sheet] :is(label,span).uppercase.tracking-wider { font-weight:600 !important; line-height:15px !important; }
+[data-erp-filter-sheet] [aria-label="Tutup"] i { font-size:14px !important; }
+[data-erp-filter-sheet] [id$="-date-trigger"] span { line-height:16px !important; }
+[data-erp-filter-sheet] .erp-filter-sheet__subtitle { line-height:16.5px !important; }
+body.erp-ui [data-erp-filter-sheet] .uppercase { font-weight:600 !important; }
+html body.erp-ui [data-erp-filter-sheet] [x-show] :is(label, span).uppercase, html body.erp-ui [data-erp-filter-sheet] :is(label, span).uppercase.tracking-wider { font-weight:600 !important; }
+/* Arus Kas reference: section labels 12px, footer buttons 14px with 16px side padding. */
+#arus-kas-filter-sheet#arus-kas-filter-sheet :is(label, span).uppercase { font-size:12px !important; font-weight:700 !important; line-height:16px !important; }
+#arus-kas-filter-sheet .erp-filter-sheet__footer { padding-inline:16px; gap:8px; }
+#arus-kas-filter-sheet .erp-filter-sheet__footer button { font-size:14px; font-weight:600; }
+#arus-kas-filter-sheet#arus-kas-filter-sheet .erp-filter-sheet__footer { display:grid !important; grid-template-columns:181fr 179fr; gap:8px !important; padding:16px !important; }
+#arus-kas-filter-sheet#arus-kas-filter-sheet .erp-filter-sheet__footer button { font-size:14px !important; font-weight:600 !important; }
+/* Arus Kas filter sheet, measured on the Arus Kas reference at 400px. */
+#arus-kas-filter-sheet#arus-kas-filter-sheet .erp-filter-sheet__header { padding:16px 20px !important; }
+#arus-kas-filter-sheet#arus-kas-filter-sheet .erp-filter-sheet__title { font-size:18px !important; line-height:28px !important; }
+#arus-kas-filter-sheet#arus-kas-filter-sheet .erp-filter-sheet__subtitle { margin-top:2px !important; }
+#arus-kas-filter-sheet#arus-kas-filter-sheet [aria-label="Tutup"] i { font-size:16px !important; }
+#arus-kas-filter-sheet#arus-kas-filter-sheet .erp-filter-sheet__body { padding:16px 20px !important; }
+#arus-kas-filter-sheet#arus-kas-filter-sheet .erp-filter-sheet__body > div > div + div { margin-top:20px !important; }
+#arus-kas-filter-sheet#arus-kas-filter-sheet div:has(> #arus-kas-mobile-branches) { border-radius:8px !important; }
+#arus-kas-filter-sheet#arus-kas-filter-sheet #arus-kas-mobile-branch-search { height:40px !important; padding-top:0 !important; padding-bottom:0 !important; }
+#arus-kas-filter-sheet#arus-kas-filter-sheet #arus-kas-mobile-branches { max-height:144px !important; }
+#arus-kas-filter-sheet#arus-kas-filter-sheet #arus-kas-mobile-branches > label { padding-top:10px !important; padding-bottom:10px !important; }
+#arus-kas-filter-sheet#arus-kas-filter-sheet .erp-filter-sheet__body .flex-wrap { margin-top:8px !important; }
+#arus-kas-filter-sheet#arus-kas-filter-sheet #arus-kas-mobile-branches > label:first-child { border-top:1px solid rgba(243,244,246,.6); }
+
 /* ---- Pengaturan: sizes and colours of the HTML reference (009. Pengaturan / 002. Pengaturan) ---- */
 .erp-ui .erp-settings-page .erp-settings-details { display:flex; flex-direction:column; padding:16px; }
 .erp-ui .erp-settings-page .erp-settings-detail { padding:0; }
