@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/erp-operations.css') }}?v={{ filemtime(public_path('assets/css/erp-operations.css')) }}">
     <style>
         .production-row { display:flex; min-width:0; align-items:center; gap:12px; }
-        .production-avatar { display:flex; width:40px; height:40px; flex:none; align-items:center; justify-content:center; border:1px solid #f3f4f6; border-radius:12px; background:#f3f4f6; font-size:18px; line-height:1; }
+        .production-avatar { display:flex; width:40px; height:40px; flex:none; align-items:center; justify-content:center; border:1px solid #f3f4f6; border-radius:12px; background:#f3f4f6; font-size:13px; font-weight:700; line-height:1; }
         /* Per-product tint from Modules\Master\Support\ProductIcon, matching the /products list. */
         .production-avatar.bg-emerald-50 { background:#ecfdf5; }
         .production-avatar.bg-rose-50 { background:#fff1f2; }

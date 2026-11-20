@@ -19,7 +19,7 @@
         .stock-results { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
         .stock-row { display:flex; align-items:center; gap:16px; min-height:78px; padding:14px 20px; border-bottom:1px solid #f3f4f6; color:inherit; text-decoration:none; transition:background .15s; }
         .stock-row:hover, .stock-row:focus-visible { background:#f8faf9; outline:0; }
-        .stock-icon { display:grid; width:48px; height:48px; flex:none; place-items:center; border:1px solid #f3f4f6; border-radius:12px; font-size:22px; }
+        .stock-icon { display:grid; width:48px; height:48px; flex:none; place-items:center; border:1px solid #f3f4f6; border-radius:12px; font-size:15px; font-weight:700; }
         .stock-icon.bg-rose-50, .stock-icon.bg-pink-100 { background:#fff1f2; }
         .stock-icon.bg-emerald-50, .stock-icon.bg-green-50 { background:#ecfdf5; }
         .stock-icon.bg-amber-50 { background:#fff7ed; }
@@ -146,7 +146,7 @@
             .stock-card { border:0; border-radius:0; }
             .stock-toolbar { padding:16px; }
             .stock-row { gap:12px; min-height:64px; padding:14px 20px; }
-            .stock-icon { width:36px; height:36px; font-size:18px; }
+            .stock-icon { width:36px; height:36px; font-size:13px; }
             .stock-name { font-size:14px; font-weight:600; }
             .stock-hpp { color:#9ca3af; font-size:12px; font-weight:400; }
             .stock-unit { font-size:11px; font-weight:400; }

@@ -1424,8 +1424,8 @@ class ProductController extends Controller
                     </div>';
                 } else {
                     [$emoji, $bgClass] = ProductIcon::resolve($product);
-                    $avatar = '<div class="w-9 h-9 md:w-12 md:h-12 rounded-xl overflow-hidden shrink-0 shadow-sm border border-gray-100 flex items-center justify-center text-lg md:text-xl ' . $bgClass . '">
-                        ' . $emoji . '
+                    $avatar = '<div class="w-9 h-9 md:w-12 md:h-12 rounded-xl overflow-hidden shrink-0 shadow-sm border border-gray-100 flex items-center justify-center text-xs md:text-sm font-bold ' . e($bgClass) . '">
+                        ' . e($emoji) . '
                     </div>';
                 }
 
