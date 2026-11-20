@@ -88,6 +88,38 @@ class LedgerSql
             : ProductStock::query()->whereIn('product_stock.id', $ids);
     }
 
+    /**
+     * transaction_stock_show rows of one product's stock ledger: its parent (or itself) and every variant of it.
+     * The running stock is partitioned by ledger and branch, so leaving other products out before it is
+     * computed gives the same stock_awal / stock_akhir (real data: whole view 273 ms, one ledger 18 ms).
+     */
+    public static function stockHistory(int $productId, string $as = 'transaction_stock_show'): \Illuminate\Database\Query\Builder
+    {
+        if (! self::filtered()) {
+            return DB::table('transaction_stock_show as ' . $as);
+        }
+
+        $ledger = (int) (ProductChild::where('product_id', $productId)->value('parent_id') ?? $productId);
+        $members = array_merge([$ledger], ProductChild::where('parent_id', $ledger)->pluck('product_id')->map(fn ($id) => (int) $id)->all());
+
+        if (! isset(self::$sql['transaction_stock_show'])) {
+            $file = file_get_contents(database_path('sql/transaction_stock_show.sql'));
+            if (! preg_match('/CREATE\s+VIEW\s+transaction_stock_show\s+AS\s+(.*?);\s*$/is', $file, $match)
+                || ! str_contains($match[1], 'SELECT * FROM transaction_stock_show_base')) {
+                throw new \RuntimeException('database/sql/transaction_stock_show.sql has no transaction_stock_show view to filter.');
+            }
+            self::$sql['transaction_stock_show'] = $match[1];
+        }
+
+        $sql = str_replace(
+            'SELECT * FROM transaction_stock_show_base',
+            'SELECT * FROM transaction_stock_show_base WHERE product_id IN (' . self::list($members) . ')',
+            self::$sql['transaction_stock_show']
+        );
+
+        return DB::query()->fromRaw('(' . $sql . ') as ' . $as);
+    }
+
     private static function filtered(): bool
     {
         return DB::connection()->getDriverName() === 'mysql';

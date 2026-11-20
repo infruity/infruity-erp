@@ -1890,7 +1890,8 @@ class ProductController extends Controller
 
         $productId = is_array($request->product_id) ? ($request->product_id[0] ?? $request->product_id) : $request->product_id;
 
-        $query = DB::table('transaction_stock_show AS transaction_stock')
+        // Only this product's stock ledger is computed, not the running stock of every product.
+        $query = LedgerSql::stockHistory((int) $productId, 'transaction_stock')
             ->whereIn('transaction_stock.branch_id', UserBranch::getUserBranch())
             ->join('products', 'transaction_stock.product_id', '=', 'products.id')
             ->join('product_units', 'products.product_unit', '=', 'product_units.id')
@@ -1940,13 +1941,28 @@ class ProductController extends Controller
             }
         }
 
-        $query->orderBy('transaction_stock.date', 'desc')
-              ->orderBy('transaction_stock.source_table', 'desc')
-              ->orderBy('transaction_stock.id', 'desc')
-              ->orderBy('transaction_stock.detail_id', 'desc');
+        // Paging, ordering and counting run in SQL: the whole history of a product is no longer loaded
+        // just to show one page. Ties keep the newest-first order the list always had.
+        $newestFirst = 'transaction_stock.date desc, transaction_stock.source_table desc, transaction_stock.id desc, transaction_stock.detail_id desc';
+        $orderable = [
+            'name' => 'products.name', 'quantity' => 'transaction_stock.quantity',
+            'stock_awal' => 'transaction_stock.stock_awal', 'stock_akhir' => 'transaction_stock.stock_akhir',
+            'date' => 'transaction_stock.date', 'reff' => 'transaction_stock.reff', 'created_by' => 'transaction_stock.created_by',
+        ];
+        if (! $request->has('order')) {
+            $query->orderByRaw($newestFirst);
+        }
 
-        $data = $query->get();
-        return DataTables::of($data)
+        $table = DataTables::of($query)
+            // The search above already covers product name and reference.
+            ->filter(function () {})
+            // Total and filtered counts are the same number, as before.
+            ->skipTotalRecords();
+        foreach ($orderable as $column => $sql) {
+            $table->orderColumn($column, $sql . ' $1, ' . $newestFirst);
+        }
+
+        return $table
             ->addIndexColumn()
 ->addColumn('name', function ($product) {
                 $targetUrl = $this->getTargetUrlFromTransaction($product);
