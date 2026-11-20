@@ -20,7 +20,6 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 	Route::get('/change-password', 'DashboardController@change_password')->name('change-password');
 	Route::post('/change-password', 'DashboardController@save_change_password')->name('save_change_password');
 	Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-	Route::get('/list-permohonan', 'DashboardController@list_permohonan')->name('admin.module');
 	// Route::resource('layanan', LayananController::class);
 	Route::get('user/impersonate/{id}', [UserController::class, 'impersonate'])->name('user.impersonate');
 	Route::post('role/switch', [RoleContextController::class, 'switch'])->name('role.switch');
