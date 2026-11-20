@@ -307,6 +307,8 @@ class TierController extends Controller
 
     public function customerReportData()
     {
+        $this->authorizeAccess('customer-report.index');
+
         $data = ReportCustomer::all();
         return DataTables::of($data)
             ->addIndexColumn()

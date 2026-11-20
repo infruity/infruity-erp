@@ -1329,7 +1329,10 @@ class PosController extends Controller
             return $denied;
         }
 
-        $data['data']         = Payment::with('paymentMethod', 'pos')->findOrFail($id);
+        // A payment of another branch answers 404, like the other POS detail endpoints.
+        $data['data']         = Payment::with('paymentMethod', 'pos')
+            ->whereHas('pos', fn ($pos) => $pos->whereIn('branch_id', UserBranch::getUserBranch()))
+            ->findOrFail($id);
         $data['totalPayment'] = Payment::where('pos_id', $data['data']->pos_id)->sum('total');
         return view('pos::pos.payment-success2', $data);
     }
@@ -1345,7 +1348,10 @@ class PosController extends Controller
             return view('pos::pos.deleted-nota');
         }
         
-        $data['data']    = PosModel::with('customer', 'user')->find($data['payment']->pos_id);
+        // A nota of another branch looks exactly like a missing one, so it does not reveal that it exists.
+        $data['data']    = PosModel::with('customer', 'user')
+            ->whereIn('branch_id', UserBranch::getUserBranch())
+            ->find($data['payment']->pos_id);
         if (!$data['data']) {
             return view('pos::pos.deleted-nota');
         }

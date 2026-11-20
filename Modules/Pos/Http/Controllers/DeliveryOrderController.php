@@ -104,7 +104,8 @@ class DeliveryOrderController extends Controller
 
         try {
             DB::beginTransaction();
-            $pos = PosModel::find($id);
+            // Only a delivery of one of the user's own branches may be completed (404 otherwise).
+            $pos = PosModel::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
             $pos->ongkir_status = 'delivered';
 
             if ($request->has('nominal') && $request->nominal > 0) {
@@ -185,8 +186,10 @@ class DeliveryOrderController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('delivery-order.index');
+
         $query = PosModel::with('customer', 'paymentDetails', 'details', 'branch', 'courier')
-        // ->whereIn('branch_id', UserBranch::getUserBranch())
+        ->whereIn('branch_id', UserBranch::getUserBranch())
         ->where('ongkir', '>', 0);
         if ($request->has('status_filter') && $request->status_filter !== 'all') {
             $query = $query->where('ongkir_status', $request->status_filter);

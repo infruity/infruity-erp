@@ -7,15 +7,21 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Modules\Pos\Http\Controllers\DeliveryOrderController;
+use Tests\Support\ActsAsBranchUser;
 use Tests\TestCase;
 
 class DeliveryOrderListTest extends TestCase
 {
+    use ActsAsBranchUser;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->createTables();
         $this->seedOrders();
+        // The list is permission- and branch-scoped; these tests exercise filters, so use the administrator.
+        $this->createAuthTables();
+        $this->actAsUser(1, 1);
     }
 
     public function test_delivery_and_payment_filters_can_be_combined(): void
@@ -182,6 +188,49 @@ class DeliveryOrderListTest extends TestCase
         foreach (['customer', 'phone', 'address', 'subtotal', 'shipping-fee', 'grand-total'] as $field) {
             $this->assertStringContainsString('data-delivery-order-detail-field="' . $field . '"', $html);
         }
+    }
+
+    private function asLimitedUser(array $permissions, array $branchIds): void
+    {
+        $this->createAuthTables();
+        $this->actAsUser(5, 2, $permissions, $branchIds);
+    }
+
+    public function test_the_list_only_contains_deliveries_of_the_users_own_branches(): void
+    {
+        $this->asLimitedUser(['delivery-order.index'], [1]);
+        $this->assertNotEmpty($this->requestRows()['data'], 'a user of branch 1 sees the branch 1 deliveries');
+
+        $this->asLimitedUser(['delivery-order.index'], [2]);
+        $this->assertSame([], $this->requestRows()['data'], 'a user of branch 2 must not see branch 1 deliveries');
+    }
+
+    public function test_the_list_data_requires_the_delivery_order_permission(): void
+    {
+        $this->asLimitedUser(['pos.index'], [1]);
+
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
+        $this->requestRows();
+    }
+
+    public function test_a_delivery_of_another_branch_cannot_be_completed(): void
+    {
+        $this->asLimitedUser(['delivery-order.set-selesai'], [2]);
+        $before = DB::table('pos_transaction')->where('id', 1)->value('ongkir_status');
+
+        app(DeliveryOrderController::class)->setSelesai(Request::create('/delivery-order/set-selesai/1', 'POST'), 1);
+
+        $this->assertSame($before, DB::table('pos_transaction')->where('id', 1)->value('ongkir_status'));
+        $this->assertNotSame('delivered', DB::table('pos_transaction')->where('id', 1)->value('ongkir_status'));
+    }
+
+    public function test_a_delivery_of_the_users_own_branch_can_be_completed(): void
+    {
+        $this->asLimitedUser(['delivery-order.set-selesai'], [1]);
+
+        app(DeliveryOrderController::class)->setSelesai(Request::create('/delivery-order/set-selesai/1', 'POST'), 1);
+
+        $this->assertSame('delivered', DB::table('pos_transaction')->where('id', 1)->value('ongkir_status'));
     }
 
     private function requestRows(array $filters = [], string $search = ''): array
