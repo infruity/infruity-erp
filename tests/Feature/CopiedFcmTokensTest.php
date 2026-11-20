@@ -49,11 +49,11 @@ final class CopiedFcmTokensTest extends TestCase
         $this->assertStringNotContainsString("\$code === 'UNREGISTERED'", $source);
     }
 
-    public function test_the_nota_settings_form_keeps_the_stored_logo_when_it_is_saved_without_a_new_file(): void
+    public function test_the_nota_logo_preview_falls_back_when_the_file_is_missing(): void
     {
-        $controller = file_get_contents(base_path('Modules/Pos/Http/Controllers/SettingNotaController.php'));
+        $view = file_get_contents(base_path('Modules/Pos/Resources/views/setting-nota/index.blade.php'));
 
-        $this->assertStringNotContainsString("is_using_logo = \$request->hasFile('avatar') ? true : false", $controller);
-        $this->assertStringContainsString("if (\$request->hasFile('avatar')) {\n                \$settingNota->is_using_logo = true;", $controller);
+        $this->assertStringContainsString("Storage::disk('public')->exists(\$data->logo)", $view);
+        $this->assertStringContainsString("blank-image.svg", $view);
     }
 }
