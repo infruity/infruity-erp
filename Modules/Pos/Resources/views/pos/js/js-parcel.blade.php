@@ -4,9 +4,106 @@
             parcels: [],
             totalAll: 0,
             parcelId: 0,
+            editId: null, // set while the in-page form edits an existing parcel (Edit Parcel)
             cart: [],
             qtyParcel: 1,
             budgetParcel: '',
+            budgetValue: 0,
+            get hasBudget() { return this.budgetValue > 0; },
+            parcelLabel() {
+                if (!this.hasBudget) return '';
+                const k = (this.kemasanName || '').trim();
+                return 'Parcel ' + (k ? k + '-' : '') + this.formatShortNumber(this.budgetValue);
+            },
+            kemasanName: '',
+            pickerOpen: false,
+            pickerSearch: '',
+            pickerResults: [],
+            pickerState: 'idle',
+            togglePicker() {
+                if (!this.hasBudget) {
+                    const el = document.getElementById('parcel_budget');
+                    if (el) { el.focus(); el.select(); }
+                    return;
+                }
+                this.pickerOpen = !this.pickerOpen;
+                if (this.pickerOpen) {
+                    this.pickerSearch = '';
+                    this.loadPickerProducts();
+                    this.$nextTick(() => this.$refs.pickerSearch && this.$refs.pickerSearch.focus());
+                }
+            },
+            stockText(row) {
+                const stock = Number(row.stock_available) || 0;
+                const unit = this.getUnitLabel(row.unit);
+                const value = stock > 0 ? String(Math.round(stock * 100) / 100).replace('.', ',') : '0';
+                return unit ? value + ' ' + unit : value;
+            },
+            async loadPickerProducts() {
+                this.pickerState = 'loading';
+                const ticket = this.pickerTicket = (this.pickerTicket || 0) + 1;
+                try {
+                    const query = new URLSearchParams({term: this.pickerSearch || '', branch: $('#branch_id').val() || '', status: 'aktif', limit: 30});
+                    const response = await fetch('/ajax/listProduct?' + query, {headers: {Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest'}});
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    const data = await response.json();
+                    if (ticket !== this.pickerTicket) return;
+                    window.productStockMap = window.productStockMap || {};
+                    const mainApp = window.mainCartInstance;
+                    const rows = data.map(item => {
+                        window.productStockMap[item.id] = item.parent_product ? item.parent_product.parent_id : item.id;
+                        const used = (mainApp && typeof mainApp.calculateUsedStock === 'function')
+                            ? mainApp.calculateUsedStock(item.id, this.parcels, $('#parcel_qty').val() || 1) : 0;
+                        return {
+                            id: item.id,
+                            text: item.name,
+                            unit: item.unit,
+                            price: item.price,
+                            hpp: item.hpp,
+                            stock_available: (item.get_stock?.stock_available ?? 0) - used,
+                            original_stock: item.get_stock?.stock_available ?? 0,
+                        };
+                    });
+                    rows.sort((a, b) => ((a.stock_available > 0 ? 0 : 1) - (b.stock_available > 0 ? 0 : 1))
+                        || String(a.text).localeCompare(String(b.text), 'id', {sensitivity: 'base'}));
+                    this.pickerResults = rows;
+                    this.pickerState = 'ready';
+                } catch (e) {
+                    if (ticket !== this.pickerTicket) return;
+                    this.pickerResults = [];
+                    this.pickerState = 'ready';
+                }
+            },
+            addPickedProduct(row) {
+                if ((Number(row.stock_available) || 0) <= 0) return;
+                const existing = this.parcels.findIndex(p => String(p.product) === String(row.id));
+                if (existing >= 0) {
+                    this.parcels[existing].qty = (Number(this.parcels[existing].qty) || 0) + 1;
+                    this.updateQty(existing);
+                } else {
+                    this.parcels.push({
+                        product: row.id,
+                        name: row.text,
+                        unit: row.unit,
+                        displayName: this.formatParcelProductName({text: row.text, unit: row.unit}),
+                        priceAwal: row.price,
+                        qty: 1,
+                        price: row.price,
+                        priceFormatted: this.formatRupiah(row.price),
+                        hpp: row.hpp,
+                        stock_available: row.stock_available,
+                        original_stock: row.original_stock,
+                    });
+                    this.updateTotal();
+                }
+                this.pickerOpen = false;
+                this.loadPickerProducts();
+            },
+            lockKemasan(open) {
+                this.$nextTick(() => {
+                    $('#select_kemasan').prop('disabled', !open);
+                });
+            },
             // get totalAll() {
             //     // kalau "Harga Jual" = budget per item, cukup jumlahkan price
             //     const total = this.parcels.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
@@ -46,6 +143,22 @@
 
             resetParcel() {
                 this.parcels = [];
+            },
+            // Back to a blank Tambah Parcel form (used when the page is closed without saving).
+            resetForm() {
+                this.editId = null;
+                this.parcels = [];
+                this.totalAll = 0;
+                this.qtyParcel = 1;
+                this.budgetParcel = '';
+                this.budgetValue = 0;
+                this.kemasanName = '';
+                this.kemasanPrice = 0;
+                this.biayaJasa = 0;
+                this.pickerOpen = false;
+                this.pickerSearch = '';
+                this.pickerResults = [];
+                this.pickerState = 'idle';
             },
             setParcel(item) {
                 // this.parcels = []; // reset
@@ -153,6 +266,8 @@
 
             updateTotal() {
                 // total produk: per item price * qty
+                const budgetEl = document.getElementById('parcel_budget');
+                this.budgetValue = budgetEl ? this.parseNumber(budgetEl.value) : 0;
                 const totalProduk = this.parcels.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
 
                 // baca biaya jasa / kemasan: coba DOM dulu; kalau tidak ada fallback ke state
@@ -202,6 +317,10 @@
                 return productName.includes(`(${unitLabel})`) ? productName : `${productName} (${unitLabel})`;
             },
             initSelect2() {
+                $('#select_kemasan').off('change.parcelLabel').on('change.parcelLabel', () => {
+                    this.kemasanName = $('#select_kemasan option:selected').text() || '';
+                    this.updateTotal();
+                });
                 $('.parcel-select:not(.select2-hidden-accessible)').select2({
                     placeholder: 'Pilih Buah',
                     language: {
@@ -468,7 +587,7 @@
                     const parcelId = 'parcel' + kemasanId + this.formatShortNumber(budget) + '_' + Date.now();
                     const parcel = {
                         id: parcelId,
-                        name: 'Parcel ' + kemasan + '-' + this.formatShortNumber(budget),
+                        name: 'Parcel ' + ((typeof defaultKemasanName !== 'undefined' && kemasan === defaultKemasanName) ? '' : kemasan + '-') + this.formatShortNumber(budget),
                         price: budgetValue,
                         fee: feeValue,
                         hpp: 0,
@@ -498,10 +617,12 @@
                     posAppInstance.cart.push(parcel);
                     posAppInstance.parcel.push(posParcel);
                     document.getElementById('parcel_budget').value = '';
+                    this.budgetValue = 0; this.kemasanName = ''; this.totalAll = 0; this.kemasanPrice = 0; this.biayaJasa = 0;
                     document.getElementById('parcel_qty').value = 1;
                     if (feeInput) feeInput.value = '';
                     $('#select_kemasan').val(null).trigger('change');
                     this.parcels = [];
+                    this.updateTotal();
                     
                     if (!referenceAddPage) {
                         const modalEl = document.getElementById('parcelModal');
@@ -560,8 +681,9 @@
                     return;
                 }
 
-                const budget = document.getElementById('parcel_edit_budget').value;
-                const qty = document.getElementById('parcel_edit_qty').value;
+                const inPage = !!this.editId; // Edit Parcel opened on the add page; otherwise the legacy edit modal
+                const budget = document.getElementById(inPage ? 'parcel_budget' : 'parcel_edit_budget').value;
+                const qty = document.getElementById(inPage ? 'parcel_qty' : 'parcel_edit_qty').value;
                 if (parseFloat(qty) <= 0 || !qty) {
                     Swal.fire({
                         icon: 'warning',
@@ -570,10 +692,15 @@
                     });
                     return;
                 }
-                const fee = document.getElementById('parcel_edit_jasa').value;
-                const kemasan = $('#select_edit_kemasan option:selected').text();
-                const kemasanId = $('#select_edit_kemasan option:selected').val();
-                const kemasanPrice = $('#kemasan_edit_price').val();
+                const fee = document.getElementById(inPage ? 'parcel_jasa' : 'parcel_edit_jasa').value;
+                const kemSel = inPage ? '#select_kemasan' : '#select_edit_kemasan';
+                let kemasan = $(kemSel + ' option:selected').text();
+                let kemasanId = $(kemSel + ' option:selected').val();
+                if (inPage && !kemasanId && typeof defaultKemasanId !== 'undefined') {
+                    kemasanId = defaultKemasanId;
+                    kemasan = defaultKemasanName;
+                }
+                const kemasanPrice = $(inPage ? '#kemasan_price' : '#kemasan_edit_price').val();
                 const budgetValue = this.parseNumber(budget);
                 const feeValue = this.parseNumber(fee);
                 const kemasanPriceValue = this.parseNumber(kemasanPrice);
@@ -648,7 +775,7 @@
 
                     const parcel = {
                         id: parcelId,
-                        name: 'Parcel ' + kemasan + '-' + this.formatShortNumber(budget),
+                        name: 'Parcel ' + ((typeof defaultKemasanName !== 'undefined' && kemasan === defaultKemasanName) ? '' : kemasan + '-') + this.formatShortNumber(budget),
                         price: budgetValue,
                         fee: feeValue,
                         hpp: 0,
@@ -690,11 +817,18 @@
 
                     // kalau mau reset form setelah edit
                     document.getElementById('parcel_budget').value = '';
+                    this.budgetValue = 0; this.kemasanName = ''; this.totalAll = 0; this.kemasanPrice = 0; this.biayaJasa = 0;
                     document.getElementById('parcel_qty').value = 1;
                     document.getElementById('parcel_jasa').value = '';
                     $('#select_kemasan').val(null).trigger('change');
                     this.parcels = [];
+                    this.updateTotal();
                     
+                    if (inPage) {
+                        this.resetForm();
+                        if (posAppInstance && typeof posAppInstance.closeParcelModal === 'function') posAppInstance.closeParcelModal();
+                        return;
+                    }
                     const modalEl = document.getElementById('parcelEditModal');
                     if(modalEl) {
                         const modal = bootstrap.Modal.getInstance(modalEl);

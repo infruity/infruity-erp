@@ -4,7 +4,7 @@
 #order-book-detail-dialog > section { width:100%; max-width:384px; max-height:calc(100dvh - 32px); border:0; border-radius:16px; background:#fff; }
 #order-book-detail-dialog > section > div:first-child { min-height:0; padding:20px 20px 16px; overscroll-behavior:contain; }
 #order-book-detail-dialog > section > div:first-child > div:first-child { margin-bottom:20px; gap:12px; }
-#order-book-detail-dialog h2 { margin:0; color:#1f2937; font-size:18px; font-weight:700; line-height:28px; }
+#order-book-detail-dialog h2 { margin:0; color:#1f2937 !important; font-size:18px; font-weight:700; line-height:28px; }
 #order-book-detail-dialog button[aria-label="Tutup detail"] { width:28px; height:28px; flex:none; border:0; padding:0; color:#6b7280; font-size:14px; }
 #order-book-detail-dialog > section > div:last-child { flex-shrink:0; border-top:1px solid #f3f4f6; }
 #order-book-detail-dialog .order-book-detail__fields { display:flex; flex-direction:column; gap:14px; }
@@ -14,7 +14,7 @@
 #order-book-detail-dialog .order-book-detail__value { min-width:0; flex:1; overflow-wrap:anywhere; }
 #order-book-detail-dialog .order-book-detail__primary { color:#1f2937; font-size:14px; font-weight:700; line-height:19.25px; }
 #order-book-detail-dialog .order-book-detail__secondary { display:block; margin-top:2px; color:#9ca3af; font-size:11px; font-weight:500; line-height:16.5px; }
-#order-book-detail-dialog .order-book-detail__phone { display:inline-block; margin-top:2px; border-bottom:1px dashed #d1d5db; padding-bottom:2px; color:#1f2937; font-size:12px; font-weight:600; line-height:16px; text-decoration:none; }
+#order-book-detail-dialog .order-book-detail__phone { display:inline-block; margin-top:4.5px; border-bottom:1px dashed #d1d5db; padding-bottom:2px; color:#1f2937; font-size:12px; font-weight:600; line-height:16px; text-decoration:none; }
 #order-book-detail-dialog .order-book-detail__muted { color:#9ca3af; font-weight:400; }
 #order-book-detail-dialog .order-book-detail__footer { width:100%; padding:12px 16px 16px; }
 #order-book-detail-dialog .order-book-detail__locked { display:block; margin-bottom:8px; color:#6b7280; font-size:11px; }
@@ -30,3 +30,26 @@
     #order-book-detail-dialog .order-book-detail__footer { padding:14px 20px 20px; }
     #order-book-detail-dialog .order-book-detail__action { min-height:48px; font-size:14px; }
 }
+
+/* Phone layout follows the Pesanan reference (measured at 400px): 24px padding, 16px row gap, 20px footer, Hapus with icon. */
+#order-book-detail-dialog { padding-inline:16px!important; }
+#order-book-detail-dialog .order-book-detail__branch { margin:4px 0 0; overflow:hidden; color:#6b7280; font-size:12px; font-weight:500; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
+@media (max-width:639.98px) {
+    #order-book-detail-dialog > section > div:first-child { padding:24px!important; }
+    #order-book-detail-dialog > section > div:first-child > div:first-child { margin-bottom:28px!important; }
+    #order-book-detail-dialog button[aria-label="Tutup detail"] { width:32px; height:32px; }
+    #order-book-detail-dialog .order-book-detail__fields { gap:16px; }
+    #order-book-detail-dialog .order-book-detail__secondary { line-height:20px; }
+    #order-book-detail-dialog .order-book-detail__footer { padding:20px 24px; }
+    #order-book-detail-dialog .order-book-detail__action { min-height:44px; padding:0 16px; font-size:14px; }
+    #order-book-detail-dialog .order-book-detail__action--delete { gap:6px; }
+    /* The reference has two buttons per status; Edit (not in the reference) sits on its own row below them. */
+    #order-book-detail-dialog .order-book-detail__actions { flex-wrap:wrap; }
+    #order-book-detail-dialog .order-book-detail__action:not(.order-book-detail__action--delete):not(.order-book-detail__action--primary) { order:3; flex:1 1 100%; }
+    #order-book-detail-dialog .order-book-detail__action--delete i { font-size:16px; line-height:1; }
+}
+
+/* Pesanan reference: no close button on the detail card (backdrop click and Esc still close it). */
+#order-book-detail-dialog button[aria-label="Tutup detail"] { display:none; }
+#order-book-detail-dialog .order-book-detail__note { margin:0; border:1px solid #f3f4f6; border-radius:12px; background:#f9fafb; padding:12px 14px; color:#374151; font-size:13px; font-weight:400; line-height:22px; white-space:pre-wrap; overflow-wrap:anywhere; }
+#order-book-detail-dialog .order-book-detail__note.is-empty { color:#9ca3af; }

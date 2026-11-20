@@ -24,16 +24,16 @@ test('actual amount input handler supports sequential typing and formatting on b
     handlers.blur({ currentTarget: input });
     assert.equal(input.value, '50.000');
     handlers.focus({ currentTarget: input });
-    assert.equal(input.value, '50000');
+    assert.equal(input.value, '50.000', 'focus keeps the separators');
     input.value += '0';
     handlers.input({ currentTarget: input });
     assert.equal(balances.at(-1), 500000);
-    for (const invalid of ['-100', '1.5', '1e5', '']) {
-        input.value = invalid;
+    // Only digits are accepted: everything else is dropped while typing.
+    for (const [typed, shown, amount] of [['-100', '100', 100], ['1.5', '15', 15], ['1e5', '15', 15], ['abc', '', null], ['', '', null]]) {
+        input.value = typed;
         handlers.input({ currentTarget: input });
-        handlers.blur({ currentTarget: input });
-        assert.equal(input.value, invalid);
-        assert.equal(balances.at(-1), null);
+        assert.equal(input.value, shown);
+        assert.equal(balances.at(-1), amount);
     }
     input.value = '0';
     zero.checked = true;
@@ -92,7 +92,7 @@ test('receipt validation requires explicit zero acknowledgement and a known posi
 });
 
 test('fractional remaining balances do not round away a shortage', () => {
-    assert.deepEqual(cards.buildPaymentBalance(100.50, 100), { type: 'underpaid', label: 'Kurang Bayar :', value: 'Rp 0,5' });
+    assert.deepEqual(cards.buildPaymentBalance(100.50, 100), { type: 'underpaid', label: 'Kurang Bayar', value: 'Rp 0,5' });
 });
 
 test('billing uses existing net invoice and cumulative ledger, not a new payment as the whole total', () => {
@@ -103,7 +103,7 @@ test('billing uses existing net invoice and cumulative ledger, not a new payment
     assert.equal(summary.voucher, 10000);
     assert.equal(summary.previousPaid, 100000);
     assert.equal(summary.remaining, 80000);
-    assert.deepEqual(cards.buildPaymentBalance(summary.remaining, 50000), { type: 'underpaid', label: 'Kurang Bayar :', value: 'Rp 30.000' });
+    assert.deepEqual(cards.buildPaymentBalance(summary.remaining, 50000), { type: 'underpaid', label: 'Kurang Bayar', value: 'Rp 30.000' });
 });
 
 test('billing distinguishes known zero from missing, invalid, or incomplete monetary data', () => {
@@ -170,13 +170,15 @@ for (const mode of ['paid', 'unpaid', 'paid-unavailable']) {
         assert.equal(input.readOnly, paid);
         assert.equal(h.node('[data-delivery-order-payment-amount-label]').hidden, paid);
         assert.equal(input['aria-label'], paid ? 'Pembayaran sudah tercatat' : 'Nominal pembayaran yang diterima');
-        assert.equal(input.value, paid ? (billing.available ? '180.000' : '') : '');
+        assert.equal(input.value, paid ? (billing.available ? '180.000' : '') : '80.000', 'unpaid starts at the remaining amount, as on the reference');
         assert.equal(input.placeholder, mode === 'paid-unavailable' ? 'Belum tersedia' : 'Masukkan nominal');
         assert.equal(h.node('.delivery-order-billing-summary').hidden, paid);
         assert.equal(h.node('[data-delivery-order-payment-amount-label]').textContent, paid ? 'Pembayaran sudah tercatat' : 'Uang diterima saat ini');
-        assert.equal(balance.hidden, !paid || !billing.available);
+        assert.equal(balance.hidden, !billing.available);
         assert.equal(submit.textContent, paid ? 'Terima Barang' : 'Bayar');
         if (!paid) {
+            input.value = '';
+            input.handlers.input({ currentTarget: input });
             submit.handlers.click();
             assert.equal(h.requests.length, 0, 'blank is not zero');
             input.value = '50000';
@@ -185,7 +187,7 @@ for (const mode of ['paid', 'unpaid', 'paid-unavailable']) {
             assert.equal(h.node('[data-delivery-order-payment-balance-value]').textContent, 'Rp 30.000');
             input.value = 'invalid';
             input.handlers.input({ currentTarget: input });
-            assert.equal(balance.hidden, true);
+            assert.equal(balance.hidden, false, 'the status box stays visible, reading as nothing received');
             input.value = '50000';
         }
         submit.handlers.click();

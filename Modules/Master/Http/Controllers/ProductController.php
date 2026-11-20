@@ -1109,7 +1109,7 @@ class ProductController extends Controller
         $search = $request->input('term', '');
         // The stock of the products and of their ingredients is loaded below in one go (see attachStock): eager loading
         // it as two relations evaluated the product_stock view twice (~340 ms each).
-        $with   = ['category', 'unit', 'productReceipt', 'productReceipt.ingredients', 'parentProduct'];
+        $with   = ['category', 'unit', 'productReceipt', 'productReceipt.ingredients', 'productReceipt.ingredients.unit', 'parentProduct'];
 
         $query  = Product::with($with)
             ->where('tipe', '!=', 'parcel')->where('name', 'like', Like::contains($search));

@@ -31,6 +31,13 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::post('pos/save-transaction', [PosController::class, 'saveTransaction'])->name('pos.save-transaction');
     Route::post('/pos/customers', [CustomerController::class, 'storeCustomer']);
     Route::get('pos/payment/{id}', [PosController::class, 'payment'])->name('pos.payment');
+    Route::get('pos/payment/{id}/addresses', [\Modules\Pos\Http\Controllers\PosDeliveryAddressController::class, 'index'])->name('pos.addresses');
+    Route::post('pos/payment/{id}/addresses', [\Modules\Pos\Http\Controllers\PosDeliveryAddressController::class, 'save']);
+    Route::put('pos/payment/{id}/addresses/{address}', [\Modules\Pos\Http\Controllers\PosDeliveryAddressController::class, 'save']);
+    Route::post('pos/payment/{id}/addresses/{address}/select', [\Modules\Pos\Http\Controllers\PosDeliveryAddressController::class, 'select']);
+    Route::delete('pos/payment/{id}/addresses/{address}', [\Modules\Pos\Http\Controllers\PosDeliveryAddressController::class, 'destroy']);
+    Route::post('pos/payment/{id}/courier', [PosController::class, 'updateCourier'])->name('pos.updateCourier');
+    Route::post('pos/payment/{id}/totals', [PosController::class, 'updateTotals'])->name('pos.updateTotals');
     Route::post('pos/savePayment', [PosController::class, 'savePayment'])->name('pos.savePayment');
     Route::get('pos/payment-notification/{id}', [PosController::class, 'paymentNotification'])->name('pos.paymentNotification');
     Route::get('pos/listPayment/{id}', [PosController::class, 'listPayment'])->name('pos.listPayment');
@@ -38,6 +45,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::get('pos/printDraftPayment/{id}', [PosController::class, 'printDraftPayment'])->name('pos.printDraftPayment');
     Route::get('pos/printNota/{id}', [PosController::class, 'printNota'])->name('pos.printNota');
     Route::post('/upload-receipt', [PosController::class, 'uploadReceipt']);
+    Route::post('pos/nota-share', [PosController::class, 'storeNotaShareImage'])->name('pos.nota-share');
     Route::resource('setting-nota', SettingNotaController::class)->names('setting-nota')->except(['show', 'create']);
     Route::get('setting-nota/view-receipt', [SettingNotaController::class, 'viewReceipt'])->name('setting-nota.view-receipt');
     Route::get('delivery-order', [DeliveryOrderController::class, 'index'])->name('delivery-order');

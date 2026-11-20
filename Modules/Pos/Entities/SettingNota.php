@@ -10,6 +10,7 @@ class SettingNota extends Model
     use HasFactory;
 
     protected $fillable = [
+        'paper_width',
         'branch_id',
         'header',
         'footer',

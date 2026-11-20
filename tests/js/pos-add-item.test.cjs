@@ -27,8 +27,8 @@ test('available stock subtracts what the cart already holds and never goes below
     assert.equal(PosAddItem.availableStock({original_stock: 10}, 4), 6);
     assert.equal(PosAddItem.availableStock({original_stock: 2}, 5), -3);
     assert.equal(PosAddItem.stockLabel(6.5, 'Kg'), '6,5 Kg');
-    assert.equal(PosAddItem.stockLabel(0, 'Kg'), 'Habis');
-    assert.equal(PosAddItem.stockLabel(-3, 'Kg'), 'Habis');
+    assert.equal(PosAddItem.stockLabel(0, 'Kg'), '0 Kg');
+    assert.equal(PosAddItem.stockLabel(-3, 'Kg'), '0 Kg');
     assert.equal(PosAddItem.stockLabel(12, ''), '12');
 });
 
@@ -42,7 +42,7 @@ test('discount prefix follows the existing rule: Rp above 100, percent otherwise
 });
 
 test('price label carries the unit like the reference', () => {
-    assert.equal(PosAddItem.priceLabel('Kg'), 'HARGA JUAL /KG');
+    assert.equal(PosAddItem.priceLabel('Kg'), 'HARGA JUAL / KG');
     assert.equal(PosAddItem.priceLabel(''), 'HARGA JUAL');
     assert.equal(PosAddItem.quantityLabel('Kg'), 'KUANTITAS (KG)');
     assert.equal(PosAddItem.quantityLabel(undefined), 'KUANTITAS');

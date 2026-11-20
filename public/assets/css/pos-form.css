@@ -97,12 +97,12 @@
 .pos-form--reference .pos-cart-row:focus-visible { outline:2px solid #0b595b; outline-offset:2px; }
 .pos-form--reference .pos-cart-name strong { font-size:14px; font-weight:700; }
 .pos-cart-side { display:flex; flex:none; align-items:center; gap:8px; }
-.pos-form--reference .pos-cart-total { color:#0b595b; font-size:12px; font-weight:800; }
+.pos-form--reference .pos-cart-total { color:#9ca3af; font-size:12px; font-weight:400; }
 .pos-cart-remove { display:flex; width:28px; height:28px; align-items:center; justify-content:center; border:0; border-radius:8px; background:transparent; color:#6b7280; font-size:15px; }
 .pos-cart-remove:hover { background:#fff1f2; color:#be123c; }
-.pos-form--reference .pos-cart-bottom { justify-content:flex-start; color:#6b7280; font-size:12px; }
-.pos-cart-discount { color:#6b7280; font-size:12px; }
-.pos-cart-discount.has-discount { color:#b91c1c; font-weight:600; }
+.pos-form--reference .pos-cart-bottom { justify-content:space-between; color:#9ca3af; font-size:12px; }
+.pos-cart-discount { display:flex; justify-content:space-between; gap:12px; color:#9ca3af; font-size:12px; }
+.pos-cart-discount.has-discount { color:#9ca3af; font-weight:400; }
 
 .pos-ref-footer { margin-top:auto; padding:0 16px calc(14px + env(safe-area-inset-bottom)); border-top:1px solid #eef0f3; border-radius:0; background:#fff; box-shadow:0 -8px 24px rgba(15,23,42,.06); }
 .pos-ref-root { display:contents; }
@@ -134,7 +134,7 @@
 .pos-ref-total { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #f1f3f5; padding:6px 0 14px; }
 .pos-ref-total__label { color:#111827; font-size:15px; font-weight:700; }
 .pos-ref-total__label span { color:#6b7280; font-weight:600; }
-.pos-ref-total__amount { color:#0b595b; font-size:16px; font-weight:800; font-variant-numeric:tabular-nums; }
+.pos-ref-total__amount { color:#111827; font-size:16px; font-weight:800; font-variant-numeric:tabular-nums; }
 .pos-ref-actions { display:flex; align-items:center; gap:10px; padding-top:14px; }
 .pos-ref-icon { display:flex; width:44px; height:44px; flex:none; align-items:center; justify-content:center; border:1px solid #d1d5db; border-radius:12px; background:#fff; color:#1f2937; font-size:18px; text-decoration:none; }
 .pos-ref-icon:hover { border-color:#34a684; color:#0b595b; }
@@ -208,12 +208,12 @@
 .pos-ref-product__main strong { overflow:hidden; color:#111827; font-size:13px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
 .pos-ref-product__main small { color:#6b7280; font-size:11px; font-variant-numeric:tabular-nums; }
 .pos-ref-product__stock { flex:none; color:#374151; font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; }
-.pos-ref-product.is-empty .pos-ref-product__stock { color:#be123c; }
+.pos-ref-product.is-empty .pos-ref-product__stock { color:#374151; }
 .pos-ref-product.is-empty .pos-ref-product__main strong { color:#6b7280; }
 .pos-ref-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
 .pos-ref-cell { display:flex; min-width:0; flex-direction:column; gap:6px; margin:0; }
 .pos-ref-cell__label { color:#374151; font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; }
-.pos-ref-cell__label small { color:#6b7280; font-size:inherit; font-weight:500; }
+.pos-ref-cell__label small { color:#9ca3af; font-size:inherit; font-weight:400; }
 .pos-ref-required::after { content:" *"; color:#dc2626; }
 .pos-ref-cell__field { display:flex; min-height:44px; overflow:hidden; border:1px solid #868e98; border-radius:12px; background:#fff; }
 .pos-ref-cell__field:focus-within { border-color:var(--erp-active-border); box-shadow:var(--erp-active-ring); }
@@ -318,6 +318,15 @@
 .pos-confirm__actions button:hover:not(:disabled) { background:#f9fafb; }
 .pos-confirm__actions .is-primary { border-color:#0b595b; background:#0b595b; color:#fff; box-shadow:0 6px 14px rgba(11,89,91,.2); }
 .pos-confirm__actions .is-primary:hover:not(:disabled) { background:#08484a; }
+.pos-confirm__mobile { display:none; }
+@media (max-width:767px) {
+  .pos-confirm__mobile { display:inline; }
+  .pos-confirm__desktop, .pos-confirm__summary { display:none; }
+  .pos-confirm__card { font-family:'Plus Jakarta Sans',sans-serif; }
+  .pos-confirm__card h2 { font-weight:700; line-height:24px; }
+  .pos-confirm__card > p { margin-bottom:24px; line-height:19.5px; }
+  .pos-confirm__actions button { min-height:40px; font-size:12px; }
+}
 /* Reference-style dropdowns for the create POS form only. */
 body:has(.pos-form--reference) .select2-dropdown:has(#select2-branch_id-results),
 body:has(.pos-form--reference) .select2-dropdown:has(#select2-customer_id-results) {
@@ -368,3 +377,464 @@ body:has(.pos-form--reference) .select2-search--dropdown input[aria-controls="se
 .pos-sheet--ref .pos-ref-parcel-composition__empty span { color:#94a3b8; font-size:12px; }
 
 .pos-confirm__actions button:disabled { opacity:.6; cursor:not-allowed; }
+
+/* Empty cart: the card fills the free height and the message is centred in all of it (the reference's centred empty state). */
+.pos-form--reference > .pos-card--list { display:flex; flex-direction:column; }
+.pos-form--reference > .pos-card--list > .pos-card__body--list { display:flex; flex:1 1 auto; flex-direction:column; }
+.pos-form--reference > .pos-card--list .pos-cart { display:flex; flex:1 1 auto; flex-direction:column; }
+.pos-form--reference > .pos-card--list .pos-cart-empty { flex:1 1 auto; min-height:0; margin:-4px -20px -12px; }
+
+/* Fields card: same look as the Sortir Barang / Pindah Stok forms (uppercase 11px label, white 12px-bold picker, grey caret, light borders). */
+.pos-form--reference > .pos-card { border:1px solid rgba(229,231,235,.9); box-shadow:0 1px 3px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.04); }
+.pos-form--reference .pos-card--fields .pos-field__label { display:block; margin:0 0 6px; color:#374151; font-size:11px; font-weight:700; line-height:16.5px; letter-spacing:.55px; text-transform:uppercase; }
+.pos-form--reference .pos-card--fields .pos-field__req { margin-left:3px; color:#ef4444; }
+.pos-form--reference .pos-card--fields .erp-picker__trigger { min-height:44px; padding:0 14px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:#1f2937; font-size:12px; font-weight:700; line-height:18px; }
+.pos-form--reference .pos-card--fields .erp-picker__label { font-size:12px; font-weight:700; line-height:18px; }
+.pos-form--reference .pos-card--fields .erp-picker__trigger i { color:#9ca3af; font-size:12px; }
+.pos-form--reference .pos-card--fields .pos-customer { border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
+.pos-form--reference .pos-card--fields .pos-customer .erp-picker__trigger { border:0; background:transparent; }
+.pos-form--reference .pos-card--fields .pos-customer__add { border-left:1px solid #e5e7eb; }
+
+/* Text sizes and weights as in the Sortir Barang form: card title, empty message, total bar and pay button. */
+.pos-card--list .pos-card__head h2 { font-weight:800; line-height:21px; }
+.pos-cart-empty p { color:#1f2937; line-height:21px; }
+.pos-cart-empty span { line-height:20.4px; }
+.pos-cart-empty strong { font-weight:600; }
+.pos-ref-total__label { font-size:16px; font-weight:800; }
+.pos-ref-total__label span { color:#9ca3af; font-size:14px; font-weight:600; }
+.pos-ref-total__amount { font-size:18px; }
+.pos-ref-pay__btn { font-size:13px; }
+.pos-ref-pay__btn:disabled { color:#9ca3af; }
+
+/* Spacing as measured in the reference (400px): label-to-field 8px, 16px between the two fields, 44px customer box with a short divider before "+". */
+.pos-form--reference .pos-card--fields { padding-top:18px; }
+.pos-form--reference .pos-card--fields .pos-field__label { margin-bottom:8px; }
+.pos-form--reference .pos-card--fields .pos-field + .pos-field { margin-top:16px; border-top-color:#f3f4f6; }
+.pos-form--reference .pos-card--fields .pos-customer { height:44px; align-items:stretch; }
+.pos-form--reference .pos-card--fields .pos-customer .erp-picker__trigger { min-height:0; height:100%; }
+.pos-form--reference .pos-card--fields .pos-customer__add { position:relative; width:48px; border-left:0; }
+.pos-form--reference .pos-card--fields .pos-customer__add::before { content:''; position:absolute; left:0; top:12px; width:1px; height:20px; background:#e5e7eb; }
+.pos-ref-footer { border-top-color:#e2e8f0; }
+.pos-ref-total { padding-bottom:11px; }
+.pos-ref-footer { padding-bottom:calc(16px + env(safe-area-inset-bottom)); }
+.pos-form--reference > .pos-card--list { margin-bottom:13px; }
+
+/* Add-item pages (Buah & Olahan / Parcel / Jus) on phones: measured against the Plan design (400px wide). */
+@media (max-width:767px) {
+  .pos-add-page, .pos-add-page button, .pos-add-page input { font-family:'Plus Jakarta Sans', sans-serif; }
+  .pos-add-page .pos-sheet-header--tabs { padding:25px 16px 12px; }
+  .pos-add-page .pos-tabs { border:1px solid rgba(229,231,235,.9); padding:6px; box-shadow:0 1px 2px rgba(15,23,42,.05); }
+  .pos-add-page .pos-tabs__track { background:rgba(243,244,246,.9); padding:4px; }
+  .pos-add-page .pos-sheet-header--tabs .pos-tabs__tab { min-height:32px; border-radius:8px; font-size:12px; font-weight:500; line-height:16px; }
+  .pos-add-page .pos-sheet-header--tabs .pos-tabs__tab.is-active { font-weight:700; }
+  .pos-add-page .pos-ref-body { padding:4px 16px 24px; }
+  .pos-add-page .pos-ref-panel { flex:1 0 auto; gap:0; border:1px solid rgba(229,231,235,.9); padding:16px; box-shadow:0 1px 2px rgba(15,23,42,.05); }
+  .pos-add-page .pos-ref-panel__head { padding-bottom:11px; border-bottom-color:#f3f4f6; }
+  .pos-add-page .pos-ref-panel__head h3 { font-size:14px; line-height:18px; }
+  .pos-add-page .pos-ref-panel__head p { margin-top:4px; font-size:12px; line-height:20px; }
+  .pos-add-page .pos-ref-cell__label { display:block; font-size:11px; font-weight:700; line-height:14px; }
+  .pos-add-page .pos-ref-panel > .pos-ref-cell__label { margin:13px 0 8px; }
+  .pos-add-page .pos-ref-panel > .pos-ref-listbox { flex:1 1 auto; min-height:220px; margin-top:0; border-color:#e5e7eb; display:flex; flex-direction:column; }
+  .pos-add-page .pos-ref-listbox .pos-ref-search { flex:none; border-bottom-color:#f3f4f6; }
+  .pos-add-page .pos-ref-search i { left:14px; font-size:14px; }
+  .pos-add-page .pos-ref-search input { min-height:32px; height:32px; background:rgba(249,250,251,.5); padding-left:36px; font-size:12px; }
+  .pos-add-page .pos-ref-products { flex:1 1 0; min-height:0; max-height:none; }
+  .pos-add-page .pos-ref-products li { border-top:1px solid #f3f4f6; }
+  .pos-add-page .pos-ref-products li + li { border-top-color:#f3f4f6; }
+  .pos-add-page .pos-ref-product { padding:10px; }
+  .pos-add-page .pos-ref-product__main { gap:2px; }
+  .pos-add-page .pos-ref-product__main strong { color:#1f2937; font-size:12px; line-height:16px; }
+  .pos-add-page .pos-ref-product__main small { color:#9ca3af; font-size:11px; line-height:16px; }
+  .pos-add-page .pos-ref-product__stock, .pos-add-page .pos-ref-product.is-empty .pos-ref-product__stock { color:#6b7280; font-size:12px; }
+  .pos-add-page .pos-ref-panel > .pos-ref-grid { margin-top:11px; gap:13px 12px; border-top-color:#f3f4f6; padding-top:13px; }
+  .pos-add-page .pos-ref-cell { gap:8px; }
+  .pos-add-page .pos-ref-cell__field { min-height:40px; border-color:#e5e7eb; }
+  .pos-add-page .pos-ref-cell__field.is-readonly { background:rgba(243,244,246,.8); }
+  .pos-add-page .pos-ref-cell__field > span { width:44px; justify-content:center; padding:0; color:#6b7280; font-size:12px; font-weight:700; }
+  .pos-add-page .pos-ref-cell__field input { font-size:12px; color:#1f2937; }
+  .pos-add-page .pos-ref-actions-bar { gap:12px; padding:15px 16px calc(15px + env(safe-area-inset-bottom)); border-top-color:#f3f4f6; }
+  .pos-add-page .pos-ref-back, .pos-add-page .pos-ref-add { font-size:12px; }
+  .pos-add-page .pos-ref-back { border-color:#e5e7eb; color:#1f2937; }
+  .pos-add-page .pos-ref-add:disabled { background:#d1d5db; color:#6b7280; }
+}
+.pos-ref-product:disabled, .pos-ref-product.is-empty { cursor:not-allowed; }
+.pos-ref-product:disabled:hover { background:#fff; }
+.pos-ref-product:disabled { opacity:.55; }
+.pos-ref-cell__field:has(input:disabled:not([readonly])) { background:#f3f4f6; }
+.pos-ref-cell__field input:disabled { cursor:not-allowed; }
+
+/* Parcel add page: Plan layout (Produk + Budget, locked Pilih Kemasan, Komposisi box, Biaya Jasa + Total Modal). */
+.pos-ref-parcel-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; margin-top:13px; }
+.pos-ref-parcel-pick { margin-top:13px; }
+.pos-ref-parcel-pick .pos-ref-cell__label { margin-bottom:8px; }
+.pos-ref-parcel-pick.is-locked .pos-ref-cell__label { color:#9ca3af; }
+.pos-ref-parcel-pick.is-locked .pos-ref-cell__label::after { color:#9ca3af; }
+.pos-ref-parcel-pick .select2-container { width:100% !important; }
+.pos-ref-parcel-pick .select2-container--bootstrap5 .select2-selection { min-height:44px; border:1px solid #e5e7eb; border-radius:12px; background-color:#fff; font-size:12px; }
+.pos-ref-parcel-pick.is-locked .select2-container--bootstrap5 .select2-selection { background-color:rgba(243,244,246,.8); opacity:.8; cursor:not-allowed; }
+.pos-ref-parcel-pick .select2-selection__rendered { font-size:12px; font-weight:500; }
+.pos-sheet--ref .pos-ref-parcel-composition { display:flex; flex:1 1 auto; flex-direction:column; min-height:140px; margin-top:12px; padding:0; overflow:hidden; border:1px solid rgba(229,231,235,.9); border-radius:12px; }
+.pos-ref-parcel-composition__head { display:flex; align-items:center; gap:6px; flex:none; border-bottom:1px solid #f3f4f6; background:rgba(249,250,251,.8); padding:10px 14px; }
+.pos-ref-parcel-composition__head strong { color:#1f2937; font-size:12px; font-weight:700; line-height:16px; }
+.pos-ref-parcel-composition__head small { color:#9ca3af; font-size:10px; font-weight:500; }
+.pos-ref-parcel-composition__body { display:flex; flex:1 1 0; min-height:0; flex-direction:column; overflow-y:auto; }
+.pos-sheet--ref .pos-ref-parcel-composition__empty { flex:1; min-height:100px; gap:4px; padding:16px; }
+.pos-sheet--ref .pos-ref-parcel-composition__empty strong { color:#374151; font-size:12px; line-height:16px; }
+.pos-sheet--ref .pos-ref-parcel-composition__empty span { max-width:260px; color:#9ca3af; font-size:11px; }
+.pos-ref-parcel-row { border-bottom:1px solid #f3f4f6; padding:10px 14px; }
+.pos-ref-parcel-row__top { display:flex; align-items:center; gap:8px; }
+.pos-ref-parcel-row__top .select2-container { flex:1; min-width:0; }
+.pos-ref-parcel-row__top .select2-container--bootstrap5 .select2-selection { min-height:36px; border:1px solid #e5e7eb; border-radius:10px; font-size:12px; }
+.pos-ref-parcel-row__remove { display:inline-flex; width:32px; height:32px; flex:none; align-items:center; justify-content:center; border:1px solid #fecdd3; border-radius:10px; background:#fff1f2; color:#e11d48; font-size:14px; }
+.pos-ref-parcel-row__fields { display:grid; grid-template-columns:72px 1fr; gap:8px; margin-top:8px; }
+.pos-ref-parcel-row__fields label { display:flex; flex-direction:column; gap:4px; margin:0; }
+.pos-ref-parcel-row__fields span { color:#6b7280; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.pos-ref-parcel-row__fields input { height:34px; min-width:0; border:1px solid #e5e7eb; border-radius:10px; padding:0 10px; color:#1f2937; font-size:12px; font-weight:700; outline:0; }
+.pos-ref-parcel-add { display:inline-flex; align-items:center; justify-content:center; gap:6px; flex:none; margin:10px 14px 12px; height:36px; border:0; border-radius:10px; background:#ecfdf5; color:#0b595b; font-size:12px; font-weight:600; }
+.pos-ref-parcel-add:disabled { opacity:.5; cursor:not-allowed; }
+.pos-ref-parcel-composition__empty + .pos-ref-parcel-row, .pos-ref-parcel-composition__body > .pos-ref-parcel-add { margin-top:10px; }
+.pos-ref-cell__field input:disabled { cursor:not-allowed; }
+.pos-ref-parcel-pick.is-locked .select2-selection__placeholder { font-size:0; }
+.pos-ref-parcel-pick.is-locked .select2-selection__placeholder::before { content:"Input budget terlebih dahulu..."; color:#9ca3af; font-size:12px; font-weight:500; }
+
+/* Parcel: product picker (popover) and composition lines, as in the Plan. */
+.pos-ref-parcel-products { position:relative; }
+.pos-ref-parcel-trigger { display:flex; width:100%; min-height:44px; align-items:center; justify-content:space-between; gap:12px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; padding:8px 14px; text-align:left; box-shadow:0 1px 2px rgba(15,23,42,.05); }
+.pos-ref-parcel-products.is-locked .pos-ref-parcel-trigger { background:rgba(243,244,246,.8); opacity:.8; cursor:not-allowed; box-shadow:none; }
+.pos-ref-parcel-products.is-locked .pos-ref-cell__label, .pos-ref-parcel-products.is-locked .pos-ref-cell__label::after { color:#9ca3af; }
+.pos-ref-parcel-trigger__text { min-width:0; flex:1; font-size:12px; }
+.pos-ref-parcel-trigger__text .is-muted { color:#9ca3af; font-weight:500; }
+.pos-ref-parcel-trigger__text i { margin-right:6px; font-size:14px; vertical-align:-2px; }
+.pos-ref-parcel-trigger__text strong { display:block; color:#111827; font-size:12px; font-weight:700; }
+.pos-ref-parcel-trigger__text small { display:block; margin-top:2px; color:#9ca3af; font-size:11px; }
+.pos-ref-parcel-trigger > i { color:#9ca3af; font-size:12px; transition:transform .2s; }
+.pos-ref-parcel-trigger > i.is-open { transform:rotate(180deg); }
+.pos-ref-parcel-trigger--search { gap:8px; }
+.pos-ref-parcel-trigger--search input { min-width:0; flex:1; height:28px; border:0; background:transparent; padding:0; color:#111827; font-size:12px; font-weight:500; outline:0; }
+.erp-ui .pos-ref-parcel-trigger--search :is(input, button):focus, .erp-ui .pos-ref-parcel-trigger--search :is(input, button):focus-visible { outline:0; box-shadow:none; }
+.pos-ref-parcel-trigger--search input::placeholder { color:#9ca3af; }
+.pos-ref-parcel-trigger__lead { color:#9ca3af; font-size:12px; }
+.pos-ref-parcel-trigger__close { display:inline-flex; border:0; background:transparent; padding:4px; color:#9ca3af; font-size:12px; }
+.pos-ref-parcel-trigger__close i { transform:rotate(180deg); }
+.pos-ref-parcel-popover { position:absolute; top:100%; right:0; left:0; z-index:30; margin-top:6px; overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; background:#fff; box-shadow:0 20px 25px -5px rgba(15,23,42,.12), 0 8px 10px -6px rgba(15,23,42,.08); }
+.pos-ref-parcel-popover__search { position:relative; border-bottom:1px solid #f3f4f6; background:rgba(249,250,251,.8); padding:8px; }
+.pos-ref-parcel-popover__search i { position:absolute; top:50%; left:20px; transform:translateY(-50%); color:#9ca3af; font-size:12px; }
+.pos-ref-parcel-popover__search input { width:100%; height:32px; border:1px solid #e5e7eb; border-radius:8px; background:#fff; padding:0 10px 0 32px; font-size:12px; outline:0; }
+.pos-ref-parcel-popover__list { max-height:224px; margin:0; padding:0; overflow-y:auto; list-style:none; overscroll-behavior:contain; }
+.pos-ref-parcel-popover__list li + li { border-top:1px solid #f3f4f6; }
+.pos-ref-parcel-popover__state { display:flex; flex-direction:column; gap:2px; padding:24px 16px; color:#9ca3af; font-size:11px; text-align:center; }
+.pos-ref-parcel-popover__state strong { color:#6b7280; font-size:12px; font-weight:600; }
+.pos-ref-parcel-option { display:flex; width:100%; align-items:center; justify-content:space-between; gap:12px; border:0; background:#fff; padding:10px; text-align:left; }
+.pos-ref-parcel-option:hover:not(:disabled) { background:#f9fafb; }
+.pos-ref-parcel-option:disabled { opacity:.4; cursor:not-allowed; background:rgba(249,250,251,.7); }
+.pos-ref-parcel-option__main { display:flex; min-width:0; flex-direction:column; gap:2px; }
+.pos-ref-parcel-option__main strong { overflow:hidden; color:#1f2937; font-size:12px; font-weight:700; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
+.pos-ref-parcel-option__main small { color:#9ca3af; font-size:11px; line-height:16px; }
+.pos-ref-parcel-option__stock { flex:none; color:#6b7280; font-size:12px; font-weight:600; }
+.pos-ref-parcel-line { position:relative; overflow:hidden; border-bottom:1px solid #f3f4f6; background:#ef4444; }
+.pos-ref-parcel-line__remove { position:absolute; top:0; right:0; bottom:0; display:flex; width:68px; flex-direction:column; align-items:center; justify-content:center; border:0; background:#ef4444; color:#fff; font-size:16px; }
+.pos-ref-parcel-line__remove span { margin-top:2px; font-size:10px; font-weight:700; }
+.pos-ref-parcel-line__body { user-select:none; position:relative; z-index:1; background:#fff; padding:10px 14px; transition:transform .2s ease-out; }
+.pos-ref-parcel-line__body.is-open { transform:translateX(-68px); }
+.pos-ref-parcel-line__top, .pos-ref-parcel-line__bottom { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.pos-ref-parcel-line__top strong { min-width:0; overflow:hidden; color:#1f2937; font-size:12px; font-weight:700; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
+.pos-ref-parcel-line__top small { flex:none; color:#9ca3af; font-size:11px; }
+.pos-ref-parcel-line__bottom { margin-top:6px; min-height:24px; }
+.pos-ref-parcel-line__price, .pos-ref-parcel-line__qty { display:flex; align-items:center; margin:0; }
+.pos-ref-parcel-line__price span { margin-right:4px; color:#9ca3af; font-size:12px; font-weight:700; }
+.pos-ref-parcel-line__price input, .pos-ref-parcel-line__qty input { user-select:text; height:22px; border:0; border-bottom:2px dashed #d1d5db; border-radius:0; background:transparent; padding:0; color:#374151; font-size:12px; font-weight:700; outline:0; }
+.pos-ref-parcel-line__price input { width:56px; text-align:left; }
+.pos-ref-parcel-line__qty input { width:44px; text-align:right; }
+.pos-ref-parcel-line__price input:focus, .pos-ref-parcel-line__qty input:focus { border-bottom-color:#10b981; color:#065f46; }
+.pos-ref-parcel-line__qty span { width:auto; margin-left:6px; flex:none; overflow:visible; color:#9ca3af; font-size:11px; font-weight:600; text-align:right; white-space:nowrap; }
+.pos-ref-panel > .pos-ref-parcel-pick > .pos-ref-cell__label { margin-bottom:8px; line-height:14px; }
+.pos-sheet--ref .pos-ref-parcel-composition__empty span { white-space:pre-line; }
+#parcelModal #select_kemasan + .select2 { display:none !important; }
+
+/* Jus add page: Plan layout (product trigger, grey-headed composition box, recipe lines). */
+.pos-ref-panel > .pos-ref-jus-pick { margin-top:13px; }
+.pos-ref-panel > .pos-ref-jus-pick > .pos-ref-cell__label { display:block; margin-bottom:8px; line-height:14px; }
+.pos-ref-jus-pick .erp-picker__trigger { min-height:44px; border-color:#e5e7eb; padding:0 14px; font-size:12px; font-weight:700; color:#111827; box-shadow:0 1px 2px rgba(15,23,42,.05); }
+.pos-ref-jus-pick .erp-picker__trigger:hover { border-color:#d1d5db; }
+.pos-ref-jus-pick .erp-picker__label.is-placeholder { color:#9ca3af; font-weight:500; }
+.pos-ref-jus-pick .erp-picker__trigger i { color:#9ca3af; font-size:12px; }
+.pos-sheet--ref .pos-ref-card--jus { flex:1 1 auto; min-height:140px; margin-top:12px; padding:0; border:1px solid rgba(229,231,235,.9); border-radius:12px; background:#fff; }
+.pos-ref-jus-head { flex:none; border-bottom:1px solid #f3f4f6; background:rgba(249,250,251,.8); padding:10px 14px; }
+.pos-sheet--ref .pos-ref-card--jus .pos-ref-jus-head h3 { margin:0; padding:0; border:0; color:#1f2937; font-size:12px; font-weight:700; line-height:16px; }
+.pos-ref-jus-body { display:flex; flex:1 1 0; min-height:0; flex-direction:column; overflow-y:auto; }
+.pos-ref-jus-empty { display:flex; flex:1; min-height:100px; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:16px; text-align:center; }
+.pos-ref-jus-empty strong { color:#374151; font-size:12px; font-weight:700; line-height:16px; }
+.pos-ref-jus-empty span { color:#9ca3af; font-size:11px; line-height:16.5px; }
+.pos-ref-jus-line { position:relative; border-bottom:1px solid #f3f4f6; padding:10px 14px; }
+.pos-ref-jus-line__top, .pos-ref-jus-line__bottom { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.pos-ref-jus-line__top strong { min-width:0; overflow:hidden; color:#1f2937; font-size:12px; font-weight:700; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
+.pos-ref-jus-line__top small { flex:none; color:#9ca3af; font-size:11px; }
+.pos-ref-jus-line__bottom { margin-top:6px; min-height:24px; }
+.pos-ref-jus-line__cost { color:#6b7280; font-size:12px; font-weight:700; }
+.pos-ref-jus-line__qty { display:flex; align-items:center; margin:0; }
+.pos-ref-jus-line__qty input { width:56px; height:22px; border:0; border-bottom:2px dashed #d1d5db; border-radius:0; background:transparent; padding:0; color:#374151; font-size:12px; font-weight:700; text-align:right; outline:0; }
+.pos-ref-jus-line__qty input:focus { border-bottom-color:#10b981; color:#065f46; }
+.pos-ref-jus-line__qty span { margin-left:4px; color:#9ca3af; font-size:11px; font-weight:500; }
+.pos-ref-jus-line .select2 { display:none !important; }
+.pos-ref-jus-line__qty input { -moz-appearance:textfield; appearance:textfield; box-shadow:none; }
+.pos-ref-jus-line__qty input::-webkit-outer-spin-button, .pos-ref-jus-line__qty input::-webkit-inner-spin-button { margin:0; -webkit-appearance:none; }
+/* Inline quantity / price editors (Jus recipe, Parcel composition): only the dashed underline marks focus, no outline box. */
+.pos-ref-jus-line__qty input:focus, .pos-ref-jus-line__qty input:focus-visible,
+.pos-ref-parcel-line__price input:focus, .pos-ref-parcel-line__price input:focus-visible,
+.pos-ref-parcel-line__qty input:focus, .pos-ref-parcel-line__qty input:focus-visible { outline:none !important; box-shadow:none !important; }
+
+/* Cart rows: swipe left to reveal "Hapus" (as in the Plan) instead of a trash icon beside the price. */
+.pos-cart-swipe { position:relative; overflow:hidden; background:#ef4444; border-bottom:1px solid #f1f3f5; user-select:none; }
+.pos-cart-swipe:last-child { border-bottom:0; }
+.pos-cart-swipe__remove { position:absolute; top:0; right:0; bottom:0; display:flex; width:68px; flex-direction:column; align-items:center; justify-content:center; border:0; background:#ef4444; color:#fff; font-size:16px; }
+.pos-cart-swipe__remove:hover { background:#dc2626; }
+.pos-cart-swipe__remove span { margin-top:2px; font-size:10px; font-weight:700; }
+.pos-cart-swipe .pos-cart-row { position:relative; z-index:1; border-bottom:0; background:#fff; transition:transform .2s ease-out; }
+.pos-cart-swipe .pos-cart-row.is-open { transform:translateX(-68px); }
+.pos-form--reference .pos-cart-swipe { margin-inline:-20px; }
+.pos-form--reference .pos-cart-swipe .pos-cart-row { padding:14px 20px; }
+.pos-form--reference .pos-cart-swipe .pos-cart-row:hover { background:#fff; }
+
+/* Pembayaran on phones: sizes, borders and type follow the Plan (400px). */
+@media (max-width:767px) {
+  .pos-form--reference .pos-card--pay { padding:16px; }
+  .pos-form--reference .pos-card--pay-main { display:flex; flex:1 1 auto; flex-direction:column; }
+  .pos-pay-customer { padding-bottom:16px; border-bottom-color:#f3f4f6; }
+  .pos-pay-customer__name { gap:6px; }
+  .pos-pay-customer__name strong { font-size:14px; font-weight:700; line-height:19px; }
+  .pos-pay-customer__name span { font-size:12px; }
+  .pos-pay-customer__address { margin:4px 0 0; font-size:12px; line-height:16.5px; }
+  .pos-pay-label { margin:0 0 6px; font-size:12px; font-weight:700; line-height:16px; letter-spacing:.05em; }
+  .pos-pay-customer + .pos-field { margin-top:16px; }
+  .pos-pay-readonly { min-height:44px; border-color:#e5e7eb; background:rgba(249,250,251,.7); font-size:12px; }
+  .pos-pay-readonly strong { font-size:12px; font-weight:600; }
+  .pos-pay-readonly span { color:#9ca3af; font-size:12px; font-weight:400; }
+  .pos-pay-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .pos-pay-head .pos-pay-label { margin:0; }
+  .pos-pay-head__add { border:0; background:transparent; padding:0; color:#0b595b; font-size:12px; font-weight:700; line-height:16px; }
+  .pos-pay-head__add:disabled { color:#9ca3af; cursor:not-allowed; }
+  .pos-pay-row { gap:10px; }
+  .pos-form--reference .pos-pay-method, .pos-pay-extra .form-select { min-height:40px; border-color:#e5e7eb; background-color:rgba(249,250,251,.7); font-size:12px; font-weight:600; }
+  .pos-pay-amount { min-height:40px; border-color:#e5e7eb; }
+  .pos-pay-amount > span { width:44px; justify-content:center; padding:0; color:#6b7280; font-size:12px; font-weight:700; }
+  .pos-pay-amount input { font-size:12px; font-weight:700; color:#1f2937; }
+  .pos-pay-split { margin:16px 0 12px; font-size:12px; font-weight:600; color:#4b5563; }
+  .pos-switch { width:44px; height:24px; }
+  .pos-switch span { top:2px; left:2px; }
+  .pos-switch.is-on span { transform:translateX(20px); }
+  .pos-pay-composition { display:flex; flex:1 1 auto; flex-direction:column; min-height:200px; border-color:rgba(229,231,235,.9); border-radius:12px; }
+  .pos-pay-composition h3 { margin:0; border-bottom:1px solid #f3f4f6; background:rgba(249,250,251,.8); padding:10px 14px; color:#1f2937; font-size:12px; font-weight:700; line-height:16px; }
+  .pos-pay-total { margin-top:auto; border-top-color:#f3f4f6; background:rgba(249,250,251,.8); padding:10px 14px; gap:2px 12px; }
+  .pos-pay-total > span { color:#6b7280; font-size:12px; font-weight:700; letter-spacing:.05em; line-height:16px; }
+  .pos-pay-total strong { color:#111827; font-size:12px; font-weight:700; line-height:16px; }
+  .pos-pay-status { font-size:12px; }
+  .pos-pay-date { margin-top:16px; }
+  .pos-pay-date .form-control { min-height:40px; border-color:#e5e7eb; font-size:12px; }
+}
+
+/* Pembayaran: status text and colours as in the Plan ("-" when exact, "Kembali Rp" teal, "Kurang Rp" amber). */
+.pos-pay-status.is-even { color:#9ca3af; font-weight:500; }
+.pos-pay-status.is-over { color:#0b595b; font-weight:700; }
+.pos-pay-status.is-short { color:#d97706; font-weight:700; }
+@media (max-width:767px) {
+  #pos-pay-method-title.pos-pay-label { color:#374151; }
+  .pos-pay-composition h3 { color:#1f2937; }
+  .pos-switch { background:#e5e7eb; }
+  .pos-switch.is-on { background:#0b595b; }
+}
+
+/* Pembayaran customer header: a link to the transaction (where the address is set) with a chevron, as in the Plan. */
+.pos-pay-customer.is-link { display:flex; align-items:center; gap:12px; color:inherit; text-decoration:none; }
+.pos-pay-customer__text { min-width:0; flex:1; }
+.pos-pay-customer__chevron { flex:none; color:#9ca3af; font-size:18px; }
+
+/* Pembayaran: courier is a dropdown (button with name, (type) and a caret). */
+.pos-pay-courier { width:100%; justify-content:space-between; cursor:pointer; text-align:left; }
+.pos-pay-courier:hover { border-color:#d1d5db; }
+.pos-pay-courier__text { display:flex; min-width:0; align-items:center; gap:6px; }
+.pos-pay-courier__text strong { overflow:hidden; font-size:12px; font-weight:600; color:#111827; text-overflow:ellipsis; white-space:nowrap; }
+.pos-pay-courier__text span { flex:none; color:#9ca3af; font-size:12px; font-weight:400; }
+.pos-pay-courier__text em { color:#111827; font-size:12px; font-style:normal; font-weight:600; }
+.pos-pay-courier__text em[hidden] { display:none; }
+.pos-pay-courier > i { flex:none; margin-left:8px; color:#9ca3af; font-size:14px; }
+
+/* Pembayaran: committed split lines (method + user on the left, amount + date on the right, trash), as in the Plan. */
+.pos-pay-lines { flex:1 1 0; min-height:0; overflow-y:auto; background:#fff; }
+.pos-pay-line { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; }
+.pos-pay-line + .pos-pay-line { border-top:1px solid #f3f4f6; }
+.pos-pay-line__main { display:flex; min-width:0; flex:1; flex-direction:column; }
+.pos-pay-line__main strong { overflow:hidden; color:#1f2937; font-size:12px; font-weight:700; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
+.pos-pay-line__main small, .pos-pay-line__amount small { margin-top:2px; color:#9ca3af; font-size:10px; font-weight:400; line-height:12px; }
+.pos-pay-line__side { display:flex; flex:none; align-items:center; gap:10px; }
+.pos-pay-line__amount { display:flex; flex-direction:column; align-items:flex-end; text-align:right; }
+.pos-pay-line__amount > div { display:flex; align-items:center; font-size:12px; font-weight:700; line-height:16px; }
+.pos-pay-line__amount span { margin-right:4px; color:#9ca3af; }
+.pos-pay-line__amount b { color:#1f2937; font-weight:700; }
+.pos-pay-line__remove { display:flex; width:24px; height:24px; align-items:center; justify-content:center; border:0; border-radius:8px; background:transparent; color:#9ca3af; font-size:12px; }
+.pos-pay-line__remove:hover { background:#fef2f2; color:#ef4444; }
+.pos-pay-swipe .pos-pay-line { position:relative; z-index:1; background:#fff; transition:transform .2s ease-out; user-select:none; }
+.pos-pay-swipe .pos-pay-line.is-open { transform:translateX(-68px); }
+.pos-pay-swipe .pos-pay-line + .pos-pay-line { border-top:0; }
+.pos-form--reference .pos-pay-swipe { margin-inline:0; }
+
+/* Pembayaran: method dropdown like the Plan (button with name + caret, floating rounded menu). */
+.pos-pay-select { position:relative; min-width:0; }
+.pos-pay-select__btn { display:flex; width:100%; min-height:40px; align-items:center; justify-content:space-between; gap:6px; border:1px solid #e5e7eb; border-radius:12px; background:rgba(249,250,251,.7); padding:0 14px; color:#111827; font-size:12px; font-weight:600; text-align:left; }
+.pos-pay-select__btn:hover, .pos-pay-select__btn.is-open { border-color:#d1d5db; background:#fff; }
+.pos-pay-select__btn:disabled { opacity:.6; cursor:not-allowed; }
+.pos-pay-select__btn span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pos-pay-select__btn span.is-placeholder { color:#9ca3af; font-weight:500; }
+.pos-pay-select__btn i { flex:none; color:#9ca3af; font-size:12px; transition:transform .2s; }
+.pos-pay-select__btn i.is-open { transform:rotate(180deg); color:#374151; }
+.pos-pay-select__menu { position:absolute; top:100%; left:0; z-index:50; width:100%; max-height:240px; margin-top:6px; padding:6px; overflow-y:auto; border:1px solid #f3f4f6; border-radius:16px; background:#fff; box-shadow:0 20px 25px -5px rgba(15,23,42,.12), 0 8px 10px -6px rgba(15,23,42,.08); }
+.pos-pay-select__option { display:block; width:100%; margin-bottom:2px; border:0; border-radius:12px; background:transparent; padding:10px 12px; color:#374151; font-size:12px; font-weight:500; text-align:left; }
+.pos-pay-select__option:hover { background:#f9fafb; }
+.pos-pay-select__option.is-selected { background:rgba(236,253,245,.6); color:#0b595b; font-weight:700; }
+.pos-pay-split.is-on label { color:#0b595b; font-weight:700; }
+.pos-pay-customer.is-locked { cursor:default; }
+.pos-pay-customer.is-locked .pos-pay-customer__address { color:#6b7280; }
+.pos-pay-customer__chevron[hidden] { display:none; }
+
+/* Pembayaran: the delivery address sits under Pilih Kurir (a link to the transaction, locked on Pick Up). */
+.pos-pay-address { display:flex; align-items:center; gap:12px; margin-top:14px; color:inherit; text-decoration:none; }
+.pos-pay-address .pos-pay-customer__address { min-width:0; flex:1; margin:0; font-size:12px; line-height:16.5px; }
+.pos-pay-address.is-locked { cursor:default; }
+.pos-pay-address.is-locked .pos-pay-customer__address { color:#6b7280; }
+
+/* Pembayaran: Pilih Kurir first, then the customer (name + delivery address) under a divider. */
+.pos-pay-who { margin-top:16px; border-top:1px solid #f3f4f6; padding-top:16px; }
+.pos-pay-who .pos-pay-customer { padding-bottom:0; border-bottom:0; }
+.pos-pay-who .pos-pay-address { margin-top:4px; }
+/* Empty name/type spans (Pick Up) must not take the flex gap, so "Pick Up" starts where a courier name starts. */
+.pos-pay-courier__text strong:empty, .pos-pay-courier__text span:empty { display:none; }
+/* Total Belanja row: tapping it opens the same sheet as the handle (Diskon Nota, Ongkos Kirim, rincian). */
+.pos-ref-total.is-toggle { cursor:pointer; }
+.pos-ref-total.is-toggle:focus-visible { outline:2px solid #0b595b; outline-offset:2px; border-radius:8px; }
+.pos-ref-money__field.is-readonly, .pos-ref-money__field.is-readonly .form-control { background:#f3f4f6; cursor:default; }
+.pos-nota-mobile { display:none; }
+@media (max-width:767px) {
+  .pos-nota-mobile { display:flex; }
+  .pos-nota-desktop { display:none; }
+}
+
+/* Total sheet (create form and Pembayaran): bar that lifts up over a dimmed, blurred page, as in the Plan. */
+.pos-fade-in { transition:opacity .2s ease-out; }
+.pos-fade-out { transition:opacity .15s ease-in; }
+.pos-fade-from { opacity:0; }
+.pos-fade-to { opacity:1; }
+.pos-ref-backdrop { z-index:35; background:rgba(0,0,0,.4); -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); }
+.pos-ref-footer { z-index:40; border-top-color:#e2e8f0; border-radius:0; box-shadow:0 -4px 24px rgba(0,0,0,.04); transition:border-radius .3s ease-out, box-shadow .3s ease-out; }
+.pos-ref-footer.is-open { max-height:85vh; overflow-y:auto; overscroll-behavior:contain; border-radius:24px 24px 0 0; box-shadow:0 -12px 40px rgba(0,0,0,.18); }
+@media (min-width:768px) { .pos-ref-footer { border-radius:0; } .pos-ref-footer.is-open { border-radius:24px 24px 0 0; } }
+/* x-collapse look without the plugin: the sheet grows from 0 to its height in 300ms. */
+.pos-collapse { display:grid; grid-template-rows:1fr; }
+.pos-collapse > * { min-height:0; overflow:hidden; }
+.pos-collapse-anim { transition:grid-template-rows .3s ease; }
+.pos-collapse-from { grid-template-rows:0fr; }
+.pos-collapse-to { grid-template-rows:1fr; }
+.pos-ref-sheet { max-height:none; overflow:hidden; padding:8px 0 14px; border-bottom:1px solid #f1f5f9; }
+.pos-ref-summary { border:1px solid rgba(226,232,240,.9); border-radius:16px; background:rgba(248,250,252,.9); padding:14px; }
+.pos-ref-summary__inputs { gap:10px; }
+.pos-ref-money { gap:4px; }
+.pos-ref-money__title { color:#334155; font-size:11px; font-weight:700; letter-spacing:.05em; }
+.pos-ref-money__field { min-height:40px; border:1px solid #e2e8f0; border-radius:12px; background:#fff; }
+.pos-ref-money__field > span { width:40px; justify-content:center; padding:0; border-right:1px solid #e2e8f0; background:#f8fafc; color:#475569; font-size:12px; font-weight:700; }
+.pos-ref-money__field .form-control { min-height:38px; padding:0 10px; background:transparent; color:#1e293b; font-size:12px; font-weight:700; text-align:left; }
+.pos-ref-money__field .form-control::placeholder { color:#cbd5e1; font-weight:700; }
+.pos-ref-money__field.is-readonly, .pos-ref-money__field.is-readonly .form-control { background:#fff; }
+.pos-ref-money__field.is-readonly > span { background:#f1f5f9; }
+.pos-ref-summary .pos-ref-lines { margin:12px 0 0; border-top:1px solid rgba(226,232,240,.8); padding-top:10px; }
+.pos-ref-summary .pos-ref-lines > div { padding:0; margin-top:6px; color:#475569; font-size:12px; }
+.pos-ref-summary .pos-ref-lines > div:first-child { margin-top:0; }
+.pos-ref-summary .pos-ref-lines dt { font-weight:400; }
+.pos-ref-summary .pos-ref-lines dd { color:#1e293b; font-weight:400; }
+.pos-ref-total { border-bottom-color:#f3f4f6; }
+.pos-ref-summary .pos-ref-lines > div { line-height:16px; }
+/* Padding lives inside the sheet (not on the grid item) so the collapse really reaches 0 height. */
+.pos-ref-sheet { padding:0; border-bottom:0; }
+.pos-ref-sheet > :first-child { margin-top:8px; }
+.pos-ref-sheet::after { content:""; display:block; height:14px; border-bottom:1px solid #f1f5f9; }
+
+/* Keep transaction fields available outside the compact total sheet. */
+.pos-extra-settings { border-bottom:1px solid #f1f3f5; padding:0 16px; }
+.pos-extra-settings > summary { padding:10px 0; color:#0b595b; cursor:pointer; font-size:12px; font-weight:700; }
+.pos-extra-settings .pos-ref-more { margin-top:0; }
+@media (max-width:767px) {
+  .pos-extra-settings { display:none; }
+  .pos-ref-total.is-toggle { -webkit-tap-highlight-color:transparent; user-select:none; }
+  /* Reserve the closed footer height while its sheet expands over the cart. */
+  .pos-form--reference > .pos-ref-root { display:block; position:relative; flex:none; height:calc(142px + env(safe-area-inset-bottom)); }
+  .pos-form--reference > .pos-ref-root > .pos-ref-footer { position:absolute; right:0; bottom:0; left:0; margin:0; }
+  .pos-form--reference > .pos-ref-root .pos-collapse-anim { transition:grid-template-rows 320ms cubic-bezier(.22,1,.36,1), opacity 220ms ease; }
+  .pos-form--reference > .pos-ref-root .pos-collapse-from { grid-template-rows:0fr; opacity:0; }
+  .pos-form--reference > .pos-ref-root .pos-collapse-to { grid-template-rows:1fr; opacity:1; }
+  .pos-ref-money__title.is-disabled { color:#94a3b8; }
+  .pos-ref-money__field.is-disabled { background:#f8fafc; cursor:not-allowed; }
+  .pos-ref-money__field.is-disabled > span { background:#f0f4f8; color:#94a3b8; }
+  .pos-ref-money__field.is-disabled .form-control { background:transparent; color:#94a3b8; cursor:not-allowed; }
+}
+@media (max-width:767px) and (prefers-reduced-motion:reduce) {
+  .pos-form--reference > .pos-ref-root .pos-collapse-anim { transition-duration:1ms; }
+  .pos-form--reference > .pos-ref-root .pos-ref-footer { transition-duration:1ms; }
+  .pos-form--reference > .pos-ref-root .pos-ref-backdrop { transition-duration:1ms; }
+}
+
+/* Kasir / POS: fields are static. No focus ring, tinted border or outline when a field is active (pages that load this sheet). */
+body.erp-ui:has(.pos-form, .pos-add-page, .pos-card--pay) {
+    --erp-active-border: #e5e7eb;
+    --erp-active-bg: #fff;
+    --erp-active-ring: 0 0 0 0 transparent;
+}
+body.erp-ui:has(.pos-form, .pos-add-page, .pos-card--pay) :is(input, select, textarea, .erp-picker__trigger, .pos-ref-parcel-trigger, .pos-pay-readonly):is(:focus, :focus-visible) { outline: 0; box-shadow: none; }
+body.erp-ui:has(.pos-form, .pos-add-page, .pos-card--pay) .pos-ref-search input:focus { background: #fff; box-shadow: none; }
+body.erp-ui:has(.pos-form, .pos-add-page, .pos-card--pay) :is(.pos-ref-parcel-line__price, .pos-ref-parcel-line__qty, .pos-ref-jus-line__qty) input:focus { border-bottom-color: #d1d5db; color: #374151; }
+
+.pos-cart-lock { margin-left:-2px; color:#d97706; font-size:14px; vertical-align:-1px; }
+.pos-ref-edit-title { display:block; padding:2px 0; color:#111827; font-size:14px; font-weight:700; }
+.pos-sheet-header--tabs > div { width:100%; min-width:0; }
+
+/* Jus: a chosen product shows its price and stock inside the field (as in the Plan). */
+.pos-ref-jus-pick .erp-picker__label--product { display:flex; flex:1; min-width:0; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; }
+.pos-ref-jus-pick .erp-picker__main { display:flex; min-width:0; flex-direction:column; gap:2px; }
+.pos-ref-jus-pick .erp-picker__main strong { overflow:hidden; color:#111827; font-size:12px; font-weight:700; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
+.pos-ref-jus-pick .erp-picker__main small { color:#9ca3af; font-size:11px; font-weight:400; line-height:14px; }
+.pos-ref-jus-pick .erp-picker__stock { flex:none; color:#6b7280; font-size:12px; font-weight:700; }
+.pos-ref-jus-head { display:flex; align-items:center; gap:6px; }
+.pos-ref-jus-head small { color:#9ca3af; font-size:10px; font-weight:500; }
+.pos-ref-jus-line__cost { display:flex; align-items:center; }
+.pos-ref-jus-line__cost em { margin-right:4px; color:#9ca3af; font-size:12px; font-style:normal; font-weight:700; }
+.pos-ref-jus-line__costval { display:block; width:56px; height:22px; border-bottom:2px dashed #d1d5db; color:#374151; font-size:12px; font-weight:700; line-height:20px; }
+
+/* Composition rows (Parcel and Jus) as in the Plan: 12px side padding, and the unit sits in a fixed 28px left-aligned slot so the top and bottom units line up. */
+.pos-ref-parcel-line__body, .pos-ref-jus-line { padding-left:12px; padding-right:12px; }
+.pos-ref-parcel-line__top small, .pos-ref-jus-line__top small { display:flex; align-items:center; }
+.pos-ref-parcel-line__qty span.pos-ref-line-unit, .pos-ref-jus-line__qty span.pos-ref-line-unit, .pos-ref-line-unit { display:inline-block; flex:none; width:28px; margin-left:4px; overflow:hidden; text-align:left; text-overflow:ellipsis; white-space:nowrap; color:#9ca3af; font-size:11px; font-weight:500; }
+.pos-ref-jus-pick .erp-picker__label--product { padding:9px 0; }
+
+/* Composition rows keep their height; the card body scrolls when there are more rows than fit (rows used to shrink and clip). */
+.pos-ref-parcel-line, .pos-ref-jus-line { flex:none; }
+.pos-ref-jus-body { overflow-y:auto; }
+
+/* The whole recipient block (name and address) opens Pilih Alamat; Ambil di toko locks it. */
+.pos-pay-who.is-link { cursor:pointer; }
+.pos-pay-who.is-link:has(.pos-pay-address.is-locked) { cursor:default; }
+
+/* Diskon Nota / Ongkos Kirim are locked once the transaction is on its way to payment: they look locked like the other read-only fields. */
+.pos-ref-money__field.is-readonly, .pos-ref-money__field.is-readonly .form-control { background:#f3f4f6; cursor:default; }
+.pos-ref-money__field.is-readonly > span { background:#eceff3; }
+
+.pos-ref-money__error { grid-column:1 / -1; margin:6px 0 0; color:#dc2626; font-size:11px; font-weight:600; }
+.pos-ref-money__field .form-control:disabled { opacity:.6; }
+/* Customer field: the + sits inside the box with no divider line beside it. */
+.pos-form--reference .pos-card--fields .pos-customer__add::before { content:none; }
+/* The + has no highlight shape at all (hover, press or focus): only the icon changes weight of colour. */
+.pos-form--reference .pos-customer .pos-customer__add:hover,
+.pos-form--reference .pos-customer .pos-customer__add:active,
+.pos-form--reference .pos-customer .pos-customer__add:focus,
+.pos-form--reference .pos-customer .pos-customer__add:focus-visible { background:transparent; box-shadow:none; outline:none; }
+.pos-form--reference .pos-customer .pos-customer__add:hover { color:#08484a; }
+/* Customer field: no dropdown chevron; a thin divider separates the name from the +. */
+.pos-form--reference .pos-card--fields .pos-customer .erp-picker__trigger > i { display:block; }
+.pos-form--reference .pos-card--fields .pos-customer__add::before { content:''; position:absolute; left:0; top:12px; width:1px; height:20px; background:#e5e7eb; }
+.pos-form--reference .pos-card--fields .pos-branch .erp-picker__trigger > i { display:block; }
+.pos-form--reference .pos-branch .pos-branch__note:disabled { color:#d1d5db; cursor:not-allowed; opacity:1; }

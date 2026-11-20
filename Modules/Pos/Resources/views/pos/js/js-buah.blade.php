@@ -99,6 +99,7 @@
             // Add Product
             showAddModal: false,
             showAddPage: false,
+            addEditRef: null, // {type:'product'|'jus', key} while the add page edits an existing cart item
             activeAddCategory: 'buah',
             // Reference "tambah item" list (only rendered when the form passes reference => true)
             productSearch: '',
@@ -117,7 +118,7 @@
                 discount: 0,
                 discountNominal: 0,
                 discountPercent: 0,
-                qty: 1
+                qty: ''
             },
 
             addParcel: {
@@ -238,6 +239,15 @@
                 // console.log('Discount Global set to:', this.diskonGlobal);
             },
 
+            // A parcel added with only a budget has no composition yet; it is marked in the list and blocks payment.
+            parcelNeedsComposition(item) {
+                if (!item || item.typeProduct !== 'parcel') return false;
+                const entry = this.parcel.find(p => p.id === item.id);
+                return !(entry && Array.isArray(entry.data) && entry.data.length > 0);
+            },
+            hasIncompleteParcel() {
+                return this.cart.some(item => this.parcelNeedsComposition(item));
+            },
             calculateUsedStock(productId, currentParcelItems = null, currentParcelQty = 1) {
                 let used = 0;
                 const mainApp = window.mainCartInstance || this;
@@ -406,8 +416,114 @@
                     });
             },
 
+            // Edit Buah & Olahan / Edit Jus on the reference add page: the same page as Tambah, prefilled, tabs locked, "Simpan".
+            editAddPageDiscountInput(item) {
+                const percent = Number(item.discountPercent || 0);
+                if (percent > 0) return percent;
+                const qty = parseFloat(item.qty) || 0;
+                const discount = Number(item.discount || 0);
+                return qty >= 1 ? Math.round(discount / qty) : discount;
+            },
+            fillAddProductFromItem(item, stockAvailable) {
+                const total = (item.total_input !== undefined && item.total_input !== null)
+                    ? Number(item.total_input) : ((item.qty * item.price) - Number(item.discount || 0));
+                this.addProduct = {
+                    id: item.id,
+                    name: item.name,
+                    unit: item.unit,
+                    price: item.price,
+                    hpp: item.hpp || 0,
+                    discount: Number(item.discount || 0),
+                    discountNominal: this.editAddPageDiscountInput(item),
+                    discountPercent: Number(item.discountPercent || 0),
+                    qty: item.qty,
+                    total: total,
+                    formattedAddTotalInput: this.formatRupiah(total),
+                    stock_available: stockAvailable,
+                    original_stock: item.original_stock,
+                    parent_id: item.parent_id,
+                };
+            },
+            async openEditProductPage(item) {
+                this.addEditRef = {type: 'product', key: item.key};
+                const used = this.calculateUsedStock(item.id) - (parseFloat(item.qty) || 0);
+                this.fillAddProductFromItem(item, (item.original_stock ?? 0) - used);
+                this.showAddPage = true;
+                this.activeAddCategory = 'buah';
+                // Items loaded from a saved draft carry no stock figure: fetch the live stock so the check below is not run against 0.
+                if (item.original_stock === undefined || item.original_stock === null) {
+                    try {
+                        const query = PosAddItem.listQuery({term: item.name, branch: $('#branch_id').val()});
+                        const response = await fetch('/ajax/listProduct?' + new URLSearchParams(query), {headers: {Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest'}});
+                        const rows = response.ok ? await response.json() : [];
+                        const row = rows.find(r => String(r.id) === String(item.id));
+                        if (row && this.addEditRef && this.addEditRef.key === item.key) {
+                            const stock = parseFloat(row.get_stock?.stock_available ?? 0) || 0;
+                            window.productStockMap = window.productStockMap || {};
+                            window.productStockMap[row.id] = row.parent_product ? row.parent_product.parent_id : row.id;
+                            this.addProduct.original_stock = stock;
+                            this.addProduct.stock_available = stock - (this.calculateUsedStock(item.id) - (parseFloat(item.qty) || 0));
+                            if (this.addProduct.parent_id === undefined || this.addProduct.parent_id === null) this.addProduct.parent_id = window.productStockMap[row.id];
+                        }
+                    } catch (error) { /* the check then falls back to what the page knows */ }
+                }
+                this.productSearch = '';
+                this.loadProductList();
+            },
+            async openEditJusPage(item) {
+                this.addEditRef = {type: 'jus', key: item.id};
+                this.openJusModal();
+                const jusRow = this.jus.find(j => j.id === item.id);
+                const productId = jusRow?.productId ?? String(item.id).replace(/^jus(\d+)_.*$/, '$1');
+                let data = null;
+                try {
+                    const query = new URLSearchParams({term: item.name, jenis: 'receipt', branch: $('#branch_id').val() || '', limit: 20});
+                    const response = await fetch('/ajax/listProduct?' + query, {headers: {Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest'}});
+                    const rows = response.ok ? await response.json() : [];
+                    const row = rows.find(r => String(r.id) === String(productId));
+                    if (row) {
+                        window.productStockMap = window.productStockMap || {};
+                        window.productStockMap[row.id] = row.parent_product ? row.parent_product.parent_id : row.id;
+                        data = {
+                            id: row.id, text: row.name, unit: row.unit, price: row.price, hpp: row.hpp,
+                            receipt: row.product_receipt,
+                            stock_available: (row.get_stock?.stock_available ?? 0),
+                            original_stock: row.get_stock?.stock_available ?? 0,
+                            parent_id: row.parent_product ? row.parent_product.parent_id : row.id,
+                        };
+                    }
+                } catch (error) { /* falls back to the saved item below */ }
+                setTimeout(() => {
+                    if (data) {
+                        const $select = $('#select_jus');
+                        const option = new Option(data.text, data.id, true, true);
+                        $(option).data('data', data);
+                        $select.empty().append(option);
+                        $select.trigger('change');
+                        $select.trigger({type: 'select2:select', params: {data}});
+                    } else {
+                        this.fillAddProductFromItem(item, item.original_stock ?? 0);
+                    }
+                    // Saved quantities win over the recipe defaults.
+                    const saved = item.data || {};
+                    (saved.products || []).forEach((pid, i) => {
+                        const $row = $("select[name='receipt_product_id[]']").filter(function () { return String($(this).data('selected-id')) === String(pid); }).closest('.receipt-row');
+                        const $qty = $row.find("input[name='receipt_qty[]']");
+                        if ($qty.length && saved.productsQty && saved.productsQty[i] !== undefined) $qty.val(saved.productsQty[i]);
+                    });
+                    const total = (item.total_input !== undefined && item.total_input !== null) ? Number(item.total_input) : (item.qty * item.price);
+                    this.addProduct.qty = item.qty;
+                    this.addProduct.discount = Number(item.discount || 0);
+                    this.addProduct.discountPercent = Number(item.discountPercent || 0);
+                    this.addProduct.discountNominal = this.editAddPageDiscountInput(item);
+                    this.addProduct.total = total;
+                    this.addProduct.formattedAddTotalInput = this.formatRupiah(total);
+                }, 150);
+            },
+
             // Edit Product Section
             openEditModal(item) {
+                if (this.isReferenceAddPage()) { this.openEditProductPage(item); return; }
                 console.log('Opening edit modal for item:', item);
                 this.editItem = {
                     ...item
@@ -660,6 +776,7 @@
             },
 
             openEditJusModal(item) {
+                if (this.isReferenceAddPage()) { this.openEditJusPage(item); return; }
                 console.log('Opening edit jus modal for item:', item);
                 this.editItem = { ...item };
                 this.editProduct = item;
@@ -920,8 +1037,10 @@
 
             // Searchable picker for the sheets that list products from /ajax/listProduct. The select2 above stays the
             // source of truth: the picker returns the same data object, so the select2:select handlers and the stock rules apply.
-            attachListProductPicker({ selector, title, params, zeroLabel }) {
+            attachListProductPicker({ selector, title, params, zeroLabel, searchPlaceholder, triggerPlaceholder, productRows, onlyJus }) {
                 const mapItem = item => {
+                    // Jus sheet: only juice products (category Jus & Smoothie, or named Jus), not salad / rujak / buah potong.
+                    if (onlyJus && !(/jus|smoothie/i.test(item.category?.name || '') || /^jus\b/i.test(item.name || ''))) return null;
                     window.productStockMap = window.productStockMap || {};
                     window.productStockMap[item.id] = item.parent_product ? item.parent_product.parent_id : item.id;
                     let qtyInCart = 0;
@@ -934,10 +1053,15 @@
                         }
                     }
                     const stock_available = (item.get_stock?.stock_available ?? 0) - qtyInCart;
+                    const unitLabel = item.unit && (item.unit.abbreviation || item.unit.name || item.unit) || '';
+                    const stockRounded = String(Math.round(stock_available * 100) / 100).replace('.', ',');
                     return {
                         id: item.id,
                         text: item.name,
-                        meta: stock_available > 0 ? 'Stok: ' + stock_available : zeroLabel,
+                        meta: productRows
+                            ? 'Rp ' + Number(item.price || 0).toLocaleString('id-ID') + (unitLabel ? ' / ' + unitLabel : '')
+                            : (stock_available > 0 ? 'Stok: ' + stock_available : zeroLabel),
+                        aside: productRows ? ((stock_available > 0 ? stockRounded : '0') + (unitLabel ? ' ' + unitLabel : '')) : undefined,
                         data: {
                             id: item.id,
                             text: item.name,
@@ -953,9 +1077,12 @@
                 };
                 ErpPicker.attach(selector, {
                     title: title,
-                    placeholder: 'Cari nama produk...',
-                    placeholderTrigger: 'Pilih produk',
-                    emptyText: 'Produk tidak ditemukan',
+                    placeholder: searchPlaceholder || 'Cari nama produk...',
+                    placeholderTrigger: triggerPlaceholder || 'Pilih produk',
+                    emptyText: productRows ? 'Produk jus tidak ditemukan' : 'Produk tidak ditemukan',
+                    variant: productRows ? 'product' : undefined,
+                    inlineSearch: productRows ? true : undefined,
+                    maxHeight: productRows ? 288 : undefined,
                     url: '/ajax/listProduct',
                     searchParam: 'term',
                     params: params,
@@ -984,6 +1111,8 @@
             },
             openAddModal() {
                 if (this.isReferenceAddPage()) {
+                    // A fresh "+ Tambah": no product, quantity, discount or search left over from the last item.
+                    if (!this.showAddPage) this.resetAddForm();
                     this.showAddPage = true;
                     this.activeAddCategory = 'buah';
                     this.productSearch = '';
@@ -1096,6 +1225,7 @@
                 this.addProduct.stock_available = data.stock_available ?? 0;
                 this.addProduct.original_stock = data.original_stock ?? 0;
                 this.addProduct.parent_id = data.parent_id ?? data.id;
+                if (!(parseFloat(this.addProduct.qty) > 0)) this.addProduct.qty = 1;
                 subtotal = this.addProduct.qty * this.addProduct.price;
                 // skip formatRupiah undefined, let updateAddTotalFromQty handle it
                 this.updateAddTotalFromQty();
@@ -1117,7 +1247,11 @@
                     data.forEach(item => {
                         window.productStockMap[item.id] = item.parent_product ? item.parent_product.parent_id : item.id;
                     });
-                    this.productList = data.map(PosAddItem.mapProductRow);
+                    this.productList = data.map(PosAddItem.mapProductRow).sort((a, b) => {
+                        const aHas = this.rowStock(a) > 0 ? 0 : 1;
+                        const bHas = this.rowStock(b) > 0 ? 0 : 1;
+                        return aHas - bHas || String(a.text).localeCompare(String(b.text), 'id', {sensitivity: 'base'});
+                    });
                     this.productListState = 'ready';
                 } catch (error) {
                     if (!this.productListGuard.isCurrent(ticket)) return;
@@ -1138,6 +1272,7 @@
                 this.applyPickedProduct({...row, stock_available: stock});
             },
             closeAddModal() {
+                this.addEditRef = null;
                 const referenceAddPage = this.isReferenceAddPage();
                 this.showAddModal = false;
                 if (referenceAddPage) {
@@ -1157,12 +1292,15 @@
                     discount: 0,
                     discountNominal: 0,
                     discountPercent: 0,
-                    qty: 1,
+                    qty: '',
                     formattedAddTotalInput: this.formatRupiah(0)
                 };
                 $('#select_product').val(null).trigger('change');
             },
             updateAddTotalFromQty() {
+                // The field starts empty (placeholder 0); typing 1 must give 1, never 01.
+                const rawQty = String(this.addProduct.qty ?? '');
+                if (/^0\d/.test(rawQty)) this.addProduct.qty = rawQty.replace(/^0+(?=\d)/, '');
                 const qty = parseFloat(this.addProduct.qty) || 0;
                 const price = parseFloat(this.addProduct.price) || 0;
                 const input = parseFloat(this.addProduct.discountNominal || 0);
@@ -1311,6 +1449,26 @@
 
                 const discount = Number(this.addProduct.discount || 0);
                 const total_input = this.addProduct.total;
+                if (this.addEditRef && this.addEditRef.type === 'product') {
+                    const editIdx = this.cart.findIndex(i => i.key === this.addEditRef.key);
+                    if (editIdx !== -1) {
+                        Object.assign(this.cart[editIdx], {
+                            id: this.addProduct.id,
+                            name: this.addProduct.name,
+                            price: this.addProduct.price,
+                            hpp: this.addProduct.hpp,
+                            qty: this.addProduct.qty,
+                            unit: this.addProduct.unit,
+                            discount: discount,
+                            discountPercent: this.addProduct.discountPercent,
+                            total_input: total_input,
+                            original_stock: this.addProduct.original_stock,
+                            parent_id: this.addProduct.parent_id,
+                        });
+                    }
+                    this.closeAddModal();
+                    return;
+                }
                 const key = Date.now() + Math.floor(Math.random() * 1000);
 
                 this.cart.push({
@@ -1331,6 +1489,10 @@
 
                 // console.log('cart', this.cart);
                 this.resetAddForm();
+                if (this.isReferenceAddPage()) {
+                    this.productSearch = '';
+                    this.loadProductList();
+                }
             },
 
             resetAddForm() {
@@ -1341,7 +1503,10 @@
                     price: 0,
                     hpp: 0,
                     discount: 0,
-                    qty: 1
+                    discountNominal: 0,
+                    discountPercent: 0,
+                    qty: '',
+                    formattedAddTotalInput: this.formatRupiah(0)
                 };
                 // Reset Select2 input juga
                 $('#select_product').val(null).trigger('change');
@@ -2337,16 +2502,12 @@
                 const modal = referenceAddPage ? null : bootstrap.Modal.getInstance(document.getElementById('parcelModal'));
                 if (modal) modal.hide();
                 
-                let parcelFormNodes = document.querySelectorAll('[x-data="parcelForm()"]');
-                parcelFormNodes.forEach(node => {
-                    if (node.id === 'parcelModal' && node.__x) {
-                        let instance = node.__x.$data;
-                        instance.parcels = [];
-                        instance.totalAll = 0;
-                        instance.qtyParcel = 1;
-                        instance.budgetParcel = '';
-                    }
-                });
+                // Alpine 3 has no node.__x: read the component state through Alpine.$data.
+                const parcelNode = document.getElementById('parcelModal');
+                if (parcelNode && window.Alpine) {
+                    const instance = Alpine.$data(parcelNode);
+                    if (instance && typeof instance.resetForm === 'function') instance.resetForm();
+                }
                 
                 const budgetInput = document.getElementById('parcel_budget');
                 const quantityInput = document.getElementById('parcel_qty');
@@ -2400,7 +2561,51 @@
                 this.removeParcel(index);
             },
 
+            // Edit Parcel on the reference add page (same form as Tambah Parcel, button "Simpan").
+            openEditParcelPage(item) {
+                const selectedParcel = this.parcel.find(i => i.id === item.id) || null;
+                const parcelData = Array.isArray(selectedParcel?.data) ? selectedParcel.data : [];
+                this.editItem = {...item};
+                this.openParcelModal();
+                setTimeout(() => {
+                    const node = document.getElementById('parcelModal');
+                    const form = node && window.Alpine ? Alpine.$data(node) : null;
+                    if (!form) return;
+                    form.resetForm();
+                    form.editId = item.id;
+                    form.setParcelId(item.id);
+                    parcelData.forEach(row => {
+                        form.setParcel({
+                            product: row.product,
+                            name: row.name,
+                            unit: row.unit?.abbreviation ?? row.unit?.name ?? row.unit ?? '',
+                            displayName: row.displayName ?? '',
+                            priceAwal: row.priceAwal ?? row.price,
+                            qty: row.qty || 1,
+                            price: row.price,
+                            priceFormatted: this.formatRupiah(row.price),
+                            hpp: row.hpp || 0,
+                            original_stock: row.original_stock || 0,
+                            stock_available: row.stock_available || 0
+                        });
+                    });
+                    $('#parcel_budget').val(this.formatRupiah(selectedParcel?.budget ?? item.price ?? 0));
+                    $('#parcel_qty').val(selectedParcel?.qty ?? item.qty ?? 1);
+                    const editFee = selectedParcel?.fee ?? item.fee ?? 0;
+                    $('#parcel_jasa').val(editFee ? this.formatRupiah(editFee) : '');
+                    $('#kemasan_price').val(selectedParcel?.kemasanPrice ?? item.kemasanPrice ?? 0);
+                    const kemasanId = selectedParcel?.kemasanId ?? item.kemasanId ?? null;
+                    const kemasanName = selectedParcel?.kemasan ?? selectedParcel?.kemasanName ?? item.kemasanName ?? null;
+                    if (kemasanId) {
+                        $('#select_kemasan').empty().append(new Option(kemasanName, kemasanId, true, true));
+                        form.kemasanName = (typeof defaultKemasanName !== 'undefined' && kemasanName === defaultKemasanName) ? '' : (kemasanName || '');
+                    }
+                    form.updateTotal();
+                }, 80);
+            },
+
             openEditParcelModal(item) {
+                if (this.isReferenceAddPage()) { this.openEditParcelPage(item); return; }
                 console.log('Opening edit parcel for item:', item);
                 this.editItem = {
                     ...item
@@ -2941,6 +3146,7 @@
                         this.addProduct.formattedAddTotalInput = this.formatRupiah(this.addProduct
                             .total);
                         this.addProduct.receipt = data.receipt;
+                        if (!(parseFloat(this.addProduct.qty) > 0)) this.addProduct.qty = 1;
                         this.updateAddTotalFromQty();
                         this.loadReceipt(data.receipt);
                     });
@@ -2948,6 +3154,10 @@
                         selector: '#select_jus',
                         title: 'Pilih Jus',
                         zeroLabel: 'Stok 0, produksi otomatis',
+                        searchPlaceholder: 'Cari nama jus...',
+                        triggerPlaceholder: 'Pilih produk jus...',
+                        productRows: true,
+                        onlyJus: true,
                         params: () => ({ jenis: 'receipt', branch: $('#branch_id').val(), limit: 10 })
                     });
                 }, 0);
@@ -2959,7 +3169,32 @@
                 const container = $('#receiptContainer');
                 container.empty(); // bersihkan biar ga dobel
 
-                if (data && data.length > 0) {
+                const referenceRows = $('#jusModal').hasClass('pos-add-page');
+                if (data && data.length > 0 && referenceRows) {
+                    const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+                    data.forEach(item => {
+                        const ing = item.ingredients;
+                        if (!ing) return;
+                        const originalStock = ing.get_stock ? ing.get_stock.stock_available : 0;
+                        const unit = (ing.unit && (ing.unit.abbreviation || ing.unit.name)) || (ing.get_stock && ing.get_stock.unit) || '';
+                        const qty = item.quantity ?? 1;
+                        const cost = Math.round(Number(ing.hpp || ing.price || 0));
+                        window.productStockMap = window.productStockMap || {};
+                        window.productStockMap[ing.id] = ing.parent_product ? ing.parent_product.parent_id : ing.id;
+                        container.append(`
+                        <div class="pos-ref-jus-line receipt-row">
+                            <div class="pos-ref-jus-line__top">
+                                <strong>${esc(ing.name)}</strong>
+                                <small><span>Rp ${cost.toLocaleString('id-ID')} /</span><span class="pos-ref-line-unit">${esc(unit)}</span></small>
+                            </div>
+                            <div class="pos-ref-jus-line__bottom">
+                                <span class="pos-ref-jus-line__cost"><em>Rp</em><span class="pos-ref-jus-line__costval">${Math.round(cost * Number(qty)).toLocaleString('id-ID')}</span></span>
+                                <label class="pos-ref-jus-line__qty"><input type="number" step="any" name="receipt_qty[]" value="${esc(qty)}" aria-label="Kuantitas ${esc(ing.name)}"><span class="pos-ref-line-unit">${esc(unit)}</span></label>
+                            </div>
+                            <select name="receipt_product_id[]" class="receipt-select" hidden data-selected-id="${ing.id}" data-selected-text="${esc(ing.name)}" data-original-stock="${originalStock}"></select>
+                        </div>`);
+                    });
+                } else if (data && data.length > 0) {
                     data.forEach(item => {
                         let originalStock = item.ingredients.get_stock ? item.ingredients.get_stock.stock_available : 0;
                         window.productStockMap = window.productStockMap || {};
@@ -2996,6 +3231,8 @@
                         `;
                     container.append(row);
                 }
+
+                $('#pos-jus-count').text(container.find('.receipt-row').length && referenceRows && data && data.length ? '(' + data.length + ' Komponen)' : '');
 
                 // aktifkan select2 di semua select yang baru dibuat
                 container.find('.receipt-select').each(function() {
@@ -3155,7 +3392,12 @@
 
                         const qtyNeed = parseFloat($("input[name='receipt_qty[]']").eq(index).val()) || 0;
                         const totalQtyNeed = qtyNeed * (parseFloat(this.addProduct.qty) || 1);
-                        const totalUsed = this.calculateUsedStock(productId);
+                        let totalUsed = this.calculateUsedStock(productId);
+                        const editingItem = this.addEditRef && this.addEditRef.type === 'jus' ? this.cart.find(i => i.id === this.addEditRef.key) : null;
+                        if (editingItem && editingItem.data && editingItem.data.products) {
+                            const oldIdx = editingItem.data.products.findIndex(p => p == productId);
+                            if (oldIdx !== -1) totalUsed -= (parseFloat(editingItem.data.productsQty[oldIdx]) || 0) * (parseFloat(editingItem.qty) || 0);
+                        }
 
                         if ((totalUsed + totalQtyNeed) > originalStock) {
                             stockErrors.push(`- ${productName} (Dibutuhkan: ${totalQtyNeed}, Sisa stok: ${Math.round((originalStock - totalUsed) * 100) / 100} [DEBUG: OS=${originalStock}, TU=${totalUsed}, QN=${qtyNeed}])`);
@@ -3168,6 +3410,45 @@
                             title: 'Stok Bahan Tidak Mencukupi',
                             html: 'Beberapa bahan untuk jus ini tidak mencukupi:<br>' + stockErrors.join('<br>'),
                         });
+                        return;
+                    }
+
+                    if (this.addEditRef && this.addEditRef.type === 'jus') {
+                        const editIdx = this.cart.findIndex(i => i.id === this.addEditRef.key);
+                        if (editIdx !== -1) {
+                            Object.assign(this.cart[editIdx], {
+                                name: this.addProduct.name || '',
+                                price: this.addProduct.price || 0,
+                                hpp: this.addProduct.hpp || 0,
+                                qty: this.addProduct.qty || 1,
+                                unit: this.addProduct.unit || '',
+                                discount: discount,
+                                discountPercent: this.addProduct.discountPercent || 0,
+                                total_input: total_input,
+                                data: {
+                                    products: receiptProducts,
+                                    productsQty: receiptProductsQty,
+                                    productsText: receiptProductsText,
+                                    productsOriginalStock: receiptProductsOriginalStock
+                                },
+                            });
+                            const jusEdit = this.jus.findIndex(i => i.id === this.addEditRef.key);
+                            if (jusEdit !== -1) {
+                                Object.assign(this.jus[jusEdit], {
+                                    productId: this.addProduct.id,
+                                    price: this.addProduct.price || 0,
+                                    hpp: this.addProduct.hpp || 0,
+                                    qty: this.addProduct.qty || 1,
+                                    unit: this.addProduct.unit || '',
+                                    discount: discount,
+                                    discountPercent: this.addProduct.discountPercent || 0,
+                                    total_input: total_input,
+                                    product_receipt_id: [...receiptProducts],
+                                    product_receipt_qty: [...receiptProductsQty],
+                                });
+                            }
+                        }
+                        this.closeJusModal();
                         return;
                     }
 
@@ -3210,6 +3491,7 @@
                     container.empty(); // bersihkan biar ga dobel
                     $('#select_jus').val(null).trigger('change');
                     this.resetAddForm();
+                    $('#pos-jus-count').text('');
                 } catch (e) {
                     console.error("SAVE JUS ERROR:", e);
                     Swal.fire({
@@ -3220,6 +3502,7 @@
                 }
             },
             closeJusModal() {
+                this.addEditRef = null;
                 const referenceAddPage = this.isReferenceAddPage();
                 this.showJusModal = false;
                 if (referenceAddPage) {
@@ -3238,12 +3521,13 @@
                     discount: 0,
                     discountNominal: 0,
                     discountPercent: 0,
-                    qty: 1,
+                    qty: '',
                     formattedAddTotalInput: this.formatRupiah(0)
                 };
                 $('#select_jus').val(null).trigger('change');
                 const container = $('#receiptContainer');
                 container.empty();
+                $('#pos-jus-count').text('');
             },
         }
     }

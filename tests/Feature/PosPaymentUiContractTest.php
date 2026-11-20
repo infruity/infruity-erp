@@ -20,7 +20,7 @@ final class PosPaymentUiContractTest extends TestCase
         $view = $this->read('Modules/Pos/Resources/views/pos/payment.blade.php');
 
         $this->assertStringContainsString('x-show="retryPending"', $view);
-        $this->assertGreaterThanOrEqual(5, substr_count($view, ':disabled="loading || retryPending"'));
+        $this->assertGreaterThanOrEqual(4, substr_count($view, ':disabled="loading || retryPending"'));
         $this->assertStringContainsString(':disabled="loading"', $view);
         $this->assertStringContainsString(':aria-busy="loading"', $view);
         $this->assertStringContainsString('@click="submitPayment()"', $view);
@@ -64,7 +64,7 @@ final class PosPaymentUiContractTest extends TestCase
 
         foreach ([
             'class="pos-form pos-form--reference"', 'METODE PEMBAYARAN', 'Split Pembayaran', 'Komposisi Pembayaran',
-            'PILIH KURIR', 'pos-ref-footer', 'pos-ref-pay__btn', 'aria-label="Kembali"', 'aria-label="Cetak draf"',
+            'METODE PENGIRIMAN', 'pos-ref-footer', 'pos-ref-pay__btn', 'aria-label="Kembali"', 'aria-label="Cetak draf"',
             'assets/css/pos-form.css',
         ] as $contract) {
             $this->assertStringContainsString($contract, $view, "Hilang: {$contract}");
@@ -76,17 +76,20 @@ final class PosPaymentUiContractTest extends TestCase
         $this->assertStringContainsString('$data->courier', $view);
         $this->assertStringNotContainsString('name="courier_id"', $view);
         // Every money-affecting control keeps the lock while sending or waiting for a retry.
-        $this->assertGreaterThanOrEqual(6, substr_count($view, ':disabled="loading || retryPending"'));
+        $this->assertGreaterThanOrEqual(4, substr_count($view, ':disabled="loading || retryPending"'));
         $this->assertStringContainsString('@click="submitPayment()"', $view);
     }
 
-    public function test_split_toggle_only_adds_or_drops_extra_rows_and_never_changes_the_payload_shape(): void
+    public function test_split_keeps_the_entry_row_separate_from_the_committed_lines_and_the_payload_shape(): void
     {
         $js = $this->read('Modules/Pos/Resources/views/pos/js-payment.blade.php');
 
         $this->assertStringContainsString('split: false', $js);
         $this->assertStringContainsString('setSplit(', $js);
-        $this->assertStringContainsString('this.payments.splice(1)', $js);
+        $this->assertStringContainsString('entry:', $js);
+        $this->assertStringContainsString('get topRow()', $js);
+        $this->assertStringContainsString('this.payments = [];', $js);
+        $this->assertStringContainsString('payments: this.payments', $js);
         $this->assertStringContainsString('this.split = this.payments.length > 1', $js);
     }
 

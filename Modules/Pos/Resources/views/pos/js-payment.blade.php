@@ -60,12 +60,76 @@
                 totalDue: {{ floor($data->total - $data->paid >= ($voucher ?? 0) ? $data->total - $data->paid - $voucher : $data->total - $data->paid) }}, // Ganti dengan nilai dari data.total misalnya dari backend
                 totalPayment: {{ floor($data->total - $data->paid) }},
                 paymentDifference: 0,
+                // Diskon Nota / Ongkos Kirim typed on this page: every figure follows the typing at once, the save runs on change.
+                itemsSubtotal: {{ (float) $itemsSubtotal }},
+                paidAmount: {{ (float) ($data->paid ?? 0) }},
+                voucherAmount: {{ (float) $voucher }},
+                shippingDiscountValue: {{ (float) $shippingDiscountValue }},
+                savedDiscount: {{ (int) $discountValue }},
+                savedOngkir: {{ (int) $data->ongkir }},
+                discountInput: {!! json_encode($discountValue > 0 ? number_format($discountValue, 0, ',', '.') : '') !!},
+                ongkirInput: {!! json_encode((float) $data->ongkir > 0 ? number_format((float) $data->ongkir, 0, ',', '.') : '') !!},
+                totalsSaving: false,
+                totalsError: '',
+                digitsOf(value) { return parseInt(String(value || '').replace(/\D/g, ''), 10) || 0; },
+                fmtDigits(value) { const n = this.digitsOf(value); return n ? n.toLocaleString('id-ID') : ''; },
+                pctAmount(value, base) { return value > 0 && value <= 100 ? base * value / 100 : value; },
+                get discountPrefix() { const n = this.digitsOf(this.discountInput); return n > 0 && n <= 100 ? '%' : 'Rp'; },
+                get liveDiscountValue() { return this.digitsOf(this.discountInput); },
+                get liveDiscountAmount() { return this.pctAmount(this.liveDiscountValue, this.itemsSubtotal); },
+                get liveOngkir() { return this.digitsOf(this.ongkirInput); },
+                get liveShippingNet() { return Math.max(0, this.liveOngkir - this.pctAmount(this.shippingDiscountValue, this.liveOngkir)); },
+                get liveTotal() { return Math.max(0, this.itemsSubtotal - this.liveDiscountAmount + this.liveShippingNet); },
+                get liveDue() { return Math.floor(this.liveTotal - this.paidAmount); },
+                get liveDiscountLabel() {
+                    return 'Diskon Transaksi' + (this.liveDiscountValue > 0 && this.liveDiscountValue <= 100 ? ' (' + this.liveDiscountValue + '%)' : '');
+                },
+                get liveDiscountText() { return 'Rp ' + this.formatRupiah(Math.round(this.liveDiscountAmount)); },
+                get liveShippingText() { return 'Rp ' + this.formatRupiah(Math.round(this.liveShippingNet)); },
+                get totalsMessage() {
+                    if (this.liveDiscountAmount > this.itemsSubtotal) return 'Diskon nota tidak boleh melebihi subtotal item.';
+                    return this.totalsError;
+                },
+                async saveTotals() {
+                    const discount = this.liveDiscountValue;
+                    const ongkir = this.liveOngkir;
+                    if (discount === this.savedDiscount && ongkir === this.savedOngkir) { this.totalsError = ''; return; }
+                    if (this.liveDiscountAmount > this.itemsSubtotal) return;
+                    this.totalsSaving = true;
+                    this.totalsError = '';
+                    try {
+                        const response = await fetch({!! json_encode(route('pos.updateTotals', $data->id)) !!}, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': {!! json_encode(csrf_token()) !!}},
+                            body: JSON.stringify({discount, ongkir}),
+                        });
+                        const json = await response.json().catch(() => ({}));
+                        if (!response.ok) {
+                            this.totalsError = json.message || Object.values(json.errors || {}).flat()[0] || 'Gagal menyimpan diskon dan ongkos kirim.';
+                        } else {
+                            this.savedDiscount = discount;
+                            this.savedOngkir = ongkir;
+                        }
+                    } catch (error) {
+                        this.totalsError = 'Gagal menyimpan diskon dan ongkos kirim.';
+                    }
+                    this.totalsSaving = false;
+                },
                 loading: false,
                 paymentMethods: [],
                 paymentAttempt: null,
                 retryPending: false,
 
                 async init() {
+                    // The amount due follows Diskon Nota / Ongkos Kirim; a single payment row keeps matching it.
+                    this.$watch('liveDue', (due) => {
+                        const voucher = this.voucherAmount;
+                        this.totalDue = due >= voucher ? due - voucher : due;
+                        if (this.payments.length === 1 && !this.split) {
+                            this.payments[0].amount = this.totalDue;
+                            this.formatAmount(0);
+                        }
+                    });
                     this.paymentAttempt = createPaymentAttempt({
                         storage: window.sessionStorage,
                         storageKey: 'infruity-payment-{{ auth()->id() }}-{{ $data->id }}',
@@ -91,24 +155,69 @@
                         this.payments[0].amount = this.totalDue;
                     }
 
+                    // Like the reference: the first row starts on Tunai (cash) when that method exists.
+                    if (this.payments.length > 0 && !this.payments[0].payment_id) {
+                        const cash = this.paymentMethods.find(m => /^(tunai|cash)$/i.test(String(m.name).trim()));
+                        if (cash) {
+                            this.payments[0].payment_id = cash.id;
+                            this.payments[0].payment_name = cash.name;
+                        }
+                    }
+
                     if (this.paymentAttempt.pending) {
                         const pending = this.paymentAttempt.pending;
                         this.payments = pending.payments;
                         this.split = this.payments.length > 1;
+                        if (this.split) {
+                            const cash = this.cashMethod();
+                            this.entry = {payment_id: cash ? cash.id : '', payment_name: cash ? cash.name : '', amount: ''};
+                        }
                         document.querySelector('[name="date"]').value = pending.date;
                         this.retryPending = true;
                     }
                     this.payments.forEach((p, i) => this.formatAmount(i));
                 },
 
+                sweepOpen: false,
+                touchY: 0,
                 split: false,
+                // Split on: the top row is the entry for the next payment, "+ Tambah" commits it as a line of the composition.
+                entry: {payment_id: '', payment_name: '', amount: ''},
+                get topRow() { return this.split ? this.entry : this.payments[0]; },
+                cashMethod() {
+                    return this.paymentMethods.find(m => /^(tunai|cash)$/i.test(String(m.name).trim())) || null;
+                },
+                setTopName() {
+                    const row = this.topRow;
+                    const method = this.paymentMethods.find(m => m.id == row.payment_id);
+                    row.payment_name = method ? method.name : '';
+                },
+                formatTopAmount() {
+                    const row = this.topRow;
+                    const digits = (row.amount || '').toString().replace(/\D/g, '');
+                    row.amount = digits === '' ? '' : (parseInt(digits, 10) || 0).toLocaleString('id-ID');
+                },
                 setSplit(on) {
-                    this.split = on;
-                    if (!on) {
-                        // Extra rows only exist while split is on; the first row is the whole payment.
-                        this.payments.splice(1);
-                    } else if (this.payments.length < 2) {
-                        this.addPayment();
+                    if (on === this.split) return;
+                    if (on) {
+                        const first = this.payments[0] || {};
+                        const cash = this.cashMethod();
+                        this.entry = {
+                            payment_id: first.payment_id || (cash ? cash.id : ''),
+                            payment_name: first.payment_name || (cash ? cash.name : ''),
+                            amount: '',
+                        };
+                        this.payments = [];
+                        this.split = true;
+                    } else {
+                        const row = this.entry;
+                        this.split = false;
+                        this.payments = [{
+                            payment_id: row.payment_id || '',
+                            payment_name: row.payment_name || '',
+                            amount: this.totalDue.toLocaleString('id-ID'),
+                        }];
+                        this.entry = {payment_id: '', payment_name: '', amount: ''};
                     }
                 },
 
@@ -117,12 +226,30 @@
                     payment_name: '',
                     amount: this.totalPayment,
                 }],
+                // "+ Tambah" (split only): commits the entry; an empty amount takes what is still due.
                 addPayment() {
+                    if (!this.split) return;
+                    const cash = this.cashMethod();
+                    const methodId = this.entry.payment_id || (cash ? cash.id : '');
+                    const method = this.paymentMethods.find(m => m.id == methodId);
+                    if (!method) {
+                        Swal.fire('Perhatian', 'Harus pilih metode pembayaran', 'warning');
+                        return;
+                    }
+                    const typed = parseInt((this.entry.amount || '').toString().replace(/\D/g, ''), 10) || 0;
+                    const amount = typed > 0 ? typed : Math.max(0, this.totalDue - this.totalPayment);
+                    if (amount <= 0) return;
+                    const now = new Date();
+                    const pad = n => String(n).padStart(2, '0');
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
                     this.payments.push({
-                        payment_id: '',
-                        payment_name: '',
-                        amount: ''
+                        payment_id: method.id,
+                        payment_name: method.name,
+                        amount: amount.toLocaleString('id-ID'),
+                        userName: @json(auth()->user()->nm_user ?? auth()->user()->username ?? auth()->user()->name ?? ''),
+                        dateTime: `${pad(now.getDate())} ${months[now.getMonth()]} ${now.getFullYear()}, ${pad(now.getHours())}:${pad(now.getMinutes())}`,
                     });
+                    this.entry = {payment_id: cash ? cash.id : '', payment_name: cash ? cash.name : '', amount: ''};
                 },
 
                 removePayment(index) {
@@ -230,6 +357,11 @@
 
                     const payload = this.buildPayload();
 
+                    if (this.payments.length === 0) {
+                        Swal.fire('Perhatian', this.split ? 'Tambahkan minimal satu pembayaran ke komposisi' : 'Harus pilih metode pembayaran', 'warning');
+                        return;
+                    }
+
                     for (let p of this.payments) {
                         if (!p.payment_id || !p.payment_name) {
                             Swal.fire('Perhatian', 'Harus pilih metode pembayaran', 'warning');
@@ -314,3 +446,86 @@
         }
     </script>
 @endsection
+
+@if (in_array($data->status, ['temp', 'draft', 'pending'], true))
+<script>
+    // Metode Pengiriman (courier or Pick Up): a dropdown like the reference. The choice is saved on the transaction right away (it is not part of the payment).
+    document.addEventListener('DOMContentLoaded', function () {
+        const select = document.getElementById('pay_courier');
+        const trigger = document.getElementById('pay_courier_trigger');
+        if (!select || !trigger || !window.ErpPicker) return;
+
+        const nameEl = trigger.querySelector('[data-courier-name]');
+        const typeEl = trigger.querySelector('[data-courier-type]');
+        const emptyEl = trigger.querySelector('[data-courier-empty]');
+        const types = {};
+        let saved = {id: select.value, type: (select.selectedOptions[0] && select.selectedOptions[0].dataset.type) || ''};
+
+        // Pick Up (no courier) locks the address: nothing is delivered.
+        const customer = document.getElementById('pay_customer');
+        const applyPickup = (pickup) => {
+            if (!customer) return;
+            const chevron = customer.querySelector('.pos-pay-customer__chevron');
+            customer.classList.toggle('is-locked', pickup);
+            window.dispatchEvent(new CustomEvent('pos-pickup-change', {detail: {pickup}}));
+            if (chevron) chevron.hidden = pickup;
+            if (pickup) {
+                customer.setAttribute('aria-disabled', 'true');
+                customer.tabIndex = -1;
+            } else {
+                customer.removeAttribute('aria-disabled');
+                customer.removeAttribute('tabindex');
+            }
+        };
+
+        const render = (id, name, type) => {
+            const none = !id || id === '0';
+            nameEl.textContent = none ? '' : name;
+            typeEl.textContent = !none && type ? '(' + type.charAt(0).toUpperCase() + type.slice(1) + ')' : '';
+            emptyEl.hidden = !none;
+            applyPickup(none);
+        };
+
+        ErpPicker.attach(select, {
+            trigger: trigger,
+            title: 'Metode Pengiriman',
+            placeholder: 'Cari kurir...',
+            variant: 'compact',
+            prepend: [{id: '0', text: 'Ambil di toko', title: 'Ambil di toko', aside: '-'}],
+            url: '/ajax/getKurir',
+            searchParam: 'term',
+            map: item => {
+                types[item.id] = item.type;
+                return {id: item.id, text: item.name, title: item.name, aside: item.type === 'internal' ? 'Internal' : 'External'};
+            }
+        });
+
+        let handled = select.value;
+        const onChange = () => {
+            const id = select.value;
+            if (id === handled) return;
+            handled = id;
+            const option = select.selectedOptions[0];
+            const name = option ? option.textContent.trim() : '';
+            const type = (id && id !== '0') ? (types[id] || (option && option.dataset.type) || '') : '';
+            render(id, name, type);
+            fetch("{{ route('pos.updateCourier', $data->id) }}", {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+                body: JSON.stringify({courier_id: (id && id !== '0') ? id : null, courier_type: type || null}),
+            }).then(response => {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                saved = {id: id, type: type};
+            }).catch(() => {
+                select.value = saved.id;
+                const previous = select.selectedOptions[0];
+                render(saved.id, previous ? previous.textContent.trim() : '', saved.type);
+                handled = saved.id;
+                if (window.Swal) Swal.fire({icon: 'error', title: 'Kurir gagal disimpan', text: 'Coba pilih kurir sekali lagi.'});
+            });
+        };
+        select.addEventListener('change', onChange);
+        if (window.jQuery) window.jQuery(select).on('change', onChange);
+    });
+</script>
+@endif

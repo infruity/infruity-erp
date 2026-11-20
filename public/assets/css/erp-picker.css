@@ -34,3 +34,50 @@
 .erp-picker__clear { flex:none; margin:0; padding:12px; border:0; border-top:1px solid #f3f4f6; background:#fff; color:#b91c1c; font-size:13px; font-weight:700; }
 .erp-picker__clear[hidden] { display:none; }
 .erp-picker.is-loading .erp-picker__list { opacity:.55; }
+
+/* Compact variant (customer picker in Kasir / POS): slim search, single-line rows with the detail on the right, 12px type. */
+.erp-picker--compact { margin-top:2px; padding:4px 0; border-radius:12px; box-shadow:0 20px 25px -5px rgba(0,0,0,.1), 0 8px 10px -6px rgba(0,0,0,.1); }
+.erp-picker--compact .erp-picker__search { padding:6px 10px; }
+.erp-picker--compact .erp-picker__search i { left:20px; font-size:12px; }
+.erp-picker--compact .erp-picker__search input { height:30px; padding:0 12px 0 28px; border-radius:8px; background:#f9fafb; font-size:12px; }
+.erp-picker--compact .erp-picker__list { padding:0; }
+.erp-picker--compact .erp-picker__item { gap:12px; padding:10px 14px; border-radius:0; font-size:12px; }
+.erp-picker--compact .erp-picker__item + .erp-picker__item { margin-top:0; }
+.erp-picker--compact .erp-picker__item:not(:last-child) { border-bottom:1px solid #f3f4f6; }
+.erp-picker--compact .erp-picker__item:hover, .erp-picker--compact .erp-picker__item:focus-visible { background:#f9fafb; }
+.erp-picker--compact .erp-picker__item.is-selected { background:rgba(236,253,245,.5); color:#111827; }
+.erp-picker--compact .erp-picker__text span { display:none; }
+.erp-picker--compact .erp-picker__text strong { color:#374151; font-size:12px; font-weight:500; line-height:16px; }
+.erp-picker--compact .erp-picker__item.is-selected .erp-picker__text strong { color:#111827; font-weight:700; }
+.erp-picker--compact .erp-picker__aside { color:#9ca3af; font-size:12px; font-weight:500; line-height:16px; }
+.erp-picker--compact .erp-picker__item.is-selected .erp-picker__aside { font-weight:700; }
+
+/* Product variant (Jus picker in Kasir / POS): grey search band, two-line rows (name + price) with the stock on the right. */
+.erp-picker--product { margin-top:6px; padding:0; border-radius:12px; box-shadow:0 20px 25px -5px rgba(15,23,42,.12), 0 8px 10px -6px rgba(15,23,42,.08); }
+.erp-picker--product .erp-picker__search { padding:8px; background:rgba(249,250,251,.8); }
+.erp-picker--product .erp-picker__search i { left:20px; font-size:12px; }
+.erp-picker--product .erp-picker__search input { height:32px; padding:0 10px 0 32px; border-radius:8px; font-size:12px; }
+.erp-picker--product .erp-picker__list { padding:0; }
+.erp-picker--product .erp-picker__item { gap:12px; padding:10px; border-radius:0; }
+.erp-picker--product .erp-picker__item + .erp-picker__item { margin-top:0; border-top:1px solid #f3f4f6; }
+.erp-picker--product .erp-picker__item:hover, .erp-picker--product .erp-picker__item:focus-visible { background:#f9fafb; }
+.erp-picker--product .erp-picker__item.is-selected { background:rgba(236,253,245,.5); color:#111827; }
+.erp-picker--product .erp-picker__text { gap:2px; }
+.erp-picker--product .erp-picker__text strong { color:#1f2937; font-size:12px; font-weight:700; line-height:16px; }
+.erp-picker--product .erp-picker__text span { margin-top:0; color:#9ca3af; font-size:11px; line-height:16px; }
+.erp-picker--product .erp-picker__aside { color:#6b7280; font-size:12px; font-weight:600; }
+.erp-picker--product .erp-picker__item > i { display:none; }
+
+/* Inline search: while the dropdown is open the trigger itself becomes the search field. */
+.erp-picker__trigger.is-searching .erp-picker__label { display:none; }
+.erp-picker__inline { min-width:0; flex:1; height:100%; border:0; background:transparent; padding:0; color:#111827; font:inherit; font-size:12px; font-weight:500; outline:0 !important; box-shadow:none !important; }
+.erp-picker__inline::placeholder { color:#9ca3af; }
+
+/* Product variant: slim scrollbar kept off the rounded edge. Adjust here:
+   --erp-scroll-thumb = visible bar thickness, --erp-scroll-gap = space on each side of it, --erp-scroll-inset = space above and below. */
+.erp-picker--product .erp-picker__list { --erp-scroll-thumb:3px; --erp-scroll-gap:4px; --erp-scroll-inset:8px; }
+.erp-picker--product .erp-picker__list::-webkit-scrollbar { width:calc(var(--erp-scroll-thumb) + var(--erp-scroll-gap) * 2); }
+.erp-picker--product .erp-picker__list::-webkit-scrollbar-track { margin:var(--erp-scroll-inset) 0; background:transparent; }
+.erp-picker--product .erp-picker__list::-webkit-scrollbar-thumb { border:var(--erp-scroll-gap) solid transparent; border-radius:999px; background:#d1d5db; background-clip:padding-box; }
+.erp-picker--product .erp-picker__list::-webkit-scrollbar-thumb:hover { background:#9ca3af; background-clip:padding-box; }
+@supports not selector(::-webkit-scrollbar) { .erp-picker--product .erp-picker__list { scrollbar-width:thin; scrollbar-color:#d1d5db transparent; } }

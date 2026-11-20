@@ -27,7 +27,10 @@ class SettingNotaController extends Controller
         
         $branch_id = $request->cabang_filter;
         if (!$branch_id) {
-            $branch_id = $userBranches ? $userBranches[0] : null;
+            // The reference opens on the list of branches; picking one opens its receipt settings.
+            return view('pos::setting-nota.list', [
+                'branches' => \Modules\Master\Entities\Branch::whereIn('id', $userBranches)->orderBy('name')->get(),
+            ]);
         }
 
         $data['page_plugin_js'] = [
@@ -76,17 +79,24 @@ class SettingNotaController extends Controller
             $settingNota->branch_id = $request->branch_id;
             $settingNota->header = $request->header;
             $settingNota->footer = $request->footer;
-            $settingNota->is_using_logo = $request->hasFile('avatar') ? true : false;
+            if ($request->hasFile('avatar')) {
+                $settingNota->is_using_logo = true;
+            }
             $settingNota->brand_name = $request->brand_name;
             $settingNota->brand_address = $request->brand_address;
             $settingNota->brand_social_media = $request->brand_social_media;
-            $settingNota->brand_phone = $request->brand_phone;
+            $settingNota->brand_phone = preg_replace('/\D+/', '', (string) $request->brand_phone) ?: null;
             $settingNota->brand_greeting = $request->brand_greeting;
             $settingNota->note = $request->note;
             $settingNota->is_using_cashier = $request->is_using_cashier ? true : false;
             $settingNota->is_using_customer = $request->is_using_customer ? true : false;
             $settingNota->is_using_date = $request->is_using_date ? true : false;
             $settingNota->is_using_invoice_number = $request->is_using_invoice_number ? true : false;
+            $settingNota->is_using_address = $request->boolean('is_using_address');
+            $settingNota->is_using_payment_method = $request->boolean('is_using_payment_method');
+            $settingNota->is_using_phone = $request->boolean('is_using_phone');
+            $settingNota->is_using_social = $request->boolean('is_using_social');
+            $settingNota->paper_width = in_array($request->paper_width, ['58', '80'], true) ? $request->paper_width : '80';
             $settingNota->created_by = Auth::id();
             
             if ($request->hasFile('avatar')) {
@@ -149,17 +159,24 @@ class SettingNotaController extends Controller
             }
             $settingNota->header = $request->header;
             $settingNota->footer = $request->footer;
-            $settingNota->is_using_logo = $request->hasFile('avatar') ? true : false;
+            if ($request->hasFile('avatar')) {
+                $settingNota->is_using_logo = true;
+            }
             $settingNota->brand_name = $request->brand_name;
             $settingNota->brand_address = $request->brand_address;
             $settingNota->brand_social_media = $request->brand_social_media;
-            $settingNota->brand_phone = $request->brand_phone;
+            $settingNota->brand_phone = preg_replace('/\D+/', '', (string) $request->brand_phone) ?: null;
             $settingNota->brand_greeting = $request->brand_greeting;
             $settingNota->note = $request->note;
             $settingNota->is_using_cashier = $request->is_using_cashier ? true : false;
             $settingNota->is_using_customer = $request->is_using_customer ? true : false;
             $settingNota->is_using_date = $request->is_using_date ? true : false;
             $settingNota->is_using_invoice_number = $request->is_using_invoice_number ? true : false;
+            $settingNota->is_using_address = $request->boolean('is_using_address');
+            $settingNota->is_using_payment_method = $request->boolean('is_using_payment_method');
+            $settingNota->is_using_phone = $request->boolean('is_using_phone');
+            $settingNota->is_using_social = $request->boolean('is_using_social');
+            $settingNota->paper_width = in_array($request->paper_width, ['58', '80'], true) ? $request->paper_width : '80';
             $settingNota->updated_by = Auth::id();
             
             if ($request->hasFile('avatar')) {

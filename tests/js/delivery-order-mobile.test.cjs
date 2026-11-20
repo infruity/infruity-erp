@@ -22,7 +22,7 @@ test('mobile delivery card matches the reference customer, amount and status hie
         paymentLabel:'Belum Lunas',
         paymentState:'unpaid',
         courierName:'Muhammad Chamim',
-        avatarTone:ErpTone.className('Kak Alvi')
+        avatarTone:ErpTone.customerClassName('Kak Alvi')
     });
 });
 
@@ -173,12 +173,12 @@ test('payment receipt details keep subtotal, shipping and grand total available 
 
 test('payment receipt balance shows paid, underpaid and overpaid amounts',()=>{
     assert.deepEqual(cards.buildPaymentBalance(379000,379000),{
-        type:'paid',label:'Lunas :',value:'Rp 0'
+        type:'paid',label:'Lunas',value:'Rp 0'
     });
     assert.deepEqual(cards.buildPaymentBalance(379000,372000),{
-        type:'underpaid',label:'Kurang Bayar :',value:'Rp 7.000'
+        type:'underpaid',label:'Kurang Bayar',value:'Rp 7.000'
     });
     assert.deepEqual(cards.buildPaymentBalance(379000,380000),{
-        type:'overpaid',label:'Lebih Bayar :',value:'Rp 1.000'
+        type:'overpaid',label:'Lebih Bayar',value:'Rp 1.000'
     });
 });

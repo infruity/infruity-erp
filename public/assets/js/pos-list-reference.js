@@ -40,12 +40,18 @@
     function detailPrimary(row) {
         if (row.status_key === 'pending' && row.edit_url) return {label: 'Lanjutkan Transaksi', url: row.edit_url};
         if (['unpaid', 'partial'].includes(row.status_key) && row.pay_url) return {label: 'Bayar', url: row.pay_url};
-        return {label: 'Lihat Nota Transaksi', url: row.show_url};
+        return {label: 'Lihat Transaksi', url: row.show_url};
     }
 
     // The server decides who may delete; settled and removed receipts never offer it.
     function canDelete(row) {
         return !!row.can_delete && !['paid', 'canceled'].includes(row.status_key);
+    }
+
+    // The reference shows numbers in local form (0812…), the stored value starts with the 62 country code.
+    function localPhone(phone) {
+        const digits = String(phone || '').replace(/\D/g, '');
+        return digits.startsWith('62') ? '0' + digits.slice(2) : String(phone || '');
     }
 
     function whatsappUrl(phone) {
@@ -96,6 +102,7 @@
             detailPrimary,
             canDelete,
             whatsappUrl,
+            localPhone,
             async openLinkedDetail(search, load) {
                 const ids = new URLSearchParams(search).getAll('detail');
                 if (!ids.length) return;
@@ -142,5 +149,5 @@
         };
     }
 
-    return {createFilters, parseDetail, detailPrimary, canDelete, whatsappUrl, nextLength, remainingLabel, customerInitial};
+    return {createFilters, parseDetail, detailPrimary, canDelete, whatsappUrl, localPhone, nextLength, remainingLabel, customerInitial};
 });

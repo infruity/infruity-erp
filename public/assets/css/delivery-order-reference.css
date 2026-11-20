@@ -14,7 +14,9 @@
 #delivery-order-detail-modal .delivery-order-detail-modal__header { padding:20px 20px; }
 #delivery-order-detail-modal .delivery-order-detail-modal__body { padding-top:0; }
 #delivery-order-detail-modal .delivery-order-detail-modal__value { color:#1f2937; line-height:19.25px; }
-#delivery-order-detail-modal .delivery-order-detail-modal__label { margin-top:2px; color:#9ca3af; line-height:16.5px; }
+#delivery-order-detail-modal .delivery-order-detail-modal__label { margin-top:2px; color:#9ca3af; line-height:20px; }
+#delivery-order-detail-modal .delivery-order-detail-modal__row ~ .delivery-order-detail-modal__row .delivery-order-detail-modal__value { line-height:20px; }
+#delivery-order-detail-modal .delivery-order-detail-modal__link + .delivery-order-detail-modal__label { margin-top:2px; }
 #delivery-order-detail-modal :is(.delivery-order-detail-modal__icon,.delivery-order-payment-step__icon) i { font-size:18px; line-height:1; }
 #delivery-order-detail-modal .delivery-order-detail-modal__link--phone { color:#1f2937; }
 #delivery-order-detail-modal .delivery-order-detail-modal__link--wrap { white-space:normal; overflow-wrap:anywhere; }
@@ -34,7 +36,82 @@
     #delivery-order-page .erp-workspace-toolbar .erp-search { flex:1 1 0; max-width:none; min-width:0; }
 }
 @media (max-width:767.98px) {
-    #delivery-order-page .delivery-order-card__title { font-size:14px; font-weight:700; line-height:20px; }
-    #delivery-order-page .delivery-order-card__phone, #delivery-order-page .delivery-order-card__amount, #delivery-order-page .delivery-order-card__courier { font-size:12px; line-height:18px; }
-    #delivery-order-page .delivery-order-card__delivery { font-size:14px; line-height:20px; }
+    /* Search field as in the Pengiriman reference (44px, 16px inset, Material filter icon). */
+    #delivery-order-page .erp-mobile-search { height:44px; gap:0; padding:0 6px 0 16px; box-shadow:none; }
+    #delivery-order-page .erp-mobile-search { border-color:rgba(229,231,235,.8); }
+    #delivery-order-page .erp-mobile-search__icon { margin-right:10px; }
+    #delivery-order-page .erp-mobile-search__divider { height:16px; margin:0 4px; }
+    #delivery-order-page .erp-mobile-search__input { font-weight:500; }
+    #delivery-order-page .erp-mobile-search__filter .icon-rounded { font-family:'Material Symbols Rounded'; font-size:20px; font-weight:300; line-height:1; }
 }
+
+#delivery-order-page .erp-mobile-search__filter .icon-rounded { font-family:'Material Symbols Rounded'; font-size:20px; font-weight:300; line-height:1; }
+/* Detail card rows measured on the Pengiriman reference: phone link 19px, address link 23px. */
+#delivery-order-detail-modal .delivery-order-detail-modal__link--phone { display:inline-block; margin-top:5.5px; padding-bottom:2px; border-bottom-width:1px; font-size:12px; font-weight:600; line-height:15px; }
+#delivery-order-detail-modal .delivery-order-detail-modal__link--dashed:not(.delivery-order-detail-modal__link--phone) { display:block; padding-bottom:4.5px; border-bottom-width:1px; font-size:14px; line-height:17.5px; }
+/* Penerimaan Pembayaran step, measured on the Pengiriman reference: 28px title, 40px rows 14px apart, 20/16.5px text lines. */
+#delivery-order-detail-modal .delivery-order-payment-step__title { margin:0 0 6px; color:#1f2937; font-size:18px; line-height:28px; }
+#delivery-order-detail-modal .delivery-order-payment-step__value { color:#111827; line-height:20px; }
+#delivery-order-detail-modal .delivery-order-payment-step__value--total { font-size:16px; font-weight:800; line-height:24px; }
+#delivery-order-detail-modal .delivery-order-payment-step__label { margin-top:0; color:#9ca3af; line-height:16.5px; }
+#delivery-order-detail-modal .delivery-order-payment-step__input { color:#111827; border-color:#d1d5db; }
+#delivery-order-detail-modal .delivery-order-payment-step__prefix { color:#9ca3af; }
+#delivery-order-detail-modal .delivery-order-payment-step__body { padding-bottom:21.5px; }
+#delivery-order-detail-modal .delivery-order-payment-step__balance { margin-top:4px; }
+#delivery-order-detail-modal .delivery-order-payment-step__footer { gap:10px; }
+#delivery-order-detail-modal .delivery-order-payment-step__back { color:#374151; border-radius:12px; }
+/* Address link as on the reference: emerald text, dashed emerald underline under the text only. */
+#delivery-order-detail-modal .delivery-order-detail-modal__link--dashed:not(.delivery-order-detail-modal__link--phone) { display:inline-block; vertical-align:top; max-width:100%; margin-bottom:2.5px; padding-bottom:2px; color:#059669; border-bottom-color:#34d399; }
+#delivery-order-detail-modal .delivery-order-detail-modal__link--dashed:not(.delivery-order-detail-modal__link--phone)[aria-disabled="true"] { color:#059669; border-bottom:1px dashed #34d399; }
+#delivery-order-detail-modal .delivery-order-detail-modal__link--phone[aria-disabled="true"] { color:#9ca3af; border-bottom:0; }
+/* The reference has no payment link, billing note or billing history lines in the delivery dialog. */
+#delivery-order-detail-modal :is(.delivery-order-payment-link, .delivery-order-billing-note, .delivery-order-billing-summary) { display:none !important; }
+/* Nominal field as in Kasir / POS payment: "Rp" cell with a divider, then the amount (40px, 12px bold). */
+#delivery-order-detail-modal .delivery-order-payment-step__input-wrap { display:flex; min-height:40px; align-items:stretch; overflow:hidden; border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
+#delivery-order-detail-modal .delivery-order-payment-step__input-wrap:focus-within { border-color:#34a684; box-shadow:0 0 0 2px rgba(16,185,129,.13); }
+#delivery-order-detail-modal .delivery-order-payment-step__prefix { position:static; display:flex; width:44px; flex:none; align-items:center; justify-content:center; padding:0; border-right:1px solid #e5e7eb; background:#f9fafb; color:#6b7280; font-size:12px; font-weight:700; line-height:1; transform:none; }
+#delivery-order-detail-modal .delivery-order-payment-step__input { height:auto; min-width:0; flex:1; border:0; border-radius:0; background:transparent; padding:0 12px; color:#1f2937; font-size:12px; font-weight:700; outline:0; box-shadow:none; }
+#delivery-order-detail-modal .delivery-order-payment-step__input:focus { border:0; outline:0; box-shadow:none; }
+/* Nominal text follows the amounts above it (14px bold); 44px keeps the reference row metrics. */
+#delivery-order-detail-modal .delivery-order-payment-step__input-wrap { min-height:44px; }
+#delivery-order-detail-modal .delivery-order-payment-step__prefix { font-size:14px; }
+#delivery-order-detail-modal .delivery-order-payment-step__input { color:#111827; font-size:14px; font-weight:700; }
+/* Nominal shown like the Total Ongkir row: no box, bold amount with a small caption underneath. */
+#delivery-order-detail-modal .delivery-order-payment-step__input-wrap { display:flex; flex-wrap:wrap; min-height:0; align-items:baseline; overflow:visible; border:0; border-radius:0; background:transparent; }
+#delivery-order-detail-modal .delivery-order-payment-step__input-wrap:focus-within { border:0; box-shadow:none; }
+#delivery-order-detail-modal .delivery-order-payment-step__input-wrap::after { content:'Uang Diterima'; flex:0 0 100%; margin-top:0; color:#9ca3af; font:500 11px/16.5px var(--erp-font); }
+#delivery-order-detail-modal .delivery-order-payment-step__prefix { width:auto; padding:0 3.5px 0 0; border:0; background:transparent; color:#111827; font-size:14px; font-weight:700; line-height:20px; }
+#delivery-order-detail-modal .delivery-order-payment-step__input { height:20px; padding:0; color:#111827; font-size:14px; font-weight:700; line-height:20px; }
+#delivery-order-detail-modal .delivery-order-payment-step__input::placeholder { color:#9ca3af; font-weight:500; }
+/* Payment status shown as a row like "Uang Diterima": icon tile, bold amount, small caption. */
+#delivery-order-detail-modal .delivery-order-payment-step__balance { display:grid; grid-template-columns:40px minmax(0,1fr); column-gap:12px; align-items:center; margin-top:0; min-height:40px; border:0; border-radius:0; background:transparent; padding:0; }
+#delivery-order-detail-modal .delivery-order-payment-step__balance[hidden] { display:none; }
+#delivery-order-detail-modal .delivery-order-payment-step__balance-label { display:contents; }
+#delivery-order-detail-modal .delivery-order-payment-step__balance-label > i { grid-column:1; grid-row:1 / span 2; display:flex; width:40px; height:40px; align-items:center; justify-content:center; border:1px solid #a7f3d0; border-radius:12px; background:#ecfdf5; color:#0b595b; font-size:18px; line-height:1; }
+#delivery-order-detail-modal .delivery-order-payment-step__balance-label > span { grid-column:2; grid-row:2; color:#9ca3af; font:500 11px/16.5px var(--erp-font); }
+#delivery-order-detail-modal .delivery-order-payment-step__balance-value { grid-column:2; grid-row:1; color:#111827; font:700 14px/20px var(--erp-font); }
+#delivery-order-detail-modal .delivery-order-payment-step__balance[data-state="underpaid"] .delivery-order-payment-step__balance-label > i { border-color:#fecdd3; background:#fff1f2; color:#be123c; }
+#delivery-order-detail-modal .delivery-order-payment-step__balance[data-state="underpaid"] .delivery-order-payment-step__balance-value { color:#9f1239; }
+#delivery-order-detail-modal .delivery-order-payment-step__balance[data-state="overpaid"] .delivery-order-payment-step__balance-label > i { border-color:#fde68a; background:#fffbeb; color:#b45309; }
+#delivery-order-detail-modal .delivery-order-payment-step__balance[data-state="overpaid"] .delivery-order-payment-step__balance-value { color:#92400e; }
+#delivery-order-detail-modal .delivery-order-payment-step__balance { grid-template-rows:20px 16.5px; align-content:center; row-gap:0; }
+/* Editable cue: dashed underline under "Rp" and the amount (same language as the phone and address links); green while focused. */
+#delivery-order-detail-modal .delivery-order-payment-step__prefix, #delivery-order-detail-modal .delivery-order-payment-step__input { box-sizing:border-box; height:20px; border-bottom:1px dashed #d1d5db; line-height:18px; }
+#delivery-order-detail-modal .delivery-order-payment-step__prefix { padding-right:3.5px; }
+#delivery-order-detail-modal .delivery-order-payment-step__input-wrap:focus-within :is(.delivery-order-payment-step__prefix, .delivery-order-payment-step__input) { border-bottom-color:#34d399; }
+#delivery-order-detail-modal .delivery-order-payment-step__input:focus { border-bottom:1px dashed #34d399; }
+/* The editable underline runs from "Rp" to the end of the "Penerimaan Pembayaran" title (165px), not across the row. */
+#delivery-order-detail-modal .delivery-order-payment-step__input-wrap { width:165px; max-width:100%; flex:none; }
+/* One continuous dashed underline from the front of "Rp" to the end of the amount (a single pattern, so the dashes do not restart under each piece). */
+#delivery-order-detail-modal .delivery-order-payment-step__prefix, #delivery-order-detail-modal .delivery-order-payment-step__input, #delivery-order-detail-modal .delivery-order-payment-step__input:focus { border-bottom:0; height:20px; line-height:20px; }
+#delivery-order-detail-modal .delivery-order-payment-step__input-wrap { background-image:repeating-linear-gradient(90deg, #d1d5db 0 4px, transparent 4px 7px); background-repeat:no-repeat; background-size:100% 1px; background-position:0 19px; }
+#delivery-order-detail-modal .delivery-order-payment-step__input-wrap:focus-within { background-image:repeating-linear-gradient(90deg, #34d399 0 4px, transparent 4px 7px); }
+#delivery-order-detail-modal .delivery-order-payment-step__input-wrap { background-position:0 21px; }
+/* The dashed underline starts under the first digit (not under "Rp") and runs to the end of the 165px field. */
+#delivery-order-detail-modal .delivery-order-payment-step__input-wrap, #delivery-order-detail-modal .delivery-order-payment-step__input-wrap:focus-within { background-image:none; }
+#delivery-order-detail-modal .delivery-order-payment-step__input { box-sizing:border-box; border-bottom:1px dashed #d1d5db; line-height:18px; }
+#delivery-order-detail-modal .delivery-order-payment-step__input:focus { border-bottom:1px dashed #34d399; }
+/* Already paid: the amount is only a record, so no editable cue (underline) on it. */
+#delivery-order-detail-modal .delivery-order-payment-step__input[readonly] { border-bottom:0; cursor:default; }
+/* The editable underline is as long as the "Total Belanja + Ongkir" caption above it (112px), starting under the first digit. */
+#delivery-order-detail-modal .delivery-order-payment-step__input-wrap { width:112.3px; }

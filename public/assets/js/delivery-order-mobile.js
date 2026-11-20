@@ -95,7 +95,7 @@
                 : order.billing?.available && order.billing.previousPaid > 0 && order.billing.remaining > 0 ? 'Bayar Sebagian' : 'Belum Lunas',
             paymentState: payment,
             courierName: String(order.courierName || 'Kurir belum dipilih').trim(),
-            avatarTone: ErpTone.className(customerName)
+            avatarTone: ErpTone.customerClassName(customerName)
         };
     }
 
@@ -169,15 +169,15 @@
 
     function buildPaymentBalance(grandTotal, receivedAmount) {
         const difference = Math.round((amountValue(receivedAmount) - amountValue(grandTotal)) * 100) / 100;
-        if (difference === 0) return { type: 'paid', label: 'Lunas :', value: 'Rp 0' };
+        if (difference === 0) return { type: 'paid', label: 'Lunas', value: 'Rp 0' };
         if (difference < 0) {
             return {
                 type: 'underpaid',
-                label: 'Kurang Bayar :',
+                label: 'Kurang Bayar',
                 value: formatAmount(Math.abs(difference))
             };
         }
-        return { type: 'overpaid', label: 'Lebih Bayar :', value: formatAmount(difference) };
+        return { type: 'overpaid', label: 'Lebih Bayar', value: formatAmount(difference) };
     }
 
     function text(element) {
@@ -286,10 +286,11 @@
 
     function updatePaymentBalance(modal, receivedAmount) {
         const paid = activeOrder?.paymentState === 'paid';
-        const available = activeOrder?.billing.available && (paid || receivedAmount !== null);
+        // The status box is always shown, like the reference: a blank or 0 amount reads as nothing received yet.
+        const available = !!activeOrder?.billing.available;
         const balance = available ? buildPaymentBalance(
             paid ? activeOrder.billing.invoiceTotal : activeOrder.billing.remaining,
-            paid ? activeOrder.billing.previousPaid : receivedAmount
+            paid ? activeOrder.billing.previousPaid : (receivedAmount === null ? 0 : receivedAmount)
         ) : null;
         const container = modal.querySelector('[data-delivery-order-payment-balance]');
         const label = modal.querySelector('[data-delivery-order-payment-balance-label]');
@@ -323,6 +324,8 @@
         setPaymentField(modal, 'subtotal', formatAmount(activeOrder.subtotal));
         setPaymentField(modal, 'shipping-fee', formatAmount(activeOrder.shippingFee));
         setPaymentField(modal, 'grand-total', activeOrder.billing.available ? formatAmount(activeOrder.billing.invoiceTotal) : 'Belum tersedia');
+        const totalLabel = modal.querySelector('[data-delivery-order-payment-total-label]');
+        if (totalLabel) totalLabel.textContent = activeOrder.billing.available && activeOrder.billing.voucher > 0 ? 'Total Tagihan (Setelah Voucher)' : 'Total Belanja + Ongkir';
 
         const input = modal.querySelector('[data-delivery-order-payment-amount]');
         const paid = activeOrder.paymentState === 'paid';
@@ -331,12 +334,14 @@
         if (label) {
             label.textContent = paid ? 'Pembayaran sudah tercatat' : 'Uang diterima saat ini';
             label.hidden = paid;
+            if (label.classList) label.classList.toggle('visually-hidden', !paid);
         }
         input?.setAttribute('aria-label', paid ? 'Pembayaran sudah tercatat' : 'Nominal pembayaran yang diterima');
         const summary = modal.querySelector('.delivery-order-billing-summary');
-        if (summary) summary.hidden = paid;
+        // The history lines only matter once something was paid or discounted; a first payment shows just the totals.
+        if (summary) summary.hidden = paid || (activeOrder.billing.available && activeOrder.billing.previousPaid === 0 && activeOrder.billing.voucher === 0);
         if (input) {
-            input.value = paid && activeOrder.billing.available ? new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(activeOrder.billing.previousPaid) : '';
+            input.value = paid && activeOrder.billing.available ? new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(activeOrder.billing.previousPaid) : (ready && !paid ? new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(activeOrder.billing.remaining) : '');
             input.readOnly = paid;
             input.placeholder = paid && !activeOrder.billing.available ? 'Belum tersedia' : 'Masukkan nominal';
             input.disabled = !ready;
@@ -355,10 +360,11 @@
         if (back) back.disabled = false;
         if (submit) submit.disabled = !ready;
         if (!ready) showPaymentError(modal, 'Rincian pembayaran belum dapat dipastikan. Periksa pembayaran melalui POS.');
-        updatePaymentBalance(modal, null);
+        updatePaymentBalance(modal, ready && !paid ? activeOrder.billing.remaining : null);
         const body = modal.querySelector('.delivery-order-payment-step__body');
         if (body) body.scrollTop = 0;
-        const focus = paid ? submit : ready ? input : back;
+        // The prefilled amount stays formatted (52.000) like the reference, so the panel takes focus instead of the input.
+        const focus = paid ? submit : ready ? modal.querySelector('.delivery-order-detail-modal__panel') : back;
         focus?.focus({ preventScroll: true });
         focus?.scrollIntoView({ block: 'nearest' });
         return true;
@@ -456,7 +462,7 @@
         setDetailField(modal, 'subtotal', detail.subtotalLabel);
         setDetailField(modal, 'shipping-fee', detail.shippingFeeLabel);
         setDetailField(modal, 'grand-total', detail.billing.available ? formatAmount(detail.billing.invoiceTotal) : detail.grandTotalLabel);
-        setDetailField(modal, 'grand-total-label', detail.billing.available ? 'Total Tagihan (Setelah Voucher)' : 'Total Belanja (Include Ongkir)');
+        setDetailField(modal, 'grand-total-label', detail.billing.available && detail.billing.voucher > 0 ? 'Total Tagihan (Setelah Voucher)' : 'Total Belanja (Include Ongkir)');
         renderBilling(modal, detail);
 
         const phone = modal.querySelector('[data-delivery-order-detail-field="phone"]');
@@ -567,6 +573,10 @@
         });
         modal.querySelector('[data-delivery-order-payment-submit]')?.addEventListener('click', submitPaymentAndReceive);
         modal.querySelector('[data-delivery-order-payment-amount]')?.addEventListener('input', event => {
+            // Digits only, with thousands separators while typing (1.000, 1.000.000, ...).
+            const field = event.currentTarget;
+            const digits = String(field.value).replace(/\D/g, '').slice(0, 15).replace(/^0+(?=\d)/, '');
+            field.value = digits ? new Intl.NumberFormat('id-ID').format(Number(digits)) : '';
             const amount = parseReceiptAmount(event.currentTarget.value);
             event.currentTarget.removeAttribute('aria-invalid');
             const error = modal.querySelector('[data-delivery-order-payment-error]');
@@ -578,8 +588,8 @@
             updatePaymentBalance(modal, amount);
         });
         modal.querySelector('[data-delivery-order-payment-amount]')?.addEventListener('focus', event => {
-            const amount = parseReceiptAmount(event.currentTarget.value);
-            if (amount !== null) event.currentTarget.value = String(amount);
+            // Keep the thousands separators while focused (the input handler reformats as you type).
+            event.currentTarget._amountFormatted = event.currentTarget.value.includes('.');
         });
         modal.querySelector('[data-delivery-order-payment-amount]')?.addEventListener('blur', event => {
             const amount = parseReceiptAmount(event.currentTarget.value);

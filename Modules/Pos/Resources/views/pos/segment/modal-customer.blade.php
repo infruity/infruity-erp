@@ -4,7 +4,6 @@
         <div class="modal-content" x-data="{ customerName: '', customerPhone: '', customerAddress: '' }">
             <div class="erp-sheet-header pos-sheet-header">
                 <div class="pos-sheet-title">
-                    <span class="pos-sheet-icon" aria-hidden="true"><i class="ph-bold ph-user-plus"></i></span>
                     <h5 class="modal-title" id="customerModalLabel">Tambah Pelanggan Baru</h5>
                 </div>
                 <button type="button" data-bs-dismiss="modal" aria-label="Tutup"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
@@ -16,7 +15,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label required">No WhatsApp</label>
-                    <input type="tel" inputmode="tel" autocomplete="tel" class="form-control" x-model="customerPhone" placeholder="Contoh: 081234567890">
+                    <input type="tel" inputmode="numeric" pattern="[0-9]*" autocomplete="tel" class="form-control" x-model="customerPhone" @input="customerPhone = customerPhone.replace(/\D/g, '')" placeholder="Contoh: 081234567890">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Alamat</label>
@@ -24,8 +23,7 @@
                 </div>
             </div>
             <div class="erp-sheet-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-primary" @click="saveCustomer()">Simpan &amp; Pilih</button>
+                <button type="button" class="btn btn-primary w-100" @click="saveCustomer()">Pilih</button>
             </div>
         </div>
     </div>

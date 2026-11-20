@@ -22,10 +22,13 @@ final class OrderBookFormUiContractTest extends TestCase
     {
         $form = $this->form();
 
-        $this->assertStringContainsString('Informasi Pesanan', $form);
+        // Pesanan reference: a Cabang card, a Catatan card and a docked footer; customer, date and invoice stay as hidden fields.
+        $this->assertStringContainsString('Cabang', $form);
         $this->assertStringContainsString('Catatan Pesanan', $form);
-        $this->assertStringContainsString('class="pos-form"', $form);
-        $this->assertStringContainsString('pos-form-footer', $form);
+        $this->assertStringContainsString('class="pos-form pos-form--reference ob-form"', $form);
+        $this->assertStringContainsString('ob-footer', $form);
+        $this->assertStringContainsString('ob-hidden-fields', $form);
+        $this->assertStringNotContainsString('Informasi Pesanan', $form);
         $this->assertStringNotContainsString('erp-editor-summary', $form);
         $this->assertStringContainsString('karakter', $form);
     }
@@ -43,11 +46,9 @@ final class OrderBookFormUiContractTest extends TestCase
             'readonly',
             'name="note" id="note"',
             '{{ $data->note ?? \'\' }}',
-            'addCustomer()',
             "saveDraft(() => loading = false)",
             "saveTransaction(() => loading = false)",
             "@include('pos::pos.segment.modal-customer')",
-            "url('/order-book')",
         ] as $contract) {
             $this->assertStringContainsString($contract, $form, "Hilang: {$contract}");
         }
