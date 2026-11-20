@@ -287,6 +287,18 @@ class WholesaleBehaviorTest extends TestCase
         $this->assertDatabaseHas('wholesale', ['order_number' => $invoice, 'branch_id' => $this->branch, 'status' => 'temp']);
     }
 
+    public function test_reopening_a_draft_from_an_earlier_day_moves_its_date_to_today(): void
+    {
+        $this->get('/wholesale/create')->assertOk();
+        $invoice = $this->adminDraftInvoice();
+        DB::table('wholesale')->where('order_number', $invoice)->update(['order_date' => date('Y-m-d', strtotime('-9 days'))]);
+
+        $this->get('/wholesale/create')->assertOk();
+
+        $this->assertSame($invoice, $this->adminDraftInvoice());
+        $this->assertSame(date('Y-m-d'), (string) DB::table('wholesale')->where('order_number', $invoice)->value('order_date'));
+    }
+
     public function test_form_flow_reopening_the_form_reuses_the_same_draft(): void
     {
         $this->get('/wholesale/create')->assertOk();

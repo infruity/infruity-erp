@@ -88,6 +88,12 @@ class WholesaleController extends Controller
             ->first();
 
         if ($draft) {
+            // A resumed draft is a purchase being made now; the form has no date field on mobile,
+            // so a draft kept from an earlier day would otherwise post on its creation date.
+            if ($draft->order_date === null || substr((string) $draft->order_date, 0, 10) < date('Y-m-d')) {
+                $draft->order_date = date('Y-m-d');
+                $draft->save();
+            }
             $draft->setRelation(
                 'products',
                 $this->hydrateWholesaleDetailPricing($draft->products, $draft->branch_id)
