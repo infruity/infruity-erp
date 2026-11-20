@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -811,75 +810,6 @@ class WholesaleController extends Controller
             return response()->json([
                 'message' => 'Product gagal diterima.',
             ], 404);
-        }
-    }
-
-    public function reset_transactions(Request $request)
-    {
-        // Truncates every transaction table: a development convenience only, never on a live system.
-        if (! app()->environment(['local', 'testing'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Reset transaksi hanya tersedia di lingkungan local/testing.',
-            ], 403);
-        }
-
-        if ($denied = $this->requireAccess('wholesale.reset')) {
-            return $denied;
-        }
-
-        $tables = [
-            'wholesale',
-            'wholesale_product',
-            'wholsale_product',
-            'pos_transaction',
-            'pos_transaction_detail',
-            'pos_payment',
-            'sortir_transaction',
-            'sortir_transaction_detail',
-            'production',
-            'production_detail',
-            'production_parcel',
-            'production_parcel_detail',
-            'transfer',
-            'transfer_detail',
-            'stock_opname',
-            'stock_opname_discussions',
-            'stock_opname_history',
-            'order_book',
-            'order_book_detail',
-            'expenditure',
-            'expenditure_detail',
-            'expenditure_payment',
-        ];
-
-        try {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0');
-
-            $resetTables = [];
-            foreach ($tables as $table) {
-                if (!Schema::hasTable($table)) {
-                    continue;
-                }
-                DB::table($table)->truncate();
-                $resetTables[] = $table;
-            }
-
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
-
-            return response()->json([
-                'success'        => true,
-                'message'        => 'Transaksi wholesale berhasil direset.',
-                'reset_tables'   => $resetTables,
-            ]);
-        } catch (\Throwable $e) {
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mereset transaksi wholesale.',
-                'error'   => $e->getMessage(),
-            ], 500);
         }
     }
 
