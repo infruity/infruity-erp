@@ -229,8 +229,16 @@ class ReportBehaviorTest extends TestCase
     {
         $this->asAdmin();
 
-        foreach (['/reports', '/report-transaction', '/report-product-sales', '/report-profit-revenue', '/report-shipping-cost', '/report-total-aset'] as $url) {
+        foreach (['/report-transaction', '/report-product-sales', '/report-profit-revenue', '/report-shipping-cost', '/report-total-aset'] as $url) {
             $this->get($url)->assertOk();
         }
+    }
+
+    public function test_there_is_no_report_hub_page_and_the_shortcut_goes_to_the_first_report(): void
+    {
+        $this->asAdmin();
+
+        $this->get('/reports')->assertNotFound();
+        $this->assertSame(route('product-stock'), \Modules\Report\Http\Controllers\ReportController::entryUrl());
     }
 }

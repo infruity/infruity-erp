@@ -132,7 +132,7 @@
             $masterRoutes = ['products.*', 'receipt.*', 'product-receipt.*', 'unit.*', 'supplier.*', 'customers.*', 'branch.*', 'user.*', 'position.*', 'staff.*', 'kurir.*', 'payment-method.*', 'roles.*'];
             $inventoryRoutes = ['wholesale.*', 'production.*', 'production-data', 'sortir.*', 'transfer-pengirim.*', 'transfer-penerima.*', 'stock-opname.*'];
             $salesRoutes = ['pos.*', 'order-book.*', 'delivery-order', 'delivery-order.*'];
-            $reportRoutes = ['reports.hub', 'report-*', 'product-stock', 'product-stock.*'];
+            $reportRoutes = ['report-*', 'product-stock', 'product-stock.*'];
         @endphp
 
         <div class="erp-sidebar__group">
@@ -191,7 +191,7 @@
         </div>
 
         <div class="erp-sidebar__group">
-            <a href="{{ route('reports.hub') }}" class="sidebar-link {{ request()->routeIs(...$reportRoutes) ? 'active' : '' }}">
+            <a href="#" data-type="header" @click.prevent="if (sidebarCollapsed) sidebarCollapsed = false" class="sidebar-link {{ request()->routeIs(...$reportRoutes) ? 'active' : '' }}">
                 <span class="erp-sidebar__link-label"><i class="ph ph-chart-line-up sidebar-icon" aria-hidden="true"></i><span class="font-medium">Laporan</span></span>
             </a>
             <div class="submenu-wrapper" x-show="!sidebarCollapsed"><div class="py-1 space-y-0.5">

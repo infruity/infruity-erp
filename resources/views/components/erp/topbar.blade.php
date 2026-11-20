@@ -16,8 +16,8 @@
         $transactionBackLabel = 'Kembali ke daftar cabang';
     }
     if ($reportDetailHeader) {
-        $transactionBackRoute = 'reports.hub';
-        $transactionBackLabel = 'Kembali ke Laporan';
+        $transactionBackRoute = 'admin.crm-dashboard';
+        $transactionBackLabel = 'Kembali ke Dashboard';
     }
     if ($orderBookFormHeader) {
         $transactionBackRoute = 'order-book.index';
