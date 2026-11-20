@@ -43,7 +43,7 @@
             </div>
         @else
             @php($productIcon = $product ? \Modules\Master\Support\ProductIcon::resolve($product) : ['📦', 'bg-gray-100'])
-            <div class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-gray-100 text-lg md:h-12 md:w-12 md:text-xl {{ $productIcon[1] }}">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-gray-100 text-xs font-bold md:h-12 md:w-12 md:text-sm {{ $productIcon[1] }}">
                 {{ $productIcon[0] }}
             </div>
         @endif
