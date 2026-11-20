@@ -22,9 +22,11 @@ final class OrderBookFormUiContractTest extends TestCase
     {
         $form = $this->form();
 
-        // Pesanan reference: a Cabang card, a Catatan card and a docked footer; customer, date and invoice stay as hidden fields.
+        // Pesanan reference: a Cabang card, a Catatan card and a docked footer; the customer is a visible picker, date and invoice stay hidden.
         $this->assertStringContainsString('Cabang', $form);
         $this->assertStringContainsString('Catatan Pesanan', $form);
+        $this->assertStringContainsString('<span>Pelanggan</span>', $form);
+        $this->assertLessThan(strpos($form, 'ob-hidden-fields'), strpos($form, 'id="customer_id"'));
         $this->assertStringContainsString('class="pos-form pos-form--reference ob-form"', $form);
         $this->assertStringContainsString('ob-footer', $form);
         $this->assertStringContainsString('ob-hidden-fields', $form);
