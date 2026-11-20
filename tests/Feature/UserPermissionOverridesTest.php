@@ -347,7 +347,7 @@ class UserPermissionOverridesTest extends TestCase
         $this->get('/roles')
             ->assertOk()
             ->assertSee('.erp-topbar-mobile {', false)
-            ->assertSee('border-bottom:1px solid rgba(255,255,255,.6); background:rgba(255,255,255,.65); box-shadow:', false);
+            ->assertSee('border-bottom:1px solid rgba(229,231,235,.6); background:rgba(255,255,255,.8); box-shadow:', false);
     }
 
     public function test_administrator_role_delete_action_is_visible_but_disabled(): void
