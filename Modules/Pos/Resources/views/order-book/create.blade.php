@@ -11,7 +11,10 @@
                 <select class="form-control" name="branch_id" id="branch_id">
                     <option value="">Pilih Cabang</option>
                 </select>
-                <label class="ob-label ob-label--spaced" for="customer_id"><span>Pelanggan</span></label>
+                <div class="ob-label-row">
+                    <label class="ob-label ob-label--spaced" for="customer_id"><span>Pelanggan</span></label>
+                    <button type="button" class="ob-add-customer" @click="addCustomer()" aria-label="Tambah pelanggan"><i class="ph-bold ph-plus" aria-hidden="true"></i><span>Tambah</span></button>
+                </div>
                 <select class="form-select" id="customer_id" name="customer_id">
                     <option value="">Pelanggan Umum</option>
                 </select>

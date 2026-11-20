@@ -48,3 +48,7 @@
 .ob-footer__pair > .ob-footer__icon.pos-ref-icon:hover:not(:disabled) { border-color:#34a684; background:#fff; color:#0b595b; }
 .ob-footer__pair > .ob-footer__icon.pos-ref-icon, .ob-footer__pair > .ob-footer__icon.pos-ref-icon:hover, .ob-footer__pair > .ob-footer__icon.pos-ref-icon:focus, .ob-footer__pair > .ob-footer__icon.pos-ref-icon:focus-visible, .ob-footer__pair > .ob-footer__icon.pos-ref-icon:active { border-color:#d1d5db !important; background:#fff !important; color:#1f2937 !important; box-shadow:none !important; outline:0 !important; }
 .ob-label--spaced { margin-top:14px; }
+.ob-label-row { display:flex; align-items:flex-end; justify-content:space-between; gap:8px; margin-top:14px; }
+.ob-label-row .ob-label--spaced { margin:0 0 6px; }
+.ob-add-customer { display:inline-flex; align-items:center; gap:4px; margin-bottom:4px; border:0; border-radius:10px; padding:4px 10px; background:#ecfdf5; color:#0b595b; font-size:12px; font-weight:700; line-height:16px; }
+.ob-add-customer:hover { background:#d1fae5; }
