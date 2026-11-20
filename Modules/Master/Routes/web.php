@@ -36,12 +36,10 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::resource('category', ProductCategoryController::class)->names('category')->except('show');
     Route::get('category/export', [ProductCategoryController::class, 'excel'])->name('export-data');
     Route::resource('unit', ProductUnitController::class)->names('unit')->except('show');
-    Route::resource('location', LocationController::class)->names('location')->except('show');
-    Route::resource('handling', HandlingController::class)->names('handling')->except('show');
-    Route::resource('department', DepartmentController::class)->names('department')->except('show');
-    Route::get('department/export', [DepartmentController::class, 'excel'])->name('export-department-data');
+    Route::resource('location', LocationController::class)->names('location')->except(['show', 'create']);
+    Route::resource('handling', HandlingController::class)->names('handling')->except(['show', 'create']);
+    Route::resource('department', DepartmentController::class)->names('department')->except(['show', 'create']);
     Route::resource('position', PositionController::class)->names('position')->except('show');
-    Route::get('position/export', [PositionController::class, 'excel'])->name('export-position-data');
     Route::resource('supplier', SupplierController::class)->names('supplier')->except('show');
     // Route::get('supplier/export', [SupplierController::class, 'excel'])->name('supplier-data');
     Route::resource('customers', CustomerController::class)->names('customers')->except('show');

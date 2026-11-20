@@ -27,10 +27,10 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
         Route::post('tier/{id}/save-detail', [TierController::class, 'saveDetail'])->name('tier.save_detail');
         Route::get('tier/get-gift/{id}', [TierController::class, 'getGift'])->name('tier.get-gift');
     });
-    Route::resource('setting-exp', SettingExpController::class)->names('setting-exp')->except('show');
-    Route::resource('point-schedule', PointScheduleController::class)->names('point-schedule')->except('show');    
-    Route::resource('deposito', DepositoController::class)->names('deposito')->except('show');
-    Route::resource('campaign', CampaignController::class)->names('campaign')->except('show');
+    Route::resource('setting-exp', SettingExpController::class)->names('setting-exp')->except(['show', 'create']);
+    Route::resource('point-schedule', PointScheduleController::class)->names('point-schedule')->except(['show', 'create']);    
+    Route::resource('deposito', DepositoController::class)->names('deposito')->except(['show', 'create']);
+    Route::resource('campaign', CampaignController::class)->names('campaign')->except(['show', 'create']);
     Route::get('customer-deposito', [DepositoController::class, 'customer_deposito'])->name('customer-deposito');
     Route::get('customer-deposito/show/{id}', [DepositoController::class, 'show'])->name('customer-deposito.show');
     Route::get('customer-report', [TierController::class, 'customerReport'])->name('customer.report');
