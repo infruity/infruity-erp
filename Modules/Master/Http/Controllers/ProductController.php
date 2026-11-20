@@ -450,6 +450,7 @@ class ProductController extends Controller
             'bahan_produksi' => 'production',
             'produksi' => 'production',
             'opname' => 'stock_opname',
+            'transfer' => 'transfer',
         ];
         $creatorNames = [];
 
@@ -467,6 +468,14 @@ class ProductController extends Controller
                 }
 
                 return $creatorNames[$key];
+            })
+            // The ledger links every source except transfers; an outgoing transfer opens on the sender page, an incoming one on the receiver page.
+            ->editColumn('url', function ($item) {
+                if ($item->trx_type === 'transfer' && $item->trx_id) {
+                    return '/' . ($item->type === '-' ? 'transfer-pengirim' : 'transfer-penerima') . '/show/' . $item->trx_id;
+                }
+
+                return $item->url;
             })
             ->addColumn('type', function ($item) {
                 $html = '';
@@ -1971,7 +1980,12 @@ class ProductController extends Controller
         $baseUrl = $transaction->url;
         $id = $transaction->id;
 
-        $showRoutes = ['wholesale', 'pos', 'sortir', 'transfer'];
+        // There is no transfer/show page: a transfer opens on its sender or receiver page.
+        if ($baseUrl === 'transfer') {
+            return url(($transaction->reff ?? null) === 'menerima' ? 'transfer-penerima/show/' . $id : 'transfer-pengirim/show/' . $id);
+        }
+
+        $showRoutes = ['wholesale', 'pos', 'sortir'];
         $detailRoutes = ['production'];
 
         if (in_array($baseUrl, $showRoutes)) {
