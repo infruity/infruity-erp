@@ -94,6 +94,22 @@ class PosPaymentBehaviorTest extends TestCase
         $this->assertSame(10.0, $this->stock());
     }
 
+    public function test_walk_in_sale_with_customer_id_zero_is_accepted(): void
+    {
+        // The POS form posts customer_id 0 for "Pelanggan Umum", which has no customer row.
+        $posId = $this->saveSale(['customer_id' => 0]);
+
+        $this->assertDatabaseHas('pos_transaction', ['id' => $posId, 'customer_id' => 0, 'status' => 'draft']);
+    }
+
+    public function test_sale_with_an_unknown_customer_id_is_rejected(): void
+    {
+        $payload = $this->salePayload(['customer_id' => 99999999]);
+
+        $this->postJson('/pos/save-transaction', $payload)->assertStatus(422)->assertJsonValidationErrors('customer_id');
+        $this->assertDatabaseMissing('pos_transaction', ['invoice_number' => $payload['invoice_number']]);
+    }
+
     public function test_header_total_is_recomputed_from_items_with_percent_discount(): void
     {
         $posId = $this->saveSale(['discount' => 10, 'total' => 54000]);
