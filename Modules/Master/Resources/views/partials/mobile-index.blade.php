@@ -103,7 +103,7 @@
                             <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-user text-lg"></i></div><div><div class="font-bold text-gray-800" x-text="detail.pic_name || '-'"></div><div class="text-[11px] text-gray-400 font-medium">Kontak PIC</div></div></div>
                             <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-phone text-lg"></i></div>
                                 <div class="min-w-0">
-                                    <a :href="detail.pic_whatsapp ? 'https://wa.me/' + String(detail.pic_whatsapp).replace(/\D/g, '') : '#'" :target="detail.pic_whatsapp ? '_blank' : '_self'" rel="noopener noreferrer"
+                                    <a :href="detail.pic_whatsapp ? 'https://wa.me/' + String(detail.pic_whatsapp).replace(/\D/g, '').replace(/^0/, '62') : '#'" :target="detail.pic_whatsapp ? '_blank' : '_self'" rel="noopener noreferrer"
                                         :class="detail.pic_whatsapp ? 'text-emerald-600 hover:text-emerald-700 border-b border-dashed border-emerald-400 hover:border-emerald-600 cursor-pointer' : 'text-gray-800 border-none pointer-events-none'"
                                         class="text-sm font-bold pb-0.5 inline-flex items-center gap-1.5 transition-colors"><span x-text="detail.pic_whatsapp || '-'"></span><i x-show="detail.pic_whatsapp" class="ph-bold ph-arrow-up-right text-xs"></i></a>
                                     <div class="text-[11px] text-gray-400 font-medium" x-text="detail.pic_whatsapp ? 'Nomor WhatsApp (Klik untuk Chat)' : 'Nomor WhatsApp'"></div>
@@ -126,7 +126,7 @@
                             <div x-show="ageLabel(detail.birth_of_date)" class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-calendar-blank text-lg"></i></div><div><div class="font-bold text-gray-800" x-text="ageLabel(detail.birth_of_date)"></div><div class="text-[11px] text-gray-400 font-medium">Usia Pelanggan</div></div></div>
                             <div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0b595b] border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs"><i class="ph-duotone ph-phone text-lg"></i></div>
                                 <div class="min-w-0">
-                                    <a :href="detail.whatsapp ? 'https://wa.me/' + String(detail.whatsapp).replace(/\D/g, '') : '#'" :target="detail.whatsapp ? '_blank' : '_self'" rel="noopener noreferrer"
+                                    <a :href="detail.whatsapp ? 'https://wa.me/' + String(detail.whatsapp).replace(/\D/g, '').replace(/^0/, '62') : '#'" :target="detail.whatsapp ? '_blank' : '_self'" rel="noopener noreferrer"
                                         :class="detail.whatsapp ? 'text-emerald-600 hover:text-emerald-700 border-b border-dashed border-emerald-400 hover:border-emerald-600 cursor-pointer' : 'text-gray-700 cursor-default'"
                                         class="text-sm font-bold pb-0.5 inline-flex items-center gap-1.5 transition-colors"><span x-text="detail.whatsapp || '-'"></span><i x-show="detail.whatsapp" class="ph-bold ph-arrow-up-right text-xs"></i></a>
                                     <div class="text-[11px] text-gray-400 font-medium" x-text="detail.whatsapp ? 'Nomor WhatsApp (Klik untuk Chat)' : 'Nomor WhatsApp'"></div>
@@ -402,7 +402,7 @@ function masterList(records, fields, routeBase, nameKey, subtitleFields, title, 
         },
         fieldHref(field, value) {
             if (!value) return '';
-            if (['pic_whatsapp', 'whatsapp', 'contact', 'phone'].includes(field.key)) return 'https://wa.me/' + String(value).replace(/\D/g, '');
+            if (['pic_whatsapp', 'whatsapp', 'contact', 'phone'].includes(field.key)) return 'https://wa.me/' + String(value).replace(/\D/g, '').replace(/^0/, '62');
             if (field.key === 'address') return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(value);
             if (field.key === 'email') return 'mailto:' + value;
             return '';

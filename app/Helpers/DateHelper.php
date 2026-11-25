@@ -273,3 +273,15 @@ if (!function_exists('formatRibuanToK')) {
     }
 }
 
+if (!function_exists('wa_phone')) {
+    /** Nomor untuk link wa.me: hanya angka, awalan 0 diganti kode negara 62 (0856... -> 62856...). */
+    function wa_phone($phone): string
+    {
+        $digits = preg_replace('/\D+/', '', (string) $phone);
+        if (str_starts_with($digits, '0')) {
+            $digits = '62' . substr($digits, 1);
+        }
+
+        return $digits;
+    }
+}

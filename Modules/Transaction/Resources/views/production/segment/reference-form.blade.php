@@ -92,6 +92,10 @@
 
         <!-- Modal, harga jual dan kuantitas -->
         <div class="production-ref-totals">
+            <div class="production-ref-field production-ref-field--wide">
+                <label class="production-ref-label" for="service_cost_display">Biaya Produksi <em>/porsi</em></label>
+                <div class="production-ref-readout" :class="referenceProductId ? '' : 'is-locked'"><small>Rp</small><input id="service_cost_display" type="text" inputmode="numeric" autocomplete="off" placeholder="0" class="production-ref-readout__input" :disabled="!referenceProductId" :value="serviceCost ? formatNumber(serviceCost) : ''" @input="serviceCost = $event.target.value.replace(/\D/g, '')" aria-label="Biaya produksi per porsi"></div>
+            </div>
             <div class="production-ref-field">
                 <span class="production-ref-label">Modal / Satuan</span>
                 <div class="production-ref-readout is-locked"><small>Rp</small><b x-text="formatNumber(hppPerUnit)"></b></div>
