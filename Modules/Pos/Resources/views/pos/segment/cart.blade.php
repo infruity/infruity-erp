@@ -30,7 +30,7 @@
                             <i class="ph-bold ph-warning-circle pos-cart-lock" x-show="parcelNeedsComposition(item)" title="Komposisi parcel belum diisi" aria-label="Komposisi parcel belum diisi"></i>
                         </span>
                     </span>
-                    <span class="pos-cart-bottom"><span x-text="item.price.toLocaleString('id-ID') + ' x ' + item.qty + ' ' + item.unit"></span><span class="pos-cart-total">Rp <span x-text="(item.price * item.qty).toLocaleString('id-ID')"></span></span></span>
+                    <span class="pos-cart-bottom"><span x-text="item.price.toLocaleString('id-ID') + ' x ' + item.qty + ' ' + item.unit"></span><span class="pos-cart-total">Rp <span x-text="(() => { const t = item.total_input; const net = typeof t === 'number' ? t : (parseFloat(String(t ?? '').replace(/[^\d]/g, '')) || 0); return net ? net + Number(item.discount || 0) : item.price * item.qty; })().toLocaleString('id-ID')"></span></span></span>
                     <span class="pos-cart-discount" :class="item.discount > 0 ? 'has-discount' : ''">
                         <span x-text="item.discount > 0 ? (Number(item.discountPercent) > 0 ? 'Diskon (' + String(Number(item.discountPercent)).replace('.', ',') + '%)' : 'Diskon') : 'Diskon -'"></span>
                         <span x-show="item.discount > 0" x-text="'-Rp ' + item.discount.toLocaleString('id-ID')"></span>

@@ -159,8 +159,9 @@ final class PosFormUiContractTest extends TestCase
         }
         $this->assertStringNotContainsString('ph-shopping-cart', $cart, 'Empty state reference has no icon');
         $this->assertStringNotContainsString('<button type="button" class="pos-cart-row', $cart, 'Row holds a delete button, so it cannot be a button itself');
-        // The row shows the gross line total (price x qty), like the nota; the discount sits on its own line below it.
-        $this->assertStringContainsString("(item.price * item.qty).toLocaleString('id-ID')", $cart);
+        // The row shows the gross line total, like the nota; the discount sits on its own line below it.
+        // Gross = stored total (what the cashier typed, so it matches Total Belanja) + discount; price x qty only when no total is stored.
+        $this->assertStringContainsString("return net ? net + Number(item.discount || 0) : item.price * item.qty;", $cart);
     }
 
     public function test_summary_keeps_discount_and_shipping_and_a_docked_footer_owns_total_and_actions(): void

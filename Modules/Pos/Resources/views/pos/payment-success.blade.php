@@ -53,7 +53,7 @@
                     ? url('/cek-nota/' . $data->uuid)
                     : url('/cek-nota/draft/' . $data->pos->uuid);
                 $message = urlencode("Halo, berikut bukti transaksi Anda:\n{$url}");
-                $phone = $data->pos->customer->whatsapp ?? '';
+                $phone = wa_phone($data->pos->customer->whatsapp ?? '');
                 $waUrl = "https://wa.me/{$phone}?text={$message}";
             @endphp
             <a href="{{ $waUrl }}" class="btn btn-success rounded-pill w-100 mt-2">

@@ -431,7 +431,7 @@ class DeliveryOrderController extends Controller
                 $customerWa = $item->customer->whatsapp ?? '';
 
                 if (!empty($customerWa)) {
-                    $phone = $customerWa;
+                    $phone = wa_phone($customerWa);
                     $waUrl = "https://wa.me/{$phone}";
 
                     $html .= '
