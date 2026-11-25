@@ -233,7 +233,6 @@
 
     $('#courier_id').select2({
         placeholder: 'Pilih Kurir',
-        width: '100%',
         ajax: {
             url: '/ajax/getKurir',
             dataType: 'json',

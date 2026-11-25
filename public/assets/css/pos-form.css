@@ -760,6 +760,7 @@ body:has(.pos-form--reference) .select2-search--dropdown input[aria-controls="se
 .pos-extra-settings > summary { padding:10px 0; color:#0b595b; cursor:pointer; font-size:12px; font-weight:700; }
 .pos-extra-settings .pos-ref-more { margin-top:0; }
 @media (max-width:767px) {
+  .pos-extra-settings { display:none; }
   .pos-ref-total.is-toggle { -webkit-tap-highlight-color:transparent; user-select:none; }
   /* Reserve the closed footer height while its sheet expands over the cart. */
   .pos-form--reference > .pos-ref-root { display:block; position:relative; flex:none; height:calc(142px + env(safe-area-inset-bottom)); }
@@ -837,7 +838,3 @@ body.erp-ui:has(.pos-form, .pos-add-page, .pos-card--pay) :is(.pos-ref-parcel-li
 .pos-form--reference .pos-card--fields .pos-customer__add::before { content:''; position:absolute; left:0; top:12px; width:1px; height:20px; background:#e5e7eb; }
 .pos-form--reference .pos-card--fields .pos-branch .erp-picker__trigger > i { display:block; }
 .pos-form--reference .pos-branch .pos-branch__note:disabled { color:#d1d5db; cursor:not-allowed; opacity:1; }
-
-/* Kurir: satu baris penuh di bawah Diskon Nota / Ongkos Kirim pada lembar ringkasan. */
-.pos-ref-courier { margin-top:10px; }
-.pos-ref-courier .pos-ref-money__title { display:block; margin-bottom:4px; }
