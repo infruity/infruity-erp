@@ -158,6 +158,13 @@
                             <label class="form-label mb-1">Alamat Pengiriman</label>
                             <select class="form-control" name="ongkir_address" id="address_id"></select>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label mb-1">Pilih Kurir</label>
+                            <select class="form-control" name="courier_id" id="courier_id">
+                                <option value="">Pilih Kurir</option>
+                            </select>
+                            <input type="hidden" name="courier_type" id="courier_type" value="">
+                        </div>
                         <div class="mb-3 row">
                             <div class="col">
                                 <label class="form-label mb-1" for="ongkir_date">Jadwal</label>
