@@ -17,6 +17,13 @@
                         <span class="pos-ref-money__field" :class="{ 'is-disabled': cart.length === 0 }"><span>Rp</span><input type="text" class="form-control" inputmode="numeric" placeholder="0" :disabled="cart.length === 0" :value="ongkirGlobal ? formatRupiah(ongkirGlobal) : ''" @input="updateOngkirGlobal" @focus="$event.target.select()"></span>
                     </label>
                 </div>
+                <div class="pos-ref-courier">
+                    <label class="pos-ref-money__title" for="courier_id">Kurir</label>
+                    <select class="form-control" name="courier_id" id="courier_id">
+                        <option value="">Pilih Kurir</option>
+                    </select>
+                    <input type="hidden" name="courier_type" id="courier_type" value="">
+                </div>
                 <p id="pos-discount-hint" class="pos-ref-hint visually-hidden">Diskon nota: Rp jika lebih dari 100, persen jika 100 atau kurang.</p>
                 <dl class="pos-ref-lines">
                     <div><dt>Subtotal Item (<span x-text="totalProduk"></span>)</dt><dd>Rp <span x-text="formatRupiah(subtotal)"></span></dd></div>
