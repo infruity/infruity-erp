@@ -30,7 +30,7 @@ class PosPaymentIdempotencyTest extends TestCase
         Schema::create('pos_transaction', function (Blueprint $t) {
             $t->increments('id'); $t->integer('branch_id'); $t->integer('customer_id')->nullable(); $t->integer('deposito_id')->nullable();
             $t->decimal('total', 15, 2); $t->decimal('paid', 15, 2)->default(0); $t->decimal('voucher', 15, 2)->default(0);
-            $t->integer('voucher_qty')->default(0); $t->string('status'); $t->softDeletes(); $t->timestamps();
+            $t->integer('voucher_qty')->default(0); $t->decimal('ongkir', 15, 2)->default(0); $t->integer('courier_id')->nullable(); $t->string('status'); $t->softDeletes(); $t->timestamps();
         });
         Schema::create('pos_payment', function (Blueprint $t) {
             $t->increments('id'); $t->string('uuid'); $t->date('date'); $t->string('nota_number'); $t->integer('pos_id'); $t->integer('branch_id');
@@ -55,6 +55,28 @@ class PosPaymentIdempotencyTest extends TestCase
     {
         return ['idempotency_key' => $key, 'date' => '2026-10-25', 'transaction_id' => 1, 'customer_id' => null,
             'total_payment' => $amount, 'payments' => [['payment_id' => 1, 'amount' => number_format($amount, 0, ',', '.')]]];
+    }
+
+    public function test_unpaid_sale_with_ongkir_requires_a_courier(): void
+    {
+        DB::table('pos_transaction')->where('id', 1)->update(['status' => 'draft', 'ongkir' => 12000, 'courier_id' => null]);
+        $this->postJson('/_payment-fixture', $this->payload())->assertStatus(422)->assertJsonValidationErrors('courier_id');
+        $this->assertSame(0, DB::table('pos_payment')->count());
+    }
+
+    public function test_courier_rule_does_not_block_sale_with_courier_or_without_ongkir(): void
+    {
+        // Fixture ini tidak punya tabel stok untuk status draft: yang dicek hanya bahwa aturan kurir tidak menolak.
+        DB::table('pos_transaction')->where('id', 1)->update(['status' => 'draft', 'ongkir' => 12000, 'courier_id' => 5]);
+        $this->postJson('/_payment-fixture', $this->payload())->assertJsonMissingValidationErrors('courier_id');
+        DB::table('pos_transaction')->where('id', 1)->update(['ongkir' => 0, 'courier_id' => null]);
+        $this->postJson('/_payment-fixture', $this->payload('53c09376-55a8-472e-9400-5c821688487a'))->assertJsonMissingValidationErrors('courier_id');
+    }
+
+    public function test_sale_already_in_debt_is_not_blocked_by_missing_courier(): void
+    {
+        DB::table('pos_transaction')->where('id', 1)->update(['status' => 'debt', 'ongkir' => 12000, 'courier_id' => null]);
+        $this->postJson('/_payment-fixture', $this->payload())->assertOk();
     }
 
     public function test_retried_partial_payment_returns_original_result_without_adding_to_ledger(): void

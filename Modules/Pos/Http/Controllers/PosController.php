@@ -403,6 +403,12 @@ class PosController extends Controller
             if (! in_array($posForVoucher->status, ['draft', 'temp', 'pending', 'debt'], true)) {
                 throw ValidationException::withMessages(['transaction_id' => 'Transaksi ini tidak dapat dibayar lagi.']);
             }
+            // Ongkir tanpa kurir = "Ambil di toko" dengan biaya kirim. Berlaku selama pemilih kurir masih tampil (belum dibayar).
+            if (in_array($posForVoucher->status, ['draft', 'temp', 'pending'], true)
+                && (float) $posForVoucher->ongkir > 0
+                && empty($posForVoucher->courier_id)) {
+                throw ValidationException::withMessages(['courier_id' => 'Kurir belum dipilih. Anda memasukkan biaya ongkir, tetapi tidak memilih kurir.']);
+            }
             if ($posForVoucher->customer_id && ! empty($data['customer_id']) && (int) $data['customer_id'] !== (int) $posForVoucher->customer_id) {
                 throw ValidationException::withMessages(['customer_id' => 'Pelanggan tidak sesuai dengan transaksi.']);
             }

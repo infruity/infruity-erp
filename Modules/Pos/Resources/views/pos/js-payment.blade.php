@@ -369,6 +369,17 @@
                         }
                     }
 
+                    // Ongkir diisi tapi pilihannya "Ambil di toko" (tanpa kurir).
+                    const courierSelect = document.getElementById('pay_courier');
+                    if (courierSelect && this.liveOngkir > 0 && (!courierSelect.value || courierSelect.value === '0')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Kurir belum dipilih',
+                            text: 'Anda memasukkan biaya ongkir, tetapi tidak memilih kurir!',
+                        });
+                        return;
+                    }
+
                     if (!payload.payments || !payload.date) {
                         Swal.fire('Lengkapi data', 'Semua input wajib diisi.', 'warning');
                         return;
