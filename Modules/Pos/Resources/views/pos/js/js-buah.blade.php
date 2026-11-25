@@ -2090,16 +2090,6 @@
                 const ongkirAddress = document.querySelector('select[name="ongkir_address"]').value;
                 console.table(this.ongkirGlobal, courierId);
 
-                if (this.ongkirGlobal > 0 && (courierId == null || courierId == '')) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Kurir belum dipilih',
-                        text: 'Anda memasukkan biaya ongkir, tetapi tidak memilih kurir!',
-                    });
-                    if (typeof doneCallback === 'function') doneCallback();
-                    return;
-                }
-
                 const data = {
                     customer_id: customerId,
                     date: transactionDate,
