@@ -760,7 +760,6 @@ body:has(.pos-form--reference) .select2-search--dropdown input[aria-controls="se
 .pos-extra-settings > summary { padding:10px 0; color:#0b595b; cursor:pointer; font-size:12px; font-weight:700; }
 .pos-extra-settings .pos-ref-more { margin-top:0; }
 @media (max-width:767px) {
-  .pos-extra-settings { display:none; }
   .pos-ref-total.is-toggle { -webkit-tap-highlight-color:transparent; user-select:none; }
   /* Reserve the closed footer height while its sheet expands over the cart. */
   .pos-form--reference > .pos-ref-root { display:block; position:relative; flex:none; height:calc(142px + env(safe-area-inset-bottom)); }
