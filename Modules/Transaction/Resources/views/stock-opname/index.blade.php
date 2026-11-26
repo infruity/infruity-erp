@@ -1197,7 +1197,8 @@
 
         function describeStockOpname(row) {
             const isPending = row?.status === 'pending';
-            const stockSystem = isPending ? Number(row?.live_stock || 0) : Number(row?.stock || 0);
+            // The system stock recorded when the shelf was counted, pending or finalized.
+            const stockSystem = Number(row?.stock || 0);
             const stockFisik = Number(row?.real_stock || 0);
             // The server rounds the difference and filters on that same value, so render it
             // verbatim; recomputing here in binary floats could disagree at half-cent ties.

@@ -418,19 +418,13 @@ class StockOpnameController extends Controller
             $query->where('stock_opname.status', $request->status_filter === 'draft' ? 'pending' : 'selesai');
         }
 
-        // The row's difference uses live stock while pending and the recorded stock once finalized.
+        // A row's difference is the one found at counting time, pending or finalized.
         // Filter on that same expression so a filtered list never contradicts the numbers it shows.
         $resultFilter = $request->input('result_filter', 'all');
         if (in_array($resultFilter, ['lebih', 'kurang', 'sesuai'], true)) {
-            $query->leftJoin('product_stock as so_live_stock', function ($join) {
-                $join->on('so_live_stock.id', '=', 'stock_opname.product_id')
-                    ->on('so_live_stock.branch_id', '=', 'stock_opname.branch_id');
-            });
-
-            $systemStock = "CASE WHEN stock_opname.status = 'pending' THEN COALESCE(so_live_stock.stock_available, 0) ELSE stock_opname.stock END";
             // Compare in exact thousandths, exactly like self::difference(): rounding the plain
             // subtraction is ambiguous at half-cent ties, where SQL and binary floats disagree.
-            $gap = "ROUND(stock_opname.real_stock * 1000) - ROUND(({$systemStock}) * 1000)";
+            $gap = 'ROUND(stock_opname.real_stock * 1000) - ROUND(stock_opname.stock * 1000)';
             $query->whereRaw(match ($resultFilter) {
                 'lebih' => "{$gap} >= 5",
                 'kurang' => "{$gap} <= -5",
@@ -455,7 +449,7 @@ class StockOpnameController extends Controller
             ->addIndexColumn()
             ->make(true);
 
-        // Live stock and average HPP come from the product_stock view, which rebuilds the
+        // The average HPP comes from the product_stock view, which rebuilds the
         // whole ledger per query. Joining it made both the page and the count query pay
         // that cost; read it once, for the rows on this page only.
         $payload = $response->getData(true);
@@ -463,7 +457,7 @@ class StockOpnameController extends Controller
         if ($rows !== []) {
             $stocks = LedgerSql::stockFor(array_unique(array_column($rows, 'product_id')))
                 ->whereIn('branch_id', array_unique(array_column($rows, 'branch_id')))
-                ->get(['id', 'branch_id', 'stock_available', 'avg_hpp']);
+                ->get(['id', 'branch_id', 'avg_hpp']);
 
             $byKey = [];
             foreach ($stocks as $stock) {
@@ -473,13 +467,9 @@ class StockOpnameController extends Controller
             foreach ($rows as $i => $row) {
                 $stock = $byKey[$row['product_id'] . '|' . $row['branch_id']] ?? null;
                 $rows[$i]['avg_hpp_calc'] = $stock?->getRawOriginal('avg_hpp');
-                $rows[$i]['live_stock'] = $stock?->getRawOriginal('stock_available');
                 // One rounding authority: the list renders this difference and the result filter
                 // compares the same expression, so a row cannot land in a bucket it contradicts.
-                $systemStock = $row['status'] === 'pending'
-                    ? ($stock?->getRawOriginal('stock_available') ?? 0)
-                    : $row['stock'];
-                $rows[$i]['display_difference'] = self::difference($row['real_stock'], $systemStock);
+                $rows[$i]['display_difference'] = self::difference($row['real_stock'], $row['stock']);
             }
             $payload['data'] = $rows;
         }
@@ -664,33 +654,13 @@ class StockOpnameController extends Controller
             }
 
             \Modules\Master\Entities\Product::whereKey($stockOpname->product_id)->lockForUpdate()->firstOrFail();
-            $productStock = DB::table('product_stock')
-                ->where('id', $stockOpname->product_id)
-                ->where('branch_id', $stockOpname->branch_id)
-                ->first();
 
-            if (!$productStock) {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Stok produk tidak ditemukan.'
-                ], 404);
-            }
-
-            $currentStock = $productStock->stock_available;
-            $avg_price = $productStock->avg_hpp;
-            
-            $difference = (Double)$stockOpname->real_stock - (Double)$currentStock;
-
-            $stockOpname->stock = $currentStock;
-            $stockOpname->difference = $difference;
+            // Finalizing approves the difference found when the shelf was counted. The system stock
+            // recorded then is not read again: sales and other movements made since the count stay
+            // in the ledger, and recomputing against today's stock would undo them.
             $stockOpname->status = 'selesai';
             $stockOpname->updated_by = Auth::user()->id_user;
             $stockOpname->save();
-
-            // (removed invalid insert into transaction_stock view)
-
-
 
             DB::commit();
 
