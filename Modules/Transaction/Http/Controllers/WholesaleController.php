@@ -662,6 +662,15 @@ class WholesaleController extends Controller
             ->make(true);
     }
 
+    /** A service (Jasa) is never purchased: it has no stock and costs nothing. */
+    private function rejectServices(array $productIds): void
+    {
+        $ids = array_filter($productIds, 'is_numeric');
+        if ($ids !== [] && Product::serviceIds($ids) !== []) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['items' => 'Produk Jasa / Layanan tidak bisa masuk Pengadaan.']);
+        }
+    }
+
     public function save_product(Request $request)
     {
         if ($denied = $this->requireAccess('wholesale.save-product')) {
@@ -676,6 +685,8 @@ class WholesaleController extends Controller
             'price'        => 'required',
             'sell_price'   => 'nullable',
         ]);
+
+        $this->rejectServices([$validated['id']]);
 
         $cek = WholesaleProduct::where('wholesale_id', $validated['wholesale_id'])
             ->where('product_id', $validated['id'])
@@ -826,6 +837,7 @@ class WholesaleController extends Controller
             return DataTables::of([])->make(true); // Kembalikan tabel kosong jika tidak ada pencarian
         }
         $query = Product::query()
+            ->where('is_service', false)
             ->with('category')
             ->with('get_stock')
             ->where('name', 'like', Like::contains($searchValue));
@@ -878,6 +890,7 @@ class WholesaleController extends Controller
             ];
         }
         $data = $request->validate($rules);
+        $this->rejectServices(array_column((array) $request->input('items', []), 'id'));
         // validate() only returns fields that have a rule; the cart rows carry more (sell, total_input, ...)
         // that the save below reads, so keep the full rows.
         $data['items'] = $request->input('items', []);

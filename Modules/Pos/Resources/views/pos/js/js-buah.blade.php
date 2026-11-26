@@ -1054,13 +1054,15 @@
                     }
                     const stock_available = (item.get_stock?.stock_available ?? 0) - qtyInCart;
                     const unitLabel = item.unit && (item.unit.abbreviation || item.unit.name || item.unit) || '';
-                    const stockRounded = String(Math.round(stock_available * 100) / 100).replace('.', ',');
+                    // A service has no stock limit (Product::SERVICE_STOCK).
+                    const unlimited = stock_available > 900000000;
+                    const stockRounded = unlimited ? '∞' : String(Math.round(stock_available * 100) / 100).replace('.', ',');
                     return {
                         id: item.id,
                         text: item.name,
                         meta: productRows
                             ? 'Rp ' + Number(item.price || 0).toLocaleString('id-ID') + (unitLabel ? ' / ' + unitLabel : '')
-                            : (stock_available > 0 ? 'Stok: ' + stock_available : zeroLabel),
+                            : (unlimited ? 'Jasa' : (stock_available > 0 ? 'Stok: ' + stock_available : zeroLabel)),
                         aside: productRows ? ((stock_available > 0 ? stockRounded : '0') + (unitLabel ? ' ' + unitLabel : '')) : undefined,
                         data: {
                             id: item.id,

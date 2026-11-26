@@ -523,6 +523,8 @@ class PosController extends Controller
                     Product::where('id', $lockId)->lockForUpdate()->first();
                 }
 
+                $requiredStocks = array_diff_key($requiredStocks, array_flip(Product::serviceIds(array_keys($requiredStocks))));
+
                 // Validasi stok akumulatif dari semua sumber (satu query untuk semua produk)
                 $stockSnapshot = InventorySnapshot::stockAvailable(array_keys($requiredStocks), $posForVoucher->branch_id);
                 foreach ($requiredStocks as $stockProductId => $requiredQty) {
@@ -870,6 +872,9 @@ class PosController extends Controller
                 }
             }
 
+            // Jasa tidak punya batas stok.
+            $requiredStocks = array_diff_key($requiredStocks, array_flip(Product::serviceIds(array_keys($requiredStocks))));
+
             // Validasi stok akumulatif dari semua sumber
             foreach ($requiredStocks as $stockProductId => $requiredQty) {
                 $currentStock = $stockOf($stockProductId);
@@ -999,7 +1004,8 @@ class PosController extends Controller
                     // Jika product memiliki parent, gunakan parent_id untuk HPP, jika tidak gunakan product itu sendiri
                     $hppProductId = $parentId ?? $product->id;
                     $productHpp   = $hppOf($hppProductId);
-                    $hppValue     = (float) ($productHpp->hpp_berjalan ?? 0);
+                    // A service has no cost, whatever its ledger once held.
+                    $hppValue     = $product->is_service ? 0.0 : (float) ($productHpp->hpp_berjalan ?? 0);
 
                     $posDetail = PosDetailModel::create([
                         'pos_id'               => $transaksiId,
@@ -1028,7 +1034,11 @@ class PosController extends Controller
                 }
             }
 
-            $movingHpp = static function (int $productId) use (&$hppSnapshot, $hppIsStale): float {
+            $serviceIds = array_flip(Product::serviceIds());
+            $movingHpp = static function (int $productId) use (&$hppSnapshot, $hppIsStale, $serviceIds): float {
+                if (isset($serviceIds[$productId])) {
+                    return 0.0;
+                }
                 $current = $hppIsStale($productId)
                     ? (InventorySnapshot::latestHpp([$productId])[$productId] ?? null)?->hpp_berjalan
                     : $hppSnapshot[$productId]?->hpp_berjalan;

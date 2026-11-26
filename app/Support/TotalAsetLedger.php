@@ -34,6 +34,7 @@ final class TotalAsetLedger
             ->join('products as PARENT', 'PARENT.id', '=', DB::raw('COALESCE(pc.parent_id, CHILD.id)'))
             ->join('product_units as C', 'PARENT.product_unit', '=', 'C.id')
             ->where('PARENT.tipe', '!=', 'parcel')
+            ->where('PARENT.is_service', false) // a service is not an asset
             ->selectRaw('COALESCE(pc.parent_id, A.product_id) as product_id')
             ->selectRaw('PARENT.name as name, C.abbreviation, PARENT.hpp')
             ->selectRaw('SUM(A.quantity) as total_stock')

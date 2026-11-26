@@ -47,6 +47,7 @@
             <file>./tests/Feature/ProductVariantBranchPricesTest.php</file>
             <file>./tests/Feature/PositionNameOnlyFormTest.php</file>
             <file>./tests/Feature/BranchScopeAndPermissionGapsTest.php</file>
+            <file>./tests/Feature/ServiceProductTest.php</file>
         </testsuite>
     </testsuites>
     <groups>

@@ -27,10 +27,15 @@ class ProductHpp
         $ledgerIds = self::ledgerIds($ids);
         $latest = InventorySnapshot::latestHpp(array_values($ledgerIds));
         $fallback = Product::whereIn('id', $ids)->pluck('hpp', 'id')->all();
+        $services = array_flip(Product::serviceIds($ids));
 
         $hpp = [];
         foreach ($ids as $id) {
             $row = $latest[$ledgerIds[$id]] ?? null;
+            if (isset($services[$id])) {
+                $hpp[$id] = 0.0;
+                continue;
+            }
             $hpp[$id] = $row !== null ? (float) $row->hpp_berjalan : (float) ($fallback[$id] ?? 0);
         }
 
@@ -52,7 +57,12 @@ class ProductHpp
         $parents = array_values(array_unique(self::ledgerIds($ids)));
         $latest = InventorySnapshot::latestHpp($parents);
 
+        $services = array_flip(Product::serviceIds($parents));
+
         foreach ($parents as $parentId) {
+            if (isset($services[$parentId])) {
+                continue; // a service keeps HPP 0
+            }
             $row = $latest[$parentId] ?? null;
             if ($row === null) {
                 continue;

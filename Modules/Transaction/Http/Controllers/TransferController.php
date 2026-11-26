@@ -598,7 +598,7 @@ class TransferController extends Controller
         $products = \Modules\Master\Entities\Product::with('unit')->select('products.*', 'product_stock.stock_available', 'product_stock.avg_hpp')
             ->join('product_stock', 'products.id', '=', 'product_stock.id')
             ->where('product_stock.branch_id', $request->branch_id)
-            ->where('products.tipe', '!=', 'parcel')->whereNull('products.is_variant')
+            ->where('products.tipe', '!=', 'parcel')->whereNull('products.is_variant')->where('products.is_service', false)
             ->where('products.name', 'like', Like::contains((string) $request->input('term', '')))
             // Products with stock first (A-Z), then those without (A-Z, shown greyed out and not selectable).
             ->orderByRaw('(product_stock.stock_available > 0' . ($ownQty->isEmpty() ? '' : ' OR products.id IN (' . implode(',', array_map('intval', $ownQty->keys()->all())) . ')') . ') DESC')

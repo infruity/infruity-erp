@@ -1075,7 +1075,7 @@ class ProductController extends Controller
     {
         $search = $request->input('search', '');
         $products = Product::with(['unit', 'category'])
-            ->select('id', 'name', 'sku as code', 'hpp', 'price', 'stock', 'product_unit', 'category_id')
+            ->select('id', 'name', 'sku as code', 'hpp', 'price', 'stock', 'product_unit', 'category_id', 'is_service')
             ->where('name', 'like', Like::contains($search))
             ->where('tipe', '!=', 'parcel'); // Exclude parcel type
 
@@ -1132,6 +1132,10 @@ class ProductController extends Controller
                         ->where('product_stock.stock_available', '>', 0);
                 });
             }
+        }
+
+        if ($request->boolean('no_service')) {
+            $query = $query->where('is_service', false); // Pengadaan: a service is never purchased
         }
 
         if ($request->has('jenis')) {
@@ -1661,6 +1665,7 @@ class ProductController extends Controller
             ->leftJoin('product_units as u', 'u.id', '=', 'p.product_unit')
             ->whereNull('p.is_variant')
             ->where('p.tipe', '!=', 'parcel')
+            ->where('p.is_service', false)
             ->select(
                 'p.id', 'p.name', 'p.sku', 'p.limit', 'p.hpp', 'p.price',
                 'p.tipe', 'p.category_id', 'p.product_unit',
@@ -1697,7 +1702,7 @@ class ProductController extends Controller
         // count query would rebuild the whole stock ledger for it (~400 ms each). Count the products alone.
         if (! $request->filled('stock_filter')) {
             $countProducts = function (?string $search = null) use ($request, $allowedBranchIds) {
-                $count = DB::table('products as p')->whereNull('p.is_variant')->where('p.tipe', '!=', 'parcel');
+                $count = DB::table('products as p')->whereNull('p.is_variant')->where('p.tipe', '!=', 'parcel')->where('p.is_service', false);
                 if ($allowedBranchIds === []) {
                     $count->whereRaw('1 = 0');
                 }
@@ -1855,6 +1860,7 @@ class ProductController extends Controller
         $candidates = DB::table('products')
             ->whereNull('is_variant')
             ->where('tipe', '!=', 'parcel')
+            ->where('is_service', false)
             ->where('name', 'like', Like::contains((string) $request->search))
             ->orderBy('id')
             ->pluck('id');
