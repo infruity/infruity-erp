@@ -97,27 +97,24 @@ final class StockOpnameListFiltersTest extends TestCase
             ['id' => 14, 'name' => 'Product Half-Down', 'product_unit' => 1],
         ]);
         DB::table('product_stock')->insert([
-            ['id' => 11, 'branch_id' => 1, 'stock_available' => 10, 'avg_hpp' => 5000],
-            ['id' => 11, 'branch_id' => 2, 'stock_available' => 10, 'avg_hpp' => 5000],
-            ['id' => 12, 'branch_id' => 1, 'stock_available' => 9.996, 'avg_hpp' => 5000],
-            ['id' => 13, 'branch_id' => 1, 'stock_available' => 12.345, 'avg_hpp' => 5000],
-            ['id' => 14, 'branch_id' => 1, 'stock_available' => 12.345, 'avg_hpp' => 5000],
+            ['id' => 11, 'branch_id' => 1, 'stock_available' => 99, 'avg_hpp' => 5000],
+            ['id' => 11, 'branch_id' => 2, 'stock_available' => 99, 'avg_hpp' => 5000],
+            ['id' => 12, 'branch_id' => 1, 'stock_available' => 99, 'avg_hpp' => 5000],
+            ['id' => 13, 'branch_id' => 1, 'stock_available' => 99, 'avg_hpp' => 5000],
+            ['id' => 14, 'branch_id' => 1, 'stock_available' => 99, 'avg_hpp' => 5000],
         ]);
 
-        $this->insertOpname(1, 1, 'pending', '2026-11-03', 8, 12, 4);   // live: +2
-        $this->insertOpname(2, 1, 'pending', '2026-11-03', 4, 5, 1);    // live: -5
-        $this->insertOpname(3, 1, 'pending', '2026-11-03', 9, 10, 1);   // live: 0
-        $this->insertOpname(4, 1, 'selesai', '2026-11-03', 10, 12, 2); // saved: +2
-        $this->insertOpname(5, 1, 'selesai', '2026-11-03', 10, 5, -5); // saved: -5
-        $this->insertOpname(6, 1, 'selesai', '2026-11-03', 10, 10, 0);// saved: 0
+        $this->insertOpname(1, 1, 'pending', '2026-11-03', 10, 12, 2);
+        $this->insertOpname(2, 1, 'pending', '2026-11-03', 10, 5, -5);
+        $this->insertOpname(3, 1, 'pending', '2026-11-03', 10, 10, 0);
+        $this->insertOpname(4, 1, 'selesai', '2026-11-03', 10, 12, 2);
+        $this->insertOpname(5, 1, 'selesai', '2026-11-03', 10, 5, -5);
+        $this->insertOpname(6, 1, 'selesai', '2026-11-03', 10, 10, 0);
         $this->insertOpname(7, 2, 'selesai', '2026-11-03', 10, 13, 3);// outside user's branch
         $this->insertOpname(8, 1, 'selesai', '2026-12-01', 10, 13, 3);// outside date range
-        // 10.00 - 9.996 = 0.004 renders as "0", so it belongs to "Sesuai", not "Lebih". Every
-        // stock_opname column stays at its 2-decimal scale; the 3-decimal value lives in live stock.
         $this->insertOpname(9, 1, 'pending', '2026-11-03', 10, 10, 0.00, 12);
-        // Exact half-cent ties in both directions. `stock` stays at the column's 2 decimals so the
-        // fixture means the same thing on MySQL; pending rows read live stock from product_stock.
-        $this->insertOpname(10, 1, 'pending', '2026-11-03', 12.35, 12.35, 0.01, 13);
+        // The smallest differences the 2-decimal columns can hold, in both directions.
+        $this->insertOpname(10, 1, 'pending', '2026-11-03', 12.34, 12.35, 0.01, 13);
         $this->insertOpname(11, 1, 'pending', '2026-11-03', 12.35, 12.34, -0.01, 14);
     }
 
@@ -143,7 +140,6 @@ final class StockOpnameListFiltersTest extends TestCase
     {
         $this->assertSame([1, 4, 8, 10], $this->fetchRows(['result_filter' => 'lebih']));
         $this->assertSame([2, 5, 11], $this->fetchRows(['result_filter' => 'kurang']));
-        // Row 9 differs by 0.004 on a 3-decimal live stock; the row renders "0", so must match here.
         $this->assertSame([3, 6, 9], $this->fetchRows(['result_filter' => 'sesuai']));
     }
 
@@ -172,7 +168,6 @@ final class StockOpnameListFiltersTest extends TestCase
             $bucket[$diff > 0 ? 'lebih' : ($diff < 0 ? 'kurang' : 'sesuai')][] = (int) $row['id'];
         }
 
-        // Half-cent ties round away from zero on both sides, matching the server-side filter.
         $this->assertContains(10, $bucket['lebih']);
         $this->assertContains(11, $bucket['kurang']);
 

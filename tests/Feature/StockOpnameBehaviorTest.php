@@ -145,9 +145,9 @@ class StockOpnameBehaviorTest extends TestCase
         $this->assertDatabaseHas('stock_opname', ['id' => $id, 'real_stock' => 7, 'status' => 'selesai']);
     }
 
-    public function test_the_physical_count_wins_over_a_sale_made_between_counting_and_finalizing(): void
+    public function test_a_sale_made_between_counting_and_finalizing_stays_deducted(): void
     {
-        $id = $this->createCount(7);   // system said 10, shelf had 7
+        $id = $this->createCount(7);   // system said 10, shelf had 7: 3 are missing
 
         // A sale of 2 is paid after the count was entered.
         $posId = DB::table('pos_transaction')->insertGetId([
@@ -163,8 +163,29 @@ class StockOpnameBehaviorTest extends TestCase
 
         $this->finalize($id)->assertOk();
 
-        $this->assertDatabaseHas('stock_opname', ['id' => $id, 'stock' => 8, 'difference' => -1]);
-        $this->assertSame(7.0, $this->stock(), 'after finalizing, system stock must equal the counted 7');
+        // The difference is the one found when counting; the later sale of 2 comes off the counted 7.
+        $this->assertDatabaseHas('stock_opname', ['id' => $id, 'stock' => 10, 'difference' => -3, 'status' => 'selesai']);
+        $this->assertSame(5.0, $this->stock());
+    }
+
+    public function test_finalizing_a_matching_count_after_a_sale_does_not_restore_the_sold_stock(): void
+    {
+        $id = $this->createCount(10);  // shelf and system agree
+
+        $posId = DB::table('pos_transaction')->insertGetId([
+            'uuid' => (string) Str::uuid(), 'invoice_number' => 'INVOP' . strtoupper(Str::random(6)), 'date' => date('Y-m-d'),
+            'total' => 36000, 'discount' => 0, 'paid' => 36000, 'status' => 'paid', 'branch_id' => $this->branch,
+            'created_by' => 1, 'created_at' => now()->addMinute(), 'updated_at' => now()->addMinute(),
+        ]);
+        DB::table('pos_transaction_detail')->insert([
+            'pos_id' => $posId, 'product_id' => $this->productId, 'quantity' => 3, 'price' => 12000, 'discount' => 0,
+            'subtotal' => 36000, 'exp' => 0, 'exp_value' => 0, 'type' => 'product', 'created_at' => now()->addMinute(), 'updated_at' => now()->addMinute(),
+        ]);
+
+        $this->finalize($id)->assertOk();
+
+        $this->assertDatabaseHas('stock_opname', ['id' => $id, 'difference' => 0]);
+        $this->assertSame(7.0, $this->stock());
     }
 
     // ---- editing a pending count -------------------------------------------------------------
