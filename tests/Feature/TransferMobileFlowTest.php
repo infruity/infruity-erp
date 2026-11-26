@@ -223,6 +223,19 @@ class TransferMobileFlowTest extends TestCase
         $this->getJson('/_test/transfer-data?mobile=1&url=unknown')->assertForbidden();
     }
 
+    public function test_branch_filter_matches_the_other_side_of_the_transfer(): void
+    {
+        $this->send(); // GKB (1) sends to GBA (2)
+        $sender = '/_test/transfer-data?mobile=1&url=transfer-pengirim&cabang_filter=';
+        $this->getJson($sender . '2')->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson($sender . '1')->assertOk()->assertJsonCount(0, 'data');
+
+        $this->receivingBranch();
+        $receiver = '/_test/transfer-data?mobile=1&url=transfer-penerima&cabang_filter=';
+        $this->getJson($receiver . '1')->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson($receiver . '2')->assertOk()->assertJsonCount(0, 'data');
+    }
+
     public function test_product_picker_uses_source_stock_and_hpp_and_requires_branch_access(): void
     {
         $this->getJson('/_test/transfer-products?branch_id=1&term=Anggur')->assertOk()->assertJsonCount(1)

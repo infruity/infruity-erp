@@ -20,7 +20,7 @@ final class SortirFilterUiContractTest extends TestCase
             '<x-erp.filter-sheet',
             'id="sortir"',
             'title="Filter Sortir Barang"',
-            'branch-label="Cabang Tujuan"',
+            'branch-label="Cabang"',
             'status-label="Status Sortir"',
             ':branches="$sortirFilterBranches"',
             "'draft' => 'Pending'",
@@ -55,11 +55,11 @@ final class SortirFilterUiContractTest extends TestCase
     public function test_sheet_renders_sections_in_reference_order(): void
     {
         $html = Blade::render(
-            '<x-erp.filter-sheet id="sortir" title="Filter Sortir Barang" branch-label="Cabang Tujuan" status-label="Status Sortir" :branches="$branches" :statuses="$statuses" />',
+            '<x-erp.filter-sheet id="sortir" title="Filter Sortir Barang" branch-label="Cabang" status-label="Status Sortir" :branches="$branches" :statuses="$statuses" />',
             ['branches' => [(object) ['id' => 1, 'name' => 'toko gkb']], 'statuses' => ['all' => 'Semua Status', 'draft' => 'Draf', 'paid' => 'Selesai']]
         );
 
-        $branch = strpos($html, 'Cabang Tujuan');
+        $branch = strpos($html, 'Cabang');
         $status = strpos($html, 'Status Sortir');
         $date = strpos($html, 'Periode Tanggal');
         $this->assertNotFalse($branch);

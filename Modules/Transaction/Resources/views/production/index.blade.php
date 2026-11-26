@@ -90,7 +90,7 @@
         </div>
     </x-erp.workspace>
     </div>
-    <x-erp.filter-sheet id="production" title="Filter Produksi" subtitle="Saring cabang tujuan, status, dan periode tanggal" branch-label="Cabang Tujuan" branch-all-label="Semua Cabang" status-label="Status Produksi" reset-label="Reset Filter" apply-label="Terapkan Filter" :branches="$branches" :show-branch-all="count($branches) > 1" :statuses="['all' => 'Semua', 'draft' => 'Pending', 'complete' => 'Selesai']" />
+    <x-erp.filter-sheet id="production" title="Filter Produksi" subtitle="Saring cabang, status, dan periode tanggal" branch-label="Cabang" branch-all-label="Semua Cabang" status-label="Status Produksi" reset-label="Reset Filter" apply-label="Terapkan Filter" :branches="$branches" :show-branch-all="count($branches) > 1" :statuses="['all' => 'Semua', 'draft' => 'Pending', 'complete' => 'Selesai']" />
     </div>
     <div data-production-detail-modal x-data="ProductionListUi.createDetailModal('{{ route('production.index') }}')">
         <template x-teleport="body">

@@ -107,7 +107,7 @@
         title="Filter Pesanan"
         subtitle="Saring cabang, status, dan periode tanggal pesanan"
         aria-label="Filter pesanan"
-        branch-label="Cabang Tujuan"
+        branch-label="Cabang"
         branch-all-label="Semua Cabang"
         status-label="Status Pesanan"
         :branches="$orderBookFilterBranches"

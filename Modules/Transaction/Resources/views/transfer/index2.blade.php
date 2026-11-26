@@ -2,6 +2,7 @@
 @php
     $receiving = request()->segment(1) === 'transfer-penerima';
     $filterBranches = $branches->map(fn ($branch) => ['id' => (string) $branch->id, 'name' => ucwords($branch->name)])->values();
+    $branchFilterLabel = $receiving ? 'Cabang Asal' : 'Cabang Tujuan';
     $side = $receiving ? 'transfer-penerima' : 'transfer-pengirim';
     $pageTitle = $receiving ? 'Pindah Stok - Menerima' : 'Pindah Stok - Mengirim';
     // Being prepared, on its way, being checked by the receiver (saved but not yet confirmed), received.
@@ -37,7 +38,7 @@
         </div>
         <x-erp.list-count noun="transfer stok" shown="rows.length" total="filtered" list=".transfer-list-scroll" />
         <div class="transfer-list-scroll" :aria-busy="loading">
-            <div class="transfer-list-head" x-show="rows.length"><span>Cabang &amp; Waktu</span><span>Pengirim / Produk</span><span style="text-align:right">Status / Nomor Pengiriman</span></div>
+            <div class="transfer-list-head" x-show="rows.length"><span>{{ $receiving ? 'Asal' : 'Tujuan' }} &amp; Waktu</span><span>Pengirim / Produk</span><span style="text-align:right">Status / Nomor Pengiriman</span></div>
             <template x-for="row in rows" :key="row.id">
                 <button type="button" class="transfer-row" :class="hasDeficit(row) ? 'has-deficit' : ''" @click="openDetail(row, $event)" :aria-label="'Detail transfer ' + row.invoice_number">
                     <span class="transfer-row-branch">
@@ -70,8 +71,8 @@
             id="transfer"
             title="Filter Pindah Stok - {{ $receiving ? 'Menerima' : 'Mengirim' }}"
             aria-label="Filter pindah stok"
-            subtitle="{{ $receiving ? 'Saring cabang, status penerimaan, dan periode tanggal' : 'Saring cabang tujuan, status, dan periode tanggal' }}"
-            :branch-label="'Cabang Tujuan'"
+            subtitle="{{ $receiving ? 'Saring cabang asal, status penerimaan, dan periode tanggal' : 'Saring cabang tujuan, status, dan periode tanggal' }}"
+            :branch-label="$branchFilterLabel"
             branch-all-label="Semua Cabang"
             :status-label="'Status ' . ($receiving ? 'Penerimaan' : 'Pengiriman')"
             :branches="$filterBranches"

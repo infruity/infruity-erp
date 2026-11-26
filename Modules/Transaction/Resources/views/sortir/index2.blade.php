@@ -64,7 +64,7 @@
             id="sortir"
             title="Filter Sortir Barang"
             aria-label="Filter sortir barang"
-            branch-label="Cabang Tujuan"
+            branch-label="Cabang"
             branch-all-label="Semua Cabang"
             status-label="Status Sortir"
             :branches="$sortirFilterBranches"

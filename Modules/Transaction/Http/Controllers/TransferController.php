@@ -36,7 +36,12 @@ class TransferController extends Controller
     {
         $this->authorizeTransferPage('index');
 
-        $data['branches'] = Branch::whereIn('id', UserBranch::getUserBranch())->get();
+        // The list filters by the other side of the transfer, which may be any branch. A single-branch
+        // user's own branch can never be the counterpart, so it is left out.
+        $own = collect(UserBranch::getUserBranch());
+        $data['branches'] = Branch::withoutGlobalScope('userBranch')
+            ->when($own->count() === 1, fn ($query) => $query->whereKeyNot($own->first()))
+            ->orderBy('name')->get();
         return view('transaction::transfer.index2', $data);
     }
 
@@ -622,7 +627,8 @@ class TransferController extends Controller
         $side = $request->input('url');
         $total = (clone $query)->count();
         if ($request->filled('status_filter') && $request->status_filter !== 'all') $query->where('status', $request->status_filter);
-        if ($request->filled('cabang_filter') && $request->cabang_filter !== 'all') $query->where($side === 'transfer-penerima' ? 'branch_destination_id' : 'branch_id', $request->cabang_filter);
+        // Counterpart branch: the receiver picks where it came from, the sender picks where it went.
+        if ($request->filled('cabang_filter') && $request->cabang_filter !== 'all') $query->where($side === 'transfer-penerima' ? 'branch_id' : 'branch_destination_id', $request->cabang_filter);
         if ($request->filled('start_date')) $query->whereDate('date', '>=', $request->start_date);
         if ($request->filled('end_date')) $query->whereDate('date', '<=', $request->end_date);
         if ($search = trim($request->input('search', ''))) {
@@ -693,9 +699,9 @@ class TransferController extends Controller
         }
         if ($request->has('cabang_filter') && $request->cabang_filter !== 'all') {
             if ($request->url == 'transfer-penerima') {
-                $query->where('branch_destination_id', $request->cabang_filter);
-            } else {
                 $query->where('branch_id', $request->cabang_filter);
+            } else {
+                $query->where('branch_destination_id', $request->cabang_filter);
             }
         }
         $data = $query->orderBy('date', 'DESC')->orderBy('id', 'DESC');
