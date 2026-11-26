@@ -120,6 +120,10 @@ class ProductionController extends Controller
             ], 422);
         }
 
+        if ($request->filled('branch_id') && ! $this->worksInBranch($request->branch_id)) {
+            return response()->json(['success' => false, 'message' => 'Anda tidak memiliki akses ke cabang yang dipilih.'], 403);
+        }
+
         try {
             // Validasi stok bahan baku (seperti PosController saveTransaction)
             if (in_array($request->submit_type, ['draft', 'posting'])) {
@@ -141,7 +145,10 @@ class ProductionController extends Controller
             // Check if this is an update (id is provided) or a new record
             $production = null;
             if ($request->id) {
-                $production = Production::find($request->id);
+                $production = Production::whereKey($request->id)->lockForUpdate()->first();
+                if ($production && ($refusal = $this->refusalToWrite($production))) {
+                    throw new Exception($refusal);
+                }
             }
 
             // If no production found with ID, check for existing temp production
@@ -386,6 +393,32 @@ class ProductionController extends Controller
         return redirect('production')->with('success', 'Produksi berhasil');
     }
 
+    private function worksInBranch($branchId): bool
+    {
+        return in_array((int) $branchId, array_map('intval', UserBranch::getUserBranch()), true);
+    }
+
+    /**
+     * Why the signed-in user may not write this run, or null when they may. A posted run is final (its stock and
+     * frozen HPP are history). Otherwise the run's branch must be one of theirs; a form draft ('temp') or a run
+     * without a branch belongs to whoever started it.
+     */
+    private function refusalToWrite(Production $production): ?string
+    {
+        if ($production->branch_id && ! $this->worksInBranch($production->branch_id)) {
+            return 'Anda tidak memiliki akses ke cabang produksi ini.';
+        }
+        if (in_array($production->status, ['posting', 'complete'], true)) {
+            return 'Produksi yang sudah selesai tidak dapat diubah.';
+        }
+        if (($production->status === 'temp' || ! $production->branch_id)
+            && (int) $production->created_by !== (int) Auth::id()) {
+            return 'Draf produksi ini milik pengguna lain.';
+        }
+
+        return null;
+    }
+
     /**
      * Stops a posting when an ingredient has less stock than the run uses, so
      * stock never goes below zero. Runs already posted are skipped: their usage
@@ -448,7 +481,13 @@ class ProductionController extends Controller
         try {
             DB::beginTransaction();
 
-            $production                  = Production::findOrFail($data['production_id']);
+            $production                  = Production::whereKey($data['production_id'])->lockForUpdate()->firstOrFail();
+            $foreign = $production->branch_id && ! $this->worksInBranch($production->branch_id);
+            if ($refusal = $this->refusalToWrite($production)) {
+                DB::rollback();
+
+                return response()->json(['success' => false, 'message' => $refusal], $foreign ? 403 : 422);
+            }
             $this->assertIngredientStock($production);
             $production->status          = 'posting';
             $production->completion_date = $data['completion_date'];
