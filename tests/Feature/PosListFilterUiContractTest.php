@@ -20,7 +20,7 @@ final class PosListFilterUiContractTest extends TestCase
             '<x-erp.filter-sheet',
             'id="pos"',
             'title="Filter Transaksi"',
-            'branch-label="Cabang Tujuan"',
+            'branch-label="Cabang"',
             'status-label="Status Transaksi"',
             ':branches="$posBranches"',
             ':default-branch="$posFilterConfig[\'defaultBranch\']"',
@@ -54,7 +54,7 @@ final class PosListFilterUiContractTest extends TestCase
     public function test_sheet_offers_the_pos_statuses_and_the_standard_sections(): void
     {
         $html = Blade::render(
-            '<x-erp.filter-sheet id="pos" title="Filter Transaksi" branch-label="Cabang Tujuan" status-label="Status Transaksi" :branches="$branches" :statuses="$statuses" reset-label="Reset Filter" apply-label="Terapkan Filter" />',
+            '<x-erp.filter-sheet id="pos" title="Filter Transaksi" branch-label="Cabang" status-label="Status Transaksi" :branches="$branches" :statuses="$statuses" reset-label="Reset Filter" apply-label="Terapkan Filter" />',
             [
                 'branches' => [(object) ['id' => 1, 'name' => 'toko gkb']],
                 'statuses' => ['all' => 'Semua', 'draft' => 'Pending', 'unpaid' => 'Belum Bayar', 'partial' => 'Kurang Bayar', 'paid' => 'Lunas'],

@@ -21,7 +21,8 @@ final class TransferFilterUiContractTest extends TestCase
             '<x-erp.filter-sheet',
             'id="transfer"',
             'title="Filter Pindah Stok - {{ $receiving ? \'Menerima\' : \'Mengirim\' }}"',
-            "'Cabang Tujuan'",
+            "\$receiving ? 'Cabang Asal' : 'Cabang Tujuan'",
+            ':branch-label="$branchFilterLabel"',
             "'Status ' . (\$receiving ? 'Penerimaan' : 'Pengiriman')",
             ':branches="$filterBranches"',
             "collect(\$statuses)->pluck('label', 'value')->all()",
@@ -53,7 +54,7 @@ final class TransferFilterUiContractTest extends TestCase
         $render = fn (bool $receiving) => Blade::render(
             '<x-erp.filter-sheet id="transfer" title="Filter Pindah Stok" :branch-label="$label" :status-label="$statusLabel" :branches="$branches" :statuses="$statuses" />',
             [
-                'label' => 'Cabang Tujuan',
+                'label' => $receiving ? 'Cabang Asal' : 'Cabang Tujuan',
                 'statusLabel' => 'Status ' . ($receiving ? 'Penerimaan' : 'Pengiriman'),
                 'branches' => [(object) ['id' => 1, 'name' => 'toko gkb']],
                 'statuses' => $statuses($receiving),
@@ -66,7 +67,7 @@ final class TransferFilterUiContractTest extends TestCase
         $this->assertStringContainsString('Cabang Tujuan', $sender);
         $this->assertStringContainsString('Status Pengiriman', $sender);
         $this->assertStringContainsString('>Pending<', $sender);
-        $this->assertStringContainsString('Cabang Tujuan', $receiver);
+        $this->assertStringContainsString('Cabang Asal', $receiver);
         $this->assertStringContainsString('Status Penerimaan', $receiver);
         $this->assertStringNotContainsString('>Pending<', $receiver);
         $this->assertStringContainsString('Sedang Diperiksa', $sender);

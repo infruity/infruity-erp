@@ -141,7 +141,7 @@
     title="Filter Transaksi"
     aria-label="Filter transaksi"
     subtitle="Saring cabang, status, dan periode tanggal transaksi"
-    branch-label="Cabang Tujuan"
+    branch-label="Cabang"
     branch-all-label="Semua Cabang"
     status-label="Status Transaksi"
     :branches="$posBranches"

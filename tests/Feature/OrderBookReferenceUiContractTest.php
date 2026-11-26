@@ -94,7 +94,7 @@ class OrderBookReferenceUiContractTest extends TestCase
             '<x-erp.filter-sheet',
             'id="order-book"',
             'title="Filter Pesanan"',
-            'branch-label="Cabang Tujuan"',
+            'branch-label="Cabang"',
             'status-label="Status Pesanan"',
             "'draft' => 'Pending'",
             "'process' => 'Proses'",

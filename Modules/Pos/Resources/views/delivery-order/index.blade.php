@@ -176,7 +176,7 @@
     title="Filter Pengiriman"
     aria-label="Filter pengiriman"
     subtitle="Saring cabang, status, dan periode pengiriman"
-    branch-label="Cabang Tujuan"
+    branch-label="Cabang"
     branch-all-label="Semua Cabang"
     status-label="Status Penerimaan"
     :branches="$branches"
