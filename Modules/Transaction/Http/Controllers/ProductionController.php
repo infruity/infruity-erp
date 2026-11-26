@@ -129,7 +129,11 @@ class ProductionController extends Controller
             if (in_array($request->submit_type, ['draft', 'posting'])) {
                 // One stock query for all ingredients (the view rebuilds the whole ledger per call).
                 $stock = InventorySnapshot::stockAvailable(array_column((array) $request->ingredients, 'id'), $request->branch_id);
+                $services = array_flip(Product::serviceIds(array_column((array) $request->ingredients, 'id')));
                 foreach ($request->ingredients as $ingredient) {
+                    if (isset($services[(int) $ingredient['id']])) {
+                        continue; // a service never runs out
+                    }
                     $requiredQty = (float)$ingredient['quantity'];
                     $currentStock = $stock[(int) $ingredient['id']] ?? 0.0;
 
@@ -435,6 +439,7 @@ class ProductionController extends Controller
             $needed[(int) $detail->product_id] = ($needed[(int) $detail->product_id] ?? 0) + (float) $detail->quantity;
         }
 
+        $needed = array_diff_key($needed, array_flip(Product::serviceIds(array_keys($needed))));
         $stock = InventorySnapshot::stockAvailable(array_keys($needed), $production->branch_id);
         foreach ($needed as $productId => $requiredQty) {
             $currentStock = $stock[$productId] ?? 0.0;

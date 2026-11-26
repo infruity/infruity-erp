@@ -26,6 +26,7 @@
     }
 
     function stockLabel(stock, unit) {
+        if (stock > 900000000) return 'Jasa'; // a service has no stock limit
         const value = stock > 0 ? String(Math.round(stock * 100) / 100).replace('.', ',') : '0';
         return unit ? `${value} ${unit}` : value;
     }

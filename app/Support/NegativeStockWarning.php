@@ -29,6 +29,7 @@ final class NegativeStockWarning
             ->select('product_stock.*', 'branch.name as branch_name')
             ->whereIn('product_stock.branch_id', $ids)
             ->where('stock_available', '<', 0)
+            ->whereNotIn('product_stock.id', \Modules\Master\Entities\Product::serviceIds())
             ->whereNull('is_variant')
             ->get();
     }

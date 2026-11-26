@@ -30,6 +30,47 @@ class Product extends Model
     ];
     protected $table = 'products';
 
+    /** Products in this category are services: no stock limit, never purchased, HPP 0. */
+    public const SERVICE_CATEGORY = 'Jasa / Layanan';
+
+    /** The stock a service reports to the screens, which all gate on stock_available. */
+    public const SERVICE_STOCK = 999999999;
+
+    protected static function booted(): void
+    {
+        static::saving(function (Product $product) {
+            if ($product->isDirty('category_id')) {
+                $service = $product->category_id
+                    && ProductCategory::whereKey($product->category_id)->value('name') === self::SERVICE_CATEGORY;
+                // Only write the flag when it changes anything, so ordinary products are left alone.
+                if ($service || $product->is_service) {
+                    $product->is_service = $service;
+                }
+            }
+            if ($product->is_service) {
+                $product->hpp = 0;
+            }
+        });
+    }
+
+    /** @return list<int> the service products among the given ids (all of them when no ids are given) */
+    public static function serviceIds(?iterable $ids = null): array
+    {
+        return self::query()->where('is_service', true)
+            ->when($ids !== null, fn ($query) => $query->whereIn('id', collect($ids)->all()))
+            ->pluck('id')->map(fn ($id) => (int) $id)->all();
+    }
+
+    public function relationsToArray()
+    {
+        $relations = parent::relationsToArray();
+        if ($this->is_service && array_key_exists('get_stock', $relations)) {
+            $relations['get_stock'] = array_merge((array) $relations['get_stock'], ['stock_available' => self::SERVICE_STOCK]);
+        }
+
+        return $relations;
+    }
+
     public function category()
     {
         return $this->belongsTo(ProductCategory::class);

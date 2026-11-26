@@ -251,7 +251,7 @@ class SortirController extends Controller
                 $ownQuantities = $sortir->detail()->pluck('quantity', 'product_id');
             }
         }
-        $products = Product::with('unit')->where('tipe', '!=', 'parcel')->whereNull('is_variant')
+        $products = Product::with('unit')->where('tipe', '!=', 'parcel')->whereNull('is_variant')->where('is_service', false)
             ->when(! empty($data['term']), fn ($q) => $q->where('name', 'like', Like::contains((string) $data['term'])))
             ->orderBy('name')->get();
         $stock = DB::table('product_stock')->where('branch_id', $data['branch_id'])

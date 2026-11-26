@@ -266,13 +266,13 @@
                 if (key === '') {
                     if (!window.__wholesaleProductList) {
                         window.__wholesaleProductList = new Promise((resolve, reject) => {
-                            $.ajax({ url: '/ajax/listProduct', dataType: 'json', data: { term: '', status: 'aktif', variant: '0', limit: 10 }, success: resolve, error: (xhr) => { window.__wholesaleProductList = null; reject(xhr); } });
+                            $.ajax({ url: '/ajax/listProduct', dataType: 'json', data: { term: '', status: 'aktif', variant: '0', limit: 10, no_service: 1 }, success: resolve, error: (xhr) => { window.__wholesaleProductList = null; reject(xhr); } });
                         });
                     }
                     return window.__wholesaleProductList.then(list => (Array.isArray(list) ? list.slice() : []));
                 }
                 return new Promise((resolve, reject) => {
-                    $.ajax({ url: '/ajax/listProduct', dataType: 'json', data: { term: key, status: 'aktif', variant: '0', limit: 10 }, success: resolve, error: reject });
+                    $.ajax({ url: '/ajax/listProduct', dataType: 'json', data: { term: key, status: 'aktif', variant: '0', limit: 10, no_service: 1 }, success: resolve, error: reject });
                 });
             },
 
@@ -514,7 +514,8 @@ set formattedEditSell(val) {
                                     term: params.term,
                                     status: 'aktif',
                                     variant: '0',
-                                    limit: 10
+                                    limit: 10,
+                                    no_service: 1
                                 };
                             },
                             processResults: data => ({

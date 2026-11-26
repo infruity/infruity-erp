@@ -36,7 +36,7 @@
             stockText(row) {
                 const stock = Number(row.stock_available) || 0;
                 const unit = this.getUnitLabel(row.unit);
-                const value = stock > 0 ? String(Math.round(stock * 100) / 100).replace('.', ',') : '0';
+                const value = stock > 900000000 ? '∞' : stock > 0 ? String(Math.round(stock * 100) / 100).replace('.', ',') : '0';
                 return unit ? value + ' ' + unit : value;
             },
             async loadPickerProducts() {

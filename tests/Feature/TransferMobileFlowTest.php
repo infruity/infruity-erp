@@ -32,7 +32,7 @@ class TransferMobileFlowTest extends TestCase
         Schema::create('product_units', function (Blueprint $t) { $t->increments('id'); $t->string('abbreviation'); });
         Schema::create('products', function (Blueprint $t) {
             $t->increments('id'); $t->string('name'); $t->integer('product_unit'); $t->string('tipe');
-            $t->integer('is_variant')->nullable(); $t->decimal('hpp', 15, 2); $t->timestamps();
+            $t->integer('is_variant')->nullable(); $t->boolean('is_service')->default(false); $t->decimal('hpp', 15, 2); $t->timestamps();
         });
         Schema::create('product_stock', function (Blueprint $t) {
             $t->integer('id'); $t->integer('branch_id'); $t->decimal('stock_available', 15, 2); $t->decimal('avg_hpp', 15, 2);

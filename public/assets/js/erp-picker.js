@@ -377,7 +377,7 @@
                 price.textContent = 'Rp ' + Number(item.price || 0).toLocaleString('id-ID') + (unit ? ' / ' + unit : '');
                 main.append(name, price);
                 var stockEl = el('span', 'erp-picker__stock');
-                stockEl.textContent = isNaN(stock) ? '' : String(Math.round(stock * 100) / 100).replace('.', ',') + (unit ? ' ' + unit : '');
+                stockEl.textContent = isNaN(stock) ? '' : stock > 900000000 ? '∞' : String(Math.round(stock * 100) / 100).replace('.', ',') + (unit ? ' ' + unit : '');
                 label.replaceChildren(main, stockEl);
             } else {
                 label.textContent = value || options.placeholderTrigger || 'Pilih';
