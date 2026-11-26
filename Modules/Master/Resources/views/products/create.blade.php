@@ -19,6 +19,9 @@
         .select2-container .select2-selection--single .select2-selection__rendered { line-height: 40px; padding-left: 1rem; font-size: 0.875rem; }
         .select2-container .select2-selection--single .select2-selection__arrow { height: 40px; }
         .select2-dropdown { border-color: #e5e7eb; }
+        /* The content wrapper must not shrink on phones, or the dock clearance of .erp-main
+           drops out of the scroll height and the save buttons stay under the dock. */
+        @media (max-width: 767px) { .erp-main > div { flex: 1 0 auto; } }
     </style>
 @endpush
 
