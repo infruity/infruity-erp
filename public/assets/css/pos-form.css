@@ -763,7 +763,8 @@ body:has(.pos-form--reference) .select2-search--dropdown input[aria-controls="se
   .pos-extra-settings { display:none; }
   .pos-ref-total.is-toggle { -webkit-tap-highlight-color:transparent; user-select:none; }
   /* Reserve the closed footer height while its sheet expands over the cart. */
-  .pos-form--reference > .pos-ref-root { display:block; position:relative; flex:none; height:calc(142px + env(safe-area-inset-bottom)); }
+  /* Sticky keeps Bayar on screen when the form is taller than the phone. */
+  .pos-form--reference > .pos-ref-root { display:block; position:sticky; bottom:0; z-index:40; flex:none; height:calc(142px + env(safe-area-inset-bottom)); }
   .pos-form--reference > .pos-ref-root > .pos-ref-footer { position:absolute; right:0; bottom:0; left:0; margin:0; }
   .pos-form--reference > .pos-ref-root .pos-collapse-anim { transition:grid-template-rows 320ms cubic-bezier(.22,1,.36,1), opacity 220ms ease; }
   .pos-form--reference > .pos-ref-root .pos-collapse-from { grid-template-rows:0fr; opacity:0; }
