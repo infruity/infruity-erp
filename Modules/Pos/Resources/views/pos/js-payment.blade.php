@@ -78,7 +78,12 @@
                 digitsOf(value) { return parseInt(String(value || '').replace(/\D/g, ''), 10) || 0; },
                 fmtDigits(value) { const n = this.digitsOf(value); return n ? n.toLocaleString('id-ID') : ''; },
                 unitAmount(value, type, base) { return type === 'percent' ? base * value / 100 : value; },
-                setDiscountType(type) { this.discountType = type; this.saveTotals(); },
+                // As on the sale form: 100 or less is a percentage, above that rupiah. Only typing changes the unit.
+                typedDiscountUnit(value) { return value > 0 && value <= 100 ? 'percent' : 'amount'; },
+                typeDiscount() {
+                    this.discountInput = this.fmtDigits(this.discountInput);
+                    this.discountType = this.typedDiscountUnit(this.liveDiscountValue);
+                },
                 get liveDiscountValue() { return this.digitsOf(this.discountInput); },
                 get liveDiscountAmount() { return this.unitAmount(this.liveDiscountValue, this.discountType, this.itemsSubtotal); },
                 get liveOngkir() { return this.digitsOf(this.ongkirInput); },

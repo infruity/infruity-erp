@@ -172,14 +172,9 @@
                 <div class="pos-ref-summary">
                     <div class="pos-ref-summary__inputs">
                         <div class="pos-ref-money">
-                            <span class="pos-unit-head">
-                                <span class="pos-ref-money__title">Diskon Nota</span>
-                                @if ($isDraftLike)
-                                @include('pos::pos.segment.unit-toggle', ['model' => 'discountType', 'set' => 'setDiscountType', 'label' => 'Jenis diskon nota'])
-                                @endif
-                            </span>
+                            <span class="pos-ref-money__title">Diskon Nota</span>
                             @if ($isDraftLike)
-                            <span class="pos-ref-money__field"><span x-text="discountType === 'percent' ? '%' : 'Rp'">Rp</span><input type="text" class="form-control" inputmode="numeric" autocomplete="off" x-model="discountInput" @input="discountInput = fmtDigits(discountInput)" @change="saveTotals()" @keydown.enter.prevent="$event.target.blur()" placeholder="0" aria-label="Diskon nota"></span>
+                            <span class="pos-ref-money__field"><span x-text="discountType === 'percent' ? '%' : 'Rp'">Rp</span><input type="text" class="form-control" inputmode="numeric" autocomplete="off" x-model="discountInput" @input="typeDiscount()" @change="saveTotals()" @keydown.enter.prevent="$event.target.blur()" placeholder="0" aria-label="Diskon nota"></span>
                             @else
                             <span class="pos-ref-money__field is-readonly"><span>{{ $discountIsPercent ? '%' : 'Rp' }}</span><input type="text" class="form-control" value="{{ $discountValue > 0 ? number_format($discountValue, 0, ',', '.') : '' }}" placeholder="0" readonly aria-label="Diskon nota"></span>
                             @endif

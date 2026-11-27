@@ -839,13 +839,3 @@ body.erp-ui:has(.pos-form, .pos-add-page, .pos-card--pay) :is(.pos-ref-parcel-li
 .pos-form--reference .pos-card--fields .pos-customer__add::before { content:''; position:absolute; left:0; top:12px; width:1px; height:20px; background:#e5e7eb; }
 .pos-form--reference .pos-card--fields .pos-branch .erp-picker__trigger > i { display:block; }
 .pos-form--reference .pos-branch .pos-branch__note:disabled { color:#d1d5db; cursor:not-allowed; opacity:1; }
-
-/* The switch is drawn 20px high but takes 14px of layout, so a discount title stays level with its neighbours' titles. */
-.pos-unit-head { display:flex; align-items:center; justify-content:space-between; gap:6px; }
-.pos-unit { display:inline-flex; flex:none; height:20px; margin:-3px 0; padding:2px; border-radius:7px; background:#eef2f7; }
-.pos-unit__option { position:relative; min-width:28px; padding:0 6px; border:0; border-radius:5px; background:transparent; color:#64748b; font-size:11px; font-weight:700; line-height:16px; cursor:pointer; }
-/* Easier to tap than it looks: the hit area grows mostly upwards, away from the input below. */
-.pos-unit__option::after { content:''; position:absolute; top:-14px; right:0; bottom:-5px; left:0; }
-.pos-unit__option.is-active { background:#fff; color:#047857; box-shadow:0 1px 2px rgba(15,23,42,.18); }
-.pos-unit__option:focus-visible { outline:2px solid #047857; outline-offset:1px; }
-.pos-unit__option:disabled { cursor:not-allowed; opacity:.45; }

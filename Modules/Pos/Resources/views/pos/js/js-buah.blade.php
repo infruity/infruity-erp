@@ -663,14 +663,10 @@
                 this.updateTotalFromEditQty();
             },
 
-            setEditDiscountType(type) {
-                this.editDiscountType = type;
-                this.updateEditDiscount();
-            },
-
             updateEditDiscountValue(e) {
                 let raw = e.target.value.replace(/\./g, '').replace(/[^0-9]/g, '');
                 let input = parseFloat(raw || 0);
+                this.editDiscountType = this.typedDiscountUnit(input);
                 const qty = parseFloat(this.editQty || 0);
                 const price = parseFloat(this.editPrice || 0);
                 let isPercent = this.editDiscountType === 'percent';
@@ -1392,15 +1388,10 @@
                 this.addProduct.formattedAddTotalInput = this.formatRupiah(inputTotal);
             },
 
-            // Switching Rp / % keeps the typed number and reprices the line with the new unit.
-            setAddDiscountType(type) {
-                this.addProduct.discountType = type;
-                this.updateAddTotalFromQty();
-                this.addProduct.discountPercent = type === 'percent' ? Number(this.addProduct.discountNominal || 0) : 0;
-            },
             updateDiscountValue(e) {
                 let raw = e.target.value.replace(/\./g, '').replace(/[^0-9]/g, '');
                 let input = parseFloat(raw || 0);
+                this.addProduct.discountType = this.typedDiscountUnit(input);
                 const qty = parseFloat(this.addProduct.qty || 0);
                 const price = parseFloat(this.addProduct.price || 0);
                 let isPercent = this.addProduct.discountType === 'percent';
@@ -1688,18 +1679,16 @@
                 // Whole rupiah, as the server saves it.
                 return Math.round(Math.round(Math.max(totalSetelahDiskon + totalOngkir, 0) * 100) / 100);
             },
-            setDiskonGlobalType(type) {
-                this.diskonGlobalType = type;
-                this.diskonGlobal = Math.min(this.diskonGlobal, type === 'percent' ? 100 : this.subtotal);
-            },
-            setDiskonOngkirType(type) {
-                this.diskonOngkirType = type;
-                this.diskonOngkir = Math.min(this.diskonOngkir, type === 'percent' ? 100 : this.ongkirGlobal);
+            // The typed number picks the unit: 100 or less is a percentage, above that rupiah. It is applied while
+            // typing only, so a reopened draft keeps the unit it was saved with.
+            typedDiscountUnit(value) {
+                return value > 0 && value <= 100 ? 'percent' : 'amount';
             },
             updateDiskonGlobal(e) {
                 let cursor = e.target.selectionStart;
                 let oldLength = e.target.value.length;
                 let val = parseFloat(e.target.value.replace(/[^\d]/g, '')) || 0;
+                this.diskonGlobalType = this.typedDiscountUnit(val);
                 
                 val = Math.min(val, this.diskonGlobalType === 'percent' ? 100 : this.subtotal);
                 
@@ -1733,6 +1722,7 @@
                 let cursor = e.target.selectionStart;
                 let oldLength = e.target.value.length;
                 let val = parseFloat(e.target.value.replace(/[^\d]/g, '')) || 0;
+                this.diskonOngkirType = this.typedDiscountUnit(val);
                 
                 val = Math.min(val, this.diskonOngkirType === 'percent' ? 100 : this.ongkirGlobal);
                 

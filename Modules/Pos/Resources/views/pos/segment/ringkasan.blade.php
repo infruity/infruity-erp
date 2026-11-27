@@ -9,10 +9,7 @@
             <div class="pos-ref-summary">
                 <div class="pos-ref-summary__inputs">
                     <div class="pos-ref-money">
-                        <span class="pos-unit-head">
-                            <span class="pos-ref-money__title" :class="{ 'is-disabled': cart.length === 0 }">Diskon Nota</span>
-                            @include('pos::pos.segment.unit-toggle', ['model' => 'diskonGlobalType', 'set' => 'setDiskonGlobalType', 'label' => 'Jenis diskon nota', 'disabled' => 'cart.length === 0'])
-                        </span>
+                        <span class="pos-ref-money__title" :class="{ 'is-disabled': cart.length === 0 }">Diskon Nota</span>
                         <span class="pos-ref-money__field" :class="{ 'is-disabled': cart.length === 0 }"><span x-text="diskonGlobalType === 'percent' ? '%' : 'Rp'">Rp</span><input type="text" class="form-control" inputmode="numeric" placeholder="0" :disabled="cart.length === 0" :value="diskonGlobal ? formatRupiah(diskonGlobal) : ''" @input="updateDiskonGlobal" @focus="$event.target.select()" aria-label="Diskon nota"></span>
                     </div>
                     <label class="pos-ref-money">
