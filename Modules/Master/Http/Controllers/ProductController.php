@@ -840,6 +840,14 @@ class ProductController extends Controller
             DB::beginTransaction();
             $product = Product::findOrFail($id);
             $child   = Product::where('parent_id', $id)->get();
+            if (\App\Support\MasterInUse::check('product', $child->pluck('id')->push($product->id)->all())) {
+                DB::rollback();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Produk ini sudah dipakai di transaksi, jadi tidak dapat dihapus. Riwayat dan laporan masih memakainya.',
+                ], 422);
+            }
             if ($child->count() > 0) {
                 foreach ($child as $item) {
                     $item->delete();
@@ -1032,6 +1040,14 @@ class ProductController extends Controller
                 ->where('parent_id', $request->parent_id)
                 ->whereHas('parentProduct', fn ($query) => $query->where('parent_id', $request->parent_id))
                 ->firstOrFail();
+            if (\App\Support\MasterInUse::check('product', [$variant->id])) {
+                DB::rollback();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Varian ini sudah dipakai di transaksi, jadi tidak dapat dihapus. Riwayat dan laporan masih memakainya.',
+                ], 422);
+            }
             ProductChild::where('parent_id', $request->parent_id)->where('product_id', $variant->id)->delete();
             $variant->delete();
             DB::commit();
@@ -1604,6 +1620,8 @@ class ProductController extends Controller
      */
     public function get_child_data(Request $request)
     {
+        $this->authorizeAnyAccess(['products.index', 'products.show', 'products.edit']);
+
         $parentId = $request->parent_id;
 
         if (!$parentId) {

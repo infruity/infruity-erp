@@ -7,13 +7,15 @@
     $phoneLabel = $localPhone !== '' ? '(+62) ' . substr($localPhone, 0, 3) . (strlen($localPhone) > 3 ? '-' . substr($localPhone, 3, 4) : '') . (strlen($localPhone) > 7 ? '-' . substr($localPhone, 7) : '') : '';
     $isDraftLike = in_array($data->status, ['temp', 'draft', 'pending'], true);
     $dueLabel = ($data->paid ?? 0) > 0 ? 'Sisa Tagihan' : 'Total Belanja';
-    // Display-only figures for the confirmation; saveTransaction owns the real maths (100 or less = percent, above = rupiah).
+    // Display-only figures for the confirmation; saveTransaction owns the real maths (App\Support\PosDiscount).
     // The header `subtotal` is empty on older drafts, so the item lines are the source.
     $itemsSubtotal = (float) $detail->sum('subtotal');
     $discountValue = (float) ($data->discount ?? 0);
-    $discountAmount = $discountValue > 0 && $discountValue <= 100 ? $itemsSubtotal * $discountValue / 100 : $discountValue;
+    $discountType = \App\Support\PosDiscount::typeOf($discountValue, $data->discount_type);
+    $discountAmount = \App\Support\PosDiscount::amount($discountValue, $data->discount_type, $itemsSubtotal);
     $shippingDiscountValue = (float) ($data->ongkir_discount ?? 0);
-    $shippingDiscountAmount = $shippingDiscountValue > 0 && $shippingDiscountValue <= 100 ? (float) $data->ongkir * $shippingDiscountValue / 100 : $shippingDiscountValue;
+    $shippingDiscountType = \App\Support\PosDiscount::typeOf($shippingDiscountValue, $data->ongkir_discount_type);
+    $shippingDiscountAmount = \App\Support\PosDiscount::amount($shippingDiscountValue, $data->ongkir_discount_type, (float) $data->ongkir);
     $rupiah = fn ($n) => 'Rp ' . number_format((float) $n, 0, ',', '.');
     $last4 = strlen($rawPhone) >= 4 ? substr($rawPhone, -4) : '';
 @endphp
@@ -108,8 +110,8 @@
         </div>
         {{-- The reference shows no payment date field; the payment is dated today (the saved value is still sent as `date`). --}}
         <input id="payment-date" type="hidden" name="date" value="{{ date('Y-m-d') }}">
-        @if(isset($deposito) && $data->total >= $deposito->voucher)
-            <dl class="pos-ref-lines pos-pay-voucher"><div><dt>Voucher</dt><dd>−Rp {{ toNumber($deposito->voucher ?? 0) }}</dd></div><div><dt>Sisa voucher</dt><dd>{{ $deposito->quantity ?? 0 }}</dd></div></dl>
+        @if(($voucherValue ?? 0) > 0)
+            <dl class="pos-ref-lines pos-pay-voucher"><div><dt>Voucher</dt><dd>−Rp {{ number_format($voucherValue, 0, ',', '.') }}</dd></div><div><dt>Sisa voucher</dt><dd>{{ $deposito->quantity ?? $voucherDeposit->voucher_qty ?? 0 }}</dd></div></dl>
         @endif
     </section>
 
@@ -157,7 +159,7 @@
     </section>
 
     @php
-        $discountIsPercent = $discountValue > 0 && $discountValue <= 100;
+        $discountIsPercent = \App\Support\PosDiscount::isPercent($discountValue, $data->discount_type);
         $shippingNet = max(0, (float) $data->ongkir - $shippingDiscountAmount);
     @endphp
     <div class="pos-ref-root">
@@ -170,9 +172,14 @@
                 <div class="pos-ref-summary">
                     <div class="pos-ref-summary__inputs">
                         <div class="pos-ref-money">
-                            <span class="pos-ref-money__title">Diskon Nota</span>
+                            <span class="pos-unit-head">
+                                <span class="pos-ref-money__title">Diskon Nota</span>
+                                @if ($isDraftLike)
+                                @include('pos::pos.segment.unit-toggle', ['model' => 'discountType', 'set' => 'setDiscountType', 'label' => 'Jenis diskon nota'])
+                                @endif
+                            </span>
                             @if ($isDraftLike)
-                            <span class="pos-ref-money__field"><span x-text="discountPrefix">{{ $discountIsPercent ? '%' : 'Rp' }}</span><input type="text" class="form-control" inputmode="numeric" autocomplete="off" x-model="discountInput" @input="discountInput = fmtDigits(discountInput)" @change="saveTotals()" @keydown.enter.prevent="$event.target.blur()" placeholder="0" aria-label="Diskon nota"></span>
+                            <span class="pos-ref-money__field"><span x-text="discountType === 'percent' ? '%' : 'Rp'">Rp</span><input type="text" class="form-control" inputmode="numeric" autocomplete="off" x-model="discountInput" @input="discountInput = fmtDigits(discountInput)" @change="saveTotals()" @keydown.enter.prevent="$event.target.blur()" placeholder="0" aria-label="Diskon nota"></span>
                             @else
                             <span class="pos-ref-money__field is-readonly"><span>{{ $discountIsPercent ? '%' : 'Rp' }}</span><input type="text" class="form-control" value="{{ $discountValue > 0 ? number_format($discountValue, 0, ',', '.') : '' }}" placeholder="0" readonly aria-label="Diskon nota"></span>
                             @endif
@@ -196,7 +203,7 @@
             </div></div>
             <div class="pos-ref-total is-toggle" @click="sweepOpen = !sweepOpen" role="button" tabindex="0" @keydown.enter.self="sweepOpen = !sweepOpen" @keydown.space.prevent.self="sweepOpen = !sweepOpen" :aria-expanded="sweepOpen" aria-controls="collapseTotal" aria-label="Rincian total">
                 <div class="pos-ref-total__label">{{ $dueLabel }} <span>({{ $detail->count() }})</span></div>
-                <div class="pos-ref-total__amount" @if ($isDraftLike) x-text="'Rp ' + formatRupiah(liveDue)" @endif>Rp {{ number_format(floor($data->total - $data->paid), 0, ',', '.') }}</div>
+                <div class="pos-ref-total__amount" @if ($isDraftLike) x-text="'Rp ' + formatRupiah(liveDue)" @endif>Rp {{ number_format(round($data->total - $data->paid), 0, ',', '.') }}</div>
             </div>
             <div class="pos-ref-actions">
                 <a href="{{ $isDraftLike ? route('pos.edit', $data->id) : route('pos.index') }}" class="pos-ref-icon" aria-label="Kembali" title="{{ $isDraftLike ? 'Kembali / Edit Lagi' : 'Daftar POS' }}"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a>

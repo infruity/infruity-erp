@@ -178,6 +178,8 @@ class AccountController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('account.index');
+
         $data = Account::all();
         return DataTables::of($data)
             ->addIndexColumn()

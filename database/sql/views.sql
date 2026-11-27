@@ -120,7 +120,7 @@ SELECT
     DATEDIFF(CURDATE(), MAX(t.date)) AS recency
 FROM customer c
 JOIN pos_transaction t ON t.customer_id = c.id
-WHERE t.deleted_at IS NULL
+WHERE t.deleted_at IS NULL AND t.status IN ('paid', 'debt')
 GROUP BY c.id, c.name, c.type;
 
 -- View Deposito

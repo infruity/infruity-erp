@@ -2,6 +2,7 @@
 
 namespace Modules\Pos\Http\Controllers;
 
+use App\Support\DocumentNumber;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -95,7 +96,7 @@ class OrderBookController extends Controller
         }
 
         $data['alpinejs'] = true;
-        $data['data'] = OrderBook::with('customer', 'details', 'details.product', 'details.product.unit', 'pos')->findOrFail($id);
+        $data['data'] = OrderBook::with('customer', 'details', 'details.product', 'details.product.unit', 'pos')->whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
 
         if ($data['data']->status == 'done' && $data['data']->pos) {
             return redirect()->back()->with('error', 'Transaksi yang sudah selesai dan memiliki POS tidak dapat diedit.');
@@ -168,18 +169,41 @@ class OrderBookController extends Controller
         $data = $request->validate([
             'branch_id' => 'required|exists:branch,id',
             'invoice_number' => 'required',
+            // Sent by the form: empty for a new order, the order's id when one is being edited.
+            'order_book_id' => 'nullable|integer',
             'customer_id' => 'nullable',
             'date' => 'required|date',
             'status' => 'nullable|in:draft,posting,process,done',
             'note' => 'required',
         ]);
 
+        // Saving replaces the order that has this number, so both the target branch and that order must be mine.
+        $myBranches = array_map('intval', UserBranch::getUserBranch());
+        $editing = ! empty($data['order_book_id']) ? OrderBook::findOrFail($data['order_book_id']) : null;
+        if ($editing) {
+            $data['invoice_number'] = $editing->invoice_number;
+        }
+        $existingBranches = $editing ? collect([$editing->branch_id]) : ($request->has('order_book_id') ? collect()
+            : OrderBook::where('invoice_number', $data['invoice_number'])->pluck('branch_id'));
+        foreach ($existingBranches->push($data['branch_id']) as $branchId) {
+            if (! in_array((int) $branchId, $myBranches, true)) {
+                return response()->json(['success' => false, 'message' => 'Anda tidak bertugas di cabang pesanan ini.'], 403);
+            }
+        }
+
         try {
             $isParcelOrder = $this->containsParcelKeyword($data['note']);
             $updateAt = null;
             $userId = Auth::id();
+            DocumentNumber::lock('order-book');
             DB::beginTransaction();
-            $cek = OrderBook::where('invoice_number', $data['invoice_number'])->first();
+            // Which order is replaced: the one being edited. A client that sends no id may only replace its own.
+            $cek = $editing ?? ($request->has('order_book_id') ? null
+                : OrderBook::where('invoice_number', $data['invoice_number'])->where('created_by', $userId)->first());
+            if (! $cek && OrderBook::where('invoice_number', $data['invoice_number'])->exists()) {
+                // The number was shown when the form opened; someone else has saved with it since.
+                $data['invoice_number'] = OrderBook::getOrderNumber();
+            }
             if ($cek) {
                 $pos = OrderBook::find($cek->id);
                 OrderBookDetail::where('order_book_id', $cek->id)->delete();
@@ -236,6 +260,7 @@ class OrderBookController extends Controller
             // Push is sent after the response so saving does not wait on Firebase.
             (new FcmService())->sendAfterResponse($tokens, $title, $body);
             // dd($data);
+            DocumentNumber::unlock('order-book');
             DB::disconnect();
             return response()->json([
                 'success' => true,
@@ -245,6 +270,7 @@ class OrderBookController extends Controller
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
+            DocumentNumber::unlock('order-book');
             DB::disconnect();
             return response()->json([
                 'success' => false,
@@ -260,7 +286,7 @@ class OrderBookController extends Controller
             return $denied;
         }
 
-        $orderBook = OrderBook::with('customer', 'details', 'details.product', 'details.product.unit', 'branch', 'pos', 'user:id_user,nm_user')->findOrFail($id);
+        $orderBook = OrderBook::with('customer', 'details', 'details.product', 'details.product.unit', 'branch', 'pos', 'user:id_user,nm_user')->whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
         
         if ($orderBook->status == 'done' && $orderBook->pos) {
             return redirect()->back()->with('error', 'Transaksi yang sudah selesai dan memiliki POS tidak dapat diproses lagi.');
@@ -407,6 +433,8 @@ class OrderBookController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('order-book.index');
+
         $query = OrderBook::with('customer', 'pos', 'branch', 'user:id_user,nm_user')->whereIn('branch_id', UserBranch::getUserBranch());
         if ($request->has('status_filter') && $request->status_filter !== 'all') {
             if ($request->status_filter === 'process') {

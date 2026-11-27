@@ -105,7 +105,7 @@ class LoginAccessBehaviorTest extends TestCase
         $attacker = $this->makeUser($this->superAdminRoleId());
 
         $this->actAsRole($attacker, 1);
-        $this->get("/user/impersonate/{$victim->id_user}")->assertForbidden();
+        $this->post("/user/impersonate/{$victim->id_user}")->assertForbidden();
         $this->assertAuthenticatedAs($attacker);
     }
 

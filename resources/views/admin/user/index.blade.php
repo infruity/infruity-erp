@@ -516,7 +516,7 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
             const user = this.users.find(item => item.id === id);
             if (!user) return;
             const label = user.email;
-            if (!await ErpDialog.confirm({ title: 'Reset password?', text: 'Kata sandi akun ' + label + ' akan direset ke kata sandi bawaan.', icon: 'warning', confirmButtonText: 'Reset', cancelButtonText: 'Batal' })) return;
+            if (!await ErpDialog.confirm({ title: 'Reset password?', text: 'Kata sandi akun ' + label + ' akan diganti dengan kata sandi sementara yang baru.', icon: 'warning', confirmButtonText: 'Reset', cancelButtonText: 'Batal' })) return;
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
                 const response = await fetch(this.baseUrl + '/' + id + '/reset-password', {
@@ -526,7 +526,7 @@ function userMaster(users, storeUrl, baseUrl, oldUserId, oldName, oldEmail, oldR
                 });
                 const result = await response.json().catch(() => ({}));
                 if (!response.ok || !result.success) throw new Error(result.message || 'Gagal mereset kata sandi.');
-                ErpDialog.success('Kata sandi akun ' + label + ' berhasil direset.', 'Berhasil');
+                await Swal.fire({ icon: 'success', title: 'Kata sandi sementara', text: 'Akun ' + label + ': ' + result.password + ' . Catat sekarang, hanya ditampilkan sekali. Minta pemilik akun menggantinya lewat menu Ubah password.', allowOutsideClick: false, allowEscapeKey: false });
             } catch (error) {
                 ErpDialog.error(error.message || 'Terjadi kesalahan saat mereset kata sandi.');
             }

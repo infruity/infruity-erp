@@ -79,6 +79,18 @@ trait HasAccessControl
         return $this->checkAccess($permission, $redirectTo);
     }
 
+    /** 403 unless the user holds at least one of these. For data used by more than one page. */
+    protected function authorizeAnyAccess(array $permissions): void
+    {
+        foreach ($permissions as $permission) {
+            if (RoleMenu::checkAccess($permission)) {
+                return;
+            }
+        }
+
+        abort(403, 'Anda tidak memiliki izin untuk mengakses data ini.');
+    }
+
     /**
      * Abort with 403 if no access (for API or strict access control)
      *

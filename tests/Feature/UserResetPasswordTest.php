@@ -6,15 +6,17 @@ use PHPUnit\Framework\TestCase;
 
 final class UserResetPasswordTest extends TestCase
 {
-    public function test_reset_puts_the_default_password_on_the_account_without_asking_for_one(): void
+    public function test_reset_makes_a_new_password_on_the_server_and_shows_it_once(): void
     {
         $root = dirname(__DIR__, 2);
         $controller = file_get_contents($root . '/app/Http/Controllers/UserController.php');
         $view = file_get_contents($root . '/resources/views/admin/user/index.blade.php');
         $routes = file_get_contents($root . '/routes/admin.php');
 
-        self::assertStringContainsString("public const DEFAULT_RESET_PASSWORD = 'infruity123';", $controller);
-        self::assertStringContainsString('Hash::make(self::DEFAULT_RESET_PASSWORD)', $controller);
+        // No shared password: PrivilegeEscalationTest checks that every reset differs.
+        self::assertStringContainsString('$password = $this->temporaryPassword();', $controller);
+        self::assertStringNotContainsString('infruity123', $controller);
+        self::assertStringContainsString('result.password', $view);
         self::assertStringNotContainsString("'password' => ['required', 'string', 'min:8']", $controller);
         self::assertStringNotContainsString('infruity123', $view, 'the default password is never shown on the page');
         self::assertStringContainsString("const label = user.email;", $view);

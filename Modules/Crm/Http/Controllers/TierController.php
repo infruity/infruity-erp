@@ -269,6 +269,8 @@ class TierController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('tier.index');
+
         $data = Tier::all();
         return DataTables::of($data)
             ->addIndexColumn()

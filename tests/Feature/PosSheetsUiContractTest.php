@@ -139,14 +139,14 @@ final class PosSheetsUiContractTest extends TestCase
 
         foreach ([
             'id="pos-product-list"', 'productSearch', 'loadProductList()', 'pickProduct(row)', 'PosAddItem.stockLabel',
-            'PosAddItem.priceUnit', 'PosAddItem.quantityUnit', 'PosAddItem.discountPrefix', 'Kembali', 'Tambah',
+            'PosAddItem.priceUnit', 'PosAddItem.quantityUnit', 'pos::pos.segment.unit-toggle', 'Kembali', 'Tambah',
             'saveAddToCart()', ':disabled="!addProduct.id"', 'Produk tidak ditemukan',
         ] as $contract) {
             $this->assertStringContainsString($contract, $modal, "Hilang: {$contract}");
         }
         // The old select2 markup stays for the Pesanan page.
         $this->assertStringContainsString('id="select_product"', $modal);
-        // Discount keeps the existing "Rp above 100, % otherwise" input handler.
+        // The cashier picks Rp or % with buttons; the input handler stays.
         $this->assertStringContainsString('updateDiscountValue', $modal);
     }
 

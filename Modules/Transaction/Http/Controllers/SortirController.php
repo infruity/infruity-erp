@@ -2,6 +2,7 @@
 
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\StockLock;
 use App\Support\Like;
 use Exception;
 use App\Models\RoleMenu;
@@ -167,8 +168,9 @@ class SortirController extends Controller
             'status' => ['required', 'in:draft,paid'],
         ]);
         $this->authorizeBranch($data['branch_id']);
+        \App\Support\StockProduct::assertCountable(array_column($data['items'], 'id'), 'items');
 
-        return DB::transaction(function () use ($data) {
+        return StockLock::during([$data['branch_id']], fn () => DB::transaction(function () use ($data) {
             if (empty($data['sortir_id'])) {
                 // Use one common row to serialize monthly numbering across branches.
                 Branch::withoutGlobalScope('userBranch')->orderBy('id')->lockForUpdate()->firstOrFail();
@@ -235,7 +237,7 @@ class SortirController extends Controller
             return response()->json(['success' => true, 'message' => 'Sortir berhasil disimpan.',
                 'transaksi_id' => $pos->id, 'invoice_number' => $pos->invoice_number,
                 'status' => $pos->status]);
-        });
+        }));
     }
 
     public function products(Request $request)
@@ -300,113 +302,6 @@ class SortirController extends Controller
     private function canDelete(Sortir $sortir): bool
     {
         return ! in_array($sortir->status, ['paid', 'debt']) || RoleMenu::currentRoleId() === 1;
-    }
-
-    public function save_stock(Request $request)
-    {
-        if ($denied = $this->requireAccess('sortir.save-stock')) {
-            return $denied;
-        }
-
-        // dd($request->all());
-        Validator::make($request->all(), [
-            'product_id' => 'required|exists:products,id',
-            'quantity'   => 'nullable|array',
-        ])->validate();
-
-        try {
-            DB::beginTransaction();
-            $product  = DB::table('product_stock')->where('id', $request->product_id)->first();
-            $quantity = $product->stock_available;
-            $hpp      = $product->hpp ?? 0;
-
-            if (isset($request->quantity)) {
-                foreach ($request->quantity as $key => $value) {
-                    $stockIn               = new StockIn();
-                    $stockIn->code         = 'sortir';
-                    $stockIn->reference_id = $request->product_id;
-                    $stockIn->date         = date('Y-m-d');
-                    $stockIn->product_id   = $key;
-                    $stockIn->quantity     = $value ?? 0;
-                    $stockIn->avg_price    = $hpp;
-                    $stockIn->created_by   = Auth::user()->id_user;
-
-                    Product::where("id", $key)->update([
-                        'hpp' => $hpp,
-                    ]);
-
-                    // $variant = ProductStock::where('id', $key)->first();
-                    // $variantStock = (float) $variant->stock_available ?? 0;
-                    // $variantHpp = $variant->hpp ?? 0;
-                    // if ($variantStock <= 0) {
-                    //     Product::where("id", $key)->update([
-                    //         'hpp' => $hpp,
-                    //     ]);
-                    // } else {
-                    //     $newHpp = collect([$hpp, $variantHpp])->avg();
-                    //     Product::where("id", $key)->update([
-                    //         'hpp' => $newHpp,
-                    //     ]);
-                    // }
-
-                    $stockIn->save();
-                }
-
-                $stockOut               = new StockOut();
-                $stockOut->code         = 'sortir';
-                $stockOut->reference_id = $request->product_id;
-                $stockOut->date         = date('Y-m-d');
-                $stockOut->product_id   = $request->product_id;
-                $stockOut->quantity     = array_sum($request->quantity) ?? 0;
-                $stockOut->avg_price    = $hpp;
-                $stockOut->created_by   = Auth::user()->id_user;
-                // dd($stockOut);
-                $stockOut->save();
-            }
-
-            if (isset($request->buang) && $request->buang > 0) {
-                $buang               = new StockOut();
-                $buang->code         = 'buang';
-                $buang->reference_id = $request->product_id;
-                $buang->date         = date('Y-m-d');
-                $buang->product_id   = $request->product_id;
-                $buang->quantity     = $request->buang ?? 0;
-                $buang->avg_price    = $hpp;
-                $buang->created_by   = Auth::user()->id_user;
-                $buang->save();
-            }
-
-            if (isset($request->product_transfer_id) && $request->value_transfer > 0) {
-                // dd('masuk', $hpp);
-                $transfer               = new StockOut();
-                $transfer->code         = 'transfer';
-                $transfer->reference_id = $request->product_id;
-                $transfer->date         = date('Y-m-d');
-                $transfer->product_id   = $request->product_id;
-                $transfer->quantity     = $request->value_transfer ?? 0;
-                $transfer->avg_price    = $hpp;
-                $transfer->created_by   = Auth::user()->id_user;
-                $transfer->save();
-
-                $stockIn               = new StockIn();
-                $stockIn->code         = 'transfer';
-                $stockIn->reference_id = $request->product_id;
-                $stockIn->date         = date('Y-m-d');
-                $stockIn->product_id   = $request->product_transfer_id;
-                $stockIn->quantity     = $request->value_transfer ?? 0;
-                $stockIn->avg_price    = $hpp;
-                $stockIn->created_by   = Auth::user()->id_user;
-                $stockIn->save();
-            }
-            // dd($stockIn, $stockOut);
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
-            return redirect()->back()->withInput($request->all())
-                ->with('error', 'Sortir gagal' . $e->getMessage());
-        }
-
-        return redirect('sortir')->with('success', 'Sortir berhasil');
     }
 
     public function get_data_old(Request $request)

@@ -320,7 +320,7 @@ class MobileReportController extends Controller
         }
 
         if ($type === 'shipping') {
-            $shippingDiscount = 'CASE WHEN COALESCE(t.ongkir_discount, 0) BETWEEN 1 AND 100 THEN COALESCE(t.ongkir, 0) * t.ongkir_discount / 100 ELSE COALESCE(t.ongkir_discount, 0) END';
+            $shippingDiscount = \App\Support\PosDiscount::sql('t.ongkir_discount', 't.ongkir_discount_type', 't.ongkir');
             $query = DB::table('pos_transaction as t')
                 ->leftJoin('kurir as k', 't.courier_id', '=', 'k.id')
                 ->leftJoin('branch', 't.branch_id', '=', 'branch.id')

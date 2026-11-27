@@ -9,7 +9,6 @@ use Modules\Master\Entities\Customer;
 use Modules\Master\Entities\Kurir;
 use Modules\Master\Entities\PaymentMethod;
 use Modules\Master\Entities\Branch;
-use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -26,8 +25,10 @@ class PosModel extends Model
         'date',
         'total',
         'discount',
+        'discount_type',
         'ongkir',
         'ongkir_discount',
+        'ongkir_discount_type',
         'ongkir_date',
         'ongkir_time',
         'status',
@@ -149,18 +150,12 @@ class PosModel extends Model
      */
     public static function reserveInvoiceNumber(callable $create)
     {
-        $useLock = DB::getDriverName() === 'mysql';
-
-        if ($useLock && (int) DB::selectOne("SELECT GET_LOCK('pos_invoice_number', 10) AS locked")->locked !== 1) {
-            throw new \RuntimeException('Nomor nota sedang dibuat oleh kasir lain. Coba lagi.');
-        }
+        \App\Support\DocumentNumber::lock('pos-invoice');
 
         try {
             return $create(self::getOrderNumber());
         } finally {
-            if ($useLock) {
-                DB::selectOne("SELECT RELEASE_LOCK('pos_invoice_number') AS released");
-            }
+            \App\Support\DocumentNumber::unlock('pos-invoice');
         }
     }
 

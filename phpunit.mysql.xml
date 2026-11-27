@@ -36,6 +36,7 @@
             <file>./tests/Feature/CrmDashboardExpenseTest.php</file>
             <file>./tests/Feature/LoginThrottleTest.php</file>
             <file>./tests/Feature/StockOpnameBehaviorTest.php</file>
+            <file>./tests/Feature/PrivilegeEscalationTest.php</file>
             <file>./tests/Feature/CustomerProductReportRegionJoinTest.php</file>
             <file>./tests/Feature/CrmTopDistributionTest.php</file>
             <file>./tests/Feature/NegativeStockWarningTest.php</file>
@@ -49,6 +50,18 @@
             <file>./tests/Feature/PositionNameOnlyFormTest.php</file>
             <file>./tests/Feature/BranchScopeAndPermissionGapsTest.php</file>
             <file>./tests/Feature/ServiceProductTest.php</file>
+            <file>./tests/Feature/SecurityHardeningTest.php</file>
+            <file>./tests/Feature/PosDiscountTypeTest.php</file>
+            <file>./tests/Feature/PosHppAtPaymentTest.php</file>
+            <file>./tests/Feature/PosMoneyRoundingTest.php</file>
+            <file>./tests/Feature/PosParcelDraftTest.php</file>
+            <file>./tests/Feature/DataHardenTest.php</file>
+            <file>./tests/Feature/ReportDefectsTest.php</file>
+            <file>./tests/Feature/AccessDefectsTest.php</file>
+            <file>./tests/Feature/StockDefectsTest.php</file>
+            <file>./tests/Feature/PosMoneyDefectsTest.php</file>
+            <file>./tests/Feature/DocumentNumberTest.php</file>
+            <file>./tests/Feature/RetiredStockEndpointsTest.php</file>
         </testsuite>
     </testsuites>
     <groups>

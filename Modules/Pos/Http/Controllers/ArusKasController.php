@@ -144,7 +144,8 @@ class ArusKasController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        $orders = $mode === 'list' ? $this->listOrders($branchIds) : [];
+        [$since, $from, $to] = $this->listPeriod();
+        $orders = $mode === 'list' ? $this->listOrders($branchIds, $since) : [];
 
         $selectedBranchId = old('branch_id', $formOrder['branchId'] ?? $branches->first()?->id);
         if (in_array($mode, ['create', 'edit'], true) && old('items_json') !== null) {
@@ -160,22 +161,50 @@ class ArusKasController extends Controller
         return view('pos::arus-kas.index', [
             'pageMode' => $mode,
             'orders' => $orders,
+            'since' => $mode === 'list' ? $since : null,
+            'dateFrom' => $from,
+            'dateTo' => $to,
             'branches' => $branches,
             'formOrder' => $formOrder,
             'selectedBranchId' => $selectedBranchId,
         ]);
     }
 
-    private function listOrders(array $branchIds): array
+    /** How far back the list loads by default. Drafts are always loaded, whatever their date. */
+    public const LIST_MONTHS = 6;
+
+    /**
+     * The list filters and searches in the browser, so it is sent a period instead of every transaction ever made:
+     * the last months by default, further back when a date filter asks for it, or everything on request.
+     *
+     * @return array{0: ?string, 1: string, 2: string} the oldest date loaded (null = all), and the asked-for range
+     */
+    private function listPeriod(): array
     {
-        $newTransactions = ArusKasTransaction::with(['items', 'branch'])
-            ->whereIn('branch_id', $branchIds)
+        $date = fn (string $key) => preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) request()->query($key)) ? (string) request()->query($key) : '';
+        $from = $date('from');
+        $to = $date('to');
+        if (request()->boolean('all')) {
+            return [null, $from, $to];
+        }
+        $default = now()->subMonthsNoOverflow(self::LIST_MONTHS)->startOfMonth()->toDateString();
+
+        return [$from !== '' && $from < $default ? $from : $default, $from, $to];
+    }
+
+    private function listOrders(array $branchIds, ?string $since = null): array
+    {
+        $inPeriod = fn ($query) => $query->when($since, fn ($dated) => $dated->where(
+            fn ($either) => $either->where('date', '>=', $since)->orWhere('status', 'draft')
+        ));
+        $newTransactions = $inPeriod(ArusKasTransaction::with(['items', 'branch'])
+            ->whereIn('branch_id', $branchIds))
             ->get();
 
-        $legacyTransactions = Expenditure::with('branch')
+        $legacyTransactions = $inPeriod(Expenditure::with('branch')
             ->whereIn('branch_id', $branchIds)
             ->whereIn('type', ['pemasukan', 'pengeluaran'])
-            ->where('status', '!=', 'canceled')
+            ->where('status', '!=', 'canceled'))
             ->get();
 
         $legacyDetails = ExpenditureDetail::query()

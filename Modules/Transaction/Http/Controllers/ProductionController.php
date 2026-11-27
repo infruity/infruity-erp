@@ -1,6 +1,8 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\StockLock;
+use App\Support\DocumentNumber;
 use App\Support\Like;
 use App\Support\InventorySnapshot;
 use App\Support\ProductionCost;
@@ -124,6 +126,8 @@ class ProductionController extends Controller
             return response()->json(['success' => false, 'message' => 'Anda tidak memiliki akses ke cabang yang dipilih.'], 403);
         }
 
+        // Held from before the transaction until it ends; see App\Support\StockLock.
+        StockLock::lock($request->branch_id);
         try {
             // Validasi stok bahan baku (seperti PosController saveTransaction)
             if (in_array($request->submit_type, ['draft', 'posting'])) {
@@ -144,6 +148,8 @@ class ProductionController extends Controller
                 }
             }
 
+            // Held until the run is saved; released in finally.
+            DocumentNumber::lock('production');
             DB::beginTransaction();
 
             // Check if this is an update (id is provided) or a new record
@@ -166,7 +172,9 @@ class ProductionController extends Controller
             // If still no production, create new one
             if (! $production) {
                 $production                    = new Production();
-                $production->production_number = $request->production_number;
+                // The number was shown when the form opened; someone else may have saved with it since.
+                $production->production_number = Production::where('production_number', $request->production_number)->exists()
+                    ? Production::getOrderNumber() : $request->production_number;
                 $production->created_by        = Auth::user()->id_user;
             }
 
@@ -242,6 +250,9 @@ class ProductionController extends Controller
                 'success' => false,
                 'message' => 'Produksi gagal: ' . $e->getMessage(),
             ], 422);
+        } finally {
+            StockLock::release();
+            DocumentNumber::unlock('production');
         }
     }
 
@@ -255,6 +266,7 @@ class ProductionController extends Controller
         if ($denied = $this->requireAccess('production.detail')) {
             return $denied;
         }
+        $this->abortForeignRun($id);
 
         try {
             $data['data']              = Production::with(['products', 'products.unit', 'staff', 'creator', 'branch', 'pos.customer'])->findOrFail($id);
@@ -303,6 +315,7 @@ class ProductionController extends Controller
         if ($denied = $this->requireAccess('production.edit')) {
             return $denied;
         }
+        $this->abortForeignRun($id);
 
         $data['alpinejs']          = true;
         $data['data']              = Production::with(['branch', 'products'])->find($id);
@@ -319,84 +332,6 @@ class ProductionController extends Controller
         return view('transaction::production.create', $data);
     }
 
-    /**
-     * Update the specified resource in storage.
-     * @param Request $request
-     * @param int $id
-     * @return Renderable
-     */
-    public function update(Request $request, $id)
-    {
-        if ($denied = $this->requireAccess('production.update')) {
-            return $denied;
-        }
-
-        // dd($request->all());
-        $validator = Validator::make($request->all(), [
-            'product_id'      => 'required|exists:receipt,id',
-            'submit_type'     => 'required|in:draft,posting,temp',
-            'production_date' => 'required|date',
-            'quantity'        => 'required',
-            'staff_id'        => 'nullable|exists:staff,id',
-            'branch_id'       => 'nullable|exists:branch,id',
-            'sell_price'      => 'nullable',
-            'service_cost'    => 'nullable|numeric|min:0',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        try {
-            $receipt   = Receipt::find($request->product_id);
-            $productId = $receipt->product_id;
-            DB::beginTransaction();
-            $production                  = Production::findOrFail($id);
-            abort_if(in_array($production->status, ['posting', 'complete'], true), 403, 'Produksi yang sudah selesai tidak dapat diedit.');
-            $production->product_id      = $productId;
-            $production->production_date = $request->production_date;
-            $production->status          = $request->submit_type;
-            $production->created_by      = Auth::user()->id_user;
-            $production->quantity        = $request->quantity;
-            $production->staff_id        = $request->staff_id;
-            $production->branch_id       = $request->branch_id;
-            $production->service_cost    = $request->service_cost ?? 0;
-            if ($request->sell_price) {
-                $production->sell_price = preg_replace('/[^0-9]/', '', $request->sell_price);
-            }
-            if ($request->submit_type == 'posting') {
-                $this->assertIngredientStock($production);
-            }
-            $production->save();
-
-            // Jika status temp, redirect ke halaman yang sama untuk continue editing
-            if ($request->submit_type == 'temp') {
-                DB::commit();
-                return redirect()->back()->with('success', 'Data berhasil disimpan sebagai draft');
-            }
-
-            // Jika status draft, redirect ke payment
-            if ($request->submit_type == 'draft') {
-                DB::commit();
-                return redirect()->route('production.payment', $id);
-            }
-
-            if ($request->submit_type == 'posting') {
-                ProductionCost::freeze($production, (float) $production->service_cost);
-            }
-
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
-            return redirect()->back()->withInput($request->all())
-                ->with('error', 'Produksi gagal' . $e->getMessage());
-        }
-
-        return redirect('production')->with('success', 'Produksi berhasil');
-    }
-
     private function worksInBranch($branchId): bool
     {
         return in_array((int) $branchId, array_map('intval', UserBranch::getUserBranch()), true);
@@ -407,6 +342,13 @@ class ProductionController extends Controller
      * frozen HPP are history). Otherwise the run's branch must be one of theirs; a form draft ('temp') or a run
      * without a branch belongs to whoever started it.
      */
+    /** Reading a run of a branch the user does not work in is refused too (a run without a branch is an own draft). */
+    private function abortForeignRun($id): void
+    {
+        $branchId = Production::whereKey($id)->value('branch_id');
+        abort_if($branchId && ! $this->worksInBranch($branchId), 403, 'Anda tidak memiliki akses ke cabang produksi ini.');
+    }
+
     private function refusalToWrite(Production $production): ?string
     {
         if ($production->branch_id && ! $this->worksInBranch($production->branch_id)) {
@@ -451,22 +393,6 @@ class ProductionController extends Controller
     }
 
     /**
-     * Show payment page (similar to POS)
-     * @param int $id
-     * @return Renderable
-     */
-    public function payment($id)
-    {
-        if ($denied = $this->requireAccess('production.payment')) {
-            return $denied;
-        }
-
-        $data['data']              = Production::with('products')->findOrFail($id);
-        $data['production_detail'] = ProductionDetail::with('products')->where('production_id', $id)->get();
-        return view('transaction::production.payment', $data);
-    }
-
-    /**
      * Save production completion (similar to POS savePayment)
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -483,6 +409,8 @@ class ProductionController extends Controller
             'notes'           => 'nullable|string',
         ]);
 
+        // Held from before the transaction until it ends; see App\Support\StockLock.
+        StockLock::lock(Production::whereKey($data['production_id'])->value('branch_id'));
         try {
             DB::beginTransaction();
 
@@ -495,8 +423,10 @@ class ProductionController extends Controller
             }
             $this->assertIngredientStock($production);
             $production->status          = 'posting';
-            $production->completion_date = $data['completion_date'];
-            $production->notes           = $data['notes'] ?? null;
+            // The table has no completion date or notes column; writing them made every completion fail.
+            if (! empty($data['notes'])) {
+                $production->description = $data['notes'];
+            }
             $production->save();
 
             ProductionCost::freeze($production, (float) $production->service_cost);
@@ -515,23 +445,9 @@ class ProductionController extends Controller
                 'message' => 'Gagal menyelesaikan produksi',
                 'error'   => $e->getMessage(),
             ], 500);
+        } finally {
+            StockLock::release();
         }
-    }
-
-    /**
-     * Show completion notification (similar to POS paymentNotification)
-     * @param int $id
-     * @return Renderable
-     */
-    public function completionNotification($id)
-    {
-        if ($denied = $this->requireAccess('production.completion-notification')) {
-            return $denied;
-        }
-
-        $data['data']              = Production::with('products')->findOrFail($id);
-        $data['production_detail'] = ProductionDetail::with('products')->where('production_id', $id)->get();
-        return view('transaction::production.completion-success', $data);
     }
 
     /**
@@ -544,6 +460,7 @@ class ProductionController extends Controller
         if ($denied = $this->requireAccess('production.print')) {
             return $denied;
         }
+        $this->abortForeignRun($id);
 
         $data['data']              = Production::with('products')->findOrFail($id);
         $data['production_detail'] = ProductionDetail::with('products')->where('production_id', $id)->get();
@@ -580,84 +497,12 @@ class ProductionController extends Controller
         }
     }
 
-    public function delete_detail(Request $request, $id)
-    {
-        if ($denied = $this->requireAccess('production.delete_detail')) {
-            return $denied;
-        }
-
-        try {
-            $userId = Auth::user()->id_user;
-            DB::beginTransaction();
-            $receipt   = Receipt::with('products')->find($request->receipt_id);
-            $productId = $receipt->product_id;
-            Production::where('id', $id)->update([
-                'product_id' => $productId,
-                'status'     => 'draft',
-            ]);
-            ProductionDetail::where('production_id', $id)->delete();
-            $newProduct       = ProductReceipt::where('receipt_id', $request->receipt_id)->get();
-            $productionDetail = [];
-            foreach ($newProduct as $key => $product) {
-                $productionDetail[] = [
-                    'production_id' => $id,
-                    'product_id'    => $product->product_receipt_id,
-                    'quantity'      => $product->quantity,
-                    'created_by'    => $userId,
-                    'created_at'    => now(),
-                    'updated_at'    => now(),
-                ];
-            }
-            if (! empty($productionDetail)) {
-                ProductionDetail::insert($productionDetail);
-            }
-            DB::commit();
-            return response()->json([
-                'success' => true,
-                'message' => 'Data berhasil dihapus.',
-            ]);
-        } catch (\Exception $e) {
-            DB::rollback();
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menghapus data: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function update_product_id(Request $request, $id)
-    {
-        if ($denied = $this->requireAccess('production.update_product_id')) {
-            return $denied;
-        }
-
-        try {
-            DB::beginTransaction();
-            $receipt   = Receipt::with('products')->find($request->receipt_id);
-            $productId = $receipt->product_id;
-            Production::where('id', $id)->update([
-                'product_id' => $productId,
-                'status'     => 'draft',
-            ]);
-            DB::commit();
-            return response()->json([
-                'success' => true,
-                'message' => 'Data berhasil dihapus.',
-            ]);
-        } catch (\Exception $e) {
-            DB::rollback();
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menghapus data: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
     public function get_detail_product(Request $request, $id)
     {
         if ($denied = $this->requireAccess('production.get-receipt')) {
             return $denied;
         }
+        $this->abortForeignRun($id);
 
         // dd($request->all());
         $data = ProductionDetail::with('products')->where('production_id', $id)->get();
@@ -702,102 +547,14 @@ class ProductionController extends Controller
             ->make(true);
     }
 
-    public function edit_additional_ingredient(Request $request, $id)
-    {
-        if ($denied = $this->requireAccess('production.edit-ajax')) {
-            return $denied;
-        }
-
-        $data = ProductionDetail::with('products')->findOrFail($id);
-        return response()->json([
-            'data' => $data,
-        ], 201);
-    }
-
-    public function save_additional_ingredient(Request $request)
-    {
-        if ($denied = $this->requireAccess('production.save-ajax')) {
-            return $denied;
-        }
-
-        // dd($request->all());
-        try {
-            DB::beginTransaction();
-            $productionDetail                = new ProductionDetail();
-            $productionDetail->production_id = $request->production_id;
-            $productionDetail->product_id    = $request->product_id;
-            $productionDetail->quantity      = $request->qty;
-            $productionDetail->save();
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
-            return response()->json([
-                'message' => 'Product gagal disimpan.' . $e->getMessage(),
-                'data'    => $productionDetail,
-            ], 404);
-        }
-
-        // Kirim response JSON
-        return response()->json([
-            'message' => 'Product berhasil disimpan.',
-            'data'    => $productionDetail,
-        ], 201);
-    }
-
-    public function update_additional_ingredient(Request $request, $id)
-    {
-        if ($denied = $this->requireAccess('production.edit-ajax')) {
-            return $denied;
-        }
-
-        // dd($request->all());
-        $validated = $request->validate([
-            'qty'        => 'required|numeric',
-            'sell_price' => 'nullable',
-        ]);
-
-        try {
-            DB::beginTransaction();
-            $detailProduct           = ProductionDetail::findOrFail($id);
-            $detailProduct->quantity = $validated['qty'];
-            $detailProduct->save();
-
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
-            return response()->json(['message' => 'Product updated failed']);
-        }
-
-        return response()->json(['message' => 'Product updated successfully']);
-    }
-
-    public function delete_additional_ingredient(Request $request, $id)
-    {
-        if ($denied = $this->requireAccess('production.delete-ajax')) {
-            return $denied;
-        }
-
-        try {
-            DB::beginTransaction();
-            $deteilProduct = ProductionDetail::findOrFail($id);
-            $deteilProduct->delete();
-            DB::commit();
-            return response()->json([
-                'message' => 'Product berhasil dihapus.',
-            ], 201);
-        } catch (Exception $e) {
-            DB::rollback();
-            return response()->json([
-                'message' => 'Product gagal dihapus.',
-            ], 404);
-        }
-    }
-
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('production.index');
+
         try {
             $query = Production::with(['products', 'products.category', 'products.unit', 'branch', 'staff', 'productionDetails', 'productionDetails.products', 'pos.customer'])
-                ->whereNotNull('product_id');
+                ->whereNotNull('product_id')
+                ->where(fn ($runs) => $runs->whereNull('branch_id')->orWhereIn('branch_id', UserBranch::getUserBranch()));
 
             if ($request->has('status_filter') && $request->status_filter !== 'all' && ! empty($request->status_filter)) {
                 // "complete" (Selesai) covers the posting and complete states, like the list label.

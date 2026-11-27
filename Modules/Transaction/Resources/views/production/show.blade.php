@@ -101,9 +101,6 @@
                 @if(in_array($data->status, ['temp', 'draft']))
                     <a href="{{ route('production.edit', $data->id) }}" class="btn btn-light-primary"><i class="ph ph-pencil-simple me-1" aria-hidden="true"></i>Edit</a>
                 @endif
-                @if($data->status == 'draft')
-                    <a href="{{ route('production.payment', $data->id) }}" class="btn btn-success"><i class="ph ph-check me-1" aria-hidden="true"></i>Selesaikan Produksi</a>
-                @endif
                 <a href="{{ route('production.print', $data->id) }}" class="btn btn-light-info"><i class="ph ph-printer me-1" aria-hidden="true"></i>Print</a>
                 <a href="{{ route('production.index') }}" class="btn btn-light"><i class="ph ph-arrow-left me-1" aria-hidden="true"></i>Kembali</a>
             </div>

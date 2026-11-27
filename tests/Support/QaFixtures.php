@@ -169,6 +169,16 @@ trait QaFixtures
         session(['role' => ['id_role' => $roleId, 'nm_role' => $name]]);
     }
 
+    /** Deleting is reserved for this account (DeleteOnlyForMaster). */
+    protected function actAsMasterAccount(): User
+    {
+        $user = User::withoutGlobalScope('is_aktif')->where('email', 'master@infruity.com')->first()
+            ?: $this->makeUser($this->superAdminRoleId(), ['email' => 'master@infruity.com']);
+        $this->actAsRole($user, $this->superAdminRoleId());
+
+        return $user;
+    }
+
     protected function paymentMethodId(string $name): int
     {
         $existing = DB::table('payment_method')->whereRaw('LOWER(name) = ?', [strtolower($name)])->value('id');

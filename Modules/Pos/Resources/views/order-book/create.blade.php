@@ -156,6 +156,7 @@
                         note: note,
                         invoice_number: invoice_number,
                         branch_id: branchId,
+                        order_book_id: @js($data->id ?? null),
                     };
 
                     // Simulasi kirim ke server
@@ -234,6 +235,7 @@
                         note: note,
                         invoice_number: invoice_number,
                         branch_id: branchId,
+                        order_book_id: @js($data->id ?? null),
                     };
 
                     // Simulasi kirim ke server

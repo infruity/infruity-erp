@@ -1,6 +1,8 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\StockLock;
+use App\Support\DocumentNumber;
 use App\Support\InventorySnapshot;
 use App\Support\NegativeStockWarning;
 use App\Support\Like;
@@ -101,14 +103,19 @@ class WholesaleController extends Controller
             $data['detail']         = $draft->products;
             $data['invoice_number'] = $draft->order_number;
         } else {
-            $invoiceNumber = Wholesale::getOrderNumber();
+            DocumentNumber::lock('wholesale');
+            try {
+                $invoiceNumber = Wholesale::getOrderNumber();
 
-            $draft = new Wholesale();
-            $draft->order_number = $invoiceNumber;
-            $draft->order_date   = date('Y-m-d');
-            $draft->status       = 'temp';
-            $draft->created_by   = Auth::user()->id_user;
-            $draft->save();
+                $draft = new Wholesale();
+                $draft->order_number = $invoiceNumber;
+                $draft->order_date   = date('Y-m-d');
+                $draft->status       = 'temp';
+                $draft->created_by   = Auth::user()->id_user;
+                $draft->save();
+            } finally {
+                DocumentNumber::unlock('wholesale');
+            }
 
             $data['data']           = $draft;
             $data['detail']         = [];
@@ -214,67 +221,6 @@ class WholesaleController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     * @param Request $request
-     * @return Renderable
-     */
-    public function store(Request $request)
-    {
-        if ($denied = $this->requireAccess('wholesale.store')) {
-            return $denied;
-        }
-
-        // dd($request->all());
-        $validator = Validator::make($request->all(), [
-            'order_date'  => 'required',
-            'description' => 'nullable|string|max:255',
-            'products'    => 'required|array',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        try {
-            DB::beginTransaction();
-            $wholesale               = new Wholesale();
-            $wholesale->order_number = Wholesale::getOrderNumber();
-            $wholesale->order_date   = $request->order_date;
-            $wholesale->description  = $request->description;
-            $wholesale->status       = $request->submit_type;
-            $wholesale->created_by   = Auth::user()->id_user;
-            $wholesale->save();
-
-            $wholesaleId = $wholesale->id;
-            foreach ($request->products as $product) {
-                $wholesaleDetail               = new WholesaleProduct();
-                $wholesaleDetail->wholesale_id = $wholesaleId;
-                $wholesaleDetail->quantity     = $product['qty'];
-                $wholesaleDetail->price        = $product['price'];
-                $wholesaleDetail->total_price  = $product['price'] * $product['qty'];
-                if ($product['type'] == 'product') {
-                    $wholesaleDetail->product_id = $product['id'];
-                } else {
-                    $wholesaleDetail->category_id = $product['id'];
-                }
-                $wholesaleDetail->supplier_id = $product['supplier_id'];
-                // dd($wholesaleDetail);
-                $wholesaleDetail->save();
-            }
-
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
-            return redirect()->back()->withInput($request->all())
-                ->with('error', 'Pembuatan Data Kulak gagal' . $e->getMessage());
-        }
-
-        return redirect('wholesale')->with('success', 'Pembuatan Data Kulak berhasil');
-    }
-
-    /**
      * Show the specified resource.
      * @param int $id
      * @return Renderable
@@ -333,41 +279,6 @@ class WholesaleController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     * @param int $id
-     * @return Renderable
-     */
-    public function update_product(Request $request, $id)
-    {
-        if ($denied = $this->requireAccess('wholesale.update-product')) {
-            return $denied;
-        }
-
-        // Validasi input
-        // dd($request->all());
-        $validated = $request->validate([
-            'supplier_id' => 'nullable|exists:supplier,id',
-            'price'       => 'required|numeric',
-            'qty'         => 'required|numeric',
-        ]);
-
-        try {
-            DB::beginTransaction();
-            $wholesaleProduct              = WholesaleProduct::findOrFail($id);
-            $wholesaleProduct->supplier_id = $validated['supplier_id'];
-            $wholesaleProduct->price       = $validated['price'];
-            $wholesaleProduct->quantity    = $validated['qty'];
-            $wholesaleProduct->save();
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
-            return response()->json(['message' => 'Product updated failed']);
-        }
-
-        return response()->json(['message' => 'Product updated successfully']);
-    }
-
-    /**
      * Update the specified resource in storage.
      * @param Request $request
      * @param int $id
@@ -388,8 +299,8 @@ class WholesaleController extends Controller
 
         try {
             DB::beginTransaction();
-            $wholesale = Wholesale::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
-            if (in_array($wholesale->status, ['complete', 'posting'], true)) {
+            $wholesale = Wholesale::whereIn('branch_id', UserBranch::getUserBranch())->lockForUpdate()->findOrFail($id);
+            if ($this->isLocked($wholesale)) {
                 DB::rollBack();
                 return redirect()->back()->with('error', 'Pengadaan yang sudah selesai tidak dapat diubah.');
             }
@@ -432,6 +343,8 @@ class WholesaleController extends Controller
             return $denied;
         }
 
+        // Held from before the transaction until it ends; see App\Support\StockLock.
+        StockLock::lock(Wholesale::whereKey($id)->value('branch_id'));
         try {
             DB::beginTransaction();
             $wholesale = Wholesale::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
@@ -459,6 +372,8 @@ class WholesaleController extends Controller
                 'success' => false,
                 'message' => 'Gagal menghapus data: ' . $e->getMessage(),
             ], 500);
+        } finally {
+            StockLock::release();
         }
     }
 
@@ -604,6 +519,7 @@ class WholesaleController extends Controller
             return $denied;
         }
 
+        Wholesale::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
         // dd($request->all());
         $data = WholesaleProduct::where('wholesale_id', $id)->get();
         return DataTables::of($data)
@@ -611,9 +527,9 @@ class WholesaleController extends Controller
             ->addColumn('name', function ($item) {
                 $html = '';
                 if ($item->supplier_id != null) {
-                    $html .= $item->product->name . '<br>' . $item->supplier->name . '<br> Jumlah : ' . $item->quantity . ' ' . $item->product->unit->abbreviation;;
+                    $html .= e($item->product->name) . '<br>' . e($item->supplier->name) . '<br> Jumlah : ' . $item->quantity . ' ' . e($item->product->unit->abbreviation);
                 } else {
-                    $html .= $item->product->name . '<br>' . '<span class="text-danger">Tidak ada supplier</span>' . '<br> Jumlah : ' . $item->quantity . ' ' . $item->product->unit->abbreviation;;
+                    $html .= e($item->product->name) . '<br>' . '<span class="text-danger">Tidak ada supplier</span>' . '<br> Jumlah : ' . $item->quantity . ' ' . e($item->product->unit->abbreviation);
                 }
                 return $html;
             })
@@ -663,6 +579,23 @@ class WholesaleController extends Controller
     }
 
     /** A service (Jasa) is never purchased: it has no stock and costs nothing. */
+    /**
+     * Once posted a purchase is in stock, cost and cash figures: it is final ('complete' is what older code checked).
+     * Only the master account can delete it, which is itself refused when its stock has been used.
+     */
+    private function isLocked(Wholesale $wholesale): bool
+    {
+        return in_array($wholesale->status, ['posting', 'complete'], true);
+    }
+
+    private function lockedResponse()
+    {
+        return response()->json([
+            'success' => false,
+            'message' => 'Pengadaan yang sudah selesai tidak dapat diubah.',
+        ], 409);
+    }
+
     private function rejectServices(array $productIds): void
     {
         $ids = array_filter($productIds, 'is_numeric');
@@ -671,110 +604,13 @@ class WholesaleController extends Controller
         }
     }
 
-    public function save_product(Request $request)
-    {
-        if ($denied = $this->requireAccess('wholesale.save-product')) {
-            return $denied;
-        }
-
-        $validated = $request->validate([
-            'wholesale_id' => 'required|exists:wholesale,id',
-            'id'           => 'required|exists:products,id',
-            'supplier_id'  => 'nullable|exists:supplier,id',
-            'qty'          => 'required',
-            'price'        => 'required',
-            'sell_price'   => 'nullable',
-        ]);
-
-        $this->rejectServices([$validated['id']]);
-
-        $cek = WholesaleProduct::where('wholesale_id', $validated['wholesale_id'])
-            ->where('product_id', $validated['id'])
-            ->first();
-        if ($cek) {
-            return response()->json([
-                'message' => 'Product sudah ada',
-            ], 404);
-        }
-
-        if ($validated['qty'] <= 0) {
-            return response()->json([
-                'message' => 'Qty tidak boleh 0',
-            ], 404);
-        }
-        try {
-            DB::beginTransaction();
-            $wholesaleProduct               = new WholesaleProduct();
-            $wholesaleProduct->wholesale_id = $validated['wholesale_id'];
-            $wholesaleProduct->product_id   = $validated['id'];
-            $wholesaleProduct->supplier_id  = $validated['supplier_id'];
-            $wholesaleProduct->quantity     = $validated['qty'];
-            $wholesaleProduct->price        = $validated['price'];
-            $wholesaleProduct->total_price  = $validated['price'] * $validated['qty'];
-            $wholesaleProduct->save();
-
-            if ($validated['sell_price'] != null) {
-                $product        = Product::findOrFail($validated['id']);
-                $product->price = $validated['sell_price'];
-                $product->save();
-            }
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollback();
-            return response()->json([
-                'message' => 'Product gagal disimpan.' . $e->getMessage(),
-                'data'    => $wholesaleProduct,
-            ], 404);
-        }
-
-        // Kirim response JSON
-        return response()->json([
-            'message' => 'Product berhasil disimpan.',
-            'data'    => $wholesaleProduct,
-        ], 201);
-    }
-
-    public function delete_product(Request $request, $id)
-    {
-        if ($denied = $this->requireAccess('wholesale.delete_product')) {
-            return $denied;
-        }
-
-        try {
-            DB::beginTransaction();
-            $wholesaleProduct = WholesaleProduct::findOrFail($id);
-            $wholesaleProduct->delete();
-            DB::commit();
-            return response()->json([
-                'message' => 'Product berhasil dihapus.',
-            ], 201);
-        } catch (Exception $e) {
-            DB::rollback();
-            return response()->json([
-                'message' => 'Product gagal dihapus.',
-            ], 404);
-        }
-    }
-
-    public function edit_product(Request $request, $id)
-    {
-        if ($denied = $this->requireAccess('wholesale.edit-product')) {
-            return $denied;
-        }
-
-        $data = WholesaleProduct::findOrFail($id);
-        return response()->json([
-            'data' => $data,
-        ], 201);
-    }
-
     public function receive_process($id)
     {
         if ($denied = $this->requireAccess('wholesale.receive_process')) {
             return $denied;
         }
 
-        $wholesale        = Wholesale::findOrFail($id);
+        $wholesale        = Wholesale::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
         $wholsaleProduct  = WholesaleProduct::with('product', 'supplier')->where('wholesale_id', $id)->get();
         $data['data']     = $wholesale;
         $data['products'] = $wholsaleProduct;
@@ -784,6 +620,8 @@ class WholesaleController extends Controller
 
     public function update_receive_product(Request $request, $id)
     {
+        return $this->legacyReceiveRetired();
+
         if ($denied = $this->requireAccess('wholesale.update_receive_product')) {
             return $denied;
         }
@@ -832,6 +670,8 @@ class WholesaleController extends Controller
 
     public function getProductTableData(Request $request)
     {
+        $this->authorizeAnyAccess(['wholesale.index', 'wholesale.create', 'wholesale.edit']);
+
         $searchValue = $request->input('searchValue'); // Ambil nilai pencarian
         if (empty($searchValue)) {
             return DataTables::of([])->make(true); // Kembalikan tabel kosong jika tidak ada pencarian
@@ -885,11 +725,19 @@ class WholesaleController extends Controller
         if ($request->input('status') !== 'temp') {
             $rules += [
                 'items.*.id'    => 'required|integer|exists:products,id',
-                'items.*.qty'   => 'required|numeric|gt:0',
-                'items.*.price' => 'nullable|numeric|min:0',
+                'items.*.qty'   => 'required|numeric|gt:0|max:1000000',
+                'items.*.price' => 'nullable|numeric|min:0|max:2000000000',
+                'items.*.total_input' => 'nullable|numeric|min:0|max:2000000000',
+                'items.*.sell'  => 'nullable|numeric|min:0|max:2000000000',
             ];
         }
         $data = $request->validate($rules);
+        // Without its own total a line is price x quantity, which must fit the column too.
+        foreach ($request->input('status') === 'temp' ? [] : (array) $request->input('items', []) as $item) {
+            if (($item['total_input'] ?? null) === null && (float) ($item['price'] ?? 0) * (float) ($item['qty'] ?? 0) > 2000000000) {
+                throw ValidationException::withMessages(['items' => 'Total baris terlalu besar. Periksa jumlah dan harganya.']);
+            }
+        }
         $this->rejectServices(array_column((array) $request->input('items', []), 'id'));
         // validate() only returns fields that have a rule; the cart rows carry more (sell, total_input, ...)
         // that the save below reads, so keep the full rows.
@@ -906,30 +754,46 @@ class WholesaleController extends Controller
         $userId = Auth::user()->id_user;
         $existingOrder = null;
         if (! empty($data['invoice_number'])) {
-            $existingOrder = Wholesale::where('order_number', $data['invoice_number'])->first();
-            $isAccessibleOrder = $existingOrder && (
-                ($existingOrder->branch_id !== null && in_array((int) $existingOrder->branch_id, $userBranchIds, true))
+            $mayOpen = fn (Wholesale $order) => ($order->branch_id !== null && in_array((int) $order->branch_id, $userBranchIds, true))
                 // A draft made by opening the form has no branch yet (null, or 0 on non-strict MySQL).
-                || (empty($existingOrder->branch_id) && (int) $existingOrder->created_by === (int) $userId)
-            );
+                || (empty($order->branch_id) && (int) $order->created_by === (int) $userId);
+            // Older data has purchases sharing one number: the user's own open one is the one being saved.
+            $sameNumber = Wholesale::where('order_number', $data['invoice_number'])->orderBy('id')->get();
+            $existingOrder = $sameNumber->first(fn ($order) => $mayOpen($order) && ! $this->isLocked($order)
+                    && (int) $order->created_by === (int) $userId)
+                ?? $sameNumber->first($mayOpen)
+                ?? $sameNumber->first();
 
-            if ($existingOrder && ! $isAccessibleOrder) {
+            if ($existingOrder && ! $mayOpen($existingOrder)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Anda tidak memiliki akses ke transaksi ini.',
                 ], 403);
             }
 
-            if ($existingOrder && $existingOrder->status === 'complete') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Pengadaan yang sudah selesai tidak dapat diubah.',
-                ], 409);
+            if ($existingOrder && $this->isLocked($existingOrder)) {
+                return $this->lockedResponse();
             }
         }
 
+        // A save without a stored number makes one, so the whole save runs under the numbering lock.
+        DocumentNumber::lock('wholesale');
+
         try {
             DB::beginTransaction();
+
+            // Asked again behind a lock, and before any other read: of two saves sent at the same moment,
+            // the second one must see that the first has posted the purchase.
+            if ($existingOrder) {
+                $current = Wholesale::whereKey($existingOrder->id)->lockForUpdate()->first();
+                if ($current && $this->isLocked($current)) {
+                    DB::rollBack();
+                    DocumentNumber::unlock('wholesale');
+                    DB::disconnect();
+
+                    return $this->lockedResponse();
+                }
+            }
 
             // Stock of every product this purchase touches, before anything changes.
             $stockBefore = $this->stockSnapshot(array_merge(
@@ -971,10 +835,10 @@ class WholesaleController extends Controller
 
             // Update atau create berdasarkan invoice_number
             if (!empty($data['invoice_number'])) {
-                $wholesale = Wholesale::updateOrCreate(
-                    ['order_number' => $data['invoice_number']],
-                    $wholesaleData
-                );
+                // By id: updating by number could write over another purchase that shares it.
+                $wholesale = ($existingOrder ? Wholesale::find($existingOrder->id) : null)
+                    ?? new Wholesale(['order_number' => $data['invoice_number']]);
+                $wholesale->fill($wholesaleData);
                 $wholesale->created_at = now();
                 $wholesale->save();
             } else {
@@ -1057,6 +921,7 @@ class WholesaleController extends Controller
             }
 
             DB::commit();
+            DocumentNumber::unlock('wholesale');
             DB::disconnect();
 
             return response()->json([
@@ -1068,6 +933,7 @@ class WholesaleController extends Controller
             ]);
         } catch (ValidationException $e) {
             DB::rollBack();
+            DocumentNumber::unlock('wholesale');
             DB::disconnect();
 
             return response()->json([
@@ -1076,6 +942,7 @@ class WholesaleController extends Controller
             ], 422);
         } catch (\Throwable $e) {
             DB::rollBack();
+            DocumentNumber::unlock('wholesale');
             DB::disconnect();
 
             return response()->json([
@@ -1088,6 +955,8 @@ class WholesaleController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('wholesale.index');
+
         // The built-in DataTables search builds its own LIKE, so escape the keyword first.
         $keyword = $request->input('search.value');
         if (is_string($keyword) && $keyword !== '') {

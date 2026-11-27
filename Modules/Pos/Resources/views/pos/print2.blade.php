@@ -748,14 +748,12 @@
                 $ongkir_discount = $data->ongkir_discount;
                 $subtotal = $total;
                 $isDiscountPercentage = false;
-                if ($discount <= 100 && $discount > 0) {
+                if (\App\Support\PosDiscount::isPercent($discount, $data->discount_type)) {
                     $isDiscountPercentage = true;
                     $discountPercent = $discount;
                     $discount = ($discount / 100) * $subtotal;
                 }
-                if ($ongkir_discount <= 100) {
-                    $ongkir_discount = ($ongkir_discount / 100) * $data->ongkir;
-                }
+                $ongkir_discount = \App\Support\PosDiscount::amount($ongkir_discount, $data->ongkir_discount_type, $data->ongkir);
             @endphp
             <div class="totals-section">
                 <div class="total-line">

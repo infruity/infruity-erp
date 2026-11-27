@@ -252,7 +252,7 @@
 
 @if ($pageMode === 'list')
 <section id="arus-kas-index-page" class="arus-kas-page arus-kas-list-page relative" aria-label="Arus Kas"
-    x-data="arusKasApp({ orders: @js($orders), branches: @js($branchOptions), formOrder: @js($formOrder), selectedBranchId: @js((string) ($selectedBranchId ?? '')), pageMode: @js($pageMode), baseUrl: @js(url('/arus-kas')) })"
+    x-data="arusKasApp({ orders: @js($orders), branches: @js($branchOptions), formOrder: @js($formOrder), selectedBranchId: @js((string) ($selectedBranchId ?? '')), pageMode: @js($pageMode), baseUrl: @js(url('/arus-kas')), since: @js($since ?? null), dateFrom: @js($dateFrom ?? ''), dateTo: @js($dateTo ?? '') })"
     @erp-filter-apply.window="if ($event.detail.id === 'arus-kas') applyMobileFilters($event.detail.values)"
     @erp-filter-close.window="if ($event.detail.id === 'arus-kas') filterOpen = false">
     <div class="arus-kas-toolbar">
@@ -281,6 +281,9 @@
     </div>
 
     <x-erp.list-count noun="transaksi" shown="visibleOrders.length" total="filteredOrders.length" list="#arus-kas-scroll-container" />
+    @if (! empty($since))
+        <p class="px-4 py-2 text-[11px] text-gray-500">Memuat transaksi sejak {{ \Carbon\Carbon::parse($since)->locale('id')->translatedFormat('d M Y') }} dan semua draf. <a href="{{ url('/arus-kas') }}?all=1" class="font-semibold text-[#0b595b] underline">Tampilkan semua</a></p>
+    @endif
 
     <div class="arus-kas-list" id="arus-kas-scroll-container">
         <div x-show="filteredOrders.length > 0" class="hidden border-b border-gray-100 bg-gray-50 px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-gray-500 lg:grid lg:grid-cols-[minmax(180px,1.3fr)_minmax(130px,1fr)_minmax(140px,1fr)_minmax(160px,1fr)_120px] lg:gap-3">
@@ -513,11 +516,12 @@ function arusKasApp(config) {
         baseUrl: config.baseUrl || '/arus-kas',
         pageSize: 50,
         visibleCount: 50,
+        since: config.since || null,
         searchQuery: '',
         filterOpen: false,
         filterStatus: 'Semua',
-        filterStart: '',
-        filterEnd: '',
+        filterStart: config.dateFrom || '',
+        filterEnd: config.dateTo || '',
         selectedBranch: 'all',
         detailModalOpen: false,
         invoiceModalOpen: false,
@@ -565,6 +569,14 @@ function arusKasApp(config) {
             this.filterStart = values.start || '';
             this.filterEnd = values.end || '';
             this.visibleCount = this.pageSize;
+            this.loadOlderIfAsked();
+        },
+        // A start date before what was loaded needs the older rows from the server.
+        loadOlderIfAsked() {
+            if (!this.since || !this.filterStart || this.filterStart >= this.since) return;
+            const query = new URLSearchParams({ from: this.filterStart });
+            if (this.filterEnd) query.set('to', this.filterEnd);
+            window.location.href = this.baseUrl + '?' + query.toString();
         },
         resetFilters() {
             this.searchQuery = '';

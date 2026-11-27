@@ -8,10 +8,8 @@ use Illuminate\Routing\Controller;
 use Modules\Master\Entities\Customer;
 use Modules\Crm\Entities\Tier;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 use Modules\Master\Entities\UserBranch;
-use Modules\Transaction\Entities\StockOpname;
 
 class DashboardController extends Controller
 {
@@ -25,29 +23,6 @@ class DashboardController extends Controller
     {
         if ($denied = $this->requireAccess('crm-dashboard.index')) {
             return $denied;
-        }
-
-        // Auto update stock-opname status (kemarin dan seterusnya)
-        $pendingStockOpnames = StockOpname::where('date', '<', date('Y-m-d'))
-            ->where('status', '!=', 'selesai')
-            ->get();
-
-        foreach ($pendingStockOpnames as $stockOpname) {
-            $productStock = DB::table('product_stock')
-                ->where('id', $stockOpname->product_id)
-                ->where('branch_id', $stockOpname->branch_id)
-                ->first();
-
-            if ($productStock) {
-                $currentStock = $productStock->stock_available;
-                $difference = (Double)$stockOpname->real_stock - (Double)$currentStock;
-
-                $stockOpname->stock = $currentStock;
-                $stockOpname->difference = $difference;
-                $stockOpname->status = 'selesai';
-                $stockOpname->updated_by = Auth::check() ? Auth::user()->id_user : null;
-                $stockOpname->save();
-            }
         }
 
         $period = in_array($request->query('period'), ['week', 'month', 'year'], true)
@@ -93,6 +68,13 @@ class DashboardController extends Controller
             ->groupBy('date')->pluck('amount', 'date');
         $expensesByDate = (clone $expenseQuery)->select('date', DB::raw('SUM(COALESCE(total, 0)) AS amount'))
             ->groupBy('date')->pluck('amount', 'date');
+        // Money paid out through the Arus Kas menu is an operating expense too.
+        $cashOutQuery = $this->cashOutQuery($allowedBranchIds, $branchId, $start->toDateString(), $end->toDateString());
+        if ($cashOutQuery) {
+            foreach ((clone $cashOutQuery)->select('cash.date', DB::raw('SUM(item.subtotal) AS amount'))->groupBy('cash.date')->pluck('amount', 'date') as $date => $amount) {
+                $expensesByDate[$date] = (float) ($expensesByDate[$date] ?? 0) + (float) $amount;
+            }
+        }
 
         $hppQuery = DB::table('pos_transaction_detail as detail')
             ->join('pos_transaction as sale', 'sale.id', '=', 'detail.pos_id')
@@ -193,7 +175,8 @@ class DashboardController extends Controller
             ->whereBetween('sale.date', [$previousStart->toDateString(), $previousEnd->toDateString()])
             ->when($branchId !== null, static fn ($query) => $query->where('sale.branch_id', $branchId))
             ->sum(DB::raw('COALESCE(detail.subtotal_hpp, 0)'));
-        $previousExpense += $previousHpp;
+        $previousCashOut = $this->cashOutQuery($allowedBranchIds, $branchId, $previousStart->toDateString(), $previousEnd->toDateString());
+        $previousExpense += $previousHpp + (float) ($previousCashOut ? $previousCashOut->sum('item.subtotal') : 0);
         $previousNet = $previousRevenue - $previousExpense;
         $previousLoss = (float) DB::table('sortir_transaction_detail as detail')
             ->join('sortir_transaction as sorting', 'sorting.id', '=', 'detail.sortir_id')
@@ -237,6 +220,11 @@ class DashboardController extends Controller
             ->groupBy('products.id', 'products.name', 'products.image')
             ->having('amount', '>', 0);
         $costItems = $expenseItems->get()->concat($productCosts->get());
+        if ($cashOutQuery) {
+            $costItems = $costItems->concat((clone $cashOutQuery)
+                ->select('item.description as name', DB::raw('NULL AS image'), DB::raw('SUM(item.subtotal) AS amount'))
+                ->groupBy('item.description')->get());
+        }
         $lossItems = (clone $lossQuery)
             ->join('products', 'products.id', '=', 'detail.product_id')
             ->select('products.name', 'products.image', DB::raw('SUM(COALESCE(detail.subtotal, 0)) AS amount'))
@@ -440,5 +428,21 @@ class DashboardController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /** Finished money-out lines of the Arus Kas menu. Money in is not revenue: revenue is what was sold. */
+    private function cashOutQuery(array $allowedBranchIds, ?int $branchId, string $from, string $to)
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('arus_kas_items')) {
+            return null;
+        }
+
+        return DB::table('arus_kas_items as item')
+            ->join('arus_kas_transactions as cash', 'cash.id', '=', 'item.arus_kas_transaction_id')
+            ->where('item.direction', 'out')
+            ->where('cash.status', 'completed')
+            ->whereIn('cash.branch_id', $allowedBranchIds)
+            ->when($branchId !== null, static fn ($query) => $query->where('cash.branch_id', $branchId))
+            ->whereBetween('cash.date', [$from, $to]);
     }
 }

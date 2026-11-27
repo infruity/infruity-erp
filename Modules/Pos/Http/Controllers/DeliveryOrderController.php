@@ -2,6 +2,9 @@
 
 namespace Modules\Pos\Http\Controllers;
 
+use App\Support\StockLock;
+use App\Support\PosSettlement;
+use App\Support\PosStockCheck;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -102,54 +105,82 @@ class DeliveryOrderController extends Controller
             return $denied;
         }
 
+        // Whole rupiah, plain ("90000") or with thousands dots ("90.000"). Stripping every dot turned "90000.00" into 9 million.
+        $typed = trim((string) $request->input('nominal', ''));
+        if ($typed !== '' && (! preg_match('/^(\d+|\d{1,3}(\.\d{3})+)$/', $typed) || (float) str_replace('.', '', $typed) > 2000000000)) {
+            return response()->json(['success' => false, 'message' => 'Nominal harus rupiah bulat, misalnya 90000.'], 422);
+        }
+        $nominal = (float) str_replace('.', '', $typed);
+        $takesMoney = $nominal > 0;
+
+        // Read outside the transaction: the first plain read inside it must come after the lock.
+        $branchIds = UserBranch::getUserBranch();
+
+        // Held from before the transaction until it ends; see App\Support\StockLock.
+        StockLock::lock(PosModel::whereKey($id)->value('branch_id'));
         try {
             DB::beginTransaction();
-            // Only a delivery of one of the user's own branches may be completed (404 otherwise).
-            $pos = PosModel::whereIn('branch_id', UserBranch::getUserBranch())->findOrFail($id);
-            $pos->ongkir_status = 'delivered';
+            // Only a delivery of one of the user's own branches may be completed. The lock makes
+            // two requests for the same sale run one after the other, here and against the payment page.
+            $pos = PosModel::whereIn('branch_id', $branchIds)->lockForUpdate()->findOrFail($id);
 
-            if ($request->has('nominal') && $request->nominal > 0) {
+            if ($takesMoney) {
+                // Money is taken when the goods are handed over, once. What is still owed after that goes through POS.
+                $paid = (float) Payment::where('pos_id', $pos->id)->sum('total')
+                    - (float) Payment::where('pos_id', $pos->id)->sum('return');
+                $due = max(0, round((float) $pos->total - (float) $pos->voucher - $paid));
+                $refusal = match (true) {
+                    $pos->ongkir_status === 'delivered' => 'Pengiriman ini sudah ditandai diterima. Pembayaran berikutnya lewat menu POS.',
+                    ! in_array($pos->status, [...PosSettlement::UNPAID, 'debt'], true) || $due <= 0 => 'Nota ini sudah lunas atau tidak dapat dibayar lagi.',
+                    default => null,
+                };
+                if ($refusal !== null) {
+                    DB::rollBack();
+                    return response()->json(['success' => false, 'message' => $refusal], 422);
+                }
+
+                // The first payment takes the stock, so it asks the same question as the payment page.
+                if (in_array($pos->status, PosSettlement::UNPAID, true)) {
+                    PosStockCheck::assertAvailable($pos);
+                }
+
+                $cash = DB::table('payment_method')->whereRaw('LOWER(name) IN (?, ?)', ['cash', 'tunai'])->orderBy('id')->first(['id', 'name']);
+                $change = max(0, $nominal - $due);
+                $remaining = max(0, $due - $nominal);
                 $payment = new Payment([
                     'uuid' => Str::uuid(),
                     'date' => date('Y-m-d'),
                     'nota_number' => date('YmdHis'),
                     'pos_id' => $id,
-                    'branch_id' => 1,
+                    'branch_id' => $pos->branch_id,
                     // 'account_id' => $data['account_id'],
-                    'payment_method' => json_encode(['cash']),
-                    'payment_method_id' => json_encode([1]),
-                    'payment_amount' => json_encode([preg_replace('/[^0-9]/', '', $request->nominal)]),
-                    'total' => preg_replace('/[^0-9]/', '', $request->nominal),
+                    'payment_method' => json_encode([$cash->name ?? 'cash']),
+                    'payment_method_id' => json_encode([(int) ($cash->id ?? 1)]),
+                    'payment_amount' => json_encode([(string) (int) $nominal]),
+                    'total' => $nominal,
                     'created_by' => Auth::user()->id_user,
                 ]);
+                $payment->return = $change;
+                $payment->remaining = $remaining;
                 $payment->save();
-                $totalPayment = Payment::where('pos_id', $id)->sum('total');
-                $pos = PosModel::findOrFail($id);
-                $total = $pos->total - $pos->voucher;
-                $pos->paid = $totalPayment;
-                if ($totalPayment > $total) {
-                    $lastPayment = Payment::findOrFail($payment->id);
-                    $lastPayment->return = ($totalPayment - $total);
-                    $lastPayment->save();
-                } else {
-                    $lastPayment = Payment::findOrFail($payment->id);
-                    $lastPayment->remaining = ($total - $totalPayment);
-                    $lastPayment->save();
+
+                $pos->paid = $paid + $nominal - $change;
+                // Same as the payment page: a first payment takes the stock, so it freezes the HPP.
+                if (in_array($pos->status, PosSettlement::UNPAID, true)) {
+                    PosSettlement::settle($pos);
                 }
-                $status = 'debt';
-                if ($totalPayment >= $total) {
-                    $status = 'paid';
-                }
-                // $pos->ongkir_status = 'delivered';
-                $pos->status = $status;
+                $pos->status = $remaining > 0 ? 'debt' : 'paid';
             }
 
+            $pos->ongkir_status = 'delivered';
             $pos->save();
             DB::commit();
             return response()->json(['success' => true]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response()->json(['error' => false, 'message' => $th->getMessage()]);
+            return response()->json(['success' => false, 'error' => false, 'message' => $th->getMessage()]);
+        } finally {
+            StockLock::release();
         }
     }
 

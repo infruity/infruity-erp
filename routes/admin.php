@@ -19,7 +19,7 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 	Route::post('/change-password', 'DashboardController@save_change_password')->name('save_change_password');
 	Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
 	// Route::resource('layanan', LayananController::class);
-	Route::get('user/impersonate/{id}', [UserController::class, 'impersonate'])->name('user.impersonate');
+	Route::post('user/impersonate/{id}', [UserController::class, 'impersonate'])->name('user.impersonate');
 	Route::post('role/switch', [RoleContextController::class, 'switch'])->name('role.switch');
 	Route::put('user/{id}/permissions', [UserController::class, 'updatePermissions'])->name('user.permissions.update');
 	Route::delete('user/{id}/permissions', [UserController::class, 'resetPermissions'])->name('user.permissions.reset');
@@ -39,23 +39,4 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
 	Route::get('user/data', [UserController::class, 'get_data'])->name('user.data');
 	Route::post('/api/save-fcm-token', [FCMController::class, 'store']);
 
-	Route::get('/get-ai-models', function (Illuminate\Http\Request $request) {
-		$response = Http::withHeaders([
-			'Authorization' => 'Bearer ' . env('GROQ_API_KEY'),
-		])->get('https://api.groq.com/openai/v1/models');
-
-		if ($response->failed()) {
-			return response()->json([
-				'error' => 'Failed to fetch models',
-				'details' => $response->body()
-			], 500);
-		}
-
-		return response()->json(
-			$response->json(),
-			200,
-			[],
-			JSON_PRETTY_PRINT
-		);
-	});
 });

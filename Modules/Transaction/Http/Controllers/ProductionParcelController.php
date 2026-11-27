@@ -2,6 +2,8 @@
 
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\StockLock;
+use App\Support\DocumentNumber;
 use App\Support\ProductionCost;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -79,6 +81,7 @@ class ProductionParcelController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
+        DocumentNumber::lock('parcel');
         try {
             DB::beginTransaction();
 
@@ -97,6 +100,8 @@ class ProductionParcelController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Failed to create production parcel: ' . $e->getMessage()]);
+        } finally {
+            DocumentNumber::unlock('parcel');
         }
     }
 
@@ -122,7 +127,7 @@ class ProductionParcelController extends Controller
         }
 
         $data['data'] = ProductionParcel::with('staff')->findOrFail($id);
-        $data['production_detail'] = ProductionParcelDetail::with('product')->where('production_id', $id)->get();
+        $data['production_detail'] = ProductionParcelDetail::with('product')->whereNull('pos_id')->where('production_id', $id)->get();
         return view('transaction::production.create-parcel', $data);
     }
 
@@ -138,7 +143,7 @@ class ProductionParcelController extends Controller
         }
 
         $data['data'] = ProductionParcel::with('staff')->findOrFail($id);
-        $data['production_detail'] = ProductionParcelDetail::with('product')->where('production_id', $id)->get();
+        $data['production_detail'] = ProductionParcelDetail::with('product')->whereNull('pos_id')->where('production_id', $id)->get();
         return view('transaction::production.create-parcel', $data);
     }
 
@@ -178,7 +183,7 @@ class ProductionParcelController extends Controller
             $production->staff_id = $request->staff_id;
             $production->save();
 
-            ProductionParcelDetail::where('production_id', $id)->delete();
+            ProductionParcelDetail::whereNull('pos_id')->where('production_id', $id)->delete();
             if (empty($request->product_receipt_id)) {
                 return redirect()->back()->withErrors(['error' => 'Tambahkan satu produk.']);
             }
@@ -214,7 +219,7 @@ class ProductionParcelController extends Controller
             DB::beginTransaction();
             $parcel = ProductionParcel::findOrFail($id);
             $parcel->delete();
-            ProductionParcelDetail::where('production_id', $id)->delete();
+            ProductionParcelDetail::whereNull('pos_id')->where('production_id', $id)->delete();
             DB::commit();
             return response()->json([
                 'success' => true,
@@ -231,6 +236,8 @@ class ProductionParcelController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('parcel.index');
+
         $data = ProductionParcel::with('staff')->get();
         return DataTables::of($data)
             ->addIndexColumn()
@@ -316,7 +323,7 @@ class ProductionParcelController extends Controller
         }
 
         // dd($request->all());
-        $data = ProductionParcelDetail::where('production_id', $id)->get();
+        $data = ProductionParcelDetail::whereNull('pos_id')->where('production_id', $id)->get();
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('name', function ($item) {
@@ -368,11 +375,11 @@ class ProductionParcelController extends Controller
         $validated = $request->validate([
             'production_id' => 'required|exists:production_parcel,id',
             'id' => 'required|exists:products,id',
-            'qty' => 'required',
+            'qty' => 'required|numeric|gt:0|max:1000000',
             'sell_price' => 'nullable',
         ]);
 
-        $cek = ProductionParcelDetail::where('production_id', $validated['production_id'])
+        $cek = ProductionParcelDetail::whereNull('pos_id')->where('production_id', $validated['production_id'])
             ->where('product_id', $validated['id'])
             ->first();
         if ($cek) {
@@ -416,7 +423,7 @@ class ProductionParcelController extends Controller
             return $denied;
         }
 
-        $data = ProductionParcelDetail::findOrFail($id);
+        $data = ProductionParcelDetail::whereNull('pos_id')->findOrFail($id);
         $product = Product::findOrFail($data->product_id);
         $data->price = $product->price;
         $data->nominal = $product->price * $data->quantity;
@@ -432,13 +439,13 @@ class ProductionParcelController extends Controller
         }
 
         $validated = $request->validate([
-            'qty' => 'required|numeric',
+            'qty' => 'required|numeric|gt:0|max:1000000',
             'sell_price' => 'nullable',
         ]);
 
         try {
             DB::beginTransaction();
-            $detailProduct = ProductionParcelDetail::findOrFail($id);
+            $detailProduct = ProductionParcelDetail::whereNull('pos_id')->findOrFail($id);
             $detailProduct->quantity = $validated['qty'];
             $detailProduct->save();
 
@@ -464,7 +471,7 @@ class ProductionParcelController extends Controller
 
         try {
             DB::beginTransaction();
-            $deteilProduct = ProductionParcelDetail::findOrFail($id);
+            $deteilProduct = ProductionParcelDetail::whereNull('pos_id')->findOrFail($id);
             $deteilProduct->delete();
             DB::commit();
             return response()->json([
@@ -478,18 +485,63 @@ class ProductionParcelController extends Controller
         }
     }
 
+    /** The parcel menu has no branch of its own: the one asked for, the worker's, or the user's only branch. */
+    private function parcelBranch(Request $request, ProductionParcel $parcel): ?int
+    {
+        $mine = array_map('intval', \Modules\Master\Entities\UserBranch::getUserBranch());
+        $staffBranch = $parcel->staff_id ? DB::table('staff')->where('id', $parcel->staff_id)->value('branch_id') : null;
+        foreach ([$request->input('branch_id'), $staffBranch, count($mine) === 1 ? $mine[0] : null] as $candidate) {
+            if ($candidate && in_array((int) $candidate, $mine, true)) {
+                return (int) $candidate;
+            }
+        }
+
+        return null;
+    }
+
     public function set_selesai(Request $request, $id)
     {
         if ($denied = $this->requireAccess('parcel.set_selesai')) {
             return $denied;
         }
 
+        $waiting = ProductionParcel::find($id);
+        // Held from before the transaction until it ends; see App\Support\StockLock.
+        StockLock::lock($waiting ? $this->parcelBranch($request, $waiting) : null);
+        // Finishing makes a production run, which needs a number nobody else is taking.
+        DocumentNumber::lock('production');
         try {
             DB::beginTransaction();
 
             $userId = Auth::id(); // Ambil user sekali
-            $parcel = ProductionParcel::findOrFail($id);
+            // Locked so a double click or two users cannot turn one parcel into two products.
+            $parcel = ProductionParcel::lockForUpdate()->findOrFail($id);
+            if ($parcel->status === 'complete' || $parcel->product_id) {
+                DB::rollBack();
+
+                return response()->json(['message' => 'Parcel ini sudah diselesaikan.'], 409);
+            }
             $parcel->status = 'complete';
+
+            $branchId = $this->parcelBranch($request, $parcel);
+            if (! $branchId) {
+                DB::rollBack();
+
+                return response()->json(['message' => 'Cabang parcel tidak dapat ditentukan. Atur cabang karyawan yang mengerjakan parcel ini.'], 422);
+            }
+            $ingredients = ProductionParcelDetail::whereNull('pos_id')->where('production_id', $parcel->id)->get()
+                ->groupBy('product_id')->map(fn ($rows) => (float) $rows->sum('quantity'))->all();
+            $ingredients = array_diff_key($ingredients, array_flip(Product::serviceIds(array_keys($ingredients))));
+            Product::whereIn('id', array_keys($ingredients))->orderBy('id')->lockForUpdate()->get();
+            $stock = \App\Support\InventorySnapshot::stockAvailable(array_keys($ingredients), $branchId);
+            foreach ($ingredients as $productId => $needed) {
+                if (($stock[(int) $productId] ?? 0.0) < $needed) {
+                    DB::rollBack();
+
+                    return response()->json(['message' => 'Stok bahan "' . (Product::whereKey($productId)->value('name') ?? $productId)
+                        . '" tidak mencukupi. Tersedia: ' . ($stock[(int) $productId] ?? 0) . ', dibutuhkan: ' . $needed . '.'], 422);
+                }
+            }
 
             // Create product
             $productNameBase = 'PARCEL ' . formatRibuanToK($parcel->budget);
@@ -514,7 +566,7 @@ class ProductionParcelController extends Controller
             $receipt->save();
 
             // Ambil detail produk parcel
-            $details = ProductionParcelDetail::where('production_id', $parcel->id)->get();
+            $details = ProductionParcelDetail::whereNull('pos_id')->where('production_id', $parcel->id)->get();
 
             $parcel->product_id = $product->id;
             $parcel->save();
@@ -527,6 +579,7 @@ class ProductionParcelController extends Controller
                 'status' => 'complete',
                 'description' => $product->description,
                 'staff_id' => $parcel->staff_id,
+                'branch_id' => $branchId,
                 'created_by' => $userId,
             ]);
             $production->save();
@@ -572,6 +625,9 @@ class ProductionParcelController extends Controller
             return response()->json([
                 'message' => 'Parcel gagal diterima. ' . $e->getMessage(),
             ], 500);
+        } finally {
+            StockLock::release();
+            DocumentNumber::unlock('production');
         }
     }
 }

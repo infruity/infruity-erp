@@ -213,7 +213,7 @@
                         </div>
                     </div>
                     <div x-show="config.type !== 'adjusted'" class="report-mobile-history-list">
-                        <template x-for="(entry, index) in filteredHistory" :key="index">
+                        <template x-for="(entry, index) in pagedHistory" :key="index">
                             <article class="report-mobile-receipt" :data-type="config.type" :class="entryUrl(entry) ? 'is-link' : ''" :role="entryUrl(entry) ? 'link' : null" :tabindex="entryUrl(entry) ? 0 : null" @click="if (entryUrl(entry)) window.location.href = entryUrl(entry)" @keydown.enter="if (entryUrl(entry)) window.location.href = entryUrl(entry)">
                                 <div class="report-mobile-receipt__head"><div><span class="report-mobile-receipt__eyebrow" x-text="config.type === 'shipping' ? 'No. Resi' : 'No. Nota'"></span><strong x-text="entry.invoice || entry.type || 'Transaksi'"></strong></div><div class="report-mobile-receipt__date"><strong x-text="entry.date_formatted"></strong><span x-text="entry.time_formatted"></span></div></div>
                                 <div class="report-mobile-receipt__content">
@@ -223,6 +223,7 @@
                                 </div>
                             </article>
                         </template>
+                        <button type="button" x-show="hiddenHistoryCount > 0" @click="showMoreHistory()" style="margin:8px auto 16px;display:block;padding:10px 20px;border:1px solid #e5e7eb;border-radius:999px;background:#fff;color:#4b5563;font-size:12px;font-weight:600">Muat lebih banyak (<span x-text="hiddenHistoryCount"></span>)</button>
                         <p x-show="!historyLoading && !historyError && filteredHistory.length === 0" style="padding:28px;text-align:center;color:#9ca3af;font-size:12px">Belum ada riwayat pada periode ini.</p>
                     </div>
                 </div>

@@ -175,6 +175,14 @@ class PaymentMethodController extends Controller
         try {
             DB::beginTransaction();
             $paymentMethod = PaymentMethod::findOrFail($id);
+            if (\App\Support\MasterInUse::check('payment_method', [$paymentMethod->getKey()])) {
+                DB::rollback();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Metode pembayaran ini sudah dipakai di transaksi, jadi tidak dapat dihapus. Riwayat dan laporan masih memakainya.',
+                ], 422);
+            }
             $paymentMethod->delete();
             DB::commit();
             return response()->json([
@@ -192,6 +200,8 @@ class PaymentMethodController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('payment-method.index');
+
         $data = PaymentMethod::all();
         return DataTables::of($data)
             ->addIndexColumn()

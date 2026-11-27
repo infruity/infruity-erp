@@ -46,10 +46,13 @@
                         <span class="pos-ref-cell__label pos-ref-required">KUANTITAS <small x-text="PosAddItem.quantityUnit(addProduct.unit || '-')"></small></span>
                         <span class="pos-ref-cell__field"><input type="number" step="0.01" min="0" placeholder="0" :disabled="!addProduct.id" x-model="addProduct.qty" @input="updateAddTotalFromQty"></span>
                     </label>
-                    <label class="pos-ref-cell">
-                        <span class="pos-ref-cell__label">DISKON</span>
-                        <span class="pos-ref-cell__field"><span x-text="PosAddItem.discountPrefix(addProduct.discountNominal)">%</span><input type="text" inputmode="numeric" placeholder="0" :disabled="!addProduct.id" :value="addProduct.discountNominal ? formatRupiah(addProduct.discountNominal) : ''" @input="updateDiscountValue"></span>
-                    </label>
+                    <div class="pos-ref-cell">
+                        <span class="pos-unit-head">
+                            <span class="pos-ref-cell__label">DISKON</span>
+                            @include('pos::pos.segment.unit-toggle', ['model' => 'addProduct.discountType', 'set' => 'setAddDiscountType', 'label' => 'Jenis diskon produk', 'disabled' => '!addProduct.id'])
+                        </span>
+                        <span class="pos-ref-cell__field"><span x-text="addProduct.discountType === 'percent' ? '%' : 'Rp'">Rp</span><input aria-label="Diskon produk" type="text" inputmode="numeric" placeholder="0" :disabled="!addProduct.id" :value="addProduct.discountNominal ? formatRupiah(addProduct.discountNominal) : ''" @input="updateDiscountValue"></span>
+                    </div>
                     <label class="pos-ref-cell">
                         <span class="pos-ref-cell__label">TOTAL HARGA</span>
                         <span class="pos-ref-cell__field"><span>Rp</span><input type="text" inputmode="numeric" :disabled="!addProduct.id" x-model="addProduct.formattedAddTotalInput" @input="updateQtyFromAddTotal" placeholder="0"></span>
@@ -105,7 +108,7 @@
 
                 <!-- Diskon -->
                 <div class="mb-3">
-                    <label class="form-label">Diskon (Rp jika > 100, % jika ≤ 100)</label>
+                    <label class="form-label">Diskon</label>
                     <input type="text" class="form-control" inputmode="numeric" :value="formatRupiah(addProduct.discountNominal || 0)"
                         @input="updateDiscountValue">
                 </div>
@@ -164,10 +167,13 @@
                         <span class="pos-ref-cell__label pos-ref-required">KUANTITAS <small x-text="PosAddItem.quantityUnit(editProductUnit)"></small></span>
                         <span class="pos-ref-cell__field"><input type="number" step="0.01" min="0" placeholder="0" x-model="editQty" @input="updateTotalFromEditQty"></span>
                     </label>
-                    <label class="pos-ref-cell">
-                        <span class="pos-ref-cell__label">DISKON</span>
-                        <span class="pos-ref-cell__field"><span x-text="PosAddItem.discountPrefix(editDiscountNominal)">%</span><input type="text" inputmode="numeric" placeholder="0" :value="editDiscountNominal ? formatRupiah(editDiscountNominal) : ''" @input="updateEditDiscountValue"></span>
-                    </label>
+                    <div class="pos-ref-cell">
+                        <span class="pos-unit-head">
+                            <span class="pos-ref-cell__label">DISKON</span>
+                            @include('pos::pos.segment.unit-toggle', ['model' => 'editDiscountType', 'set' => 'setEditDiscountType', 'label' => 'Jenis diskon produk'])
+                        </span>
+                        <span class="pos-ref-cell__field"><span x-text="editDiscountType === 'percent' ? '%' : 'Rp'">Rp</span><input aria-label="Diskon produk" type="text" inputmode="numeric" placeholder="0" :value="editDiscountNominal ? formatRupiah(editDiscountNominal) : ''" @input="updateEditDiscountValue"></span>
+                    </div>
                     <label class="pos-ref-cell">
                         <span class="pos-ref-cell__label">TOTAL HARGA</span>
                         <span class="pos-ref-cell__field"><span>Rp</span><input type="text" inputmode="numeric" x-model="editTotalFormatted" @input="updateQtyFromEditTotalFormatted"></span>
@@ -222,7 +228,7 @@
 
                     <!-- Diskon -->
                     <div class="mb-3">
-                        <label class="form-label">Diskon (Rp jika > 100, % jika ≤ 100)</label>
+                        <label class="form-label">Diskon</label>
                         <input type="text" class="form-control" inputmode="numeric" :value="formatRupiah(editDiscountNominal || 0)"
                             @input="updateEditDiscountValue">
                     </div>

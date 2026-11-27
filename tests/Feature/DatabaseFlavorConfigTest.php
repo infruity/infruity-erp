@@ -17,20 +17,19 @@ class DatabaseFlavorConfigTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $value = getenv('DB_SERVER');
-        $this->previous = $value === false ? null : $value;
+        $this->previous = $_SERVER['DB_SERVER'] ?? $_ENV['DB_SERVER'] ?? (getenv('DB_SERVER') === false ? null : getenv('DB_SERVER'));
     }
 
     protected function tearDown(): void
     {
-        $this->previous === null ? putenv('DB_SERVER') : putenv('DB_SERVER=' . $this->previous);
+        $this->setServer($this->previous);
         parent::tearDown();
     }
 
     #[DataProvider('flavors')]
     public function test_the_cte_depth_variable_follows_the_database_server(?string $server, string $variable): void
     {
-        $server === null ? putenv('DB_SERVER') : putenv('DB_SERVER=' . $server);
+        $this->setServer($server);
         $config = require config_path('database.php');
 
         $this->assertSame($variable, $config['cte_recursion_variable']);
@@ -39,6 +38,19 @@ class DatabaseFlavorConfigTest extends TestCase
             $init = $config['connections']['mysql']['options'][\Pdo\Mysql::ATTR_INIT_COMMAND];
             $this->assertStringStartsWith("SET SESSION {$variable} = ", $init);
         }
+    }
+
+    /** env() reads $_SERVER and $_ENV before putenv, and a local .env fills both. */
+    private function setServer(?string $server): void
+    {
+        if ($server === null) {
+            unset($_SERVER['DB_SERVER'], $_ENV['DB_SERVER']);
+            putenv('DB_SERVER');
+
+            return;
+        }
+        $_SERVER['DB_SERVER'] = $_ENV['DB_SERVER'] = $server;
+        putenv('DB_SERVER=' . $server);
     }
 
     public static function flavors(): array

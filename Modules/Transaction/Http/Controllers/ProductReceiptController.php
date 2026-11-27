@@ -563,6 +563,8 @@ class ProductReceiptController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('receipt.index');
+
         $data = Receipt::with('products')->get();
         return DataTables::of($data)
             ->addIndexColumn()

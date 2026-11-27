@@ -176,8 +176,11 @@
                             </div>
                         </div>
                         <div>
-                            <label class="form-label mb-1">Diskon Ongkir</label>
-                            <input type="text" class="form-control text-end" inputmode="numeric" :value="formatRupiah(diskonOngkir)" @input="updateDiskonOngkir" @focus="$event.target.select()">
+                            <span class="pos-unit-head mb-1">
+                                <span class="form-label mb-0">Diskon Ongkir</span>
+                                @include('pos::pos.segment.unit-toggle', ['model' => 'diskonOngkirType', 'set' => 'setDiskonOngkirType', 'label' => 'Jenis diskon ongkir'])
+                            </span>
+                            <span class="pos-ref-money__field"><span x-text="diskonOngkirType === 'percent' ? '%' : 'Rp'">Rp</span><input type="text" class="form-control text-end" inputmode="numeric" :value="formatRupiah(diskonOngkir)" @input="updateDiskonOngkir" @focus="$event.target.select()" aria-label="Diskon ongkir"></span>
                         </div>
                     </div>
                 </details>

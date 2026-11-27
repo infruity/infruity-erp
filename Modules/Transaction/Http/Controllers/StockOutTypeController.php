@@ -144,6 +144,8 @@ class StockOutTypeController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('stock-out-type.index');
+
         $data = StockOutType::all();
         return DataTables::of($data)
             ->addIndexColumn()

@@ -26,22 +26,7 @@ class Customer extends Model
 
     public static function getCustomerNumber()
     {
-        $orderData = self::select(DB::raw('CAST(RIGHT(code, 5) AS UNSIGNED) + 1 AS order_number'))
-            ->whereRaw('MONTH(created_at) = MONTH(NOW())')
-            ->whereRaw('YEAR(created_at) = YEAR(NOW())')
-            ->whereRaw('SUBSTRING(code, 1, 3) = ?', ['PLG'])
-            ->orderByRaw('CAST(RIGHT(code, 5) AS UNSIGNED) DESC')
-            ->limit(1)
-            ->first();
-        $orderPad = '00001';
-        if ($orderData && $orderData->order_number) {
-            $orderPad = str_pad($orderData->order_number, 5, '0', STR_PAD_LEFT);
-        }
-
-        $prefix = 'PLG' . now()->format('ym');
-        $newCode = $prefix . $orderPad;
-
-        return $newCode;
+        return \App\Support\DocumentNumber::next(self::class, 'code', 'PLG' . now()->format('ym'), 5);
     }
 
     public static function sanitizeWhatsapp(?string $phone): ?string

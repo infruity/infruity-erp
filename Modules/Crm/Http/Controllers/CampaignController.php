@@ -222,6 +222,8 @@ class CampaignController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('campaign.index');
+
         $data = Campaign::where('start_date', '>=', date('Y-m-d'))->orWhere('end_date', '>=', date('Y-m-d'))->get();
         return DataTables::of($data)
             ->addIndexColumn()
@@ -233,10 +235,10 @@ class CampaignController extends Controller
                 }
             })
             ->addColumn('start_date', function ($row) {
-                return dateEnglish($row->start_date);
+                return \Carbon\Carbon::parse($row->start_date)->locale('id')->translatedFormat('d M Y');
             })
             ->addColumn('end_date', function ($row) {
-                return dateEnglish($row->end_date);
+                return \Carbon\Carbon::parse($row->end_date)->locale('id')->translatedFormat('d M Y');
             })
             ->addColumn('type_promo', function ($row) {
                 if ($row->type_promo == 'discount') {

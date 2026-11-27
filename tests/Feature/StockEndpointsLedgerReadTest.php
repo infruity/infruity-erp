@@ -59,7 +59,7 @@ final class StockEndpointsLedgerReadTest extends TestCase
                 ->mapWithKeys(fn ($v, $k) => [(int) explode('|', $k)[0] => $v])->all();
 
             $this->assertEquals($expected, $actual, $only ? 'one branch' : 'all branches');
-            $this->assertEqualsCanonicalizing(['id', 'name', 'stock_available', 'hpp'], array_keys($rows->first()));
+            $this->assertEqualsCanonicalizing(['id', 'name', 'stock_available', 'hpp', 'unit'], array_keys($rows->first()));
         }
     }
 

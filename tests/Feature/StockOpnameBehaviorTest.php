@@ -188,6 +188,86 @@ class StockOpnameBehaviorTest extends TestCase
         $this->assertSame(7.0, $this->stock());
     }
 
+    public function test_opening_a_dashboard_does_not_finalize_old_pending_counts(): void
+    {
+        $id = $this->createCount(7);
+        DB::table('stock_opname')->where('id', $id)->update(['date' => date('Y-m-d', strtotime('-1 day'))]);
+
+        foreach (['/dashboard', '/crm-dashboard'] as $page) {
+            $this->get($page)->assertOk();
+        }
+
+        $this->assertDatabaseHas('stock_opname', [
+            'id' => $id, 'status' => 'pending', 'stock' => 10, 'real_stock' => 7, 'difference' => -3,
+        ]);
+        $this->assertSame(10.0, $this->stock(), 'viewing a dashboard must not move stock');
+    }
+
+    // ---- one open count per stock --------------------------------------------------------------
+
+    public function test_a_pending_count_blocks_a_new_one_on_another_date(): void
+    {
+        $this->submitCount(8, ['date' => date('Y-m-d', strtotime('-1 day'))])->assertCreated();
+
+        $this->submitCount(8)->assertStatus(422);
+        $this->assertSame(1, DB::table('stock_opname')->where('product_id', $this->productId)->where('branch_id', $this->branch)->where('status', 'pending')->count());
+    }
+
+    public function test_a_pending_count_of_a_variant_blocks_a_count_of_the_stock_it_shares(): void
+    {
+        $variant = $this->makeProduct('Pisang Varian', 6000);
+        DB::table('product_child')->insert(['product_id' => $variant, 'parent_id' => $this->productId, 'created_at' => now(), 'updated_at' => now()]);
+
+        $this->createCount(8);
+        $this->submitCount(8, ['product_id' => $variant, 'date' => date('Y-m-d', strtotime('-1 day'))])->assertStatus(422);
+    }
+
+    public function test_a_new_count_is_allowed_once_the_previous_one_is_finalized(): void
+    {
+        $this->finalize($this->createCount(8))->assertOk();
+
+        $this->submitCount(8)->assertCreated()->assertJsonPath('data.difference', 0);
+    }
+
+    /** Duplicates made before the one-open-count rule are still in the data. */
+    private function leftoverDuplicates(): array
+    {
+        // The opening stock (itself a finished count) is older than both duplicates.
+        DB::table('stock_opname')->where('product_id', $this->productId)
+            ->update(['created_at' => now()->subDay(), 'updated_at' => now()->subDay()]);
+        $first = $this->createCount(8);
+        $copy = (array) DB::table('stock_opname')->find($first);
+        unset($copy['id']);
+        $copy['code'] .= 'D';
+        $copy['date'] = date('Y-m-d', strtotime('-1 day'));
+        $second = DB::table('stock_opname')->insertGetId($copy);
+        DB::table('stock_opname')->whereIn('id', [$first, $second])
+            ->update(['created_at' => now()->subHour(), 'updated_at' => now()->subHour()]);
+
+        return [$first, $second];
+    }
+
+    public function test_only_one_of_two_leftover_duplicates_can_be_finalized(): void
+    {
+        [$first, $second] = $this->leftoverDuplicates();
+
+        $this->finalize($first)->assertOk();
+        $this->finalize($second)->assertStatus(422);
+
+        $this->assertDatabaseHas('stock_opname', ['id' => $second, 'status' => 'pending']);
+        $this->assertSame(8.0, $this->stock(), 'the shortage must be applied once');
+    }
+
+    public function test_a_superseded_leftover_does_not_block_a_new_count(): void
+    {
+        [$first] = $this->leftoverDuplicates();
+        $this->finalize($first)->assertOk();
+
+        $this->finalize($this->createCount(7))->assertOk();
+
+        $this->assertSame(7.0, $this->stock());
+    }
+
     // ---- editing a pending count -------------------------------------------------------------
 
     public function test_pending_count_can_be_updated_and_history_is_kept(): void
@@ -259,6 +339,7 @@ class StockOpnameBehaviorTest extends TestCase
     public function test_pending_count_can_be_deleted_without_touching_stock(): void
     {
         $id = $this->createCount(7);
+        $this->actAsMasterAccount();
 
         $this->deleteJson("/stock-opname/{$id}")->assertOk()->assertJson(['success' => true]);
 
@@ -305,7 +386,7 @@ class StockOpnameBehaviorTest extends TestCase
         $sales = $this->makeUser($roleId, [], [$this->branch]);
         $this->actAsRole($sales, $roleId);
 
-        $this->finalize($id)->assertRedirect();
+        $this->finalize($id)->assertForbidden();
         $this->assertDatabaseHas('stock_opname', ['id' => $id, 'status' => 'pending']);
         $this->assertSame(10.0, $this->stock());
     }

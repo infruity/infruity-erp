@@ -13,6 +13,18 @@ class SettingNotaController extends Controller
 {
     use \App\Traits\HasAccessControl;
 
+    /** The logo is served from the public disk, so only a real PNG or JPG may be stored. */
+    private function validateLogo(Request $request): void
+    {
+        $request->validate(
+            ['avatar' => 'nullable|file|mimes:png,jpg,jpeg|max:2048'],
+            [
+                'avatar.mimes' => 'Logo harus berupa gambar PNG atau JPG.',
+                'avatar.max' => 'Ukuran logo maksimal 2 MB.',
+            ]
+        );
+    }
+
     /**
      * Display a listing of the resource.
      * @return Renderable
@@ -72,6 +84,8 @@ class SettingNotaController extends Controller
         if ($denied = $this->requireAccess('setting-nota.store')) {
             return $denied;
         }
+
+        $this->validateLogo($request);
 
         DB::beginTransaction();
         try {
@@ -151,6 +165,8 @@ class SettingNotaController extends Controller
             return $denied;
         }
 
+        $this->validateLogo($request);
+
         DB::beginTransaction();
         try {
             $settingNota = SettingNota::findOrFail($id);
@@ -226,7 +242,9 @@ class SettingNotaController extends Controller
             $userBranches = \Modules\Master\Entities\UserBranch::getUserBranch();
             $data['setting'] = SettingNota::whereIn('branch_id', $userBranches)->first();
         }
-        
+        // A branch without its own nota settings prints with the first one, as the receipts do; with none at all, blank.
+        $data['setting'] ??= SettingNota::first() ?? new SettingNota();
+
         return view('pos::setting-nota.view', $data);
     }
 }
