@@ -38,10 +38,7 @@
                         <span class="pos-ref-cell__field"><input type="number" step="0.01" min="0" placeholder="0" :disabled="!addProduct.id" x-model="addProduct.qty" @input="updateAddTotalFromQty"></span>
                     </label>
                     <div class="pos-ref-cell">
-                        <span class="pos-unit-head">
-                            <span class="pos-ref-cell__label">DISKON</span>
-                            @include('pos::pos.segment.unit-toggle', ['model' => 'addProduct.discountType', 'set' => 'setAddDiscountType', 'label' => 'Jenis diskon produk', 'disabled' => '!addProduct.id'])
-                        </span>
+                        <span class="pos-ref-cell__label">DISKON</span>
                         <span class="pos-ref-cell__field"><span x-text="addProduct.discountType === 'percent' ? '%' : 'Rp'">Rp</span><input aria-label="Diskon produk" type="text" inputmode="numeric" placeholder="0" :disabled="!addProduct.id" :value="addProduct.discountNominal ? formatRupiah(addProduct.discountNominal) : ''" @input="updateDiscountValue"></span>
                     </div>
                     <label class="pos-ref-cell">
@@ -161,10 +158,7 @@
                         <span class="pos-ref-cell__field"><input type="number" step="0.01" min="0" placeholder="0" x-model="editQty" @input="updateTotalFromEditQty"></span>
                     </label>
                     <div class="pos-ref-cell">
-                        <span class="pos-unit-head">
-                            <span class="pos-ref-cell__label">DISKON</span>
-                            @include('pos::pos.segment.unit-toggle', ['model' => 'editDiscountType', 'set' => 'setEditDiscountType', 'label' => 'Jenis diskon produk'])
-                        </span>
+                        <span class="pos-ref-cell__label">DISKON</span>
                         <span class="pos-ref-cell__field"><span x-text="editDiscountType === 'percent' ? '%' : 'Rp'">Rp</span><input aria-label="Diskon produk" type="text" inputmode="numeric" placeholder="0" :value="editDiscountNominal ? formatRupiah(editDiscountNominal) : ''" @input="updateEditDiscountValue"></span>
                     </div>
                     <label class="pos-ref-cell">
