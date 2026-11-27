@@ -5,6 +5,7 @@ namespace Modules\Crm\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use App\Support\PosDiscount;
 use Modules\Master\Entities\Customer;
 use Modules\Crm\Entities\Tier;
 use Illuminate\Support\Facades\DB;
@@ -64,7 +65,7 @@ class DashboardController extends Controller
             $expenseQuery->where('expenditure.branch_id', $branchId);
         }
 
-        $salesByDate = (clone $salesQuery)->select('date', DB::raw('SUM(COALESCE(total, 0)) AS amount'))
+        $salesByDate = (clone $salesQuery)->select('date', DB::raw('SUM(' . PosDiscount::revenueSql() . ') AS amount'))
             ->groupBy('date')->pluck('amount', 'date');
         $expensesByDate = (clone $expenseQuery)->select('date', DB::raw('SUM(COALESCE(total, 0)) AS amount'))
             ->groupBy('date')->pluck('amount', 'date');
@@ -158,7 +159,7 @@ class DashboardController extends Controller
             ->whereIn('branch_id', $allowedBranchIds)
             ->whereBetween('date', [$previousStart->toDateString(), $previousEnd->toDateString()])
             ->when($branchId !== null, static fn ($query) => $query->where('branch_id', $branchId))
-            ->sum(DB::raw('COALESCE(total, 0)'));
+            ->sum(DB::raw(PosDiscount::revenueSql()));
         $previousExpense = (float) DB::table('expenditure')
             ->where('type', 'pengeluaran')
             ->whereIn('status', ['paid', 'debt'])

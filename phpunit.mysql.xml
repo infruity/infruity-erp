@@ -57,6 +57,7 @@
             <file>./tests/Feature/PosParcelDraftTest.php</file>
             <file>./tests/Feature/DataHardenTest.php</file>
             <file>./tests/Feature/ReportDefectsTest.php</file>
+            <file>./tests/Feature/OmzetTanpaOngkirTest.php</file>
             <file>./tests/Feature/AccessDefectsTest.php</file>
             <file>./tests/Feature/StockDefectsTest.php</file>
             <file>./tests/Feature/PosMoneyDefectsTest.php</file>

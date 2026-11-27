@@ -32,6 +32,19 @@ class PosDiscount
         return $type ?: (self::isPercent($value, null) ? self::PERCENT : self::AMOUNT);
     }
 
+    /**
+     * Revenue of a sale, for queries on pos_transaction: the stored total without the shipping inside it, that is the
+     * shipping cost after its own discount. Shipping is not revenue (owner's decision, 2026-11-27). The procedures in
+     * database/sql/function.sql carry the same expression.
+     */
+    public static function revenueSql(string $table = 'pos_transaction'): string
+    {
+        $shipping = "COALESCE({$table}.ongkir, 0) - (" . self::sql("{$table}.ongkir_discount", "{$table}.ongkir_discount_type", "{$table}.ongkir") . ')';
+        $revenue = "COALESCE({$table}.total, 0) - (CASE WHEN {$shipping} > 0 THEN {$shipping} ELSE 0 END)";
+
+        return "CASE WHEN {$revenue} > 0 THEN {$revenue} ELSE 0 END";
+    }
+
     /** The same rule as amount(), for report queries. The arguments are column names written in code. */
     public static function sql(string $value, string $type, string $base): string
     {
