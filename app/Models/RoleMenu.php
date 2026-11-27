@@ -70,6 +70,25 @@ class RoleMenu extends Model
         return is_string($email) && mb_strtolower(trim($email)) === self::MASTER_EMAIL;
     }
 
+    public const ADMINISTRATOR_ROLE_ID = 1;
+
+    /** Whether the signed-in user is acting as an Administrator (or is the master account). */
+    public static function actingAsAdministrator(): bool
+    {
+        return self::isMasterAccount() || (int) self::currentRoleId() === self::ADMINISTRATOR_ROLE_ID;
+    }
+
+    /** An account only an Administrator may change: one holding the Administrator role, or the master account. */
+    public static function isPrivilegedAccount(int $userId): bool
+    {
+        if (RoleUser::where('id_user', $userId)->where('id_role', self::ADMINISTRATOR_ROLE_ID)->exists()) {
+            return true;
+        }
+        $email = \Illuminate\Support\Facades\DB::table('users')->where('id_user', $userId)->value('email');
+
+        return is_string($email) && mb_strtolower(trim($email)) === self::MASTER_EMAIL;
+    }
+
     /** "x.destroy", "x.delete", "x.delete_product", "x.delete-ajax", "x.destroy-variant" ... */
     public static function isDeletePermission(string $permission): bool
     {

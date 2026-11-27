@@ -99,7 +99,7 @@ class PosPaymentBehaviorTest extends TestCase
         // The POS form posts customer_id 0 for "Pelanggan Umum", which has no customer row.
         $posId = $this->saveSale(['customer_id' => 0]);
 
-        $this->assertDatabaseHas('pos_transaction', ['id' => $posId, 'customer_id' => 0, 'status' => 'draft']);
+        $this->assertDatabaseHas('pos_transaction', ['id' => $posId, 'customer_id' => null, 'status' => 'draft']);
     }
 
     public function test_sale_with_an_unknown_customer_id_is_rejected(): void
@@ -325,7 +325,7 @@ class PosPaymentBehaviorTest extends TestCase
         $gudang = $this->makeUser($roleId, [], [$this->branchId]);
         $this->actAsRole($gudang, $roleId);
 
-        $this->pay($posId, [['payment_id' => $this->cashId, 'amount' => '60.000']])->assertRedirect();
+        $this->pay($posId, [['payment_id' => $this->cashId, 'amount' => '60.000']])->assertForbidden();
         $this->assertSame(0, DB::table('pos_payment')->where('pos_id', $posId)->count());
     }
 }

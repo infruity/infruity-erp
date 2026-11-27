@@ -71,7 +71,7 @@ final class PosPaymentUiContractTest extends TestCase
         }
         // Address and courier are read from the saved transaction; choosing them writes, so they stay read-only here.
         // Whole rupiah in the footer, like the list (toNumber() prints ",00").
-        $this->assertStringContainsString("number_format(floor(\$data->total - \$data->paid), 0, ',', '.')", $view);
+        $this->assertStringContainsString("number_format(round(\$data->total - \$data->paid), 0, ',', '.')", $view);
         $this->assertStringContainsString('$data->ongkir_address', $view);
         $this->assertStringContainsString('$data->courier', $view);
         $this->assertStringNotContainsString('name="courier_id"', $view);
@@ -136,9 +136,9 @@ final class PosPaymentUiContractTest extends TestCase
     {
         $view = $this->read('Modules/Pos/Resources/views/pos/payment.blade.php');
 
-        // Same rule as saveTransaction: 100 or less is a percentage, above is rupiah.
+        // Same rule as saveTransaction: the stored Rp / % choice, read through PosDiscount.
         $this->assertStringContainsString('$discountAmount', $view);
-        $this->assertStringContainsString('<= 100', $view);
+        $this->assertStringContainsString('PosDiscount::amount(', $view);
         $this->assertStringContainsString('$data->branch?->name', $view);
         $this->assertStringContainsString("\$detail->sum('subtotal')", $view);
         $this->assertStringNotContainsString('$data->subtotal', $view);

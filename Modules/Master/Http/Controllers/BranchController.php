@@ -180,6 +180,14 @@ class BranchController extends Controller
         try {
             DB::beginTransaction();
             $branch = Branch::findOrFail($id);
+            if (\App\Support\MasterInUse::check('branch', [$branch->getKey()])) {
+                DB::rollback();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cabang ini sudah dipakai di transaksi, jadi tidak dapat dihapus. Riwayat dan laporan masih memakainya.',
+                ], 422);
+            }
             $branch->delete();
             DB::commit();
             return response()->json([
@@ -245,6 +253,8 @@ class BranchController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAnyAccess(['branch.index', 'product-stock.index', 'products.index']);
+
         $data = Branch::all();
         return DataTables::of($data)
             ->addIndexColumn()

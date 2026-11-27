@@ -720,7 +720,7 @@ class ReportController extends Controller
 
         $startDate = $request->filled('start_date') ? $request->start_date : date('Y-m-d');
         $endDate   = $request->filled('end_date') ? $request->end_date : date('Y-m-d');
-        $shippingDiscount = 'CASE WHEN COALESCE(pos_transaction.ongkir_discount, 0) BETWEEN 1 AND 100 THEN COALESCE(pos_transaction.ongkir, 0) * pos_transaction.ongkir_discount / 100 ELSE COALESCE(pos_transaction.ongkir_discount, 0) END';
+        $shippingDiscount = \App\Support\PosDiscount::sql('pos_transaction.ongkir_discount', 'pos_transaction.ongkir_discount_type', 'pos_transaction.ongkir');
 
         // Query
         $data = \Modules\Pos\Entities\PosModel::select(
@@ -867,9 +867,7 @@ class ReportController extends Controller
             $txDate = \Carbon\Carbon::parse($detail->tx_date);
             $ongkir = $detail->ongkir ?? 0;
             $rawShippingDiscount = (float) ($detail->ongkir_discount ?? 0);
-            $ongkirDiscount = $rawShippingDiscount > 0 && $rawShippingDiscount <= 100
-                ? $ongkir * $rawShippingDiscount / 100
-                : $rawShippingDiscount;
+            $ongkirDiscount = \App\Support\PosDiscount::amount($rawShippingDiscount, $detail->ongkir_discount_type, $ongkir);
             $customerName = $detail->customer_name ?? 'Pelanggan Umum';
             $address = $detail->ongkir_address ?? '-';
             

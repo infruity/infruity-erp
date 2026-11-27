@@ -88,11 +88,6 @@ class DashboardController extends Controller
         return $this->forgot_password();
     }
 
-    public function generateQrCode()
-    {
-        return view('qrcode');
-    }
-
     public function produk()
     {
         return view('produk');

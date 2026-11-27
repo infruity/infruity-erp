@@ -131,16 +131,14 @@
     $subtotal = $detail->sum(fn ($line) => $line->subtotal);
     $discount = $data->discount;
     $isDiscountPercentage = false;
-    if ($discount <= 100 && $discount > 0) {
+    if (\App\Support\PosDiscount::isPercent($discount, $data->discount_type)) {
         $isDiscountPercentage = true;
         $discountPercent = $discount;
         $discount = ($discount / 100) * $subtotal;
     }
     $ongkir = (float) ($data->ongkir ?? 0);
     $ongkirDiscount = $data->ongkir_discount;
-    if ($ongkirDiscount <= 100 && $ongkirDiscount > 0) {
-        $ongkirDiscount = ($ongkirDiscount / 100) * $ongkir;
-    }
+    $ongkirDiscount = \App\Support\PosDiscount::amount($ongkirDiscount, $data->ongkir_discount_type, $ongkir);
     $grandTotal = $data->total ?? $data->total_amount ?? ($subtotal - $discount + $ongkir - $ongkirDiscount);
     $change = max((float) ($data->return ?? 0), 0);
 

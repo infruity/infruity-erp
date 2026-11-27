@@ -31,11 +31,6 @@
         return unit ? `${value} ${unit}` : value;
     }
 
-    // Existing rule of the form: above 100 is rupiah, 100 or less is a percentage.
-    function discountPrefix(nominal) {
-        return Number(nominal) > 100 ? 'Rp' : '%';
-    }
-
     function priceLabel(unit) {
         return unit ? `HARGA JUAL / ${String(unit).toUpperCase()}` : 'HARGA JUAL';
     }
@@ -65,5 +60,5 @@
         };
     }
 
-    return {mapProductRow, availableStock, stockLabel, discountPrefix, priceLabel, quantityLabel, priceUnit, quantityUnit, listQuery, createRequestGuard};
+    return {mapProductRow, availableStock, stockLabel, priceLabel, quantityLabel, priceUnit, quantityUnit, listQuery, createRequestGuard};
 });

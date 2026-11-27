@@ -229,6 +229,8 @@ class KurirController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('kurir.index');
+
         $data = Kurir::all();
         return DataTables::of($data)
             ->addIndexColumn()

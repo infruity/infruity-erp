@@ -38,7 +38,7 @@
 
                 <!-- Diskon -->
                 <div class="mb-3">
-                    <label class="form-label">Diskon (Rp jika > 100, % jika ≤ 100)</label>
+                    <label class="form-label">Diskon (Rp)</label>
                     <input type="text" class="form-control" inputmode="numeric" :value="formatRupiah(addProduct.discountNominal || 0)"
                         @input="updateDiscountValue">
                 </div>
@@ -93,7 +93,7 @@
                     </div>
                     <!-- Diskon -->
                     <div class="mb-3">
-                        <label class="form-label">Diskon (Rp jika > 100, % jika ≤ 100)</label>
+                        <label class="form-label">Diskon (Rp)</label>
                         <input type="number" class="form-control" x-model="editDiscount" min="0"
                             @input="updateEditDiscount">
                     </div>

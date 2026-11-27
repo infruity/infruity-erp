@@ -55,17 +55,21 @@
         function posApp() {
             return {
                 @php
-                    $voucher = $deposito->voucher ?? 0;
+                    // From PosVoucher, as the payment itself computes it. A voucher never takes more than the bill.
+                    $voucherCap = isset($voucherDeposit) && $voucherDeposit ? (float) $voucherDeposit->voucher : (float) ($voucherValue ?? 0);
                 @endphp
-                totalDue: {{ floor($data->total - $data->paid >= ($voucher ?? 0) ? $data->total - $data->paid - $voucher : $data->total - $data->paid) }}, // Ganti dengan nilai dari data.total misalnya dari backend
-                totalPayment: {{ floor($data->total - $data->paid) }},
+                totalDue: {{ max(0, round($data->total - $data->paid - min($voucherCap, (float) $data->total))) }},
+                totalPayment: {{ round($data->total - $data->paid) }},
                 paymentDifference: 0,
                 // Diskon Nota / Ongkos Kirim typed on this page: every figure follows the typing at once, the save runs on change.
                 itemsSubtotal: {{ (float) $itemsSubtotal }},
                 paidAmount: {{ (float) ($data->paid ?? 0) }},
-                voucherAmount: {{ (float) $voucher }},
+                voucherAmount: {{ (float) $voucherCap }},
                 shippingDiscountValue: {{ (float) $shippingDiscountValue }},
                 savedDiscount: {{ (int) $discountValue }},
+                discountType: {!! json_encode($discountType) !!},
+                savedDiscountType: {!! json_encode($discountType) !!},
+                shippingDiscountType: {!! json_encode($shippingDiscountType) !!},
                 savedOngkir: {{ (int) $data->ongkir }},
                 discountInput: {!! json_encode($discountValue > 0 ? number_format($discountValue, 0, ',', '.') : '') !!},
                 ongkirInput: {!! json_encode((float) $data->ongkir > 0 ? number_format((float) $data->ongkir, 0, ',', '.') : '') !!},
@@ -73,16 +77,18 @@
                 totalsError: '',
                 digitsOf(value) { return parseInt(String(value || '').replace(/\D/g, ''), 10) || 0; },
                 fmtDigits(value) { const n = this.digitsOf(value); return n ? n.toLocaleString('id-ID') : ''; },
-                pctAmount(value, base) { return value > 0 && value <= 100 ? base * value / 100 : value; },
-                get discountPrefix() { const n = this.digitsOf(this.discountInput); return n > 0 && n <= 100 ? '%' : 'Rp'; },
+                unitAmount(value, type, base) { return type === 'percent' ? base * value / 100 : value; },
+                setDiscountType(type) { this.discountType = type; this.saveTotals(); },
                 get liveDiscountValue() { return this.digitsOf(this.discountInput); },
-                get liveDiscountAmount() { return this.pctAmount(this.liveDiscountValue, this.itemsSubtotal); },
+                get liveDiscountAmount() { return this.unitAmount(this.liveDiscountValue, this.discountType, this.itemsSubtotal); },
                 get liveOngkir() { return this.digitsOf(this.ongkirInput); },
-                get liveShippingNet() { return Math.max(0, this.liveOngkir - this.pctAmount(this.shippingDiscountValue, this.liveOngkir)); },
-                get liveTotal() { return Math.max(0, this.itemsSubtotal - this.liveDiscountAmount + this.liveShippingNet); },
-                get liveDue() { return Math.floor(this.liveTotal - this.paidAmount); },
+                get liveShippingNet() { return Math.max(0, this.liveOngkir - this.unitAmount(this.shippingDiscountValue, this.shippingDiscountType, this.liveOngkir)); },
+                // Whole rupiah, rounded as the server does; the inner round drops binary noise (18629.499999 is 18629.50).
+                wholeRupiah(value) { return Math.round(Math.round(value * 100) / 100); },
+                get liveTotal() { return this.wholeRupiah(Math.max(0, this.itemsSubtotal - this.liveDiscountAmount + this.liveShippingNet)); },
+                get liveDue() { return this.wholeRupiah(this.liveTotal - this.paidAmount); },
                 get liveDiscountLabel() {
-                    return 'Diskon Transaksi' + (this.liveDiscountValue > 0 && this.liveDiscountValue <= 100 ? ' (' + this.liveDiscountValue + '%)' : '');
+                    return 'Diskon Transaksi' + (this.discountType === 'percent' && this.liveDiscountValue > 0 ? ' (' + this.liveDiscountValue + '%)' : '');
                 },
                 get liveDiscountText() { return 'Rp ' + this.formatRupiah(Math.round(this.liveDiscountAmount)); },
                 get liveShippingText() { return 'Rp ' + this.formatRupiah(Math.round(this.liveShippingNet)); },
@@ -93,7 +99,8 @@
                 async saveTotals() {
                     const discount = this.liveDiscountValue;
                     const ongkir = this.liveOngkir;
-                    if (discount === this.savedDiscount && ongkir === this.savedOngkir) { this.totalsError = ''; return; }
+                    const discountType = this.discountType;
+                    if (discount === this.savedDiscount && discountType === this.savedDiscountType && ongkir === this.savedOngkir) { this.totalsError = ''; return; }
                     if (this.liveDiscountAmount > this.itemsSubtotal) return;
                     this.totalsSaving = true;
                     this.totalsError = '';
@@ -101,13 +108,14 @@
                         const response = await fetch({!! json_encode(route('pos.updateTotals', $data->id)) !!}, {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': {!! json_encode(csrf_token()) !!}},
-                            body: JSON.stringify({discount, ongkir}),
+                            body: JSON.stringify({discount, discount_type: discountType, ongkir}),
                         });
                         const json = await response.json().catch(() => ({}));
                         if (!response.ok) {
                             this.totalsError = json.message || Object.values(json.errors || {}).flat()[0] || 'Gagal menyimpan diskon dan ongkos kirim.';
                         } else {
                             this.savedDiscount = discount;
+                            this.savedDiscountType = discountType;
                             this.savedOngkir = ongkir;
                         }
                     } catch (error) {
@@ -123,8 +131,7 @@
                 async init() {
                     // The amount due follows Diskon Nota / Ongkos Kirim; a single payment row keeps matching it.
                     this.$watch('liveDue', (due) => {
-                        const voucher = this.voucherAmount;
-                        this.totalDue = due >= voucher ? due - voucher : due;
+                        this.totalDue = Math.max(0, this.wholeRupiah(due - Math.min(this.voucherAmount, this.liveTotal)));
                         if (this.payments.length === 1 && !this.split) {
                             this.payments[0].amount = this.totalDue;
                             this.formatAmount(0);
@@ -386,7 +393,7 @@
                     }
 
                     // Check if total penjualan is 0 and payment is 0
-                    const totalPenjualan = {{ floor($data->total) }};
+                    const totalPenjualan = {{ round($data->total) }};
                     if (totalPenjualan == 0 && this.totalPayment == 0) {
                         this.loading = true;
                         Swal.fire({

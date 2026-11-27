@@ -1,6 +1,8 @@
 <?php
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\StockLock;
+use App\Support\PosDiscount;
 use App\Support\Like;
 use App\Support\InventorySnapshot;
 use App\Support\StatusBadge;
@@ -84,16 +86,21 @@ class TransferController extends Controller
             $data['detail']         = $draft->detail;
             $data['invoice_number'] = $draft->invoice_number;
         } else {
-            $invoiceNumber = Transfer::getOrderNumber();
+            \App\Support\DocumentNumber::lock('transfer');
+            try {
+                $invoiceNumber = Transfer::getOrderNumber();
 
-            $draft = new Transfer();
-            $draft->uuid           = Str::uuid();
-            $draft->invoice_number = $invoiceNumber;
-            $draft->created_by     = $userId;
-            $draft->status         = 'temp';
-            $draft->date           = date('Y-m-d');
-            $draft->total          = 0;
-            $draft->save();
+                $draft = new Transfer();
+                $draft->uuid           = Str::uuid();
+                $draft->invoice_number = $invoiceNumber;
+                $draft->created_by     = $userId;
+                $draft->status         = 'temp';
+                $draft->date           = date('Y-m-d');
+                $draft->total          = 0;
+                $draft->save();
+            } finally {
+                \App\Support\DocumentNumber::unlock('transfer');
+            }
 
             $data['data']           = $draft;
             $data['detail']         = [];
@@ -238,10 +245,13 @@ class TransferController extends Controller
             'discount'              => 'nullable|numeric|min:0',
             'ongkir'                => 'nullable|numeric|min:0',
             'discount_ongkir'       => 'nullable|numeric|min:0',
+            'discount_type'         => 'nullable|in:percent,amount',
+            'discount_ongkir_type'  => 'nullable|in:percent,amount',
             'status'                => 'nullable|in:temp,draft,pending',
         ]);
 
         abort_unless(in_array((int) $data['branch_id'], array_map('intval', UserBranch::getUserBranch()), true), 403);
+        \App\Support\StockProduct::assertCountable(array_column($data['items'], 'id'), 'items');
         if ((int) $data['branch_id'] === (int) $data['branch_destination_id']) {
             throw \Illuminate\Validation\ValidationException::withMessages(['branch_destination_id' => 'Cabang tujuan harus berbeda dari cabang asal.']);
         }
@@ -259,8 +269,9 @@ class TransferController extends Controller
         $discount = (float) ($data['discount'] ?? 0);
         $shipping = (float) ($data['ongkir'] ?? 0);
         $shippingDiscount = (float) ($data['discount_ongkir'] ?? 0);
-        $discountAmount = $discount > 0 && $discount <= 100 ? $calculatedSubtotal * $discount / 100 : $discount;
-        $shippingDiscountAmount = $shippingDiscount > 0 && $shippingDiscount <= 100 ? $shipping * $shippingDiscount / 100 : $shippingDiscount;
+        // Rupiah unless the request says percent: a transfer has no stored unit, and the screen sends no discount.
+        $discountAmount = PosDiscount::amount($discount, $data['discount_type'] ?? PosDiscount::AMOUNT, $calculatedSubtotal);
+        $shippingDiscountAmount = PosDiscount::amount($shippingDiscount, $data['discount_ongkir_type'] ?? PosDiscount::AMOUNT, $shipping);
         $calculatedTotal = max(0, $calculatedSubtotal - $discountAmount + $shipping - $shippingDiscountAmount);
         if ($discountAmount > $calculatedSubtotal || $shippingDiscountAmount > $shipping
             || abs($calculatedTotal - (float) $data['total']) > 0.01) {
@@ -268,6 +279,10 @@ class TransferController extends Controller
         }
         $data['total'] = $calculatedTotal;
 
+        // Held from before the transaction until it ends; see App\Support\StockLock.
+        StockLock::lock($data['branch_id']);
+        // Two saves taking a number at once deadlocked on the range lock behind getOrderNumber(), so they take turns.
+        \App\Support\DocumentNumber::lock('transfer');
         try {
             $userId        = Auth::id();
             $invoiceNumber = $data['invoice_number'] ?? null;
@@ -424,6 +439,9 @@ class TransferController extends Controller
                 'message' => 'Gagal menyimpan transaksi',
                 'error'   => $e->getMessage(),
             ], 500);
+        } finally {
+            StockLock::release();
+            \App\Support\DocumentNumber::unlock('transfer');
         }
     }
 
@@ -519,7 +537,7 @@ class TransferController extends Controller
             'items.*.note' => 'nullable|string|max:1000',
             'items.*.expected_quantity' => 'required|numeric|min:0',
         ]);
-        return DB::transaction(function () use ($id, $input) {
+        return StockLock::during([Transfer::whereKey($id)->value('branch_id')], fn () => DB::transaction(function () use ($id, $input) {
             $transfer = Transfer::whereIn('branch_destination_id', UserBranch::getUserBranch())
                 ->lockForUpdate()->findOrFail($id);
             if (!in_array($transfer->status, ['pending', 'proses'], true)) {
@@ -579,7 +597,7 @@ class TransferController extends Controller
                 'pic_penerima' => Auth::id(), 'tanggal_diterima' => now(),
             ]);
             return response()->json(['success' => true, 'message' => 'Barang berhasil diterima.']);
-        });
+        }));
     }
 
     public function products(Request $request)
@@ -723,9 +741,9 @@ class TransferController extends Controller
             ->addColumn('name', function ($item) use ($request) {
                 $html  = '<div class="d-flex align-items-center">';
                 $html .= '<div class="ms-5">';
-                $html .= '<a href="' . route($request->url . '.show', $item->id) . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $item->invoice_number . '</a>';
-                $html .= '<br><span class="text-muted d-block fs-7">' . ($item->branch->name ?? '-') . ' <i class="bi bi-arrow-right"></i> ' . ($item->branchDestination->name ?? '-') . '</span>';
-                $html .= '<span class="badge badge-light-danger">' . ucwords(strtolower($item->createdBy->nm_user ?? $item->createdBy->name ?? 'unknown')) . '</span>';
+                $html .= '<a href="' . route($request->url . '.show', $item->id) . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . e($item->invoice_number) . '</a>';
+                $html .= '<br><span class="text-muted d-block fs-7">' . e($item->branch->name ?? '-') . ' <i class="bi bi-arrow-right"></i> ' . e($item->branchDestination->name ?? '-') . '</span>';
+                $html .= '<span class="badge badge-light-danger">' . e(ucwords(strtolower($item->createdBy->nm_user ?? $item->createdBy->name ?? 'unknown'))) . '</span>';
                 return $html;
             })
             ->addColumn('date', function ($item) {
@@ -736,7 +754,7 @@ class TransferController extends Controller
                 // temp and draft are both shown as "Draft"; any other status keeps its own word (escaped).
                 $html .= StatusBadge::for($item->status, in_array($item->status, ['temp', 'draft'], true) ? 'Draft' : null);
                 if ($item->picPenerima) {
-                    $html .= '<br><span class="badge badge-light-success mt-1">' . ucwords(strtolower($item->picPenerima->nm_user ?? $item->picPenerima->name ?? 'unknown')) . '</span>';
+                    $html .= '<br><span class="badge badge-light-success mt-1">' . e(ucwords(strtolower($item->picPenerima->nm_user ?? $item->picPenerima->name ?? 'unknown'))) . '</span>';
                 }
                 return $html;
             })

@@ -78,6 +78,7 @@
             editDiscount: 0,
             editDiscountPercent: 0,
             editDiscountNominal: 0,
+            editDiscountType: 'amount',
             editDiscountMode: 'nominal', // atau 'percent'
             editTotalFormatted: '',
             editProductName: '',
@@ -87,8 +88,10 @@
             voucher: 0,
             isShowGiftButton: false,
             diskonGlobal: 0,
+            diskonGlobalType: 'amount',
             ongkirGlobal: 0,
             diskonOngkir: 0,
+            diskonOngkirType: 'amount',
             currentInvoiceNumber: '',
             autoSaveTimeout: null,
             isAutoSaving: false,
@@ -190,8 +193,10 @@
                 this.$watch('parcel', () => this.autoSaveDraft());
                 this.$watch('jus', () => this.autoSaveDraft());
                 this.$watch('diskonGlobal', () => this.autoSaveDraft());
+                this.$watch('diskonGlobalType', () => this.autoSaveDraft());
                 this.$watch('ongkirGlobal', () => this.autoSaveDraft());
                 this.$watch('diskonOngkir', () => this.autoSaveDraft());
+                this.$watch('diskonOngkirType', () => this.autoSaveDraft());
                 this.$watch('customer_id', () => this.autoSaveDraft());
 
                 // Reset modals when hidden (e.g., clicked outside)
@@ -436,6 +441,7 @@
                     discount: Number(item.discount || 0),
                     discountNominal: this.editAddPageDiscountInput(item),
                     discountPercent: Number(item.discountPercent || 0),
+                    discountType: Number(item.discountPercent || 0) > 0 ? 'percent' : 'amount',
                     qty: item.qty,
                     total: total,
                     formattedAddTotalInput: this.formatRupiah(total),
@@ -515,6 +521,7 @@
                     this.addProduct.qty = item.qty;
                     this.addProduct.discount = Number(item.discount || 0);
                     this.addProduct.discountPercent = Number(item.discountPercent || 0);
+                    this.addProduct.discountType = this.addProduct.discountPercent > 0 ? 'percent' : 'amount';
                     this.addProduct.discountNominal = this.editAddPageDiscountInput(item);
                     this.addProduct.total = total;
                     this.addProduct.formattedAddTotalInput = this.formatRupiah(total);
@@ -539,6 +546,7 @@
 
                 this.editDiscount = item.discount || 0;
                 this.editDiscountPercent = item.discountPercent || 0;
+                this.editDiscountType = this.editDiscountPercent > 0 ? 'percent' : 'amount';
                 if (this.editDiscountPercent > 0) {
                     this.editDiscountNominal = this.editDiscountPercent;
                 } else {
@@ -566,7 +574,7 @@
                 const price = parseFloat(this.editPrice || 1);
                 
                 let input = parseFloat(this.editDiscountNominal || 0);
-                let isPercent = (input <= 100 && input > 0);
+                let isPercent = this.editDiscountType === 'percent';
                 let qty;
                 let totalDiscount;
                 if (isPercent) {
@@ -614,7 +622,11 @@
                 let qty = parseFloat(this.editQty || 0);
                 let price = parseFloat(this.editPrice || 0);
                 let input = parseFloat(this.editDiscountNominal || 0);
-                let isPercent = (input <= 100 && input > 0);
+                let isPercent = this.editDiscountType === 'percent';
+                if (isPercent && input > 100) {
+                    input = 100;
+                    this.editDiscountNominal = input;
+                }
                 if (!isPercent) {
                     let maxDiscount = qty < 1 ? (qty * price) : price;
                     if (input > maxDiscount) {
@@ -633,7 +645,7 @@
                 const val = parseFloat(this.editDiscountNominal || 0);
                 let qty = parseFloat(this.editQty || 0);
                 // console.log('Discount:', val);
-                if (val <= 100 && val > 0) {
+                if (this.editDiscountType === 'percent') {
                     let originalPrice = parseFloat(this.editPrice || 0);
                     let subtotal = qty * originalPrice;
                     return parseFloat(((subtotal || 0) * val / 100).toFixed(2)); // persen
@@ -651,13 +663,20 @@
                 this.updateTotalFromEditQty();
             },
 
+            setEditDiscountType(type) {
+                this.editDiscountType = type;
+                this.updateEditDiscount();
+            },
+
             updateEditDiscountValue(e) {
                 let raw = e.target.value.replace(/\./g, '').replace(/[^0-9]/g, '');
                 let input = parseFloat(raw || 0);
                 const qty = parseFloat(this.editQty || 0);
                 const price = parseFloat(this.editPrice || 0);
-                let isPercent = (input <= 100 && input > 0);
-                if (!isPercent) {
+                let isPercent = this.editDiscountType === 'percent';
+                if (isPercent) {
+                    input = Math.min(input, 100);
+                } else {
                     let maxDiscount = qty < 1 ? (qty * price) : price;
                     if (input > maxDiscount) {
                         input = maxDiscount;
@@ -671,7 +690,7 @@
                 let totalAfterDiscount = (qty * price) - totalDiscount;
                 
                 this.editDiscount = totalDiscount;
-                this.editDiscountPercent = (input <= 100 && input > 0) ? input : 0;
+                this.editDiscountPercent = isPercent ? input : 0;
                 
                 this.editTotal = totalAfterDiscount;
                 this.editTotalFormatted = this.formatRupiah(totalAfterDiscount);
@@ -681,7 +700,11 @@
                 let qty = parseFloat(this.editQty || 0);
                 let price = parseFloat(this.editPrice || 0);
                 let input = parseFloat(this.editDiscountNominal || 0);
-                let isPercent = (input <= 100 && input > 0);
+                let isPercent = this.editDiscountType === 'percent';
+                if (isPercent && input > 100) {
+                    input = 100;
+                    this.editDiscountNominal = input;
+                }
                 if (!isPercent) {
                     let maxDiscount = qty < 1 ? (qty * price) : price;
                     if (input > maxDiscount) {
@@ -691,7 +714,7 @@
                 }
 
                 let totalDiscount = isPercent ? (qty * price * (input / 100)) : (qty < 1 ? input : (qty * input));
-                this.editDiscountPercent = (input <= 100 && input > 0) ? input : 0;
+                this.editDiscountPercent = isPercent ? input : 0;
                 this.editDiscount = totalDiscount;
                 
                 this.editTotal = parseFloat(((qty * price) - totalDiscount).toFixed(2));
@@ -790,6 +813,7 @@
                 
                 this.editDiscount = item.discount || 0;
                 this.editDiscountPercent = item.discountPercent || 0;
+                this.editDiscountType = this.editDiscountPercent > 0 ? 'percent' : 'amount';
                 if (this.editDiscountPercent > 0) {
                     this.editDiscountNominal = this.editDiscountPercent;
                 } else {
@@ -987,7 +1011,7 @@
                             totalUsed -= oldUsed;
 
                             if ((totalUsed + totalQtyNeed) > originalStock) {
-                                stockErrors.push(`- ${productName} (Sisa stok: ${Math.round((originalStock - totalUsed) * 100) / 100} [DEBUG: OS=${originalStock}, TU=${totalUsed}, QN=${qtyNeed}])`);
+                                stockErrors.push(`- ${productName} (Sisa stok: ${Math.round((originalStock - totalUsed) * 100) / 100})`);
                             }
                         }
                     });
@@ -1305,8 +1329,12 @@
                 if (/^0\d/.test(rawQty)) this.addProduct.qty = rawQty.replace(/^0+(?=\d)/, '');
                 const qty = parseFloat(this.addProduct.qty) || 0;
                 const price = parseFloat(this.addProduct.price) || 0;
-                const input = parseFloat(this.addProduct.discountNominal || 0);
-                let isPercent = (input <= 100 && input > 0);
+                let input = parseFloat(this.addProduct.discountNominal || 0);
+                let isPercent = this.addProduct.discountType === 'percent';
+                if (isPercent && input > 100) {
+                    input = 100;
+                    this.addProduct.discountNominal = input;
+                }
                 if (!isPercent) {
                     let maxDiscount = qty < 1 ? (qty * price) : price;
                     if (input > maxDiscount) {
@@ -1328,7 +1356,7 @@
                 const price = parseFloat(this.addProduct.price || 1);
                 
                 let input = parseFloat(this.addProduct.discountNominal || 0);
-                let isPercent = (input <= 100 && input > 0);
+                let isPercent = this.addProduct.discountType === 'percent';
                 
                 let qty;
                 let totalDiscount;
@@ -1364,13 +1392,21 @@
                 this.addProduct.formattedAddTotalInput = this.formatRupiah(inputTotal);
             },
 
+            // Switching Rp / % keeps the typed number and reprices the line with the new unit.
+            setAddDiscountType(type) {
+                this.addProduct.discountType = type;
+                this.updateAddTotalFromQty();
+                this.addProduct.discountPercent = type === 'percent' ? Number(this.addProduct.discountNominal || 0) : 0;
+            },
             updateDiscountValue(e) {
                 let raw = e.target.value.replace(/\./g, '').replace(/[^0-9]/g, '');
                 let input = parseFloat(raw || 0);
                 const qty = parseFloat(this.addProduct.qty || 0);
                 const price = parseFloat(this.addProduct.price || 0);
-                let isPercent = (input <= 100 && input > 0);
-                if (!isPercent) {
+                let isPercent = this.addProduct.discountType === 'percent';
+                if (isPercent) {
+                    input = Math.min(input, 100);
+                } else {
                     let maxDiscount = qty < 1 ? (qty * price) : price;
                     if (input > maxDiscount) {
                         input = maxDiscount;
@@ -1384,7 +1420,7 @@
                 let totalAfterDiscount = (qty * price) - totalDiscount;
                 
                 this.addProduct.discount = totalDiscount;
-                this.addProduct.discountPercent = (input <= 100 && input > 0) ? input : 0;
+                this.addProduct.discountPercent = isPercent ? input : 0;
                 
                 this.addProduct.total = totalAfterDiscount;
                 this.addProduct.formattedAddTotalInput = this.formatRupiah(totalAfterDiscount);
@@ -1636,44 +1672,36 @@
                     return sum + total;
                 }, 0);
             },
+            get diskonGlobalRupiah() {
+                return this.diskonGlobalType === 'percent' ? this.subtotal * this.diskonGlobal / 100 : this.diskonGlobal;
+            },
+            get ongkirBersih() {
+                const potongan = this.diskonOngkirType === 'percent' ? this.ongkirGlobal * this.diskonOngkir / 100 : this.diskonOngkir;
+                return Math.max(0, this.ongkirGlobal - potongan);
+            },
             get totalHargaKeseluruhan() {
-                const diskon = this.diskonGlobal;
-                const ongkir = this.ongkirGlobal;
-                const diskonOngkir = this.diskonOngkir;
-
-                let totalSetelahDiskon = 0;
-                let totalOngkir = 0;
-                if (diskon > 0 && diskon <= 100) {
-                    // Diskon persen
-                    totalSetelahDiskon = this.subtotal - (this.subtotal * (diskon / 100));
-                } else {
-                    // Diskon nominal
-                    totalSetelahDiskon = this.subtotal - diskon;
-                }
-
-                if (diskonOngkir > 0 && diskonOngkir <= 100) {
-                    // Diskon persen
-                    totalOngkir = ongkir - (ongkir * (diskonOngkir / 100));
-                } else {
-                    // Diskon nominal
-                    totalOngkir = ongkir - diskonOngkir;
-                }
+                const totalSetelahDiskon = this.subtotal - this.diskonGlobalRupiah;
+                const totalOngkir = this.ongkirBersih;
 
                 this.checkGiftButton(totalSetelahDiskon);
                 // Ongkir harus selalu ditambahkan
-                return Math.max(totalSetelahDiskon + totalOngkir, 0);
+                // Whole rupiah, as the server saves it.
+                return Math.round(Math.round(Math.max(totalSetelahDiskon + totalOngkir, 0) * 100) / 100);
+            },
+            setDiskonGlobalType(type) {
+                this.diskonGlobalType = type;
+                this.diskonGlobal = Math.min(this.diskonGlobal, type === 'percent' ? 100 : this.subtotal);
+            },
+            setDiskonOngkirType(type) {
+                this.diskonOngkirType = type;
+                this.diskonOngkir = Math.min(this.diskonOngkir, type === 'percent' ? 100 : this.ongkirGlobal);
             },
             updateDiskonGlobal(e) {
                 let cursor = e.target.selectionStart;
                 let oldLength = e.target.value.length;
                 let val = parseFloat(e.target.value.replace(/[^\d]/g, '')) || 0;
                 
-                let isPercent = (val <= 100 && val > 0);
-                if (!isPercent) {
-                    if (val > this.subtotal) {
-                        val = this.subtotal;
-                    }
-                }
+                val = Math.min(val, this.diskonGlobalType === 'percent' ? 100 : this.subtotal);
                 
                 e.target.value = this.formatRupiah(val);
                 this.diskonGlobal = val;
@@ -1690,8 +1718,7 @@
                 this.ongkirGlobal = val;
                 
                 // If ongkir changes, check if diskonOngkir > ongkirGlobal
-                let isPercent = (this.diskonOngkir <= 100 && this.diskonOngkir > 0);
-                if (!isPercent && this.diskonOngkir > this.ongkirGlobal) {
+                if (this.diskonOngkirType !== 'percent' && this.diskonOngkir > this.ongkirGlobal) {
                     this.diskonOngkir = this.ongkirGlobal;
                 }
                 
@@ -1707,12 +1734,7 @@
                 let oldLength = e.target.value.length;
                 let val = parseFloat(e.target.value.replace(/[^\d]/g, '')) || 0;
                 
-                let isPercent = (val <= 100 && val > 0);
-                if (!isPercent) {
-                    if (val > this.ongkirGlobal) {
-                        val = this.ongkirGlobal;
-                    }
-                }
+                val = Math.min(val, this.diskonOngkirType === 'percent' ? 100 : this.ongkirGlobal);
                 
                 e.target.value = this.formatRupiah(val);
                 this.diskonOngkir = val;
@@ -1777,8 +1799,10 @@
                     jus: this.jus,
                     subtotal: this.subtotal,
                     discount: this.diskonGlobal,
+                    discount_type: this.diskonGlobalType,
                     ongkir: this.ongkirGlobal,
                     discount_ongkir: this.diskonOngkir,
+                    discount_ongkir_type: this.diskonOngkirType,
                     ongkir_date: ongkirDate,
                     ongkir_time: ongkirTime,
                     total: this.totalHargaKeseluruhan,
@@ -1894,8 +1918,10 @@
                         jus: this.jus,
                         subtotal: this.subtotal,
                         discount: this.diskonGlobal,
+                        discount_type: this.diskonGlobalType,
                         ongkir: this.ongkirGlobal,
                         discount_ongkir: this.diskonOngkir,
+                        discount_ongkir_type: this.diskonOngkirType,
                         ongkir_date: ongkirDate,
                         ongkir_time: ongkirTime,
                         total: this.totalHargaKeseluruhan,
@@ -1993,8 +2019,10 @@
                     jus: this.jus,
                     subtotal: this.subtotal,
                     discount: this.diskonGlobal,
+                    discount_type: this.diskonGlobalType,
                     ongkir: this.ongkirGlobal,
                     discount_ongkir: this.diskonOngkir,
+                    discount_ongkir_type: this.diskonOngkirType,
                     ongkir_date: ongkirDate,
                     ongkir_time: ongkirTime,
                     total: this.totalHargaKeseluruhan,
@@ -2101,8 +2129,10 @@
                     jus: this.jus,
                     subtotal: this.subtotal,
                     discount: this.diskonGlobal,
+                    discount_type: this.diskonGlobalType,
                     ongkir: this.ongkirGlobal,
                     discount_ongkir: this.diskonOngkir,
+                    discount_ongkir_type: this.diskonOngkirType,
                     ongkir_date: ongkirDate,
                     ongkir_time: ongkirTime,
                     total: this.totalHargaKeseluruhan,
@@ -2178,7 +2208,10 @@
             resetPOS() {
                 this.cart = [];
                 this.diskonGlobal = 0;
+                this.diskonGlobalType = 'amount';
                 this.ongkirGlobal = 0;
+                this.diskonOngkir = 0;
+                this.diskonOngkirType = 'amount';
                 this.subtotal = 0;
                 this.totalHargaKeseluruhan = 0;
             },
@@ -2788,7 +2821,7 @@
                         price: this.sanitizeNumber(Number(item.price || 0)), // pastikan number dulu
                         hpp: parseFloat(item.hpp || 0),
                         qty: this.sanitizeNumber(Number(item.quantity)),
-                        unit: item.product.unit.abbreviation,
+                        unit: item.product.unit?.abbreviation ?? '',
                         discount: this.sanitizeNumber(Number(item.discount || 0)),
                         discountPercent: item.discountPercent || 0,
                         fee: item.product.fee || 0,
@@ -2845,9 +2878,10 @@
                             id: id,
                             budget: parseInt(item.price, 10),
                             qty: item.quantity,
-                            kemasan: item.parcel.name,
-                            kemasanId: item.parcel.id,
-                            kemasanPrice: item.parcel.price,
+                            // A parcel whose basket is one of its ingredients has no separate packaging.
+                            kemasan: item.parcel?.name ?? '',
+                            kemasanId: item.parcel?.id ?? null,
+                            kemasanPrice: item.parcel?.price ?? 0,
                             hpp: parseFloat(item.hpp || 0),
                             fee: parseInt(item.product.fee, 10) || 0,
                             data: percelDatas,
@@ -2919,7 +2953,12 @@
                 });
 
                 this.diskonGlobal = parseFloat(transactionData.discount || 0);
+                // A sale saved before the Rp / % buttons has no unit: 100 or less was a percentage then.
+                const legacyUnit = value => (value > 0 && value <= 100 ? 'percent' : 'amount');
+                this.diskonGlobalType = transactionData.discount_type || legacyUnit(this.diskonGlobal);
                 this.ongkirGlobal = parseFloat(transactionData.ongkir || 0);
+                this.diskonOngkir = parseFloat(transactionData.ongkir_discount || 0);
+                this.diskonOngkirType = transactionData.ongkir_discount_type || legacyUnit(this.diskonOngkir);
 
                 $('#note').val(transactionData.note);
                 $('#ongkir_date').val(transactionData.ongkir_date);
@@ -3000,7 +3039,7 @@
                         price: this.sanitizeNumber(Number(item.product.price || 0)), // pastikan number dulu
                         hpp: parseFloat(item.product.hpp || 0),
                         qty: this.sanitizeNumber(Number(item.quantity)),
-                        unit: item.product.unit.abbreviation,
+                        unit: item.product.unit?.abbreviation ?? '',
                         discount: this.sanitizeNumber(Number(item.discount || 0)),
                         discountPercent: item.discountPercent || 0,
                         fee: item.product.fee || 0,
@@ -3392,7 +3431,7 @@
                         }
 
                         if ((totalUsed + totalQtyNeed) > originalStock) {
-                            stockErrors.push(`- ${productName} (Dibutuhkan: ${totalQtyNeed}, Sisa stok: ${Math.round((originalStock - totalUsed) * 100) / 100} [DEBUG: OS=${originalStock}, TU=${totalUsed}, QN=${qtyNeed}])`);
+                            stockErrors.push(`- ${productName} (Dibutuhkan: ${totalQtyNeed}, Sisa stok: ${Math.round((originalStock - totalUsed) * 100) / 100})`);
                         }
                     });
 

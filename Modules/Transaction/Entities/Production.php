@@ -4,7 +4,6 @@ namespace Modules\Transaction\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\DB;
 
 class Production extends Model
 {
@@ -32,23 +31,7 @@ class Production extends Model
 
     public static function getOrderNumber($productionDate = null)
     {
-        $date = $productionDate ? \Carbon\Carbon::parse($productionDate) : now();
-        $prefix = 'PRO' . $date->format('Ym');
-
-        $latestNumber = self::where('production_number', 'like', $prefix . '%')
-            ->orderByDesc('production_number')
-            ->first();
-
-        $nextNumber = 1;
-        if ($latestNumber) {
-            $lastNumber = (int) substr($latestNumber->production_number, -3);
-            $nextNumber = $lastNumber + 1;
-        }
-
-        $orderPad = str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-        $newCode = $prefix . $orderPad;
-
-        return $newCode;
+        return \App\Support\DocumentNumber::next(self::class, 'production_number', 'PRO' . ($productionDate ? \Carbon\Carbon::parse($productionDate) : now())->format('Ym'));
     }
 
     public function products()

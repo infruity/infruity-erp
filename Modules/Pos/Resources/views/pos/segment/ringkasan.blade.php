@@ -8,20 +8,22 @@
         <div id="collapseTotal" class="pos-collapse" x-show="sweepOpen" x-cloak x-transition:enter="pos-collapse-anim" x-transition:enter-start="pos-collapse-from" x-transition:enter-end="pos-collapse-to" x-transition:leave="pos-collapse-anim" x-transition:leave-start="pos-collapse-to" x-transition:leave-end="pos-collapse-from"><div class="pos-ref-sheet">
             <div class="pos-ref-summary">
                 <div class="pos-ref-summary__inputs">
-                    <label class="pos-ref-money">
-                        <span class="pos-ref-money__title" :class="{ 'is-disabled': cart.length === 0 }">Diskon Nota</span>
-                        <span class="pos-ref-money__field" :class="{ 'is-disabled': cart.length === 0 }"><span x-text="diskonGlobal > 100 ? 'Rp' : '%'"></span><input type="text" class="form-control" inputmode="numeric" placeholder="0" :disabled="cart.length === 0" :value="diskonGlobal ? formatRupiah(diskonGlobal) : ''" @input="updateDiskonGlobal" @focus="$event.target.select()" aria-describedby="pos-discount-hint"></span>
-                    </label>
+                    <div class="pos-ref-money">
+                        <span class="pos-unit-head">
+                            <span class="pos-ref-money__title" :class="{ 'is-disabled': cart.length === 0 }">Diskon Nota</span>
+                            @include('pos::pos.segment.unit-toggle', ['model' => 'diskonGlobalType', 'set' => 'setDiskonGlobalType', 'label' => 'Jenis diskon nota', 'disabled' => 'cart.length === 0'])
+                        </span>
+                        <span class="pos-ref-money__field" :class="{ 'is-disabled': cart.length === 0 }"><span x-text="diskonGlobalType === 'percent' ? '%' : 'Rp'">Rp</span><input type="text" class="form-control" inputmode="numeric" placeholder="0" :disabled="cart.length === 0" :value="diskonGlobal ? formatRupiah(diskonGlobal) : ''" @input="updateDiskonGlobal" @focus="$event.target.select()" aria-label="Diskon nota"></span>
+                    </div>
                     <label class="pos-ref-money">
                         <span class="pos-ref-money__title" :class="{ 'is-disabled': cart.length === 0 }">Ongkos Kirim</span>
                         <span class="pos-ref-money__field" :class="{ 'is-disabled': cart.length === 0 }"><span>Rp</span><input type="text" class="form-control" inputmode="numeric" placeholder="0" :disabled="cart.length === 0" :value="ongkirGlobal ? formatRupiah(ongkirGlobal) : ''" @input="updateOngkirGlobal" @focus="$event.target.select()"></span>
                     </label>
                 </div>
-                <p id="pos-discount-hint" class="pos-ref-hint visually-hidden">Diskon nota: Rp jika lebih dari 100, persen jika 100 atau kurang.</p>
                 <dl class="pos-ref-lines">
                     <div><dt>Subtotal Item (<span x-text="totalProduk"></span>)</dt><dd>Rp <span x-text="formatRupiah(subtotal)"></span></dd></div>
-                    <div><dt>Diskon Transaksi</dt><dd x-text="(() => { const pct = diskonGlobal > 0 && diskonGlobal <= 100; const amt = pct ? subtotal * diskonGlobal / 100 : diskonGlobal; return amt > 0 ? '-Rp ' + formatRupiah(amt) + (pct ? ' (' + String(diskonGlobal).replace('.', ',') + '%)' : '') : 'Rp 0'; })()"></dd></div>
-                    <div><dt>Ongkos Kirim</dt><dd x-text="(() => { const net = Math.max(0, (diskonOngkir > 0 && diskonOngkir <= 100) ? ongkirGlobal * (1 - diskonOngkir / 100) : ongkirGlobal - diskonOngkir); return net > 0 ? '+Rp ' + formatRupiah(net) : 'Rp 0'; })()"></dd></div>
+                    <div><dt>Diskon Transaksi</dt><dd x-text="diskonGlobalRupiah > 0 ? '-Rp ' + formatRupiah(diskonGlobalRupiah) + (diskonGlobalType === 'percent' ? ' (' + String(diskonGlobal).replace('.', ',') + '%)' : '') : 'Rp 0'"></dd></div>
+                    <div><dt>Ongkos Kirim</dt><dd x-text="ongkirBersih > 0 ? '+Rp ' + formatRupiah(ongkirBersih) : 'Rp 0'"></dd></div>
                 </dl>
             </div>
 

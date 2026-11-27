@@ -2,12 +2,15 @@
 
 namespace Modules\Transaction\Http\Controllers;
 
+use App\Support\StockLock;
 use App\Support\Like;
 use App\Support\LedgerSql;
 use App\Support\NegativeStockWarning;
+use App\Support\DocumentNumber;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Carbon;
 use Modules\Transaction\Entities\StockOpname;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
@@ -116,21 +119,41 @@ class StockOpnameController extends Controller
 
         abort_unless(in_array((int) $validated['branch_id'], array_map('intval', UserBranch::getUserBranch()), true), 403);
 
-        $existing = StockOpname::where('product_id', $validated['product_id'])
-            ->where('branch_id', $validated['branch_id'])
-            ->whereDate('date', $validated['date'])
-            ->where('status', 'pending')
-            ->first();
-
-        if ($existing) {
-            return response()->json([
-                'message' => 'Produk ini sudah di-stock opname pada tanggal yang dipilih di cabang ini. Harap selesaikan stock opname sebelumnya sebelum membuat yang baru.',
-            ], 422);
+        \App\Support\StockProduct::assertCountable([$validated['product_id']], 'product_id');
+        // The ledger takes every row of a variant out of the parent's stock, so a count there could only lower it.
+        if (DB::table('product_child')->where('product_id', $validated['product_id'])->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'product_id' => 'Produk varian memakai stok produk induknya. Hitung produk induknya.',
+            ]);
         }
+
+        $family = StockOpname::stockFamily($validated['product_id']);
+
+        // Held until the row is saved, so two counts made at the same moment get different codes.
+        DocumentNumber::lock('stock-opname');
 
         // Simpan data ke database
         try {
             DB::beginTransaction();
+            // Taken before any other read, so two saves of the same stock run one after the other
+            // and the second one sees the first.
+            DB::table('products')->where('id', $family[0])->lockForUpdate()->first();
+
+            // One open count per stock, whatever its date: two open counts hold the same difference.
+            $open = StockOpname::whereIn('product_id', $family)
+                ->where('branch_id', $validated['branch_id'])
+                ->where('status', '!=', 'selesai')
+                ->orderBy('id')
+                ->get()
+                ->first(fn ($count) => ! $count->isSuperseded($family));
+            if ($open) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => "Produk ini (atau variannya) masih punya stock opname yang belum selesai di cabang ini: {$open->code}, tanggal "
+                        . Carbon::parse($open->date)->format('d/m/Y') . '. Koreksi atau Submit yang itu dulu.',
+                ], 422);
+            }
+
             $productStock = DB::table('product_stock')
                 ->where('id', $validated['product_id'])
                 ->where('branch_id', $validated['branch_id'])
@@ -182,6 +205,8 @@ class StockOpnameController extends Controller
                 'message' => 'Transaksi gagal disimpan.',
                 'data' => $stock
             ], 404);
+        } finally {
+            DocumentNumber::unlock('stock-opname');
         }
 
         // Kirim response JSON
@@ -639,11 +664,17 @@ class StockOpnameController extends Controller
             return $denied;
         }
 
+        // Read outside the transaction: the first plain read inside it must come after the locks.
+        $branchIds = UserBranch::getUserBranch();
+        $family = StockOpname::stockFamily(StockOpname::whereIn('branch_id', $branchIds)->findOrFail($id)->product_id);
+
+        // Held from before the transaction until it ends; see App\Support\StockLock.
+        StockLock::lock(StockOpname::whereKey($id)->value('branch_id'));
         try {
             DB::beginTransaction();
 
-            $stockOpname = StockOpname::whereIn('branch_id', UserBranch::getUserBranch())
-                ->lockForUpdate()->findOrFail($id);
+            DB::table('products')->where('id', $family[0])->lockForUpdate()->first();
+            $stockOpname = StockOpname::whereIn('branch_id', $branchIds)->lockForUpdate()->findOrFail($id);
 
             if ($stockOpname->status === 'selesai') {
                 DB::rollBack();
@@ -653,7 +684,14 @@ class StockOpnameController extends Controller
                 ], 422);
             }
 
-            \Modules\Master\Entities\Product::whereKey($stockOpname->product_id)->lockForUpdate()->firstOrFail();
+            if ($stockOpname->isSuperseded($family)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Opname lain untuk stok ini sudah difinalisasi setelah draf ini dibuat, jadi selisihnya tidak boleh diterapkan lagi. '
+                        . 'Hapus draf ini, atau buat hitungan baru kalau stok masih berbeda.',
+                ], 422);
+            }
 
             // Finalizing approves the difference found when the shelf was counted. The system stock
             // recorded then is not read again: sales and other movements made since the count stay
@@ -680,6 +718,8 @@ class StockOpnameController extends Controller
                 'success' => false,
                 'message' => 'Gagal melakukan finalisasi: ' . $e->getMessage()
             ], 500);
+        } finally {
+            StockLock::release();
         }
     }
 }

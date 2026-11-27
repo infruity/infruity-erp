@@ -4,6 +4,8 @@ namespace Modules\Master\Http\Controllers;
 use Exception;
 use App\User;
 use App\Models\Role;
+use App\Models\RoleMenu;
+use App\Support\Delegation;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -79,6 +81,8 @@ class StaffController extends Controller
             'role_ids.*' => ['required', 'integer', 'distinct', 'exists:role,id_role'],
         ];
         $validator = Validator::make($request->all(), $rules, $this->validationMessages());
+        $this->guardAdministratorRole($validator, $request);
+        $this->guardDelegation($validator, $request, null);
 
         if ($validator->fails()) {
             return redirect()->route('staff.index', ['create' => 1])
@@ -170,6 +174,21 @@ class StaffController extends Controller
             return $denied;
         }
 
+        $target = Staff::findOrFail($id);
+        abort_if(
+            ! RoleMenu::actingAsAdministrator() && $this->isAdministratorStaff($target),
+            403,
+            'Hanya Administrator yang dapat mengubah data karyawan Administrator.'
+        );
+        abort_if(
+            ! RoleMenu::actingAsAdministrator()
+                && collect($this->accountIdsOf($target))->contains(fn ($account) => Delegation::accountExceedsActor($account)),
+            403,
+            'Akun karyawan ini punya izin atau cabang yang tidak Anda miliki, jadi hanya Administrator yang dapat mengubahnya.'
+        );
+        // Nobody but an Administrator decides their own access, so their own record keeps it as it is.
+        $ownAccessLocked = ! RoleMenu::actingAsAdministrator() && $this->isOwnStaff($target);
+
         $rules = [
             'staff_name' => ['required', 'string', 'max:255'],
             'date_in' => ['required', 'date_format:Y-m-d'],
@@ -180,9 +199,16 @@ class StaffController extends Controller
             'role_ids.*' => ['required', 'integer', 'distinct', 'exists:role,id_role'],
         ];
         $validator = Validator::make($request->all(), $rules, $this->validationMessages());
+        $this->guardAdministratorRole($validator, $request);
+        if ($ownAccessLocked) {
+            $this->guardOwnAccess($validator, $request, $target);
+        } else {
+            $this->guardDelegation($validator, $request, $target);
+        }
 
         if ($validator->fails()) {
-            return redirect()->back()
+            // The list shows no messages; the edit form does, so go back to it open.
+            return redirect()->route('staff.edit', $id)
                 ->withErrors($validator)
                 ->withInput($request->except(['account_password', 'password']));
         }
@@ -208,8 +234,10 @@ class StaffController extends Controller
                 User::withoutGlobalScope('is_aktif')
                     ->where('id_user', $accountId)
                     ->update(['nm_user' => $staff->name]);
-                $this->syncAccountRoles((int) $accountId, $request->input('role_ids', []));
-                $this->syncAccountBranch((int) $accountId, (int) $staff->branch_id);
+                if (! $ownAccessLocked) {
+                    $this->syncAccountRoles((int) $accountId, $request->input('role_ids', []));
+                    $this->syncAccountBranch((int) $accountId, (int) $staff->branch_id);
+                }
             }
 
             DB::commit();
@@ -340,6 +368,69 @@ class StaffController extends Controller
             })
             ->rawColumns(['name', 'action', 'position'])
             ->make(true);
+    }
+
+    private function guardAdministratorRole($validator, Request $request): void
+    {
+        $validator->after(function ($validator) use ($request) {
+            $roleIds = array_map('intval', (array) $request->input('role_ids', []));
+            if (! RoleMenu::actingAsAdministrator() && in_array(RoleMenu::ADMINISTRATOR_ROLE_ID, $roleIds, true)) {
+                $validator->errors()->add('role_ids', 'Hanya Administrator yang dapat memberikan template akses Administrator.');
+            }
+        });
+    }
+
+    /** A role or branch newly given to an employee may not go beyond the giver's own. What they already had may stay. */
+    private function guardDelegation($validator, Request $request, ?Staff $staff): void
+    {
+        $validator->after(function ($validator) use ($request, $staff) {
+            if (RoleMenu::actingAsAdministrator()) {
+                return;
+            }
+            $kept = $staff ? DB::table('staff_role')->where('staff_id', $staff->id)->pluck('id_role')->map(fn ($id) => (int) $id)->all() : [];
+            $added = array_values(array_diff(array_map('intval', (array) $request->input('role_ids', [])), $kept));
+            if (Delegation::beyondActor(Delegation::permissionsOfRoles($added)) !== []) {
+                $validator->errors()->add('role_ids', 'Anda hanya dapat memberikan template akses yang izinnya Anda miliki sendiri.');
+            }
+            $branch = (int) $request->input('branch_id');
+            if (! ($staff && (int) $staff->branch_id === $branch) && Delegation::branchesBeyondActor([$branch]) !== []) {
+                $validator->errors()->add('branch_id', 'Anda hanya dapat menempatkan karyawan di cabang Anda sendiri.');
+            }
+        });
+    }
+
+    private function guardOwnAccess($validator, Request $request, Staff $staff): void
+    {
+        $validator->after(function ($validator) use ($request, $staff) {
+            $requested = collect((array) $request->input('role_ids', []))->map(fn ($id) => (int) $id)->unique()->sort()->values()->all();
+            $held = DB::table('role_user')->where('id_user', Auth::id())->pluck('id_role')
+                ->map(fn ($id) => (int) $id)->unique()->sort()->values()->all();
+            if ($requested !== $held) {
+                $validator->errors()->add('role_ids', 'Template akses akun sendiri tidak dapat diubah.');
+            }
+            if ((int) $request->input('branch_id') !== (int) $staff->branch_id) {
+                $validator->errors()->add('branch_id', 'Cabang akun sendiri tidak dapat diubah.');
+            }
+        });
+    }
+
+    /** The accounts an employee record writes to. */
+    private function accountIdsOf(Staff $staff): array
+    {
+        return User::withoutGlobalScope('is_aktif')->where('staff_id', $staff->id)->pluck('id_user')
+            ->push($staff->user_id)->filter()->map(fn ($id) => (int) $id)->unique()->values()->all();
+    }
+
+    private function isOwnStaff(Staff $staff): bool
+    {
+        return (int) Auth::user()->staff_id === (int) $staff->id
+            || in_array((int) Auth::id(), $this->accountIdsOf($staff), true);
+    }
+
+    private function isAdministratorStaff(Staff $staff): bool
+    {
+        return DB::table('staff_role')->where('staff_id', $staff->id)->where('id_role', RoleMenu::ADMINISTRATOR_ROLE_ID)->exists()
+            || collect($this->accountIdsOf($staff))->contains(fn ($id) => RoleMenu::isPrivilegedAccount($id));
     }
 
     private function syncPendingRoles(int $staffId, array $roleIds): void

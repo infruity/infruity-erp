@@ -1,10 +1,16 @@
 <?php
 namespace Modules\Pos\Http\Controllers;
 
+use App\Support\StockLock;
 use Illuminate\Support\Facades\Schema;
+use App\Support\DocumentNumber;
 use App\Support\NegativeStockWarning;
 use Modules\Pos\Services\PaymentSubmission;
 use App\Support\InventorySnapshot;
+use App\Support\PosDiscount;
+use App\Support\PosSettlement;
+use App\Support\PosStockCheck;
+use App\Support\PosVoucher;
 
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -156,72 +162,6 @@ class PosController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     * @param Request $request
-     * @return Renderable
-     */
-    public function store(Request $request)
-    {
-        $this->normalizeWalkInCustomer($request);
-        if ($denied = $this->requireAccess('pos.store')) {
-            return $denied;
-        }
-
-        // dd($request->all());
-        $request->validate([
-            'customer_id'         => $this->customerRule(),
-            'items'               => 'required|array',
-            'items.*.product_id'  => 'required|exists:products,id',
-            'items.*.qty'         => 'required|numeric|min:1',
-            'items.*.price'       => 'required|numeric|min:0',
-            'items.*.discount'    => 'nullable|numeric|min:0',
-            'items.*.total_input' => 'required|numeric|min:0',
-        ]);
-
-        $sum_discount    = array_sum(array_column($request->items, 'discount'));
-        $sum_total_input = array_sum(array_column($request->items, 'total_input'));
-
-        DB::beginTransaction();
-        try {
-
-            $userId = Auth::id(); // Ambil user sekali
-            $pos    = new PosModel([
-                'customer_id' => $request->customer_id,
-                'date'        => date('Y-m-d'),
-                'total'       => $sum_total_input - $sum_discount,
-                'created_by'  => $userId,
-            ]);
-            $pos->save();
-
-            $posDetail = [];
-            foreach ($request->items as $item) {
-                $posDetail[] = [
-                    'pos_id'     => $pos->id,
-                    'product_id' => $item['product_id'],
-                    'quantity'   => $item['qty'],
-                    'price'      => $item['price'],
-                    'discount'   => $item['discount'] ?? 0,
-                    'subtotal'   => $item['total_input'],
-                ];
-            }
-            PosDetailModel::insert($posDetail);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'id'      => $pos->id,
-            ]);
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
      * Show the specified resource.
      * @param int $id
      * @return Renderable
@@ -282,6 +222,7 @@ class PosController extends Controller
             'product.productReceipt.ingredients',
             'product.productReceipt.ingredients.get_stock'
         ])->where('pos_id', $id)->get();
+        $this->giveEachParcelLineItsOwnIngredients($data['detail']);
         $data['invoice_number'] = $data['data']->invoice_number;
         return view('pos::pos.create2', $data);
     }
@@ -381,17 +322,24 @@ class PosController extends Controller
         ]);
 
         $paymentAmounts = collect($data['payments'])->map(fn ($item) => (float) str_replace('.', '', (string) $item['amount']));
-        if ($paymentAmounts->contains(fn ($amount) => $amount <= 0) || abs($paymentAmounts->sum() - (float) $data['total_payment']) > 0.01) {
+        // Rp0 is a payment only when nothing is owed (a voucher covers the bill); that is checked below.
+        if (($paymentAmounts->sum() > 0 && $paymentAmounts->contains(fn ($amount) => $amount <= 0))
+            || abs($paymentAmounts->sum() - (float) $data['total_payment']) > 0.01) {
             throw ValidationException::withMessages(['payments' => 'Jumlah rincian pembayaran harus positif dan sama dengan total pembayaran.']);
         }
 
         $fingerprint = PaymentSubmission::fingerprint($data);
+        // Read outside the transaction: the first plain read inside it must come after the lock,
+        // or a payment made at the same moment stays invisible to this one.
+        $branchIds = UserBranch::getUserBranch();
 
+        // Held from before the transaction until it ends; see App\Support\StockLock.
+        StockLock::lock(PosModel::whereKey($data['transaction_id'])->value('branch_id'));
         try {
             DB::beginTransaction();
 
             $posForVoucher = PosModel::whereKey($data['transaction_id'])
-                ->whereIn('branch_id', UserBranch::getUserBranch())
+                ->whereIn('branch_id', $branchIds)
                 ->lockForUpdate()->firstOrFail();
             // Check authorization before replay; a completed request stays replayable
             // even when the original attempt made the invoice fully paid.
@@ -421,18 +369,15 @@ class PosController extends Controller
 
             $existingPaid = (float) Payment::where('pos_id', $posForVoucher->id)->sum('total')
                 - (float) Payment::where('pos_id', $posForVoucher->id)->sum('return');
-            $voucher = (float) ($posForVoucher->voucher ?? 0);
-            $deposito = null;
-            if (! $posForVoucher->deposito_id && $posForVoucher->customer_id) {
-                $deposito = Deposito::where('customer_id', $posForVoucher->customer_id)->lockForUpdate()->first();
-                if ($deposito && $deposito->voucher_qty > 0) {
-                    $voucher = min((float) $deposito->voucher, (float) $posForVoucher->total);
-                }
-            }
-            $due = max(0, (float) $posForVoucher->total - $voucher - $existingPaid);
+            [$voucher, $deposito] = PosVoucher::for($posForVoucher, true);
+            // Rounded like the payment page rounds it: notes saved earlier may still hold a fraction.
+            $due = max(0, round((float) $posForVoucher->total - $voucher - $existingPaid));
             $amount = array_sum($paymentAmounts);
-            if ($amount <= 0 || $due <= 0) {
-                throw ValidationException::withMessages(['payments' => 'Tidak ada sisa tagihan yang dapat dibayar.']);
+            if ($due <= 0 && $amount > 0) {
+                throw ValidationException::withMessages(['payments' => 'Tidak ada sisa tagihan yang dapat dibayar. Isi pembayaran Rp0 untuk menyelesaikan transaksi.']);
+            }
+            if ($due > 0 && $amount <= 0) {
+                throw ValidationException::withMessages(['payments' => 'Jumlah rincian pembayaran harus positif dan sama dengan total pembayaran.']);
             }
             $change = max(0, $amount - $due);
             if ($change > 0 && collect($paymentNames)->contains(fn ($name) => strtolower($name) !== 'cash')) {
@@ -456,86 +401,8 @@ class PosController extends Controller
             // dd($payment);
             $payment->save();
 
-            // Pengecekan stok seperti pada saveTransaction (hanya untuk transaksi yang belum terpotong stoknya)
-            if (in_array($posForVoucher->status, ['draft', 'temp', 'pending'])) {
-                $posDetails = PosDetailModel::where('pos_id', $data['transaction_id'])->get();
-                $parcelDetails = ProductionParcelDetail::where('pos_id', $data['transaction_id'])->get();
-                $productions = Production::with('productionDetails')->where('pos_id', $data['transaction_id'])->get();
-
-                $allProductIdsToLock = [];
-                $requiredStocks = [];
-
-                $addRequiredStock = function($productId, $qty) use (&$requiredStocks, &$allProductIdsToLock) {
-                    if (!$productId) return;
-                    
-                    if (!in_array($productId, $allProductIdsToLock)) {
-                        $allProductIdsToLock[] = $productId;
-                    }
-
-                    $product = Product::find($productId);
-                    $stockProductId = $productId;
-                    if ($product) {
-                        $parentId = $product->getParentId();
-                        $stockProductId = $parentId ?? $product->id;
-                        if ($parentId && !in_array($parentId, $allProductIdsToLock)) {
-                            $allProductIdsToLock[] = $parentId;
-                        }
-                    }
-                    
-                    if (!isset($requiredStocks[$stockProductId])) {
-                        $requiredStocks[$stockProductId] = 0;
-                    }
-                    $requiredStocks[$stockProductId] += (float)$qty;
-                };
-
-                foreach ($posDetails as $detail) {
-                    if ($detail->type === 'product') {
-                        $addRequiredStock($detail->product_id, $detail->quantity);
-                    } elseif ($detail->type === 'parcel') {
-                        if ($detail->parcel_id) {
-                            $addRequiredStock($detail->parcel_id, $detail->quantity);
-                        }
-                    } elseif ($detail->type === 'jus') {
-                        $production = $productions->where('product_id', $detail->product_id)->first();
-                        $productionQty = $production ? $production->quantity : 0;
-                        $consumeStockQty = $detail->quantity - $productionQty;
-                        if ($consumeStockQty > 0) {
-                            $addRequiredStock($detail->product_id, $consumeStockQty);
-                        }
-                    }
-                }
-
-                foreach ($parcelDetails as $pDetail) {
-                    $addRequiredStock($pDetail->product_id, $pDetail->quantity);
-                }
-
-                foreach ($productions as $production) {
-                    foreach ($production->productionDetails as $pDetail) {
-                        $addRequiredStock($pDetail->product_id, $pDetail->quantity);
-                    }
-                }
-
-                $allProductIdsToLock = array_unique($allProductIdsToLock);
-                sort($allProductIdsToLock);
-
-                // Kunci master produk secara berurutan agar antrean checkout terjaga dan bebas Deadlock
-                foreach ($allProductIdsToLock as $lockId) {
-                    Product::where('id', $lockId)->lockForUpdate()->first();
-                }
-
-                $requiredStocks = array_diff_key($requiredStocks, array_flip(Product::serviceIds(array_keys($requiredStocks))));
-
-                // Validasi stok akumulatif dari semua sumber (satu query untuk semua produk)
-                $stockSnapshot = InventorySnapshot::stockAvailable(array_keys($requiredStocks), $posForVoucher->branch_id);
-                foreach ($requiredStocks as $stockProductId => $requiredQty) {
-                    $currentStock = $stockSnapshot[(int) $stockProductId] ?? 0.0;
-
-                    if ($currentStock < $requiredQty) {
-                        $product     = Product::find($stockProductId);
-                        $productName = $product ? $product->name : 'Produk #' . $stockProductId;
-                        throw new \Exception("Stok \"{$productName}\" tidak mencukupi. Stok tersedia: {$currentStock}, dibutuhkan: {$requiredQty}");
-                    }
-                }
+            if (in_array($posForVoucher->status, PosSettlement::UNPAID, true)) {
+                PosStockCheck::assertAvailable($posForVoucher);
             }
 
             if ($deposito && $voucher > 0 && $deposito->voucher_qty > 0) {
@@ -548,10 +415,14 @@ class PosController extends Controller
             $pos = $posForVoucher;
             $pos->paid = $existingPaid + $amount - $change;
             $payment->return = $change;
-            $payment->remaining = max(0, (float) $pos->total - (float) $pos->voucher - (float) $pos->paid);
+            $payment->remaining = max(0, round((float) $pos->total - (float) $pos->voucher - (float) $pos->paid));
             $payment->save();
             $status = $payment->remaining <= 0.01 ? 'paid' : 'debt';
             // $pos->ongkir_status = 'delivered';
+            // First payment: the stock leaves now, so the HPP is frozen now. Before the new status is saved.
+            if (in_array($pos->getOriginal('status'), PosSettlement::UNPAID, true)) {
+                PosSettlement::settle($pos);
+            }
             $pos->status = $status;
             $pos->save();
 
@@ -584,6 +455,8 @@ class PosController extends Controller
                 'message' => 'Gagal menyimpan transaksi',
                 'error'   => $e->getMessage(),
             ], 500);
+        } finally {
+            StockLock::release();
         }
     }
 
@@ -629,12 +502,12 @@ class PosController extends Controller
             'invoice_number'    => 'nullable',
             'items'             => 'required|array',
             'items.*.id'        => 'nullable',
-            'items.*.price'     => 'nullable|numeric|min:0',
-            'items.*.qty'       => 'nullable|numeric|min:0.01',
-            'items.*.discount'  => 'nullable|numeric|min:0',
-            'items.*.total_input' => 'nullable|numeric|min:0',
+            'items.*.price'     => 'nullable|numeric|min:0|max:2000000000',
+            'items.*.qty'       => 'nullable|numeric|min:0.01|max:1000000',
+            'items.*.discount'  => 'nullable|numeric|min:0|max:2000000000',
+            'items.*.total_input' => 'nullable|numeric|min:0|max:2000000000',
             'parcel'            => 'nullable|array',
-            'parcel.*.qty'      => 'required|numeric|gt:0',
+            'parcel.*.qty'      => 'required|numeric|gt:0|max:1000000',
             // validate() drops keys without a rule, and the parcel block below reads these.
             'parcel.*.id'           => 'nullable',
             'parcel.*.budget'       => 'required',
@@ -648,22 +521,25 @@ class PosController extends Controller
             'parcel.*.data.*.price'     => 'nullable|numeric|min:0',
             'parcel.*.data.*.priceAwal' => 'nullable|numeric|min:0',
             'parcel.*.data.*.product' => 'required|integer|exists:products,id',
-            'parcel.*.data.*.qty' => 'required|numeric|gt:0',
+            'parcel.*.data.*.qty' => 'required|numeric|gt:0|max:1000000',
             'jus'               => 'nullable|array',
             'jus.*.productId'   => 'required|integer|exists:products,id',
-            'jus.*.qty'         => 'required|numeric|gt:0',
-            'jus.*.price'       => 'nullable|numeric|min:0',
+            'jus.*.qty'         => 'required|numeric|gt:0|max:1000000',
+            'jus.*.price'       => 'nullable|numeric|min:0|max:2000000000',
             'jus.*.discount'    => 'nullable|numeric|min:0',
-            'jus.*.total_input' => 'nullable|numeric|min:0',
+            'jus.*.total_input' => 'nullable|numeric|min:0|max:2000000000',
             'jus.*.product_receipt_id' => 'nullable|array',
             'jus.*.product_receipt_id.*' => 'integer|exists:products,id',
             'jus.*.product_receipt_qty' => 'nullable|array',
             'jus.*.product_receipt_qty.*' => 'numeric|gt:0',
-            'subtotal'          => 'required|numeric|min:0',
-            'discount'          => 'nullable|numeric|min:0',
-            'ongkir'            => 'required|numeric|min:0',
-            'discount_ongkir'   => 'required|numeric|min:0',
-            'total'             => 'required|numeric|min:0',
+            'subtotal'          => 'required|numeric|min:0|max:9000000000',
+            'discount'          => 'nullable|numeric|min:0|max:9000000000',
+            'ongkir'            => 'required|numeric|min:0|max:2000000000',
+            'discount_ongkir'   => 'required|numeric|min:0|max:2000000000',
+            // Absent only from a page opened before the Rp / % buttons existed; see PosDiscount.
+            'discount_type'        => 'nullable|in:percent,amount',
+            'discount_ongkir_type' => 'nullable|in:percent,amount',
+            'total'             => 'required|numeric|min:0|max:9000000000',
             'status'            => 'nullable|in:draft,temp,pending',
             'process_status'    => 'nullable|in:none,pending,done',
             'ongkir_date'       => 'nullable|date',
@@ -684,27 +560,19 @@ class PosController extends Controller
         }
 
         // Harga khusus tetap mengikuti input kasir; angka header selalu berasal dari rincian.
-        $calculatedSubtotal = collect($data['items'])->sum(function ($item) {
-            // The form computes the same way: a missing or zero total_input (a parcel is added with 0) falls back to price x qty - discount.
-            $totalInput = (float) ($item['total_input'] ?? 0);
-
-            return $totalInput > 0
-                ? $totalInput
-                : ((float) ($item['price'] ?? 0) * (float) ($item['qty'] ?? 0)) - (float) ($item['discount'] ?? 0);
-        });
+        $calculatedSubtotal = collect($data['items'])->sum(fn ($item) => self::lineTotal($item));
         $globalDiscount = (float) ($data['discount'] ?? 0);
-        $discountAmount = $globalDiscount > 0 && $globalDiscount <= 100
-            ? $calculatedSubtotal * $globalDiscount / 100 : $globalDiscount;
+        $discountAmount = PosDiscount::amount($globalDiscount, $data['discount_type'] ?? null, $calculatedSubtotal);
         $shipping = (float) $data['ongkir'];
         $shippingDiscount = (float) $data['discount_ongkir'];
-        $shippingDiscountAmount = $shippingDiscount > 0 && $shippingDiscount <= 100
-            ? $shipping * $shippingDiscount / 100 : $shippingDiscount;
+        $shippingDiscountAmount = PosDiscount::amount($shippingDiscount, $data['discount_ongkir_type'] ?? null, $shipping);
         if ($discountAmount > $calculatedSubtotal || $shippingDiscountAmount > $shipping
             || abs($calculatedSubtotal - (float) $data['subtotal']) > 0.01) {
             throw ValidationException::withMessages(['subtotal' => 'Rincian dan diskon transaksi tidak sesuai.']);
         }
         $data['subtotal'] = $calculatedSubtotal;
-        $data['total'] = max(0, $calculatedSubtotal - $discountAmount + $shipping - $shippingDiscountAmount);
+        // Whole rupiah: a percent discount can leave a fraction, which the cashier cannot pay.
+        $data['total'] = round(max(0, $calculatedSubtotal - $discountAmount + $shipping - $shippingDiscountAmount));
 
         try {
             $userId     = Auth::id();
@@ -765,6 +633,12 @@ class PosController extends Controller
             }
             $allProductIdsToLock = array_unique(array_merge($allProductIdsToLock, $parentIdsToLock));
             sort($allProductIdsToLock);
+
+            // A juice makes a production run, which needs a number nobody else is taking.
+            $numbersProduction = ! empty($data['jus']);
+            if ($numbersProduction) {
+                DocumentNumber::lock('production');
+            }
 
             DB::beginTransaction();
 
@@ -942,8 +816,10 @@ class PosController extends Controller
                 'subtotal'          => $data['subtotal'],
                 'total'             => $data['total'],
                 'discount'          => $data['discount'],
+                'discount_type'     => $data['discount_type'] ?? null,
                 'ongkir'            => $data['ongkir'],
                 'ongkir_discount'   => $data['discount_ongkir'] ?? 0,
+                'ongkir_discount_type' => $data['discount_ongkir_type'] ?? null,
                 'ongkir_date'       => $data['ongkir_date'] ?? null,
                 'ongkir_time'       => $data['ongkir_time'] ?? null,
                 'status'            => $statusToSave,
@@ -967,11 +843,7 @@ class PosController extends Controller
             $transaksiId = $pos->id;
             $settingExp  = SettingExp::first();
 
-            // Convert global discount to nominal if it is a percentage (<= 100)
-            $globalDiscountInput = $data['discount'] ?? 0;
-            $globalDiscountNominal = ($globalDiscountInput > 0 && $globalDiscountInput <= 100) 
-                ? ($data['subtotal'] * ($globalDiscountInput / 100))
-                : $globalDiscountInput;
+            $globalDiscountNominal = PosDiscount::amount($data['discount'] ?? 0, $data['discount_type'] ?? null, $data['subtotal']);
 
             // HPP of every involved product in one query. Once this request writes rows
             // into a product's HPP history, that product is read again so results stay
@@ -990,9 +862,12 @@ class PosController extends Controller
                 return $hppSnapshot[$productId];
             };
 
+            // Parcel and juice rows are stored from their own lists; their money comes from the matching cart row.
+            $cartRows = collect($data['items'])->filter(fn ($row) => isset($row['id']) && ! is_numeric($row['id']))->keyBy('id');
+
             foreach ($data['items'] as $item) {
                 if (is_numeric($item['id'])) {
-                    $itemTotal   = isset($item['total_input']) ? $item['total_input'] : (($item['price'] * $item['qty']) - ($item['discount'] ?? 0));
+                    $itemTotal   = self::lineTotal($item);
                     $prosentase  = $data['subtotal'] > 0 ? ($itemTotal / $data['subtotal']) : 0;
                     $posDiscount = $prosentase * $globalDiscountNominal;
                     $product     = Product::find($item['id']);
@@ -1076,11 +951,14 @@ class PosController extends Controller
                         ]
                     );
 
-                    $parcelSubtotal = (float) $product->price * (float) $parcel['qty'];
+                    // The cart row of this parcel carries the same id; without one, budget x sets.
+                    $parcelSubtotal = isset($parcel['id'], $cartRows[$parcel['id']])
+                        ? self::lineTotal($cartRows[$parcel['id']])
+                        : (float) $productPrice * (float) $parcel['qty'];
                     $parcelProrate  = $data['subtotal'] > 0 ? ($parcelSubtotal / $data['subtotal']) : 0;
                     $parcelDiscount = $parcelProrate * $globalDiscountNominal;
 
-                    PosDetailModel::insert([
+                    $parcelLineId = PosDetailModel::insertGetId([
                         'pos_id'        => $transaksiId,
                         'parcel_id'     => ! empty($parcel['kemasanId']) ? $parcel['kemasanId'] : ($kemasanProduct->id ?? null),
                         'product_id'    => $product->id,
@@ -1115,6 +993,7 @@ class PosController extends Controller
                         ProductionParcelDetail::insert([
                             'production_id' => $product->id,
                             'pos_id'        => $transaksiId,
+                            'pos_detail_id' => $parcelLineId,
                             'product_id'    => $item['product'],
                             'kemasan_id'    => $parcel['kemasanId'] ?? null,
                             'quantity'      => $parcelQtyPerSet * $value['qty'],
@@ -1203,7 +1082,9 @@ class PosController extends Controller
                         }
                     }
 
-                    $jusSubtotal = isset($value['total_input']) ? $value['total_input'] : (($value['price'] * $value['qty']) - ($value['discount'] ?? 0));
+                    $jusSubtotal = isset($value['id'], $cartRows[$value['id']])
+                        ? self::lineTotal($cartRows[$value['id']])
+                        : self::lineTotal($value);
                     $jusProrate  = $data['subtotal'] > 0 ? ($jusSubtotal / $data['subtotal']) : 0;
                     $jusDiscount = $jusProrate * $globalDiscountNominal;
 
@@ -1241,6 +1122,11 @@ class PosController extends Controller
                 $pos->save();
             }
 
+            $storedSubtotal = (float) PosDetailModel::where('pos_id', $transaksiId)->sum('subtotal');
+            if (! $isTempSave && abs($storedSubtotal - (float) $data['subtotal']) > 1) {
+                throw ValidationException::withMessages(['subtotal' => 'Jumlah baris barang tidak sama dengan subtotal nota. Periksa keranjang lalu simpan lagi.']);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -1254,7 +1140,47 @@ class PosController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
-            ], 500);
+            ], $e instanceof ValidationException ? 422 : 500);
+        } finally {
+            if ($numbersProduction ?? false) {
+                DocumentNumber::unlock('production');
+            }
+        }
+    }
+
+    /**
+     * What one cart row is worth. The form computes the same way: a missing or zero total_input (a parcel is added
+     * with 0) falls back to price x qty - discount.
+     */
+    private static function lineTotal(array $row): float
+    {
+        $totalInput = (float) ($row['total_input'] ?? 0);
+
+        return $totalInput > 0
+            ? $totalInput
+            : ((float) ($row['price'] ?? 0) * (float) ($row['qty'] ?? 0)) - (float) ($row['discount'] ?? 0);
+    }
+
+    /**
+     * Parcels of one budget share one product, and the ingredients are loaded through the product. Rows saved before
+     * they carried their line cannot be split: the first such line gets them all and the others none, so saving is
+     * refused until the cashier re-enters them, instead of taking the stock twice.
+     */
+    private function giveEachParcelLineItsOwnIngredients($lines): void
+    {
+        $seen = [];
+        foreach ($lines as $line) {
+            if ($line->type !== 'parcel' || ! $line->product) {
+                continue;
+            }
+            $rows = $line->product->productionParcelDetails;
+            $own = $rows->where('pos_detail_id', $line->id);
+            if ($own->isEmpty()) {
+                $own = isset($seen[$line->product_id]) ? $rows->take(0) : $rows->whereNull('pos_detail_id');
+            }
+            $seen[$line->product_id] = true;
+            // Lines share the loaded product, so each needs its own copy before its rows are replaced.
+            $line->setRelation('product', (clone $line->product)->setRelation('productionParcelDetails', $own->values()));
         }
     }
 
@@ -1319,8 +1245,8 @@ class PosController extends Controller
     }
 
     /**
-     * Diskon Nota and Ongkos Kirim edited on the payment page. Same rules as saveTransaction: a discount of 100 or
-     * less is a percentage, above that it is rupiah; the header total and each line's share of the discount follow.
+     * Diskon Nota and Ongkos Kirim edited on the payment page. Same rules as saveTransaction (see PosDiscount);
+     * the header total and each line's share of the discount follow.
      */
     public function updateTotals(Request $request, $id)
     {
@@ -1330,6 +1256,7 @@ class PosController extends Controller
 
         $data = $request->validate([
             'discount' => 'nullable|numeric|min:0',
+            'discount_type' => 'nullable|in:percent,amount',
             'ongkir'   => 'nullable|numeric|min:0',
         ]);
 
@@ -1339,14 +1266,22 @@ class PosController extends Controller
         }
 
         return DB::transaction(function () use ($data, $pos) {
+            // Asked again behind a lock: a payment made at the same moment must not have its total rewritten.
+            $pos = PosModel::whereKey($pos->id)->lockForUpdate()->firstOrFail();
+            if (! in_array($pos->status, ['temp', 'draft', 'pending'], true)) {
+                return response()->json(['success' => false, 'message' => 'Transaksi ini tidak dapat diubah lagi.'], 422);
+            }
+
             $details       = PosDetailModel::where('pos_id', $pos->id)->lockForUpdate()->get();
             $itemsSubtotal = (float) $details->sum('subtotal');
 
             $discountInput  = (float) ($data['discount'] ?? 0);
-            $discountAmount = $discountInput > 0 && $discountInput <= 100 ? $itemsSubtotal * $discountInput / 100 : $discountInput;
+            // A page opened before the update sends no unit; the stored one then no longer describes its number.
+            $discountType   = $data['discount_type'] ?? null;
+            $discountAmount = PosDiscount::amount($discountInput, $discountType, $itemsSubtotal);
             $ongkir         = (float) ($data['ongkir'] ?? 0);
             $shipDiscInput  = (float) ($pos->ongkir_discount ?? 0);
-            $shipDiscAmount = $shipDiscInput > 0 && $shipDiscInput <= 100 ? $ongkir * $shipDiscInput / 100 : $shipDiscInput;
+            $shipDiscAmount = PosDiscount::amount($shipDiscInput, $pos->ongkir_discount_type, $ongkir);
 
             if ($discountAmount > $itemsSubtotal) {
                 return response()->json(['success' => false, 'message' => 'Diskon nota tidak boleh melebihi subtotal item.'], 422);
@@ -1355,7 +1290,7 @@ class PosController extends Controller
                 return response()->json(['success' => false, 'message' => 'Ongkos kirim tidak boleh lebih kecil dari diskon ongkirnya.'], 422);
             }
 
-            $total = max(0, $itemsSubtotal - $discountAmount + $ongkir - $shipDiscAmount);
+            $total = round(max(0, $itemsSubtotal - $discountAmount + $ongkir - $shipDiscAmount));
 
             foreach ($details as $detail) {
                 $share = $itemsSubtotal > 0 ? ((float) $detail->subtotal / $itemsSubtotal) * $discountAmount : 0;
@@ -1368,6 +1303,7 @@ class PosController extends Controller
 
             $pos->update([
                 'discount' => $discountInput,
+                'discount_type' => $discountType,
                 'ongkir'   => $ongkir,
                 'total'    => $total,
             ]);
@@ -1392,6 +1328,7 @@ class PosController extends Controller
         $data['detail']   = PosDetailModel::with('product')->where('pos_id', $id)->get();
         $data['tier']     = CustomerTier::where('customer_id', $data['data']->customer_id)->first();
         $data['deposito'] = CustomerDeposito::where('customer_id', $data['data']->customer_id)->where('quantity', '>', 0)->first();
+        [$data['voucherValue'], $data['voucherDeposit']] = PosVoucher::for($data['data']);
         // dd($data);
         return view('pos::pos.payment', $data);
     }

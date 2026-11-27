@@ -13,5 +13,4 @@
 
 Route::prefix('/')->group(function() {
     Route::get('/chat', 'ChatController@index');
-    Route::get('/srrd', 'ChatController@srrd');
 });

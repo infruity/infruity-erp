@@ -162,6 +162,7 @@ class CustomerController extends Controller
                 ->withInput();
         }
 
+        \App\Support\DocumentNumber::lock('customer');
         try {
             DB::beginTransaction();
             $customer = new Customer();
@@ -185,6 +186,8 @@ class CustomerController extends Controller
             DB::rollback();
             return redirect()->back()->withInput($request->all())
                 ->with('error', 'Pembuatan Customer gagal' . $e->getMessage());
+        } finally {
+            \App\Support\DocumentNumber::unlock('customer');
         }
 
         return redirect('customers')->with('success', 'Pembuatan Customer berhasil');
@@ -337,6 +340,14 @@ class CustomerController extends Controller
         try {
             DB::beginTransaction();
             $customer = Customer::findOrFail($id);
+            if (\App\Support\MasterInUse::check('customer', [$customer->getKey()])) {
+                DB::rollback();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pelanggan ini sudah dipakai di transaksi, jadi tidak dapat dihapus. Riwayat dan laporan masih memakainya.',
+                ], 422);
+            }
             $customer->delete();
             DB::commit();
             return response()->json([
@@ -381,6 +392,7 @@ class CustomerController extends Controller
             ], 422);
         }
 
+        \App\Support\DocumentNumber::lock('customer');
         try {
             DB::beginTransaction();
             $customer = new Customer();
@@ -408,6 +420,8 @@ class CustomerController extends Controller
                 'success' => false,
                 'message' => 'Gagal menambahkan data: ' . $e->getMessage(),
             ], 500);
+        } finally {
+            \App\Support\DocumentNumber::unlock('customer');
         }
     }
 
@@ -428,6 +442,8 @@ class CustomerController extends Controller
 
     public function storeAddress(Request $request)
     {
+        $this->authorizeAnyAccess(['pos.save-transaction', 'pos.create', 'pos.payment', 'customers.update', 'customers.store', 'order-book.create']);
+
         // dd($request->all());
         $validated = $request->validate([
             'customer_id' => 'required|exists:customer,id',

@@ -76,15 +76,4 @@ class ChatController extends Controller
     {
         //
     }
-
-    /**
-     * Display a listing of the resource.
-     * @return Renderable
-     */
-    public function srrd()
-    {
-        $pdf = \PDF::loadview("chat::srrd")
-                    ->setOptions(['defaultFont' => 'Tahoma'])->setPaper('A4', 'portrait');
-                    return $pdf->stream();
-    }
 }

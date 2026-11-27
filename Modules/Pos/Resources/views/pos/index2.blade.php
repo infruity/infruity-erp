@@ -110,7 +110,7 @@
     }
 </style>
 <script src="{{ asset('assets/js/pos-list-reference.js') }}?v={{ filemtime(public_path('assets/js/pos-list-reference.js')) }}"></script>
-<div class="contents pos-list-page" data-pos-list x-data="PosListUi.createFilters(@js($posFilterConfig))" x-init="onApply = (applied) => window.posApplyFilters(applied); onLoadMore = () => window.posLoadMore()" @pos-list-drawn.window="onDrawn($event.detail)" @erp-filter-apply.window="if ($event.detail.id === 'pos') applyFilters($event.detail.values)" @erp-filter-close.window="if ($event.detail.id === 'pos') close()">
+<div class="contents pos-list-page" data-pos-list x-data="PosListUi.createFilters(@js($posFilterConfig))" x-init="(() => { onApply = (applied) => window.posApplyFilters(applied); onLoadMore = () => window.posLoadMore(); })()" @pos-list-drawn.window="onDrawn($event.detail)" @erp-filter-apply.window="if ($event.detail.id === 'pos') applyFilters($event.detail.values)" @erp-filter-close.window="if ($event.detail.id === 'pos') close()">
 <x-erp.workspace title="Kasir / POS" subtitle="Kelola kasir / pos dan lihat rincian transaksi.">
     <x-slot:toolbar>
         <x-erp.mobile-search class="pos-toolbar-search erp-mobile-search-shell--always-visible erp-mobile-search-shell--flush">

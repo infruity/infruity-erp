@@ -145,21 +145,6 @@ class Wholesale extends Model
 
     public static function getOrderNumber()
     {
-        $orderData = self::select(DB::raw('CAST(RIGHT(order_number, 3) AS UNSIGNED) + 1 AS order_number'))
-            ->whereRaw('MONTH(created_at) = MONTH(NOW())')
-            ->whereRaw('YEAR(created_at) = YEAR(NOW())')
-            ->whereRaw('SUBSTRING(order_number, 1, 2) = ?', ['PO'])
-            ->orderByRaw('CAST(RIGHT(order_number, 3) AS UNSIGNED) DESC')
-            ->limit(1)
-            ->first();
-        $orderPad = '001';
-        if ($orderData && $orderData->order_number) {
-            $orderPad = str_pad($orderData->order_number, 3, '0', STR_PAD_LEFT);
-        }
-
-        $prefix = 'PO' . now()->format('Ym');
-        $newCode = $prefix . $orderPad;
-
-        return $newCode;
+        return \App\Support\DocumentNumber::next(self::class, 'order_number', 'PO' . now()->format('Ym'));
     }
 }

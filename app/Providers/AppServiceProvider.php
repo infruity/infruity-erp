@@ -14,7 +14,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        // A wrong .env must not show stack traces, queries, or session data to visitors of the live site.
+        if ($this->app->environment('production')) {
+            config(['app.debug' => false, 'debugbar.enabled' => false]);
+        }
     }
 
     /**

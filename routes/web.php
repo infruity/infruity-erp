@@ -26,7 +26,6 @@ Route::get('/forgot-password', 'DashboardController@forgot_password')->name('for
 Route::post('/forgot-password', 'DashboardController@forgot_password_check')->name('forgot-password.request');
 Route::get('/register', 'Auth\RegisterController@showRegister')->name('register');
 Route::post('/register', 'Auth\RegisterController@create')->name('register.store');
-Route::get('/qrcode', 'DashboardController@generateQrCode');
 // Route::get('/produk', 'DashboardController@produk')->name('produk');
 Route::group(['prefix' => '/auth'], function () {
     // Route::get('/', 'Auth\LoginController@showLogin')->name('login');

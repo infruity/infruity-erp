@@ -46,6 +46,9 @@
             historyOpen: false,
             historyLoading: false,
             historyRows: [],
+            // Cards drawn at a time: a long period holds thousands, and search, filters and totals still use all of them.
+            historyPageSize: 50,
+            historyVisible: 50,
             historyError: '',
             historyRow: null,
             historySearch: '',
@@ -68,6 +71,9 @@
             get hasFilter() {
                 return this.branch !== 'all' || (config.type === 'shipping' && this.groupBy === 'product' && this.courier !== 'all') || Boolean(this.startDate || this.endDate);
             },
+            get pagedHistory() { return this.filteredHistory.slice(0, this.historyVisible); },
+            get hiddenHistoryCount() { return Math.max(0, this.filteredHistory.length - this.historyVisible); },
+            showMoreHistory() { this.historyVisible += this.historyPageSize; },
             get filteredHistory() {
                 const query = this.historySearch.trim().toLocaleLowerCase('id-ID');
                 return this.historyRows.filter(entry => {
@@ -360,6 +366,7 @@
                 if (!config.history) return;
                 const sequence = ++this.historySequence;
                 this.historyRows = [];
+                this.historyVisible = this.historyPageSize;
                 this.historyError = '';
                 this.historyRow = row;
                 this.historySearch = '';
@@ -397,6 +404,7 @@
             async openDateHistory(row) {
                 const sequence = ++this.historySequence;
                 this.historyRows = [];
+                this.historyVisible = this.historyPageSize;
                 this.historyError = '';
                 this.historyRow = row;
                 this.historySearch = '';

@@ -230,22 +230,24 @@ class SupplierController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('supplier.index');
+
         $data = Supplier::all();
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('name', function ($item) {
                 return '<div class="d-flex align-items-center">
                             <div class="ms-5">
-                                <a href="javascript:void(0)" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $item->name . '</a>
-                                <br> ' . $item->pic_name . '<br> <div class="badge badge-light-success fw-bold">' . $item->pic_whatsapp . '</div>
+                                <a href="javascript:void(0)" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . e($item->name) . '</a>
+                                <br> ' . e($item->pic_name) . '<br> <div class="badge badge-light-success fw-bold">' . e($item->pic_whatsapp) . '</div>
                             </div>
                         </div>';
             })
             ->addColumn('pic_name', function ($item) {
-                return $item->pic_name . '<br> <div class="badge badge-light-success fw-bold">' . $item->pic_whatsapp . '</div>';
+                return e($item->pic_name) . '<br> <div class="badge badge-light-success fw-bold">' . e($item->pic_whatsapp) . '</div>';
             })
             ->addColumn('address', function ($item) {
-                return $item->address . '<br> <div class="badge badge-light fw-bold">' . $item->email . '</div>';
+                return e($item->address) . '<br> <div class="badge badge-light fw-bold">' . e($item->email) . '</div>';
             })
             ->addColumn('action', function ($row) {
                 $name = e($row->name);

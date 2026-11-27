@@ -708,12 +708,8 @@
                 $discount = $data->discount;
                 $ongkir_discount = $data->ongkir_discount;
                 $subtotal = $total;
-                if ($discount <= 100) {
-                    $discount = ($discount / 100) * $subtotal;
-                }
-                if ($ongkir_discount <= 100) {
-                    $ongkir_discount = ($ongkir_discount / 100) * $data->ongkir;
-                }
+                $discount = \App\Support\PosDiscount::amount($discount, $data->discount_type, $subtotal);
+                $ongkir_discount = \App\Support\PosDiscount::amount($ongkir_discount, $data->ongkir_discount_type, $data->ongkir);
             @endphp
             <div class="totals-section">
                 <div class="total-line">

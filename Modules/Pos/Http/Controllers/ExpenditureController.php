@@ -165,7 +165,9 @@ class ExpenditureController extends Controller
         try {
             $userId = Auth::id();
             DB::beginTransaction();
-            $cek = Expenditure::where('invoice_number', $data['invoice_number'])->first();
+            // Only the user's own record may be replaced by number: the number was shown when the form opened,
+            // so another person's form can carry the same one.
+            $cek = Expenditure::where('invoice_number', $data['invoice_number'])->where('created_by', $userId)->first();
             if ($cek) {
                 $pos = Expenditure::find($cek->id);
                 $posDetail = ExpenditureDetail::where('expenditure_id', $cek->id);
@@ -243,6 +245,8 @@ class ExpenditureController extends Controller
 
     public function get_data(Request $request)
     {
+        $this->authorizeAccess('expenditure.index');
+
         $query = Expenditure::with('branch', 'payment')->whereIn('branch_id', UserBranch::getUserBranch());
         if ($request->has('status_filter') && $request->status_filter !== 'all') {
             $query = $query->where('status', $request->status_filter);
@@ -261,7 +265,7 @@ class ExpenditureController extends Controller
                 $html = '<div class="d-flex align-items-center">';
                 $html .= '<div class="ms-5">';
                 if (isset($item->branch->name)) {
-                    $html .= '<a href="' . url('pos') . '/show' . '/' . $item->id . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $item->branch->name . '</a>';
+                    $html .= '<a href="' . url('pos') . '/show' . '/' . $item->id . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . e($item->branch->name) . '</a>';
                 } else {
                     $html .= '<a href="' . url('pos') . '/show' . '/' . $item->id . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">Pelanggan Umum</a>';
                 }
@@ -276,7 +280,7 @@ class ExpenditureController extends Controller
                 } else if ($item->status == 'draft') {
                     $html .= '<span class="badge badge-light-danger">Draft</span>';
                 } else {
-                    $html .= '<span class="badge badge-light-warning">' . $item->status . '</span>';
+                    $html .= '<span class="badge badge-light-warning">' . e($item->status) . '</span>';
                 }
                 return $html;
             })

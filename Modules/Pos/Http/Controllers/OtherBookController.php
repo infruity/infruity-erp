@@ -94,7 +94,7 @@ class OtherBookController extends Controller
 
         try {
             DB::beginTransaction();
-            $pos = PosModel::find($id);
+            $pos = PosModel::whereIn('branch_id', \Modules\Master\Entities\UserBranch::getUserBranch())->findOrFail($id);
             $pos->process_status = 'done';
             $pos->process_date = date('Y-m-d H:i:s');
             $pos->save();
@@ -108,7 +108,9 @@ class OtherBookController extends Controller
 
     public function get_data(Request $request)
     {
-        $query = PosModel::with('customer', 'payment')->where('process_status', '!=', 'none');
+        $this->authorizeAccess('other-book.index');
+
+        $query = PosModel::with('customer', 'payment')->whereIn('branch_id', \Modules\Master\Entities\UserBranch::getUserBranch())->where('process_status', '!=', 'none');
         if ($request->has('status_filter') && $request->status_filter !== 'all') {
             $query = $query->where('process_status', $request->status_filter);
         }
@@ -123,8 +125,8 @@ class OtherBookController extends Controller
                 $html = '<div class="d-flex align-items-center">';
                 $html .= '<div class="ms-5">';
                 if (isset($item->customer->name)) {
-                    $html .= '<a href="' . url('pos') . '/' . $item->id . '/show' . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . $item->customer->name . '</a>';
-                    $html .= '<br><span class="text-muted d-block fs-7">' . ($item->customer->address) . '</span>';
+                    $html .= '<a href="' . url('pos') . '/' . $item->id . '/show' . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">' . e($item->customer->name) . '</a>';
+                    $html .= '<br><span class="text-muted d-block fs-7">' . e($item->customer->address) . '</span>';
                 } else {
                     $html .= '<a href="' . url('pos') . '/' . $item->id . '/show' . '" class="text-gray-800 text-hover-primary fs-5 fw-bold">Pelanggan Umum</a>';
                 }
@@ -142,7 +144,7 @@ class OtherBookController extends Controller
                 } else if ($item->process_status == 'done') {
                     $html .= '<span class="badge badge-light-success">Selesai</span>';
                 } else {
-                    $html .= '<span class="badge badge-light-warning">' . $item->process_status . '</span>';
+                    $html .= '<span class="badge badge-light-warning">' . e($item->process_status) . '</span>';
                 }
                 return $html;
             })

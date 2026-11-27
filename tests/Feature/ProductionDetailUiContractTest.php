@@ -28,9 +28,11 @@ final class ProductionDetailUiContractTest extends TestCase
 
         $this->assertStringContainsString("in_array(\$data->status, ['temp', 'draft'])", $show);
         $this->assertStringContainsString("in_array(\$data->status, ['draft', 'temp'], true)", $show);
-        foreach (["route('production.edit', \$data->id)", "route('production.payment', \$data->id)", "route('production.print', \$data->id)", "route('production.index')", "route('pos.show', \$data->pos_id)"] as $link) {
+        foreach (["route('production.edit', \$data->id)", "route('production.print', \$data->id)", "route('production.index')", "route('pos.show', \$data->pos_id)"] as $link) {
             $this->assertStringContainsString($link, $show, "Hilang: {$link}");
         }
+        // The payment page had no view, so its button only led to an error.
+        $this->assertStringNotContainsString('production.payment', $show);
         foreach (['Selesai', 'Pending'] as $label) {
             $this->assertStringContainsString($label, $show);
         }

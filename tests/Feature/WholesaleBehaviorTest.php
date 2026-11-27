@@ -129,46 +129,74 @@ class WholesaleBehaviorTest extends TestCase
         ]);
     }
 
-    // ---- never-negative stock when a posted purchase changes -------------------------------------
+    // ---- a posted purchase is locked --------------------------------------------------------------
 
-    public function test_editing_a_posted_purchase_is_allowed_while_stock_stays_non_negative(): void
+    /** @return array{0:string,1:int} number and id of a posted purchase of 10 */
+    private function postedPurchase(): array
     {
-        $invoice = $this->save()->assertOk()->json('invoice_number');   // +10
-        $this->sellFromStock(8);                                         // 2 left
+        $saved = $this->save()->assertOk();
 
-        $this->save(['invoice_number' => $invoice, 'items' => [['id' => $this->productId, 'price' => 10000, 'qty' => 9, 'total_input' => 90000]], 'subtotal' => 90000, 'total' => 90000])
-            ->assertOk();
-
-        $this->assertSame(1.0, $this->stock(), '9 received - 8 sold');
+        return [$saved->json('invoice_number'), (int) $saved->json('transaksi_id')];
     }
 
-    public function test_editing_a_posted_purchase_below_what_was_sold_is_refused_and_leaves_it_unchanged(): void
+    private function rewrite(string $invoice, int $qty, array $override = [])
     {
-        $invoice = $this->save()->assertOk()->json('invoice_number');
-        $this->sellFromStock(8);
-
-        $response = $this->save(['invoice_number' => $invoice, 'items' => [['id' => $this->productId, 'price' => 10000, 'qty' => 3, 'total_input' => 30000]], 'subtotal' => 30000, 'total' => 30000]);
-
-        $response->assertStatus(422)->assertJson(['success' => false]);
-        $this->assertEquals(10, DB::table('wholesale_product')->join('wholesale', 'wholesale.id', '=', 'wholesale_product.wholesale_id')->where('wholesale.order_number', $invoice)->value('wholesale_product.quantity'), 'rolled back');
-        $this->assertSame(2.0, $this->stock());
+        return $this->save($override + [
+            'invoice_number' => $invoice, 'subtotal' => $qty * 1, 'total' => $qty * 1,
+            'items' => [['id' => $this->productId, 'price' => 1, 'qty' => $qty, 'total_input' => $qty, 'sell' => 1]],
+        ]);
     }
 
-    public function test_turning_a_sold_from_posted_purchase_back_into_a_draft_is_refused(): void
+    private function assertPurchaseUntouched(int $id): void
     {
-        $invoice = $this->save()->assertOk()->json('invoice_number');
-        $this->sellFromStock(8);
+        $this->assertDatabaseHas('wholesale', ['id' => $id, 'status' => 'posting', 'branch_id' => $this->branch]);
+        $lines = DB::table('wholesale_product')->where('wholesale_id', $id)->get();
+        $this->assertCount(1, $lines);
+        $this->assertEquals([10, 10000], [(float) $lines[0]->quantity, (float) $lines[0]->price]);
+        $this->assertDatabaseMissing('product_branch', ['product_id' => $this->productId, 'price' => 1]);
+    }
 
-        $this->save(['invoice_number' => $invoice, 'status' => 'draft'])->assertStatus(422);
+    public function test_a_posted_purchase_cannot_be_rewritten_or_turned_back_into_a_draft(): void
+    {
+        [$invoice, $id] = $this->postedPurchase();
 
-        $this->assertDatabaseHas('wholesale', ['order_number' => $invoice, 'status' => 'posting']);
-        $this->assertSame(2.0, $this->stock());
+        foreach (['posting', 'draft', 'temp'] as $status) {
+            foreach ([500, 3] as $qty) {
+                $this->rewrite($invoice, $qty, ['status' => $status])->assertStatus(409)->assertJson(['success' => false]);
+            }
+        }
+
+        $this->assertPurchaseUntouched($id);
+        $this->assertSame(10.0, $this->stock());
+    }
+
+    public function test_a_posted_purchase_cannot_be_moved_to_another_branch(): void
+    {
+        [$invoice, $id] = $this->postedPurchase();
+        $this->sellFromStock(10);
+        $other = $this->makeBranch('TUJUAN');
+
+        $this->rewrite($invoice, 10, ['branch_id' => $other])->assertStatus(409);
+
+        $this->assertPurchaseUntouched($id);
+        $this->assertSame(0.0, $this->stock(), 'the origin branch must not go negative');
+    }
+
+    public function test_a_draft_can_still_be_changed_and_then_posted(): void
+    {
+        $invoice = $this->save(['status' => 'draft'])->assertOk()->json('invoice_number');
+
+        $this->save(['invoice_number' => $invoice, 'status' => 'draft'])->assertOk();
+        $this->save(['invoice_number' => $invoice])->assertOk()->assertJson(['status' => 'posting']);
+
+        $this->assertSame(10.0, $this->stock());
     }
 
     public function test_deleting_a_posted_purchase_that_was_already_sold_from_is_refused(): void
     {
         $wholesaleId = $this->save()->assertOk()->json('transaksi_id');
         $this->sellFromStock(8);
+        $this->actAsMasterAccount();
 
         $this->deleteJson("/wholesale/{$wholesaleId}")->assertStatus(422)->assertJson(['success' => false]);
 
@@ -179,6 +207,7 @@ class WholesaleBehaviorTest extends TestCase
     public function test_deleting_an_unsold_posted_purchase_is_allowed(): void
     {
         $wholesaleId = $this->save()->assertOk()->json('transaksi_id');
+        $this->actAsMasterAccount();
 
         $this->deleteJson("/wholesale/{$wholesaleId}")->assertOk()->assertJson(['success' => true]);
 
@@ -423,32 +452,7 @@ class WholesaleBehaviorTest extends TestCase
         $sales = $this->makeUser($roleId, [], [$this->branch]);
         $this->actAsRole($sales, $roleId);
 
-        $this->save()->assertRedirect();
+        $this->save()->assertForbidden();
         $this->assertSame(0.0, $this->stock());
-    }
-
-    // ---- after posting -----------------------------------------------------------------------
-
-    public function test_a_posted_purchase_that_was_already_sold_from_cannot_be_reduced_below_what_was_sold(): void
-    {
-        $created = $this->save()->assertOk();          // +10
-        $invoice = $created->json('invoice_number');
-
-        // 8 of the 10 are sold (paid sale).
-        $posId = DB::table('pos_transaction')->insertGetId([
-            'uuid' => (string) Str::uuid(), 'invoice_number' => 'INVWS' . strtoupper(Str::random(6)), 'date' => date('Y-m-d'),
-            'total' => 200000, 'discount' => 0, 'paid' => 200000, 'status' => 'paid', 'branch_id' => $this->branch,
-            'created_by' => 1, 'created_at' => now()->addMinute(), 'updated_at' => now()->addMinute(),
-        ]);
-        DB::table('pos_transaction_detail')->insert([
-            'pos_id' => $posId, 'product_id' => $this->productId, 'quantity' => 8, 'price' => 25000, 'discount' => 0,
-            'subtotal' => 200000, 'exp' => 0, 'exp_value' => 0, 'type' => 'product', 'created_at' => now()->addMinute(), 'updated_at' => now()->addMinute(),
-        ]);
-        $this->assertSame(2.0, $this->stock());
-
-        // Edit the posted purchase down to 3 pieces: stock would become 3 - 8 = -5.
-        $this->save(['invoice_number' => $invoice, 'items' => [['id' => $this->productId, 'price' => 10000, 'qty' => 3, 'total_input' => 30000]], 'subtotal' => 30000, 'total' => 30000]);
-
-        $this->assertGreaterThanOrEqual(0.0, $this->stock(), 'editing a posted purchase must never push stock negative');
     }
 }

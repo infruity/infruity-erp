@@ -15,7 +15,7 @@
                 <table class="table align-middle erp-report-table" data-erp-collection="transaction-table" id="transaction-table" width="100%">
                     <thead>
                         <tr class="text-start text-gray-500 fw-bold fs-7">
-                            <th class="text-start min-w-150px">Tanggal dan Waktu</th>
+                            <th class="text-start min-w-150px">Waktu</th>
                             <th class="text-start min-w-150px">Nama Pelanggan</th>
                             <th class="text-start min-w-50px">Jenis Kelamin</th>
                             <th class="text-start min-w-50px">Usia</th>

@@ -137,6 +137,21 @@ class ProductionBranchAccessTest extends TestCase
         $this->assertSame(6.0, $this->fruitStock($this->mine));
     }
 
+    /** Completion wrote two columns the table does not have, so it answered 500 every time. */
+    public function test_a_draft_of_the_own_branch_can_be_completed(): void
+    {
+        $this->actAsCrew();
+        $number = 'PRDQA' . strtoupper(Str::random(8));
+        $this->store($number, 'draft', $this->mine)->assertOk();
+        $id = (int) DB::table('production')->where('production_number', $number)->value('id');
+
+        $this->postJson('/production/save-completion', ['production_id' => $id, 'completion_date' => date('Y-m-d'), 'notes' => 'selesai'])
+            ->assertOk()->assertJson(['success' => true]);
+
+        $this->assertDatabaseHas('production', ['id' => $id, 'status' => 'posting', 'description' => 'selesai']);
+        $this->assertSame(6.0, $this->fruitStock($this->mine));
+    }
+
     public function test_completion_is_refused_for_another_branch_and_for_a_finished_run(): void
     {
         [, $foreign] = $this->adminRun('draft', $this->other);

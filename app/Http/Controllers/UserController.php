@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Support\Like;
 use App\Http\Requests\UserRequest;
 use App\Models\Role;
+use App\Models\RoleMenu;
+use App\Support\Delegation;
 use App\Models\RoleUser;
 use App\Models\UserPermission;
 use Illuminate\Validation\ValidationException;
@@ -19,9 +21,6 @@ use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
-    /** The password an administrator's reset puts on an account. */
-    public const DEFAULT_RESET_PASSWORD = 'infruity123';
-
     use \App\Traits\HasAccessControl;
 
     public function index(Request $request)
@@ -119,6 +118,12 @@ class UserController extends Controller
             return $denied;
         }
 
+        abort_if(
+            ! RoleMenu::actingAsAdministrator() && mb_strtolower(trim((string) $request->email)) === RoleMenu::MASTER_EMAIL,
+            403,
+            'Hanya Administrator yang dapat membuat akun Master.'
+        );
+
         try {
             DB::beginTransaction();
             $staff = Staff::query()->lockForUpdate()->findOrFail($request->staff_id);
@@ -151,6 +156,8 @@ class UserController extends Controller
         if ($denied = $this->requireAccess('user.update')) {
             return $denied;
         }
+
+        $this->abortUnlessMayChange((int) $id);
 
         DB::transaction(function () use ($id, $request) {
             $user = User::query()->lockForUpdate()->findOrFail($id);
@@ -185,6 +192,26 @@ class UserController extends Controller
                     ->all();
                 $hasBranch = $newStaff->branch_id
                     && DB::table('branch')->where('id', $newStaff->branch_id)->exists();
+
+                // Linking hands the account the employee's roles, so it is a way to assign them.
+                if (! RoleMenu::actingAsAdministrator()) {
+                    if ($userId === (int) Auth::id()) {
+                        throw ValidationException::withMessages([
+                            'staff_id' => 'Tautan karyawan akun sendiri tidak dapat diubah.',
+                        ]);
+                    }
+                    if (in_array(RoleMenu::ADMINISTRATOR_ROLE_ID, $roleIds, true)) {
+                        throw ValidationException::withMessages([
+                            'staff_id' => 'Hanya Administrator yang dapat menautkan karyawan dengan akses Administrator.',
+                        ]);
+                    }
+                    if (Delegation::beyondActor(Delegation::permissionsOfRoles($roleIds)) !== []
+                        || Delegation::branchesBeyondActor([$newStaff->branch_id]) !== []) {
+                        throw ValidationException::withMessages([
+                            'staff_id' => 'Akses atau cabang karyawan ini melebihi milik Anda. Minta Administrator yang menautkannya.',
+                        ]);
+                    }
+                }
 
                 if (!$hasBranch || $roleIds === []) {
                     throw ValidationException::withMessages([
@@ -251,6 +278,7 @@ class UserController extends Controller
 
         $user = User::findOrFail($id);
         abort_if((int) $user->id_user === (int) Auth::id(), 403, 'Hak akses akun sendiri tidak dapat diubah.');
+        $this->abortUnlessMayChange((int) $user->id_user);
 
         $validated = $request->validate([
             'overrides' => ['required', 'array', 'min:1'],
@@ -267,6 +295,13 @@ class UserController extends Controller
             ->values();
         $overrides = $validated['overrides'];
         $unknownPermissions = array_diff(array_keys($overrides), $knownPermissions->all());
+
+        if (! RoleMenu::actingAsAdministrator()) {
+            $held = Delegation::permissionsOfAccount((int) $user->id_user);
+            $granted = array_keys(array_filter($overrides, fn ($allowed) => (bool) $allowed));
+            abort_if(Delegation::beyondActor(array_diff($granted, $held)) !== [], 403,
+                'Anda hanya dapat memberikan izin yang Anda miliki sendiri.');
+        }
 
         if ($unknownPermissions !== []) {
             throw ValidationException::withMessages([
@@ -296,6 +331,7 @@ class UserController extends Controller
 
         $user = User::findOrFail($id);
         abort_if((int) $user->id_user === (int) Auth::id(), 403, 'Hak akses akun sendiri tidak dapat diubah.');
+        $this->abortUnlessMayChange((int) $user->id_user);
 
         UserPermission::where('id_user', $user->id_user)->delete();
 
@@ -307,13 +343,44 @@ class UserController extends Controller
         $this->authorizeAccess('user.update');
 
         $user = User::findOrFail($id);
-        $user->password = Hash::make(self::DEFAULT_RESET_PASSWORD);
+        $this->abortUnlessMayChange((int) $user->id_user);
+
+        $password = $this->temporaryPassword();
+        $user->password = Hash::make($password);
         $user->save();
 
+        // Shown once to whoever reset it; only the hash is stored.
         return response()->json([
             'success' => true,
             'message' => 'Kata sandi berhasil direset.',
-        ]);
+            'password' => $password,
+        ])->header('Cache-Control', 'no-store');
+    }
+
+    /** Easy to read out and type: no 0/O or 1/l/I. */
+    private function temporaryPassword(int $length = 10): string
+    {
+        $alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        $password = '';
+        for ($i = 0; $i < $length; $i++) {
+            $password .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+        }
+
+        return $password;
+    }
+
+    private function abortUnlessMayChange(int $userId): void
+    {
+        abort_if(
+            ! RoleMenu::actingAsAdministrator() && RoleMenu::isPrivilegedAccount($userId),
+            403,
+            'Hanya Administrator yang dapat mengubah akun Administrator atau Master.'
+        );
+        abort_if(
+            ! RoleMenu::actingAsAdministrator() && Delegation::accountExceedsActor($userId),
+            403,
+            'Akun ini punya izin atau cabang yang tidak Anda miliki, jadi hanya Administrator yang dapat mengubahnya.'
+        );
     }
 
     public function destroy($id)
@@ -404,9 +471,9 @@ class UserController extends Controller
                 if(Auth::id() == 1 && $row->id_user != 1) {
                     $impersonateBtn = '
                         <li>
-                            <a class="dropdown-item text-success d-flex" href="'.route('user.impersonate', $row->id_user).'" title="Login sebagai user ini">
+                            <form method="POST" action="'.route('user.impersonate', $row->id_user).'">'.csrf_field().'<button type="submit" class="dropdown-item text-success d-flex" title="Login sebagai user ini">
                                 <i class="bi bi-person-bounding-box text-success me-2"></i> Login
-                            </a>
+                            </button></form>
                         </li>
                     ';
                 }

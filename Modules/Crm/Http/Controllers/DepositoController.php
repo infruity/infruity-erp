@@ -84,6 +84,10 @@ class DepositoController extends Controller
         if (! $pointSchedule) {
             return response()->json(['message' => 'Jadwal poin belum diatur.'], 422);
         }
+        // The vouchers come from the tier's package, so the money received must be that package's price.
+        if ($refusal = $this->amountRefusal(Tier::findOrFail($validated['tier_id']), $validated['deposito'])) {
+            return $refusal;
+        }
 
         // Simpan data ke database
         try {
@@ -173,7 +177,19 @@ class DepositoController extends Controller
         // Simpan data ke database
         try {
             DB::beginTransaction();
-            $deposito = Deposito::findOrFail($id);
+            $deposito = Deposito::lockForUpdate()->findOrFail($id);
+            if ((int) $deposito->customer_id !== (int) $validated['customer_id']
+                && DB::table('pos_transaction')->where('deposito_id', $deposito->id)->exists()) {
+                DB::rollBack();
+                return response()->json(['message' => 'Voucher deposito ini sudah terpakai, jadi pelanggannya tidak dapat diganti.'], 422);
+            }
+            // An unchanged amount stays valid even if the tier's package price was edited since.
+            $tier = Tier::find($deposito->tier_id);
+            $typed = (int) preg_replace('/[^0-9]/', '', $validated['deposito']);
+            if ($tier && $typed !== (int) $deposito->deposito && ($refusal = $this->amountRefusal($tier, $validated['deposito']))) {
+                DB::rollBack();
+                return $refusal;
+            }
             $deposito->customer_id = $validated['customer_id'];
             $deposito->deposito_date = $validated['date'];
             $deposito->deposito = preg_replace('/[^0-9]/', '', $validated['deposito']);
@@ -192,6 +208,18 @@ class DepositoController extends Controller
             'message' => 'Deposito berhasil disimpan.',
             'data' => $deposito
         ], 201);
+    }
+
+    private function amountRefusal(Tier $tier, string $typed)
+    {
+        $price = (int) $tier->deposito;
+        if ($price <= 0 || (int) preg_replace('/[^0-9]/', '', $typed) === $price) {
+            return null;
+        }
+
+        return response()->json([
+            'message' => 'Nominal deposito harus Rp' . number_format($price, 0, ',', '.') . ' sesuai paket tier yang dipilih.',
+        ], 422);
     }
 
     /**
@@ -315,6 +343,8 @@ class DepositoController extends Controller
 
     public function customer_deposito_transaction_get_data(Request $request)
     {
+        $this->authorizeAnyAccess(['customer-deposito.index', 'customer-deposito.show']);
+
         $query = DepositoTransaction::with(['customer', 'deposito'])
             ->where('customer_id', $request->customer_id);
         $data = $query->get();
@@ -354,7 +384,7 @@ class DepositoController extends Controller
                 }
             })
             ->addColumn('date', function ($item) {
-                return dateEnglish($item->deposito_date);
+                return \Carbon\Carbon::parse($item->deposito_date)->locale('id')->translatedFormat('d M Y');
             })
             ->rawColumns(['name', 'nominal', 'voucher_qty', 'date'])
             ->make(true);
