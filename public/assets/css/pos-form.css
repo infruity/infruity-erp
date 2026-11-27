@@ -760,9 +760,7 @@ body:has(.pos-form--reference) .select2-search--dropdown input[aria-controls="se
 .pos-extra-settings > summary { padding:10px 0; color:#0b595b; cursor:pointer; font-size:12px; font-weight:700; }
 .pos-extra-settings .pos-ref-more { margin-top:0; }
 @media (max-width:767px) {
-  /* Opened inside the summary sheet, the extra settings scroll with it: they are the only place on a phone for the
-     note, delivery schedule, shipping discount, and processing branch. */
-  .pos-extra-settings[open] { max-height:42vh; overflow-y:auto; overscroll-behavior:contain; }
+  .pos-extra-settings { display:none; }
   .pos-ref-total.is-toggle { -webkit-tap-highlight-color:transparent; user-select:none; }
   /* Reserve the closed footer height while its sheet expands over the cart. */
   /* Sticky keeps Bayar on screen when the form is taller than the phone. */
