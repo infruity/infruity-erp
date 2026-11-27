@@ -80,10 +80,11 @@ final class ReportDefectsTest extends TestCase
         $this->assertEquals([1, 100000], [(int) $view->jumlah_transaksi, (float) $view->total_transaksi]);
     }
 
-    public function test_the_phone_layout_keeps_the_extra_settings_reachable_and_the_cashier_sees_no_debug_text(): void
+    public function test_the_phone_layout_hides_the_extra_settings_and_the_cashier_sees_no_debug_text(): void
     {
         $css = file_get_contents(public_path('assets/css/pos-form.css'));
-        $this->assertDoesNotMatchRegularExpression('/\.pos-extra-settings\s*\{\s*display:\s*none/', $css);
+        // Hidden on phones on purpose (#88): the courier lives in the summary sheet there.
+        $this->assertMatchesRegularExpression('/@media \(max-width:767px\) \{\s*\.pos-extra-settings \{ display:none; \}/', $css);
         $this->assertStringNotContainsString('[DEBUG:', file_get_contents(base_path('Modules/Pos/Resources/views/pos/js/js-buah.blade.php')));
         $this->assertStringContainsString('PosDiscount::amount($discount, $data->discount_type, $subtotal)',
             file_get_contents(base_path('Modules/Pos/Resources/views/pos/print.blade.php')));
