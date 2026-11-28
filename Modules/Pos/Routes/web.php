@@ -2,6 +2,7 @@
 use App\Http\Middleware\EnsureFeatureEnabled;
 use Illuminate\Support\Facades\Route;
 use Modules\Pos\Http\Controllers\PosController;
+use Modules\Pos\Http\Controllers\PosBalancingController;
 use Modules\Pos\Http\Controllers\SettingNotaController;
 use Modules\Pos\Http\Controllers\DeliveryOrderController;
 use Modules\Master\Http\Controllers\CustomerController;
@@ -28,6 +29,10 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::post('pos/{id}/payment', [PosController::class, 'savePayment'])->name('receipt.payment');
     Route::get('pos/{id}/receipt', [PosController::class, 'showReceipt'])->name('pos.receipt');
     Route::post('pos/save-transaction', [PosController::class, 'saveTransaction'])->name('pos.save-transaction');
+    Route::get('pos-balancing', [PosBalancingController::class, 'index'])->name('pos-balancing.index');
+    Route::get('pos-balancing/summary', [PosBalancingController::class, 'summary'])->name('pos-balancing.summary');
+    Route::post('pos-balancing', [PosBalancingController::class, 'store'])->name('pos-balancing.store');
+    Route::post('pos-balancing/{id}/cancel', [PosBalancingController::class, 'cancel'])->whereNumber('id')->name('pos-balancing.cancel');
     Route::post('/pos/customers', [CustomerController::class, 'storeCustomer']);
     Route::get('pos/payment/{id}', [PosController::class, 'payment'])->name('pos.payment');
     Route::get('pos/payment/{id}/addresses', [\Modules\Pos\Http\Controllers\PosDeliveryAddressController::class, 'index'])->name('pos.addresses');

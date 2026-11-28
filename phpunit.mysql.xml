@@ -63,6 +63,7 @@
             <file>./tests/Feature/PosMoneyDefectsTest.php</file>
             <file>./tests/Feature/DocumentNumberTest.php</file>
             <file>./tests/Feature/RetiredStockEndpointsTest.php</file>
+            <file>./tests/Feature/PosBalancingTest.php</file>
         </testsuite>
     </testsuites>
     <groups>

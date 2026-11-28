@@ -5,6 +5,7 @@ namespace Modules\Crm\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use App\Support\PosBalancingRevenue;
 use App\Support\PosDiscount;
 use Modules\Master\Entities\Customer;
 use Modules\Crm\Entities\Tier;
@@ -67,6 +68,10 @@ class DashboardController extends Controller
 
         $salesByDate = (clone $salesQuery)->select('date', DB::raw('SUM(' . PosDiscount::revenueSql() . ') AS amount'))
             ->groupBy('date')->pluck('amount', 'date');
+        // POS balancing corrects revenue on the date of its sale.
+        foreach (PosBalancingRevenue::byDate($allowedBranchIds, $branchId, $start->toDateString(), $end->toDateString()) as $date => $amount) {
+            $salesByDate[$date] = (float) ($salesByDate[$date] ?? 0) + (float) $amount;
+        }
         $expensesByDate = (clone $expenseQuery)->select('date', DB::raw('SUM(COALESCE(total, 0)) AS amount'))
             ->groupBy('date')->pluck('amount', 'date');
         // Money paid out through the Arus Kas menu is an operating expense too.
@@ -160,6 +165,7 @@ class DashboardController extends Controller
             ->whereBetween('date', [$previousStart->toDateString(), $previousEnd->toDateString()])
             ->when($branchId !== null, static fn ($query) => $query->where('branch_id', $branchId))
             ->sum(DB::raw(PosDiscount::revenueSql()));
+        $previousRevenue += (float) PosBalancingRevenue::byDate($allowedBranchIds, $branchId, $previousStart->toDateString(), $previousEnd->toDateString())->sum();
         $previousExpense = (float) DB::table('expenditure')
             ->where('type', 'pengeluaran')
             ->whereIn('status', ['paid', 'debt'])
