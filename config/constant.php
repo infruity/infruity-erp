@@ -43,6 +43,14 @@ return [
             'actions' => $resourceActions('Role Menu'),
         ],
 
+        // POS balancing. Creating one needs pos.receipt, like selling.
+        'pos-balancing' => [
+            'label' => 'Balancing POS',
+            'actions' => $indexActions('Laporan Balancing POS', [
+                'backdate' => 'Balancing Nota Hari Sebelumnya',
+            ]),
+        ],
+
         // CRM
         'crm-dashboard' => [
             'label' => 'CRM Dashboard',

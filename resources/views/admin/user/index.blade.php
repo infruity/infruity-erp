@@ -24,6 +24,7 @@
             ['key' => 'wholesale', 'label' => 'Pengadaan'], ['key' => 'sortir', 'label' => 'Sortir Barang'],
             ['key' => 'transfer', 'label' => 'Pindah Stok'], ['key' => 'stock-opname', 'label' => 'Stok Opname'],
             ['key' => 'production', 'label' => 'Produksi'], ['key' => 'pos', 'label' => 'Kasir / POS'],
+            ['key' => 'pos-balancing', 'label' => 'Balancing POS'],
             ['key' => 'order-book', 'label' => 'Pesanan'], ['key' => 'delivery-order', 'label' => 'Pengiriman'],
             ['key' => 'expenditure', 'label' => 'Pengeluaran'], ['key' => 'receipt', 'label' => 'Resep'],
             ['key' => 'parcel', 'label' => 'Parcel'], ['key' => 'other-book', 'label' => 'Other Book'],

@@ -2,15 +2,20 @@ DROP PROCEDURE IF EXISTS get_customer_report;
 CREATE PROCEDURE get_customer_report(IN start_date DATE, IN end_date DATE)
 BEGIN
     -- Only paid or owed sales of the period count: drafts did, and HPP was not multiplied by the quantity.
-    WITH sales AS (
+    WITH balancing AS (
+        -- POS balancing corrects the revenue of its sale. Summed per sale first, so a sale is never counted twice.
+        SELECT pos_id, SUM(amount) AS amount FROM pos_balancing GROUP BY pos_id
+    ),
+    sales AS (
         SELECT id, customer_id,
             -- Revenue leaves out the shipping inside the total (see PosDiscount::revenueSql).
             GREATEST(COALESCE(total, 0) - GREATEST(COALESCE(ongkir, 0) - (CASE
                 WHEN COALESCE(ongkir_discount, 0) > 0
                      AND (ongkir_discount_type = 'percent' OR (ongkir_discount_type IS NULL AND ongkir_discount <= 100))
                 THEN COALESCE(ongkir, 0) * ongkir_discount / 100
-                ELSE COALESCE(ongkir_discount, 0) END), 0), 0) AS total
+                ELSE COALESCE(ongkir_discount, 0) END), 0), 0) + COALESCE(balancing.amount, 0) AS total
         FROM pos_transaction
+        LEFT JOIN balancing ON balancing.pos_id = pos_transaction.id
         WHERE `date` BETWEEN start_date AND end_date
           AND deleted_at IS NULL
           AND status IN ('paid', 'debt')
@@ -50,15 +55,20 @@ DROP PROCEDURE IF EXISTS get_branch_report;
 CREATE PROCEDURE get_branch_report(IN start_date DATE, IN end_date DATE)
 BEGIN
     -- One row per paid or owed sale: joining the payments counted a sale paid in instalments once per payment.
-    WITH sales AS (
+    WITH balancing AS (
+        -- POS balancing corrects the revenue of its sale. Summed per sale first, so a sale is never counted twice.
+        SELECT pos_id, SUM(amount) AS amount FROM pos_balancing GROUP BY pos_id
+    ),
+    sales AS (
         SELECT id, branch_id,
             -- Revenue leaves out the shipping inside the total (see PosDiscount::revenueSql).
             GREATEST(COALESCE(total, 0) - GREATEST(COALESCE(ongkir, 0) - (CASE
                 WHEN COALESCE(ongkir_discount, 0) > 0
                      AND (ongkir_discount_type = 'percent' OR (ongkir_discount_type IS NULL AND ongkir_discount <= 100))
                 THEN COALESCE(ongkir, 0) * ongkir_discount / 100
-                ELSE COALESCE(ongkir_discount, 0) END), 0), 0) AS total
+                ELSE COALESCE(ongkir_discount, 0) END), 0), 0) + COALESCE(balancing.amount, 0) AS total
         FROM pos_transaction
+        LEFT JOIN balancing ON balancing.pos_id = pos_transaction.id
         WHERE `date` BETWEEN start_date AND end_date
           AND deleted_at IS NULL
           AND status IN ('paid', 'debt')
